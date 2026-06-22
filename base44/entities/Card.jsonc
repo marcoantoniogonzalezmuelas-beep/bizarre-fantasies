@@ -1,0 +1,108 @@
+{
+  "name": "Card",
+  "type": "object",
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "description": "Unique card identifier"
+    },
+    "number": {
+      "type": "number",
+      "description": "Card number in the set"
+    },
+    "name": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "description": "Subtitle/epithet"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "hero",
+        "spell",
+        "ranged_weapon",
+        "melee_weapon",
+        "armor",
+        "object",
+        "bonus",
+        "race"
+      ]
+    },
+    "clan": {
+      "type": "string",
+      "description": "Race/faction"
+    },
+    "clan_color": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "description": "CC/AD/HE for heroes, element for spells, etc."
+    },
+    "cost": {
+      "type": "number"
+    },
+    "cc": {
+      "type": "number"
+    },
+    "ad": {
+      "type": "number"
+    },
+    "he": {
+      "type": "number"
+    },
+    "hp": {
+      "type": "number"
+    },
+    "mana": {
+      "type": "number"
+    },
+    "power": {
+      "type": "number"
+    },
+    "ability_name": {
+      "type": "string"
+    },
+    "ability_text": {
+      "type": "string"
+    },
+    "elite_ability_name": {
+      "type": "string"
+    },
+    "elite_ability_text": {
+      "type": "string"
+    },
+    "elite_cc": {
+      "type": "number"
+    },
+    "elite_ad": {
+      "type": "number"
+    },
+    "elite_he": {
+      "type": "number"
+    },
+    "elite_hp": {
+      "type": "number"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "art_url": {
+      "type": "string",
+      "description": "URL of the generated art"
+    },
+    "elite_art_url": {
+      "type": "string",
+      "description": "URL of elite version art"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}

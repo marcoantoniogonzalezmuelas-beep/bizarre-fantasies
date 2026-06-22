@@ -1,0 +1,139 @@
+import React, { useState, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowLeft, Search } from 'lucide-react';
+import HeroCard from '@/components/cards/HeroCard';
+import EquipCard from '@/components/cards/EquipCard';
+import RaceCard from '@/components/cards/RaceCard';
+import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES, CLAN_COLORS, CLAN_SYMBOLS } from '@/lib/cardData';
+
+const TABS = [
+  { key: 'heroes', label: 'Héroes' },
+  { key: 'spells', label: 'Hechizos' },
+  { key: 'ranged', label: 'Armas Dist.' },
+  { key: 'melee', label: 'Armas C/C' },
+  { key: 'armors', label: 'Armaduras' },
+  { key: 'objects', label: 'Objetos' },
+  { key: 'bonuses', label: 'Bonificadores' },
+  { key: 'races', label: 'Razas' },
+];
+
+const HERO_CLANS = ['Todos', 'Guerreros', 'Druidas', 'No-muertos', 'Vaqueros', 'Elfos', 'Magos', 'Épicas', 'Cotidianos'];
+const HERO_TYPES = ['Todos', 'CC', 'AD', 'HE'];
+
+export default function Cards() {
+  const loc = useLocation();
+  const params = new URLSearchParams(loc.search);
+  const initialTab = params.get('tab') || 'heroes';
+
+  const [tab, setTab] = useState(initialTab);
+  const [search, setSearch] = useState('');
+  const [clanFilter, setClanFilter] = useState('Todos');
+  const [typeFilter, setTypeFilter] = useState('Todos');
+  const [selectedHero, setSelectedHero] = useState(null);
+
+  const filteredHeroes = useMemo(() => {
+    return HEROES.filter(h => {
+      if (search && !h.name.toLowerCase().includes(search.toLowerCase()) && !h.title.toLowerCase().includes(search.toLowerCase())) return false;
+      if (clanFilter !== 'Todos' && h.clan !== clanFilter) return false;
+      if (typeFilter !== 'Todos' && h.type !== typeFilter) return false;
+      return true;
+    });
+  }, [search, clanFilter, typeFilter]);
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0d0a14, #0a0810)' }}>
+      {/* Header */}
+      <div className="sticky top-0 z-20 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Link to="/" className="text-[#a89fbb] hover:text-[#FFD24A] transition-colors"><ArrowLeft size={20} /></Link>
+          <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">CATÁLOGO</h1>
+          <span className="text-xs text-[#a89fbb] hidden md:inline">103 cartas · Base Set</span>
+        </div>
+
+        {/* Tabs */}
+        <div className="max-w-7xl mx-auto px-4 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar">
+          {TABS.map(t => (
+            <button key={t.key} onClick={() => { setTab(t.key); setSearch(''); setClanFilter('Todos'); setTypeFilter('Todos'); }}
+              className={`flex-shrink-0 text-sm font-semibold px-3 py-2 rounded-lg transition-all ${tab === t.key ? 'bg-gradient-to-b from-[#ffe49a] via-[#FFD24A] to-[#d8a431] text-[#2a1d05] border-[#ffe9a8]' : 'bg-[#221a36] text-[#efe9dc] border-[#3c3158] hover:border-[#b8902a]'} border`}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Filters for heroes */}
+        {tab === 'heroes' && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8099]" size={16} />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar héroe..." className="w-full pl-9 pr-3 py-2.5 text-sm bg-[#15101f] border border-[#3c3158] rounded-lg text-[#efe9dc] focus:outline-none focus:border-[#b8902a]" />
+            </div>
+            <div className="flex gap-1 flex-wrap">
+              {HERO_CLANS.map(c => (
+                <button key={c} onClick={() => setClanFilter(c)} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border transition-all ${clanFilter === c ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
+                  {c !== 'Todos' && <span className="mr-0.5">{CLAN_SYMBOLS[c]}</span>}{c}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1">
+              {HERO_TYPES.map(t => (
+                <button key={t} onClick={() => setTypeFilter(t)} className={`text-xs font-bold px-3 py-2 rounded-lg border transition-all ${typeFilter === t ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
+                  {t === 'Todos' ? 'Todos' : t === 'CC' ? '⚔️ CC' : t === 'AD' ? '🏹 AD' : '🔮 HE'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Content */}
+        {tab === 'heroes' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {filteredHeroes.map(hero => (
+              <HeroCard key={hero.id} hero={hero} onClick={h => setSelectedHero(h)} />
+            ))}
+          </div>
+        )}
+        {tab === 'spells' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {SPELLS.map(s => <EquipCard key={s.id} item={s} type="spell" />)}
+          </div>
+        )}
+        {tab === 'ranged' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {RANGED_WEAPONS.map(w => <EquipCard key={w.id} item={w} type="ranged" />)}
+          </div>
+        )}
+        {tab === 'melee' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {MELEE_WEAPONS.map(w => <EquipCard key={w.id} item={w} type="melee" />)}
+          </div>
+        )}
+        {tab === 'armors' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {ARMORS.map(a => <EquipCard key={a.id} item={a} type="armor" />)}
+          </div>
+        )}
+        {tab === 'objects' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {OBJECTS.map(o => <EquipCard key={o.id} item={o} type="object" />)}
+          </div>
+        )}
+        {tab === 'bonuses' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {BONUSES.map(b => <EquipCard key={b.id} item={{ ...b, cost: '—' }} type="bonus" />)}
+          </div>
+        )}
+        {tab === 'races' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {RACES.map(r => <RaceCard key={r.name} race={r} />)}
+          </div>
+        )}
+
+        {tab === 'heroes' && filteredHeroes.length === 0 && (
+          <div className="text-center py-16 text-[#a89fbb]">No se encontraron héroes con esos filtros.</div>
+        )}
+      </div>
+    </div>
+  );
+}
