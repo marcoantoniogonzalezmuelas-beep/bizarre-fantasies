@@ -363,7 +363,7 @@ function buildArtScript() {
       /* Mobile card fit: keep art and text inside the phone frame */
       @media (max-width: 640px) {
         .cardface, .bf-hero-card { max-width: 100% !important; }
-        .bf-hero-bg { inset: -3% !important; background-position: center 8% !important; }
+        .bf-hero-bg, .cf-art.has-art::before { inset: -14% !important; background-size: cover !important; background-position: center 10% !important; }
         .bf-hero-top { padding: 9px 42px 0 !important; min-height: 78px !important; }
         .bf-hero-name { font-size: clamp(17px, 6.8vw, 25px) !important; line-height: .98 !important; }
         .bf-hero-title { font-size: 10.5px !important; }
@@ -382,9 +382,9 @@ function buildArtScript() {
         .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
-        .shop-card-art { height: 82px !important; background-size: contain !important; background-repeat: no-repeat !important; background-color: rgba(7,5,11,.72) !important; }
-        .bf-bonus-card { height: clamp(136px, 42vw, 172px) !important; margin: 4px 0 7px !important; }
-        .bf-bonus-card .bf-bonus-art { inset: 4px !important; background-size: contain !important; background-repeat: no-repeat !important; }
+        .shop-card-art { height: 104px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card { height: clamp(148px, 46vw, 184px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
+        .bf-bonus-card .bf-bonus-art { inset: -16% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -405,9 +405,9 @@ function buildArtScript() {
       @keyframes bfZap { 0%,100%{opacity:.98} 50%{opacity:.66} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
       .bf-ctb-thumb { position:absolute; left:4px; top:4px; bottom:4px; width:34px; border-radius:7px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.28); }
-      .hero-acquired { position:relative !important; min-height:58px; padding-left:58px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:6px; top:6px; bottom:6px; width:44px; border-radius:9px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.32),0 3px 8px rgba(0,0,0,.35); }
-      .bf-result-thumb { display:inline-block; width:32px; height:32px; border-radius:8px; margin-right:7px; vertical-align:middle; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.45); }
+      .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
+      .bf-acq-thumb { position:absolute; left:7px; top:7px; bottom:7px; width:62px; border-radius:11px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.42),0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:44px; height:44px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.55),0 4px 10px rgba(0,0,0,.38); }
       .fx-ring-heal { box-shadow:0 0 24px #51ff8a, inset 0 0 18px #51ff8a !important; }
       .fx-burst { mix-blend-mode:screen; filter:blur(.2px) saturate(1.4); }
       .fx-status, .fx-word, .fx-dmg { text-shadow:0 2px 6px #000,0 0 12px currentColor !important; font-weight:1000 !important; }
