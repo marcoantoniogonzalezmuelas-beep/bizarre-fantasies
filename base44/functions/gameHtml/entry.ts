@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-zoom-mobile-v15';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-zoom-fullcard-v16';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -639,7 +639,8 @@ function buildArtScript() {
       .bf-zoom-btn { position:absolute; top:50%; right:8px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.55); color:#ffe49a; box-shadow:0 3px 8px rgba(0,0,0,.5); transition:background .12s ease; padding:0; }
       .bf-zoom-btn:hover { background:rgba(255,210,74,.22); }
       .bf-zoom-overlay { position:fixed; inset:0; z-index:100001; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(6,4,12,.92); backdrop-filter:blur(6px); animation:bfFadeIn .2s ease; }
-      .bf-zoom-img { max-width:92vw; max-height:92vh; object-fit:contain; border-radius:18px; border:2.5px solid #caa14a; box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
+      .bf-zoom-cardwrap { position:relative; width:min(420px,90vw); height:min(640px,86vh); aspect-ratio:7/10; box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
+      .bf-zoom-cardwrap .bf-hero-card { position:absolute; inset:0; }
       .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
       .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
     \`;
@@ -708,7 +709,7 @@ function buildArtScript() {
           '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
         '</div>' +
         '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
-        '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomImage(\\'' + safeUrl + '\\')" aria-label="Ampliar">🔍</button>' +
+        '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomCard(\\'' + clean(h && h.id || '') + '\\',\\'' + (elite ? 'elite' : 'normal') + '\\')" aria-label="Ampliar">🔍</button>' +
         '<div class="bf-logo">BF</div>' +
       '</div>';
     };
@@ -717,9 +718,11 @@ function buildArtScript() {
     return true;
   }
 
-  // ---- Full-screen image zoom (lupa) ----
-  function bfZoomImage(url) {
-    if (!url) return;
+  // ---- Full-screen card zoom (lupa) — shows the WHOLE card (art + stats + ability), enlarged ----
+  function bfZoomCard(heroId, variant) {
+    if (typeof window.cardFace !== 'function') return;
+    var h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; });
+    if (!h) return;
     var existing = document.getElementById('bf-zoom-overlay');
     if (existing) existing.remove();
     var overlay = document.createElement('div');
@@ -727,13 +730,17 @@ function buildArtScript() {
     overlay.className = 'bf-zoom-overlay';
     overlay.innerHTML =
       '<button class="bf-zoom-close" aria-label="Cerrar">✕</button>' +
-      '<img class="bf-zoom-img" src="' + url + '" alt="">';
+      '<div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '</div>';
     document.body.appendChild(overlay);
+    // Don't let the zoomed card's own lupa button re-trigger inside the modal.
+    var innerBtn = overlay.querySelector('.bf-zoom-cardwrap .bf-zoom-btn');
+    if (innerBtn) innerBtn.remove();
     function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
     overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.className === 'bf-zoom-close') close(); });
-    overlay.querySelector('.bf-zoom-img').addEventListener('click', function(e) { e.stopPropagation(); });
+    var wrap = overlay.querySelector('.bf-zoom-cardwrap');
+    if (wrap) wrap.addEventListener('click', function(e) { e.stopPropagation(); });
   }
-  window.bfZoomImage = bfZoomImage;
+  window.bfZoomCard = bfZoomCard;
 
   // ---- DOM injection for hero cards (match by name) ----
   function injectHeroArt() {
