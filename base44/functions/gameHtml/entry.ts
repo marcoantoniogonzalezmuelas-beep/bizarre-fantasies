@@ -259,10 +259,13 @@ function buildArtScript() {
         animation: bfEmojiFloat 3.2s ease-in-out infinite !important;
       }
       @keyframes bfEmojiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-      /* Reinforce 3D flip so the elite (back) face never shows mirrored */
-      .flip3d-inner { transform-style: preserve-3d !important; }
-      .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
-      .flip3d .face.back { transform: rotateY(180deg) !important; }
+      /* Safe elite flip: show the back face without mirror artifacts */
+      .flip3d-inner { transform: none !important; transition: none !important; }
+      .flip3d .face { backface-visibility: visible !important; -webkit-backface-visibility: visible !important; transition: opacity .22s ease, transform .22s ease !important; }
+      .flip3d .face.front { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+      .flip3d .face.back { opacity: 0 !important; transform: none !important; pointer-events: none !important; }
+      .flip3d.flipped .face.front { opacity: 0 !important; transform: scale(.985) !important; pointer-events: none !important; }
+      .flip3d.flipped .face.back { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
       .face.back .bf-hero-card.cf-elite .bf-hero-bg,
       .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
 
