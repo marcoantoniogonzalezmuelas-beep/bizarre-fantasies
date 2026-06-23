@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-art-v5';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-confirm-v6';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -221,6 +221,9 @@ function buildArtScript() {
   var HERO_IDS = ${JSON.stringify(HERO_IDS)};
   var HERO_NAMES = ${JSON.stringify(HERO_NAMES)};
   var NUM_ART = ${JSON.stringify(NUM_ART)};
+  var MELEE_ART = ${JSON.stringify(MELEE_ART)};
+  var RANGED_ART = ${JSON.stringify(RANGED_ART)};
+  var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
@@ -523,6 +526,26 @@ function buildArtScript() {
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:3; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; }
       .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.05; }
       .bf-quick-txt { color:#d9d0e8; font-size:11px; line-height:1.25; margin-top:5px; }
+      /* In-game styled confirm dialog */
+      .bf-confirm-overlay { position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.72),rgba(8,5,14,.9)); backdrop-filter:blur(4px); animation:bfFadeIn .2s ease; }
+      .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
+      .bf-confirm-art { position:relative; height:150px; background-size:cover; background-position:center; }
+      .bf-confirm-art::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 35%,rgba(18,13,34,.96) 100%); }
+      .bf-confirm-cost { position:absolute; top:10px; left:10px; z-index:2; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; color:#5a3d06; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; box-shadow:0 4px 10px rgba(0,0,0,.55); }
+      .bf-confirm-num { position:absolute; top:12px; right:10px; z-index:2; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:3px 8px; }
+      .bf-confirm-body { padding:4px 18px 18px; text-align:center; }
+      .bf-confirm-name { font-family:'Cinzel',serif; font-weight:1000; font-size:19px; color:#fff5dc; text-shadow:0 2px 6px #000; margin-top:-26px; position:relative; z-index:2; }
+      .bf-confirm-msg { color:#cfc6dd; font-size:13px; line-height:1.35; margin-top:8px; }
+      .bf-confirm-msg b { color:#ffe49a; }
+      .bf-confirm-actions { display:flex; gap:10px; margin-top:16px; }
+      .bf-confirm-btn { flex:1; border-radius:11px; padding:11px 10px; font-family:'Cinzel',serif; font-weight:900; font-size:14px; cursor:pointer; border:none; transition:transform .12s ease,filter .12s ease; }
+      .bf-confirm-btn:active { transform:scale(.96); }
+      .bf-confirm-yes { color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 5px 14px rgba(255,210,74,.32); }
+      .bf-confirm-yes:hover { filter:brightness(1.08); }
+      .bf-confirm-no { color:#efe9dc; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); }
+      .bf-confirm-no:hover { background:rgba(255,255,255,.12); }
+      @keyframes bfFadeIn { from{opacity:0} to{opacity:1} }
+      @keyframes bfPopIn { from{opacity:0;transform:translateY(14px) scale(.94)} to{opacity:1;transform:none} }
       @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} }
       @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
       @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} }
@@ -1081,60 +1104,105 @@ function buildArtScript() {
     function findHero(side, heroId) {
       return ((G.team && G.team[side]) || []).find(function(h) { return h && h.id === heroId; });
     }
-    function confirmPurchase(item, side, hero) {
-      if (!item) return false;
-      var cost = Number(item.cost || 0);
-      var coins = Number((G.equipCoins && G.equipCoins[side]) || 0);
-      if (coins < cost) {
-        if (window.notif) notif('No tienes monedas suficientes para comprar ' + item.name + '.');
-        return false;
-      }
-      var target = hero ? ' y equiparlo a ' + hero.name : '';
-      return window.confirm('Comprar ' + item.name + ' por ' + cost + ' monedas' + target + '?');
-    }
     function closeAnyModal() {
       var close = document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');
       if (close) close.click();
       else if (typeof window.closeModal === 'function') closeModal();
     }
 
+    // Game-styled confirmation dialog. Calls onYes() if the player confirms.
+    // artUrl is optional (used for the preview banner).
+    function bfConfirm(opts, onYes) {
+      var item = opts.item;
+      if (!item) return;
+      var cost = Number(item.cost || 0);
+      var coins = Number((G.equipCoins && G.equipCoins[opts.side]) || 0);
+      if (coins < cost) {
+        if (window.notif) notif('No tienes monedas suficientes para comprar ' + item.name + '.');
+        return;
+      }
+      var existing = document.getElementById('bf-confirm-overlay');
+      if (existing) existing.remove();
+      var no = numFor(item);
+      var target = opts.hero ? ' y equiparlo a <b>' + clean(opts.hero.name) + '</b>' : '';
+      var overlay = document.createElement('div');
+      overlay.id = 'bf-confirm-overlay';
+      overlay.className = 'bf-confirm-overlay';
+      overlay.innerHTML =
+        '<div class="bf-confirm-box">' +
+          (opts.art ? '<div class="bf-confirm-art" style="background-image:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-cost">' + cost + '</div><div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div></div>' : '') +
+          '<div class="bf-confirm-body">' +
+            '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
+            '<div class="bf-confirm-msg">¿Comprar por <b>' + cost + ' monedas</b>' + target + '?</div>' +
+            '<div class="bf-confirm-actions">' +
+              '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button>' +
+              '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Comprar</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+      overlay.querySelector('#bf-confirm-no').onclick = close;
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+      overlay.querySelector('#bf-confirm-yes').onclick = function() { close(); onYes(); };
+    }
+
+    function indexInList(list, id) {
+      for (var i = 0; i < (list || []).length; i++) { if (list[i] && list[i].id === id) return i; }
+      return -1;
+    }
+
     var originalBuySpell = window.buySpell;
     window.buySpell = function(side, id) {
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
-      if (!confirmPurchase(item, side)) return;
-      return originalBuySpell.apply(this, arguments);
+      if (!item) return;
+      var art = NUM_ART[String(numFor(item))] || '';
+      bfConfirm({ item: item, side: side, art: art }, function() { originalBuySpell(side, id); });
     };
 
     var originalBuyObject = window.buyObject;
     window.buyObject = function(side, id) {
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
-      if (!confirmPurchase(item, side)) return;
-      return originalBuyObject.apply(this, arguments);
+      if (!item) return;
+      var art = NUM_ART[String(numFor(item))] || '';
+      bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); });
     };
 
     var originalDoAssign = window.doAssign;
     window.doAssign = function(side, heroId) {
       var hero = findHero(side, heroId);
-      var item = G.assign ? { name: G.assign.name, cost: G.assign.cost } : null;
-      if (!confirmPurchase(item, side, hero)) return;
-      return originalDoAssign.apply(this, arguments);
+      var a = G.assign || {};
+      var item = a.name ? { name: a.name, cost: a.cost, id: a.id } : null;
+      if (!item) return;
+      var kind = a.kind === 'armor' ? 'armor' : (a.kind === 'ranged' ? 'ranged' : 'melee');
+      var srcList = kind === 'armor' ? ARMORS : (kind === 'ranged' ? RANGED : MELEE);
+      var art = artFor(kind, indexInList(srcList, a.id));
+      bfConfirm({ item: item, side: side, hero: hero, art: art }, function() { originalDoAssign(side, heroId); });
     };
 
+    // Resolve an item's art + number by its INDEX inside the game's own list
+    // (MELEE/RANGED/ARMORS), which is index-for-index with the art arrays.
+    function artFor(kind, idx) {
+      var arr = kind === 'armor' ? ARMOR_ART : (kind === 'ranged' ? RANGED_ART : MELEE_ART);
+      return arr[idx] || '';
+    }
+    function numFor(item) {
+      return (typeof cardNo === 'function' ? cardNo(item.id) : item.num) || item.num || 0;
+    }
+
     // Build a name -> {num, art} map for every equipment item, so we can show
-    // a thumbnail and number on equipped slots.
+    // a thumbnail and number on equipped slots. Art resolved by array index.
     function itemArtByName() {
       var map = {};
-      function add(list) {
-        (list || []).forEach(function(it) {
+      function add(list, kind) {
+        (list || []).forEach(function(it, i) {
           if (!it || !it.name) return;
-          var no = typeof cardNo === 'function' ? cardNo(it.id) : it.num;
-          var art = NUM_ART[String(no)] || NUM_ART[no] || '';
-          map[it.name] = { num: no, art: art };
+          map[it.name] = { num: numFor(it), art: artFor(kind, i) };
         });
       }
-      if (typeof MELEE !== 'undefined') add(MELEE);
-      if (typeof RANGED !== 'undefined') add(RANGED);
-      if (typeof ARMORS !== 'undefined') add(ARMORS);
+      if (typeof MELEE !== 'undefined') add(MELEE, 'melee');
+      if (typeof RANGED !== 'undefined') add(RANGED, 'ranged');
+      if (typeof ARMORS !== 'undefined') add(ARMORS, 'armor');
       return map;
     }
 
@@ -1180,11 +1248,14 @@ function buildArtScript() {
       var items = slot === 'armor' ? (ARMORS || []).map(function(x) { return { kind:'armor', item:x }; }) :
         (MELEE || []).map(function(x) { return { kind:'melee', item:x }; }).concat((RANGED || []).map(function(x) { return { kind:'ranged', item:x }; }));
       var coins = Number((G.equipCoins && G.equipCoins[side]) || 0);
+      // Track per-kind index so we can resolve art by array position.
+      var kindIdx = { melee: 0, ranged: 0, armor: 0 };
       var cards = items.map(function(row) {
         var item = row.item;
-        var art = NUM_ART[String(cardNo(item.id))] || NUM_ART[cardNo(item.id)] || '';
+        var idx = kindIdx[row.kind]++;
+        var art = artFor(row.kind, idx);
         var disabled = Number(item.cost || 0) > coins;
-        var no = typeof cardNo === 'function' ? cardNo(item.id) : item.num;
+        var no = numFor(item);
         return '<div class="bf-quick-card" ' + (disabled ? 'style="opacity:.45;cursor:not-allowed"' : 'onclick="bfQuickBuy(&quot;' + side + '&quot;,&quot;' + heroId + '&quot;,&quot;' + row.kind + '&quot;,&quot;' + item.id + '&quot;)"') + '>' +
           (art ? '<div class="bf-quick-art" style="background-image:url(&quot;' + art + '&quot;)"></div>' : '') +
           '<div class="bf-quick-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>' +
@@ -1199,11 +1270,11 @@ function buildArtScript() {
     window.bfQuickBuy = function(side, heroId, kind, id) {
       var src = kind === 'armor' ? ARMORS : (kind === 'melee' ? MELEE : RANGED);
       var item = typeof byId === 'function' ? byId(src, id) : null;
-      var hero = findHero(side, heroId);
-      if (!confirmPurchase(item, side, hero)) return;
+      if (!item) return;
       G.assign = { kind: kind, id: id, cost: item.cost, name: item.name };
       closeAnyModal();
-      return originalDoAssign.call(this, side, heroId);
+      // doAssign now shows the in-game styled confirm itself.
+      return window.doAssign(side, heroId);
     };
   }
 
