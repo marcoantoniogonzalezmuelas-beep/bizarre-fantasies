@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-zoom-allcards-v17';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-bonus-fullart-v18';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -392,7 +392,7 @@ function buildArtScript() {
       /* Bonus / restador shown as a mini-card with the whole card visible */
       .bf-bonus-card {
         position: relative; display: block; border-radius: 13px; overflow: hidden;
-        height: 214px; margin: 5px 0 8px; border: 2px solid rgba(255,210,74,0.68);
+        aspect-ratio: 1 / 1; margin: 5px auto 8px; max-width: 320px; border: 2px solid rgba(255,210,74,0.68);
         background: #07050b;
         box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,210,74,.10);
       }
@@ -441,7 +441,7 @@ function buildArtScript() {
         .shop-card { max-width: 100% !important; }
         .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
         .shop-card-art-sharp { inset: -8px !important; background-size: cover !important; background-position: center center !important; }
-        .bf-bonus-card { height: clamp(190px, 62vw, 250px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
+        .bf-bonus-card { aspect-ratio: 1 / 1 !important; height: auto !important; max-width: 100% !important; margin: 4px auto 7px !important; background:#07050b !important; }
         .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
