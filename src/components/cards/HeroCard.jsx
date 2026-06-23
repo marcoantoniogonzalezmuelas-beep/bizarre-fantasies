@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 import { CLAN_COLORS, CLAN_SYMBOLS } from '@/lib/cardData';
+import ImageZoomModal from '@/components/cards/ImageZoomModal';
 
 const TYPE_ICON = { CC: '⚔', AD: '🏹', HE: '✦' };
 
 export default function HeroCard({ hero, onClick }) {
   const [flipped, setFlipped] = useState(false);
+  const [zoomSrc, setZoomSrc] = useState(null);
   const color = CLAN_COLORS[hero.clan] || '#caa14a';
   const symbol = CLAN_SYMBOLS[hero.clan] || '◆';
 
@@ -22,6 +25,17 @@ export default function HeroCard({ hero, onClick }) {
         {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" />}
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
         <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
+
+        {/* Lupa: ampliar arte */}
+        {artUrl && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setZoomSrc(artUrl); }}
+            className="absolute top-1/2 right-2 -translate-y-1/2 z-30 w-9 h-9 rounded-full flex items-center justify-center bg-black/65 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/85 hover:text-[#fff5dc] transition-colors shadow-lg"
+            aria-label="Ampliar"
+          >
+            <Search size={16} />
+          </button>
+        )}
 
         <div className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center text-[#fff7dc] font-heading text-2xl font-black shadow-lg" style={{ background: 'radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%)', border: `2px solid ${color}`, textShadow: `0 2px 4px #000,0 0 10px ${color}` }}>{symbol}</div>
@@ -76,6 +90,7 @@ export default function HeroCard({ hero, onClick }) {
       <button onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} className="text-xs font-bold text-[#e8def6] bg-[#241a33] border border-[#3c3158] rounded-lg py-1.5 hover:border-[#b8902a] hover:text-[#ffcf57] transition-colors">
         ⟳ {flipped ? 'Normal' : 'Élite'}
       </button>
+      <ImageZoomModal src={zoomSrc} alt={hero.name} onClose={() => setZoomSrc(null)} />
     </div>
   );
 }

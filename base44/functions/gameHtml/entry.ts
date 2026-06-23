@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-thumb-fit-v14';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-zoom-mobile-v15';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -402,8 +402,8 @@ function buildArtScript() {
       }
       .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(20px) saturate(1.35) contrast(1.18); transform: scale(1.45); opacity: 1; }
       .bf-bonus-card .bf-bonus-art {
-        inset: -32px; background-size: cover; z-index: 1; transform: scale(1.32);
-        filter: saturate(1.15) contrast(1.13);
+        inset: 0; background-size: contain; background-position: center center; z-index: 1; transform: none;
+        filter: saturate(1.12) contrast(1.1);
       }
       .bf-bonus-card .bf-bonus-shade {
         position: absolute; inset: 0; z-index: 2;
@@ -420,28 +420,29 @@ function buildArtScript() {
         .cardface, .bf-hero-card { max-width: 100% !important; }
         .bf-hero-bg, .cf-art.has-art::before { inset: -4% !important; background-size: cover !important; background-position: center center !important; }
         .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; }
-        .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 99px !important; padding: 4px 7px !important; }
+        .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; }
         .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
         .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; }
         .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
         .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
-        .bf-stats { left: 10px !important; right: 10px !important; bottom: 142px !important; padding: 6px 45px 6px 7px !important; }
+        .bf-stats { left: 10px !important; right: 10px !important; bottom: 150px !important; padding: 6px 45px 6px 7px !important; }
         .bf-stat b { font-size: 17px !important; }
-        .bf-heart { right: 8px !important; bottom: 146px !important; width: 50px !important; height: 46px !important; }
+        .bf-heart { right: 8px !important; bottom: 154px !important; width: 50px !important; height: 46px !important; }
         .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; }
         .bf-heart .cf-hp { font-size: 16px !important; }
-        .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 94px !important; grid-template-columns: 38px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; }
-        .bf-ability-orb { width: 35px !important; height: 35px !important; }
-        .bf-ability-orb::before { font-size: 20px !important; }
-        .bf-ability-name { font-size: 10.8px !important; }
-        .bf-ability-text { font-size: 10.6px !important; line-height: 1.18 !important; }
+        .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 90px !important; max-height: 138px !important; overflow: hidden !important; grid-template-columns: 34px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; align-items: start !important; }
+        .bf-ability-orb { width: 32px !important; height: 32px !important; margin-top: 1px !important; }
+        .bf-ability-orb::before { font-size: 18px !important; }
+        .bf-ability-name { font-size: 10.2px !important; line-height: 1.1 !important; }
+        .bf-ability-text { font-size: 9.8px !important; line-height: 1.16 !important; }
+        .bf-zoom-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; right: 6px !important; }
         .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
         .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
         .shop-card-art-sharp { inset: -8px !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { height: clamp(190px, 62vw, 250px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: -28px !important; transform: scale(1.32) !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -633,6 +634,14 @@ function buildArtScript() {
       /* ---- Élite badge in hero info modal ---- */
       .bf-elite-badge { display:flex; align-items:center; gap:8px; margin:8px 0 4px; padding:8px 12px; border-radius:11px; font-family:'Cinzel',serif; font-weight:1000; font-size:14px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3); text-shadow:0 1px 1px rgba(255,255,255,.4); animation:bfBadgePulse 1.8s ease-in-out infinite; }
       @keyframes bfBadgePulse { 0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3)} 50%{box-shadow:0 4px 22px rgba(255,210,74,.7), inset 0 0 0 1px rgba(255,255,255,.45)} }
+
+      /* ---- Lupa (zoom) en cartas de héroe ---- */
+      .bf-zoom-btn { position:absolute; top:50%; right:8px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.55); color:#ffe49a; box-shadow:0 3px 8px rgba(0,0,0,.5); transition:background .12s ease; padding:0; }
+      .bf-zoom-btn:hover { background:rgba(255,210,74,.22); }
+      .bf-zoom-overlay { position:fixed; inset:0; z-index:100001; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(6,4,12,.92); backdrop-filter:blur(6px); animation:bfFadeIn .2s ease; }
+      .bf-zoom-img { max-width:92vw; max-height:92vh; object-fit:contain; border-radius:18px; border:2.5px solid #caa14a; box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
+      .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
+      .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
     \`;
     document.head.appendChild(style);
   }
@@ -699,6 +708,7 @@ function buildArtScript() {
           '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
         '</div>' +
         '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
+        '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomImage(\\'' + safeUrl + '\\')" aria-label="Ampliar">🔍</button>' +
         '<div class="bf-logo">BF</div>' +
       '</div>';
     };
@@ -706,6 +716,24 @@ function buildArtScript() {
     window.cardFace = patched;
     return true;
   }
+
+  // ---- Full-screen image zoom (lupa) ----
+  function bfZoomImage(url) {
+    if (!url) return;
+    var existing = document.getElementById('bf-zoom-overlay');
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'bf-zoom-overlay';
+    overlay.className = 'bf-zoom-overlay';
+    overlay.innerHTML =
+      '<button class="bf-zoom-close" aria-label="Cerrar">✕</button>' +
+      '<img class="bf-zoom-img" src="' + url + '" alt="">';
+    document.body.appendChild(overlay);
+    function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+    overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.className === 'bf-zoom-close') close(); });
+    overlay.querySelector('.bf-zoom-img').addEventListener('click', function(e) { e.stopPropagation(); });
+  }
+  window.bfZoomImage = bfZoomImage;
 
   // ---- DOM injection for hero cards (match by name) ----
   function injectHeroArt() {
