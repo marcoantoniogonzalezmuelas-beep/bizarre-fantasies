@@ -172,171 +172,154 @@ const BONUS_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png',
 ];
 
+// Hero id order, matching the HERO_ART / HERO_ELITE_ART arrays index-for-index.
+const HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
+
+// Hero id -> display name (so we can match cards already rendered in the DOM by name).
+const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok","Gnarr","Vragnar","Morthex","Buck Ironclad","La Comadreja","Krunder Mec.","El Heavy","El Pijo","Patrón","Sylvara","Aelion","Zarmandis","Eredon","Alfredinho","Dixie Plasma","Skarla","Sylvex","Gorvak","El Futbolista","El Gamer","Retropoeta","Malachar","Serafis","Batu","Nixara","Vexal","Chivo","Solenne","Mantenimiento","Pacopiton","Hexara","Reverendo Hex","Doc Radiante","Zarmandis","Xerath","El Ajedrecista","El Rolero","El Político"];
+
+// Equipment ids by category, index-for-index with their art arrays. Also their
+// card numbers (cardNo) so we can match the "Nº X" shown on shop cards.
+const EQUIP = {
+  melee:  { ids:["mw_sword","mw_mace","mw_axe","mw_dagger","mw_plasma","mw_thunder"], nums:[59,60,61,62,63,64] },
+  ranged: { ids:["rw_sling","rw_cross","rw_pistol","rw_smg","rw_cannon","rw_plasma","rw_elfbow","rw_photon"], nums:[65,66,67,68,69,70,71,72] },
+  armor:  { ids:["ar_leather","ar_mail","ar_plate","ar_arcane","ar_aegis","ar_exo","ar_water","ar_thunder","ar_ice","ar_fire"], nums:[73,74,75,76,77,78,79,80,81,82] },
+  spell:  { ids:["sp_fire1","sp_fire2","sp_ice1","sp_ray1","sp_agua1","sp_heal1","sp_heal2","sp_prot1","sp_ward","sp_sleep","sp_para","sp_curse","sp_bless"], nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] },
+  object: { ids:["ob_pot","ob_potbig","ob_mana","ob_manabig","ob_shield","ob_cleanse","ob_bomb","ob_revive","ob_phoenix"], nums:[83,84,85,86,87,88,89,90,91] },
+};
+
+// Build a number -> art map for all equipment (used to patch shop cards by their "Nº").
+function buildNumArtMap() {
+  const map = {};
+  const sets = [
+    [EQUIP.melee, MELEE_ART], [EQUIP.ranged, RANGED_ART], [EQUIP.armor, ARMOR_ART],
+    [EQUIP.spell, SPELL_ART], [EQUIP.object, OBJECT_ART],
+  ];
+  for (const [cat, arts] of sets) {
+    cat.nums.forEach((n, i) => { if (arts[i]) map[n] = arts[i]; });
+  }
+  return map;
+}
+
 // Build the JS injection snippet for the game HTML
 function buildArtScript() {
+  const NUM_ART = buildNumArtMap();
   return `
 <script>
 (function() {
   // ---- ART DATA ----
   var HERO_ART = ${JSON.stringify(HERO_ART)};
   var HERO_ELITE_ART = ${JSON.stringify(HERO_ELITE_ART)};
-  var MELEE_ART = ${JSON.stringify(MELEE_ART)};
-  var RANGED_ART = ${JSON.stringify(RANGED_ART)};
-  var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
-  var SPELL_ART = ${JSON.stringify(SPELL_ART)};
-  var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
-  var BONUS_ART = ${JSON.stringify(BONUS_ART)};
+  var HERO_IDS = ${JSON.stringify(HERO_IDS)};
+  var HERO_NAMES = ${JSON.stringify(HERO_NAMES)};
+  var NUM_ART = ${JSON.stringify(NUM_ART)};
   var COVER_BG = "${COVER_BG}";
 
-  // ---- COVER BACKGROUND ----
-  // s-title is the title screen id
+  // id -> art, name -> art lookups for heroes
+  var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
+  HERO_IDS.forEach(function(id, i) {
+    ART_BY_ID[id] = HERO_ART[i];
+    ELITE_BY_ID[id] = HERO_ELITE_ART[i] || HERO_ART[i];
+    var nm = HERO_NAMES[i];
+    ART_BY_NAME[nm] = HERO_ART[i];
+    ELITE_BY_NAME[nm] = HERO_ELITE_ART[i] || HERO_ART[i];
+  });
+
+  // ---- STYLES for injected art ----
   function injectCoverStyle() {
     var style = document.createElement('style');
     style.textContent = \`
-      #s-title.screen {
-        position: relative !important;
-        min-height: 100vh;
-      }
-      #s-title.screen::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background-image:
-          linear-gradient(180deg, rgba(18,14,28,0.55) 0%, rgba(14,10,22,0.78) 100%),
-          url("\${COVER_BG}");
-        background-size: cover, cover;
-        background-position: center center, center center;
-        background-repeat: no-repeat, no-repeat;
-        pointer-events: none;
-        z-index: 0;
-      }
-      #s-title.screen > * { position: relative; z-index: 1; }
       .gtitle { text-shadow: 0 0 50px rgba(255,210,74,0.7), 0 4px 30px rgba(255,210,74,0.3) !important; }
-      /* Card art image slot */
-      .cf-art-img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center top;
-        z-index: 0;
-        border-radius: inherit;
-      }
-      .cf-art-emoji { position: relative; z-index: 1; }
-      .cf-name, .cf-title, .cf-heart, .cf-stats { position: relative; z-index: 1; }
-      /* When art image is present, dim the emoji */
+      /* Hero card art image slot (fills the cf-art region behind text) */
       .cf-art.has-art .cf-art-emoji { display: none; }
-      /* Equipment card art */
-      .ecard-art-img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: inherit;
-        opacity: 0.85;
+      .cf-art-img {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        object-fit: cover; object-position: center top;
+        z-index: 0; border-radius: inherit;
+      }
+      .cf-art > .cf-name, .cf-art > .cf-title, .cf-art > .cf-heart,
+      .cf-art > .cf-stats, .cf-art > .cf-coin { position: relative; z-index: 2; }
+      /* Equipment / spell / object shop card art (subtle background banner) */
+      .shop-card { position: relative; overflow: hidden; }
+      .shop-card.has-art > * { position: relative; z-index: 2; }
+      .shop-card-art {
+        position: absolute; left: 0; right: 0; top: 0; height: 96px;
+        background-size: cover; background-position: center center;
+        z-index: 0; opacity: 0.9;
+        -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
       }
     \`;
     document.head.appendChild(style);
   }
 
-  // ---- BUILD HERO ID → INDEX MAP ----
-  // Hero IDs match the HEROES array: kru=0, bos=1, nar=2, ...
-  var HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
-  var EQUIP_IDS = {
-    melee: ["mw_sword","mw_mace","mw_axe","mw_dagger","mw_plasma","mw_thunder"],
-    ranged: ["rw_sling","rw_cross","rw_pistol","rw_smg","rw_cannon","rw_plasma","rw_elfbow","rw_photon"],
-    armor: ["ar_leather","ar_mail","ar_plate","ar_arcane","ar_aegis","ar_exo","ar_water","ar_thunder","ar_ice","ar_fire"],
-    spell: ["sp_fire1","sp_fire2","sp_ice1","sp_ray1","sp_agua1","sp_heal1","sp_heal2","sp_prot1","sp_ward","sp_sleep","sp_para","sp_curse","sp_bless"],
-    object: ["ob_pot","ob_potbig","ob_mana","ob_manabig","ob_shield","ob_cleanse","ob_bomb","ob_revive","ob_phoenix"],
-    bonus: ["ban","cor","mer","nau","pre","for_","arm","pir","cor2","hac","ban2","gli"]
-  };
-
-  // ---- PATCH DATA ARRAYS ----
-  function patchArrays() {
-    var patched = false;
-    if (window.HEROES && window.HEROES.length) {
-      window.HEROES.forEach(function(h) {
-        var idx = HERO_IDS.indexOf(h.id);
-        if (idx >= 0) { h.art = HERO_ART[idx]; h.eliteArt = HERO_ELITE_ART[idx]; }
-      });
-      patched = true;
-    }
-    var sets = [
-      [window.MELEE, MELEE_ART, EQUIP_IDS.melee],
-      [window.RANGED, RANGED_ART, EQUIP_IDS.ranged],
-      [window.ARMORS, ARMOR_ART, EQUIP_IDS.armor],
-      [window.SPELLS, SPELL_ART, EQUIP_IDS.spell],
-      [window.OBJECTS, OBJECT_ART, EQUIP_IDS.object],
-      [window.BONUS, BONUS_ART, EQUIP_IDS.bonus],
-    ];
-    sets.forEach(function(pair) {
-      var arr = pair[0], arts = pair[1], ids = pair[2];
-      if (!arr) return;
-      arr.forEach(function(item) {
-        var idx = ids.indexOf(item.id);
-        if (idx >= 0) item.art = arts[idx];
-      });
-    });
-    return patched;
-  }
-
-  // ---- PATCH cardFace TO USE art ----
+  // ---- PATCH cardFace (heroes) — uses h.id directly, no global arrays needed ----
   function patchCardFace() {
-    if (typeof window.cardFace !== 'function') return false;
+    if (typeof window.cardFace !== 'function' || window.cardFace.__patched) return !!(window.cardFace && window.cardFace.__patched);
     var orig = window.cardFace;
-    window.cardFace = function(h, variant) {
+    var patched = function(h, variant) {
       var html = orig(h, variant);
       var isElite = variant === 'elite';
-      var artUrl = isElite ? (h.eliteArt || h.art) : h.art;
-      if (artUrl) {
-        // Replace the cf-art-emoji with an actual image + keep emoji as fallback hidden
+      var url = isElite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
+      if (url) {
         html = html.replace(
           '<div class="cf-art">',
-          '<div class="cf-art has-art"><img class="cf-art-img" src="' + artUrl + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+          '<div class="cf-art has-art"><img class="cf-art-img" src="' + url + '" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">'
         );
       }
       return html;
     };
+    patched.__patched = true;
+    window.cardFace = patched;
     return true;
   }
 
-  // ---- DOM OBSERVER: inject art into already-rendered cf-art slots ----
-  function injectArtIntoDOM() {
-    // For each rendered cardface without an art img, try to inject
+  // ---- DOM injection for hero cards (match by name) ----
+  function injectHeroArt() {
     document.querySelectorAll('.cardface').forEach(function(card) {
       var artDiv = card.querySelector('.cf-art');
       if (!artDiv || artDiv.querySelector('.cf-art-img')) return;
-      // Try to find hero by name text
       var nameEl = card.querySelector('.cf-name');
       if (!nameEl) return;
       var nameText = nameEl.textContent.replace(/★/g, '').trim();
       var isElite = card.classList.contains('cf-elite');
-      if (window.HEROES) {
-        var hero = window.HEROES.find(function(h) { return h.name === nameText; });
-        if (hero) {
-          var url = isElite ? (hero.eliteArt || hero.art) : hero.art;
-          if (url) {
-            var img = document.createElement('img');
-            img.className = 'cf-art-img';
-            img.src = url;
-            img.alt = '';
-            img.loading = 'lazy';
-            img.onerror = function() { this.style.display = 'none'; };
-            artDiv.insertBefore(img, artDiv.firstChild);
-            artDiv.classList.add('has-art');
-          }
-        }
-      }
+      var url = isElite ? (ELITE_BY_NAME[nameText] || ART_BY_NAME[nameText]) : ART_BY_NAME[nameText];
+      if (!url) return;
+      var img = document.createElement('img');
+      img.className = 'cf-art-img';
+      img.src = url; img.alt = ''; img.loading = 'lazy';
+      img.onerror = function() { this.style.display = 'none'; };
+      artDiv.insertBefore(img, artDiv.firstChild);
+      artDiv.classList.add('has-art');
     });
+  }
+
+  // ---- DOM injection for equipment shop cards (match by "Nº X") ----
+  function injectEquipArt() {
+    document.querySelectorAll('.shop-card').forEach(function(card) {
+      if (card.querySelector('.shop-card-art')) return;
+      var bf = card.querySelector('.shop-bf span');
+      if (!bf) return;
+      var m = bf.textContent.match(/(\\d+)/);
+      if (!m) return;
+      var url = NUM_ART[m[1]];
+      if (!url) return;
+      var art = document.createElement('div');
+      art.className = 'shop-card-art';
+      art.style.backgroundImage = 'url("' + url + '")';
+      card.insertBefore(art, card.firstChild);
+      card.classList.add('has-art');
+    });
+  }
+
+  function injectArtIntoDOM() {
+    injectHeroArt();
+    injectEquipArt();
   }
 
   // ---- OBSERVE DOM MUTATIONS ----
   function startObserver() {
-    var observer = new MutationObserver(function() {
-      injectArtIntoDOM();
-    });
+    var observer = new MutationObserver(function() { injectArtIntoDOM(); });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
@@ -382,17 +365,16 @@ function buildArtScript() {
     var interval = setInterval(function() {
       attempts++;
       applyCover();
-      patchArrays();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
-      if ((patchedFace && attempts > 5) || attempts > 40) clearInterval(interval);
+      if ((patchedFace && attempts > 8) || attempts > 60) clearInterval(interval);
     }, 150);
 
     startObserver();
 
     document.addEventListener('click', function() {
-      setTimeout(function() { applyCover(); patchArrays(); injectArtIntoDOM(); }, 80);
-      setTimeout(function() { applyCover(); patchArrays(); injectArtIntoDOM(); }, 400);
+      setTimeout(function() { applyCover(); injectArtIntoDOM(); }, 80);
+      setTimeout(function() { applyCover(); injectArtIntoDOM(); }, 400);
     });
 
     // Keep cover in sync even if screen changes without a click
