@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-24-equip-art-v9';
+const GAME_PATCH_VERSION = 'bf-2026-06-25-ad-warn-v10';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -1421,6 +1421,61 @@ function buildArtScript() {
       // doAssign now shows the in-game styled confirm itself.
       return window.doAssign(side, heroId);
     };
+
+    // Warn the player if any of their A-distancia (AD) heroes has no ranged
+    // weapon equipped before entering battle — those heroes can't shoot.
+    function adHeroesWithoutRanged(side) {
+      return ((G.team && G.team[side]) || []).filter(function(h) {
+        return h && h.type === 'AD' && !h.rwep;
+      });
+    }
+
+    function bfWarnConfirm(title, message, onYes) {
+      var existing = document.getElementById('bf-confirm-overlay');
+      if (existing) existing.remove();
+      var overlay = document.createElement('div');
+      overlay.id = 'bf-confirm-overlay';
+      overlay.className = 'bf-confirm-overlay';
+      overlay.innerHTML =
+        '<div class="bf-confirm-box">' +
+          '<div class="bf-confirm-body">' +
+            '<div class="bf-confirm-name" style="margin-top:14px">' + title + '</div>' +
+            '<div class="bf-confirm-msg">' + message + '</div>' +
+            '<div class="bf-confirm-actions">' +
+              '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Volver a equipar</button>' +
+              '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Entrar igual</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+      overlay.querySelector('#bf-confirm-no').onclick = close;
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+      overlay.querySelector('#bf-confirm-yes').onclick = function() { close(); onYes(); };
+    }
+
+    if (typeof window.eqDone === 'function' && !window.eqDone.__bfWarn) {
+      var originalEqDone = window.eqDone;
+      window.eqDone = function(side) {
+        if (G.demoExample) return originalEqDone.apply(this, arguments);
+        var mySide = (NET.role === 'client') ? NET.mySide : (side || G.eqSide);
+        var unarmed = adHeroesWithoutRanged(mySide);
+        if (unarmed.length && !G.__bfAdWarnAck) {
+          var names = unarmed.map(function(h) { return '<b>' + clean(h.name) + '</b>'; }).join(', ');
+          var plural = unarmed.length > 1;
+          bfWarnConfirm(
+            '⚠️ Héroe sin arma a distancia',
+            (plural ? 'Tus héroes a distancia ' : 'Tu héroe a distancia ') + names +
+              (plural ? ' no tienen' : ' no tiene') + ' arma a distancia equipada y <b>no podrá' + (plural ? 'n' : '') + ' disparar</b> en combate. ¿Entrar en batalla de todos modos?',
+            function() { G.__bfAdWarnAck = true; window.eqDone(side); }
+          );
+          return;
+        }
+        G.__bfAdWarnAck = false;
+        return originalEqDone.apply(this, arguments);
+      };
+      window.eqDone.__bfWarn = 1;
+    }
   }
 
   function injectRecruitHeroArt() {

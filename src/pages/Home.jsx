@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-06-24-equip-art-v9';
+const EXPECTED_PATCH_VERSION = 'bf-2026-06-25-ad-warn-v10';
 const MAX_LOAD_ATTEMPTS = 3;
 
 export default function Home() {
