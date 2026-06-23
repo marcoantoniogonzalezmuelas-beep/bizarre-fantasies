@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-26-equip-warn-v11';
+const GAME_PATCH_VERSION = 'bf-2026-06-27-elite-fx-v12';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -574,6 +574,27 @@ function buildArtScript() {
       @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.2)} }
       @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.55)} 30%{opacity:1;transform:scale(1.05)} 100%{opacity:0;transform:scale(1.24)} }
       @keyframes bfBolt { 0%{opacity:0;transform:translateY(-8px) scale(.7)} 18%{opacity:1;transform:translateY(0) scale(1.08)} 100%{opacity:0;transform:translateY(10px) scale(.95)} }
+
+      /* ---- ÉLITE in battle: flip the portrait + golden glow ---- */
+      .bhero.bf-auto-elite .bf-battle-art { transform: scaleX(-1); filter: saturate(1.3) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; transition: transform .55s cubic-bezier(.2,.8,.3,1), filter .4s ease; }
+      .bhero.bf-auto-elite { box-shadow: 0 0 0 2px rgba(255,176,0,.6), 0 0 22px rgba(255,176,0,.4) !important; }
+      .bf-fx-elite-flip { position:absolute; inset:0; z-index:5; pointer-events:none; background:radial-gradient(circle at 50% 45%,rgba(255,210,74,.55),rgba(255,176,0,.15) 45%,transparent 72%); animation:bfEliteFlash .6s ease-out forwards; }
+      @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
+
+      /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
+      .bhero .bf-battle-gear { position:absolute; left:80px; bottom:6px; z-index:3; display:flex; gap:4px; }
+      .bhero .bf-gear-icon { width:26px; height:26px; border-radius:6px; background-size:cover; background-position:center; border:1.5px solid rgba(255,210,74,.55); box-shadow:0 2px 6px rgba(0,0,0,.6); background-color:#0a0710; }
+
+      /* ---- True death: gravestone / RIP ---- */
+      .bf-fx-grave { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); z-index:5; font-size:52px; filter:drop-shadow(0 4px 8px #000); animation:bfGraveRise 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
+      .bf-fx-grave-shade { position:absolute; inset:0; z-index:4; background:radial-gradient(circle at 50% 55%,rgba(0,0,0,.55),rgba(40,20,60,.3) 45%,transparent 75%); animation:bfDeathSmoke 1.3s ease-out forwards; }
+      @keyframes bfGraveRise { 0%{opacity:0;transform:translate(-50%,10%) scale(.5) rotate(-8deg)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(4deg)} 70%{transform:translate(-50%,-50%) scale(1) rotate(0)} 100%{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+      .bhero.bf-truedead { filter:grayscale(.85) brightness(.5) !important; }
+      .bhero.bf-truedead .bf-battle-art { filter:grayscale(1) brightness(.45) !important; }
+
+      /* ---- Élite badge in hero info modal ---- */
+      .bf-elite-badge { display:flex; align-items:center; gap:8px; margin:8px 0 4px; padding:8px 12px; border-radius:11px; font-family:'Cinzel',serif; font-weight:1000; font-size:14px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3); text-shadow:0 1px 1px rgba(255,255,255,.4); animation:bfBadgePulse 1.8s ease-in-out infinite; }
+      @keyframes bfBadgePulse { 0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3)} 50%{box-shadow:0 4px 22px rgba(255,210,74,.7), inset 0 0 0 1px rgba(255,255,255,.45)} }
     \`;
     document.head.appendChild(style);
   }
@@ -712,18 +733,34 @@ function buildArtScript() {
     });
   }
 
+  // Build a name -> art map for every weapon/armor, used to show equipped
+  // gear thumbnails on battle heroes. Resolved by array index in the game lists.
+  function buildGearArtByName() {
+    if (window.__bfGearArtByName || typeof MELEE === 'undefined') return;
+    var map = {};
+    function add(list, arts) {
+      (list || []).forEach(function(it, i) { if (it && it.name && arts[i]) map[it.name] = arts[i]; });
+    }
+    add(typeof MELEE !== 'undefined' ? MELEE : [], MELEE_ART);
+    add(typeof RANGED !== 'undefined' ? RANGED : [], RANGED_ART);
+    add(typeof ARMORS !== 'undefined' ? ARMORS : [], ARMOR_ART);
+    window.__bfGearArtByName = map;
+  }
+
   function injectBattleHeroArt() {
+    buildGearArtByName();
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
-      if (card.dataset.bfBattleArt === '1') return;
+      if (card.dataset.bfBattleArt === '1') { injectBattleGear(card); return; }
       var parts = card.id.split('_');
       var id = parts[parts.length - 1];
       var url = ART_BY_ID[id] || ELITE_BY_ID[id];
-      if (!url) return;
+      if (!url) { injectBattleGear(card); return; }
       var art = document.createElement('div');
       art.className = 'bf-battle-art';
       art.style.backgroundImage = 'url("' + url + '")';
       card.insertBefore(art, card.firstChild);
       card.dataset.bfBattleArt = '1';
+      injectBattleGear(card);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(slot) {
       if (slot.dataset.bfCtbArt === '1') return;
@@ -770,12 +807,46 @@ function buildArtScript() {
     if (!card || card.dataset.bfAutoElite === '1') return;
     var id = heroIdFromCard(card);
     var eliteUrl = ELITE_BY_ID[id];
-    if (!eliteUrl) return;
     var art = card.querySelector('.bf-battle-art');
-    if (art) art.style.backgroundImage = 'url("' + eliteUrl + '")';
+    if (art && eliteUrl) art.style.backgroundImage = 'url("' + eliteUrl + '")';
     card.dataset.bfAutoElite = '1';
     card.classList.add('bf-auto-elite', 'elite-mode');
-    addOverlayFx(card, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1150);
+    addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
+  }
+
+  // Permanent death animation (gravestone / RIP) for a hero that dies for good.
+  function playTrueDeath(card) {
+    if (!card || !card.isConnected) return;
+    card.classList.add('bf-dead', 'bf-truedead');
+    addOverlayFx(card, '<div class="bf-fx-grave-shade"></div><div class="bf-fx-grave">🪦</div><div class="bf-fx-float bf-fx-status-txt">R.I.P.</div>', 1400);
+  }
+
+  // Inject thumbnails of the hero's equipped weapon + armor onto a battle card.
+  function injectBattleGear(card) {
+    if (!card || card.dataset.bfGear === '1') return;
+    var id = heroIdFromCard(card);
+    var side = (String(card.id || '').split('_')[1]) || 'p';
+    var hero = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(h) { return h && h.id === id; });
+    if (!hero) return;
+    card.dataset.bfGear = '1';
+    var items = [];
+    var w = hero.mwep || hero.rwep;
+    if (w) items.push(w);
+    if (hero.armor) items.push(hero.armor);
+    if (!items.length) return;
+    var gearByName = window.__bfGearArtByName || {};
+    var row = document.createElement('div');
+    row.className = 'bf-battle-gear';
+    items.forEach(function(it) {
+      var url = gearByName[it.name];
+      if (!url) return;
+      var icon = document.createElement('div');
+      icon.className = 'bf-gear-icon';
+      icon.title = it.name;
+      icon.style.backgroundImage = 'url("' + url + '")';
+      row.appendChild(icon);
+    });
+    if (row.children.length) card.appendChild(row);
   }
 
   function playHeroFx(card, type, value) {
@@ -795,9 +866,14 @@ function buildArtScript() {
       card.classList.remove('bf-dead');
       addOverlayFx(card, '<div class="bf-fx-phoenix">🔥</div><div class="bf-fx-float bf-fx-heal-txt">REVIVE</div>', 1100);
     } else if (type === 'death') {
-      card.classList.add('bf-dead');
-      addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150);
-      setTimeout(function() { transformHeroToElite(card); }, 420);
+      // Second fall (was already elite) => permanent death with gravestone.
+      // First fall => the game itself revives it in elite form (handled by class watch).
+      if (card.classList.contains('bf-auto-elite') || card.classList.contains('elite-mode')) {
+        playTrueDeath(card);
+      } else {
+        card.classList.add('bf-dead');
+        addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150);
+      }
     } else {
       addOverlayFx(card, '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>', 950);
     }
@@ -805,6 +881,14 @@ function buildArtScript() {
 
   function syncBattleFx() {
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
+      // Watch for the game flagging this hero as elite (class .elite-mode or a ★
+      // in its name) and flip the portrait to the elite art automatically.
+      var nameEl = card.querySelector('.bhero-name');
+      var isEliteNow = card.classList.contains('elite-mode') || (nameEl && nameEl.textContent.indexOf('★') !== -1);
+      if (isEliteNow && card.dataset.bfAutoElite !== '1') {
+        transformHeroToElite(card);
+      }
+
       var hp = readHeroHp(card);
       if (hp !== null) {
         if (card.dataset.bfPrevHp !== undefined) {
@@ -1130,6 +1214,29 @@ function buildArtScript() {
       });
       return originalResolveBidRound.apply(this, arguments);
     };
+
+    // Show a clear "EN MODO ÉLITE" badge in the hero info modal when the hero
+    // is currently in elite form during battle.
+    if (typeof window.heroInfo === 'function' && !window.heroInfo.__bfElite) {
+      var originalHeroInfo = window.heroInfo;
+      window.heroInfo = function(id, side) {
+        var h = null;
+        if (side && typeof getHero === 'function') h = getHero(side, id);
+        if (!h) for (var si = 0; si < 2; si++) { var f = byId(G.team[['p','o'][si]] || [], id); if (f) { h = f; break; } }
+        originalHeroInfo.apply(this, arguments);
+        if (h && h.eliteMode) {
+          var body = document.querySelector('.modal .modal-body, .modal-body, #modal .modal-body');
+          var sub = document.querySelector('.modal .hi-sub') || document.querySelector('.hi-sub');
+          if (sub && !document.querySelector('.bf-elite-badge')) {
+            var badge = document.createElement('div');
+            badge.className = 'bf-elite-badge';
+            badge.innerHTML = '★ EN MODO ÉLITE — versión renacida y potenciada';
+            sub.parentNode.insertBefore(badge, sub.nextSibling);
+          }
+        }
+      };
+      window.heroInfo.__bfElite = 1;
+    }
   }
 
   function patchRaceModal() {
