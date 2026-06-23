@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-25-ad-warn-v10';
+const GAME_PATCH_VERSION = 'bf-2026-06-26-equip-warn-v11';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -1422,12 +1422,20 @@ function buildArtScript() {
       return window.doAssign(side, heroId);
     };
 
-    // Warn the player if any of their A-distancia (AD) heroes has no ranged
-    // weapon equipped before entering battle — those heroes can't shoot.
-    function adHeroesWithoutRanged(side) {
-      return ((G.team && G.team[side]) || []).filter(function(h) {
-        return h && h.type === 'AD' && !h.rwep;
+    // Collect equipment warnings before entering battle:
+    // - AD heroes with no ranged weapon (can't shoot)
+    // - any hero with no weapon at all
+    // - any hero with no armor
+    function equipWarnings(side) {
+      var team = (G.team && G.team[side]) || [];
+      var warns = [];
+      team.forEach(function(h) {
+        if (!h) return;
+        if (h.type === 'AD' && !h.rwep) warns.push('<b>' + clean(h.name) + '</b> (sin arma a distancia, no podrá disparar)');
+        else if (!h.mwep && !h.rwep) warns.push('<b>' + clean(h.name) + '</b> (sin arma)');
+        if (!h.armor) warns.push('<b>' + clean(h.name) + '</b> (sin armadura)');
       });
+      return warns;
     }
 
     function bfWarnConfirm(title, message, onYes) {
@@ -1459,14 +1467,11 @@ function buildArtScript() {
       window.eqDone = function(side) {
         if (G.demoExample) return originalEqDone.apply(this, arguments);
         var mySide = (NET.role === 'client') ? NET.mySide : (side || G.eqSide);
-        var unarmed = adHeroesWithoutRanged(mySide);
-        if (unarmed.length && !G.__bfAdWarnAck) {
-          var names = unarmed.map(function(h) { return '<b>' + clean(h.name) + '</b>'; }).join(', ');
-          var plural = unarmed.length > 1;
+        var warns = equipWarnings(mySide);
+        if (warns.length && !G.__bfAdWarnAck) {
           bfWarnConfirm(
-            '⚠️ Héroe sin arma a distancia',
-            (plural ? 'Tus héroes a distancia ' : 'Tu héroe a distancia ') + names +
-              (plural ? ' no tienen' : ' no tiene') + ' arma a distancia equipada y <b>no podrá' + (plural ? 'n' : '') + ' disparar</b> en combate. ¿Entrar en batalla de todos modos?',
+            '⚠️ Equipamiento incompleto',
+            'Hay héroes sin equipamiento completo:<br><br>' + warns.join('<br>') + '<br><br>¿Entrar en batalla de todos modos?',
             function() { G.__bfAdWarnAck = true; window.eqDone(side); }
           );
           return;
