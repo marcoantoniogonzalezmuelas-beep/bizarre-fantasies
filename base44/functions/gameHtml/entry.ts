@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-epic-offer-v4';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-art-v5';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -503,10 +503,15 @@ function buildArtScript() {
       .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
       .shop-card.has-art { background: transparent !important; }
       .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.80) 100%); }
-      .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:154px; padding-left:104px !important; overflow:hidden; }
+      .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
-      .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:92px; z-index:1; background-size:cover; background-position:center 18%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
-      .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.28) 56%,rgba(18,12,25,.92) 100%); }
+      .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:138px; z-index:1; background-size:cover; background-position:center 16%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
+      .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.22) 58%,rgba(18,12,25,.92) 100%); }
+      /* Equipped item thumbnail inside a filled slot */
+      .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; }
+      .bf-slot-thumb { position:absolute; left:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:8px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.45); box-shadow:0 3px 8px rgba(0,0,0,.5); }
+      .bf-slot-num { position:absolute; left:6px; bottom:3px; z-index:2; font-size:7px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.78); border-radius:6px; padding:1px 4px; }
+      .bf-quick-num { position:absolute; top:8px; right:8px; z-index:3; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:2px 7px; }
       .eq-slot.bf-slot-empty { display:flex; align-items:center; justify-content:space-between; gap:8px; }
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
@@ -1115,14 +1120,50 @@ function buildArtScript() {
       return originalDoAssign.apply(this, arguments);
     };
 
+    // Build a name -> {num, art} map for every equipment item, so we can show
+    // a thumbnail and number on equipped slots.
+    function itemArtByName() {
+      var map = {};
+      function add(list) {
+        (list || []).forEach(function(it) {
+          if (!it || !it.name) return;
+          var no = typeof cardNo === 'function' ? cardNo(it.id) : it.num;
+          var art = NUM_ART[String(no)] || NUM_ART[no] || '';
+          map[it.name] = { num: no, art: art };
+        });
+      }
+      if (typeof MELEE !== 'undefined') add(MELEE);
+      if (typeof RANGED !== 'undefined') add(RANGED);
+      if (typeof ARMORS !== 'undefined') add(ARMORS);
+      return map;
+    }
+
+    // Inject a thumbnail + number into a filled equipment slot, matching by name.
+    function decorateFilledSlot(html, item) {
+      if (!item || !item.art) return html;
+      var thumb = '<div class="bf-slot-thumb" style="background-image:url(&quot;' + item.art + '&quot;)"></div>' +
+        '<div class="bf-slot-num">Nº ' + String(item.num || 0).padStart(3, '0') + '</div>';
+      // Add class + thumbnail to the next filled slot that doesn't have art yet.
+      return html.replace('<div class="eq-slot filled', '<div class="bf-slot-pending eq-slot filled').replace(
+        /<div class="bf-slot-pending eq-slot filled([^"]*)"([^>]*)>/,
+        '<div class="eq-slot filled bf-slot-art$1"$2>' + thumb
+      );
+    }
+
     var originalEqHeroCard = window.eqHeroCard;
     window.eqHeroCard = function(h, side) {
       var html = originalEqHeroCard.apply(this, arguments);
+      var byName = itemArtByName();
       var url = ART_BY_ID[h && h.id] || '';
       if (url && html.indexOf('bf-eq-hero-art') === -1) {
         html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"');
         html = html.replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>');
       }
+      // Equipped weapon thumbnail
+      var weapon = h.mwep || h.rwep;
+      if (weapon && byName[weapon.name]) html = decorateFilledSlot(html, byName[weapon.name]);
+      // Equipped armor thumbnail
+      if (h.armor && byName[h.armor.name]) html = decorateFilledSlot(html, byName[h.armor.name]);
       if (!h.mwep && !h.rwep) {
         var weaponSlotPattern = new RegExp('<div class="eq-slot">Arma: vacía([\\\\s\\\\S]*?)</div>');
         html = html.replace(weaponSlotPattern, '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(&quot;' + side + '&quot;,&quot;' + h.id + '&quot;,&quot;weapon&quot;)"><span>Arma: vacía$1</span><button class="bf-slot-buy">Comprar</button></div>');
@@ -1143,8 +1184,10 @@ function buildArtScript() {
         var item = row.item;
         var art = NUM_ART[String(cardNo(item.id))] || NUM_ART[cardNo(item.id)] || '';
         var disabled = Number(item.cost || 0) > coins;
+        var no = typeof cardNo === 'function' ? cardNo(item.id) : item.num;
         return '<div class="bf-quick-card" ' + (disabled ? 'style="opacity:.45;cursor:not-allowed"' : 'onclick="bfQuickBuy(&quot;' + side + '&quot;,&quot;' + heroId + '&quot;,&quot;' + row.kind + '&quot;,&quot;' + item.id + '&quot;)"') + '>' +
           (art ? '<div class="bf-quick-art" style="background-image:url(&quot;' + art + '&quot;)"></div>' : '') +
+          '<div class="bf-quick-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>' +
           '<div class="bf-quick-cost">' + clean(item.cost) + '</div>' +
           '<div class="bf-quick-name">' + clean(item.name) + '</div>' +
           '<div class="bf-quick-txt">' + clean(item.txt || '') + '</div>' +
