@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
+const EXPECTED_PATCH_VERSION = 'bf-2026-06-23-fresh-load-v2';
+const MAX_LOAD_ATTEMPTS = 3;
 
 export default function Home() {
   const iframeRef = useRef(null);
@@ -12,29 +14,60 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false;
 
-    base44.functions
-      .invoke('gameHtml', { version: 'bf-2026-06-23-icons-bgs-v1', t: Date.now() })
-      .then((res) => {
+    const loadGame = async (attempt = 1) => {
+      try {
+        if (cancelled) return;
+        setError(false);
+        setLoading(true);
+
+        const res = await base44.functions.invoke('gameHtml', {
+          version: EXPECTED_PATCH_VERSION,
+          t: Date.now(),
+          attempt,
+        });
+
         if (cancelled) return;
         const html = typeof res.data === 'string' ? res.data : String(res.data);
         const iframe = iframeRef.current;
         if (!iframe) return;
-        // Write the HTML into the iframe document directly. Unlike srcDoc,
-        // document.write produces a real same-origin document where inline
-        // <script> tags execute reliably.
+
         const doc = iframe.contentDocument || iframe.contentWindow?.document;
         if (!doc) {
           setError(true);
           return;
         }
+
         doc.open();
-        doc.write(html);
+        doc.write(`<!-- ${EXPECTED_PATCH_VERSION}:${Date.now()}:${attempt} -->${html}`);
         doc.close();
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!cancelled) setError(true);
-      });
+
+        window.setTimeout(() => {
+          if (cancelled) return;
+          const loadedVersion = iframe.contentWindow?.__BF_PATCH_VERSION;
+
+          if (loadedVersion === EXPECTED_PATCH_VERSION) {
+            setLoading(false);
+            return;
+          }
+
+          if (attempt < MAX_LOAD_ATTEMPTS) {
+            loadGame(attempt + 1);
+            return;
+          }
+
+          setError(true);
+        }, 250);
+      } catch {
+        if (cancelled) return;
+        if (attempt < MAX_LOAD_ATTEMPTS) {
+          loadGame(attempt + 1);
+          return;
+        }
+        setError(true);
+      }
+    };
+
+    loadGame();
 
     return () => {
       cancelled = true;
