@@ -478,6 +478,24 @@ function buildArtScript() {
       .bf-race-trait { position:relative; z-index:1; margin-top:4px; color:#ffe49a; font-weight:800; font-size:12.5px; line-height:1.25; }
       .bf-race-desc { position:relative; z-index:1; margin-top:7px; color:#efe9dc; font-size:13px; line-height:1.28; }
       .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
+      .shop-card.has-art { min-height: 226px !important; padding-top: 92px !important; background: linear-gradient(180deg,rgba(18,12,25,.78),rgba(9,7,13,.96)) !important; }
+      .shop-card-art.bf-shop-card-art { height: 112px !important; opacity: 1 !important; filter: saturate(1.14) contrast(1.08); }
+      .bf-shop-shade { position:absolute; left:0; right:0; top:0; height:126px; z-index:1; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0) 32%,rgba(0,0,0,.78) 100%); }
+      .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:154px; padding-left:104px !important; overflow:hidden; }
+      .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
+      .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:92px; z-index:1; background-size:cover; background-position:center 18%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
+      .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.28) 56%,rgba(18,12,25,.92) 100%); }
+      .eq-slot.bf-slot-empty { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+      .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
+      .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
+      .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
+      .bf-quick-card { position:relative; overflow:hidden; min-height:172px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#0b0811; padding:86px 10px 10px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
+      .bf-quick-art { position:absolute; left:0; right:0; top:0; height:102px; background-size:cover; background-position:center; }
+      .bf-quick-card::after { content:''; position:absolute; left:0; right:0; top:0; height:112px; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.82) 100%); pointer-events:none; }
+      .bf-quick-card > *:not(.bf-quick-art) { position:relative; z-index:2; }
+      .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:3; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; }
+      .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.05; }
+      .bf-quick-txt { color:#d9d0e8; font-size:11px; line-height:1.25; margin-top:5px; }
       @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} }
       @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
       @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} }
@@ -1096,6 +1114,7 @@ function buildArtScript() {
       applyCover();
       patchGameRules();
       patchRaceModal();
+      patchEquipmentUI();
       patchCombatFx();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
