@@ -8,6 +8,7 @@ const MAX_LOAD_ATTEMPTS = 3;
 
 export default function Home() {
   const iframeRef = useRef(null);
+  const [html, setHtml] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -27,36 +28,10 @@ export default function Home() {
         });
 
         if (cancelled) return;
-        const html = typeof res.data === 'string' ? res.data : String(res.data);
-        const iframe = iframeRef.current;
-        if (!iframe) return;
-
-        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (!doc) {
-          setError(true);
-          return;
-        }
-
-        doc.open();
-        doc.write(`<!-- ${EXPECTED_PATCH_VERSION}:${Date.now()}:${attempt} -->${html}`);
-        doc.close();
-
-        window.setTimeout(() => {
-          if (cancelled) return;
-          const loadedVersion = iframe.contentWindow?.__BF_PATCH_VERSION;
-
-          if (loadedVersion === EXPECTED_PATCH_VERSION) {
-            setLoading(false);
-            return;
-          }
-
-          if (attempt < MAX_LOAD_ATTEMPTS) {
-            loadGame(attempt + 1);
-            return;
-          }
-
-          setError(true);
-        }, 250);
+        const data = typeof res.data === 'string' ? res.data : String(res.data);
+        if (!data || data.length < 1000) throw new Error('empty');
+        setHtml(data);
+        setLoading(false);
       } catch {
         if (cancelled) return;
         if (attempt < MAX_LOAD_ATTEMPTS) {
@@ -100,12 +75,15 @@ export default function Home() {
         </div>
       </Link>
 
-      <iframe
-        ref={iframeRef}
-        title="Bizarre Fantasies v5"
-        className="w-full h-full border-0"
-        allow="autoplay; fullscreen; clipboard-read; clipboard-write"
-      />
+      {html && (
+        <iframe
+          ref={iframeRef}
+          title="Bizarre Fantasies v5"
+          srcDoc={html}
+          className="w-full h-full border-0"
+          allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+        />
+      )}
     </div>
   );
 }
