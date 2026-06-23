@@ -230,16 +230,30 @@ function buildArtScript() {
     var style = document.createElement('style');
     style.textContent = \`
       .gtitle { text-shadow: 0 0 50px rgba(255,210,74,0.7), 0 4px 30px rgba(255,210,74,0.3) !important; }
-      /* Hero card art image slot (fills the cf-art region behind text) */
-      .cf-art.has-art .cf-art-emoji { display: none; }
-      .cf-art-img {
-        position: absolute; inset: 0; width: 100%; height: 100%;
-        object-fit: cover; object-position: center top;
-        z-index: 0; border-radius: inherit;
+      /* Title screen emoji row — bigger, spaced, with a soft golden glow */
+      .title-emoji {
+        font-size: clamp(34px, 7vw, 54px) !important;
+        letter-spacing: 14px !important;
+        margin-bottom: 6px !important;
+        filter: drop-shadow(0 0 18px rgba(255,210,74,0.55)) drop-shadow(0 4px 10px rgba(0,0,0,0.6)) !important;
+        animation: bfEmojiFloat 3.2s ease-in-out infinite !important;
       }
-      .cf-art > .cf-name, .cf-art > .cf-title, .cf-art > .cf-heart,
-      .cf-art > .cf-stats, .cf-art > .cf-coin { position: relative; z-index: 2; }
-      /* Equipment / spell / object shop card art (subtle background banner) */
+      @keyframes bfEmojiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      /* Reinforce 3D flip so the elite (back) face never shows mirrored */
+      .flip3d-inner { transform-style: preserve-3d !important; }
+      .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
+      .flip3d .face.back { transform: rotateY(180deg) !important; }
+      /* Hero art is painted as the .cf-art background so the existing
+         absolutely-positioned name / title / heart / stats sit on top of it. */
+      .cf-art.has-art { background-image: var(--bf-art) !important; background-size: cover !important; background-position: center top !important; background-repeat: no-repeat !important; }
+      .cf-art.has-art .cf-art-emoji { display: none !important; }
+      /* Dark gradient at top & bottom so name and stats stay readable over art */
+      .cf-art.has-art::after {
+        content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+        background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.72) 100%);
+      }
+      .cf-art.has-art > * { position: relative; z-index: 2; }
+      /* Equipment / spell / object shop card art (background banner at top) */
       .shop-card { position: relative; overflow: hidden; }
       .shop-card.has-art > * { position: relative; z-index: 2; }
       .shop-card-art {
@@ -264,7 +278,7 @@ function buildArtScript() {
       if (url) {
         html = html.replace(
           '<div class="cf-art">',
-          '<div class="cf-art has-art"><img class="cf-art-img" src="' + url + '" alt="" loading="lazy" onerror="this.style.display=\\'none\\'">'
+          '<div class="cf-art has-art" style="--bf-art:url(\\'' + url + '\\')">'
         );
       }
       return html;
@@ -278,18 +292,14 @@ function buildArtScript() {
   function injectHeroArt() {
     document.querySelectorAll('.cardface').forEach(function(card) {
       var artDiv = card.querySelector('.cf-art');
-      if (!artDiv || artDiv.querySelector('.cf-art-img')) return;
+      if (!artDiv || artDiv.classList.contains('has-art')) return;
       var nameEl = card.querySelector('.cf-name');
       if (!nameEl) return;
       var nameText = nameEl.textContent.replace(/★/g, '').trim();
       var isElite = card.classList.contains('cf-elite');
       var url = isElite ? (ELITE_BY_NAME[nameText] || ART_BY_NAME[nameText]) : ART_BY_NAME[nameText];
       if (!url) return;
-      var img = document.createElement('img');
-      img.className = 'cf-art-img';
-      img.src = url; img.alt = ''; img.loading = 'lazy';
-      img.onerror = function() { this.style.display = 'none'; };
-      artDiv.insertBefore(img, artDiv.firstChild);
+      artDiv.style.setProperty('--bf-art', "url('" + url + "')");
       artDiv.classList.add('has-art');
     });
   }
