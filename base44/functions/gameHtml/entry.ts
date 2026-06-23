@@ -273,41 +273,41 @@ function buildArtScript() {
         background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important;
       }
       .bf-hero-bg {
-        position: absolute; inset: -9%; z-index: 0; pointer-events: none;
-        background-image: var(--bf-art); background-size: cover; background-position: center 12%; background-repeat: no-repeat;
-        filter: saturate(1.1) contrast(1.06);
+        position: absolute; inset: -3%; z-index: 0; pointer-events: none;
+        background-image: var(--bf-art); background-size: cover; background-position: center center; background-repeat: no-repeat;
+        filter: saturate(1.12) contrast(1.08);
       }
       .bf-hero-card::before {
         content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
         background:
-          linear-gradient(180deg, rgba(0,0,0,.68) 0%, rgba(0,0,0,.18) 21%, rgba(0,0,0,0) 44%, rgba(0,0,0,.34) 67%, rgba(0,0,0,.92) 100%),
-          radial-gradient(circle at 50% 4%, rgba(255,210,74,.24), rgba(0,0,0,0) 26%);
+          linear-gradient(180deg, rgba(0,0,0,.54) 0%, rgba(0,0,0,.12) 20%, rgba(0,0,0,0) 42%, rgba(0,0,0,.12) 64%, rgba(0,0,0,.68) 100%),
+          radial-gradient(circle at 50% 4%, rgba(255,210,74,.20), rgba(0,0,0,0) 28%);
       }
       .bf-hero-card.cf-elite::before {
         background:
-          linear-gradient(180deg, rgba(16,0,34,.70) 0%, rgba(20,0,42,.16) 25%, rgba(0,0,0,0) 43%, rgba(18,0,35,.38) 67%, rgba(0,0,0,.92) 100%),
-          radial-gradient(circle at 50% 4%, rgba(192,91,255,.34), rgba(0,0,0,0) 28%);
+          linear-gradient(180deg, rgba(16,0,34,.58) 0%, rgba(20,0,42,.10) 24%, rgba(0,0,0,0) 43%, rgba(18,0,35,.16) 66%, rgba(0,0,0,.70) 100%),
+          radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%);
       }
       .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
       .bf-hero-top { position:relative; z-index:3; padding:11px 46px 0; text-align:center; min-height:92px; }
-      .bf-hero-band { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:2px 13px; border-radius:999px; color:#fff; background:rgba(0,0,0,.62); border:1px solid var(--clan,#caa14a); font-size:10.5px; font-weight:900; letter-spacing:.8px; text-shadow:0 1px 2px #000; }
-      .bf-hero-name { margin-top:5px; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(20px, 8.2vw, 31px); line-height:.96; color:#fff5dc; text-transform:uppercase; letter-spacing:.2px; text-shadow:0 3px 4px #000,0 0 16px rgba(0,0,0,.95); overflow-wrap:anywhere; }
+      .bf-hero-band { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:2px 13px; border-radius:999px; color:#fff; background:rgba(0,0,0,.46); border:1px solid var(--clan,#caa14a); font-size:10.5px; font-weight:900; letter-spacing:.8px; text-shadow:0 1px 2px #000; backdrop-filter:blur(2px); }
+      .bf-hero-name { display:inline-block; margin-top:5px; padding:2px 10px; border-radius:10px; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(19px, 7.7vw, 29px); line-height:.96; color:#fff5dc; text-transform:uppercase; letter-spacing:.2px; background:linear-gradient(90deg,rgba(0,0,0,.02),rgba(0,0,0,.50),rgba(0,0,0,.02)); text-shadow:0 3px 4px #000,0 0 16px rgba(0,0,0,.95); overflow-wrap:anywhere; }
       .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 12px rgba(255,187,52,.9),0 3px 5px #000; }
-      .bf-hero-title { margin-top:4px; color:#ffe6a8; font-family:'Cinzel',serif; font-size:12px; line-height:1.05; font-weight:700; font-style:italic; text-shadow:0 2px 4px #000,0 0 10px #000; }
+      .bf-hero-title { display:inline-block; margin-top:4px; padding:1px 8px; border-radius:8px; color:#ffe6a8; background:rgba(0,0,0,.30); font-family:'Cinzel',serif; font-size:11.5px; line-height:1.05; font-weight:700; font-style:italic; text-shadow:0 2px 4px #000,0 0 10px #000; }
       .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
       .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
       .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; }
       .bf-heart { position:absolute; right:9px; bottom:122px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
       .bf-heart .cf-heart-ico { position:absolute; inset:0; font-size:54px; color:#e23d3a; line-height:52px; text-align:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)); }
       .bf-heart .cf-hp { position:relative; z-index:2; font-weight:1000; color:#fff; font-size:18px; text-shadow:0 2px 3px #000; }
-      .bf-stats { position:absolute; left:16px; right:16px; bottom:116px; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:7px 50px 7px 8px; border-radius:10px; background:linear-gradient(180deg,rgba(9,7,13,.72),rgba(9,7,13,.92)); border:1px solid rgba(255,210,74,.18); box-shadow:0 3px 12px rgba(0,0,0,.45); }
-      .bf-stat { text-align:center; font-weight:900; line-height:1; text-shadow:0 1px 2px #000; }
+      .bf-stats { position:absolute; left:16px; right:16px; bottom:116px; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:7px 50px 7px 8px; border-radius:10px; background:linear-gradient(180deg,rgba(9,7,13,.36),rgba(9,7,13,.58)); border:1px solid rgba(255,210,74,.18); box-shadow:0 3px 12px rgba(0,0,0,.36); backdrop-filter:blur(2px); }
+      .bf-stat { text-align:center; font-weight:900; line-height:1; text-shadow:0 1px 2px #000,0 0 8px #000; }
       .bf-stat span { display:block; font-size:9px; letter-spacing:1px; margin-bottom:2px; }
       .bf-stat b { display:block; font-size:20px; }
       .bf-stat-cc span,.bf-stat-cc b { color:#ff4b45; }
       .bf-stat-ad span,.bf-stat-ad b { color:#54e876; }
       .bf-stat-he span,.bf-stat-he b { color:#b06cff; }
-      .bf-ability-panel { position:absolute; left:11px; right:11px; bottom:11px; z-index:3; min-height:99px; display:grid; grid-template-columns:44px 1fr; gap:9px; align-items:center; padding:9px 10px 20px 9px; border-radius:11px; background:linear-gradient(180deg,rgba(19,12,7,.90),rgba(4,3,5,.97)); border:1px solid rgba(255,210,74,.48); box-shadow:0 -2px 20px rgba(0,0,0,.62), inset 0 0 0 1px rgba(255,255,255,.08); }
+      .bf-ability-panel { position:absolute; left:11px; right:11px; bottom:11px; z-index:3; min-height:99px; display:grid; grid-template-columns:44px 1fr; gap:9px; align-items:center; padding:9px 10px 20px 9px; border-radius:11px; background:linear-gradient(180deg,rgba(19,12,7,.30),rgba(4,3,5,.62)); border:1px solid rgba(255,210,74,.34); box-shadow:0 -2px 18px rgba(0,0,0,.42), inset 0 0 0 1px rgba(255,255,255,.05); backdrop-filter:blur(2px); }
       .bf-ability-orb { position:relative; width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101); border:2px solid rgba(255,224,121,.82); box-shadow:0 0 16px rgba(255,95,25,.72), inset 0 0 10px rgba(255,255,255,.18); }
       .bf-ability-orb::before { content:'✦'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff7d7; font-size:23px; font-weight:900; text-shadow:0 0 8px #fff,0 2px 4px #000; }
       .bf-ability-orb::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1px solid rgba(255,210,74,.34); box-shadow:0 0 14px rgba(255,210,74,.32); }
@@ -319,7 +319,7 @@ function buildArtScript() {
       .bf-card-num { position:absolute; left:62px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
 
       /* Fallback for any old-format hero cards already on screen */
-      .cf-art.has-art::before { content:''; position:absolute; inset:-9%; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center 12%; background-repeat:no-repeat; }
+      .cf-art.has-art::before { content:''; position:absolute; inset:-4%; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center center; background-repeat:no-repeat; }
       .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
       .cf-art.has-art .cf-art-emoji { display:none !important; }
       .cf-art.has-art::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:1; background:linear-gradient(180deg,rgba(0,0,0,.76) 0%,rgba(0,0,0,.18) 28%,rgba(0,0,0,0) 50%,rgba(0,0,0,.90) 100%); }
@@ -342,17 +342,22 @@ function buildArtScript() {
       /* Bonus / restador shown as a mini-card with the whole card visible */
       .bf-bonus-card {
         position: relative; display: block; border-radius: 13px; overflow: hidden;
-        height: 178px; margin: 5px 0 8px; border: 2px solid rgba(255,210,74,0.68);
+        height: 214px; margin: 5px 0 8px; border: 2px solid rgba(255,210,74,0.68);
         background: #07050b;
         box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,255,255,.05);
       }
+      .bf-bonus-card .bf-bonus-fill,
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: -8%; border-radius: 0; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 0;
-        filter: saturate(1.1) contrast(1.06);
+        position: absolute; inset: 0; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
+      }
+      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(12px) saturate(1.2) contrast(1.1); transform: scale(1.14); opacity: .9; }
+      .bf-bonus-card .bf-bonus-art {
+        inset: 3px; background-size: contain; z-index: 1;
+        filter: saturate(1.08) contrast(1.06);
       }
       .bf-bonus-card .bf-bonus-shade {
-        position: absolute; inset: 0; z-index: 1;
-        background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.82) 100%);
+        position: absolute; inset: 0; z-index: 2;
+        background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0) 68%, rgba(0,0,0,0.72) 100%);
       }
       .bf-bonus-card .bf-bonus-name {
         position: absolute; left: 8px; right: 8px; bottom: 7px; z-index: 2;
@@ -363,9 +368,9 @@ function buildArtScript() {
       /* Mobile card fit: keep art and text inside the phone frame */
       @media (max-width: 640px) {
         .cardface, .bf-hero-card { max-width: 100% !important; }
-        .bf-hero-bg, .cf-art.has-art::before { inset: -14% !important; background-size: cover !important; background-position: center 10% !important; }
-        .bf-hero-top { padding: 9px 42px 0 !important; min-height: 78px !important; }
-        .bf-hero-name { font-size: clamp(17px, 6.8vw, 25px) !important; line-height: .98 !important; }
+        .bf-hero-bg, .cf-art.has-art::before { inset: -4% !important; background-size: cover !important; background-position: center center !important; }
+        .bf-hero-top { padding: 8px 40px 0 !important; min-height: 74px !important; }
+        .bf-hero-name { font-size: clamp(16px, 6.4vw, 24px) !important; line-height: .98 !important; }
         .bf-hero-title { font-size: 10.5px !important; }
         .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
         .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
@@ -383,8 +388,8 @@ function buildArtScript() {
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
         .shop-card-art { height: 104px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
-        .bf-bonus-card { height: clamp(148px, 46vw, 184px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: -16% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card { height: clamp(190px, 62vw, 250px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
+        .bf-bonus-card .bf-bonus-art { inset: 3px !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -530,6 +535,7 @@ function buildArtScript() {
       var card = document.createElement('div');
       card.className = 'bf-bonus-card';
       card.innerHTML =
+        '<div class="bf-bonus-fill" style="background-image:url(\\'' + url + '\\')"></div>' +
         '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
         '<div class="bf-bonus-shade"></div>' +
         '<div class="bf-bonus-name">' + name + '</div>';
