@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-fresh-load-v2';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-bonus-art-v3';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -172,8 +172,8 @@ const BONUS_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5369480ce_generated_image.png',
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5c4370fc_generated_image.png',
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/26219e884_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1acefc0e0_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1acefc0e0_generated_image.png', // Bandolero Seco (matches DB)
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png', // Glitch (matches DB)
 ];
 
 // Bonus / restador ids and display names, index-for-index with BONUS_ART.
@@ -395,12 +395,12 @@ function buildArtScript() {
       }
       .bf-bonus-card .bf-bonus-fill,
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: -24px; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
+        position: absolute; inset: -40px; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
       }
-      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(18px) saturate(1.3) contrast(1.16); transform: scale(1.28); opacity: 1; }
+      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(20px) saturate(1.35) contrast(1.18); transform: scale(1.45); opacity: 1; }
       .bf-bonus-card .bf-bonus-art {
-        inset: -12px; background-size: cover; z-index: 1; transform: scale(1.08);
-        filter: saturate(1.14) contrast(1.12);
+        inset: -32px; background-size: cover; z-index: 1; transform: scale(1.32);
+        filter: saturate(1.15) contrast(1.13);
       }
       .bf-bonus-card .bf-bonus-shade {
         position: absolute; inset: 0; z-index: 2;
@@ -438,7 +438,7 @@ function buildArtScript() {
         .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
         .shop-card-art-sharp { inset: -8px !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { height: clamp(190px, 62vw, 250px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: -1px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: -28px !important; transform: scale(1.32) !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -553,8 +553,12 @@ function buildArtScript() {
     function raceSigil(clan) {
       return RACE_SIGILS[clan] || '◆';
     }
-    function padNum(value) {
+    function padNum(value, hero) {
       var n = parseInt(value || 0, 10);
+      if (!n && hero && hero.id) {
+        var idx = HERO_IDS.indexOf(hero.id);
+        if (idx >= 0) n = idx + 1;
+      }
       return n ? String(n).padStart(3, '0') : '---';
     }
 
@@ -586,7 +590,7 @@ function buildArtScript() {
           '<div class="bf-ability-orb"></div>' +
           '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
         '</div>' +
-        '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num) + '</div>' +
+        '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
         '<div class="bf-logo">BF</div>' +
       '</div>';
     };
@@ -878,6 +882,9 @@ function buildArtScript() {
         h.cost = Number(h.cost || 0) + 10;
         h.__bfEpicRaised = 1;
       }
+      // Inject the official Base Set card number so cardFace can render "Nº XXX".
+      var idx = HERO_IDS.indexOf(h.id);
+      if (idx >= 0) h.num = idx + 1;
     });
 
     if (!BONUS.some(function(b) { return b.id === 'epic_self'; })) {
