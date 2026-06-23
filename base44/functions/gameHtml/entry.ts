@@ -222,9 +222,18 @@ function buildArtScript() {
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
   var COVER_BG = "${COVER_BG}";
 
+  function bfKey(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+
   // name -> bonus art lookup
   var BONUS_ART_BY_NAME = {};
-  BONUS_IDS.forEach(function(id, i) { BONUS_ART_BY_NAME[BONUS_NAMES[i]] = BONUS_ART[i]; });
+  var BONUS_ART_BY_KEY = {};
+  BONUS_IDS.forEach(function(id, i) {
+    BONUS_ART_BY_NAME[BONUS_NAMES[i]] = BONUS_ART[i];
+    BONUS_ART_BY_KEY[bfKey(BONUS_NAMES[i])] = BONUS_ART[i];
+  });
+  BONUS_ART_BY_KEY['patron de foria'] = BONUS_ART_BY_KEY['patron de forja'];
 
   // id -> art, name -> art lookups for heroes
   var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
@@ -254,38 +263,69 @@ function buildArtScript() {
       .flip3d-inner { transform-style: preserve-3d !important; }
       .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
       .flip3d .face.back { transform: rotateY(180deg) !important; }
-      /* Hero art is painted on a dedicated ::before layer (NOT a background on
-         .cf-art itself) so we can flip ONLY the art for the elite back-face,
-         killing the mirror effect, while the name/title/stats stay readable. */
-      .cf-art.has-art::before {
-        content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-        background-image: var(--bf-art);
-        background-size: cover; background-position: center top; background-repeat: no-repeat;
+
+      /* Premium full-art hero cards */
+      .bf-hero-card {
+        position: relative !important; height: 100% !important; overflow: hidden !important;
+        border-radius: 18px !important; border: 2.5px solid var(--clan,#caa14a) !important;
+        background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important;
       }
-      /* Elite art lives inside a back-face rotated 180deg -> mirror it back. */
+      .bf-hero-bg {
+        position: absolute; inset: 0; z-index: 0; pointer-events: none;
+        background-image: var(--bf-art); background-size: cover; background-position: center top; background-repeat: no-repeat;
+        filter: saturate(1.05) contrast(1.03);
+      }
+      .face.back .bf-hero-card.cf-elite .bf-hero-bg { transform: scaleX(-1); }
+      .bf-hero-card::before {
+        content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+        background:
+          linear-gradient(180deg, rgba(0,0,0,.68) 0%, rgba(0,0,0,.18) 21%, rgba(0,0,0,0) 44%, rgba(0,0,0,.34) 67%, rgba(0,0,0,.92) 100%),
+          radial-gradient(circle at 50% 4%, rgba(255,210,74,.24), rgba(0,0,0,0) 26%);
+      }
+      .bf-hero-card.cf-elite::before {
+        background:
+          linear-gradient(180deg, rgba(16,0,34,.70) 0%, rgba(20,0,42,.16) 25%, rgba(0,0,0,0) 43%, rgba(18,0,35,.38) 67%, rgba(0,0,0,.92) 100%),
+          radial-gradient(circle at 50% 4%, rgba(192,91,255,.34), rgba(0,0,0,0) 28%);
+      }
+      .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
+      .bf-hero-top { position:relative; z-index:3; padding:11px 46px 0; text-align:center; min-height:92px; }
+      .bf-hero-band { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:2px 13px; border-radius:999px; color:#fff; background:rgba(0,0,0,.62); border:1px solid var(--clan,#caa14a); font-size:10.5px; font-weight:900; letter-spacing:.8px; text-shadow:0 1px 2px #000; }
+      .bf-hero-name { margin-top:5px; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(20px, 8.2vw, 31px); line-height:.96; color:#fff5dc; text-transform:uppercase; letter-spacing:.2px; text-shadow:0 3px 4px #000,0 0 16px rgba(0,0,0,.95); overflow-wrap:anywhere; }
+      .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 12px rgba(255,187,52,.9),0 3px 5px #000; }
+      .bf-hero-title { margin-top:4px; color:#ffe6a8; font-family:'Cinzel',serif; font-size:12px; line-height:1.05; font-weight:700; font-style:italic; text-shadow:0 2px 4px #000,0 0 10px #000; }
+      .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
+      .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
+      .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; }
+      .bf-heart { position:absolute; right:9px; bottom:122px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
+      .bf-heart .cf-heart-ico { position:absolute; inset:0; font-size:54px; color:#e23d3a; line-height:52px; text-align:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)); }
+      .bf-heart .cf-hp { position:relative; z-index:2; font-weight:1000; color:#fff; font-size:18px; text-shadow:0 2px 3px #000; }
+      .bf-stats { position:absolute; left:16px; right:16px; bottom:116px; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:7px 50px 7px 8px; border-radius:10px; background:linear-gradient(180deg,rgba(9,7,13,.72),rgba(9,7,13,.92)); border:1px solid rgba(255,210,74,.18); box-shadow:0 3px 12px rgba(0,0,0,.45); }
+      .bf-stat { text-align:center; font-weight:900; line-height:1; text-shadow:0 1px 2px #000; }
+      .bf-stat span { display:block; font-size:9px; letter-spacing:1px; margin-bottom:2px; }
+      .bf-stat b { display:block; font-size:20px; }
+      .bf-stat-cc span,.bf-stat-cc b { color:#ff4b45; }
+      .bf-stat-ad span,.bf-stat-ad b { color:#54e876; }
+      .bf-stat-he span,.bf-stat-he b { color:#b06cff; }
+      .bf-ability-panel { position:absolute; left:11px; right:11px; bottom:11px; z-index:3; min-height:94px; display:grid; grid-template-columns:42px 1fr; gap:9px; align-items:center; padding:10px 10px 10px 9px; border-radius:11px; background:linear-gradient(180deg,rgba(17,13,11,.88),rgba(6,5,7,.96)); border:1px solid rgba(255,210,74,.32); box-shadow:0 -2px 18px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.04); }
+      .bf-ability-orb { width:38px; height:38px; border-radius:50%; background:radial-gradient(circle at 50% 45%,#ff2f26,#2b0202 58%,#050101); border:2px solid rgba(255,210,74,.45); box-shadow:0 0 12px rgba(255,36,26,.55); }
+      .bf-hero-card.cf-elite .bf-ability-orb { background:radial-gradient(circle at 50% 45%,#b95cff,#270041 58%,#06000d); box-shadow:0 0 14px rgba(180,91,255,.7); }
+      .bf-ability-name { color:#ffd76a; font-family:'Cinzel',serif; font-size:12px; font-weight:900; letter-spacing:.2px; text-transform:uppercase; text-shadow:0 1px 3px #000; }
+      .bf-hero-card.cf-elite .bf-ability-name { color:#c487ff; }
+      .bf-ability-text { margin-top:2px; color:#f2e8d7; font-size:11.5px; line-height:1.22; text-shadow:0 1px 2px #000; }
+      .bf-logo { position:absolute; right:8px; bottom:7px; z-index:4; font-family:'Cinzel',serif; font-weight:1000; color:#ffd24a; font-size:16px; line-height:1; letter-spacing:-1px; padding:4px 5px 3px; border-radius:7px; background:linear-gradient(135deg,#0a0500,#2b1600 55%,#050300); border:1.5px solid #d39b22; text-shadow:0 0 8px rgba(255,210,74,.6),0 1px 1px #000; box-shadow:0 0 9px rgba(255,210,74,.25), inset 0 0 8px rgba(255,210,74,.12); }
+      .bf-card-num { position:absolute; left:56px; bottom:9px; z-index:4; color:rgba(235,222,194,.55); font-size:8px; letter-spacing:.2px; }
+
+      /* Fallback for any old-format hero cards already on screen */
+      .cf-art.has-art::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center top; background-repeat:no-repeat; }
       .face.back .cf-elite .cf-art.has-art::before { transform: scaleX(-1); }
-      .cf-art.has-art .cf-art-emoji { display: none !important; }
-      /* Dark gradients so name (top) and stats (bottom) stay legible over art */
-      .cf-art.has-art::after {
-        content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-        background: linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.30) 22%, rgba(0,0,0,0) 44%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.82) 100%);
-      }
-      .cf-art.has-art > * { position: relative; z-index: 2; }
-      /* Name & legend: centered, readable, with their own shadow strip */
-      .cf-art.has-art .cf-name {
-        font-size: 20px !important; text-shadow: 0 2px 8px #000, 0 0 16px rgba(0,0,0,0.95) !important;
-        letter-spacing: 0.3px !important;
-      }
-      .cf-art.has-art .cf-title {
-        font-size: 11.5px !important; color: #ffe6a8 !important;
-        text-shadow: 0 2px 6px #000, 0 0 10px rgba(0,0,0,0.95) !important;
-      }
-      /* Make sure stats row sits above everything and is fully visible */
-      .cf-art.has-art .cf-stats {
-        z-index: 4 !important;
-        background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.86) 60%) !important;
-      }
-      .cf-art.has-art .cf-heart { z-index: 5 !important; }
+      .cf-art.has-art .cf-art-emoji { display:none !important; }
+      .cf-art.has-art::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:1; background:linear-gradient(180deg,rgba(0,0,0,.76) 0%,rgba(0,0,0,.18) 28%,rgba(0,0,0,0) 50%,rgba(0,0,0,.90) 100%); }
+      .cf-art.has-art > * { position:relative; z-index:2; }
+      .cf-art.has-art .cf-name { font-size:18px !important; padding:0 44px !important; line-height:1.05 !important; text-shadow:0 2px 8px #000,0 0 16px #000 !important; }
+      .cf-art.has-art .cf-title { font-size:11px !important; padding:0 44px !important; color:#ffe6a8 !important; text-shadow:0 2px 6px #000,0 0 10px #000 !important; }
+      .cf-he b,.cf-he span{color:#b06cff !important;}
+      .cf-art.has-art .cf-stats { z-index:4 !important; background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.90) 58%) !important; }
+      .cf-art.has-art .cf-heart { z-index:5 !important; }
       /* Equipment / spell / object shop card art (background banner at top) */
       .shop-card { position: relative; overflow: hidden; }
       .shop-card.has-art > * { position: relative; z-index: 2; }
@@ -296,43 +336,90 @@ function buildArtScript() {
         -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
         mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
       }
-      /* Bonus / restador shown as a mini-card with its own art */
+      /* Bonus / restador shown as a mini-card with the whole card visible */
       .bf-bonus-card {
-        position: relative; display: block; border-radius: 12px; overflow: hidden;
-        height: 118px; margin: 4px 0 8px; border: 2px solid rgba(255,210,74,0.55);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        position: relative; display: block; border-radius: 13px; overflow: hidden;
+        height: 178px; margin: 5px 0 8px; border: 2px solid rgba(255,210,74,0.68);
+        background: radial-gradient(circle at 50% 30%,#21182d,#07050b 75%);
+        box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,255,255,.05);
       }
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: 0; background-size: cover; background-position: center center; z-index: 0;
+        position: absolute; inset: 6px; border-radius: 9px; background-size: contain; background-position: center center; background-repeat: no-repeat; z-index: 0;
+        filter: saturate(1.05) contrast(1.04);
       }
       .bf-bonus-card .bf-bonus-shade {
         position: absolute; inset: 0; z-index: 1;
-        background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%);
+        background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.78) 100%);
       }
       .bf-bonus-card .bf-bonus-name {
-        position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 2;
-        font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; color: #fff;
-        text-align: center; text-shadow: 0 2px 6px #000, 0 0 12px rgba(0,0,0,0.9);
+        position: absolute; left: 8px; right: 8px; bottom: 7px; z-index: 2;
+        font-family: 'Cinzel', serif; font-weight: 900; font-size: 14px; color: #fff5d9;
+        text-align: center; text-shadow: 0 2px 6px #000, 0 0 12px rgba(0,0,0,0.95);
       }
     \`;
     document.head.appendChild(style);
   }
 
-  // ---- PATCH cardFace (heroes) — uses h.id directly, no global arrays needed ----
+  // ---- PATCH cardFace (heroes) — premium full-art layout ----
   function patchCardFace() {
     if (typeof window.cardFace !== 'function' || window.cardFace.__patched) return !!(window.cardFace && window.cardFace.__patched);
-    var orig = window.cardFace;
+
+    function clean(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+      });
+    }
+    function typeLabel(type) {
+      if (type === 'CC') return 'CUERPO A CUERPO';
+      if (type === 'AD') return 'A DISTANCIA';
+      if (type === 'HE') return 'HECHICERÍA';
+      return clean(type || 'HÉROE');
+    }
+    function typeIcon(type) {
+      if (type === 'CC') return '⚔';
+      if (type === 'AD') return '🏹';
+      if (type === 'HE') return '✦';
+      return '★';
+    }
+    function padNum(value) {
+      var n = parseInt(value || 0, 10);
+      return n ? String(n).padStart(3, '0') : '---';
+    }
+
     var patched = function(h, variant) {
-      var html = orig(h, variant);
-      var isElite = variant === 'elite';
-      var url = isElite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
-      if (url) {
-        html = html.replace(
-          '<div class="cf-art">',
-          '<div class="cf-art has-art" style="--bf-art:url(\\'' + url + '\\')">'
-        );
-      }
-      return html;
+      var elite = variant === 'elite';
+      var cc = elite ? h.eCc : h.cc;
+      var ad = elite ? h.eAd : h.ad;
+      var he = elite ? h.eHe : h.he;
+      var hp = elite ? h.eHp : h.hp;
+      var ability = elite ? h.eAbility : h.ability;
+      var abilityTxt = elite ? h.eTxt : h.abilityTxt;
+      var col = h.clanColor || '#caa14a';
+      var url = elite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
+      var safeUrl = String(url || '').replace(/'/g, '%27');
+      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' +
+        '<div class="bf-hero-bg"></div>' +
+        '<div class="bf-hero-frame"></div>' +
+        '<div class="bf-coin">' + clean(h.cost) + '</div>' +
+        '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' +
+        '<div class="bf-hero-top">' +
+          '<div class="bf-hero-band">' + clean(h.clan) + (elite ? ' ÉLITE' : '') + ' · ' + typeLabel(h.type) + '</div>' +
+          '<div class="bf-hero-name">' + clean(h.name) + '</div>' +
+          '<div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div>' +
+        '</div>' +
+        '<div class="bf-stats">' +
+          '<div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div>' +
+          '<div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div>' +
+          '<div class="bf-stat bf-stat-he"><span>HE</span><b>' + clean(he) + '</b></div>' +
+        '</div>' +
+        '<div class="bf-heart"><span class="cf-heart-ico">❤</span><span class="cf-hp">' + clean(hp) + '</span></div>' +
+        '<div class="bf-ability-panel">' +
+          '<div class="bf-ability-orb"></div>' +
+          '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
+        '</div>' +
+        '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num) + '</div>' +
+        '<div class="bf-logo">BF</div>' +
+      '</div>';
     };
     patched.__patched = true;
     window.cardFace = patched;
@@ -381,7 +468,7 @@ function buildArtScript() {
       if (!chip || !chip.classList || !chip.classList.contains('chip')) return;
       if (chip.dataset.bfDone === '1') return;
       var name = chip.textContent.trim();
-      var url = BONUS_ART_BY_NAME[name];
+      var url = BONUS_ART_BY_NAME[name] || BONUS_ART_BY_KEY[bfKey(name)];
       if (!url) return;
       chip.dataset.bfDone = '1';
       chip.style.display = 'none';
