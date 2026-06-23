@@ -10,7 +10,7 @@ export default function Home() {
     let cancelled = false;
 
     base44.functions
-      .invoke('gameHtml', { version: 'bf-2026-06-23-equip-v3', t: Date.now() })
+      .invoke('gameHtml', { version: 'bf-2026-06-23-equip-v4', t: Date.now() })
       .then((res) => {
         if (cancelled) return;
         const html = typeof res.data === 'string' ? res.data : String(res.data);

@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b309b8a3_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d82531745_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e8006df25_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-v3';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-v4';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -1091,10 +1091,11 @@ function buildArtScript() {
         html = html.replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>');
       }
       if (!h.mwep && !h.rwep) {
-        html = html.replace(/<div class="eq-slot">Arma: vacía([\s\S]*?)<\/div>/, '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(\'' + side + '\',\'' + h.id + '\',\'weapon\')"><span>Arma: vacía$1</span><button class="bf-slot-buy">Comprar</button></div>');
+        var weaponSlotPattern = new RegExp('<div class="eq-slot">Arma: vacía([\\\\s\\\\S]*?)</div>');
+        html = html.replace(weaponSlotPattern, '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(&quot;' + side + '&quot;,&quot;' + h.id + '&quot;,&quot;weapon&quot;)"><span>Arma: vacía$1</span><button class="bf-slot-buy">Comprar</button></div>');
       }
       if (!h.armor) {
-        html = html.replace('<div class="eq-slot">Armadura: vacía</div>', '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(\'' + side + '\',\'' + h.id + '\',\'armor\')"><span>Armadura: vacía</span><button class="bf-slot-buy">Comprar</button></div>');
+        html = html.replace('<div class="eq-slot">Armadura: vacía</div>', '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(&quot;' + side + '&quot;,&quot;' + h.id + '&quot;,&quot;armor&quot;)"><span>Armadura: vacía</span><button class="bf-slot-buy">Comprar</button></div>');
       }
       return html;
     };
@@ -1109,7 +1110,7 @@ function buildArtScript() {
         var item = row.item;
         var art = NUM_ART[String(cardNo(item.id))] || NUM_ART[cardNo(item.id)] || '';
         var disabled = Number(item.cost || 0) > coins;
-        return '<div class="bf-quick-card" ' + (disabled ? 'style="opacity:.45;cursor:not-allowed"' : 'onclick="bfQuickBuy(\'' + side + '\',\'' + heroId + '\',\'' + row.kind + '\',\'' + item.id + '\')"') + '>' +
+        return '<div class="bf-quick-card" ' + (disabled ? 'style="opacity:.45;cursor:not-allowed"' : 'onclick="bfQuickBuy(&quot;' + side + '&quot;,&quot;' + heroId + '&quot;,&quot;' + row.kind + '&quot;,&quot;' + item.id + '&quot;)"') + '>' +
           (art ? '<div class="bf-quick-art" style="background-image:url(&quot;' + art + '&quot;)"></div>' : '') +
           '<div class="bf-quick-cost">' + clean(item.cost) + '</div>' +
           '<div class="bf-quick-name">' + clean(item.name) + '</div>' +
