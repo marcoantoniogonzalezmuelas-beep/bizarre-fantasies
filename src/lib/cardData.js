@@ -11,14 +11,14 @@ export const CLAN_COLORS = {
 };
 
 export const CLAN_SYMBOLS = {
-  "Guerreros": "⚔️",
-  "Druidas": "🌿",
-  "No-muertos": "💀",
-  "Vaqueros": "🤠",
-  "Elfos": "🏹",
-  "Magos": "🔮",
-  "Épicas": "✨",
-  "Cotidianos": "🎮"
+  "Guerreros": "⚔",
+  "Druidas": "❦",
+  "No-muertos": "☠",
+  "Vaqueros": "✦",
+  "Elfos": "⟐",
+  "Magos": "✧",
+  "Épicas": "◆",
+  "Cotidianos": "◈"
 };
 
 export const HEROES = [

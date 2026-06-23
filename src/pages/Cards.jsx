@@ -6,6 +6,7 @@ import HeroCard from '@/components/cards/HeroCard';
 import EquipCard from '@/components/cards/EquipCard';
 import RaceCard from '@/components/cards/RaceCard';
 import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES, CLAN_COLORS, CLAN_SYMBOLS } from '@/lib/cardData';
+import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 
 const TABS = [
   { key: 'heroes', label: 'Héroes' },
@@ -21,6 +22,17 @@ const TABS = [
 const HERO_CLANS = ['Todos', 'Guerreros', 'Druidas', 'No-muertos', 'Vaqueros', 'Elfos', 'Magos', 'Épicas', 'Cotidianos'];
 const HERO_TYPES = ['Todos', 'CC', 'AD', 'HE'];
 
+const gameArtFor = (category, number) => {
+  const n = Number(number || 0);
+  if (category === 'spell') return SPELL_ART[n - 46];
+  if (category === 'melee_weapon') return MELEE_ART[n - 59];
+  if (category === 'ranged_weapon') return RANGED_ART[n - 65];
+  if (category === 'armor') return ARMOR_ART[n - 73];
+  if (category === 'object') return OBJECT_ART[n - 83];
+  if (category === 'bonus') return BONUS_ART[n - 92];
+  return undefined;
+};
+
 const normalizeHero = (card) => ({
   ...card,
   id: card.card_id,
@@ -33,8 +45,8 @@ const normalizeHero = (card) => ({
   abilityTxt: card.ability_text,
   eAbility: card.elite_ability_name,
   eTxt: card.elite_ability_text,
-  art: card.art_url,
-  eliteArt: card.elite_art_url,
+  art: HERO_ART[Number(card.number || 0) - 1] || card.art_url,
+  eliteArt: HERO_ELITE_ART[Number(card.number || 0) - 1] || card.elite_art_url,
 });
 
 const normalizeItem = (card) => ({
@@ -42,6 +54,7 @@ const normalizeItem = (card) => ({
   id: card.card_id,
   num: card.number,
   txt: card.description,
+  art: gameArtFor(card.category, card.number) || card.art_url,
   element: card.category === 'spell' ? card.type : undefined,
   tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
 });
