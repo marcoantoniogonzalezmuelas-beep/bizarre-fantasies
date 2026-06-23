@@ -903,11 +903,11 @@ function buildArtScript() {
 Deno.serve(async (req) => {
   try {
     const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
-    const upstream = await fetch(SRC);
+    const upstream = await fetch(SRC + '?bf=' + Date.now(), { cache: 'no-store' });
     let html = await upstream.text();
 
-    // Prevent in-game "back to start" buttons from reloading the raw old HTML inside the iframe.
-    html = html.replaceAll('location.reload()', 'window.parent.location.reload()');
+    // Prevent in-game "back to start" buttons from reloading cached/raw HTML.
+    html = html.replaceAll('location.reload()', 'window.parent.location.href = window.parent.location.pathname + "?bf=" + Date.now()');
 
     // Inject art script right before </body> so the game's own script
     // (cardFace, HEROES, etc.) is already defined when we hook it.
@@ -922,7 +922,9 @@ Deno.serve(async (req) => {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=1800'
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     });
   } catch (error) {
