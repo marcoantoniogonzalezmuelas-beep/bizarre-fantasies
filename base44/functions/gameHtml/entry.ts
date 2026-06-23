@@ -680,6 +680,9 @@ Deno.serve(async (req) => {
     const upstream = await fetch(SRC);
     let html = await upstream.text();
 
+    // Prevent in-game "back to start" buttons from reloading the raw old HTML inside the iframe.
+    html = html.replaceAll('location.reload()', 'window.parent.location.reload()');
+
     // Inject art script right before </body> so the game's own script
     // (cardFace, HEROES, etc.) is already defined when we hook it.
     const artScript = buildArtScript();
