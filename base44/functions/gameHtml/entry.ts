@@ -263,6 +263,8 @@ function buildArtScript() {
       .flip3d-inner { transform-style: preserve-3d !important; }
       .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
       .flip3d .face.back { transform: rotateY(180deg) !important; }
+      .face.back .bf-hero-card.cf-elite .bf-hero-bg,
+      .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
 
       /* Premium full-art hero cards */
       .bf-hero-card {
@@ -271,11 +273,10 @@ function buildArtScript() {
         background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important;
       }
       .bf-hero-bg {
-        position: absolute; inset: 0; z-index: 0; pointer-events: none;
-        background-image: var(--bf-art); background-size: cover; background-position: center top; background-repeat: no-repeat;
-        filter: saturate(1.05) contrast(1.03);
+        position: absolute; inset: -9%; z-index: 0; pointer-events: none;
+        background-image: var(--bf-art); background-size: cover; background-position: center 12%; background-repeat: no-repeat;
+        filter: saturate(1.1) contrast(1.06);
       }
-      .face.back .bf-hero-card.cf-elite .bf-hero-bg { transform: scaleX(-1); }
       .bf-hero-card::before {
         content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
         background:
@@ -306,18 +307,20 @@ function buildArtScript() {
       .bf-stat-cc span,.bf-stat-cc b { color:#ff4b45; }
       .bf-stat-ad span,.bf-stat-ad b { color:#54e876; }
       .bf-stat-he span,.bf-stat-he b { color:#b06cff; }
-      .bf-ability-panel { position:absolute; left:11px; right:11px; bottom:11px; z-index:3; min-height:94px; display:grid; grid-template-columns:42px 1fr; gap:9px; align-items:center; padding:10px 10px 10px 9px; border-radius:11px; background:linear-gradient(180deg,rgba(17,13,11,.88),rgba(6,5,7,.96)); border:1px solid rgba(255,210,74,.32); box-shadow:0 -2px 18px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.04); }
-      .bf-ability-orb { width:38px; height:38px; border-radius:50%; background:radial-gradient(circle at 50% 45%,#ff2f26,#2b0202 58%,#050101); border:2px solid rgba(255,210,74,.45); box-shadow:0 0 12px rgba(255,36,26,.55); }
-      .bf-hero-card.cf-elite .bf-ability-orb { background:radial-gradient(circle at 50% 45%,#b95cff,#270041 58%,#06000d); box-shadow:0 0 14px rgba(180,91,255,.7); }
-      .bf-ability-name { color:#ffd76a; font-family:'Cinzel',serif; font-size:12px; font-weight:900; letter-spacing:.2px; text-transform:uppercase; text-shadow:0 1px 3px #000; }
-      .bf-hero-card.cf-elite .bf-ability-name { color:#c487ff; }
-      .bf-ability-text { margin-top:2px; color:#f2e8d7; font-size:11.5px; line-height:1.22; text-shadow:0 1px 2px #000; }
-      .bf-logo { position:absolute; right:8px; bottom:7px; z-index:4; font-family:'Cinzel',serif; font-weight:1000; color:#ffd24a; font-size:16px; line-height:1; letter-spacing:-1px; padding:4px 5px 3px; border-radius:7px; background:linear-gradient(135deg,#0a0500,#2b1600 55%,#050300); border:1.5px solid #d39b22; text-shadow:0 0 8px rgba(255,210,74,.6),0 1px 1px #000; box-shadow:0 0 9px rgba(255,210,74,.25), inset 0 0 8px rgba(255,210,74,.12); }
-      .bf-card-num { position:absolute; left:56px; bottom:9px; z-index:4; color:rgba(235,222,194,.55); font-size:8px; letter-spacing:.2px; }
+      .bf-ability-panel { position:absolute; left:11px; right:11px; bottom:11px; z-index:3; min-height:99px; display:grid; grid-template-columns:44px 1fr; gap:9px; align-items:center; padding:9px 10px 20px 9px; border-radius:11px; background:linear-gradient(180deg,rgba(19,12,7,.90),rgba(4,3,5,.97)); border:1px solid rgba(255,210,74,.48); box-shadow:0 -2px 20px rgba(0,0,0,.62), inset 0 0 0 1px rgba(255,255,255,.08); }
+      .bf-ability-orb { position:relative; width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101); border:2px solid rgba(255,224,121,.82); box-shadow:0 0 16px rgba(255,95,25,.72), inset 0 0 10px rgba(255,255,255,.18); }
+      .bf-ability-orb::before { content:'✦'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff7d7; font-size:23px; font-weight:900; text-shadow:0 0 8px #fff,0 2px 4px #000; }
+      .bf-ability-orb::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1px solid rgba(255,210,74,.34); box-shadow:0 0 14px rgba(255,210,74,.32); }
+      .bf-hero-card.cf-elite .bf-ability-orb { background:radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012); box-shadow:0 0 17px rgba(190,91,255,.82), inset 0 0 10px rgba(255,255,255,.16); }
+      .bf-ability-name { color:#ffe07b; font-family:'Cinzel',serif; font-size:12.6px; font-weight:1000; letter-spacing:.25px; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32); }
+      .bf-hero-card.cf-elite .bf-ability-name { color:#d9a2ff; }
+      .bf-ability-text { margin-top:3px; color:#fff7ea; font-size:12px; font-weight:700; line-height:1.25; text-shadow:0 2px 3px #000,0 0 8px #000; }
+      .bf-logo { position:absolute; right:8px; bottom:11px; z-index:8; font-family:'Cinzel',serif; font-weight:1000; color:#ffd24a; font-size:16px; line-height:1; letter-spacing:-1px; padding:4px 5px 3px; border-radius:7px; background:linear-gradient(135deg,#0a0500,#2b1600 55%,#050300); border:1.5px solid #d39b22; text-shadow:0 0 8px rgba(255,210,74,.6),0 1px 1px #000; box-shadow:0 0 9px rgba(255,210,74,.25), inset 0 0 8px rgba(255,210,74,.12); }
+      .bf-card-num { position:absolute; left:62px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
 
       /* Fallback for any old-format hero cards already on screen */
-      .cf-art.has-art::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center top; background-repeat:no-repeat; }
-      .face.back .cf-elite .cf-art.has-art::before { transform: scaleX(-1); }
+      .cf-art.has-art::before { content:''; position:absolute; inset:-9%; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center 12%; background-repeat:no-repeat; }
+      .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
       .cf-art.has-art .cf-art-emoji { display:none !important; }
       .cf-art.has-art::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:1; background:linear-gradient(180deg,rgba(0,0,0,.76) 0%,rgba(0,0,0,.18) 28%,rgba(0,0,0,0) 50%,rgba(0,0,0,.90) 100%); }
       .cf-art.has-art > * { position:relative; z-index:2; }
@@ -340,22 +343,46 @@ function buildArtScript() {
       .bf-bonus-card {
         position: relative; display: block; border-radius: 13px; overflow: hidden;
         height: 178px; margin: 5px 0 8px; border: 2px solid rgba(255,210,74,0.68);
-        background: radial-gradient(circle at 50% 30%,#21182d,#07050b 75%);
+        background: #07050b;
         box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,255,255,.05);
       }
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: 6px; border-radius: 9px; background-size: contain; background-position: center center; background-repeat: no-repeat; z-index: 0;
-        filter: saturate(1.05) contrast(1.04);
+        position: absolute; inset: -8%; border-radius: 0; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 0;
+        filter: saturate(1.1) contrast(1.06);
       }
       .bf-bonus-card .bf-bonus-shade {
         position: absolute; inset: 0; z-index: 1;
-        background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.78) 100%);
+        background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.82) 100%);
       }
       .bf-bonus-card .bf-bonus-name {
         position: absolute; left: 8px; right: 8px; bottom: 7px; z-index: 2;
         font-family: 'Cinzel', serif; font-weight: 900; font-size: 14px; color: #fff5d9;
         text-align: center; text-shadow: 0 2px 6px #000, 0 0 12px rgba(0,0,0,0.95);
       }
+
+      /* Battle/recruit hero thumbnails */
+      .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
+      .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
+      .bf-battle-art { position:absolute; left:-10px; top:-10px; bottom:-10px; width:98px; z-index:1; background-size:cover; background-position:center top; background-repeat:no-repeat; filter:saturate(1.12) contrast(1.08); opacity:.94; }
+      .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.06) 48%,rgba(21,16,31,.95) 100%); }
+      .bhero.active-turn { animation:bfHeroActive 1.35s ease-in-out infinite !important; }
+      .bhero.fx-shake { animation:bfDamageShake .34s ease-in-out 1 !important; }
+      .bhero.s-paralyzed .bf-battle-art { filter:saturate(1.35) contrast(1.15) drop-shadow(0 0 10px #ffd24a); animation:bfZap .55s steps(2,end) infinite; }
+      .bhero.s-sleeping .bf-battle-art { filter:saturate(.7) contrast(.9) brightness(.82); }
+      .bhero.s-cursed .bf-battle-art { filter:saturate(.75) contrast(1.2) hue-rotate(245deg) drop-shadow(0 0 9px #b06cff); }
+      .bhero.elite-mode .bf-battle-art { filter:saturate(1.25) contrast(1.12) drop-shadow(0 0 10px #ffd24a); }
+      @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+      @keyframes bfHeroActive { 0%,100%{transform:translateY(0);box-shadow:0 0 0 2px rgba(255,210,74,.34),0 0 14px rgba(255,210,74,.18)} 50%{transform:translateY(-4px);box-shadow:0 0 0 3px rgba(255,210,74,.55),0 0 24px rgba(255,210,74,.38)} }
+      @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)} }
+      @keyframes bfZap { 0%,100%{opacity:.98} 50%{opacity:.66} }
+      .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
+      .bf-ctb-thumb { position:absolute; left:4px; top:4px; bottom:4px; width:34px; border-radius:7px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.28); }
+      .hero-acquired { position:relative !important; min-height:58px; padding-left:58px !important; overflow:hidden; }
+      .bf-acq-thumb { position:absolute; left:6px; top:6px; bottom:6px; width:44px; border-radius:9px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.32),0 3px 8px rgba(0,0,0,.35); }
+      .bf-result-thumb { display:inline-block; width:32px; height:32px; border-radius:8px; margin-right:7px; vertical-align:middle; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.45); }
+      .fx-ring-heal { box-shadow:0 0 24px #51ff8a, inset 0 0 18px #51ff8a !important; }
+      .fx-burst { mix-blend-mode:screen; filter:blur(.2px) saturate(1.4); }
+      .fx-status, .fx-word, .fx-dmg { text-shadow:0 2px 6px #000,0 0 12px currentColor !important; font-weight:1000 !important; }
     \`;
     document.head.appendChild(style);
   }
@@ -482,10 +509,67 @@ function buildArtScript() {
     });
   }
 
+  function injectBattleHeroArt() {
+    document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
+      if (card.dataset.bfBattleArt === '1') return;
+      var parts = card.id.split('_');
+      var id = parts[parts.length - 1];
+      var url = ART_BY_ID[id] || ELITE_BY_ID[id];
+      if (!url) return;
+      var art = document.createElement('div');
+      art.className = 'bf-battle-art';
+      art.style.backgroundImage = 'url("' + url + '")';
+      card.insertBefore(art, card.firstChild);
+      card.dataset.bfBattleArt = '1';
+    });
+    document.querySelectorAll('.ctb-slot').forEach(function(slot) {
+      if (slot.dataset.bfCtbArt === '1') return;
+      var nm = slot.querySelector('.ctb-hero-name');
+      if (!nm) return;
+      var url = ART_BY_NAME[nm.textContent.trim()];
+      if (!url) return;
+      var thumb = document.createElement('div');
+      thumb.className = 'bf-ctb-thumb';
+      thumb.style.backgroundImage = 'url("' + url + '")';
+      slot.insertBefore(thumb, slot.firstChild);
+      slot.dataset.bfCtbArt = '1';
+    });
+  }
+
+  function injectRecruitHeroArt() {
+    document.querySelectorAll('.hero-acquired').forEach(function(card) {
+      if (card.dataset.bfAcqArt === '1') return;
+      var on = card.getAttribute('onclick') || '';
+      var hit = on.split("heroInfo('")[1];
+      var id = hit ? hit.split("'")[0] : '';
+      var url = id ? ART_BY_ID[id] : null;
+      if (!url) return;
+      var thumb = document.createElement('div');
+      thumb.className = 'bf-acq-thumb';
+      thumb.style.backgroundImage = 'url("' + url + '")';
+      card.insertBefore(thumb, card.firstChild);
+      card.dataset.bfAcqArt = '1';
+    });
+    document.querySelectorAll('.pr-got').forEach(function(row) {
+      if (row.dataset.bfResultArt === '1') return;
+      var b = row.querySelector('b');
+      if (!b) return;
+      var url = ART_BY_NAME[b.textContent.trim()];
+      if (!url) return;
+      var thumb = document.createElement('span');
+      thumb.className = 'bf-result-thumb';
+      thumb.style.backgroundImage = 'url("' + url + '")';
+      row.insertBefore(thumb, row.firstChild);
+      row.dataset.bfResultArt = '1';
+    });
+  }
+
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
     injectBonusArt();
+    injectBattleHeroArt();
+    injectRecruitHeroArt();
   }
 
   // ---- OBSERVE DOM MUTATIONS ----
