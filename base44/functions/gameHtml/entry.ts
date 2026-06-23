@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-bonus-art-v3';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-epic-offer-v4';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -936,13 +936,15 @@ function buildArtScript() {
     function prepareEpicOffers() {
       G.epicCands = {};
       if (!G.forceEpic) return;
+      var baseCands = (G.cands || []).slice();
       ['p','o'].forEach(function(side) {
         if (!G.forceEpic[side]) return;
         var pool = epicPoolForCurrentType();
         if (!pool.length) return;
         var h = pool[Math.floor(Math.random() * pool.length)];
-        G.epicCands[side] = [h];
-        if (!(G.cands || []).some(function(x) { return x.id === h.id; })) G.cands.push(h);
+        // This side sees the normal candidates PLUS one epic hero. The other
+        // side keeps seeing only G.cands (without this epic).
+        G.epicCands[side] = baseCands.concat([h]);
       });
       G.forceEpic = {};
     }
