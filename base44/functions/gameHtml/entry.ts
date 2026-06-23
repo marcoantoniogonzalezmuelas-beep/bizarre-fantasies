@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-27-elite-fx-v12';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-battle-fx-v13';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -448,54 +448,85 @@ function buildArtScript() {
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:112px; z-index:1; background-size:cover; background-position:center 18%; background-repeat:no-repeat; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; }
+      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:118px; z-index:1; background-size:cover; background-position:center 18%; background-repeat:no-repeat; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
-      .bhero.active-turn { animation:bfHeroActive 1.35s ease-in-out infinite !important; }
-      .bhero.fx-shake { animation:bfDamageShake .34s ease-in-out 1 !important; }
-      .bhero.s-paralyzed .bf-battle-art { filter:saturate(1.35) contrast(1.15) drop-shadow(0 0 10px #ffd24a); animation:bfZap .55s steps(2,end) infinite; }
-      .bhero.s-sleeping .bf-battle-art { filter:saturate(.7) contrast(.9) brightness(.82); }
-      .bhero.s-cursed .bf-battle-art { filter:saturate(.75) contrast(1.2) hue-rotate(245deg) drop-shadow(0 0 9px #b06cff); }
+
+      /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
+      .bhero.active-turn { animation:bfHeroActive 2.1s ease-in-out infinite !important; z-index:5 !important; }
+      .bhero.active-turn .bf-battle-art { width:138px !important; filter:saturate(1.3) contrast(1.16) brightness(1.08) drop-shadow(0 0 16px rgba(255,210,74,.55)) !important; transform:scale(1.04); }
+      .bf-active-aura { position:absolute; inset:-14px; z-index:0; pointer-events:none; border-radius:22px;
+        background:radial-gradient(120% 120% at 0% 50%, rgba(255,210,74,.42), rgba(255,160,40,.18) 38%, rgba(255,210,74,0) 70%);
+        opacity:0; transition:opacity .45s ease; animation:bfAuraBreath 2.4s ease-in-out infinite; }
+      .bhero.active-turn .bf-active-aura { opacity:1; }
+      .bf-active-ring { position:absolute; inset:-3px; z-index:0; pointer-events:none; border-radius:18px; border:2px solid rgba(255,210,74,.0); }
+      .bhero.active-turn .bf-active-ring { border-color:rgba(255,210,74,.8); box-shadow:0 0 0 1px rgba(255,210,74,.4), 0 0 30px rgba(255,210,74,.5), inset 0 0 24px rgba(255,210,74,.22); animation:bfRingPulse 2.1s ease-in-out infinite; }
+      .bf-active-tag { position:absolute; top:-11px; left:50%; transform:translateX(-50%); z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.6px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); padding:2px 12px; border-radius:999px; box-shadow:0 4px 12px rgba(255,210,74,.5); opacity:0; }
+      .bhero.active-turn .bf-active-tag { opacity:1; animation:bfTagBob 2.1s ease-in-out infinite; }
+      @keyframes bfAuraBreath { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
+      @keyframes bfRingPulse { 0%,100%{box-shadow:0 0 0 1px rgba(255,210,74,.4),0 0 22px rgba(255,210,74,.4),inset 0 0 20px rgba(255,210,74,.18)} 50%{box-shadow:0 0 0 2px rgba(255,210,74,.6),0 0 40px rgba(255,210,74,.65),inset 0 0 28px rgba(255,210,74,.3)} }
+      @keyframes bfTagBob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-3px)} }
+
+      .bhero.fx-shake { animation:bfDamageShake .5s ease-in-out 1 !important; }
+
+      /* ---- STATUS EFFECTS: strong, unmistakable visuals ---- */
+      .bhero.s-paralyzed .bf-battle-art { filter:saturate(1.45) contrast(1.2) drop-shadow(0 0 12px #ffe14a); animation:bfZap .5s steps(2,end) infinite; }
+      .bhero.s-paralyzed { box-shadow:0 0 0 2px rgba(255,225,74,.7), 0 0 24px rgba(255,225,74,.45) !important; }
+      .bhero.s-sleeping .bf-battle-art { filter:saturate(.55) contrast(.9) brightness(.7) blur(.4px); }
+      .bhero.s-sleeping { box-shadow:0 0 0 2px rgba(120,160,255,.6), 0 0 22px rgba(120,160,255,.4) !important; }
+      .bhero.s-cursed .bf-battle-art { filter:saturate(.78) contrast(1.22) hue-rotate(255deg) drop-shadow(0 0 11px #b06cff); }
+      .bhero.s-cursed { box-shadow:0 0 0 2px rgba(176,108,255,.65), 0 0 22px rgba(176,108,255,.45) !important; }
       .bhero.elite-mode .bf-battle-art { filter:saturate(1.25) contrast(1.12) drop-shadow(0 0 10px #ffd24a); }
+
+      /* Floating status emblem, always visible while the status is active */
+      .bf-status-badge { position:absolute; top:6px; right:6px; z-index:6; display:flex; align-items:center; gap:4px; padding:3px 9px 3px 6px; border-radius:999px; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.3px; color:#fff; background:rgba(8,5,14,.82); border:1.5px solid currentColor; box-shadow:0 0 12px currentColor; animation:bfBadgeFloat 1.8s ease-in-out infinite; }
+      .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; }
+      .bf-status-paralyzed { color:#ffe14a; }
+      .bf-status-sleeping { color:#8aaaff; }
+      .bf-status-cursed { color:#c79bff; }
+      @keyframes bfBadgeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+      .bf-sleep-z { position:absolute; left:50%; top:8%; z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; color:#9bb4ff; font-size:18px; text-shadow:0 0 10px #5a7fff; animation:bfSleepZ 2.6s ease-in-out infinite; }
+      @keyframes bfSleepZ { 0%{opacity:0;transform:translate(-50%,4px) scale(.7)} 30%{opacity:1} 100%{opacity:0;transform:translate(-30%,-22px) scale(1.1)} }
+
       @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
-      @keyframes bfHeroActive { 0%,100%{transform:translateY(0);box-shadow:0 0 0 2px rgba(255,210,74,.34),0 0 14px rgba(255,210,74,.18)} 50%{transform:translateY(-4px);box-shadow:0 0 0 3px rgba(255,210,74,.55),0 0 24px rgba(255,210,74,.38)} }
-      @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)} }
-      @keyframes bfZap { 0%,100%{opacity:.98} 50%{opacity:.66} }
+      @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+      @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
+      @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
       .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
       .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
       .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
-      .bhero.bf-fx-damage { animation:bfDamageShake .34s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
-      .bhero.bf-fx-heal { animation:bfHealPulse .62s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
-      .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .55s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
+      .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
+      .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
+      .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
       .bf-combat-fx { position:absolute; inset:0; z-index:4; pointer-events:none; overflow:hidden; border-radius:inherit; }
-      .bf-fx-float { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%); font-family:'Cinzel',serif; font-weight:1000; font-size:28px; letter-spacing:.4px; text-shadow:0 3px 8px #000,0 0 16px currentColor; animation:bfFloatHit .9s ease-out forwards; }
+      .bf-fx-float { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%); font-family:'Cinzel',serif; font-weight:1000; font-size:34px; letter-spacing:.4px; text-shadow:0 3px 8px #000,0 0 16px currentColor; animation:bfFloatHit 1.5s ease-out forwards; }
       .bf-fx-dmg { color:#ff4b45; }
       .bf-fx-heal-txt { color:#51ff8a; }
-      .bf-fx-status-txt { color:#ffd24a; font-size:20px; top:35%; }
-      .bf-fx-slash { position:absolute; left:18px; right:12px; top:50%; height:4px; border-radius:999px; background:linear-gradient(90deg,transparent,#fff,#ff3b35,transparent); transform:rotate(-18deg) scaleX(0); box-shadow:0 0 18px #ff3b35; animation:bfSlash .42s ease-out forwards; }
-      .bf-fx-heal-ring { position:absolute; left:18px; top:14px; width:72px; height:72px; border-radius:50%; border:3px solid rgba(81,255,138,.9); box-shadow:0 0 18px #51ff8a,inset 0 0 14px rgba(81,255,138,.45); animation:bfHealRing .82s ease-out forwards; }
-      .bf-fx-bolt { position:absolute; left:22px; top:6px; color:#ffd24a; font-size:54px; line-height:1; filter:drop-shadow(0 0 12px #ffd24a); animation:bfBolt .72s ease-out forwards; }
+      .bf-fx-status-txt { color:#ffd24a; font-size:24px; top:35%; }
+      .bf-fx-slash { position:absolute; left:18px; right:12px; top:50%; height:5px; border-radius:999px; background:linear-gradient(90deg,transparent,#fff,#ff3b35,transparent); transform:rotate(-18deg) scaleX(0); box-shadow:0 0 22px #ff3b35; animation:bfSlash .7s ease-out forwards; }
+      .bf-fx-heal-ring { position:absolute; left:18px; top:14px; width:82px; height:82px; border-radius:50%; border:3px solid rgba(81,255,138,.9); box-shadow:0 0 18px #51ff8a,inset 0 0 14px rgba(81,255,138,.45); animation:bfHealRing 1.3s ease-out forwards; }
+      .bf-fx-bolt { position:absolute; left:22px; top:6px; color:#ffd24a; font-size:60px; line-height:1; filter:drop-shadow(0 0 12px #ffd24a); animation:bfBolt 1.2s ease-out forwards; }
       .fx-ring-heal { box-shadow:0 0 24px #51ff8a, inset 0 0 18px #51ff8a !important; }
       .fx-burst { mix-blend-mode:screen; filter:blur(.2px) saturate(1.4); }
       .fx-status, .fx-word, .fx-dmg { text-shadow:0 2px 6px #000,0 0 12px currentColor !important; font-weight:1000 !important; }
-      @keyframes bfHealPulse { 0%{transform:scale(1)} 45%{transform:scale(1.035)} 100%{transform:scale(1)} }
-      @keyframes bfParalyzeJolt { 0%,100%{transform:translateX(0)} 18%{transform:translateX(-4px) skewX(-3deg)} 36%{transform:translateX(5px) skewX(3deg)} 54%{transform:translateX(-3px)} 72%{transform:translateX(3px)} }
-      @keyframes bfFloatHit { 0%{opacity:0;transform:translate(-50%,-22%) scale(.78)} 18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)} 100%{opacity:0;transform:translate(-50%,-105%) scale(.92)} }
-      @keyframes bfSlash { 0%{opacity:0;transform:rotate(-18deg) scaleX(0)} 25%{opacity:1;transform:rotate(-18deg) scaleX(1.05)} 100%{opacity:0;transform:rotate(-18deg) scaleX(1.24)} }
-      @keyframes bfHealRing { 0%{opacity:0;transform:scale(.35)} 20%{opacity:1} 100%{opacity:0;transform:scale(1.65)} }
+      @keyframes bfHealPulse { 0%{transform:scale(1)} 45%{transform:scale(1.05)} 100%{transform:scale(1)} }
+      @keyframes bfParalyzeJolt { 0%,100%{transform:translateX(0)} 18%{transform:translateX(-5px) skewX(-3deg)} 36%{transform:translateX(6px) skewX(3deg)} 54%{transform:translateX(-4px)} 72%{transform:translateX(4px)} }
+      @keyframes bfFloatHit { 0%{opacity:0;transform:translate(-50%,-22%) scale(.7)} 16%{opacity:1;transform:translate(-50%,-52%) scale(1.22)} 30%{transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-118%) scale(.92)} }
+      @keyframes bfSlash { 0%{opacity:0;transform:rotate(-18deg) scaleX(0)} 30%{opacity:1;transform:rotate(-18deg) scaleX(1.08)} 100%{opacity:0;transform:rotate(-18deg) scaleX(1.3)} }
+      @keyframes bfHealRing { 0%{opacity:0;transform:scale(.35)} 25%{opacity:1} 100%{opacity:0;transform:scale(1.8)} }
       .bhero.bf-dead { filter:saturate(.35) brightness(.66); }
       .bhero.bf-auto-elite .bf-battle-art { filter:saturate(1.35) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; }
       .bf-fx-death-smoke { position:absolute; left:0; right:0; bottom:-20px; height:110px; background:radial-gradient(circle at 45% 70%,rgba(15,15,18,.88),rgba(90,38,120,.36) 38%,transparent 72%); animation:bfDeathSmoke 1.1s ease-out forwards; }
       .bf-fx-skull { position:absolute; left:50%; top:38%; transform:translate(-50%,-50%); font-size:44px; filter:drop-shadow(0 0 15px #000); animation:bfSkullRise 1.05s ease-out forwards; }
       .bf-fx-phoenix { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:58px; filter:drop-shadow(0 0 16px #ff8a2a); animation:bfPhoenix .95s ease-out forwards; }
       .bf-fx-elite-aura { position:absolute; inset:-8px; border-radius:inherit; background:radial-gradient(circle,rgba(255,210,74,.34),rgba(176,108,255,.20) 36%,transparent 70%); animation:bfEliteAura 1.1s ease-out forwards; }
-      .bf-fx-projectile { position:fixed; z-index:9999; pointer-events:none; font-size:34px; filter:drop-shadow(0 0 10px currentColor); transition:left .34s cubic-bezier(.17,.84,.44,1), top .34s cubic-bezier(.17,.84,.44,1); }
+      .bf-fx-projectile { position:fixed; z-index:9999; pointer-events:none; font-size:38px; filter:drop-shadow(0 0 12px currentColor); transition:left .55s cubic-bezier(.17,.84,.44,1), top .55s cubic-bezier(.17,.84,.44,1); }
       .bf-fx-bullet { color:#ffe49a; }
       .bf-fx-arrow-proj { color:#c6ff8a; }
-      .bf-fx-magic-orb { position:fixed; z-index:9999; pointer-events:none; width:34px; height:34px; border-radius:50%; box-shadow:0 0 20px currentColor; background:radial-gradient(circle,#fff,currentColor 44%,transparent 72%); transition:left .42s ease, top .42s ease, transform .42s ease; }
-      .bf-fx-spell-wave { position:absolute; left:50%; top:50%; width:34px; height:34px; border-radius:50%; border:3px solid currentColor; transform:translate(-50%,-50%) scale(.2); box-shadow:0 0 20px currentColor,inset 0 0 18px currentColor; animation:bfSpellWave .75s ease-out forwards; }
-      .bf-fx-bigblast { position:absolute; inset:-10px; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(255,77,60,.62) 18%,rgba(255,143,42,.26) 42%,transparent 72%); animation:bfBigBlast .72s ease-out forwards; }
+      .bf-fx-magic-orb { position:fixed; z-index:9999; pointer-events:none; width:40px; height:40px; border-radius:50%; box-shadow:0 0 26px currentColor; background:radial-gradient(circle,#fff,currentColor 44%,transparent 72%); transition:left .65s ease, top .65s ease, transform .65s ease; }
+      .bf-fx-spell-wave { position:absolute; left:50%; top:50%; width:34px; height:34px; border-radius:50%; border:3px solid currentColor; transform:translate(-50%,-50%) scale(.2); box-shadow:0 0 20px currentColor,inset 0 0 18px currentColor; animation:bfSpellWave 1.2s ease-out forwards; }
+      .bf-fx-bigblast { position:absolute; inset:-10px; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(255,77,60,.62) 18%,rgba(255,143,42,.26) 42%,transparent 72%); animation:bfBigBlast 1.1s ease-out forwards; }
       .bf-race-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:12px; }
       .bf-race-card { position:relative; min-height:168px; overflow:hidden; border-radius:16px; padding:14px; border:1.5px solid var(--race,#ffd24a); background:radial-gradient(circle at 22% 14%,color-mix(in srgb,var(--race,#ffd24a) 34%,transparent),transparent 36%),linear-gradient(145deg,#120d1d,#261d3d); box-shadow:0 10px 26px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.06); }
       .bf-race-card::before { content:''; position:absolute; right:-28px; top:-22px; width:132px; height:132px; border-radius:50%; background:radial-gradient(circle,color-mix(in srgb,var(--race,#ffd24a) 32%,transparent),transparent 66%); filter:blur(1px); }
@@ -571,9 +602,9 @@ function buildArtScript() {
       @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
       @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} }
       @keyframes bfEliteAura { 0%{opacity:0;transform:scale(.75) rotate(0)} 35%{opacity:1} 100%{opacity:0;transform:scale(1.25) rotate(18deg)} }
-      @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.2)} }
-      @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.55)} 30%{opacity:1;transform:scale(1.05)} 100%{opacity:0;transform:scale(1.24)} }
-      @keyframes bfBolt { 0%{opacity:0;transform:translateY(-8px) scale(.7)} 18%{opacity:1;transform:translateY(0) scale(1.08)} 100%{opacity:0;transform:translateY(10px) scale(.95)} }
+      @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.6)} }
+      @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.5)} 35%{opacity:1;transform:scale(1.08)} 100%{opacity:0;transform:scale(1.3)} }
+      @keyframes bfBolt { 0%{opacity:0;transform:translateY(-10px) scale(.6)} 20%{opacity:1;transform:translateY(0) scale(1.14)} 100%{opacity:0;transform:translateY(12px) scale(.95)} }
 
       /* ---- ÉLITE in battle: flip the portrait + golden glow ---- */
       .bhero.bf-auto-elite .bf-battle-art { transform: scaleX(-1); filter: saturate(1.3) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; transition: transform .55s cubic-bezier(.2,.8,.3,1), filter .4s ease; }
@@ -591,6 +622,13 @@ function buildArtScript() {
       @keyframes bfGraveRise { 0%{opacity:0;transform:translate(-50%,10%) scale(.5) rotate(-8deg)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(4deg)} 70%{transform:translate(-50%,-50%) scale(1) rotate(0)} 100%{opacity:1;transform:translate(-50%,-50%) scale(1)} }
       .bhero.bf-truedead { filter:grayscale(.85) brightness(.5) !important; }
       .bhero.bf-truedead .bf-battle-art { filter:grayscale(1) brightness(.45) !important; }
+
+      /* ---- Hero info modal: dramatic art background ---- */
+      .bf-info-art { position:absolute; inset:0; z-index:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
+      .bf-info-art .bf-info-fill { position:absolute; inset:-30px; background-image:var(--bf-info-art); background-size:cover; background-position:center 14%; filter:blur(26px) saturate(1.3) contrast(1.1); transform:scale(1.4); opacity:.9; }
+      .bf-info-art .bf-info-sharp { position:absolute; right:-8px; top:-8px; bottom:-8px; width:46%; background-image:var(--bf-info-art); background-size:cover; background-position:center 12%; filter:saturate(1.12) contrast(1.08); opacity:.42; -webkit-mask-image:linear-gradient(90deg,transparent,#000 60%); mask-image:linear-gradient(90deg,transparent,#000 60%); }
+      .bf-info-art .bf-info-shade { position:absolute; inset:0; background:linear-gradient(120deg,rgba(18,13,34,.96) 0%,rgba(18,13,34,.86) 42%,rgba(18,13,34,.55) 100%); }
+      .modal-box.bf-info-themed > *:not(.bf-info-art) { position:relative; z-index:1; }
 
       /* ---- Élite badge in hero info modal ---- */
       .bf-elite-badge { display:flex; align-items:center; gap:8px; margin:8px 0 4px; padding:8px 12px; border-radius:11px; font-family:'Cinzel',serif; font-weight:1000; font-size:14px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3); text-shadow:0 1px 1px rgba(255,255,255,.4); animation:bfBadgePulse 1.8s ease-in-out infinite; }
@@ -783,10 +821,64 @@ function buildArtScript() {
     return match ? parseInt(match[0], 10) : null;
   }
 
-  function isHeroParalyzed(card) {
+  function statusText(card) {
     var status = card.querySelector('.bhero-status');
-    var text = status ? status.textContent : '';
-    return card.classList.contains('s-paralyzed') || /par[aá]li/i.test(text);
+    return status ? status.textContent : '';
+  }
+
+  function isHeroParalyzed(card) {
+    return card.classList.contains('s-paralyzed') || /par[aá]li/i.test(statusText(card));
+  }
+
+  // Resolve the current status of a battle hero: 'paralyzed' | 'sleeping' | 'cursed' | ''.
+  function heroStatusOf(card) {
+    var t = statusText(card);
+    if (card.classList.contains('s-paralyzed') || /par[aá]li/i.test(t)) return 'paralyzed';
+    if (card.classList.contains('s-sleeping') || /dorm|sue[ñn]/i.test(t)) return 'sleeping';
+    if (card.classList.contains('s-cursed') || /maldi|maldec/i.test(t)) return 'cursed';
+    return '';
+  }
+
+  var STATUS_INFO = {
+    paralyzed: { ico: '⚡', label: 'PARALIZADO', cls: 'bf-status-paralyzed' },
+    sleeping:  { ico: '💤', label: 'DORMIDO',    cls: 'bf-status-sleeping' },
+    cursed:    { ico: '☠', label: 'MALDITO',     cls: 'bf-status-cursed' },
+  };
+
+  // Ensure the active hero has its dramatic aura/ring/tag layers, and that every
+  // hero shows a floating status badge matching its current condition.
+  function decorateBattleHeroState(card) {
+    if (!card || !card.isConnected) return;
+    if (!card.querySelector('.bf-active-aura')) {
+      var aura = document.createElement('div'); aura.className = 'bf-active-aura';
+      var ring = document.createElement('div'); ring.className = 'bf-active-ring';
+      var tag = document.createElement('div'); tag.className = 'bf-active-tag'; tag.textContent = '★ SU TURNO';
+      card.insertBefore(ring, card.firstChild);
+      card.insertBefore(aura, card.firstChild);
+      card.appendChild(tag);
+    }
+    var st = heroStatusOf(card);
+    var badge = card.querySelector('.bf-status-badge');
+    if (!st) {
+      if (badge) badge.remove();
+      var z = card.querySelector('.bf-sleep-z'); if (z) z.remove();
+      card.dataset.bfStatus = '';
+      return;
+    }
+    if (card.dataset.bfStatus !== st) {
+      if (badge) badge.remove();
+      var info = STATUS_INFO[st];
+      var b = document.createElement('div');
+      b.className = 'bf-status-badge ' + info.cls;
+      b.innerHTML = '<span class="bf-status-ico">' + info.ico + '</span>' + info.label;
+      card.appendChild(b);
+      var existingZ = card.querySelector('.bf-sleep-z'); if (existingZ) existingZ.remove();
+      if (st === 'sleeping') {
+        var zz = document.createElement('div'); zz.className = 'bf-sleep-z'; zz.textContent = 'Z';
+        card.appendChild(zz);
+      }
+      card.dataset.bfStatus = st;
+    }
   }
 
   function heroIdFromCard(card) {
@@ -889,6 +981,9 @@ function buildArtScript() {
         transformHeroToElite(card);
       }
 
+      // Keep the active-hero aura/ring/tag and status badge always in sync.
+      decorateBattleHeroState(card);
+
       var hp = readHeroHp(card);
       if (hp !== null) {
         if (card.dataset.bfPrevHp !== undefined) {
@@ -900,12 +995,21 @@ function buildArtScript() {
         }
         card.dataset.bfPrevHp = String(hp);
       }
-      var paralyzed = isHeroParalyzed(card) ? '1' : '0';
-      if (card.dataset.bfPrevParalyzed !== undefined && card.dataset.bfPrevParalyzed !== paralyzed && paralyzed === '1') {
-        playHeroFx(card, 'paralyze');
+      // Detect a freshly applied status (paralyzed/sleeping/cursed) and pop an fx.
+      var st = heroStatusOf(card);
+      if (card.dataset.bfPrevStatusFx !== undefined && card.dataset.bfPrevStatusFx !== st && st) {
+        playStatusFx(card, st);
       }
-      card.dataset.bfPrevParalyzed = paralyzed;
+      card.dataset.bfPrevStatusFx = st;
     });
+  }
+
+  function playStatusFx(card, st) {
+    var info = STATUS_INFO[st];
+    if (!info) return;
+    if (st === 'paralyzed') { playHeroFx(card, 'paralyze'); return; }
+    var color = st === 'sleeping' ? '#8aaaff' : '#c79bff';
+    addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:' + color + '">' + info.ico + ' ' + info.label + '</div>', 1300);
   }
 
   function getBattleCard(side, id) {
@@ -1215,6 +1319,25 @@ function buildArtScript() {
       return originalResolveBidRound.apply(this, arguments);
     };
 
+    // Slow down the combat pacing a touch so the (now bigger) animations are
+    // easier to follow. We add a short pause before each turn transition.
+    if (typeof window.endTurn === 'function' && !window.endTurn.__bfSlow) {
+      var originalEndTurn = window.endTurn;
+      window.endTurn = function() {
+        var args = arguments, self = this;
+        setTimeout(function() { originalEndTurn.apply(self, args); }, 520);
+      };
+      window.endTurn.__bfSlow = 1;
+    }
+    if (typeof window.finishAct === 'function' && !window.finishAct.__bfSlow) {
+      var originalFinishAct = window.finishAct;
+      window.finishAct = function() {
+        var args = arguments, self = this;
+        setTimeout(function() { originalFinishAct.apply(self, args); }, 360);
+      };
+      window.finishAct.__bfSlow = 1;
+    }
+
     // Show a clear "EN MODO ÉLITE" badge in the hero info modal when the hero
     // is currently in elite form during battle.
     if (typeof window.heroInfo === 'function' && !window.heroInfo.__bfElite) {
@@ -1224,15 +1347,45 @@ function buildArtScript() {
         if (side && typeof getHero === 'function') h = getHero(side, id);
         if (!h) for (var si = 0; si < 2; si++) { var f = byId(G.team[['p','o'][si]] || [], id); if (f) { h = f; break; } }
         originalHeroInfo.apply(this, arguments);
-        if (h && h.eliteMode) {
-          var body = document.querySelector('.modal .modal-body, .modal-body, #modal .modal-body');
-          var sub = document.querySelector('.modal .hi-sub') || document.querySelector('.hi-sub');
-          if (sub && !document.querySelector('.bf-elite-badge')) {
-            var badge = document.createElement('div');
-            badge.className = 'bf-elite-badge';
-            badge.innerHTML = '★ EN MODO ÉLITE — versión renacida y potenciada';
-            sub.parentNode.insertBefore(badge, sub.nextSibling);
-          }
+        // Give the info modal a dramatic gradient background built from the hero art.
+        var artUrl = h ? (h.eliteMode ? (ELITE_BY_ID[h.id] || ART_BY_ID[h.id]) : ART_BY_ID[h.id]) : '';
+        var box = document.querySelector('#modalRoot .mb');
+        if (artUrl && box && box.querySelector('.hi-sub') && !box.querySelector('.bf-info-art')) {
+          box.classList.add('bf-info-themed', 'modal-box');
+          box.style.setProperty('--bf-info-art', 'url("' + artUrl + '")');
+          if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+          var artLayer = document.createElement('div');
+          artLayer.className = 'bf-info-art';
+          artLayer.innerHTML = '<div class="bf-info-fill"></div><div class="bf-info-sharp"></div><div class="bf-info-shade"></div>';
+          box.insertBefore(artLayer, box.firstChild);
+        }
+        var sub = document.querySelector('.modal .hi-sub') || document.querySelector('.hi-sub');
+        if (h && h.eliteMode && sub && !document.querySelector('.bf-elite-badge')) {
+          var badge = document.createElement('div');
+          badge.className = 'bf-elite-badge';
+          badge.innerHTML = '★ EN MODO ÉLITE — versión renacida y potenciada';
+          sub.parentNode.insertBefore(badge, sub.nextSibling);
+        }
+        // Show the hero's current battle status (paralyzed/sleeping/cursed).
+        var st = '';
+        if (side && typeof getBattleCard === 'function') {
+          var bc = getBattleCard(side, id);
+          if (bc) st = heroStatusOf(bc);
+        }
+        if (!st) for (var bi = 0; bi < 2; bi++) {
+          var c = getBattleCard(['p','o'][bi], id);
+          if (c) { var s2 = heroStatusOf(c); if (s2) { st = s2; break; } }
+        }
+        if (st && sub && !document.querySelector('.bf-info-status')) {
+          var sinfo = STATUS_INFO[st];
+          var sb = document.createElement('div');
+          sb.className = 'bf-info-status bf-elite-badge ' + sinfo.cls;
+          sb.style.background = 'rgba(8,5,14,.9)';
+          sb.style.border = '1.5px solid currentColor';
+          sb.style.boxShadow = '0 0 16px currentColor';
+          sb.innerHTML = sinfo.ico + ' ESTADO: ' + sinfo.label;
+          var anchor = document.querySelector('.bf-elite-badge') || sub;
+          anchor.parentNode.insertBefore(sb, anchor.nextSibling);
         }
       };
       window.heroInfo.__bfElite = 1;
