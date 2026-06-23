@@ -259,13 +259,14 @@ function buildArtScript() {
         animation: bfEmojiFloat 3.2s ease-in-out infinite !important;
       }
       @keyframes bfEmojiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-      /* Safe elite flip: show the back face without mirror artifacts */
-      .flip3d-inner { transform: none !important; transition: none !important; }
-      .flip3d .face { backface-visibility: visible !important; -webkit-backface-visibility: visible !important; transition: opacity .22s ease, transform .22s ease !important; }
-      .flip3d .face.front { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
-      .flip3d .face.back { opacity: 0 !important; transform: none !important; pointer-events: none !important; }
-      .flip3d.flipped .face.front { opacity: 0 !important; transform: scale(.985) !important; pointer-events: none !important; }
-      .flip3d.flipped .face.back { opacity: 1 !important; transform: none !important; pointer-events: auto !important; }
+      /* Safe elite flip: 3D feeling without mirror artifacts */
+      .flip3d { perspective: 1200px !important; }
+      .flip3d-inner { transform: none !important; transition: none !important; transform-style: preserve-3d !important; }
+      .flip3d .face { backface-visibility: visible !important; -webkit-backface-visibility: visible !important; transition: opacity .28s ease, transform .34s cubic-bezier(.22,.75,.25,1) !important; transform-origin: center center !important; }
+      .flip3d .face.front { opacity: 1 !important; transform: rotateY(0deg) translateZ(0) scale(1) !important; pointer-events: auto !important; }
+      .flip3d .face.back { opacity: 0 !important; transform: rotateY(-18deg) translateZ(-28px) scale(.96) !important; pointer-events: none !important; }
+      .flip3d.flipped .face.front { opacity: 0 !important; transform: rotateY(18deg) translateZ(-28px) scale(.96) !important; pointer-events: none !important; }
+      .flip3d.flipped .face.back { opacity: 1 !important; transform: rotateY(0deg) translateZ(0) scale(1) !important; pointer-events: auto !important; }
       .face.back .bf-hero-card.cf-elite .bf-hero-bg,
       .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
 
@@ -292,18 +293,19 @@ function buildArtScript() {
           radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%);
       }
       .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
-      .bf-hero-top { position:relative; z-index:3; padding:11px 46px 0; text-align:center; min-height:92px; }
+      .bf-hero-top { position:relative; z-index:3; padding:11px 46px 0; text-align:center; min-height:46px; }
       .bf-hero-band { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:2px 13px; border-radius:999px; color:#fff; background:rgba(0,0,0,.46); border:1px solid var(--clan,#caa14a); font-size:10.5px; font-weight:900; letter-spacing:.8px; text-shadow:0 1px 2px #000; backdrop-filter:blur(2px); }
-      .bf-hero-name { display:inline-block; margin-top:5px; padding:2px 10px; border-radius:10px; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(19px, 7.7vw, 29px); line-height:.96; color:#fff5dc; text-transform:uppercase; letter-spacing:.2px; background:linear-gradient(90deg,rgba(0,0,0,.02),rgba(0,0,0,.50),rgba(0,0,0,.02)); text-shadow:0 3px 4px #000,0 0 16px rgba(0,0,0,.95); overflow-wrap:anywhere; }
-      .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 12px rgba(255,187,52,.9),0 3px 5px #000; }
-      .bf-hero-title { display:inline-block; margin-top:4px; padding:1px 8px; border-radius:8px; color:#ffe6a8; background:rgba(0,0,0,.30); font-family:'Cinzel',serif; font-size:11.5px; line-height:1.05; font-weight:700; font-style:italic; text-shadow:0 2px 4px #000,0 0 10px #000; }
+      .bf-nameplate { position:absolute; left:15px; right:15px; bottom:108px; z-index:4; text-align:center; padding:4px 9px 5px; border-radius:10px; background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14)); border:1px solid rgba(255,210,74,.18); backdrop-filter:blur(1.5px); }
+      .bf-hero-name { display:block; margin:0 auto; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(15px, 5.4vw, 21px); line-height:1; color:#fff5dc; text-transform:uppercase; letter-spacing:.15px; text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95); overflow-wrap:anywhere; text-align:center; }
+      .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000; }
+      .bf-hero-title { display:block; margin-top:2px; color:#ffe6a8; font-family:'Cinzel',serif; font-size:10.2px; line-height:1.05; font-weight:700; font-style:italic; text-shadow:0 2px 4px #000,0 0 10px #000; text-align:center; }
       .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
       .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
       .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; }
-      .bf-heart { position:absolute; right:9px; bottom:122px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
+      .bf-heart { position:absolute; right:9px; bottom:164px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
       .bf-heart .cf-heart-ico { position:absolute; inset:0; font-size:54px; color:#e23d3a; line-height:52px; text-align:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)); }
       .bf-heart .cf-hp { position:relative; z-index:2; font-weight:1000; color:#fff; font-size:18px; text-shadow:0 2px 3px #000; }
-      .bf-stats { position:absolute; left:16px; right:16px; bottom:116px; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:7px 50px 7px 8px; border-radius:10px; background:linear-gradient(180deg,rgba(9,7,13,.36),rgba(9,7,13,.58)); border:1px solid rgba(255,210,74,.18); box-shadow:0 3px 12px rgba(0,0,0,.36); backdrop-filter:blur(2px); }
+      .bf-stats { position:absolute; left:16px; right:16px; bottom:158px; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:7px 50px 7px 8px; border-radius:10px; background:linear-gradient(180deg,rgba(9,7,13,.36),rgba(9,7,13,.58)); border:1px solid rgba(255,210,74,.18); box-shadow:0 3px 12px rgba(0,0,0,.36); backdrop-filter:blur(2px); }
       .bf-stat { text-align:center; font-weight:900; line-height:1; text-shadow:0 1px 2px #000,0 0 8px #000; }
       .bf-stat span { display:block; font-size:9px; letter-spacing:1px; margin-bottom:2px; }
       .bf-stat b { display:block; font-size:20px; }
@@ -372,14 +374,15 @@ function buildArtScript() {
       @media (max-width: 640px) {
         .cardface, .bf-hero-card { max-width: 100% !important; }
         .bf-hero-bg, .cf-art.has-art::before { inset: -4% !important; background-size: cover !important; background-position: center center !important; }
-        .bf-hero-top { padding: 8px 40px 0 !important; min-height: 74px !important; }
-        .bf-hero-name { font-size: clamp(16px, 6.4vw, 24px) !important; line-height: .98 !important; }
-        .bf-hero-title { font-size: 10.5px !important; }
+        .bf-hero-top { padding: 8px 40px 0 !important; min-height: 40px !important; }
+        .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 99px !important; padding: 4px 7px !important; }
+        .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
+        .bf-hero-title { font-size: 9px !important; }
         .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
         .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
-        .bf-stats { left: 10px !important; right: 10px !important; bottom: 108px !important; padding: 6px 45px 6px 7px !important; }
+        .bf-stats { left: 10px !important; right: 10px !important; bottom: 142px !important; padding: 6px 45px 6px 7px !important; }
         .bf-stat b { font-size: 17px !important; }
-        .bf-heart { right: 8px !important; bottom: 112px !important; width: 50px !important; height: 46px !important; }
+        .bf-heart { right: 8px !important; bottom: 146px !important; width: 50px !important; height: 46px !important; }
         .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; }
         .bf-heart .cf-hp { font-size: 16px !important; }
         .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 94px !important; grid-template-columns: 38px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; }
@@ -399,8 +402,8 @@ function buildArtScript() {
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-10px; top:-10px; bottom:-10px; width:98px; z-index:1; background-size:cover; background-position:center top; background-repeat:no-repeat; filter:saturate(1.12) contrast(1.08); opacity:.94; }
-      .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.06) 48%,rgba(21,16,31,.95) 100%); }
+      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:112px; z-index:1; background-size:cover; background-position:center 18%; background-repeat:no-repeat; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; }
+      .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
       .bhero.active-turn { animation:bfHeroActive 1.35s ease-in-out infinite !important; }
       .bhero.fx-shake { animation:bfDamageShake .34s ease-in-out 1 !important; }
       .bhero.s-paralyzed .bf-battle-art { filter:saturate(1.35) contrast(1.15) drop-shadow(0 0 10px #ffd24a); animation:bfZap .55s steps(2,end) infinite; }
@@ -412,10 +415,10 @@ function buildArtScript() {
       @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(3px)} }
       @keyframes bfZap { 0%,100%{opacity:.98} 50%{opacity:.66} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
-      .bf-ctb-thumb { position:absolute; left:4px; top:4px; bottom:4px; width:34px; border-radius:7px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.28); }
+      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:7px; top:7px; bottom:7px; width:62px; border-radius:11px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.42),0 5px 12px rgba(0,0,0,.45); }
-      .bf-result-thumb { display:inline-block; width:44px; height:44px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.55),0 4px 10px rgba(0,0,0,.38); }
+      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
       .bhero.bf-fx-damage { animation:bfDamageShake .34s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .62s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .55s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -502,14 +505,13 @@ function buildArtScript() {
         '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' +
         '<div class="bf-hero-top">' +
           '<div class="bf-hero-band">' + clean(h.clan) + (elite ? ' ÉLITE' : '') + ' · ' + typeLabel(h.type) + '</div>' +
-          '<div class="bf-hero-name">' + clean(h.name) + '</div>' +
-          '<div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div>' +
         '</div>' +
         '<div class="bf-stats">' +
           '<div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div>' +
           '<div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div>' +
           '<div class="bf-stat bf-stat-he"><span>HE</span><b>' + clean(he) + '</b></div>' +
         '</div>' +
+        '<div class="bf-nameplate"><div class="bf-hero-name">' + clean(h.name) + '</div><div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div></div>' +
         '<div class="bf-heart"><span class="cf-heart-ico">❤</span><span class="cf-hp">' + clean(hp) + '</span></div>' +
         '<div class="bf-ability-panel">' +
           '<div class="bf-ability-orb"></div>' +
