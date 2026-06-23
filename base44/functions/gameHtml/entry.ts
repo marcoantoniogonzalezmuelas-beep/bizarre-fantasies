@@ -432,6 +432,24 @@ function buildArtScript() {
       @keyframes bfFloatHit { 0%{opacity:0;transform:translate(-50%,-22%) scale(.78)} 18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)} 100%{opacity:0;transform:translate(-50%,-105%) scale(.92)} }
       @keyframes bfSlash { 0%{opacity:0;transform:rotate(-18deg) scaleX(0)} 25%{opacity:1;transform:rotate(-18deg) scaleX(1.05)} 100%{opacity:0;transform:rotate(-18deg) scaleX(1.24)} }
       @keyframes bfHealRing { 0%{opacity:0;transform:scale(.35)} 20%{opacity:1} 100%{opacity:0;transform:scale(1.65)} }
+      .bhero.bf-dead { filter:saturate(.35) brightness(.66); }
+      .bhero.bf-auto-elite .bf-battle-art { filter:saturate(1.35) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; }
+      .bf-fx-death-smoke { position:absolute; left:0; right:0; bottom:-20px; height:110px; background:radial-gradient(circle at 45% 70%,rgba(15,15,18,.88),rgba(90,38,120,.36) 38%,transparent 72%); animation:bfDeathSmoke 1.1s ease-out forwards; }
+      .bf-fx-skull { position:absolute; left:50%; top:38%; transform:translate(-50%,-50%); font-size:44px; filter:drop-shadow(0 0 15px #000); animation:bfSkullRise 1.05s ease-out forwards; }
+      .bf-fx-phoenix { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-size:58px; filter:drop-shadow(0 0 16px #ff8a2a); animation:bfPhoenix .95s ease-out forwards; }
+      .bf-fx-elite-aura { position:absolute; inset:-8px; border-radius:inherit; background:radial-gradient(circle,rgba(255,210,74,.34),rgba(176,108,255,.20) 36%,transparent 70%); animation:bfEliteAura 1.1s ease-out forwards; }
+      .bf-fx-projectile { position:fixed; z-index:9999; pointer-events:none; font-size:34px; filter:drop-shadow(0 0 10px currentColor); transition:left .34s cubic-bezier(.17,.84,.44,1), top .34s cubic-bezier(.17,.84,.44,1); }
+      .bf-fx-bullet { color:#ffe49a; }
+      .bf-fx-arrow-proj { color:#c6ff8a; }
+      .bf-fx-magic-orb { position:fixed; z-index:9999; pointer-events:none; width:34px; height:34px; border-radius:50%; box-shadow:0 0 20px currentColor; background:radial-gradient(circle,#fff,currentColor 44%,transparent 72%); transition:left .42s ease, top .42s ease, transform .42s ease; }
+      .bf-fx-spell-wave { position:absolute; left:50%; top:50%; width:34px; height:34px; border-radius:50%; border:3px solid currentColor; transform:translate(-50%,-50%) scale(.2); box-shadow:0 0 20px currentColor,inset 0 0 18px currentColor; animation:bfSpellWave .75s ease-out forwards; }
+      .bf-fx-bigblast { position:absolute; inset:-10px; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(255,77,60,.62) 18%,rgba(255,143,42,.26) 42%,transparent 72%); animation:bfBigBlast .72s ease-out forwards; }
+      @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} }
+      @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
+      @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} }
+      @keyframes bfEliteAura { 0%{opacity:0;transform:scale(.75) rotate(0)} 35%{opacity:1} 100%{opacity:0;transform:scale(1.25) rotate(18deg)} }
+      @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.2)} }
+      @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.55)} 30%{opacity:1;transform:scale(1.05)} 100%{opacity:0;transform:scale(1.24)} }
       @keyframes bfBolt { 0%{opacity:0;transform:translateY(-8px) scale(.7)} 18%{opacity:1;transform:translateY(0) scale(1.08)} 100%{opacity:0;transform:translateY(10px) scale(.95)} }
     \`;
     document.head.appendChild(style);
@@ -600,25 +618,55 @@ function buildArtScript() {
     return card.classList.contains('s-paralyzed') || /par[aá]li/i.test(text);
   }
 
+  function heroIdFromCard(card) {
+    var parts = String(card && card.id || '').split('_');
+    return parts[parts.length - 1] || '';
+  }
+
+  function addOverlayFx(card, html, ms) {
+    if (!card || !card.isConnected) return;
+    var fx = document.createElement('div');
+    fx.className = 'bf-combat-fx';
+    fx.innerHTML = html;
+    card.appendChild(fx);
+    setTimeout(function() { if (fx.parentNode) fx.parentNode.removeChild(fx); }, ms || 1000);
+  }
+
+  function transformHeroToElite(card) {
+    if (!card || card.dataset.bfAutoElite === '1') return;
+    var id = heroIdFromCard(card);
+    var eliteUrl = ELITE_BY_ID[id];
+    if (!eliteUrl) return;
+    var art = card.querySelector('.bf-battle-art');
+    if (art) art.style.backgroundImage = 'url("' + eliteUrl + '")';
+    card.dataset.bfAutoElite = '1';
+    card.classList.add('bf-auto-elite', 'elite-mode');
+    addOverlayFx(card, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1150);
+  }
+
   function playHeroFx(card, type, value) {
     if (!card || !card.isConnected) return;
-    var cls = type === 'heal' ? 'bf-fx-heal' : (type === 'paralyze' ? 'bf-fx-paralyze' : 'bf-fx-damage');
+    var cls = type === 'heal' || type === 'revive' ? 'bf-fx-heal' : (type === 'paralyze' ? 'bf-fx-paralyze' : 'bf-fx-damage');
     card.classList.remove('bf-fx-damage', 'bf-fx-heal', 'bf-fx-paralyze');
     void card.offsetWidth;
     card.classList.add(cls);
     setTimeout(function() { card.classList.remove(cls); }, 760);
 
-    var fx = document.createElement('div');
-    fx.className = 'bf-combat-fx';
     if (type === 'damage') {
-      fx.innerHTML = '<div class="bf-fx-slash"></div><div class="bf-fx-float bf-fx-dmg">-' + Math.abs(value || 0) + '</div>';
+      var big = Math.abs(value || 0) >= 18 ? '<div class="bf-fx-bigblast"></div>' : '';
+      addOverlayFx(card, big + '<div class="bf-fx-slash"></div><div class="bf-fx-float bf-fx-dmg">-' + Math.abs(value || 0) + '</div>', 950);
     } else if (type === 'heal') {
-      fx.innerHTML = '<div class="bf-fx-heal-ring"></div><div class="bf-fx-float bf-fx-heal-txt">+' + Math.abs(value || 0) + '</div>';
+      addOverlayFx(card, '<div class="bf-fx-heal-ring"></div><div class="bf-fx-float bf-fx-heal-txt">+' + Math.abs(value || 0) + '</div>', 950);
+    } else if (type === 'revive') {
+      card.classList.remove('bf-dead');
+      addOverlayFx(card, '<div class="bf-fx-phoenix">🔥</div><div class="bf-fx-float bf-fx-heal-txt">REVIVE</div>', 1100);
+    } else if (type === 'death') {
+      card.classList.add('bf-dead');
+      addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150);
+      setTimeout(function() { transformHeroToElite(card); }, 420);
     } else {
-      fx.innerHTML = '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>';
+      addOverlayFx(card, '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>', 950);
     }
-    card.appendChild(fx);
-    setTimeout(function() { if (fx.parentNode) fx.parentNode.removeChild(fx); }, 950);
   }
 
   function syncBattleFx() {
@@ -627,8 +675,10 @@ function buildArtScript() {
       if (hp !== null) {
         if (card.dataset.bfPrevHp !== undefined) {
           var oldHp = parseInt(card.dataset.bfPrevHp, 10);
-          if (!isNaN(oldHp) && hp < oldHp) playHeroFx(card, 'damage', oldHp - hp);
-          if (!isNaN(oldHp) && hp > oldHp) playHeroFx(card, 'heal', hp - oldHp);
+          if (!isNaN(oldHp) && oldHp > 0 && hp <= 0) playHeroFx(card, 'death', oldHp);
+          else if (!isNaN(oldHp) && oldHp <= 0 && hp > 0) playHeroFx(card, 'revive', hp);
+          else if (!isNaN(oldHp) && hp < oldHp) playHeroFx(card, 'damage', oldHp - hp);
+          else if (!isNaN(oldHp) && hp > oldHp) playHeroFx(card, 'heal', hp - oldHp);
         }
         card.dataset.bfPrevHp = String(hp);
       }
@@ -638,6 +688,104 @@ function buildArtScript() {
       }
       card.dataset.bfPrevParalyzed = paralyzed;
     });
+  }
+
+  function getBattleCard(side, id) {
+    return document.getElementById('b_' + side + '_' + id);
+  }
+
+  function cardCenter(card) {
+    if (!card) return null;
+    var r = card.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2, card: card };
+  }
+
+  function targetCenter(side, id) {
+    return cardCenter(getBattleCard(side, id));
+  }
+
+  function elementColor(el) {
+    var map = { fuego:'#ff5a2a', hielo:'#5ad0ff', rayo:'#ffe14a', agua:'#3aa0ff', curacion:'#5fffa0', proteccion:'#ffd23a', arcano:'#c79bff', estado:'#c79bff' };
+    return map[el] || '#ffffff';
+  }
+
+  function launchProjectile(from, to, kind, color) {
+    if (!from || !to) return;
+    var p = document.createElement('div');
+    p.className = 'bf-fx-projectile ' + (kind === 'arrow' ? 'bf-fx-arrow-proj' : 'bf-fx-bullet');
+    p.textContent = kind === 'arrow' ? '➤' : '•';
+    p.style.left = from.x + 'px';
+    p.style.top = from.y + 'px';
+    p.style.color = color || (kind === 'arrow' ? '#c6ff8a' : '#ffe49a');
+    var ang = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
+    p.style.transform = 'translate(-50%,-50%) rotate(' + ang + 'deg)';
+    document.body.appendChild(p);
+    requestAnimationFrame(function() { p.style.left = to.x + 'px'; p.style.top = to.y + 'px'; });
+    setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 430);
+  }
+
+  function launchMagic(from, to, el) {
+    if (!from || !to) return;
+    var orb = document.createElement('div');
+    orb.className = 'bf-fx-magic-orb';
+    orb.style.color = elementColor(el);
+    orb.style.left = from.x + 'px';
+    orb.style.top = from.y + 'px';
+    document.body.appendChild(orb);
+    requestAnimationFrame(function() { orb.style.left = to.x + 'px'; orb.style.top = to.y + 'px'; orb.style.transform = 'scale(1.35)'; });
+    setTimeout(function() { if (orb.parentNode) orb.parentNode.removeChild(orb); }, 560);
+  }
+
+  function enhanceCombatEvent(ev) {
+    if (!ev || !ev.k) return;
+    if (ev.k === 'arrow') {
+      launchProjectile(targetCenter(ev.fromSide, ev.fromId), targetCenter(ev.toSide, ev.toId), 'arrow', '#c6ff8a');
+      return;
+    }
+    if (ev.k === 'hit') {
+      var card = getBattleCard(ev.side, ev.id);
+      if (!card) return;
+      if (ev.dtype === 'ranged') addOverlayFx(card, '<div class="bf-fx-bigblast"></div>', 740);
+      if (ev.dtype === 'spell') addOverlayFx(card, '<div class="bf-fx-spell-wave" style="color:#c79bff"></div>', 780);
+      if (Number(ev.dmg || 0) >= 22) addOverlayFx(card, '<div class="bf-fx-bigblast"></div><div class="bf-fx-float bf-fx-dmg">CRÍTICO</div>', 950);
+      return;
+    }
+    if (ev.k === 'spell') {
+      var target = getBattleCard(ev.toSide, ev.toId);
+      if (!target) return;
+      var actor = document.querySelector('.bhero.active-turn') || target;
+      launchMagic(cardCenter(actor), cardCenter(target), ev.el);
+      addOverlayFx(target, '<div class="bf-fx-spell-wave" style="color:' + elementColor(ev.el) + '"></div>', 820);
+      return;
+    }
+    if (ev.k === 'death') {
+      var dead = getBattleCard(ev.side, ev.id);
+      playHeroFx(dead, 'death');
+      return;
+    }
+    if (ev.k === 'elite') {
+      transformHeroToElite(getBattleCard(ev.side, ev.id));
+      return;
+    }
+    if (ev.k === 'heal') {
+      var healed = getBattleCard(ev.side, ev.id);
+      if (healed && healed.classList.contains('bf-dead')) playHeroFx(healed, 'revive', ev.amt);
+      return;
+    }
+    if (ev.k === 'manaup' || ev.k === 'shieldup' || ev.k === 'wardup') {
+      var buff = getBattleCard(ev.side || ev.toSide, ev.id || ev.toId);
+      if (buff) addOverlayFx(buff, '<div class="bf-fx-elite-aura"></div>', 900);
+    }
+  }
+
+  function patchCombatFx() {
+    if (typeof window.flushFx !== 'function' || window.flushFx.__bfEnhanced) return;
+    var original = window.flushFx;
+    window.flushFx = function(list) {
+      original(list);
+      setTimeout(function() { (list || []).forEach(enhanceCombatEvent); }, 20);
+    };
+    window.flushFx.__bfEnhanced = true;
   }
 
   function injectRecruitHeroArt() {
@@ -725,6 +873,7 @@ function buildArtScript() {
     var interval = setInterval(function() {
       attempts++;
       applyCover();
+      patchCombatFx();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
       if ((patchedFace && attempts > 8) || attempts > 60) clearInterval(interval);
