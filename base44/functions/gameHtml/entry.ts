@@ -369,15 +369,22 @@ function buildArtScript() {
       .cf-he b,.cf-he span{color:#b06cff !important;}
       .cf-art.has-art .cf-stats { z-index:4 !important; background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.90) 58%) !important; }
       .cf-art.has-art .cf-heart { z-index:5 !important; }
-      /* Equipment / spell / object shop card art (background banner at top) */
+      /* Equipment / spell / object shop card art — full-bleed like bonus cards */
       .shop-card { position: relative; overflow: hidden; }
       .shop-card.has-art > * { position: relative; z-index: 2; }
+      /* Blurred fill */
       .shop-card-art {
-        position: absolute; left: 0; right: 0; top: 0; height: 96px;
-        background-size: cover; background-position: center center;
-        z-index: 0; opacity: 0.9;
-        -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
-        mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+        position: absolute; inset: -20px; z-index: 0;
+        background-size: cover; background-position: center center; background-repeat: no-repeat;
+        filter: blur(18px) saturate(1.3) contrast(1.16);
+        transform: scale(1.28); opacity: 1;
+      }
+      /* Sharp art layer */
+      .shop-card-art-sharp {
+        position: absolute; inset: -12px; z-index: 1;
+        background-size: cover; background-position: center center; background-repeat: no-repeat;
+        filter: saturate(1.14) contrast(1.12);
+        transform: scale(1.08);
       }
       /* Bonus / restador shown as a mini-card with the whole card visible */
       .bf-bonus-card {
@@ -428,7 +435,8 @@ function buildArtScript() {
         .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
-        .shop-card-art { height: 104px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
+        .shop-card-art-sharp { inset: -8px !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { height: clamp(190px, 62vw, 250px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
         .bf-bonus-card .bf-bonus-art { inset: -1px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
@@ -493,9 +501,8 @@ function buildArtScript() {
       .bf-race-trait { position:relative; z-index:1; margin-top:4px; color:#ffe49a; font-weight:800; font-size:12.5px; line-height:1.25; }
       .bf-race-desc { position:relative; z-index:1; margin-top:7px; color:#efe9dc; font-size:13px; line-height:1.28; }
       .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
-      .shop-card.has-art { min-height: 226px !important; padding-top: 92px !important; background: linear-gradient(180deg,rgba(18,12,25,.78),rgba(9,7,13,.96)) !important; }
-      .shop-card-art.bf-shop-card-art { height: 112px !important; opacity: 1 !important; filter: saturate(1.14) contrast(1.08); }
-      .bf-shop-shade { position:absolute; left:0; right:0; top:0; height:126px; z-index:1; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0) 32%,rgba(0,0,0,.78) 100%); }
+      .shop-card.has-art { background: transparent !important; }
+      .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.80) 100%); }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:154px; padding-left:104px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
       .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:92px; z-index:1; background-size:cover; background-position:center 18%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
@@ -604,7 +611,7 @@ function buildArtScript() {
     });
   }
 
-  // ---- DOM injection for equipment shop cards (match by "Nº X") ----
+  // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
   function injectEquipArt() {
     document.querySelectorAll('.shop-card').forEach(function(card) {
       if (card.querySelector('.shop-card-art')) return;
@@ -614,13 +621,17 @@ function buildArtScript() {
       if (!m) return;
       var url = NUM_ART[m[1]];
       if (!url) return;
-      var art = document.createElement('div');
-      art.className = 'shop-card-art bf-shop-card-art';
-      art.style.backgroundImage = 'url("' + url + '")';
+      var sharp = document.createElement('div');
+      sharp.className = 'shop-card-art-sharp';
+      sharp.style.backgroundImage = 'url("' + url + '")';
+      var fill = document.createElement('div');
+      fill.className = 'shop-card-art';
+      fill.style.backgroundImage = 'url("' + url + '")';
       var shade = document.createElement('div');
       shade.className = 'bf-shop-shade';
       card.insertBefore(shade, card.firstChild);
-      card.insertBefore(art, card.firstChild);
+      card.insertBefore(sharp, card.firstChild);
+      card.insertBefore(fill, card.firstChild);
       card.classList.add('has-art');
     });
   }

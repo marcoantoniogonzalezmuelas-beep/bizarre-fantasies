@@ -6,7 +6,8 @@ const TYPE_COLORS = {
 };
 
 const ELEMENT_COLORS = {
-  fuego: '#d6552a', hielo: '#3aa0c8', rayo: '#caa12f', agua: '#2f7fd6', curacion: '#2f9d54', proteccion: '#caa12f', arcano: '#7a5fd0', estado: '#8a5fb0',
+  fuego: '#d6552a', hielo: '#3aa0c8', rayo: '#caa12f', agua: '#2f7fd6',
+  curacion: '#2f9d54', proteccion: '#caa12f', arcano: '#7a5fd0', estado: '#8a5fb0',
 };
 
 function gameArt(item, type) {
@@ -21,42 +22,123 @@ function gameArt(item, type) {
   return undefined;
 }
 
+// Shared full-bleed card: art fills the whole card (same as bonus cards), text overlay at bottom.
+function FullBleedCard({ item, type, borderColor, artUrl, onClick, children }) {
+  return (
+    <div
+      className="relative h-[320px] rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1"
+      style={{ border: `2px solid ${borderColor}88` }}
+      onClick={() => onClick?.(item)}
+    >
+      {/* Full-bleed art, bleed past edges to hide white borders */}
+      {artUrl && (
+        <>
+          {/* Blurred fill layer */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              inset: '-20px',
+              backgroundImage: `url("${artUrl}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'blur(18px) saturate(1.3) contrast(1.16)',
+              transform: 'scale(1.28)',
+              zIndex: 0,
+            }}
+          />
+          {/* Sharp art layer */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              inset: '-12px',
+              backgroundImage: `url("${artUrl}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              filter: 'saturate(1.14) contrast(1.12)',
+              transform: 'scale(1.08)',
+              zIndex: 1,
+            }}
+          />
+        </>
+      )}
+
+      {/* Gradient shade at bottom */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/80" style={{ zIndex: 2 }} />
+
+      {/* Top badges */}
+      <div className="absolute left-3 right-3 top-3 flex justify-between items-start" style={{ zIndex: 3 }}>
+        {children}
+        <span className="font-heading font-black text-[#ffd24a] text-sm bg-[#160b00] border border-[#d39b22] rounded-md px-1.5 py-0.5">BF</span>
+      </div>
+
+      {/* Bottom info panel */}
+      <div className="absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 py-3 backdrop-blur-sm" style={{ borderColor: `${borderColor}44`, zIndex: 3 }}>
+        <div className="font-heading font-black text-base leading-tight text-[#fff5d9]" style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
+        <div className="mt-1.5 text-[11px] font-bold leading-snug text-[#efe9dc]">{item.txt || item.description}</div>
+        <div className="mt-2 text-[8px] font-black text-[#bdae87]">Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function EquipCard({ item, type, onClick }) {
   const borderColor = TYPE_COLORS[type] || '#3c3158';
   const artUrl = gameArt(item, type);
 
   if (type === 'bonus') {
     return (
-      <div className="relative h-[360px] rounded-[18px] overflow-hidden cursor-pointer border-2 border-[#d39b22]/80 bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1" onClick={() => onClick?.(item)}>
-        {artUrl && <img src={artUrl} alt={item.name} className="absolute -inset-5 w-[calc(100%+40px)] h-[calc(100%+40px)] object-cover scale-105 saturate-110 contrast-105" />}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/75" />
-        <div className="absolute left-3 right-3 top-3 flex justify-between items-start">
-          <span className="rounded-full bg-black/70 border border-[#ffd24a66] px-2 py-1 text-[10px] font-black text-[#ffe49a]">{item.type || item.tag || 'BON'}</span>
-          <span className="font-heading font-black text-[#ffd24a] text-sm bg-[#160b00] border border-[#d39b22] rounded-md px-1.5 py-0.5">BF</span>
-        </div>
-        <div className="absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/70 border border-[#ffd24a44] px-3 py-3 backdrop-blur-sm">
-          <div className="font-heading font-black text-lg leading-none text-[#fff5d9]" style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
-          <div className="mt-2 text-[11px] font-bold leading-snug text-[#efe9dc]">{item.txt || item.description}</div>
-          <div className="mt-2 text-[8px] font-black text-[#bdae87]">Base Set · Nº {String(item.num).padStart(3, '0')}</div>
-        </div>
-      </div>
+      <FullBleedCard item={item} type={type} borderColor="#d39b22" artUrl={artUrl} onClick={onClick}>
+        <span className="rounded-full bg-black/70 border border-[#ffd24a66] px-2 py-1 text-[10px] font-black text-[#ffe49a]">
+          {item.type || item.tag || 'BON'}
+        </span>
+      </FullBleedCard>
     );
   }
 
+  // Spell / melee / ranged / armor / object — same full-bleed layout
+  const tagLabel = type === 'spell'
+    ? (item.element?.toUpperCase() || item.tag)
+    : item.tag;
+
+  const tagBg = type === 'spell' && item.element
+    ? ELEMENT_COLORS[item.element] || borderColor
+    : borderColor;
+
+  const statLine = item.cc != null
+    ? `+${item.cc} CC`
+    : item.power != null
+    ? `Pot. ${item.power}`
+    : item.hp != null && type === 'armor'
+    ? `+${item.hp} HP`
+    : item.mana != null
+    ? `🔵 ${item.mana} maná`
+    : null;
+
   return (
-    <div className="relative min-h-[226px] rounded-xl overflow-hidden cursor-pointer border border-[#3c3158] transition-transform hover:-translate-y-1 hover:shadow-xl" style={{ background: 'linear-gradient(180deg,rgba(18,12,25,.78),rgba(9,7,13,.96))', borderTop: `3px solid ${borderColor}` }} onClick={() => onClick?.(item)}>
-      {artUrl && <><img src={artUrl} alt={item.name} className="absolute inset-x-0 top-0 h-28 w-full object-cover saturate-110 contrast-105" /><div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-transparent via-black/45 to-[#120d1d]" /></>}
-      <div className="absolute top-2 left-2 z-10 w-8 h-8 rounded-full flex items-center justify-center font-black text-[#5a3d06] text-xs shadow-md" style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}>{item.cost}</div>
-      {item.mana != null && <div className="absolute top-2.5 right-2 z-10 bg-[#1b2b58] border border-[#46618c] text-[#bcd2ff] text-[10px] font-extrabold rounded-lg px-1.5 py-0.5">🔵 {item.mana}</div>}
-      <div className={`relative z-10 px-3 ${artUrl ? 'pt-24' : 'pt-10'} pb-3`}>
-        <div className="font-bold text-sm text-[#efe9dc]">{item.name}</div>
-        {(item.tag || item.element) && <span className="inline-block mt-1 text-[10px] font-bold text-white rounded-full px-2 py-0.5" style={{ background: item.element ? ELEMENT_COLORS[item.element] || '#3a3155' : borderColor }}>{item.element?.toUpperCase() || item.tag}</span>}
-        {item.cc != null && <div className="mt-1 text-xs text-[#ff9b9b] font-bold">+{item.cc} CC</div>}
-        {item.power != null && <div className="mt-1 text-xs text-[#7eea9e] font-bold">Potencia {item.power}</div>}
-        {item.hp != null && type === 'armor' && <div className="mt-1 text-xs text-[#ffdf7a] font-bold">+{item.hp} HP</div>}
-        <div className="mt-1.5 text-[11px] text-[#a89fbb] leading-snug">{item.txt}</div>
-        <div className="flex items-center gap-1 mt-2 justify-end"><span className="font-heading font-extrabold text-[10px] text-[#FFD24A] border border-[#a9771f] rounded px-1" style={{ background: 'linear-gradient(180deg, #2a2010, #16100a)' }}>BF</span><span className="text-[7px] text-[#9a8f7a]">Nº {String(item.num).padStart(3, '0')}</span></div>
+    <FullBleedCard item={item} type={type} borderColor={borderColor} artUrl={artUrl} onClick={onClick}>
+      <div className="flex flex-col gap-1">
+        {/* Cost coin */}
+        {item.cost != null && item.cost !== '—' && (
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center font-black text-[#5a3d06] text-xs shadow-md"
+            style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}
+          >
+            {item.cost}
+          </div>
+        )}
+        {/* Tag / element */}
+        {tagLabel && (
+          <span className="text-[10px] font-black text-white rounded-full px-2 py-0.5 w-fit" style={{ background: tagBg }}>
+            {tagLabel}
+          </span>
+        )}
+        {/* Stat */}
+        {statLine && (
+          <span className="text-[10px] font-black text-[#ffe49a] bg-black/60 rounded-full px-2 py-0.5 w-fit">
+            {statLine}
+          </span>
+        )}
       </div>
-    </div>
+    </FullBleedCard>
   );
 }
