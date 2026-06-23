@@ -1,8 +1,9 @@
 const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
-const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b309b8a3_generated_image.png';
-const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d82531745_generated_image.png';
-const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e8006df25_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-cards-bonus-v1';
+const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
+const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
+const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
+const ICONS_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/83996aae3_generated_image.png';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-icons-bgs-v1';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -228,6 +229,7 @@ function buildArtScript() {
   var AUCTION_BG = "${AUCTION_BG}";
   var SHOP_BG = "${SHOP_BG}";
   var BATTLE_BG = "${BATTLE_BG}";
+  var ICONS_IMG = "${ICONS_IMG}";
   window.__BF_PATCH_VERSION = "${GAME_PATCH_VERSION}";
 
   function bfKey(value) {
@@ -273,15 +275,25 @@ function buildArtScript() {
     var style = document.createElement('style');
     style.textContent = \`
       .gtitle { text-shadow: 0 0 50px rgba(255,210,74,0.7), 0 4px 30px rgba(255,210,74,0.3) !important; }
-      /* Title screen emoji row — bigger, spaced, with a soft golden glow */
-      .title-emoji {
-        font-size: clamp(34px, 7vw, 54px) !important;
-        letter-spacing: 14px !important;
-        margin-bottom: 6px !important;
-        filter: drop-shadow(0 0 18px rgba(255,210,74,0.55)) drop-shadow(0 4px 10px rgba(0,0,0,0.6)) !important;
-        animation: bfEmojiFloat 3.2s ease-in-out infinite !important;
+      /* Title screen icon row — replaced by sprite sheet icons */
+      .title-emoji { display: none !important; }
+      .bf-title-icons { display: flex !important; gap: 18px !important; justify-content: center !important; align-items: center !important; margin-bottom: 8px !important; }
+      .bf-title-icon {
+        width: 72px !important; height: 72px !important; border-radius: 50% !important; overflow: hidden !important;
+        border: 2px solid rgba(255,210,74,0.5) !important;
+        box-shadow: 0 0 22px rgba(255,210,74,0.38), 0 0 8px rgba(0,0,0,0.7) !important;
+        background: #0a0710 !important;
+        animation: bfIconFloat 3.2s ease-in-out infinite !important;
+        position: relative !important; cursor: default !important;
       }
-      @keyframes bfEmojiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      .bf-title-icon:nth-child(2) { animation-delay: -1.1s !important; }
+      .bf-title-icon:nth-child(3) { animation-delay: -2.2s !important; }
+      .bf-title-icon img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+      /* Each icon shows a third of the icons image */
+      .bf-icon-cc  img { object-position: 14% center !important; }
+      .bf-icon-ad  img { object-position: 50% center !important; }
+      .bf-icon-he  img { object-position: 86% center !important; }
+      @keyframes bfIconFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-7px) scale(1.06); } }
       /* Real 3D flip, with corrected back face */
       .flip3d { perspective: 1300px !important; }
       .flip3d-inner { transform-style: preserve-3d !important; transition: transform .62s cubic-bezier(.2,.72,.2,1) !important; will-change: transform !important; }
@@ -1159,12 +1171,32 @@ function buildArtScript() {
     });
   }
 
+  // ---- Replace title emoji row with custom icon images ----
+  function injectTitleIcons() {
+    var row = document.querySelector('.title-emoji');
+    if (!row || row.dataset.bfIconsDone === '1') return;
+    row.dataset.bfIconsDone = '1';
+    var container = document.createElement('div');
+    container.className = 'bf-title-icons';
+    ['bf-icon-cc','bf-icon-ad','bf-icon-he'].forEach(function(cls) {
+      var div = document.createElement('div');
+      div.className = 'bf-title-icon ' + cls;
+      var img = document.createElement('img');
+      img.src = ICONS_IMG;
+      img.alt = cls;
+      div.appendChild(img);
+      container.appendChild(div);
+    });
+    row.parentNode.insertBefore(container, row);
+  }
+
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
     injectBonusArt();
     injectBattleHeroArt();
     injectRecruitHeroArt();
+    injectTitleIcons();
     syncBattleFx();
   }
 
