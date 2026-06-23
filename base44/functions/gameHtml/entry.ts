@@ -1,17 +1,394 @@
+const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
+
+const HERO_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0ae86f5cf_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3144fa0cc_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b3befffca_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b27af2a2e_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49da10371_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b39462db_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/70e5ca186_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2321b345c_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7b6b1032e_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3bbcf59c0_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dc308d368_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a53c0e073_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/362ea0a4b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/861dbe1ad_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/72ce7dd1a_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ec5dbfd9_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5d35394d_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49c4de216_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a96095ce8_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dd9ae011d_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d9d830676_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/54365cb73_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b34bdb48f_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a237d8ffc_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/99d2f7a81_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dcee2560b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ed76b96e2_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a1aed5117_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/998c3949c_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3c97a29dd_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5a9d97619_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1bd2bdf6d_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/40de7f507_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a6a9e3561_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a291e62f4_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e72cf42e_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/95e8228cd_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5be72327_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c71c525b8_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0ad0be833_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3aedc4e62_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0b3987343_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2cfe0922c_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9c56aea64_generated_image.png',
+];
+
+const HERO_ELITE_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b2219417f_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a2abfb434_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4952ab881_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/01e96302a_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e908b3273_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/650b7ff27_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4d934fdf4_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f7954d1fc_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8bc966bfa_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/452bb4fb7_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/653c2036d_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/141eb7445_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ddf40d7ab_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/12f840fe3_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4cf89ac43_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8019f9f21_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8979eecb4_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/87c291158_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ace3347_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8d6e97ce2_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/33eb953a8_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ffd892ff4_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5a79e3638_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b08f41b13_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fb9937c69_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/04b64ecc7_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d9ef92043_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/40e91e893_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/437bbb48b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/35add4eeb_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0827725df_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2c7c03c8f_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d0512bd56_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ae296c827_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8cde88cb7_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ea100edfb_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7764cb9ea_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/84c9693dc_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/907ef8e72_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b96972130_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8959bebcc_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ce90f66_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4328395b6_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06c814afa_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/12a5ddb5c_generated_image.png',
+];
+
+const MELEE_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2ef6e8fd8_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/90d5f4f20_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ca0217dac_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/79830b431_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5b6160a3_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a8ea859a5_generated_image.png',
+];
+
+const RANGED_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2146a215b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab826c633_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/88e45b0a1_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/93554b1ee_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c8cf4c6d1_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06ce99379_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/08cb8f198_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/809f7051c_generated_image.png',
+];
+
+const ARMOR_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b989796b2_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/37519e06c_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4a38b42e1_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6889c5c36_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fefd71323_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2de5cea6a_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/244338b2e_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/adc154eaf_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/46890f673_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ed198ba53_generated_image.png',
+];
+
+const SPELL_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/16656e37c_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ecdf6d2c_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f07673381_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c9386b2a6_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77fcb19fb_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/75254b62e_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fbc82143b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0cc792c57_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/05dd1e130_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/938f0dfba_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/299116e86_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e1c0a659_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e73cbd75b_generated_image.png',
+];
+
+const OBJECT_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/58d239c00_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1688e1433_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b9d6986f_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dd35e9e6b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/026d2d45d_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d138d9427_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6eec753dd_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4581afaa7_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b990b1173_generated_image.png',
+];
+
+const BONUS_ART = [
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/88ffc8b21_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a644bca96_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a5d3ecf52_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a58e01097_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/664754ee3_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6c0160e33_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fbe03869b_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5369480ce_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5c4370fc_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/26219e884_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1acefc0e0_generated_image.png',
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png',
+];
+
+// Build the JS injection snippet for the game HTML
+function buildArtScript() {
+  return `
+<script>
+(function() {
+  // ---- ART DATA ----
+  var HERO_ART = ${JSON.stringify(HERO_ART)};
+  var HERO_ELITE_ART = ${JSON.stringify(HERO_ELITE_ART)};
+  var MELEE_ART = ${JSON.stringify(MELEE_ART)};
+  var RANGED_ART = ${JSON.stringify(RANGED_ART)};
+  var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
+  var SPELL_ART = ${JSON.stringify(SPELL_ART)};
+  var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
+  var BONUS_ART = ${JSON.stringify(BONUS_ART)};
+  var COVER_BG = "${COVER_BG}";
+
+  // ---- COVER BACKGROUND ----
+  // s-title is the title screen id
+  function injectCoverStyle() {
+    var style = document.createElement('style');
+    style.textContent = \`
+      #s-title {
+        background-image: url("\${COVER_BG}") !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        position: relative !important;
+      }
+      #s-title::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(18,14,28,0.52) 0%, rgba(14,10,22,0.72) 100%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      #s-title > * { position: relative; z-index: 1; }
+      .gtitle { text-shadow: 0 0 50px rgba(255,210,74,0.7), 0 4px 30px rgba(255,210,74,0.3) !important; }
+      /* Card art image slot */
+      .cf-art-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        z-index: 0;
+        border-radius: inherit;
+      }
+      .cf-art-emoji { position: relative; z-index: 1; }
+      .cf-name, .cf-title, .cf-heart, .cf-stats { position: relative; z-index: 1; }
+      /* When art image is present, dim the emoji */
+      .cf-art.has-art .cf-art-emoji { display: none; }
+      /* Equipment card art */
+      .ecard-art-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
+        opacity: 0.85;
+      }
+    \`;
+    document.head.appendChild(style);
+  }
+
+  // ---- BUILD HERO ID → INDEX MAP ----
+  // Hero IDs match the HEROES array: kru=0, bos=1, nar=2, ...
+  var HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
+  var EQUIP_IDS = {
+    melee: ["mw_sword","mw_mace","mw_axe","mw_dagger","mw_plasma","mw_thunder"],
+    ranged: ["rw_sling","rw_cross","rw_pistol","rw_smg","rw_cannon","rw_plasma","rw_elfbow","rw_photon"],
+    armor: ["ar_leather","ar_mail","ar_plate","ar_arcane","ar_aegis","ar_exo","ar_water","ar_thunder","ar_ice","ar_fire"],
+    spell: ["sp_fire1","sp_fire2","sp_ice1","sp_ray1","sp_agua1","sp_heal1","sp_heal2","sp_prot1","sp_ward","sp_sleep","sp_para","sp_curse","sp_bless"],
+    object: ["ob_pot","ob_potbig","ob_mana","ob_manabig","ob_shield","ob_cleanse","ob_bomb","ob_revive","ob_phoenix"],
+    bonus: ["ban","cor","mer","nau","pre","for_","arm","pir","cor2","hac","ban2","gli"]
+  };
+
+  // ---- PATCH DATA ARRAYS ----
+  function patchArrays() {
+    var patched = false;
+    if (window.HEROES && window.HEROES.length) {
+      window.HEROES.forEach(function(h) {
+        var idx = HERO_IDS.indexOf(h.id);
+        if (idx >= 0) { h.art = HERO_ART[idx]; h.eliteArt = HERO_ELITE_ART[idx]; }
+      });
+      patched = true;
+    }
+    var sets = [
+      [window.MELEE, MELEE_ART, EQUIP_IDS.melee],
+      [window.RANGED, RANGED_ART, EQUIP_IDS.ranged],
+      [window.ARMORS, ARMOR_ART, EQUIP_IDS.armor],
+      [window.SPELLS, SPELL_ART, EQUIP_IDS.spell],
+      [window.OBJECTS, OBJECT_ART, EQUIP_IDS.object],
+      [window.BONUS, BONUS_ART, EQUIP_IDS.bonus],
+    ];
+    sets.forEach(function(pair) {
+      var arr = pair[0], arts = pair[1], ids = pair[2];
+      if (!arr) return;
+      arr.forEach(function(item) {
+        var idx = ids.indexOf(item.id);
+        if (idx >= 0) item.art = arts[idx];
+      });
+    });
+    return patched;
+  }
+
+  // ---- PATCH cardFace TO USE art ----
+  function patchCardFace() {
+    if (typeof window.cardFace !== 'function') return false;
+    var orig = window.cardFace;
+    window.cardFace = function(h, variant) {
+      var html = orig(h, variant);
+      var isElite = variant === 'elite';
+      var artUrl = isElite ? (h.eliteArt || h.art) : h.art;
+      if (artUrl) {
+        // Replace the cf-art-emoji with an actual image + keep emoji as fallback hidden
+        html = html.replace(
+          '<div class="cf-art">',
+          '<div class="cf-art has-art"><img class="cf-art-img" src="' + artUrl + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+        );
+      }
+      return html;
+    };
+    return true;
+  }
+
+  // ---- DOM OBSERVER: inject art into already-rendered cf-art slots ----
+  function injectArtIntoDOM() {
+    // For each rendered cardface without an art img, try to inject
+    document.querySelectorAll('.cardface').forEach(function(card) {
+      var artDiv = card.querySelector('.cf-art');
+      if (!artDiv || artDiv.querySelector('.cf-art-img')) return;
+      // Try to find hero by name text
+      var nameEl = card.querySelector('.cf-name');
+      if (!nameEl) return;
+      var nameText = nameEl.textContent.replace(/★/g, '').trim();
+      var isElite = card.classList.contains('cf-elite');
+      if (window.HEROES) {
+        var hero = window.HEROES.find(function(h) { return h.name === nameText; });
+        if (hero) {
+          var url = isElite ? (hero.eliteArt || hero.art) : hero.art;
+          if (url) {
+            var img = document.createElement('img');
+            img.className = 'cf-art-img';
+            img.src = url;
+            img.alt = '';
+            img.loading = 'lazy';
+            img.onerror = function() { this.style.display = 'none'; };
+            artDiv.insertBefore(img, artDiv.firstChild);
+            artDiv.classList.add('has-art');
+          }
+        }
+      }
+    });
+  }
+
+  // ---- OBSERVE DOM MUTATIONS ----
+  function startObserver() {
+    var observer = new MutationObserver(function() {
+      injectArtIntoDOM();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // ---- MAIN INIT ----
+  function init() {
+    injectCoverStyle();
+
+    var attempts = 0;
+    var patchedFace = false;
+    var interval = setInterval(function() {
+      attempts++;
+      patchArrays();
+      if (!patchedFace) patchedFace = patchCardFace();
+      injectArtIntoDOM();
+      if ((patchedFace && attempts > 5) || attempts > 40) clearInterval(interval);
+    }, 150);
+
+    startObserver();
+
+    document.addEventListener('click', function() {
+      setTimeout(function() { patchArrays(); injectArtIntoDOM(); }, 80);
+      setTimeout(function() { patchArrays(); injectArtIntoDOM(); }, 400);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+`;
+}
+
 Deno.serve(async (req) => {
   try {
     const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
     const upstream = await fetch(SRC);
-    const html = await upstream.text();
+    let html = await upstream.text();
+
+    // Inject art script right before </head>
+    const artScript = buildArtScript();
+    html = html.replace('</head>', artScript + '</head>');
+
     return new Response(html, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': 'public, max-age=1800'
       }
     });
   } catch (error) {
-    return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;color:#fff;background:#0e0a16;padding:24px">Error cargando el juego: ' + (error?.message || error) + '</body>', {
+    return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;color:#fff;background:#0e0a16;padding:24px">Error: ' + (error?.message || error) + '</body>', {
       status: 500,
       headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
