@@ -360,6 +360,34 @@ function buildArtScript() {
         text-align: center; text-shadow: 0 2px 6px #000, 0 0 12px rgba(0,0,0,0.95);
       }
 
+      /* Mobile card fit: keep art and text inside the phone frame */
+      @media (max-width: 640px) {
+        .cardface, .bf-hero-card { max-width: 100% !important; }
+        .bf-hero-bg { inset: -3% !important; background-position: center 8% !important; }
+        .bf-hero-top { padding: 9px 42px 0 !important; min-height: 78px !important; }
+        .bf-hero-name { font-size: clamp(17px, 6.8vw, 25px) !important; line-height: .98 !important; }
+        .bf-hero-title { font-size: 10.5px !important; }
+        .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
+        .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
+        .bf-stats { left: 10px !important; right: 10px !important; bottom: 108px !important; padding: 6px 45px 6px 7px !important; }
+        .bf-stat b { font-size: 17px !important; }
+        .bf-heart { right: 8px !important; bottom: 112px !important; width: 50px !important; height: 46px !important; }
+        .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; }
+        .bf-heart .cf-hp { font-size: 16px !important; }
+        .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 94px !important; grid-template-columns: 38px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; }
+        .bf-ability-orb { width: 35px !important; height: 35px !important; }
+        .bf-ability-orb::before { font-size: 20px !important; }
+        .bf-ability-name { font-size: 10.8px !important; }
+        .bf-ability-text { font-size: 10.6px !important; line-height: 1.18 !important; }
+        .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
+        .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
+        .shop-card { max-width: 100% !important; }
+        .shop-card-art { height: 82px !important; background-size: contain !important; background-repeat: no-repeat !important; background-color: rgba(7,5,11,.72) !important; }
+        .bf-bonus-card { height: clamp(136px, 42vw, 172px) !important; margin: 4px 0 7px !important; }
+        .bf-bonus-card .bf-bonus-art { inset: 4px !important; background-size: contain !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
+      }
+
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
