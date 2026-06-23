@@ -58,10 +58,19 @@ export default function HeroCard({ hero, onClick }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative w-full h-[420px] cursor-pointer" onClick={() => onClick?.(hero)}>
-        {/* Single face whose content swaps (no 3D flip → no mirror) */}
-        <div key={flipped ? 'elite' : 'normal'} className="absolute inset-0 animate-in fade-in duration-300">
-          <Face elite={flipped} />
+      <div className="relative w-full h-[420px] cursor-pointer" style={{ perspective: '1300px' }} onClick={() => onClick?.(hero)}>
+        <div
+          className="absolute inset-0 transition-transform duration-[620ms]"
+          style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transitionTimingFunction: 'cubic-bezier(.2,.72,.2,1)' }}
+        >
+          {/* Front (normal) */}
+          <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
+            <Face elite={false} />
+          </div>
+          {/* Back (elite) — counter-rotated so its content isn't mirrored */}
+          <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+            <Face elite={true} />
+          </div>
         </div>
       </div>
       <button onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} className="text-xs font-bold text-[#e8def6] bg-[#241a33] border border-[#3c3158] rounded-lg py-1.5 hover:border-[#b8902a] hover:text-[#ffcf57] transition-colors">
