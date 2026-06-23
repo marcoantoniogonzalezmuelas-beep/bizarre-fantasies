@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-zoom-fullcard-v16';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-zoom-allcards-v17';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -641,6 +641,7 @@ function buildArtScript() {
       .bf-zoom-overlay { position:fixed; inset:0; z-index:100001; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(6,4,12,.92); backdrop-filter:blur(6px); animation:bfFadeIn .2s ease; }
       .bf-zoom-cardwrap { position:relative; width:min(420px,90vw); height:min(640px,86vh); aspect-ratio:7/10; box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-zoom-cardwrap .bf-hero-card { position:absolute; inset:0; }
+      .bf-zoom-bonuswrap { position:relative; width:min(420px,90vw); height:min(560px,84vh); box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
       .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
     \`;
@@ -742,6 +743,32 @@ function buildArtScript() {
   }
   window.bfZoomCard = bfZoomCard;
 
+  // ---- Full-screen bonus/restador zoom (lupa) — shows the whole bonus card enlarged ----
+  function bfZoomBonus(name, url) {
+    if (!url) return;
+    var existing = document.getElementById('bf-zoom-overlay');
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'bf-zoom-overlay';
+    overlay.className = 'bf-zoom-overlay';
+    overlay.innerHTML =
+      '<button class="bf-zoom-close" aria-label="Cerrar">✕</button>' +
+      '<div class="bf-zoom-bonuswrap">' +
+        '<div class="bf-bonus-card" style="height:100%;margin:0">' +
+          '<div class="bf-bonus-fill" style="background-image:url(\\'' + url + '\\')"></div>' +
+          '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
+          '<div class="bf-bonus-shade"></div>' +
+          '<div class="bf-bonus-name">' + name + '</div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+    overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.className === 'bf-zoom-close') close(); });
+    var wrap = overlay.querySelector('.bf-zoom-bonuswrap');
+    if (wrap) wrap.addEventListener('click', function(e) { e.stopPropagation(); });
+  }
+  window.bfZoomBonus = bfZoomBonus;
+
   // ---- DOM injection for hero cards (match by name) ----
   function injectHeroArt() {
     document.querySelectorAll('.cardface').forEach(function(card) {
@@ -797,10 +824,12 @@ function buildArtScript() {
       chip.style.display = 'none';
       var card = document.createElement('div');
       card.className = 'bf-bonus-card';
+      var safeName = name.replace(/'/g, "\\\\'");
       card.innerHTML =
         '<div class="bf-bonus-fill" style="background-image:url(\\'' + url + '\\')"></div>' +
         '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
         '<div class="bf-bonus-shade"></div>' +
+        '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomBonus(\\'' + safeName + '\\',\\'' + url + '\\')" aria-label="Ampliar">🔍</button>' +
         '<div class="bf-bonus-name">' + name + '</div>';
       chip.parentNode.insertBefore(card, chip.nextSibling);
     });
