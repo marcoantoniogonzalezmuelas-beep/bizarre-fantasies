@@ -413,9 +413,26 @@ function buildArtScript() {
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
       .bf-acq-thumb { position:absolute; left:7px; top:7px; bottom:7px; width:62px; border-radius:11px; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.42),0 5px 12px rgba(0,0,0,.45); }
       .bf-result-thumb { display:inline-block; width:44px; height:44px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center top; box-shadow:0 0 0 1px rgba(255,210,74,.55),0 4px 10px rgba(0,0,0,.38); }
+      .bhero.bf-fx-damage { animation:bfDamageShake .34s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
+      .bhero.bf-fx-heal { animation:bfHealPulse .62s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
+      .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .55s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
+      .bf-combat-fx { position:absolute; inset:0; z-index:4; pointer-events:none; overflow:hidden; border-radius:inherit; }
+      .bf-fx-float { position:absolute; left:50%; top:42%; transform:translate(-50%,-50%); font-family:'Cinzel',serif; font-weight:1000; font-size:28px; letter-spacing:.4px; text-shadow:0 3px 8px #000,0 0 16px currentColor; animation:bfFloatHit .9s ease-out forwards; }
+      .bf-fx-dmg { color:#ff4b45; }
+      .bf-fx-heal-txt { color:#51ff8a; }
+      .bf-fx-status-txt { color:#ffd24a; font-size:20px; top:35%; }
+      .bf-fx-slash { position:absolute; left:18px; right:12px; top:50%; height:4px; border-radius:999px; background:linear-gradient(90deg,transparent,#fff,#ff3b35,transparent); transform:rotate(-18deg) scaleX(0); box-shadow:0 0 18px #ff3b35; animation:bfSlash .42s ease-out forwards; }
+      .bf-fx-heal-ring { position:absolute; left:18px; top:14px; width:72px; height:72px; border-radius:50%; border:3px solid rgba(81,255,138,.9); box-shadow:0 0 18px #51ff8a,inset 0 0 14px rgba(81,255,138,.45); animation:bfHealRing .82s ease-out forwards; }
+      .bf-fx-bolt { position:absolute; left:22px; top:6px; color:#ffd24a; font-size:54px; line-height:1; filter:drop-shadow(0 0 12px #ffd24a); animation:bfBolt .72s ease-out forwards; }
       .fx-ring-heal { box-shadow:0 0 24px #51ff8a, inset 0 0 18px #51ff8a !important; }
       .fx-burst { mix-blend-mode:screen; filter:blur(.2px) saturate(1.4); }
       .fx-status, .fx-word, .fx-dmg { text-shadow:0 2px 6px #000,0 0 12px currentColor !important; font-weight:1000 !important; }
+      @keyframes bfHealPulse { 0%{transform:scale(1)} 45%{transform:scale(1.035)} 100%{transform:scale(1)} }
+      @keyframes bfParalyzeJolt { 0%,100%{transform:translateX(0)} 18%{transform:translateX(-4px) skewX(-3deg)} 36%{transform:translateX(5px) skewX(3deg)} 54%{transform:translateX(-3px)} 72%{transform:translateX(3px)} }
+      @keyframes bfFloatHit { 0%{opacity:0;transform:translate(-50%,-22%) scale(.78)} 18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)} 100%{opacity:0;transform:translate(-50%,-105%) scale(.92)} }
+      @keyframes bfSlash { 0%{opacity:0;transform:rotate(-18deg) scaleX(0)} 25%{opacity:1;transform:rotate(-18deg) scaleX(1.05)} 100%{opacity:0;transform:rotate(-18deg) scaleX(1.24)} }
+      @keyframes bfHealRing { 0%{opacity:0;transform:scale(.35)} 20%{opacity:1} 100%{opacity:0;transform:scale(1.65)} }
+      @keyframes bfBolt { 0%{opacity:0;transform:translateY(-8px) scale(.7)} 18%{opacity:1;transform:translateY(0) scale(1.08)} 100%{opacity:0;transform:translateY(10px) scale(.95)} }
     \`;
     document.head.appendChild(style);
   }
@@ -570,6 +587,59 @@ function buildArtScript() {
     });
   }
 
+  function readHeroHp(card) {
+    var hp = card.querySelector('.bhero-hpnum');
+    var text = hp ? hp.textContent : '';
+    var match = String(text).match(/-?\d+/);
+    return match ? parseInt(match[0], 10) : null;
+  }
+
+  function isHeroParalyzed(card) {
+    var status = card.querySelector('.bhero-status');
+    var text = status ? status.textContent : '';
+    return card.classList.contains('s-paralyzed') || /par[aá]li/i.test(text);
+  }
+
+  function playHeroFx(card, type, value) {
+    if (!card || !card.isConnected) return;
+    var cls = type === 'heal' ? 'bf-fx-heal' : (type === 'paralyze' ? 'bf-fx-paralyze' : 'bf-fx-damage');
+    card.classList.remove('bf-fx-damage', 'bf-fx-heal', 'bf-fx-paralyze');
+    void card.offsetWidth;
+    card.classList.add(cls);
+    setTimeout(function() { card.classList.remove(cls); }, 760);
+
+    var fx = document.createElement('div');
+    fx.className = 'bf-combat-fx';
+    if (type === 'damage') {
+      fx.innerHTML = '<div class="bf-fx-slash"></div><div class="bf-fx-float bf-fx-dmg">-' + Math.abs(value || 0) + '</div>';
+    } else if (type === 'heal') {
+      fx.innerHTML = '<div class="bf-fx-heal-ring"></div><div class="bf-fx-float bf-fx-heal-txt">+' + Math.abs(value || 0) + '</div>';
+    } else {
+      fx.innerHTML = '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>';
+    }
+    card.appendChild(fx);
+    setTimeout(function() { if (fx.parentNode) fx.parentNode.removeChild(fx); }, 950);
+  }
+
+  function syncBattleFx() {
+    document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
+      var hp = readHeroHp(card);
+      if (hp !== null) {
+        if (card.dataset.bfPrevHp !== undefined) {
+          var oldHp = parseInt(card.dataset.bfPrevHp, 10);
+          if (!isNaN(oldHp) && hp < oldHp) playHeroFx(card, 'damage', oldHp - hp);
+          if (!isNaN(oldHp) && hp > oldHp) playHeroFx(card, 'heal', hp - oldHp);
+        }
+        card.dataset.bfPrevHp = String(hp);
+      }
+      var paralyzed = isHeroParalyzed(card) ? '1' : '0';
+      if (card.dataset.bfPrevParalyzed !== undefined && card.dataset.bfPrevParalyzed !== paralyzed && paralyzed === '1') {
+        playHeroFx(card, 'paralyze');
+      }
+      card.dataset.bfPrevParalyzed = paralyzed;
+    });
+  }
+
   function injectRecruitHeroArt() {
     document.querySelectorAll('.hero-acquired').forEach(function(card) {
       if (card.dataset.bfAcqArt === '1') return;
@@ -604,6 +674,7 @@ function buildArtScript() {
     injectBonusArt();
     injectBattleHeroArt();
     injectRecruitHeroArt();
+    syncBattleFx();
   }
 
   // ---- OBSERVE DOM MUTATIONS ----
