@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Search } from 'lucide-react';
 import HeroCard from '@/components/cards/HeroCard';
 import EquipCard from '@/components/cards/EquipCard';
@@ -20,6 +21,31 @@ const TABS = [
 const HERO_CLANS = ['Todos', 'Guerreros', 'Druidas', 'No-muertos', 'Vaqueros', 'Elfos', 'Magos', 'Épicas', 'Cotidianos'];
 const HERO_TYPES = ['Todos', 'CC', 'AD', 'HE'];
 
+const normalizeHero = (card) => ({
+  ...card,
+  id: card.card_id,
+  num: card.number,
+  eCc: card.elite_cc,
+  eAd: card.elite_ad,
+  eHe: card.elite_he,
+  eHp: card.elite_hp,
+  ability: card.ability_name,
+  abilityTxt: card.ability_text,
+  eAbility: card.elite_ability_name,
+  eTxt: card.elite_ability_text,
+  art: card.art_url,
+  eliteArt: card.elite_art_url,
+});
+
+const normalizeItem = (card) => ({
+  ...card,
+  id: card.card_id,
+  num: card.number,
+  txt: card.description,
+  element: card.category === 'spell' ? card.type : undefined,
+  tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
+});
+
 export default function Cards() {
   const loc = useLocation();
   const params = new URLSearchParams(loc.search);
@@ -30,15 +56,33 @@ export default function Cards() {
   const [clanFilter, setClanFilter] = useState('Todos');
   const [typeFilter, setTypeFilter] = useState('Todos');
   const [selectedHero, setSelectedHero] = useState(null);
+  const [dbCards, setDbCards] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    base44.entities.Card.list('number', 200).then((cards) => {
+      if (active) setDbCards(cards || []);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const hasDbCards = dbCards.length > 0;
+  const heroes = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero').map(normalizeHero) : HEROES, [dbCards, hasDbCards]);
+  const spells = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'spell').map(normalizeItem) : SPELLS, [dbCards, hasDbCards]);
+  const ranged = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'ranged_weapon').map(normalizeItem) : RANGED_WEAPONS, [dbCards, hasDbCards]);
+  const melee = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'melee_weapon').map(normalizeItem) : MELEE_WEAPONS, [dbCards, hasDbCards]);
+  const armors = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'armor').map(normalizeItem) : ARMORS, [dbCards, hasDbCards]);
+  const objects = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'object').map(normalizeItem) : OBJECTS, [dbCards, hasDbCards]);
+  const bonuses = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'bonus').map(normalizeItem) : BONUSES, [dbCards, hasDbCards]);
 
   const filteredHeroes = useMemo(() => {
-    return HEROES.filter(h => {
+    return heroes.filter(h => {
       if (search && !h.name.toLowerCase().includes(search.toLowerCase()) && !h.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (clanFilter !== 'Todos' && h.clan !== clanFilter) return false;
       if (typeFilter !== 'Todos' && h.type !== typeFilter) return false;
       return true;
     });
-  }, [search, clanFilter, typeFilter]);
+  }, [heroes, search, clanFilter, typeFilter]);
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0d0a14, #0a0810)' }}>
@@ -47,7 +91,7 @@ export default function Cards() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link to="/" className="text-[#a89fbb] hover:text-[#FFD24A] transition-colors"><ArrowLeft size={20} /></Link>
           <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">CATÁLOGO</h1>
-          <span className="text-xs text-[#a89fbb] hidden md:inline">103 cartas · Base Set</span>
+          <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} cartas · Base Set</span>
         </div>
 
         {/* Tabs */}
@@ -96,32 +140,32 @@ export default function Cards() {
         )}
         {tab === 'spells' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {SPELLS.map(s => <EquipCard key={s.id} item={s} type="spell" />)}
+            {spells.map(s => <EquipCard key={s.id} item={s} type="spell" />)}
           </div>
         )}
         {tab === 'ranged' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {RANGED_WEAPONS.map(w => <EquipCard key={w.id} item={w} type="ranged" />)}
+            {ranged.map(w => <EquipCard key={w.id} item={w} type="ranged" />)}
           </div>
         )}
         {tab === 'melee' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {MELEE_WEAPONS.map(w => <EquipCard key={w.id} item={w} type="melee" />)}
+            {melee.map(w => <EquipCard key={w.id} item={w} type="melee" />)}
           </div>
         )}
         {tab === 'armors' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {ARMORS.map(a => <EquipCard key={a.id} item={a} type="armor" />)}
+            {armors.map(a => <EquipCard key={a.id} item={a} type="armor" />)}
           </div>
         )}
         {tab === 'objects' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {OBJECTS.map(o => <EquipCard key={o.id} item={o} type="object" />)}
+            {objects.map(o => <EquipCard key={o.id} item={o} type="object" />)}
           </div>
         )}
         {tab === 'bonuses' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-            {BONUSES.map(b => <EquipCard key={b.id} item={{ ...b, cost: '—' }} type="bonus" />)}
+            {bonuses.map(b => <EquipCard key={b.id} item={{ ...b, cost: '—' }} type="bonus" />)}
           </div>
         )}
         {tab === 'races' && (

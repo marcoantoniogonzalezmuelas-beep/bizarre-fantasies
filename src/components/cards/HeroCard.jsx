@@ -13,6 +13,7 @@ export default function HeroCard({ hero, onClick }) {
     const hp = elite ? hero.eHp : hero.hp;
     const abilityName = elite ? hero.eAbility : hero.ability;
     const abilityTxt = elite ? hero.eTxt : hero.abilityTxt;
+    const artUrl = elite ? (hero.eliteArt || hero.elite_art_url || hero.art || hero.art_url) : (hero.art || hero.art_url);
 
     return (
       <div
@@ -33,8 +34,8 @@ export default function HeroCard({ hero, onClick }) {
 
         {/* Art area */}
         <div className="relative flex-1 flex items-center justify-center overflow-hidden" style={{ background: elite ? `radial-gradient(circle at 50% 34%, rgba(190,120,255,.30), transparent 60%), linear-gradient(160deg, #3a1e5e, #140a22 72%)` : `radial-gradient(circle at 50% 36%, rgba(255,255,255,.10), transparent 60%), linear-gradient(160deg, ${color}66, #0e0b16 72%)` }}>
-          {hero.art ? (
-            <img src={hero.art} alt={hero.name} className="absolute inset-0 w-full h-full object-cover" style={{ opacity: elite ? 0.85 : 0.92 }} />
+          {artUrl ? (
+            <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover" style={{ opacity: elite ? 0.85 : 0.92 }} />
           ) : (
             <span className="text-7xl opacity-80" style={{ filter: elite ? 'drop-shadow(0 0 22px rgba(190,120,255,.85))' : 'drop-shadow(0 6px 14px rgba(0,0,0,.6))' }}>{symbol}</span>
           )}

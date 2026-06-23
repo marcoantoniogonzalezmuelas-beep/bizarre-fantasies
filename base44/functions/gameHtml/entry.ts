@@ -2,6 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b309b8a3_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d82531745_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e8006df25_generated_image.png';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-v3';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -227,6 +228,7 @@ function buildArtScript() {
   var AUCTION_BG = "${AUCTION_BG}";
   var SHOP_BG = "${SHOP_BG}";
   var BATTLE_BG = "${BATTLE_BG}";
+  window.__BF_PATCH_VERSION = "${GAME_PATCH_VERSION}";
 
   function bfKey(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -600,8 +602,11 @@ function buildArtScript() {
       var url = NUM_ART[m[1]];
       if (!url) return;
       var art = document.createElement('div');
-      art.className = 'shop-card-art';
+      art.className = 'shop-card-art bf-shop-card-art';
       art.style.backgroundImage = 'url("' + url + '")';
+      var shade = document.createElement('div');
+      shade.className = 'bf-shop-shade';
+      card.insertBefore(shade, card.firstChild);
       card.insertBefore(art, card.firstChild);
       card.classList.add('has-art');
     });
@@ -1025,6 +1030,106 @@ function buildArtScript() {
     };
   }
 
+  function patchEquipmentUI() {
+    if (window.__bfEquipPatched) return;
+    if (typeof window.eqHeroCard !== 'function' || typeof window.doAssign !== 'function') return;
+    window.__bfEquipPatched = true;
+
+    function clean(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+      });
+    }
+    function findHero(side, heroId) {
+      return ((G.team && G.team[side]) || []).find(function(h) { return h && h.id === heroId; });
+    }
+    function confirmPurchase(item, side, hero) {
+      if (!item) return false;
+      var cost = Number(item.cost || 0);
+      var coins = Number((G.equipCoins && G.equipCoins[side]) || 0);
+      if (coins < cost) {
+        if (window.notif) notif('No tienes monedas suficientes para comprar ' + item.name + '.');
+        return false;
+      }
+      var target = hero ? ' y equiparlo a ' + hero.name : '';
+      return window.confirm('Comprar ' + item.name + ' por ' + cost + ' monedas' + target + '?');
+    }
+    function closeAnyModal() {
+      var close = document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');
+      if (close) close.click();
+      else if (typeof window.closeModal === 'function') closeModal();
+    }
+
+    var originalBuySpell = window.buySpell;
+    window.buySpell = function(side, id) {
+      var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
+      if (!confirmPurchase(item, side)) return;
+      return originalBuySpell.apply(this, arguments);
+    };
+
+    var originalBuyObject = window.buyObject;
+    window.buyObject = function(side, id) {
+      var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
+      if (!confirmPurchase(item, side)) return;
+      return originalBuyObject.apply(this, arguments);
+    };
+
+    var originalDoAssign = window.doAssign;
+    window.doAssign = function(side, heroId) {
+      var hero = findHero(side, heroId);
+      var item = G.assign ? { name: G.assign.name, cost: G.assign.cost } : null;
+      if (!confirmPurchase(item, side, hero)) return;
+      return originalDoAssign.apply(this, arguments);
+    };
+
+    var originalEqHeroCard = window.eqHeroCard;
+    window.eqHeroCard = function(h, side) {
+      var html = originalEqHeroCard.apply(this, arguments);
+      var url = ART_BY_ID[h && h.id] || '';
+      if (url && html.indexOf('bf-eq-hero-art') === -1) {
+        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"');
+        html = html.replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>');
+      }
+      if (!h.mwep && !h.rwep) {
+        html = html.replace(/<div class="eq-slot">Arma: vacía([\s\S]*?)<\/div>/, '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(\'' + side + '\',\'' + h.id + '\',\'weapon\')"><span>Arma: vacía$1</span><button class="bf-slot-buy">Comprar</button></div>');
+      }
+      if (!h.armor) {
+        html = html.replace('<div class="eq-slot">Armadura: vacía</div>', '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(\'' + side + '\',\'' + h.id + '\',\'armor\')"><span>Armadura: vacía</span><button class="bf-slot-buy">Comprar</button></div>');
+      }
+      return html;
+    };
+
+    window.bfOpenQuickShop = function(side, heroId, slot) {
+      var hero = findHero(side, heroId);
+      if (!hero || typeof modal !== 'function') return;
+      var items = slot === 'armor' ? (ARMORS || []).map(function(x) { return { kind:'armor', item:x }; }) :
+        (MELEE || []).map(function(x) { return { kind:'melee', item:x }; }).concat((RANGED || []).map(function(x) { return { kind:'ranged', item:x }; }));
+      var coins = Number((G.equipCoins && G.equipCoins[side]) || 0);
+      var cards = items.map(function(row) {
+        var item = row.item;
+        var art = NUM_ART[String(cardNo(item.id))] || NUM_ART[cardNo(item.id)] || '';
+        var disabled = Number(item.cost || 0) > coins;
+        return '<div class="bf-quick-card" ' + (disabled ? 'style="opacity:.45;cursor:not-allowed"' : 'onclick="bfQuickBuy(\'' + side + '\',\'' + heroId + '\',\'' + row.kind + '\',\'' + item.id + '\')"') + '>' +
+          (art ? '<div class="bf-quick-art" style="background-image:url(&quot;' + art + '&quot;)"></div>' : '') +
+          '<div class="bf-quick-cost">' + clean(item.cost) + '</div>' +
+          '<div class="bf-quick-name">' + clean(item.name) + '</div>' +
+          '<div class="bf-quick-txt">' + clean(item.txt || '') + '</div>' +
+        '</div>';
+      }).join('');
+      modal('<h3>Comprar para ' + clean(hero.name) + '</h3><div class="modal-note">Elige ' + (slot === 'armor' ? 'una armadura' : 'un arma') + '. Antes de pagar se pedirá confirmación.</div><div class="bf-quick-grid">' + cards + '</div>');
+    };
+
+    window.bfQuickBuy = function(side, heroId, kind, id) {
+      var src = kind === 'armor' ? ARMORS : (kind === 'melee' ? MELEE : RANGED);
+      var item = typeof byId === 'function' ? byId(src, id) : null;
+      var hero = findHero(side, heroId);
+      if (!confirmPurchase(item, side, hero)) return;
+      G.assign = { kind: kind, id: id, cost: item.cost, name: item.name };
+      closeAnyModal();
+      return originalDoAssign.call(this, side, heroId);
+    };
+  }
+
   function injectRecruitHeroArt() {
     document.querySelectorAll('.hero-acquired').forEach(function(card) {
       if (card.dataset.bfAcqArt === '1') return;
@@ -1145,7 +1250,7 @@ function buildArtScript() {
 Deno.serve(async (req) => {
   try {
     const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
-    const upstream = await fetch(SRC + '?bf=' + Date.now(), { cache: 'no-store' });
+    const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now(), { cache: 'no-store' });
     let html = await upstream.text();
 
     // Prevent in-game "back to start" buttons from reloading cached/raw HTML.
@@ -1164,6 +1269,7 @@ Deno.serve(async (req) => {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
+        'X-BF-Patch-Version': GAME_PATCH_VERSION,
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
         'Expires': '0'

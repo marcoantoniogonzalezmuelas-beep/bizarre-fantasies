@@ -16,6 +16,7 @@ const ELEMENT_COLORS = {
 
 export default function EquipCard({ item, type, onClick }) {
   const borderColor = TYPE_COLORS[type] || '#3c3158';
+  const artUrl = item.art || item.art_url;
 
   return (
     <div
@@ -23,8 +24,15 @@ export default function EquipCard({ item, type, onClick }) {
       style={{ background: 'linear-gradient(180deg, #2b2244, #221a36)', border: `1.5px solid #3c3158`, borderTop: `3px solid ${borderColor}` }}
       onClick={() => onClick?.(item)}
     >
+      {artUrl && (
+        <>
+          <img src={artUrl} alt={item.name} className="absolute inset-x-0 top-0 h-28 w-full object-cover" />
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-transparent via-[#120d1dcc] to-[#221a36]" />
+        </>
+      )}
+
       {/* Cost coin */}
-      <div className="absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center font-black text-[#5a3d06] text-xs shadow-md" style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}>
+      <div className="absolute top-2 left-2 z-10 w-8 h-8 rounded-full flex items-center justify-center font-black text-[#5a3d06] text-xs shadow-md" style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}>
         {item.cost}
       </div>
 
@@ -35,7 +43,7 @@ export default function EquipCard({ item, type, onClick }) {
         </div>
       )}
 
-      <div className="px-3 pt-10 pb-3">
+      <div className={`relative px-3 ${artUrl ? 'pt-24' : 'pt-10'} pb-3`}>
         <div className="font-bold text-sm text-[#efe9dc]">{item.name}</div>
 
         {/* Tags */}
