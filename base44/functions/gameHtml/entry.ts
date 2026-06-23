@@ -1,4 +1,7 @@
 const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
+const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b309b8a3_generated_image.png';
+const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d82531745_generated_image.png';
+const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e8006df25_generated_image.png';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -221,6 +224,9 @@ function buildArtScript() {
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
   var COVER_BG = "${COVER_BG}";
+  var AUCTION_BG = "${AUCTION_BG}";
+  var SHOP_BG = "${SHOP_BG}";
+  var BATTLE_BG = "${BATTLE_BG}";
 
   function bfKey(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -259,14 +265,13 @@ function buildArtScript() {
         animation: bfEmojiFloat 3.2s ease-in-out infinite !important;
       }
       @keyframes bfEmojiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-      /* Safe elite flip: 3D feeling without mirror artifacts */
-      .flip3d { perspective: 1200px !important; }
-      .flip3d-inner { transform: none !important; transition: none !important; transform-style: preserve-3d !important; }
-      .flip3d .face { backface-visibility: visible !important; -webkit-backface-visibility: visible !important; transition: opacity .28s ease, transform .34s cubic-bezier(.22,.75,.25,1) !important; transform-origin: center center !important; }
-      .flip3d .face.front { opacity: 1 !important; transform: rotateY(0deg) translateZ(0) scale(1) !important; pointer-events: auto !important; }
-      .flip3d .face.back { opacity: 0 !important; transform: rotateY(-18deg) translateZ(-28px) scale(.96) !important; pointer-events: none !important; }
-      .flip3d.flipped .face.front { opacity: 0 !important; transform: rotateY(18deg) translateZ(-28px) scale(.96) !important; pointer-events: none !important; }
-      .flip3d.flipped .face.back { opacity: 1 !important; transform: rotateY(0deg) translateZ(0) scale(1) !important; pointer-events: auto !important; }
+      /* Real 3D flip, with corrected back face */
+      .flip3d { perspective: 1300px !important; }
+      .flip3d-inner { transform-style: preserve-3d !important; transition: transform .62s cubic-bezier(.2,.72,.2,1) !important; will-change: transform !important; }
+      .flip3d.flipped .flip3d-inner { transform: rotateY(180deg) !important; }
+      .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; transform-style: preserve-3d !important; }
+      .flip3d .face.front { transform: rotateY(0deg) translateZ(1px) !important; }
+      .flip3d .face.back { transform: rotateY(180deg) translateZ(1px) !important; }
       .face.back .bf-hero-card.cf-elite .bf-hero-bg,
       .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
 
@@ -298,7 +303,7 @@ function buildArtScript() {
       .bf-nameplate { position:absolute; left:15px; right:15px; bottom:108px; z-index:4; text-align:center; padding:4px 9px 5px; border-radius:10px; background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14)); border:1px solid rgba(255,210,74,.18); backdrop-filter:blur(1.5px); }
       .bf-hero-name { display:block; margin:0 auto; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(15px, 5.4vw, 21px); line-height:1; color:#fff5dc; text-transform:uppercase; letter-spacing:.15px; text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95); overflow-wrap:anywhere; text-align:center; }
       .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000; }
-      .bf-hero-title { display:block; margin-top:2px; color:#ffe6a8; font-family:'Cinzel',serif; font-size:10.2px; line-height:1.05; font-weight:700; font-style:italic; text-shadow:0 2px 4px #000,0 0 10px #000; text-align:center; }
+      .bf-hero-title { display:block; margin:3px auto 0; max-width:92%; padding:2px 7px; border-radius:999px; color:#fff0bd; background:rgba(8,5,12,.62); border:1px solid rgba(255,210,74,.22); font-family:'Cinzel',serif; font-size:10.8px; line-height:1.08; font-weight:800; font-style:italic; text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22); text-align:center; letter-spacing:.12px; }
       .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
       .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
       .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; }
@@ -349,16 +354,16 @@ function buildArtScript() {
         position: relative; display: block; border-radius: 13px; overflow: hidden;
         height: 214px; margin: 5px 0 8px; border: 2px solid rgba(255,210,74,0.68);
         background: #07050b;
-        box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,255,255,.05);
+        box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,210,74,.10);
       }
       .bf-bonus-card .bf-bonus-fill,
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: 0; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
+        position: absolute; inset: -10px; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
       }
-      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(12px) saturate(1.2) contrast(1.1); transform: scale(1.14); opacity: .9; }
+      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(14px) saturate(1.25) contrast(1.12); transform: scale(1.18); opacity: 1; }
       .bf-bonus-card .bf-bonus-art {
-        inset: 3px; background-size: contain; z-index: 1;
-        filter: saturate(1.08) contrast(1.06);
+        inset: -1px; background-size: cover; z-index: 1;
+        filter: saturate(1.1) contrast(1.08);
       }
       .bf-bonus-card .bf-bonus-shade {
         position: absolute; inset: 0; z-index: 2;
@@ -377,7 +382,7 @@ function buildArtScript() {
         .bf-hero-top { padding: 8px 40px 0 !important; min-height: 40px !important; }
         .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 99px !important; padding: 4px 7px !important; }
         .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
-        .bf-hero-title { font-size: 9px !important; }
+        .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; }
         .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
         .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
         .bf-stats { left: 10px !important; right: 10px !important; bottom: 142px !important; padding: 6px 45px 6px 7px !important; }
@@ -395,7 +400,7 @@ function buildArtScript() {
         .shop-card { max-width: 100% !important; }
         .shop-card-art { height: 104px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card { height: clamp(190px, 62vw, 250px) !important; margin: 4px 0 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: 3px !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: -1px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -836,9 +841,8 @@ function buildArtScript() {
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  // ---- APPLY COVER DIRECTLY (robust) ----
-  // We put the cover on a dedicated full-screen fixed layer that is only
-  // visible while the title screen (#s-title) is the active screen.
+  // ---- APPLY AI BACKGROUNDS DIRECTLY (robust) ----
+  // We put the current screen background on a dedicated full-screen layer.
   function ensureCoverLayer() {
     var layer = document.getElementById('bf-cover-layer');
     if (!layer) {
@@ -848,7 +852,7 @@ function buildArtScript() {
         'position:fixed;inset:0;z-index:-1;pointer-events:none;' +
         'background-image:linear-gradient(180deg,rgba(18,14,28,0.45) 0%,rgba(14,10,22,0.72) 100%),url("' + COVER_BG + '");' +
         'background-size:cover,cover;background-position:center center,center center;' +
-        'background-repeat:no-repeat,no-repeat;transition:opacity .4s ease;opacity:0;';
+        'background-repeat:no-repeat,no-repeat;transition:opacity .35s ease;opacity:1;';
       document.body.appendChild(layer);
     }
     return layer;
@@ -856,16 +860,19 @@ function buildArtScript() {
 
   function applyCover() {
     var layer = ensureCoverLayer();
-    var t = document.getElementById('s-title');
-    var titleActive = t && t.classList.contains('active');
-    layer.style.opacity = titleActive ? '1' : '0';
-    // The game body has an opaque gradient background that would cover our
-    // fixed layer. Make body background transparent only while on title.
-    if (titleActive) {
-      document.body.style.background = 'transparent';
-    } else {
-      document.body.style.background = '';
-    }
+    var active = document.querySelector('.screen.active');
+    var id = active ? active.id : 's-title';
+    var bg = COVER_BG;
+    if (id === 's-equip') bg = SHOP_BG;
+    else if (id === 's-battle') bg = BATTLE_BG;
+    else if (id !== 's-title') bg = AUCTION_BG;
+    var shade = id === 's-title'
+      ? 'linear-gradient(180deg,rgba(18,14,28,0.45) 0%,rgba(14,10,22,0.72) 100%)'
+      : 'linear-gradient(180deg,rgba(12,8,20,0.70) 0%,rgba(10,7,15,0.84) 100%)';
+    layer.style.backgroundImage = shade + ',url("' + bg + '")';
+    layer.style.opacity = '1';
+    // The game body has an opaque gradient background that would cover our fixed layer.
+    document.body.style.background = 'transparent';
   }
 
   // ---- MAIN INIT ----
