@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b309b8a3_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d82531745_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e8006df25_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-v4';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-cards-bonus-v1';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -375,12 +375,12 @@ function buildArtScript() {
       }
       .bf-bonus-card .bf-bonus-fill,
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: -10px; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
+        position: absolute; inset: -24px; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
       }
-      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(14px) saturate(1.25) contrast(1.12); transform: scale(1.18); opacity: 1; }
+      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(18px) saturate(1.3) contrast(1.16); transform: scale(1.28); opacity: 1; }
       .bf-bonus-card .bf-bonus-art {
-        inset: -1px; background-size: cover; z-index: 1;
-        filter: saturate(1.1) contrast(1.08);
+        inset: -12px; background-size: cover; z-index: 1; transform: scale(1.08);
+        filter: saturate(1.14) contrast(1.12);
       }
       .bf-bonus-card .bf-bonus-shade {
         position: absolute; inset: 0; z-index: 2;

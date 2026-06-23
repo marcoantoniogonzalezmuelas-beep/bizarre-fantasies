@@ -28,7 +28,7 @@ export default function EquipCard({ item, type, onClick }) {
   if (type === 'bonus') {
     return (
       <div className="relative h-[360px] rounded-[18px] overflow-hidden cursor-pointer border-2 border-[#d39b22]/80 bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1" onClick={() => onClick?.(item)}>
-        {artUrl && <img src={artUrl} alt={item.name} className="absolute -inset-1 w-[calc(100%+8px)] h-[calc(100%+8px)] object-cover saturate-110 contrast-105" />}
+        {artUrl && <img src={artUrl} alt={item.name} className="absolute -inset-5 w-[calc(100%+40px)] h-[calc(100%+40px)] object-cover scale-105 saturate-110 contrast-105" />}
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/75" />
         <div className="absolute left-3 right-3 top-3 flex justify-between items-start">
           <span className="rounded-full bg-black/70 border border-[#ffd24a66] px-2 py-1 text-[10px] font-black text-[#ffe49a]">{item.type || item.tag || 'BON'}</span>
