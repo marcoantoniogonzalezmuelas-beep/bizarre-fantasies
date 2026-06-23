@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-equip-confirm-v6';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-six-cands-v7';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -920,6 +920,30 @@ function buildArtScript() {
     }
     if (!BONUS.some(function(b) { return b.id === 'epic_rival'; })) {
       BONUS.push({ id: 'epic_rival', name: 'Destino Épico Rival', type: 'RES', effect: 0, txt: 'En esta subasta tu rival verá una criatura Épica para pujar.' });
+    }
+
+    // Force at least 6 candidates per auction round. The base game draws one
+    // hero per available race; we top it up with extra heroes from the pool.
+    var TARGET_CANDS = 6;
+    if (typeof window.drawRaceSlate === 'function' && !window.drawRaceSlate.__bf6) {
+      var originalDrawRaceSlate = window.drawRaceSlate;
+      window.drawRaceSlate = function(pool) {
+        var out = originalDrawRaceSlate.apply(this, arguments) || [];
+        if (out.length >= TARGET_CANDS) return out;
+        var chosen = {};
+        out.forEach(function(h) { if (h) chosen[h.id] = true; });
+        var rest = (pool || []).filter(function(h) { return h && !chosen[h.id]; });
+        // shuffle the remaining pool
+        for (var i = rest.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = rest[i]; rest[i] = rest[j]; rest[j] = t;
+        }
+        for (var k = 0; k < rest.length && out.length < TARGET_CANDS; k++) {
+          out.push(rest[k]);
+        }
+        return out;
+      };
+      window.drawRaceSlate.__bf6 = 1;
     }
 
     function findHero(heroId) {

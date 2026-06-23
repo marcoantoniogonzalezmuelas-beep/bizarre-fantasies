@@ -18,7 +18,7 @@ export default function HeroCard({ hero, onClick }) {
     const artUrl = elite ? (hero.eliteArt || hero.art) : hero.art;
 
     return (
-      <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: elite ? '#ffb43a' : color, backfaceVisibility: 'hidden', transform: elite ? 'rotateY(180deg)' : 'none' }}>
+      <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: elite ? '#ffb43a' : color }}>
         {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" />}
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
         <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
@@ -58,10 +58,10 @@ export default function HeroCard({ hero, onClick }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="w-full h-[420px] cursor-pointer" style={{ perspective: '1300px' }} onClick={() => onClick?.(hero)}>
-        <div className="relative w-full h-full transition-transform duration-700" style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'none' }}>
-          <Face elite={false} />
-          <Face elite={true} />
+      <div className="relative w-full h-[420px] cursor-pointer" onClick={() => onClick?.(hero)}>
+        {/* Single face whose content swaps (no 3D flip → no mirror) */}
+        <div key={flipped ? 'elite' : 'normal'} className="absolute inset-0 animate-in fade-in duration-300">
+          <Face elite={flipped} />
         </div>
       </div>
       <button onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} className="text-xs font-bold text-[#e8def6] bg-[#241a33] border border-[#3c3158] rounded-lg py-1.5 hover:border-[#b8902a] hover:text-[#ffcf57] transition-colors">
