@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-battle-fx-v13';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-thumb-fit-v14';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -448,7 +448,7 @@ function buildArtScript() {
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:118px; z-index:1; background-size:cover; background-position:center 18%; background-repeat:no-repeat; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
+      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:118px; z-index:1; background-size:auto 132%; background-position:center 14%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
@@ -492,10 +492,10 @@ function buildArtScript() {
       @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
       @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
-      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
+      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:138% auto; background-position:center 14%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
-      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 18%; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
+      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:138% auto; background-position:center 14%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:138% auto; background-position:center 14%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
