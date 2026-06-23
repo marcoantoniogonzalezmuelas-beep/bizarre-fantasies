@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-23-six-cands-v7';
+const GAME_PATCH_VERSION = 'bf-2026-06-23-rules-v8';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -904,6 +904,29 @@ function buildArtScript() {
   function patchGameRules() {
     if (window.__bfRulesPatched || typeof HEROES === 'undefined' || typeof BONUS === 'undefined' || typeof G === 'undefined') return;
     window.__bfRulesPatched = true;
+
+    // Updated "how to play" rules, in plain language, including the new rules
+    // (6 candidates per auction, Epic offers, epic cost +10).
+    if (typeof window.rulesBody === 'function' && !window.rulesBody.__bf) {
+      window.rulesBody = function() {
+        return '<div class="rules-body">' +
+          '<p><b>🎯 Objetivo:</b> arma un equipo de <b>3 héroes</b> y derrota a los 3 del rival.</p>' +
+          '<p><b>1 · Subasta (3 fases).</b> Una para cuerpo a cuerpo, otra para distancia y otra para magia. En cada fase verás <b>6 héroes</b> y eliges uno con una <b>puja sellada</b> (a ciegas): quien ofrezca más se lo lleva. Cada ronda trae un <b>bonificador</b> distinto (más monedas, o un castigo para el rival). Las monedas que no gastes pasan al Equipamiento.</p>' +
+          '<p><b>✦ Cartas Épicas.</b> Son las más poderosas y cuestan <b>+10 monedas</b>. Normalmente no aparecen en la subasta, pero ciertos bonificadores pueden hacer que <b>tú</b> (o tu <b>rival</b>) reciba una oferta Épica extra en esa puja.</p>' +
+          '<p><b>2 · Equipamiento.</b> Con las monedas sobrantes (+ una base) equipas a cada héroe con <b>1 arma</b> (cuerpo a cuerpo <i>o</i> distancia) y <b>1 armadura</b>. Los hechizos y objetos van a tu <b>mano</b> para usarlos en combate.</p>' +
+          '<p><b>3 · Combate por rondas.</b> Los turnos van en este orden: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, actúa antes quien tenga más velocidad).</p>' +
+          '<ul>' +
+            '<li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li>' +
+            '<li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li>' +
+            '<li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li>' +
+          '</ul>' +
+          '<p><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' +
+          '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma o Ave Fénix).</p>' +
+          '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p>' +
+        '</div>';
+      };
+      window.rulesBody.__bf = 1;
+    }
 
     HEROES.forEach(function(h) {
       if (h.clan === 'Épicas' && h.__bfEpicRaised !== 1) {
