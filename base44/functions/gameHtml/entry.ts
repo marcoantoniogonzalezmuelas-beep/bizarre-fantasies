@@ -172,6 +172,10 @@ const BONUS_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png',
 ];
 
+// Bonus / restador ids and display names, index-for-index with BONUS_ART.
+const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli"];
+const BONUS_NAMES = ["Gran Banquero","Corredor de Bolsa","Mercader Zeta","Nauta Financiero","La Prestamista","Patrón de Forja","Armero Real","El Pirata","La Corsaria","Hacker Nexus","Bandolero Seco","Glitch"];
+
 // Hero id order, matching the HERO_ART / HERO_ELITE_ART arrays index-for-index.
 const HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
 
@@ -213,7 +217,14 @@ function buildArtScript() {
   var HERO_IDS = ${JSON.stringify(HERO_IDS)};
   var HERO_NAMES = ${JSON.stringify(HERO_NAMES)};
   var NUM_ART = ${JSON.stringify(NUM_ART)};
+  var BONUS_ART = ${JSON.stringify(BONUS_ART)};
+  var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
+  var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
   var COVER_BG = "${COVER_BG}";
+
+  // name -> bonus art lookup
+  var BONUS_ART_BY_NAME = {};
+  BONUS_IDS.forEach(function(id, i) { BONUS_ART_BY_NAME[BONUS_NAMES[i]] = BONUS_ART[i]; });
 
   // id -> art, name -> art lookups for heroes
   var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
@@ -243,16 +254,38 @@ function buildArtScript() {
       .flip3d-inner { transform-style: preserve-3d !important; }
       .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; }
       .flip3d .face.back { transform: rotateY(180deg) !important; }
-      /* Hero art is painted as the .cf-art background so the existing
-         absolutely-positioned name / title / heart / stats sit on top of it. */
-      .cf-art.has-art { background-image: var(--bf-art) !important; background-size: cover !important; background-position: center top !important; background-repeat: no-repeat !important; }
+      /* Hero art is painted on a dedicated ::before layer (NOT a background on
+         .cf-art itself) so we can flip ONLY the art for the elite back-face,
+         killing the mirror effect, while the name/title/stats stay readable. */
+      .cf-art.has-art::before {
+        content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+        background-image: var(--bf-art);
+        background-size: cover; background-position: center top; background-repeat: no-repeat;
+      }
+      /* Elite art lives inside a back-face rotated 180deg -> mirror it back. */
+      .face.back .cf-elite .cf-art.has-art::before { transform: scaleX(-1); }
       .cf-art.has-art .cf-art-emoji { display: none !important; }
-      /* Dark gradient at top & bottom so name and stats stay readable over art */
+      /* Dark gradients so name (top) and stats (bottom) stay legible over art */
       .cf-art.has-art::after {
         content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-        background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.72) 100%);
+        background: linear-gradient(180deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.30) 22%, rgba(0,0,0,0) 44%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.82) 100%);
       }
       .cf-art.has-art > * { position: relative; z-index: 2; }
+      /* Name & legend: centered, readable, with their own shadow strip */
+      .cf-art.has-art .cf-name {
+        font-size: 20px !important; text-shadow: 0 2px 8px #000, 0 0 16px rgba(0,0,0,0.95) !important;
+        letter-spacing: 0.3px !important;
+      }
+      .cf-art.has-art .cf-title {
+        font-size: 11.5px !important; color: #ffe6a8 !important;
+        text-shadow: 0 2px 6px #000, 0 0 10px rgba(0,0,0,0.95) !important;
+      }
+      /* Make sure stats row sits above everything and is fully visible */
+      .cf-art.has-art .cf-stats {
+        z-index: 4 !important;
+        background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.86) 60%) !important;
+      }
+      .cf-art.has-art .cf-heart { z-index: 5 !important; }
       /* Equipment / spell / object shop card art (background banner at top) */
       .shop-card { position: relative; overflow: hidden; }
       .shop-card.has-art > * { position: relative; z-index: 2; }
@@ -262,6 +295,24 @@ function buildArtScript() {
         z-index: 0; opacity: 0.9;
         -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
         mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+      }
+      /* Bonus / restador shown as a mini-card with its own art */
+      .bf-bonus-card {
+        position: relative; display: block; border-radius: 12px; overflow: hidden;
+        height: 118px; margin: 4px 0 8px; border: 2px solid rgba(255,210,74,0.55);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+      }
+      .bf-bonus-card .bf-bonus-art {
+        position: absolute; inset: 0; background-size: cover; background-position: center center; z-index: 0;
+      }
+      .bf-bonus-card .bf-bonus-shade {
+        position: absolute; inset: 0; z-index: 1;
+        background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%);
+      }
+      .bf-bonus-card .bf-bonus-name {
+        position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 2;
+        font-family: 'Cinzel', serif; font-weight: 800; font-size: 14px; color: #fff;
+        text-align: center; text-shadow: 0 2px 6px #000, 0 0 12px rgba(0,0,0,0.9);
       }
     \`;
     document.head.appendChild(style);
@@ -322,9 +373,32 @@ function buildArtScript() {
     });
   }
 
+  // ---- DOM injection for the round bonus/restador (turn its chip into a card) ----
+  function injectBonusArt() {
+    document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
+      if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
+      var chip = lbl.nextElementSibling;
+      if (!chip || !chip.classList || !chip.classList.contains('chip')) return;
+      if (chip.dataset.bfDone === '1') return;
+      var name = chip.textContent.trim();
+      var url = BONUS_ART_BY_NAME[name];
+      if (!url) return;
+      chip.dataset.bfDone = '1';
+      chip.style.display = 'none';
+      var card = document.createElement('div');
+      card.className = 'bf-bonus-card';
+      card.innerHTML =
+        '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
+        '<div class="bf-bonus-shade"></div>' +
+        '<div class="bf-bonus-name">' + name + '</div>';
+      chip.parentNode.insertBefore(card, chip.nextSibling);
+    });
+  }
+
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
+    injectBonusArt();
   }
 
   // ---- OBSERVE DOM MUTATIONS ----
