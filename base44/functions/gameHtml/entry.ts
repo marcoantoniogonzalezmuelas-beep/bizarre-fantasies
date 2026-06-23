@@ -193,22 +193,24 @@ function buildArtScript() {
   function injectCoverStyle() {
     var style = document.createElement('style');
     style.textContent = \`
-      #s-title {
-        background-image: url("\${COVER_BG}") !important;
-        background-size: cover !important;
-        background-position: center center !important;
-        background-repeat: no-repeat !important;
+      #s-title.screen {
         position: relative !important;
+        min-height: 100vh;
       }
-      #s-title::before {
+      #s-title.screen::before {
         content: '';
         position: fixed;
         inset: 0;
-        background: linear-gradient(180deg, rgba(18,14,28,0.52) 0%, rgba(14,10,22,0.72) 100%);
+        background-image:
+          linear-gradient(180deg, rgba(18,14,28,0.55) 0%, rgba(14,10,22,0.78) 100%),
+          url("\${COVER_BG}");
+        background-size: cover, cover;
+        background-position: center center, center center;
+        background-repeat: no-repeat, no-repeat;
         pointer-events: none;
         z-index: 0;
       }
-      #s-title > * { position: relative; z-index: 1; }
+      #s-title.screen > * { position: relative; z-index: 1; }
       .gtitle { text-shadow: 0 0 50px rgba(255,210,74,0.7), 0 4px 30px rgba(255,210,74,0.3) !important; }
       /* Card art image slot */
       .cf-art-img {
@@ -338,14 +340,48 @@ function buildArtScript() {
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
+  // ---- APPLY COVER DIRECTLY (robust) ----
+  // We put the cover on a dedicated full-screen fixed layer that is only
+  // visible while the title screen (#s-title) is the active screen.
+  function ensureCoverLayer() {
+    var layer = document.getElementById('bf-cover-layer');
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'bf-cover-layer';
+      layer.style.cssText =
+        'position:fixed;inset:0;z-index:-1;pointer-events:none;' +
+        'background-image:linear-gradient(180deg,rgba(18,14,28,0.45) 0%,rgba(14,10,22,0.72) 100%),url("' + COVER_BG + '");' +
+        'background-size:cover,cover;background-position:center center,center center;' +
+        'background-repeat:no-repeat,no-repeat;transition:opacity .4s ease;opacity:0;';
+      document.body.appendChild(layer);
+    }
+    return layer;
+  }
+
+  function applyCover() {
+    var layer = ensureCoverLayer();
+    var t = document.getElementById('s-title');
+    var titleActive = t && t.classList.contains('active');
+    layer.style.opacity = titleActive ? '1' : '0';
+    // The game body has an opaque gradient background that would cover our
+    // fixed layer. Make body background transparent only while on title.
+    if (titleActive) {
+      document.body.style.background = 'transparent';
+    } else {
+      document.body.style.background = '';
+    }
+  }
+
   // ---- MAIN INIT ----
   function init() {
     injectCoverStyle();
+    applyCover();
 
     var attempts = 0;
     var patchedFace = false;
     var interval = setInterval(function() {
       attempts++;
+      applyCover();
       patchArrays();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
@@ -355,9 +391,12 @@ function buildArtScript() {
     startObserver();
 
     document.addEventListener('click', function() {
-      setTimeout(function() { patchArrays(); injectArtIntoDOM(); }, 80);
-      setTimeout(function() { patchArrays(); injectArtIntoDOM(); }, 400);
+      setTimeout(function() { applyCover(); patchArrays(); injectArtIntoDOM(); }, 80);
+      setTimeout(function() { applyCover(); patchArrays(); injectArtIntoDOM(); }, 400);
     });
+
+    // Keep cover in sync even if screen changes without a click
+    setInterval(applyCover, 600);
   }
 
   if (document.readyState === 'loading') {
@@ -376,9 +415,14 @@ Deno.serve(async (req) => {
     const upstream = await fetch(SRC);
     let html = await upstream.text();
 
-    // Inject art script right before </head>
+    // Inject art script right before </body> so the game's own script
+    // (cardFace, HEROES, etc.) is already defined when we hook it.
     const artScript = buildArtScript();
-    html = html.replace('</head>', artScript + '</head>');
+    if (html.includes('</body>')) {
+      html = html.replace('</body>', artScript + '</body>');
+    } else {
+      html = html + artScript;
+    }
 
     return new Response(html, {
       status: 200,
