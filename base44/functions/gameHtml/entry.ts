@@ -240,6 +240,21 @@ function buildArtScript() {
     BONUS_ART_BY_KEY[bfKey(BONUS_NAMES[i])] = BONUS_ART[i];
   });
   BONUS_ART_BY_KEY['patron de foria'] = BONUS_ART_BY_KEY['patron de forja'];
+  BONUS_ART_BY_NAME['Convocatoria Épica'] = HERO_ELITE_ART[12];
+  BONUS_ART_BY_NAME['Destino Épico Rival'] = HERO_ELITE_ART[23];
+  BONUS_ART_BY_KEY[bfKey('Convocatoria Épica')] = HERO_ELITE_ART[12];
+  BONUS_ART_BY_KEY[bfKey('Destino Épico Rival')] = HERO_ELITE_ART[23];
+
+  var RACE_SIGILS = {
+    'Guerreros': '⚔',
+    'Druidas': '❦',
+    'No-muertos': '☠',
+    'Vaqueros': '✦',
+    'Elfos': '⟐',
+    'Magos': '✧',
+    'Épicas': '◆',
+    'Cotidianos': '◈'
+  };
 
   // id -> art, name -> art lookups for heroes
   var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
@@ -298,8 +313,8 @@ function buildArtScript() {
           radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%);
       }
       .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
-      .bf-hero-top { position:relative; z-index:3; padding:11px 46px 0; text-align:center; min-height:46px; }
-      .bf-hero-band { display:inline-flex; align-items:center; gap:6px; max-width:100%; padding:2px 13px; border-radius:999px; color:#fff; background:rgba(0,0,0,.46); border:1px solid var(--clan,#caa14a); font-size:10.5px; font-weight:900; letter-spacing:.8px; text-shadow:0 1px 2px #000; backdrop-filter:blur(2px); }
+      .bf-hero-top, .bf-hero-band { display:none !important; }
+      .bf-race-sigil { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff7dc; font-family:'Cinzel',serif; font-size:25px; font-weight:1000; background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%); border:2px solid var(--clan,#caa14a); text-shadow:0 2px 4px #000,0 0 10px var(--clan,#caa14a); box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 15px color-mix(in srgb, var(--clan,#caa14a) 45%, transparent); }
       .bf-nameplate { position:absolute; left:15px; right:15px; bottom:108px; z-index:4; text-align:center; padding:4px 9px 5px; border-radius:10px; background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14)); border:1px solid rgba(255,210,74,.18); backdrop-filter:blur(1.5px); }
       .bf-hero-name { display:block; margin:0 auto; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(15px, 5.4vw, 21px); line-height:1; color:#fff5dc; text-transform:uppercase; letter-spacing:.15px; text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95); overflow-wrap:anywhere; text-align:center; }
       .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000; }
@@ -379,7 +394,7 @@ function buildArtScript() {
       @media (max-width: 640px) {
         .cardface, .bf-hero-card { max-width: 100% !important; }
         .bf-hero-bg, .cf-art.has-art::before { inset: -4% !important; background-size: cover !important; background-position: center center !important; }
-        .bf-hero-top { padding: 8px 40px 0 !important; min-height: 40px !important; }
+        .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; }
         .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 99px !important; padding: 4px 7px !important; }
         .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
         .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; }
@@ -455,6 +470,14 @@ function buildArtScript() {
       .bf-fx-magic-orb { position:fixed; z-index:9999; pointer-events:none; width:34px; height:34px; border-radius:50%; box-shadow:0 0 20px currentColor; background:radial-gradient(circle,#fff,currentColor 44%,transparent 72%); transition:left .42s ease, top .42s ease, transform .42s ease; }
       .bf-fx-spell-wave { position:absolute; left:50%; top:50%; width:34px; height:34px; border-radius:50%; border:3px solid currentColor; transform:translate(-50%,-50%) scale(.2); box-shadow:0 0 20px currentColor,inset 0 0 18px currentColor; animation:bfSpellWave .75s ease-out forwards; }
       .bf-fx-bigblast { position:absolute; inset:-10px; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(255,77,60,.62) 18%,rgba(255,143,42,.26) 42%,transparent 72%); animation:bfBigBlast .72s ease-out forwards; }
+      .bf-race-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:12px; margin-top:12px; }
+      .bf-race-card { position:relative; min-height:168px; overflow:hidden; border-radius:16px; padding:14px; border:1.5px solid var(--race,#ffd24a); background:radial-gradient(circle at 22% 14%,color-mix(in srgb,var(--race,#ffd24a) 34%,transparent),transparent 36%),linear-gradient(145deg,#120d1d,#261d3d); box-shadow:0 10px 26px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.06); }
+      .bf-race-card::before { content:''; position:absolute; right:-28px; top:-22px; width:132px; height:132px; border-radius:50%; background:radial-gradient(circle,color-mix(in srgb,var(--race,#ffd24a) 32%,transparent),transparent 66%); filter:blur(1px); }
+      .bf-race-sigil-big { position:relative; z-index:1; width:58px; height:58px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff7dc; font-family:'Cinzel',serif; font-size:32px; font-weight:1000; background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%); border:2px solid var(--race,#ffd24a); text-shadow:0 2px 4px #000,0 0 12px var(--race,#ffd24a); box-shadow:0 5px 16px rgba(0,0,0,.55); }
+      .bf-race-title { position:relative; z-index:1; margin-top:10px; font-family:'Cinzel',serif; font-size:20px; font-weight:1000; color:#fff5dc; text-shadow:0 2px 5px #000; }
+      .bf-race-trait { position:relative; z-index:1; margin-top:4px; color:#ffe49a; font-weight:800; font-size:12.5px; line-height:1.25; }
+      .bf-race-desc { position:relative; z-index:1; margin-top:7px; color:#efe9dc; font-size:13px; line-height:1.28; }
+      .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
       @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} }
       @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
       @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} }
@@ -487,6 +510,9 @@ function buildArtScript() {
       if (type === 'HE') return '✦';
       return '★';
     }
+    function raceSigil(clan) {
+      return RACE_SIGILS[clan] || '◆';
+    }
     function padNum(value) {
       var n = parseInt(value || 0, 10);
       return n ? String(n).padStart(3, '0') : '---';
@@ -507,10 +533,8 @@ function buildArtScript() {
         '<div class="bf-hero-bg"></div>' +
         '<div class="bf-hero-frame"></div>' +
         '<div class="bf-coin">' + clean(h.cost) + '</div>' +
+        '<div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + clean(raceSigil(h.clan)) + '</div>' +
         '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' +
-        '<div class="bf-hero-top">' +
-          '<div class="bf-hero-band">' + clean(h.clan) + (elite ? ' ÉLITE' : '') + ' · ' + typeLabel(h.type) + '</div>' +
-        '</div>' +
         '<div class="bf-stats">' +
           '<div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div>' +
           '<div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div>' +
@@ -798,6 +822,191 @@ function buildArtScript() {
     window.flushFx.__bfEnhanced = true;
   }
 
+  function patchGameRules() {
+    if (window.__bfRulesPatched || typeof HEROES === 'undefined' || typeof BONUS === 'undefined' || typeof G === 'undefined') return;
+    window.__bfRulesPatched = true;
+
+    HEROES.forEach(function(h) {
+      if (h.clan === 'Épicas' && h.__bfEpicRaised !== 1) {
+        h.cost = Number(h.cost || 0) + 10;
+        h.__bfEpicRaised = 1;
+      }
+    });
+
+    if (!BONUS.some(function(b) { return b.id === 'epic_self'; })) {
+      BONUS.push({ id: 'epic_self', name: 'Convocatoria Épica', type: 'BON', effect: 0, txt: 'En esta subasta sólo tú verás una criatura Épica para pujar.' });
+    }
+    if (!BONUS.some(function(b) { return b.id === 'epic_rival'; })) {
+      BONUS.push({ id: 'epic_rival', name: 'Destino Épico Rival', type: 'RES', effect: 0, txt: 'En esta subasta tu rival verá una criatura Épica para pujar.' });
+    }
+
+    function findHero(heroId) {
+      var lists = [G.cands || []];
+      if (G.epicCands) lists = lists.concat(Object.values(G.epicCands));
+      lists.push(HEROES || []);
+      for (var i = 0; i < lists.length; i++) {
+        var found = (lists[i] || []).find(function(h) { return h && h.id === heroId; });
+        if (found) return found;
+      }
+      return null;
+    }
+
+    function adjustBid(side, heroId, amount) {
+      var h = findHero(heroId);
+      if (!h) return amount;
+      var coins = Number((G.coins && G.coins[side]) || 0);
+      if (coins < h.cost) return null;
+      return Math.min(coins, Math.max(Number(amount || 0), h.cost));
+    }
+
+    function patchBidInputs() {
+      var all = (G.cands || []).slice();
+      if (G.epicCands) Object.values(G.epicCands).forEach(function(list) { all = all.concat(list || []); });
+      all.forEach(function(h) {
+        var inp = document.getElementById('bid_' + h.id);
+        if (!inp) return;
+        inp.min = String(h.cost);
+        var current = parseInt(inp.value || '0', 10) || 0;
+        if (current < h.cost) inp.value = String(Math.min(h.cost, Number((G.coins && (G.coins.p || G.coins.o)) || h.cost)));
+      });
+    }
+
+    function epicPoolForCurrentType() {
+      var type = G.curType;
+      var usedIds = {};
+      ['p','o'].forEach(function(side) { (G.team && G.team[side] || []).forEach(function(h) { usedIds[h.id] = true; }); });
+      (G.cands || []).forEach(function(h) { if (h) usedIds[h.id] = true; });
+      return HEROES.filter(function(h) { return h.clan === 'Épicas' && h.type === type && !usedIds[h.id]; });
+    }
+
+    function prepareEpicOffers() {
+      G.epicCands = {};
+      if (!G.forceEpic) return;
+      ['p','o'].forEach(function(side) {
+        if (!G.forceEpic[side]) return;
+        var pool = epicPoolForCurrentType();
+        if (!pool.length) return;
+        var h = pool[Math.floor(Math.random() * pool.length)];
+        G.epicCands[side] = [h];
+        if (!(G.cands || []).some(function(x) { return x.id === h.id; })) G.cands.push(h);
+      });
+      G.forceEpic = {};
+    }
+
+    var originalApplyBonus = window.applyBonus;
+    window.applyBonus = function(side, b) {
+      if (!G.forceEpic) G.forceEpic = {};
+      if (b && b.id === 'epic_self') G.forceEpic[side] = true;
+      if (b && b.id === 'epic_rival') G.forceEpic[other(side)] = true;
+      return originalApplyBonus.apply(this, arguments);
+    };
+
+    var originalStartAuctionPhase = window.startAuctionPhase;
+    window.startAuctionPhase = function() {
+      if (G.pools) {
+        ['CC','AD','HE'].forEach(function(t) {
+          G.pools[t] = (G.pools[t] || []).filter(function(h) { return h.clan !== 'Épicas'; });
+        });
+      }
+      return originalStartAuctionPhase.apply(this, arguments);
+    };
+
+    var originalBeginBidRound = window.beginBidRound;
+    window.beginBidRound = function() {
+      var ret = originalBeginBidRound.apply(this, arguments);
+      prepareEpicOffers();
+      if (NET.role !== 'client') {
+        renderRecruit('p');
+        netSync('s-recruit');
+      }
+      return ret;
+    };
+
+    var originalRenderRecruit = window.renderRecruit;
+    window.renderRecruit = function(forSide) {
+      var saved = G.cands;
+      if (!G.phaseResult && G.epicCands && G.epicCands[forSide]) G.cands = G.epicCands[forSide];
+      var ret = originalRenderRecruit.apply(this, arguments);
+      G.cands = saved;
+      patchBidInputs();
+      return ret;
+    };
+
+    var originalSubmitBid = window.submitBid;
+    window.submitBid = function(side, heroId) {
+      var inp = document.getElementById('bid_' + heroId);
+      var raw = inp ? (parseInt(inp.value || '0', 10) || 0) : 0;
+      var amt = adjustBid(side, heroId, raw);
+      var h = findHero(heroId);
+      if (amt === null) {
+        if (window.notif && h) notif('Necesitas al menos ' + h.cost + ' monedas para pujar por ' + h.name + '.');
+        return;
+      }
+      if (inp) inp.value = String(amt);
+      return originalSubmitBid.apply(this, arguments);
+    };
+
+    var originalNetBid = window.netBid;
+    window.netBid = function(heroId, amount) {
+      var amt = adjustBid('o', heroId, amount);
+      if (amt === null) return netPass();
+      return originalNetBid.call(this, heroId, amt);
+    };
+
+    var originalAiBid = window.aiBid;
+    window.aiBid = function(side) {
+      var saved = G.cands;
+      if (G.epicCands && G.epicCands[side]) G.cands = G.epicCands[side];
+      originalAiBid.apply(this, arguments);
+      var bid = G.bids && G.bids[side];
+      if (bid && !bid.pass) {
+        var amt = adjustBid(side, bid.heroId, bid.amount);
+        if (amt === null) G.bids[side] = { pass: true };
+        else G.bids[side].amount = amt;
+      }
+      G.cands = saved;
+    };
+
+    var originalResolveBidRound = window.resolveBidRound;
+    window.resolveBidRound = function() {
+      ['p','o'].forEach(function(side) {
+        var bid = G.bids && G.bids[side];
+        if (!bid || bid.pass) return;
+        var amt = adjustBid(side, bid.heroId, bid.amount);
+        if (amt === null) G.bids[side] = { pass: true };
+        else G.bids[side].amount = amt;
+      });
+      return originalResolveBidRound.apply(this, arguments);
+    };
+  }
+
+  function patchRaceModal() {
+    if (window.__bfRaceModalPatched || typeof CLAN_PROFILE === 'undefined' || typeof modal !== 'function') return;
+    window.__bfRaceModalPatched = true;
+    function clean(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+      });
+    }
+    function fmt(value) { return (value > 0 ? '+' : '') + value; }
+    window.racesModal = function() {
+      var names = Object.keys(CLAN_PROFILE);
+      var rows = names.map(function(name) {
+        var p = CLAN_PROFILE[name];
+        var col = (typeof CLAN_COLORS !== 'undefined' && CLAN_COLORS[name]) || '#ffd24a';
+        var sigil = RACE_SIGILS[name] || '◆';
+        return '<div class="bf-race-card" style="--race:' + col + '">' +
+          '<div class="bf-race-sigil-big">' + clean(sigil) + '</div>' +
+          '<div class="bf-race-title">' + clean(name) + '</div>' +
+          '<div class="bf-race-trait">' + clean(p.trait) + '</div>' +
+          '<div class="bf-race-desc">' + clean(p.desc) + '</div>' +
+          '<div class="bf-race-stats">Élite ' + Math.round(p.eliteHpPct * 100) + '% · CC ' + fmt(p.mMelee) + ' · AD ' + fmt(p.mRanged) + ' · HE ' + fmt(p.mSpell) + ' · Vel ' + fmt(p.mVel) + ' · Maná ' + fmt(p.manaBonus) + ' · Res.F ' + fmt(p.resPhys) + ' · Res.M ' + fmt(p.resMagic) + '</div>' +
+        '</div>';
+      }).join('');
+      modal('<h3>🧬 Razas y símbolos</h3><div class="modal-note">Cada héroe lleva ahora su sigilo de raza directamente sobre la ilustración.</div><div class="bf-race-list">' + rows + '</div>');
+    };
+  }
+
   function injectRecruitHeroArt() {
     document.querySelectorAll('.hero-acquired').forEach(function(card) {
       if (card.dataset.bfAcqArt === '1') return;
@@ -885,6 +1094,8 @@ function buildArtScript() {
     var interval = setInterval(function() {
       attempts++;
       applyCover();
+      patchGameRules();
+      patchRaceModal();
       patchCombatFx();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
