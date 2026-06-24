@@ -24,11 +24,11 @@ export default function HeroCard({ hero, onClick }) {
           style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transitionTimingFunction: 'cubic-bezier(.2,.72,.2,1)' }}
         >
           {/* Front (normal) */}
-          <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
+          <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transformStyle: 'preserve-3d', transform: 'rotateY(0deg) translateZ(1px)' }}>
             <HeroCardFace hero={hero} elite={false} />
           </div>
           {/* Back (elite) — counter-rotated so its content isn't mirrored */}
-          <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+          <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transformStyle: 'preserve-3d', transform: 'rotateY(180deg) translateZ(1px)' }}>
             <HeroCardFace hero={hero} elite={true} />
           </div>
         </div>
