@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-oracle-cover-v34';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-shop-buy-v35';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -421,7 +421,7 @@ function buildArtScript() {
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:118px; z-index:1; background-size:auto 132%; background-position:center 14%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
+      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:118px; z-index:1; background-size:cover; background-position:center 12%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
@@ -465,10 +465,10 @@ function buildArtScript() {
       @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
       @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
-      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:138% auto; background-position:center 14%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
+      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 12%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:138% auto; background-position:center 14%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
-      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:138% auto; background-position:center 14%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
+      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 12%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 12%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -551,6 +551,11 @@ function buildArtScript() {
       /* "Ver carta" button on every shop card */
       .bf-view-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid rgba(255,210,74,.6); background:rgba(8,5,14,.78); color:#ffe49a; border-radius:999px; padding:4px 12px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; backdrop-filter:blur(2px); transition:background .12s ease; }
       .bf-view-btn:hover { background:rgba(255,210,74,.22); color:#fff5dc; }
+      /* "Comprar" button on every shop card */
+      .bf-buy-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid #ffd24a; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); color:#3a2600; border-radius:999px; padding:5px 14px; font-size:11px; font-weight:900; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,210,74,.4); transition:filter .12s ease; }
+      .bf-buy-btn:hover { filter:brightness(1.08); }
+      /* Card text strip near the bottom of a shop card image */
+      .bf-shop-txt { position:absolute; left:8px; right:8px; bottom:38px; z-index:5; padding:5px 8px; border-radius:8px; background:rgba(8,5,14,.82); border:1px solid rgba(255,210,74,.28); color:#fff7ea; font-size:9.5px; font-weight:700; line-height:1.22; text-align:center; max-height:48px; overflow:hidden; backdrop-filter:blur(2px); text-shadow:0 1px 2px #000; }
       .shop-card.has-art { padding-bottom:34px !important; }
       /* Full-size card view modal */
       .bf-view-wrap { display:flex; justify-content:center; padding:6px 0; }
@@ -1706,13 +1711,20 @@ function buildArtScript() {
       return (arr && arr[idx]) || '';
     }
 
-    // Open a full-size card view — the artwork already IS the full oracle card.
-    window.bfViewCard = function(id) {
-      if (typeof modal !== 'function') return;
-      var m = metaById(id);
-      if (!m || !m.art) return;
-      modal('<div class="bf-view-wrap"><div class="bf-view-card" style="--bf-art:url(&quot;' + m.art + '&quot;)">' +
-        '<div class="bf-view-fill"></div><div class="bf-view-art"></div></div></div>');
+    // Buy an item straight from a shop card.
+    // - Spells/objects go to the player's hand right away (with confirm).
+    // - Weapons/armor need a target hero: select the item (as clicking the card
+    //   does in the base game) and tell the player to pick a hero.
+    window.bfShopBuy = function(side, kind, id) {
+      if (kind === 'spell') { return window.buySpell(side, id); }
+      if (kind === 'object') { return window.buyObject(side, id); }
+      var src = kind === 'armor' ? ARMORS : (kind === 'ranged' ? RANGED : MELEE);
+      var item = typeof byId === 'function' ? byId(src, id) : null;
+      if (!item) return;
+      G.assign = { kind: kind, id: id, cost: item.cost, name: item.name };
+      // Mark the card as selected if the base game uses a selection highlight.
+      document.querySelectorAll('.shop-card.selected').forEach(function(c) { c.classList.remove('selected'); });
+      if (window.notif) notif('Has seleccionado ' + item.name + '. Ahora pulsa «Comprar» en el héroe que quieras equiparlo.');
     };
 
     // Rebuild the shop grid so every card shows full-bleed art + a "Ver carta" button.
@@ -1728,7 +1740,7 @@ function buildArtScript() {
         var byName = {};
         function reg(list, kind) {
           (list || []).forEach(function(it, i) {
-            if (it && it.name) byName[it.name] = { id: it.id, art: shopArt(kind, i) };
+            if (it && it.name) byName[it.name] = { id: it.id, art: shopArt(kind, i), kind: kind, txt: it.txt || '' };
           });
         }
         reg(MELEE, 'melee'); reg(RANGED, 'ranged'); reg(ARMORS, 'armor'); reg(SPELLS, 'spell'); reg(OBJECTS, 'object');
@@ -1747,11 +1759,20 @@ function buildArtScript() {
           card.classList.add('has-art');
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(sharp, card.firstChild);
-          if (id) {
+          // Card text strip at the bottom of the image.
+          if (meta && meta.txt) {
+            var txt = document.createElement('div');
+            txt.className = 'bf-shop-txt';
+            txt.textContent = meta.txt;
+            card.appendChild(txt);
+          }
+          // "Comprar" button — buys this item (spells/objects to hand, weapons/armor
+          // need a hero so we open the quick-shop chooser via the assign flow).
+          if (id && meta) {
             var btn = document.createElement('button');
-            btn.className = 'bf-view-btn';
-            btn.textContent = '🔍 Ver carta';
-            btn.setAttribute('onclick', 'event.stopPropagation();bfViewCard(&quot;' + id + '&quot;)');
+            btn.className = 'bf-buy-btn';
+            btn.textContent = '🛒 Comprar';
+            btn.setAttribute('onclick', 'event.stopPropagation();bfShopBuy(&quot;' + side + '&quot;,&quot;' + meta.kind + '&quot;,&quot;' + id + '&quot;)');
             card.appendChild(btn);
           }
         });
