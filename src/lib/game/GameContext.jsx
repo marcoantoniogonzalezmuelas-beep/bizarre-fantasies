@@ -44,3 +44,5 @@ export function GameProvider({ children }) {
     </GameCtx.Provider>
   );
 }
+
+export { GameCtx };
