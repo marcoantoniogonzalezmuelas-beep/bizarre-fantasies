@@ -1,12 +1,15 @@
 // Bizarre Fantasies — motor de juego nativo (lógica pura, sin UI).
 // Replica EXACTA de la subasta del juego original (v5).
-import { HEROES, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES } from '@/lib/cardData';
+import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, CLAN_PROFILE, MANA_BASE, ELEM_COUNTER } from '@/lib/game/gameData';
 import { HERO_ART, HERO_ELITE_ART } from '@/lib/artUrls';
 
 // ----- Constantes idénticas al original -----
 export const EQUIP_BASE = 45;
 export const START_COINS = 100;
 export const SELL_RATE = 0.6;
+export { SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, ELEM_COUNTER };
+
+export const prof = (h) => CLAN_PROFILE[h.clan] || { eliteHpPct: 0.3, mMelee: 0, mRanged: 0, mSpell: 0, mVel: 0, manaBonus: 0, regenBonus: 0, resPhys: 0, resMagic: 0 };
 
 const rnd = (n) => Math.floor(Math.random() * n);
 const pick = (arr) => arr[rnd(arr.length)];
@@ -221,10 +224,107 @@ function finishAuction(g) {
   for (const s of ['p', 'o']) {
     const eb = pick(eqPool);
     g.equipReserve[s] += eb.effect;
-    g.auction.bonus[s] = eb;
+    g.equipBonus = g.equipBonus || {};
+    g.equipBonus[s] = eb;
     g.equipCoins[s] = g.coins[s] + EQUIP_BASE + g.equipReserve[s];
   }
+  g.spellbook = { p: [], o: [] };
+  g.items = { p: [], o: [] };
+  g.eqShop = 'spell';
+  g.assign = null;
   g.phase = 'equip';
 }
 
-export { heroScore, primKey };
+// ===================== EQUIPAMIENTO (réplica exacta) =====================
+export const SHOP_TABS = [['spell', 'Hechizos'], ['melee', 'Armas C/C'], ['ranged', 'Armas Distancia'], ['armor', 'Armaduras'], ['object', 'Objetos']];
+
+export function eqStat(h, k) {
+  const pr = prof(h);
+  let v = h[k] || 0;
+  if (k === 'cc') { v += pr.mMelee || 0; if (h.mwep) v += h.mwep.cc; }
+  if (k === 'ad') v += pr.mRanged || 0;
+  if (k === 'he') v += pr.mSpell || 0;
+  return Math.max(0, v);
+}
+export const eqHpVal = (h) => (h.hp || 0) + (h.armor ? h.armor.hp : 0);
+export const eqManaVal = (h) => { const pr = prof(h); return Math.max(0, (MANA_BASE[h.type] || 0) + (pr.manaBonus || 0)); };
+export function eqVelVal(h) {
+  const pr = prof(h);
+  let v = eqStat(h, primKey(h.type)) + (pr.mVel || 0);
+  if (h.mwep && h.mwep.tag === '+veloc') v += 3;
+  if (h.rwep && h.rwep.tag === 'lento') v -= 2;
+  return Math.max(1, v);
+}
+
+const eqList = (kind) => (kind === 'melee' ? MELEE_WEAPONS : kind === 'ranged' ? RANGED_WEAPONS : ARMORS);
+export const canAssign = (h, a) => { if (!a) return false; if (a.kind === 'armor') return !h.armor; return !h.mwep && !h.rwep; };
+
+export function buySpell(g, side, id) {
+  const s = byId(SPELLS, id);
+  if (!s || g.equipCoins[side] < s.cost) return false;
+  g.equipCoins[side] -= s.cost; g.spellbook[side].push(id);
+  return true;
+}
+export function buyObject(g, side, id) {
+  const o = byId(OBJECTS, id);
+  if (!o || g.equipCoins[side] < o.cost) return false;
+  g.equipCoins[side] -= o.cost; g.items[side].push(deep(o));
+  return true;
+}
+export function removeSpell(g, side, i) {
+  const id = g.spellbook[side][i]; if (id == null) return;
+  const s = byId(SPELLS, id); g.equipCoins[side] += s.cost; g.spellbook[side].splice(i, 1);
+}
+export function removeItem(g, side, i) {
+  const o = g.items[side][i]; if (!o) return;
+  g.equipCoins[side] += o.cost; g.items[side].splice(i, 1);
+}
+// Asigna un arma/armadura a un héroe (compra + equipa).
+export function assignEquip(g, side, heroId, kind, id) {
+  const h = byId(g.team[side], heroId);
+  const src = eqList(kind);
+  const item = byId(src, id);
+  if (!h || !item) return false;
+  const a = { kind, id, cost: item.cost, name: item.name };
+  if (!canAssign(h, a)) return false;
+  if (g.equipCoins[side] < a.cost) return false;
+  g.equipCoins[side] -= a.cost;
+  if (kind === 'armor') h.armor = deep(item);
+  else if (kind === 'melee') h.mwep = deep(item);
+  else h.rwep = deep(item);
+  return true;
+}
+export function unequip(g, side, heroId, slot) {
+  const h = byId(g.team[side], heroId);
+  if (!h || !h[slot]) return;
+  g.equipCoins[side] += h[slot].cost; h[slot] = null;
+}
+
+export function aiEquip(g, side) {
+  let budget = g.equipCoins[side];
+  const buyW = (h, arr, kindKey) => {
+    const aff = arr.filter((w) => w.cost <= budget).sort((a, b) => b.cost - a.cost);
+    if (aff.length) { const w = aff[0]; budget -= w.cost; h[kindKey] = deep(w); }
+  };
+  for (const h of g.team[side]) {
+    if (h.type === 'AD') buyW(h, RANGED_WEAPONS, 'rwep');
+    else if (h.type === 'CC') buyW(h, MELEE_WEAPONS, 'mwep');
+    else { const cheap = RANGED_WEAPONS.filter((w) => w.cost <= budget).sort((a, b) => a.cost - b.cost); if (cheap.length) { budget -= cheap[0].cost; h.rwep = deep(cheap[0]); } }
+  }
+  const tank = [...g.team[side]].sort((a, b) => b.hp - a.hp)[0];
+  const arm = ARMORS.filter((a) => a.cost <= budget).sort((a, b) => (b.hp + b.redM + b.redH) - (a.hp + a.redM + a.redH))[0];
+  if (tank && arm) { budget -= arm.cost; tank.armor = deep(arm); }
+  const mage = g.team[side].find((h) => h.type === 'HE');
+  if (mage) { for (const s of shuffle(SPELLS)) { if (s.cost <= budget) { budget -= s.cost; g.spellbook[side].push(s.id); } if (g.spellbook[side].length >= 4) break; } }
+  const shop = mage ? ['ob_mana', 'ob_pot', 'ob_revive', 'ob_shield', 'ob_bomb'] : ['ob_pot', 'ob_revive', 'ob_shield', 'ob_bomb'];
+  for (const oid of shop) { const o = byId(OBJECTS, oid); if (o && o.cost <= budget) { budget -= o.cost; g.items[side].push(deep(o)); } }
+  g.equipCoins[side] = budget;
+}
+
+// El jugador confirma su equipo: la IA equipa al rival y se pasa a batalla.
+export function finishEquip(g) {
+  aiEquip(g, 'o');
+  g.phase = 'battle';
+}
+
+export { heroScore, primKey, byId, deep, pick, other, clamp };
