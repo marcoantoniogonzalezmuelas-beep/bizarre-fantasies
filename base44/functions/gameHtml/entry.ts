@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-no-hero-lupa-v20';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-quickshop-fullart-v21';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -551,13 +551,15 @@ function buildArtScript() {
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
-      .bf-quick-card { position:relative; overflow:hidden; min-height:172px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#0b0811; padding:86px 10px 10px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
-      .bf-quick-art { position:absolute; left:0; right:0; top:0; height:102px; background-size:cover; background-position:center; }
-      .bf-quick-card::after { content:''; position:absolute; left:0; right:0; top:0; height:112px; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.82) 100%); pointer-events:none; }
-      .bf-quick-card > *:not(.bf-quick-art) { position:relative; z-index:2; }
-      .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:3; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; }
-      .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.05; }
-      .bf-quick-txt { color:#d9d0e8; font-size:11px; line-height:1.25; margin-top:5px; }
+      .bf-quick-card { position:relative; overflow:hidden; min-height:210px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:120px 11px 12px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); display:flex; flex-direction:column; justify-content:flex-end; }
+      .bf-quick-fill { position:absolute; inset:-20px; z-index:0; background-size:cover; background-position:center; filter:blur(18px) saturate(1.3) contrast(1.16); transform:scale(1.28); }
+      .bf-quick-art { position:absolute; inset:-12px; z-index:1; background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:scale(1.06); }
+      .bf-quick-card::after { content:''; position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,.86) 100%); pointer-events:none; }
+      .bf-quick-card > *:not(.bf-quick-fill):not(.bf-quick-art) { position:relative; z-index:3; }
+      .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
+      .bf-quick-num { z-index:4; }
+      .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.08; text-shadow:0 2px 6px #000,0 0 12px #000; }
+      .bf-quick-txt { color:#f0e7ff; font-size:11px; line-height:1.25; margin-top:5px; text-shadow:0 1px 3px #000; }
       /* In-game styled confirm dialog */
       .bf-confirm-overlay { position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.72),rgba(8,5,14,.9)); backdrop-filter:blur(4px); animation:bfFadeIn .2s ease; }
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
@@ -1730,7 +1732,7 @@ function buildArtScript() {
         var disabled = Number(item.cost || 0) > coins;
         var no = numFor(item);
         return '<div class="bf-quick-card" ' + (disabled ? 'style="opacity:.45;cursor:not-allowed"' : 'onclick="bfQuickBuy(&quot;' + side + '&quot;,&quot;' + heroId + '&quot;,&quot;' + row.kind + '&quot;,&quot;' + item.id + '&quot;)"') + '>' +
-          (art ? '<div class="bf-quick-art" style="background-image:url(&quot;' + art + '&quot;)"></div>' : '') +
+          (art ? '<div class="bf-quick-fill" style="background-image:url(&quot;' + art + '&quot;)"></div><div class="bf-quick-art" style="background-image:url(&quot;' + art + '&quot;)"></div>' : '') +
           '<div class="bf-quick-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>' +
           '<div class="bf-quick-cost">' + clean(item.cost) + '</div>' +
           '<div class="bf-quick-name">' + clean(item.name) + '</div>' +
