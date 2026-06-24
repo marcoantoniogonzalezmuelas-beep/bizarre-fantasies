@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-guide-prepare-v25';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-confirm-art-v26';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -224,6 +224,8 @@ function buildArtScript() {
   var MELEE_ART = ${JSON.stringify(MELEE_ART)};
   var RANGED_ART = ${JSON.stringify(RANGED_ART)};
   var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
+  var SPELL_ART = ${JSON.stringify(SPELL_ART)};
+  var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
@@ -1578,7 +1580,7 @@ function buildArtScript() {
     window.buySpell = function(side, id) {
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
       if (!item) return;
-      var art = NUM_ART[String(numFor(item))] || '';
+      var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuySpell(side, id); });
     };
 
@@ -1586,7 +1588,7 @@ function buildArtScript() {
     window.buyObject = function(side, id) {
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
       if (!item) return;
-      var art = NUM_ART[String(numFor(item))] || '';
+      var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); });
     };
 
