@@ -11,6 +11,7 @@ export default function Home() {
   const [html, setHtml] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,13 +25,20 @@ export default function Home() {
         const res = await base44.functions.invoke('gameHtml', {
           version: EXPECTED_PATCH_VERSION,
           t: Date.now(),
+          r: Math.random().toString(36).slice(2),
           attempt,
         });
 
         if (cancelled) return;
         const data = typeof res.data === 'string' ? res.data : String(res.data);
         if (!data || data.length < 1000) throw new Error('empty');
+        // If the served HTML isn't the expected version, the response was cached — retry.
+        if (data.indexOf(EXPECTED_PATCH_VERSION) === -1 && attempt < MAX_LOAD_ATTEMPTS) {
+          loadGame(attempt + 1);
+          return;
+        }
         setHtml(data);
+        setReloadKey((k) => k + 1);
         setLoading(false);
       } catch {
         if (cancelled) return;
@@ -77,6 +85,7 @@ export default function Home() {
 
       {html && (
         <iframe
+          key={reloadKey}
           ref={iframeRef}
           title="Bizarre Fantasies v5"
           srcDoc={html}
