@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-shop-name-txt-v36';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-borders-foil-v37';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -317,7 +317,7 @@ function buildArtScript() {
         background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important;
       }
       .bf-hero-bg {
-        position: absolute; inset: -3%; z-index: 0; pointer-events: none;
+        position: absolute; inset: -8%; z-index: 0; pointer-events: none;
         background-image: var(--bf-art); background-size: cover; background-position: center center; background-repeat: no-repeat;
         filter: saturate(1.12) contrast(1.08);
       }
@@ -332,6 +332,16 @@ function buildArtScript() {
           linear-gradient(180deg, rgba(16,0,34,.58) 0%, rgba(20,0,42,.10) 24%, rgba(0,0,0,0) 43%, rgba(18,0,35,.16) 66%, rgba(0,0,0,.70) 100%),
           radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%);
       }
+      /* Épicas: borde foiled holográfico animado */
+      .bf-hero-card.cf-epic { border-color:transparent !important; box-shadow:0 10px 28px rgba(0,0,0,.65), 0 0 24px rgba(255,170,80,.4) !important; }
+      .bf-hero-card.cf-epic .bf-foil { position:absolute; inset:-3px; z-index:6; border-radius:21px; padding:3px; pointer-events:none;
+        background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);
+        background-size:300% 300%; animation:bfFoilShift 4s linear infinite;
+        -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); mask-composite:exclude;
+        filter:drop-shadow(0 0 8px rgba(255,200,120,.7)); }
+      .bf-hero-card.cf-epic::after { content:''; position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:18px;
+        background:linear-gradient(125deg,transparent 30%,rgba(255,255,255,.18) 47%,transparent 62%); background-size:250% 250%; animation:bfFoilShift 4s linear infinite; mix-blend-mode:screen; }
+      @keyframes bfFoilShift { 0%{background-position:0% 0%} 100%{background-position:300% 300%} }
       .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
       .bf-hero-top, .bf-hero-band { display:none !important; }
       .bf-race-sigil { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff7dc; font-family:'Cinzel',serif; font-size:25px; font-weight:1000; background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%); border:2px solid var(--clan,#caa14a); text-shadow:0 2px 4px #000,0 0 10px var(--clan,#caa14a); box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 15px color-mix(in srgb, var(--clan,#caa14a) 45%, transparent); }
@@ -384,7 +394,7 @@ function buildArtScript() {
       }
       .bf-bonus-card .bf-bonus-fill { display: none; }
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: -3px; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1;
+        position: absolute; inset: 0; background-size: 106% 106%; background-position: center center; background-repeat: no-repeat; z-index: 1;
       }
       .bf-bonus-card .bf-bonus-shade { display: none; }
       .bf-bonus-card .bf-bonus-name { display: none; }
@@ -392,7 +402,7 @@ function buildArtScript() {
       /* Mobile card fit: keep art and text inside the phone frame */
       @media (max-width: 640px) {
         .cardface, .bf-hero-card { max-width: 100% !important; }
-        .bf-hero-bg, .cf-art.has-art::before { inset: -4% !important; background-size: cover !important; background-position: center center !important; }
+        .bf-hero-bg, .cf-art.has-art::before { inset: -8% !important; background-size: cover !important; background-position: center center !important; }
         .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; }
         .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; }
         .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
@@ -413,15 +423,15 @@ function buildArtScript() {
         .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
-        .shop-card-art-sharp { inset: -3px !important; background-size: cover !important; background-position: center center !important; }
+        .shop-card-art-sharp { inset: 0 !important; background-size: 106% 106% !important; background-position: center center !important; }
         .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: -3px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: 0 !important; background-size: 106% 106% !important; background-position: center center !important; background-repeat: no-repeat !important; }
       }
 
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-16px; top:-16px; bottom:-16px; width:118px; z-index:1; background-size:cover; background-position:center 12%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
+      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:130px; z-index:1; background-size:140% auto; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
@@ -465,10 +475,10 @@ function buildArtScript() {
       @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
       @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
-      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 12%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
+      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:150% auto; background-position:center 16%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 12%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
-      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 12%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
+      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:142% auto; background-position:center 16%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:150% auto; background-position:center 16%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -514,17 +524,17 @@ function buildArtScript() {
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
       .shop-card.has-art > *:not(.shop-card-art-sharp):not(.bf-view-btn) { display:none !important; }
       .shop-card-art { display:none !important; }
-      .shop-card-art-sharp { position:absolute; inset:-3px; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
+      .shop-card-art-sharp { position:absolute; inset:0; z-index:1; background-size:106% 106%; background-position:center center; background-repeat:no-repeat; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
       .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
       .chip.bf-chip-card .bf-chip-fill { display:none; }
-      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-3px; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
+      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:0; z-index:1; background-size:106% 106%; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
-      .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:138px; z-index:1; background-size:cover; background-position:center 16%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
+      .bf-eq-hero-art { position:absolute; left:-10px; top:-10px; bottom:-10px; width:150px; z-index:1; background-size:130% auto; background-position:center 18%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
       .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.22) 58%,rgba(18,12,25,.92) 100%); }
       /* Equipped item thumbnail inside a filled slot (no number) */
       .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; display:flex; align-items:center; }
@@ -537,7 +547,7 @@ function buildArtScript() {
       /* Quick-shop card = the oracle card itself (cover + overscan + card ratio). */
       .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
       .bf-quick-fill { display:none; }
-      .bf-quick-art { position:absolute; inset:-3px; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
+      .bf-quick-art { position:absolute; inset:0; z-index:1; background-size:106% 106%; background-position:center; background-repeat:no-repeat; }
       .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-cost) { display:none !important; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
       /* In-game styled confirm dialog */
@@ -704,9 +714,11 @@ function buildArtScript() {
       var ability = elite ? h.eAbility : h.ability;
       var abilityTxt = elite ? h.eTxt : h.abilityTxt;
       var col = h.clanColor || '#caa14a';
+      var isEpic = h.clan === 'Épicas';
       var url = elite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
       var safeUrl = String(url || '').replace(/'/g, '%27');
-      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' +
+      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + (isEpic ? ' cf-epic' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' +
+        (isEpic ? '<div class="bf-foil"></div>' : '') +
         '<div class="bf-hero-bg"></div>' +
         '<div class="bf-hero-frame"></div>' +
         '<div class="bf-coin">' + clean(h.cost) + '</div>' +
