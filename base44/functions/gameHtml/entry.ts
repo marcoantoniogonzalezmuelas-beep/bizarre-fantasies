@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-tidy-v43';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-art-v44';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -292,7 +292,7 @@ function buildArtScript() {
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:130px; z-index:1; background-size:cover; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
+      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:130px; z-index:1; background-size:118% auto; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
@@ -336,10 +336,10 @@ function buildArtScript() {
       @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
       @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
-      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
+      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:122% auto; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
-      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
+      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:122% auto; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:122% auto; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -386,12 +386,14 @@ function buildArtScript() {
       .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt) { display:none !important; }
       .shop-card-art { display:none !important; }
       .shop-card-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
-      .shop-card-art-sharp { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
+      .shop-card-art-sharp { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
       .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
       .chip.bf-chip-card .bf-chip-fill { display:block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(14px) saturate(1.3) brightness(.85); transform:scale(1.35); }
-      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
+      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
+      .chip.bf-chip-card .bf-chip-info { position:absolute; left:0; right:0; bottom:0; z-index:3; padding:2px 3px 3px; font-size:7.5px !important; line-height:1.1; font-weight:800; font-family:'Rubik',sans-serif; color:#cfeaff; text-align:center; text-shadow:0 1px 2px #000,0 0 4px #000; background:linear-gradient(0deg,rgba(4,8,16,.95),rgba(4,8,16,.6) 70%,transparent); white-space:normal; }
+      .chip.bf-chip-card.bf-chip-has-info .bf-chip-name { bottom:auto; top:0; background:linear-gradient(180deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
       .chip.bf-chip-card .bf-chip-name { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:3px 4px 4px; font-size:8.5px !important; line-height:1.04; font-weight:900; font-family:'Cinzel',serif; color:#fff5dc; text-align:center; text-transform:uppercase; letter-spacing:.1px; text-shadow:0 1px 2px #000,0 0 6px #000; background:linear-gradient(0deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); white-space:normal; }
@@ -481,10 +483,23 @@ function buildArtScript() {
       .bhero .bf-gear-icon { width:26px; height:26px; border-radius:6px; background-size:cover; background-position:center; border:1.5px solid rgba(255,210,74,.55); box-shadow:0 2px 6px rgba(0,0,0,.6); background-color:#0a0710; }
 
       /* ---- Action panel of the active hero: AI battle background ---- */
-      .bf-action-bg { position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 30%; background-repeat:no-repeat; opacity:.9; }
-      .bf-action-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,7,18,.78) 0%,rgba(10,7,18,.62) 45%,rgba(10,7,18,.88) 100%); }
-      .bf-action-host { position:relative !important; }
-      .bf-action-host > *:not(.bf-action-bg) { position:relative; z-index:1; }
+      .bf-action-bg { position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 22%; background-repeat:no-repeat; opacity:.95; transition:background-image .4s ease; }
+      .bf-action-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,7,18,.74) 0%,rgba(10,7,18,.55) 38%,rgba(10,7,18,.9) 100%); }
+      .bf-action-host { position:relative !important; overflow:hidden; border-radius:14px; }
+      .bf-action-host > *:not(.bf-action-bg):not(.bf-active-banner) { position:relative; z-index:1; }
+      /* Active hero banner: name + ability, shown at the top of the action panel */
+      .bf-active-banner { position:relative; z-index:2; margin:0 0 10px; padding:9px 11px; border-radius:12px; background:linear-gradient(180deg,rgba(20,12,34,.78),rgba(8,5,14,.85)); border:1px solid rgba(255,210,74,.4); box-shadow:0 4px 16px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.05); backdrop-filter:blur(2px); display:grid; grid-template-columns:42px 1fr; gap:10px; align-items:center; }
+      .bf-active-banner.bf-banner-elite { border-color:rgba(190,108,255,.55); }
+      .bf-ab-orb { position:relative; width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101); border:2px solid rgba(255,224,121,.82); box-shadow:0 0 14px rgba(255,95,25,.7), inset 0 0 8px rgba(255,255,255,.18); }
+      .bf-ab-orb::before { content:'✦'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff7d7; font-size:21px; font-weight:900; text-shadow:0 0 8px #fff,0 2px 4px #000; }
+      .bf-banner-elite .bf-ab-orb { background:radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012); box-shadow:0 0 15px rgba(190,91,255,.8), inset 0 0 8px rgba(255,255,255,.16); }
+      .bf-ab-hero { font-family:'Cinzel',serif; font-weight:1000; font-size:13px; color:#ffe07b; letter-spacing:.2px; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 8px rgba(255,210,74,.3); line-height:1; }
+      .bf-banner-elite .bf-ab-hero { color:#d9a2ff; }
+      .bf-ab-name { font-family:'Cinzel',serif; font-weight:900; font-size:11px; color:#fff5dc; margin-top:3px; line-height:1; }
+      .bf-ab-text { color:#fff7ea; font-size:11px; font-weight:600; line-height:1.22; margin-top:3px; text-shadow:0 1px 2px #000; }
+      /* Beefed-up action buttons in the active panel */
+      .bf-action-host button { transition:transform .12s ease, box-shadow .12s ease, filter .12s ease; }
+      .bf-action-host button:hover { transform:translateY(-2px); filter:brightness(1.08); }
 
       /* ---- Hand card "play it?" confirm + cast animation ---- */
       .bf-cast-flash { position:fixed; inset:0; z-index:99998; pointer-events:none; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.5),rgba(176,108,255,.25) 30%,transparent 65%); animation:bfCastFlash .8s ease-out forwards; }
@@ -1841,6 +1856,40 @@ function buildArtScript() {
     return map;
   }
 
+  // Build a name -> item lookup for spells/objects, so we can read each card's
+  // effect (damage / heal / mana / etc.) and show it on the hand card.
+  var __bfHandItemByName = null;
+  function handItemByName() {
+    if (__bfHandItemByName) return __bfHandItemByName;
+    if (typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined') return null;
+    var map = {};
+    (SPELLS || []).forEach(function(s) { if (s && s.name) map[s.name] = { item: s, kind: 'spell' }; });
+    (OBJECTS || []).forEach(function(o) { if (o && o.name) map[o.name] = { item: o, kind: 'object' }; });
+    __bfHandItemByName = map;
+    return map;
+  }
+
+  // Short, battle-useful summary of what a card does (damage / heal / effect).
+  function handCardSummary(found) {
+    if (!found || !found.item) return '';
+    var it = found.item;
+    var parts = [];
+    var dmg = it.dmg != null ? it.dmg : (it.damage != null ? it.damage : (it.power != null ? it.power : null));
+    var heal = it.heal != null ? it.heal : (it.hp != null ? it.hp : null);
+    var manaGain = it.manaGain != null ? it.manaGain : (it.giveMana != null ? it.giveMana : null);
+    var manaCost = it.mana != null ? it.mana : (it.manaCost != null ? it.manaCost : null);
+    if (dmg) parts.push('💥 ' + dmg + ' daño');
+    if (heal) parts.push('💚 +' + heal + ' vida');
+    if (manaGain) parts.push('🔷 +' + manaGain + ' maná');
+    if (found.kind === 'spell' && manaCost) parts.push('coste ' + manaCost);
+    // If nothing numeric was found, fall back to the card's own short text.
+    if (!parts.length) {
+      var txt = it.txt || it.desc || '';
+      return txt.length > 46 ? txt.slice(0, 44) + '…' : txt;
+    }
+    return parts.join(' · ');
+  }
+
   function injectHandArt() {
     var map = handArtByName();
     if (!map) return;
@@ -1877,6 +1926,18 @@ function buildArtScript() {
       nm.className = 'bf-chip-name';
       nm.textContent = name;
       chip.appendChild(nm);
+      // Effect line (damage / heal / mana / short text) at the bottom — most
+      // useful during battle so the player knows what each card does.
+      var items = handItemByName();
+      var found = items ? items[name] : null;
+      var summary = handCardSummary(found);
+      if (summary) {
+        var info = document.createElement('div');
+        info.className = 'bf-chip-info';
+        info.textContent = summary;
+        chip.appendChild(info);
+        chip.classList.add('bf-chip-has-info');
+      }
     });
   }
 
@@ -2006,7 +2067,23 @@ function buildArtScript() {
     wrap.querySelector('.bf-guide-text').innerHTML = msg.m;
   }
 
-  // ---- (A) AI battle background behind the active hero's action panel ----
+  // ---- (A) Active hero's action panel: their own AI battle art as background,
+  // plus a banner showing their name + ability right in the panel ----
+  function bfActiveHero() {
+    var card = document.querySelector('.bhero.active-turn');
+    if (!card) return null;
+    var id = heroIdFromCard(card);
+    var side = (String(card.id || '').split('_')[1]) || 'p';
+    var hero = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(h) { return h && h.id === id; });
+    return hero ? { hero: hero, id: id, side: side, card: card } : { hero: null, id: id, side: side, card: card };
+  }
+
+  function bfEsc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+    });
+  }
+
   function injectActionPanelBg() {
     var battle = document.getElementById('s-battle');
     if (!battle || !battle.classList.contains('active')) return;
@@ -2019,13 +2096,52 @@ function buildArtScript() {
       if (/Atacar|Hechizo|Objeto|Pasar turno|Pasar/i.test(t)) { host = btns[i].parentElement; break; }
     }
     if (!host) return;
-    if (host.dataset.bfActionBg === '1') return;
-    host.dataset.bfActionBg = '1';
     host.classList.add('bf-action-host');
-    var bg = document.createElement('div');
-    bg.className = 'bf-action-bg';
-    bg.style.setProperty('--bf-action-art', 'url("' + ACTION_BG + '")');
-    host.insertBefore(bg, host.firstChild);
+    var bg = host.querySelector('.bf-action-bg');
+    if (!bg) {
+      bg = document.createElement('div');
+      bg.className = 'bf-action-bg';
+      host.insertBefore(bg, host.firstChild);
+    }
+
+    // Resolve the active hero so we can use their portrait + ability.
+    var active = bfActiveHero();
+    var hero = active && active.hero;
+    var elite = active && active.card && (active.card.classList.contains('elite-mode') || active.card.classList.contains('bf-auto-elite'));
+    // Background = the active hero's battle art (elite art when in elite form),
+    // falling back to the generic battle background.
+    var artUrl = ACTION_BG;
+    if (active && active.id) {
+      artUrl = (elite ? (ELITE_BY_ID[active.id] || ART_BY_ID[active.id]) : ART_BY_ID[active.id]) || ACTION_BG;
+    }
+    if (host.dataset.bfActionArt !== artUrl) {
+      bg.style.setProperty('--bf-action-art', 'url("' + artUrl + '")');
+      host.dataset.bfActionArt = artUrl;
+    }
+
+    // Banner with the active hero's name + ability, placed at the top of panel.
+    if (hero) {
+      var ability = elite ? (hero.eAbility || hero.ability) : hero.ability;
+      var abilityTxt = elite ? (hero.eTxt || hero.abilityTxt) : hero.abilityTxt;
+      var key = active.id + '|' + (elite ? 'e' : 'n');
+      var banner = host.querySelector('.bf-active-banner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.className = 'bf-active-banner';
+        host.insertBefore(banner, bg.nextSibling);
+      }
+      if (banner.dataset.bfKey !== key) {
+        banner.dataset.bfKey = key;
+        banner.className = 'bf-active-banner' + (elite ? ' bf-banner-elite' : '');
+        banner.innerHTML =
+          '<div class="bf-ab-orb"></div>' +
+          '<div>' +
+            '<div class="bf-ab-hero">' + bfEsc(hero.name) + (elite ? ' ★' : '') + '</div>' +
+            (ability ? '<div class="bf-ab-name">' + bfEsc(ability) + '</div>' : '') +
+            (abilityTxt ? '<div class="bf-ab-text">' + bfEsc(abilityTxt) + '</div>' : '') +
+          '</div>';
+      }
+    }
   }
 
   // ---- (B) Play a hand card (spell/object) with a confirm + cast animation ----
