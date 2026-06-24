@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-thumbs-play-v41';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-optimize-v42';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -683,6 +683,36 @@ function buildArtScript() {
         .bf-guide-title { font-size:11px; }
         .bf-guide-text { font-size:11px; line-height:1.25; }
         .bf-guide-x { top:2px; right:2px; width:30px; height:30px; font-size:16px; background:rgba(255,255,255,.18); }
+      }
+
+      /* ---- Tablets (portrait + landscape): roomier than phones, tighter than desktop ---- */
+      @media (min-width: 641px) and (max-width: 1024px) {
+        .bf-hero-bg, .cf-art.has-art::before { inset:-7% !important; background-size:cover !important; background-position:center center !important; }
+        .bf-race-list { grid-template-columns:repeat(auto-fit,minmax(260px,1fr)) !important; }
+        .bf-quick-grid { grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important; }
+        .chip.bf-chip-card { width:96px !important; height:131px !important; }
+        .bf-confirm-box { width:min(420px,90vw) !important; }
+        .bf-guide { max-width:min(640px,92vw) !important; }
+        .bf-eq-hero-art { width:140px !important; }
+        .eq-hero.bf-eq-hero-with-art { padding-left:140px !important; }
+      }
+
+      /* ---- Small phones: shrink hand cards & confirm dialog so they always fit ---- */
+      @media (max-width: 420px) {
+        .chip.bf-chip-card { width:76px !important; height:104px !important; }
+        .bf-confirm-box { width:96vw !important; }
+        .bf-confirm-name { font-size:17px !important; }
+        .bf-confirm-btn { font-size:13px !important; padding:10px 8px !important; }
+        .bf-action-bg { background-position:center 35% !important; }
+        .bf-quick-grid { grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) !important; }
+      }
+
+      /* ---- Landscape phones: keep the guide & action panel out of the way ---- */
+      @media (max-height: 480px) and (orientation: landscape) {
+        .bf-guide { top:4px !important; }
+        .bf-guide-char { width:50px !important; height:50px !important; }
+        .bf-guide-bubble { padding:6px 30px 7px 10px !important; }
+        .bf-guide-text { font-size:10.5px !important; }
       }
     \`;
     document.head.appendChild(style);
@@ -2266,9 +2296,15 @@ function buildArtScript() {
     syncBattleFx();
   }
 
-  // ---- OBSERVE DOM MUTATIONS ----
+  // ---- OBSERVE DOM MUTATIONS (debounced via rAF so a burst of mutations
+  // triggers a single injection pass on the next frame, not dozens) ----
   function startObserver() {
-    var observer = new MutationObserver(function() { injectArtIntoDOM(); });
+    var scheduled = false;
+    var observer = new MutationObserver(function() {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(function() { scheduled = false; injectArtIntoDOM(); });
+    });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
@@ -2328,6 +2364,9 @@ function buildArtScript() {
     applyCover();
     patchQuitToHome();
 
+    // Startup loop: keep trying until the game's own functions are defined and
+    // patched, then stop. The MutationObserver takes over afterwards, so we no
+    // longer need perpetual intervals or per-click timers (less CPU, smoother).
     var attempts = 0;
     var patchedFace = false;
     var interval = setInterval(function() {
@@ -2345,13 +2384,14 @@ function buildArtScript() {
 
     startObserver();
 
-    document.addEventListener('click', function() {
-      setTimeout(function() { applyCover(); injectArtIntoDOM(); }, 80);
-      setTimeout(function() { applyCover(); injectArtIntoDOM(); }, 400);
-    });
-
-    // Keep cover in sync even if screen changes without a click
-    setInterval(applyCover, 600);
+    // The observer catches DOM changes; this only re-syncs the cover background
+    // on screen transitions (which may not mutate body children), throttled.
+    var lastScreenId = '';
+    setInterval(function() {
+      var active = document.querySelector('.screen.active');
+      var id = active ? active.id : '';
+      if (id !== lastScreenId) { lastScreenId = id; applyCover(); }
+    }, 400);
   }
 
   if (document.readyState === 'loading') {
@@ -2364,26 +2404,31 @@ function buildArtScript() {
 `;
 }
 
+// In-memory cache of the fully assembled HTML, keyed by patch version. The
+// upstream file only changes when we bump GAME_PATCH_VERSION, so we fetch +
+// assemble once per deploy and serve every later request straight from memory.
+let CACHED_HTML = null;
+
+async function buildGameHtml() {
+  if (CACHED_HTML) return CACHED_HTML;
+  const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
+  const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION, { cache: 'no-store' });
+  let html = await upstream.text();
+
+  // Prevent in-game "back to start" buttons from reloading cached/raw HTML.
+  html = html.replaceAll('location.reload()', 'window.parent.location.href = window.parent.location.pathname + "?bf=" + Date.now()');
+
+  // Inject art script right before </body> so the game's own script
+  // (cardFace, HEROES, etc.) is already defined when we hook it.
+  const artScript = buildArtScript();
+  html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
+  CACHED_HTML = html;
+  return html;
+}
+
 Deno.serve(async (req) => {
   try {
-    const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
-    const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now() + '&r=' + Math.random().toString(36).slice(2), {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache, no-store, max-age=0', 'Pragma': 'no-cache' },
-    });
-    let html = await upstream.text();
-
-    // Prevent in-game "back to start" buttons from reloading cached/raw HTML.
-    html = html.replaceAll('location.reload()', 'window.parent.location.href = window.parent.location.pathname + "?bf=" + Date.now()');
-
-    // Inject art script right before </body> so the game's own script
-    // (cardFace, HEROES, etc.) is already defined when we hook it.
-    const artScript = buildArtScript();
-    if (html.includes('</body>')) {
-      html = html.replace('</body>', artScript + '</body>');
-    } else {
-      html = html + artScript;
-    }
+    const html = await buildGameHtml();
 
     return new Response(html, {
       status: 200,
