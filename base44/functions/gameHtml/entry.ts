@@ -582,35 +582,12 @@ function buildArtScript() {
   function patchCardFace() {
     if (typeof window.cardFace !== 'function' || window.cardFace.__patched) return !!(window.cardFace && window.cardFace.__patched);
 
-    function clean(value) {
-      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
-        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
-      });
-    }
-    function typeLabel(type) {
-      if (type === 'CC') return 'CUERPO A CUERPO';
-      if (type === 'AD') return 'A DISTANCIA';
-      if (type === 'HE') return 'MAGIA';
-      return clean(type || 'HÉROE');
-    }
-
-    var ROLE_EMBLEM = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' };
-    function typeIcon(type) {
-      var RI = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' };
-      if (RI[type]) return '<img class="bf-role-emblem" src="' + RI[type] + '" alt="">';
-      return '★';
-    }
-    function raceSigil(clan) {
-      return RACE_SIGILS[clan] || '◆';
-    }
-    function padNum(value, hero) {
-      var n = parseInt(value || 0, 10);
-      if (!n && hero && hero.id) {
-        var idx = HERO_IDS.indexOf(hero.id);
-        if (idx >= 0) n = idx + 1;
-      }
-      return n ? String(n).padStart(3, '0') : '---';
-    }
+    var RB='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/',ROLE_EMBLEM={CC:RB+'ab147bafb_generated_image.png',AD:RB+'fd388871c_generated_image.png',HE:RB+'cfd5e317c_generated_image.png'};
+    function clean(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
+    function typeLabel(t){if(t==='CC')return'CUERPO A CUERPO';if(t==='AD')return'A DISTANCIA';if(t==='HE')return'MAGIA';return clean(t||'HÉROE');}
+    function typeIcon(t){if(ROLE_EMBLEM[t])return'<img class="bf-role-emblem" src="'+ROLE_EMBLEM[t]+'" alt="">';return'★';}
+    function raceSigil(c){return RACE_SIGILS[c]||'◆';}
+    function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
 
     var patched = function(h, variant) {
       var elite = variant === 'elite';
@@ -823,21 +800,9 @@ function buildArtScript() {
     });
   }
 
-  function readHeroHp(card) {
-    var hp = card.querySelector('.bhero-hpnum');
-    var text = hp ? hp.textContent : '';
-    var match = String(text).match(/-?\d+/);
-    return match ? parseInt(match[0], 10) : null;
-  }
-
-  function statusText(card) {
-    var status = card.querySelector('.bhero-status');
-    return status ? status.textContent : '';
-  }
-
-  function isHeroParalyzed(card) {
-    return card.classList.contains('s-paralyzed') || /par[aá]li/i.test(statusText(card));
-  }
+  function readHeroHp(c){var h=c.querySelector('.bhero-hpnum'),t=h?h.textContent:'',m=String(t).match(/-?\d+/);return m?parseInt(m[0],10):null;}
+  function statusText(c){var s=c.querySelector('.bhero-status');return s?s.textContent:'';}
+  function isHeroParalyzed(c){return c.classList.contains('s-paralyzed')||/par[aá]li/i.test(statusText(c));}
 
   // Resolve the current status of a battle hero: 'paralyzed' | 'sleeping' | 'cursed' | ''.
   function heroStatusOf(card) {
@@ -890,10 +855,7 @@ function buildArtScript() {
     }
   }
 
-  function heroIdFromCard(card) {
-    var parts = String(card && card.id || '').split('_');
-    return parts[parts.length - 1] || '';
-  }
+  function heroIdFromCard(c){var p=String(c&&c.id||'').split('_');return p[p.length-1]||'';}
 
   function addOverlayFx(card, html, ms) {
     if (!card || !card.isConnected) return;
@@ -1481,9 +1443,7 @@ function buildArtScript() {
         return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
       });
     }
-    function findHero(side, heroId) {
-      return ((G.team && G.team[side]) || []).find(function(h) { return h && h.id === heroId; });
-    }
+    function findHero(s,i){return((G.team&&G.team[s])||[]).find(function(h){return h&&h.id===i;});}
     function closeAnyModal() {
       var close = document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');
       if (close) close.click();
@@ -1529,10 +1489,7 @@ function buildArtScript() {
       overlay.querySelector('#bf-confirm-yes').onclick = function() { close(); onYes(); };
     }
 
-    function indexInList(list, id) {
-      for (var i = 0; i < (list || []).length; i++) { if (list[i] && list[i].id === id) return i; }
-      return -1;
-    }
+    function indexInList(l,i){for(var x=0;x<(l||[]).length;x++)if(l[x]&&l[x].id===i)return x;return -1;}
 
     var originalBuySpell = window.buySpell;
     window.buySpell = function(side, id) {
@@ -2145,11 +2102,7 @@ function buildArtScript() {
     return hero ? { hero: hero, id: id, side: side, card: card } : { hero: null, id: id, side: side, card: card };
   }
 
-  function bfEsc(value) {
-    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
-    });
-  }
+  function bfEsc(v){return clean(v);}
 
   function injectActionPanelBg() {
     var battle = document.getElementById('s-battle');
@@ -2212,11 +2165,7 @@ function buildArtScript() {
   }
 
   // ---- (B) Play a hand card (spell/object) with a confirm + cast animation ----
-  function bfHandClean(value) {
-    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
-    });
-  }
+  function bfHandClean(v){return clean(v);}
 
   function bfActiveMana() {
     var active = document.querySelector('.bhero.active-turn');
