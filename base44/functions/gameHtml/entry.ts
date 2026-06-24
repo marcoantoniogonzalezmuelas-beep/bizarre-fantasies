@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-cover-fit-v38';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-fill-name-v39';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -392,7 +392,7 @@ function buildArtScript() {
         background: #07050b;
         box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,210,74,.10);
       }
-      .bf-bonus-card .bf-bonus-fill { display: none; }
+      .bf-bonus-card .bf-bonus-fill { display: block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .bf-bonus-card .bf-bonus-art {
         position: absolute; inset: -3%; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1;
       }
@@ -522,13 +522,14 @@ function buildArtScript() {
          overscan to eat the white border the source images carry. */
       .shop-card { position:relative; overflow:hidden; }
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
-      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.bf-view-btn) { display:none !important; }
+      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt) { display:none !important; }
       .shop-card-art { display:none !important; }
+      .shop-card-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .shop-card-art-sharp { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
       .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
-      .chip.bf-chip-card .bf-chip-fill { display:none; }
+      .chip.bf-chip-card .bf-chip-fill { display:block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(14px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
@@ -546,9 +547,9 @@ function buildArtScript() {
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
       /* Quick-shop card = the oracle card itself (cover + overscan + card ratio). */
       .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
-      .bf-quick-fill { display:none; }
+      .bf-quick-fill { display:block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .bf-quick-art { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
-      .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-cost) { display:none !important; }
+      .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-fill):not(.bf-quick-cost) { display:none !important; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
       /* In-game styled confirm dialog */
       .bf-confirm-overlay { position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.72),rgba(8,5,14,.9)); backdrop-filter:blur(4px); animation:bfFadeIn .2s ease; }
@@ -813,18 +814,33 @@ function buildArtScript() {
   // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
   function injectEquipArt() {
     document.querySelectorAll('.shop-card').forEach(function(card) {
-      if (card.querySelector('.shop-card-art')) return;
+      if (card.dataset.bfShopArt === '1') return;
       var bf = card.querySelector('.shop-bf span');
       if (!bf) return;
       var m = bf.textContent.match(/(\\d+)/);
       if (!m) return;
       var url = NUM_ART[m[1]];
       if (!url) return;
+      // Capture the card name BEFORE we hide it, so we can re-show it on top.
+      var nameEl = card.querySelector('.shop-name');
+      var nameTxt = nameEl ? nameEl.textContent.trim() : '';
+      card.dataset.bfShopArt = '1';
+      var fill = document.createElement('div');
+      fill.className = 'shop-card-fill';
+      fill.style.backgroundImage = 'url("' + url + '")';
+      card.insertBefore(fill, card.firstChild);
       var sharp = document.createElement('div');
       sharp.className = 'shop-card-art-sharp';
       sharp.style.backgroundImage = 'url("' + url + '")';
       card.insertBefore(sharp, card.firstChild);
       card.classList.add('has-art');
+      // Re-add the name on top of the art (the original .shop-name is hidden).
+      if (nameTxt && !card.querySelector('.bf-shop-name')) {
+        var nm = document.createElement('div');
+        nm.className = 'bf-shop-name';
+        nm.textContent = nameTxt;
+        card.appendChild(nm);
+      }
     });
   }
 
@@ -1775,6 +1791,9 @@ function buildArtScript() {
           if (!url) return;
           var id = meta && meta.id;
           card.classList.add('has-art');
+          card.dataset.bfShopArt = '1';
+          var fill = document.createElement('div'); fill.className = 'shop-card-fill'; fill.style.backgroundImage = 'url("' + url + '")';
+          card.insertBefore(fill, card.firstChild);
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(sharp, card.firstChild);
           // Card name (stylized) over the image.
