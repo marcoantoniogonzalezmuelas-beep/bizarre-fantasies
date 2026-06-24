@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v24';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v25';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -868,10 +868,8 @@ function buildArtScript() {
 
   // ---- DOM injection for the round bonus/restador (turn its chip into a card) ----
   function injectBonusArt() {
-    document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
-      if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
-      var chip = lbl.nextElementSibling;
-      if (!chip || !chip.classList || !chip.classList.contains('chip')) return;
+    // Match any .chip element whose name is a known bonus/restador
+    document.querySelectorAll('.chip').forEach(function(chip) {
       if (chip.dataset.bfDone === '1') return;
       var name = chip.textContent.trim();
       var url = BONUS_ART_BY_NAME[name] || BONUS_ART_BY_KEY[bfKey(name)];
@@ -1729,6 +1727,7 @@ function buildArtScript() {
     };
 
     // Rebuild the shop grid so every card shows full-bleed art + a "Ver carta" button.
+    // Works for ALL item types: weapons, armors, spells, objects.
     if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfArt) {
       var originalEqShopGrid = window.eqShopGrid;
       window.eqShopGrid = function(side) {
@@ -1736,14 +1735,44 @@ function buildArtScript() {
         var box = document.createElement('div');
         box.innerHTML = html;
         box.querySelectorAll('.shop-card').forEach(function(card) {
+          // Try card number via .shop-bf span (weapons/armors)
+          var url = null, id = '';
           var span = card.querySelector('.shop-bf span');
           var no = span ? (span.textContent.match(/(\d+)/) || [])[1] : null;
-          var url = no ? NUM_ART[no] : null;
+          if (no) url = NUM_ART[no];
+
+          // Fallback: match by item name against all game arrays
+          if (!url) {
+            var cardText = card.textContent;
+            var allSets = [
+              [SPELLS || [], SPELL_ART],
+              [OBJECTS || [], OBJECT_ART],
+              [MELEE || [], MELEE_ART],
+              [RANGED || [], RANGED_ART],
+              [ARMORS || [], ARMOR_ART],
+            ];
+            for (var s = 0; s < allSets.length; s++) {
+              var list = allSets[s][0], arts = allSets[s][1];
+              for (var i = 0; i < list.length; i++) {
+                if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1 && arts[i]) {
+                  url = arts[i];
+                  id = list[i].id;
+                  break;
+                }
+              }
+              if (url) break;
+            }
+          }
+
           if (!url) return;
-          var id = '';
-          var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
-          var match = allItems.find(function(it) { return String(numFor(it)) === String(no); });
-          if (match) id = match.id;
+
+          // Resolve id from number if not yet set
+          if (!id && no) {
+            var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
+            var match = allItems.find(function(it) { return String(numFor(it)) === String(no); });
+            if (match) id = match.id;
+          }
+
           card.classList.add('has-art');
           var fill = document.createElement('div'); fill.className = 'shop-card-art'; fill.style.backgroundImage = 'url("' + url + '")';
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
