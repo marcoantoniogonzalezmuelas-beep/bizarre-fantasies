@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-quickshop-v20';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v21';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -789,13 +789,42 @@ function buildArtScript() {
   function injectEquipArt() {
     document.querySelectorAll('.shop-card').forEach(function(card) {
       if (card.classList.contains('has-art') || card.querySelector('.shop-card-art')) return;
+      // Try multiple selectors to find the card number
+      var no = null;
       var bf = card.querySelector('.shop-bf span');
-      if (!bf) return;
-      var m = bf.textContent.match(/(\\d+)/);
-      if (!m) return;
-      var no = m[1];
+      if (bf) { var m0 = bf.textContent.match(/(\\d+)/); if (m0) no = m0[1]; }
+      if (!no) {
+        // Fallback: scan all text in the card for "Nº XX" pattern
+        var all = card.querySelectorAll('span, div, small');
+        for (var i = 0; i < all.length; i++) {
+          var t = all[i].textContent;
+          var mn = t.match(/N[ºo°]\\s*(\\d+)/i) || t.match(/^\\s*(\\d+)\\s*$/);
+          if (mn) { no = mn[1]; break; }
+        }
+      }
+      if (!no) return;
       var url = NUM_ART[no];
-      if (!url) return;
+      if (!url) {
+        // Try resolving by matching item name in the card text
+        if (typeof SPELLS !== 'undefined') {
+          var cardText = card.textContent;
+          var allItems2 = [].concat(SPELLS || [], OBJECTS || [], MELEE || [], RANGED || [], ARMORS || []);
+          var numForItem2 = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
+          for (var j = 0; j < allItems2.length; j++) {
+            var it2 = allItems2[j];
+            if (it2 && it2.name && cardText.indexOf(it2.name) !== -1) {
+              var idx2 = SPELLS.indexOf(it2);
+              if (idx2 >= 0 && SPELL_ART[idx2]) { url = SPELL_ART[idx2]; no = String(numForItem2(it2)); break; }
+              var oi2 = OBJECTS.indexOf(it2);
+              if (oi2 >= 0 && OBJECT_ART[oi2]) { url = OBJECT_ART[oi2]; no = String(numForItem2(it2)); break; }
+            }
+          }
+        }
+        if (!url) return;
+      }
+      // Make the card relatively positioned so our absolute layers work
+      if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
+      card.style.overflow = 'hidden';
       var sharp = document.createElement('div');
       sharp.className = 'shop-card-art-sharp';
       sharp.style.backgroundImage = 'url("' + url + '")';
@@ -808,7 +837,7 @@ function buildArtScript() {
       card.insertBefore(sharp, card.firstChild);
       card.insertBefore(fill, card.firstChild);
       card.classList.add('has-art');
-      // "Ver carta" button (resolve the item id from its card number).
+      // "Ver carta" button
       if (!card.querySelector('.bf-view-btn') && typeof MELEE !== 'undefined') {
         var numForItem = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
         var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
