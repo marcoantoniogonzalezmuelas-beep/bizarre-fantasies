@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-epic-offer-v28';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-hand-shop-art-v29';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -540,6 +540,9 @@ function buildArtScript() {
       .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
       .shop-card.has-art { background: transparent !important; }
       .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.80) 100%); }
+      /* Hand chips (spells/objects) — small art thumbnail before the name */
+      .chip.bf-chip-art { display:inline-flex !important; align-items:center !important; gap:5px !important; padding-left:3px !important; }
+      .bf-chip-thumb { flex:0 0 auto; width:24px; height:24px; border-radius:6px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.5); box-shadow:0 2px 5px rgba(0,0,0,.5); }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
       .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:138px; z-index:1; background-size:cover; background-position:center 16%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
@@ -1753,15 +1756,28 @@ function buildArtScript() {
         var html = originalEqShopGrid.apply(this, arguments);
         var box = document.createElement('div');
         box.innerHTML = html;
+        // Resolve each shop card's art by the item's NAME (robust — the card's
+        // ".shop-name" always matches the item name, while the Nº numbering used
+        // by the game may not match our hardcoded number→art map).
+        var byName = {};
+        function reg(list, kind) {
+          (list || []).forEach(function(it, i) {
+            if (it && it.name) byName[it.name] = { id: it.id, art: shopArt(kind, i) };
+          });
+        }
+        reg(MELEE, 'melee'); reg(RANGED, 'ranged'); reg(ARMORS, 'armor'); reg(SPELLS, 'spell'); reg(OBJECTS, 'object');
         box.querySelectorAll('.shop-card').forEach(function(card) {
-          var span = card.querySelector('.shop-bf span');
-          var no = span ? (span.textContent.match(/(\d+)/) || [])[1] : null;
-          var url = no ? NUM_ART[no] : null;
+          var nameEl = card.querySelector('.shop-name');
+          var meta = nameEl ? byName[nameEl.textContent.trim()] : null;
+          var url = meta && meta.art;
+          // Fallback to the old number→art lookup if the name didn't resolve.
+          if (!url) {
+            var span = card.querySelector('.shop-bf span');
+            var no = span ? (span.textContent.match(/(\d+)/) || [])[1] : null;
+            url = no ? NUM_ART[no] : null;
+          }
           if (!url) return;
-          var id = '';
-          var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
-          var match = allItems.find(function(it) { return String(numFor(it)) === String(no); });
-          if (match) id = match.id;
+          var id = meta && meta.id;
           card.classList.add('has-art');
           var fill = document.createElement('div'); fill.className = 'shop-card-art'; fill.style.backgroundImage = 'url("' + url + '")';
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
@@ -1881,6 +1897,37 @@ function buildArtScript() {
     }
   }
 
+  // ---- Hand chips (spells/objects) → add a small art thumbnail ----
+  var __bfHandArtByName = null;
+  function handArtByName() {
+    if (__bfHandArtByName) return __bfHandArtByName;
+    if (typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined') return null;
+    var map = {};
+    (SPELLS || []).forEach(function(s, i) { if (s && s.name && SPELL_ART[i]) map[s.name] = SPELL_ART[i]; });
+    (OBJECTS || []).forEach(function(o, i) { if (o && o.name && OBJECT_ART[i]) map[o.name] = OBJECT_ART[i]; });
+    __bfHandArtByName = map;
+    return map;
+  }
+
+  function injectHandArt() {
+    var map = handArtByName();
+    if (!map) return;
+    document.querySelectorAll('.chip-spell, .chip-object').forEach(function(chip) {
+      if (chip.dataset.bfHandArt === '1') return;
+      // The chip text is the item name plus the "×" remove button — read the
+      // leading text node only.
+      var name = (chip.childNodes[0] && chip.childNodes[0].textContent || '').trim();
+      var url = map[name];
+      if (!url) return;
+      chip.dataset.bfHandArt = '1';
+      chip.classList.add('bf-chip-art');
+      var thumb = document.createElement('span');
+      thumb.className = 'bf-chip-thumb';
+      thumb.style.backgroundImage = 'url("' + url + '")';
+      chip.insertBefore(thumb, chip.firstChild);
+    });
+  }
+
   function injectRecruitHeroArt() {
     document.querySelectorAll('.hero-acquired').forEach(function(card) {
       if (card.dataset.bfAcqArt === '1') return;
@@ -1941,7 +1988,7 @@ function buildArtScript() {
       return { t: '¡Hola, aventurero!', m: 'Soy <b>Plumas</b>, tu guía. Pulsa <b>Jugar</b> para empezar. Te explicaré cada paso.' };
     }
     if (id === 's-equip') {
-      return { t: 'Fase de Equipamiento', m: 'Da a cada héroe <b>1 arma</b> y <b>1 armadura</b>. Compra hechizos y objetos para tu mano. Cuando estés listo, pulsa <b>continuar</b>.' };
+      return { t: 'Fase de Equipamiento', m: 'Para equipar un arma o armadura: <b>1)</b> pulsa la carta de la tienda para <b>seleccionarla</b>, <b>2)</b> luego pulsa <b>«Comprar»</b> en el héroe al que se la quieras poner. Los hechizos y objetos van a tu <b>mano</b>. Cuando termines, pulsa <b>«Listo — a la batalla»</b>.' };
     }
     if (id === 's-battle') {
       return { t: '¡A la batalla!', m: 'Elige una <b>acción</b> con el héroe activo (atacar, hechizo u objeto). Vence a los <b>3 héroes</b> rivales.' };
@@ -2010,6 +2057,7 @@ function buildArtScript() {
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
+    injectHandArt();
     injectBonusArt();
     injectBattleHeroArt();
     injectRecruitHeroArt();
