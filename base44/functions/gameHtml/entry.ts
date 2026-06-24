@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-type-v46';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-phase-v47';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -142,6 +142,7 @@ function buildArtScript() {
     var style = document.createElement('style');
     style.textContent = \`
       .gtitle { text-shadow: 0 0 50px rgba(255,210,74,0.7), 0 4px 30px rgba(255,210,74,0.3) !important; }
+      .phase-badge { display:inline-flex !important; align-items:center; gap:7px; font-family:'Cinzel',serif !important; font-weight:1000 !important; letter-spacing:.3px; box-shadow:0 4px 14px rgba(0,0,0,.4), inset 0 1px 1px rgba(255,255,255,.25) !important; } .bf-role-ico { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; font-size:15px; line-height:1; background:rgba(0,0,0,.32); box-shadow:inset 0 1px 2px rgba(255,255,255,.4), inset 0 -2px 4px rgba(0,0,0,.35), 0 2px 5px rgba(0,0,0,.35); text-shadow:0 1px 2px rgba(0,0,0,.6); border:1.5px solid rgba(255,255,255,.35); }
       /* Title screen icon row — replaced by sprite sheet icons */
       .title-emoji { display: none !important; }
       .bf-title-icons { display: flex !important; gap: 18px !important; justify-content: center !important; align-items: center !important; margin-bottom: 8px !important; }
@@ -211,9 +212,8 @@ function buildArtScript() {
       .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000; }
       .bf-hero-title { display:block; margin:3px auto 0; max-width:92%; padding:2px 7px; border-radius:999px; color:#fff0bd; background:rgba(8,5,12,.62); border:1px solid rgba(255,210,74,.22); font-family:'Cinzel',serif; font-size:10.8px; line-height:1.08; font-weight:800; font-style:italic; text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22); text-align:center; letter-spacing:.12px; }
       .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
-      .bf-type-medal { position:absolute; top:9px; right:9px; z-index:5; width:46px; display:flex; flex-direction:column; align-items:center; gap:3px; }
-      .bf-type-emblem { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:21px; color:#fff7e0; position:relative; box-shadow:0 4px 12px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.4); text-shadow:0 1px 2px rgba(0,0,0,.7); } .bf-type-emblem::after { content:''; position:absolute; inset:3px; border-radius:50%; border:1px solid rgba(255,255,255,.28); } .bf-type-cc .bf-type-emblem { background:radial-gradient(circle at 36% 26%,#ff9b8a,#e23d3a 46%,#7a0f0d); } .bf-type-ad .bf-type-emblem { background:radial-gradient(circle at 36% 26%,#9dffb6,#28b34d 46%,#0c5e23); } .bf-type-he .bf-type-emblem { background:radial-gradient(circle at 36% 26%,#dcb6ff,#9a4dff 46%,#43108c); }
-      .bf-type-lbl { font-family:'Cinzel',serif; font-size:8px; line-height:1; font-weight:1000; letter-spacing:.5px; color:#1a1208; background:linear-gradient(180deg,#ffe27a,#FFD24A 60%,#c8901f); padding:2px 6px; border-radius:999px; box-shadow:0 2px 5px rgba(0,0,0,.5); text-shadow:0 1px 0 rgba(255,255,255,.35); white-space:nowrap; }
+      .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
+      .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; }
       .bf-heart { position:absolute; right:9px; bottom:164px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
       .bf-heart .cf-heart-ico { position:absolute; inset:0; font-size:54px; color:#e23d3a; line-height:52px; text-align:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)); }
       .bf-heart .cf-hp { position:relative; z-index:2; font-weight:1000; color:#fff; font-size:18px; text-shadow:0 2px 3px #000; }
@@ -270,7 +270,7 @@ function buildArtScript() {
         .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
         .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; }
         .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
-        .bf-type-medal { width: 40px !important; } .bf-type-emblem { width: 36px !important; height: 36px !important; font-size: 18px !important; } .bf-type-lbl { font-size: 7px !important; padding: 2px 5px !important; }
+        .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
         .bf-stats { left: 10px !important; right: 10px !important; bottom: 150px !important; padding: 6px 45px 6px 7px !important; }
         .bf-stat b { font-size: 17px !important; }
         .bf-heart { right: 8px !important; bottom: 154px !important; width: 50px !important; height: 46px !important; }
@@ -635,7 +635,7 @@ function buildArtScript() {
         '<div class="bf-hero-frame"></div>' +
         '<div class="bf-coin">' + clean(h.cost) + '</div>' +
         '<div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + clean(raceSigil(h.clan)) + '</div>' +
-        '<div class="bf-type-medal bf-type-' + (h.type === 'CC' ? 'cc' : h.type === 'AD' ? 'ad' : 'he') + '" title="' + typeLabel(h.type) + '"><div class="bf-type-emblem">' + typeIcon(h.type) + '</div><div class="bf-type-lbl">' + (h.type === 'CC' ? 'C. CUERPO' : h.type === 'AD' ? 'DISTANCIA' : 'MAGIA') + '</div></div>' +
+        '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' +
         '<div class="bf-stats">' +
           '<div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div>' +
           '<div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div>' +
@@ -1140,17 +1140,17 @@ function buildArtScript() {
           '<p><b>✦ Cartas Épicas.</b> Son las más poderosas y cuestan <b>+10 monedas</b>. Normalmente no aparecen en la subasta, pero ciertos bonificadores pueden hacer que <b>tú</b> (o tu <b>rival</b>) reciba una oferta Épica extra en esa puja.</p>' +
           '<p><b>2 · Equipamiento.</b> Con las monedas sobrantes (+ una base) equipas a cada héroe con <b>1 arma</b> (cuerpo a cuerpo <i>o</i> distancia) y <b>1 armadura</b>. Los hechizos y objetos van a tu <b>mano</b> para usarlos en combate.</p>' +
           '<p><b>3 · Combate por rondas.</b> Los turnos van en este orden: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, actúa antes quien tenga más velocidad).</p>' +
-          '<ul>' +
-            '<li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li>' +
-            '<li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li>' +
-            '<li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li>' +
-          '</ul>' +
+          '<ul><li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li><li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li><li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li></ul>' +
           '<p><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' +
           '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma o Ave Fénix).</p>' +
           '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p>' +
         '</div>';
       };
       window.rulesBody.__bf = 1;
+    }
+    if (typeof window.roleIcon === 'function' && !window.roleIcon.__bf) {
+      window.roleIcon = function(t) { var sym = t === 'CC' ? '⚔' : t === 'AD' ? '🏹' : '🔮'; return '<span class="bf-role-ico bf-role-' + (t === 'CC' ? 'cc' : t === 'AD' ? 'ad' : 'he') + '">' + sym + '</span>'; };
+      window.roleIcon.__bf = 1;
     }
 
     HEROES.forEach(function(h) {
