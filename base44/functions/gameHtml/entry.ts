@@ -2034,6 +2034,8 @@ function buildArtScript(dbArtMap) {
 
   // ---- MAIN INIT ----
   function init() {
+    console.log('[BF] Patch v' + GAME_PATCH_VERSION + ' iniciando...');
+    console.log('[BF] DB_ART entries:', Object.keys(DB_ART).length);
     injectCoverStyle();
     applyCover();
 
@@ -2041,6 +2043,7 @@ function buildArtScript(dbArtMap) {
     var patchedFace = false;
     var interval = setInterval(function() {
       attempts++;
+      if (attempts === 1 || attempts % 10 === 0) console.log('[BF] Attempt', attempts, '— cardFace patched:', !!patchedFace, 'cardface elements:', document.querySelectorAll('.cardface').length);
       applyCover();
       patchGameRules();
       patchRaceModal();
