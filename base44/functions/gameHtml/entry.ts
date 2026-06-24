@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v21';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v22';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -786,67 +786,80 @@ function buildArtScript() {
   }
 
   // ---- DOM injection for equipment shop cards — full-bleed like the catalog ----
+  // Resolves art by matching the card's visible name/text against game item arrays.
   function injectEquipArt() {
+    if (typeof SPELLS === 'undefined') return;
+    var numForItem = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
+    var SETS = [
+      [SPELLS || [], SPELL_ART, 'spell'],
+      [OBJECTS || [], OBJECT_ART, 'object'],
+      [MELEE || [], MELEE_ART, 'melee'],
+      [RANGED || [], RANGED_ART, 'ranged'],
+      [ARMORS || [], ARMOR_ART, 'armor'],
+    ];
+
     document.querySelectorAll('.shop-card').forEach(function(card) {
       if (card.classList.contains('has-art') || card.querySelector('.shop-card-art')) return;
-      // Try multiple selectors to find the card number
-      var no = null;
+
+      // 1) Try .shop-bf span (weapons/armor) — has a card number
+      var url = null, matchedItem = null;
       var bf = card.querySelector('.shop-bf span');
-      if (bf) { var m0 = bf.textContent.match(/(\\d+)/); if (m0) no = m0[1]; }
-      if (!no) {
-        // Fallback: scan all text in the card for "Nº XX" pattern
-        var all = card.querySelectorAll('span, div, small');
-        for (var i = 0; i < all.length; i++) {
-          var t = all[i].textContent;
-          var mn = t.match(/N[ºo°]\\s*(\\d+)/i) || t.match(/^\\s*(\\d+)\\s*$/);
-          if (mn) { no = mn[1]; break; }
-        }
+      if (bf) {
+        var mn = bf.textContent.match(/(\\d+)/);
+        if (mn) { url = NUM_ART[mn[1]]; }
       }
-      if (!no) return;
-      var url = NUM_ART[no];
+
+      // 2) Fallback: match by item name against all game arrays
       if (!url) {
-        // Try resolving by matching item name in the card text
-        if (typeof SPELLS !== 'undefined') {
-          var cardText = card.textContent;
-          var allItems2 = [].concat(SPELLS || [], OBJECTS || [], MELEE || [], RANGED || [], ARMORS || []);
-          var numForItem2 = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
-          for (var j = 0; j < allItems2.length; j++) {
-            var it2 = allItems2[j];
-            if (it2 && it2.name && cardText.indexOf(it2.name) !== -1) {
-              var idx2 = SPELLS.indexOf(it2);
-              if (idx2 >= 0 && SPELL_ART[idx2]) { url = SPELL_ART[idx2]; no = String(numForItem2(it2)); break; }
-              var oi2 = OBJECTS.indexOf(it2);
-              if (oi2 >= 0 && OBJECT_ART[oi2]) { url = OBJECT_ART[oi2]; no = String(numForItem2(it2)); break; }
+        var cardText = card.textContent;
+        outer: for (var s = 0; s < SETS.length; s++) {
+          var list = SETS[s][0], arts = SETS[s][1];
+          for (var i = 0; i < list.length; i++) {
+            if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1) {
+              url = arts[i] || null;
+              matchedItem = list[i];
+              break outer;
             }
           }
         }
-        if (!url) return;
       }
-      // Make the card relatively positioned so our absolute layers work
+
+      if (!url) return;
+
       if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
       card.style.overflow = 'hidden';
-      var sharp = document.createElement('div');
-      sharp.className = 'shop-card-art-sharp';
-      sharp.style.backgroundImage = 'url("' + url + '")';
       var fill = document.createElement('div');
       fill.className = 'shop-card-art';
       fill.style.backgroundImage = 'url("' + url + '")';
+      var sharp = document.createElement('div');
+      sharp.className = 'shop-card-art-sharp';
+      sharp.style.backgroundImage = 'url("' + url + '")';
       var shade = document.createElement('div');
       shade.className = 'bf-shop-shade';
       card.insertBefore(shade, card.firstChild);
       card.insertBefore(sharp, card.firstChild);
       card.insertBefore(fill, card.firstChild);
       card.classList.add('has-art');
+
       // "Ver carta" button
-      if (!card.querySelector('.bf-view-btn') && typeof MELEE !== 'undefined') {
-        var numForItem = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
-        var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
-        var match = allItems.find(function(it) { return String(numForItem(it)) === String(no); });
-        if (match) {
+      if (!card.querySelector('.bf-view-btn')) {
+        var item = matchedItem;
+        if (!item) {
+          // resolve from NUM_ART path
+          var bf2 = card.querySelector('.shop-bf span');
+          if (bf2) {
+            var mn2 = bf2.textContent.match(/(\\d+)/);
+            if (mn2) {
+              var allFlat = [].concat(SPELLS||[],OBJECTS||[],MELEE||[],RANGED||[],ARMORS||[]);
+              item = allFlat.find(function(it) { return String(numForItem(it)) === mn2[1]; });
+            }
+          }
+        }
+        if (item) {
           var btn = document.createElement('button');
           btn.className = 'bf-view-btn';
           btn.textContent = '🔍 Ver carta';
-          btn.setAttribute('onclick', 'event.stopPropagation();bfViewCard(&quot;' + match.id + '&quot;)');
+          btn.setAttribute('onclick', 'event.stopPropagation();bfViewCard(&quot;' + item.id + '&quot;)');
           card.appendChild(btn);
         }
       }
