@@ -1,32 +1,27 @@
 // Bizarre Fantasies — motor de juego nativo (lógica pura, sin UI).
-// Toda la lógica del juego vive aquí para que la UI solo dibuje estado.
-import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES } from '@/lib/cardData';
+// Replica EXACTA de la subasta del juego original (v5).
+import { HEROES, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES } from '@/lib/cardData';
 import { HERO_ART, HERO_ELITE_ART } from '@/lib/artUrls';
 
-const rng = (n) => Math.floor(Math.random() * n);
-const shuffle = (arr) => {
+// ----- Constantes idénticas al original -----
+export const EQUIP_BASE = 45;
+export const START_COINS = 100;
+export const SELL_RATE = 0.6;
+
+const rnd = (n) => Math.floor(Math.random() * n);
+const pick = (arr) => arr[rnd(arr.length)];
+const other = (s) => (s === 'p' ? 'o' : 'p');
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+export const shuffle = (arr) => {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
-    const j = rng(i + 1);
+    const j = rnd(i + 1);
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 };
-
-// Atajo: perfil de raza por nombre
-const raceProfile = (clan) => RACES.find((r) => r.name === clan) || RACES[0];
-
-// Modificadores numéricos por raza (parseados de la columna stats de cardData)
-const RACE_MODS = {
-  'Guerreros': { cc: 2, ad: 0, he: -4, vel: 0, mana: -2, resPhys: 2, resMag: 0, elite: 0.30 },
-  'Druidas': { cc: 0, ad: 1, he: 1, vel: 0, mana: 12, resPhys: 1, resMag: 1, elite: 0.38 },
-  'No-muertos': { cc: 1, ad: 0, he: 2, vel: -1, mana: 7, resPhys: 1, resMag: 1, elite: 0.60 },
-  'Vaqueros': { cc: 0, ad: 2, he: -3, vel: 2, mana: -2, resPhys: 0, resMag: 0, elite: 0.30 },
-  'Elfos': { cc: 0, ad: 2, he: 1, vel: 2, mana: 7, resPhys: 0, resMag: 1, elite: 0.32 },
-  'Magos': { cc: -4, ad: 0, he: 3, vel: 0, mana: 16, resPhys: 0, resMag: 2, elite: 0.30 },
-  'Épicas': { cc: 1, ad: 1, he: 1, vel: 1, mana: 9, resPhys: 1, resMag: 1, elite: 0.45 },
-  'Cotidianos': { cc: 0, ad: 1, he: 0, vel: 1, mana: 7, resPhys: 1, resMag: 0, elite: 0.32 },
-};
+const byId = (list, id) => (list || []).find((x) => x && x.id === id);
+const deep = (o) => JSON.parse(JSON.stringify(o));
 
 export const heroArt = (hero, elite) => {
   const i = Number(hero.num || 0) - 1;
@@ -34,204 +29,202 @@ export const heroArt = (hero, elite) => {
   return HERO_ART[i];
 };
 
-// Crea una instancia de héroe lista para combate (copia con HP actual, maná, etc.)
-export const makeBattleHero = (hero, side) => {
-  const mods = RACE_MODS[hero.clan] || RACE_MODS['Cotidianos'];
-  const baseMana = 30 + (mods.mana || 0);
-  return {
-    uid: side + '_' + hero.id,
-    side,
-    ref: hero,
-    id: hero.id,
-    name: hero.name,
-    clan: hero.clan,
-    type: hero.type,
-    cc: hero.cc, ad: hero.ad, he: hero.he,
-    maxHp: hero.hp, hp: hero.hp,
-    eCc: hero.eCc, eAd: hero.eAd, eHe: hero.eHe, eHp: hero.eHp,
-    mana: Math.max(20, baseMana), maxMana: Math.max(20, baseMana),
-    mwep: null, rwep: null, armor: null,
-    elite: false, dead: false, hasRevived: false,
-    status: null, // 'sleeping' | 'paralyzed' | 'cursed' | null
-    statusTurns: 0,
-    shield: 0,
-    eliteHpPct: mods.elite,
-  };
-};
+const AUCTION_TYPES = ['CC', 'AD', 'HE'];
+export const currentAuctionType = (game) => AUCTION_TYPES[game.auction.aIndex];
+export const auctionTypeLabel = (t) => (t === 'CC' ? 'Cuerpo a Cuerpo' : t === 'AD' ? 'Ataque a Distancia' : 'Magia');
+export const typeIcon = (t) => (t === 'CC' ? '⚔️' : t === 'AD' ? '🏹' : '🔮');
+
+const primKey = (t) => (t === 'CC' ? 'cc' : t === 'AD' ? 'ad' : 'he');
+const heroScore = (h) => h[primKey(h.type)] * 2 + Math.round(h.hp / 4) + Math.round(h.cost / 2);
 
 // ---------- CREACIÓN DE PARTIDA ----------
 export function createGame() {
-  return {
+  const g = {
     phase: 'auction', // auction -> equip -> battle -> result
-    auction: createAuctionState(),
-    coins: { p: 0, o: 0 },         // monedas ganadas (se llevan a equipamiento)
-    team: { p: [], o: [] },        // héroes reclutados
-    equip: null,
-    battle: null,
+    names: { p: 'Tú', o: 'IA Némesis' },
+    coins: { p: START_COINS, o: START_COINS },
+    equipReserve: { p: 0, o: 0 },
+    equipCoins: { p: 0, o: 0 },
+    pendDebt: { p: 0, o: 0 },
+    team: { p: [], o: [] },
+    auction: {
+      pools: {
+        CC: shuffle(HEROES.filter((h) => h.type === 'CC')),
+        AD: shuffle(HEROES.filter((h) => h.type === 'AD')),
+        HE: shuffle(HEROES.filter((h) => h.type === 'HE')),
+      },
+      aIndex: 0,
+      subRound: 0,
+      curType: 'CC',
+      cands: [],
+      bonus: { p: null, o: null },
+      bids: { p: null, o: null },
+      bidsIn: { p: false, o: false },
+      phaseNeeds: { p: true, o: true },
+      phaseResult: null,
+    },
     winner: null,
-    log: [],
   };
+  startAuctionPhase(g);
+  return g;
 }
 
-// ---------- SUBASTA ----------
-// 3 fases (CC, AD, HE). En cada fase se hacen rondas de puja sellada con 6 candidatos.
-const AUCTION_TYPES = ['CC', 'AD', 'HE'];
-
-function buildPools() {
-  const pools = {};
-  AUCTION_TYPES.forEach((t) => {
-    pools[t] = shuffle(HEROES.filter((h) => h.type === t && h.clan !== 'Épicas'));
-  });
-  return pools;
+// ---------- SUBASTA (réplica exacta) ----------
+function startAuctionPhase(g) {
+  const a = g.auction;
+  a.phaseResult = null;
+  a.curType = AUCTION_TYPES[a.aIndex];
+  a.phaseNeeds = { p: true, o: true };
+  a.subRound = 0;
+  // Un bonificador por jugador, por fase
+  a.bonus = { p: pick(BONUSES), o: pick(BONUSES) };
+  applyBonus(g, 'p', a.bonus.p);
+  applyBonus(g, 'o', a.bonus.o);
+  beginBidRound(g);
 }
 
-function createAuctionState() {
-  const pools = buildPools();
-  const st = {
-    pools,
-    typeIndex: 0,        // qué fase (0..2)
-    round: 0,            // ronda dentro de la fase
-    cands: [],           // 6 candidatos actuales
-    bonus: null,         // bonificador de la ronda
-    playerCoinsBase: 60, // monedas base por fase
-    bidsDone: false,
-    lastResult: null,    // { winnerSide, hero, amount } | { passed:true }
-  };
-  startAuctionType(st, 0);
-  return st;
+function applyBonus(g, side, b) {
+  if (!b) return;
+  if (g.pendDebt[side]) { g.coins[side] = Math.max(0, g.coins[side] - g.pendDebt[side]); g.pendDebt[side] = 0; }
+  if (b.type === 'BON') { g.coins[side] += b.effect; if (b.id === 'pre') g.pendDebt[side] = 8; }
+  else if (b.type === 'EQP') { g.equipReserve[side] += b.effect; }
+  else if (b.type === 'RES') { g.coins[other(side)] = Math.max(0, g.coins[other(side)] - b.effect); }
 }
 
-function startAuctionType(st, typeIndex) {
-  st.typeIndex = typeIndex;
-  st.round = 0;
-  st.pool = st.pools[AUCTION_TYPES[typeIndex]].slice();
+// Un héroe de cada raza disponible en el pool de la fase actual, barajado.
+function drawRaceSlate(pool) {
+  const by = {};
+  for (const h of pool) { (by[h.clan] = by[h.clan] || []).push(h); }
+  const out = [];
+  for (const c of Object.keys(by)) out.push(pick(by[c]));
+  return shuffle(out);
 }
 
-// Saca 6 candidatos del pool de la fase actual y un bonificador
-export function dealAuctionRound(game) {
-  const st = game.auction;
-  const cands = st.pool.splice(0, 6);
-  st.cands = cands;
-  st.bonus = BONUSES[rng(BONUSES.length)];
-  st.bidsDone = false;
-  st.lastResult = null;
-  // Monedas disponibles esta ronda = base + bonificador
-  applyBonusCoins(game);
-  return st.cands;
+function beginBidRound(g) {
+  const a = g.auction;
+  a.cands = drawRaceSlate(a.pools[a.curType]);
+  a.bids = { p: null, o: null };
+  a.bidsIn = { p: false, o: false };
 }
 
-function applyBonusCoins(game) {
-  const st = game.auction;
-  const b = st.bonus;
-  let pCoins = st.playerCoinsBase;
-  let oCoins = st.playerCoinsBase;
-  if (b) {
-    const m = (b.txt.match(/\+(\d+) monedas/) || [])[1];
-    const minus = (b.txt.match(/-(\d+) monedas|pierde (\d+)/) || []);
-    const plus = m ? Number(m) : 0;
-    if (b.type === 'BON') { pCoins += plus; oCoins += plus; }
-    if (b.type === 'RES') {
-      const lose = Number(minus[1] || minus[2] || 0);
-      oCoins = Math.max(0, oCoins - lose);
-    }
-  }
-  st.roundCoins = { p: pCoins, o: oCoins };
-}
-
-export const currentAuctionType = (game) => AUCTION_TYPES[game.auction.typeIndex];
-export const auctionTypeLabel = (t) => (t === 'CC' ? 'Cuerpo a cuerpo' : t === 'AD' ? 'A distancia' : 'Hechicería');
-
-// El jugador puja por un héroe con cierta cantidad. La IA puja a ciegas.
-export function resolveAuctionBids(game, playerBid) {
-  const st = game.auction;
-  const aiBid = computeAiBid(game);
-  let result;
-
-  const valid = playerBid && playerBid.heroId
-    ? { side: 'p', heroId: playerBid.heroId, amount: clampBid(game, 'p', playerBid.heroId, playerBid.amount) }
-    : null;
-
-  if (valid && aiBid && valid.heroId === aiBid.heroId) {
-    // Mismo héroe: gana la puja más alta (empate -> jugador)
-    if (valid.amount >= aiBid.amount) result = award(game, 'p', valid);
-    else result = award(game, 'o', aiBid);
+// El jugador puja (o pasa). Tras su decisión, la IA decide y se resuelve la ronda.
+export function playerDecision(g, decision) {
+  const a = g.auction;
+  if (!a.phaseNeeds.p) {
+    a.bids.p = { pass: true };
+  } else if (decision && decision.heroId) {
+    const amt = clamp(parseInt(decision.amount, 10) || 0, 0, g.coins.p);
+    a.bids.p = { heroId: decision.heroId, amount: amt };
   } else {
-    if (valid) award(game, 'p', valid);
-    if (aiBid) award(game, 'o', aiBid);
-    result = { multi: true, player: valid, ai: aiBid };
+    a.bids.p = { pass: true };
+  }
+  a.bidsIn.p = true;
+  // IA decide
+  aiDecision(g, 'o');
+  resolveBidRound(g);
+}
+
+function aiDecision(g, side) {
+  const a = g.auction;
+  if (a.phaseNeeds[side]) aiBid(g, side);
+  else { a.bids[side] = { pass: true }; a.bidsIn[side] = true; }
+}
+
+function aiBid(g, side) {
+  const a = g.auction;
+  const budget = g.coins[side];
+  const opp = other(side);
+  const ranked = a.cands.map((h) => ({ h, v: heroScore(h) })).sort((x, y) => y.v - x.v);
+  let target = ranked.find((r) => Math.round(r.v * 0.35) <= budget) || ranked[ranked.length - 1];
+  let bid = clamp(Math.round(target.v * 0.35) + rnd(8), 0, budget);
+  if (a.bids[opp] && !a.bids[opp].pass && a.bids[opp].heroId === target.h.id) {
+    const need = a.bids[opp].amount + 1;
+    if (need <= budget && Math.random() < 0.7) bid = Math.min(budget, Math.max(bid, need + rnd(5)));
+  }
+  a.bids[side] = { heroId: target.h.id, amount: bid };
+  a.bidsIn[side] = true;
+}
+
+function phaseHeroOf(g, side) {
+  const t = g.team[side];
+  return t && t.length ? t[t.length - 1] : null;
+}
+const nameOf = (h) => (h ? h.name : '—');
+
+function makeInstance(t) {
+  const h = deep(t);
+  h.mwep = null; h.rwep = null; h.armor = null;
+  return h;
+}
+
+function award(g, side, heroId, amount) {
+  const a = g.auction;
+  const tmpl = byId(a.cands, heroId) || byId(HEROES, heroId);
+  g.coins[side] = Math.max(0, g.coins[side] - amount);
+  const inst = makeInstance(tmpl);
+  inst.boughtFor = amount;
+  g.team[side].push(inst);
+  for (const t of AUCTION_TYPES) a.pools[t] = a.pools[t].filter((x) => x.id !== heroId);
+}
+
+function resolveBidRound(g) {
+  const a = g.auction;
+  const bp = a.bids.p, bo = a.bids.o;
+  const pBid = bp && !bp.pass, oBid = bo && !bo.pass;
+  let contested = false, winner = null, contestId = null;
+
+  if (pBid && oBid && bp.heroId === bo.heroId) {
+    contested = true; contestId = bp.heroId;
+    winner = bp.amount >= bo.amount ? 'p' : 'o';
+    award(g, winner, contestId, winner === 'p' ? bp.amount : bo.amount);
+    a.phaseNeeds[winner] = false; a.phaseNeeds[other(winner)] = true;
+  } else {
+    if (pBid) { award(g, 'p', bp.heroId, bp.amount); a.phaseNeeds.p = false; }
+    if (oBid) { award(g, 'o', bo.heroId, bo.amount); a.phaseNeeds.o = false; }
   }
 
-  st.lastResult = result;
-  st.bidsDone = true;
-  return result;
+  a.phaseResult = {
+    phase: a.aIndex, sub: a.subRound, contested, winner,
+    contestName: contested ? (byId(a.cands, contestId) || {}).name || '—' : '',
+    pPass: !pBid, oPass: !oBid,
+    bpName: pBid ? (byId(a.cands, bp.heroId) || {}).name || '—' : '',
+    boName: oBid ? (byId(a.cands, bo.heroId) || {}).name || '—' : '',
+    bpAmt: pBid ? bp.amount : 0, boAmt: oBid ? bo.amount : 0,
+    gotP: a.phaseNeeds.p ? null : nameOf(phaseHeroOf(g, 'p')),
+    gotO: a.phaseNeeds.o ? null : nameOf(phaseHeroOf(g, 'o')),
+    needMore: a.phaseNeeds.p || a.phaseNeeds.o,
+  };
 }
 
-function clampBid(game, side, heroId, amount) {
-  const st = game.auction;
-  const coins = st.roundCoins[side];
-  const hero = st.cands.find((h) => h.id === heroId);
-  if (!hero) return 0;
-  return Math.min(coins, Math.max(Number(amount || 0), hero.cost));
-}
-
-function award(game, side, bid) {
-  const st = game.auction;
-  const hero = st.cands.find((h) => h.id === bid.heroId);
-  if (!hero) return { passed: true, side };
-  if (game.team[side].length >= 3) return { full: true, side };
-  if (game.team[side].some((h) => h.id === hero.id)) return { dup: true, side };
-  game.team[side].push(hero);
-  // Sobrante de monedas se acumula para equipamiento
-  game.coins[side] += Math.max(0, st.roundCoins[side] - bid.amount);
-  return { side, hero, amount: bid.amount };
-}
-
-function computeAiBid(game) {
-  const st = game.auction;
-  if (game.team.o.length >= 3) return null;
-  const owned = new Set(game.team.o.map((h) => h.id));
-  const options = st.cands.filter((h) => !owned.has(h.id) && h.cost <= st.roundCoins.o);
-  if (!options.length) return null;
-  // La IA elige el de mayor "valor" (suma de stats) que pueda permitirse
-  const scored = options.map((h) => ({ h, v: h.cc + h.ad + h.he + h.hp / 2 }));
-  scored.sort((a, b) => b.v - a.v);
-  const pick = scored[0].h;
-  const max = st.roundCoins.o;
-  const amount = Math.min(max, pick.cost + rng(Math.max(1, Math.floor((max - pick.cost) * 0.5))));
-  return { side: 'o', heroId: pick.id, amount };
-}
-
-// ¿Sigue habiendo subasta? Avanza fase/ronda. Devuelve true si la subasta terminó.
-export function advanceAuction(game) {
-  const st = game.auction;
-  const playerFull = game.team.p.length >= 3;
-  const aiFull = game.team.o.length >= 3;
-  if (playerFull && aiFull) return true;
-
-  // ¿Quedan candidatos en esta fase?
-  if (st.pool.length < 1) {
-    if (st.typeIndex >= AUCTION_TYPES.length - 1) {
-      // Sin más fases: completa equipos con relleno si hace falta
-      fillTeams(game);
-      return true;
-    }
-    startAuctionType(st, st.typeIndex + 1);
+// Avanza tras ver el resultado: nueva terna/re-puja, siguiente fase, o fin de subasta.
+// Devuelve true si la subasta terminó (pasa a equipamiento).
+export function advancePhase(g) {
+  const a = g.auction;
+  const needMore = a.phaseNeeds.p || a.phaseNeeds.o;
+  a.phaseResult = null;
+  if (needMore) {
+    a.subRound++;
+    beginBidRound(g);
+    return false;
   }
-  st.round += 1;
-  return false;
+  a.aIndex++;
+  if (a.aIndex < 3) {
+    startAuctionPhase(g);
+    return false;
+  }
+  finishAuction(g);
+  return true;
 }
 
-// Rellena cualquier equipo incompleto con héroes aleatorios disponibles
-function fillTeams(game) {
-  const used = new Set([...game.team.p, ...game.team.o].map((h) => h.id));
-  const pool = shuffle(HEROES.filter((h) => !used.has(h.id) && h.clan !== 'Épicas'));
-  ['p', 'o'].forEach((side) => {
-    while (game.team[side].length < 3 && pool.length) {
-      const h = pool.shift();
-      used.add(h.id);
-      game.team[side].push(h);
-    }
-  });
+function finishAuction(g) {
+  const eqPool = BONUSES.filter((b) => b.type === 'EQP');
+  for (const s of ['p', 'o']) {
+    const eb = pick(eqPool);
+    g.equipReserve[s] += eb.effect;
+    g.auction.bonus[s] = eb;
+    g.equipCoins[s] = g.coins[s] + EQUIP_BASE + g.equipReserve[s];
+  }
+  g.phase = 'equip';
 }
 
-export { RACE_MODS, raceProfile, shuffle };
+export { heroScore, primKey };

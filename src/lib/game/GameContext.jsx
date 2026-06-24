@@ -1,47 +1,38 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { createGame, dealAuctionRound, resolveAuctionBids, advanceAuction } from '@/lib/game/engine';
+import { createGame, playerDecision, advancePhase } from '@/lib/game/engine';
 
 const GameCtx = createContext(null);
 export const useGame = () => useContext(GameCtx);
 
-// Clona superficialmente el game para forzar re-render tras mutar el motor.
 const bump = (g) => ({ ...g });
 
 export function GameProvider({ children }) {
   const [game, setGame] = useState(null);
 
   const newGame = useCallback(() => {
-    const g = createGame();
-    dealAuctionRound(g);
-    setGame(g);
+    setGame(createGame());
   }, []);
 
-  // Resuelve la ronda de puja y devuelve el resultado para mostrarlo en UI.
-  const submitBid = useCallback((playerBid) => {
-    let result;
+  // El jugador puja por un héroe { heroId, amount } o pasa (null).
+  const decide = useCallback((decision) => {
     setGame((prev) => {
-      result = resolveAuctionBids(prev, playerBid);
+      playerDecision(prev, decision);
       return bump(prev);
     });
-    return result;
   }, []);
 
-  // Avanza a la siguiente ronda o fase. Devuelve true si la subasta terminó.
-  const nextAuctionRound = useCallback(() => {
-    let ended = false;
+  // Avanza tras ver el resultado de la ronda.
+  const advance = useCallback(() => {
     setGame((prev) => {
-      ended = advanceAuction(prev);
-      if (!ended) dealAuctionRound(prev);
-      else prev.phase = 'equip';
+      advancePhase(prev);
       return bump(prev);
     });
-    return ended;
   }, []);
 
   const resetGame = useCallback(() => setGame(null), []);
 
   return (
-    <GameCtx.Provider value={{ game, newGame, submitBid, nextAuctionRound, resetGame, setGame }}>
+    <GameCtx.Provider value={{ game, newGame, decide, advance, resetGame, setGame }}>
       {children}
     </GameCtx.Provider>
   );
