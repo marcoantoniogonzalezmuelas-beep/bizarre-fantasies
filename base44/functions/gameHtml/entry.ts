@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-bonus-auction-v19';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-no-hero-lupa-v20';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -710,7 +710,6 @@ function buildArtScript() {
           '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
         '</div>' +
         '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
-        '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomCard(\\'' + clean(h && h.id || '') + '\\',\\'' + (elite ? 'elite' : 'normal') + '\\')" aria-label="Ampliar">🔍</button>' +
         '<div class="bf-logo">BF</div>' +
       '</div>';
     };
