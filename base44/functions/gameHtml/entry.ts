@@ -241,6 +241,8 @@ function buildArtScript(dbArtMap) {
   var MELEE_ART = ${JSON.stringify(MELEE_ART)};
   var RANGED_ART = ${JSON.stringify(RANGED_ART)};
   var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
+  var SPELL_ART = ${JSON.stringify(SPELL_ART)};
+  var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
@@ -2034,7 +2036,7 @@ function buildArtScript(dbArtMap) {
 
   // ---- MAIN INIT ----
   function init() {
-    console.log('[BF] Patch v' + GAME_PATCH_VERSION + ' iniciando...');
+    console.log('[BF] Patch v' + window.__BF_PATCH_VERSION + ' iniciando...');
     console.log('[BF] DB_ART entries:', Object.keys(DB_ART).length);
     injectCoverStyle();
     applyCover();
