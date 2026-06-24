@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-bonus-fullart-v18';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-bonus-auction-v19';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -814,8 +814,13 @@ function buildArtScript() {
   function injectBonusArt() {
     document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
       if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
+      // The bonus name lives in the next .chip sibling — but be tolerant: it may
+      // be the immediate sibling, or a .chip somewhere after the label.
       var chip = lbl.nextElementSibling;
-      if (!chip || !chip.classList || !chip.classList.contains('chip')) return;
+      while (chip && (!chip.classList || !chip.classList.contains('chip'))) {
+        chip = chip.nextElementSibling;
+      }
+      if (!chip) return;
       if (chip.dataset.bfDone === '1') return;
       var name = chip.textContent.trim();
       var url = BONUS_ART_BY_NAME[name] || BONUS_ART_BY_KEY[bfKey(name)];
