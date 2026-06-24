@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-shop-buy-v35';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-shop-name-txt-v36';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -545,7 +545,7 @@ function buildArtScript() {
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; aspect-ratio:3 / 4.1; max-height:300px; overflow:hidden; background:#07050b; }
       .bf-confirm-art::before { display:none; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-3px; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; z-index:1; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-2px; background-image:var(--bf-cart); background-size:cover; background-position:center top; background-repeat:no-repeat; z-index:1; }
       .bf-confirm-art::after { display:none; }
       .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
@@ -554,8 +554,10 @@ function buildArtScript() {
       /* "Comprar" button on every shop card */
       .bf-buy-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid #ffd24a; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); color:#3a2600; border-radius:999px; padding:5px 14px; font-size:11px; font-weight:900; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,210,74,.4); transition:filter .12s ease; }
       .bf-buy-btn:hover { filter:brightness(1.08); }
+      /* Card name (stylized) over a shop card image */
+      .bf-shop-name { position:absolute; left:6px; right:6px; bottom:92px; z-index:6; text-align:center; font-family:'Cinzel',serif; font-weight:1000; font-size:13px; line-height:1.05; color:#fff5dc; text-transform:uppercase; letter-spacing:.3px; text-shadow:0 2px 5px #000,0 0 12px #000; padding:3px 6px; border-radius:8px; background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.55),rgba(0,0,0,0)); }
       /* Card text strip near the bottom of a shop card image */
-      .bf-shop-txt { position:absolute; left:8px; right:8px; bottom:38px; z-index:5; padding:5px 8px; border-radius:8px; background:rgba(8,5,14,.82); border:1px solid rgba(255,210,74,.28); color:#fff7ea; font-size:9.5px; font-weight:700; line-height:1.22; text-align:center; max-height:48px; overflow:hidden; backdrop-filter:blur(2px); text-shadow:0 1px 2px #000; }
+      .bf-shop-txt { position:absolute; left:8px; right:8px; bottom:46px; z-index:5; padding:5px 8px; border-radius:8px; background:rgba(8,5,14,.85); border:1px solid rgba(255,210,74,.28); color:#fff7ea; font-size:9.5px; font-weight:700; line-height:1.22; text-align:center; max-height:46px; overflow:hidden; backdrop-filter:blur(2px); text-shadow:0 1px 2px #000; }
       .shop-card.has-art { padding-bottom:34px !important; }
       /* Full-size card view modal */
       .bf-view-wrap { display:flex; justify-content:center; padding:6px 0; }
@@ -575,6 +577,7 @@ function buildArtScript() {
       .bf-confirm-num { position:absolute; top:12px; right:10px; z-index:2; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:3px 8px; }
       .bf-confirm-body { padding:4px 18px 18px; text-align:center; }
       .bf-confirm-name { font-family:'Cinzel',serif; font-weight:1000; font-size:19px; color:#fff5dc; text-shadow:0 2px 6px #000; margin-top:6px; position:relative; z-index:2; }
+      .bf-confirm-effect { margin-top:8px; padding:8px 11px; border-radius:10px; background:rgba(8,5,14,.6); border:1px solid rgba(255,210,74,.3); color:#fff7ea; font-size:12.5px; font-weight:700; line-height:1.34; text-shadow:0 1px 2px #000; }
       .bf-confirm-msg { color:#cfc6dd; font-size:13px; line-height:1.35; margin-top:8px; }
       .bf-confirm-msg b { color:#ffe49a; }
       .bf-confirm-actions { display:flex; gap:10px; margin-top:16px; }
@@ -1567,6 +1570,7 @@ function buildArtScript() {
       if (existing) existing.remove();
       var no = numFor(item);
       var target = opts.hero ? ' y equiparlo a <b>' + clean(opts.hero.name) + '</b>' : '';
+      var effectTxt = item.txt || item.desc || '';
       var overlay = document.createElement('div');
       overlay.id = 'bf-confirm-overlay';
       overlay.className = 'bf-confirm-overlay';
@@ -1575,6 +1579,7 @@ function buildArtScript() {
           (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div><div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div></div>' : '') +
           '<div class="bf-confirm-body">' +
             '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
+            (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') +
             '<div class="bf-confirm-msg">¿Comprar por <b>' + cost + ' monedas</b>' + target + '?</div>' +
             '<div class="bf-confirm-actions">' +
               '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button>' +
@@ -1614,10 +1619,11 @@ function buildArtScript() {
     window.doAssign = function(side, heroId) {
       var hero = findHero(side, heroId);
       var a = G.assign || {};
-      var item = a.name ? { name: a.name, cost: a.cost, id: a.id } : null;
-      if (!item) return;
       var kind = a.kind === 'armor' ? 'armor' : (a.kind === 'ranged' ? 'ranged' : 'melee');
       var srcList = kind === 'armor' ? ARMORS : (kind === 'ranged' ? RANGED : MELEE);
+      var full = (typeof byId === 'function' ? byId(srcList, a.id) : null) || {};
+      var item = a.name ? { name: a.name, cost: a.cost, id: a.id, txt: full.txt || '', desc: full.desc || '' } : null;
+      if (!item) return;
       var art = artFor(kind, indexInList(srcList, a.id));
       bfConfirm({ item: item, side: side, hero: hero, art: art }, function() { originalDoAssign(side, heroId); });
     };
@@ -1759,6 +1765,13 @@ function buildArtScript() {
           card.classList.add('has-art');
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(sharp, card.firstChild);
+          // Card name (stylized) over the image.
+          if (nameEl) {
+            var nm = document.createElement('div');
+            nm.className = 'bf-shop-name';
+            nm.textContent = nameEl.textContent.trim();
+            card.appendChild(nm);
+          }
           // Card text strip at the bottom of the image.
           if (meta && meta.txt) {
             var txt = document.createElement('div');
