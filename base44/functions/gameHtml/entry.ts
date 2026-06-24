@@ -404,7 +404,7 @@ function buildArtScript() {
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; aspect-ratio:3 / 4.1; max-height:300px; overflow:hidden; background:#07050b; display:flex; align-items:center; justify-content:center; }
       .bf-confirm-art .bf-confirm-art-fill { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); z-index:0; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center center; background-repeat:no-repeat; z-index:1; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:90%; height:90%; background-image:var(--bf-cart); background-size:cover; background-position:center center; background-repeat:no-repeat; z-index:1; }
       .bf-confirm-art::after { display:none; }
       .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
