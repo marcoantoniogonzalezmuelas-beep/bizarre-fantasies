@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-quit-guideclose-v40';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-thumbs-play-v41';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -233,6 +233,7 @@ function buildArtScript() {
   var AUCTION_BG = "${AUCTION_BG}";
   var SHOP_BG = "${SHOP_BG}";
   var BATTLE_BG = "${BATTLE_BG}";
+  var ACTION_BG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9e0b3119e_generated_image.png";
   var ICON_CC = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/119c5390a_generated_image.png";
   var ICON_AD = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/93cdad509_generated_image.png";
   var ICON_HE = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ccdd4a1ec_generated_image.png";
@@ -431,7 +432,7 @@ function buildArtScript() {
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:130px; z-index:1; background-size:140% auto; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
+      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:130px; z-index:1; background-size:cover; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
@@ -475,10 +476,10 @@ function buildArtScript() {
       @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
       @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
-      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:150% auto; background-position:center 16%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
+      .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
-      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:142% auto; background-position:center 16%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
-      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:150% auto; background-position:center 16%; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
+      .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); }
+      .bf-result-thumb { display:inline-block; width:46px; height:46px; border-radius:10px; margin-right:9px; vertical-align:middle; background-size:cover; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); }
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -533,9 +534,10 @@ function buildArtScript() {
       .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
+      .chip.bf-chip-card .bf-chip-name { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:3px 4px 4px; font-size:8.5px !important; line-height:1.04; font-weight:900; font-family:'Cinzel',serif; color:#fff5dc; text-align:center; text-transform:uppercase; letter-spacing:.1px; text-shadow:0 1px 2px #000,0 0 6px #000; background:linear-gradient(0deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); white-space:normal; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
-      .bf-eq-hero-art { position:absolute; left:-10px; top:-10px; bottom:-10px; width:150px; z-index:1; background-size:130% auto; background-position:center 18%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
+      .bf-eq-hero-art { position:absolute; left:-10px; top:-10px; bottom:-10px; width:150px; z-index:1; background-size:cover; background-position:center 20%; background-repeat:no-repeat; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
       .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.22) 58%,rgba(18,12,25,.92) 100%); }
       /* Equipped item thumbnail inside a filled slot (no number) */
       .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; display:flex; align-items:center; }
@@ -555,8 +557,8 @@ function buildArtScript() {
       .bf-confirm-overlay { position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.72),rgba(8,5,14,.9)); backdrop-filter:blur(4px); animation:bfFadeIn .2s ease; }
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; aspect-ratio:3 / 4.1; max-height:300px; overflow:hidden; background:#07050b; }
-      .bf-confirm-art::before { display:none; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-2px; background-image:var(--bf-cart); background-size:cover; background-position:center top; background-repeat:no-repeat; z-index:1; }
+      .bf-confirm-art .bf-confirm-art-fill { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); z-index:0; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-3%; background-image:var(--bf-cart); background-size:cover; background-position:center center; background-repeat:no-repeat; z-index:1; }
       .bf-confirm-art::after { display:none; }
       .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
@@ -617,6 +619,18 @@ function buildArtScript() {
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
       .bhero .bf-battle-gear { position:absolute; left:80px; bottom:6px; z-index:3; display:flex; gap:4px; }
       .bhero .bf-gear-icon { width:26px; height:26px; border-radius:6px; background-size:cover; background-position:center; border:1.5px solid rgba(255,210,74,.55); box-shadow:0 2px 6px rgba(0,0,0,.6); background-color:#0a0710; }
+
+      /* ---- Action panel of the active hero: AI battle background ---- */
+      .bf-action-bg { position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 30%; background-repeat:no-repeat; opacity:.9; }
+      .bf-action-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,7,18,.78) 0%,rgba(10,7,18,.62) 45%,rgba(10,7,18,.88) 100%); }
+      .bf-action-host { position:relative !important; }
+      .bf-action-host > *:not(.bf-action-bg) { position:relative; z-index:1; }
+
+      /* ---- Hand card "play it?" confirm + cast animation ---- */
+      .bf-cast-flash { position:fixed; inset:0; z-index:99998; pointer-events:none; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.5),rgba(176,108,255,.25) 30%,transparent 65%); animation:bfCastFlash .8s ease-out forwards; }
+      @keyframes bfCastFlash { 0%{opacity:0} 25%{opacity:1} 100%{opacity:0} }
+      .bf-cast-runes { position:fixed; left:50%; top:50%; z-index:99999; pointer-events:none; transform:translate(-50%,-50%); font-size:84px; filter:drop-shadow(0 0 24px currentColor); animation:bfCastRune 1s ease-out forwards; }
+      @keyframes bfCastRune { 0%{opacity:0;transform:translate(-50%,-30%) scale(.4) rotate(-20deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(8deg)} 100%{opacity:0;transform:translate(-50%,-72%) scale(1) rotate(0)} }
 
       /* ---- True death: gravestone / RIP ---- */
       .bf-fx-grave { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); z-index:5; font-size:52px; filter:drop-shadow(0 4px 8px #000); animation:bfGraveRise 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
@@ -1605,7 +1619,7 @@ function buildArtScript() {
       overlay.className = 'bf-confirm-overlay';
       overlay.innerHTML =
         '<div class="bf-confirm-box">' +
-          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div><div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div></div>' : '') +
+          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div><div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div></div>' : '') +
           '<div class="bf-confirm-body">' +
             '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
             (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') +
@@ -1968,6 +1982,11 @@ function buildArtScript() {
       fill.style.backgroundImage = 'url("' + url + '")';
       chip.insertBefore(art, chip.firstChild);
       chip.insertBefore(fill, chip.firstChild);
+      // Card name label on top of the art (so the player can identify it).
+      var nm = document.createElement('div');
+      nm.className = 'bf-chip-name';
+      nm.textContent = name;
+      chip.appendChild(nm);
     });
   }
 
@@ -2097,6 +2116,143 @@ function buildArtScript() {
     wrap.querySelector('.bf-guide-text').innerHTML = msg.m;
   }
 
+  // ---- (A) AI battle background behind the active hero's action panel ----
+  function injectActionPanelBg() {
+    var battle = document.getElementById('s-battle');
+    if (!battle || !battle.classList.contains('active')) return;
+    // Find the action buttons panel (contains the turn actions). We locate the
+    // closest container that holds action buttons like Atacar/Hechizo/Objeto/Pasar.
+    var btns = battle.querySelectorAll('button');
+    var host = null;
+    for (var i = 0; i < btns.length; i++) {
+      var t = (btns[i].textContent || '').trim();
+      if (/Atacar|Hechizo|Objeto|Pasar turno|Pasar/i.test(t)) { host = btns[i].parentElement; break; }
+    }
+    if (!host) return;
+    if (host.dataset.bfActionBg === '1') return;
+    host.dataset.bfActionBg = '1';
+    host.classList.add('bf-action-host');
+    var bg = document.createElement('div');
+    bg.className = 'bf-action-bg';
+    bg.style.setProperty('--bf-action-art', 'url("' + ACTION_BG + '")');
+    host.insertBefore(bg, host.firstChild);
+  }
+
+  // ---- (B) Play a hand card (spell/object) with a confirm + cast animation ----
+  function bfHandClean(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+    });
+  }
+
+  function bfActiveMana() {
+    var active = document.querySelector('.bhero.active-turn');
+    if (!active) return null;
+    var mp = active.querySelector('.mp-num');
+    var m = mp ? String(mp.textContent).match(/-?\\d+/) : null;
+    return m ? parseInt(m[0], 10) : null;
+  }
+
+  function bfFindItemByName(name) {
+    var key = (name || '').trim();
+    var sp = (typeof SPELLS !== 'undefined' ? SPELLS : []).find(function(s) { return s && s.name === key; });
+    if (sp) return { item: sp, kind: 'spell' };
+    var ob = (typeof OBJECTS !== 'undefined' ? OBJECTS : []).find(function(o) { return o && o.name === key; });
+    if (ob) return { item: ob, kind: 'object' };
+    return null;
+  }
+
+  function bfPlayCastAnim(kind, el) {
+    var color = kind === 'object' ? '#5fffa0' : elementColor(el || 'arcano');
+    var flash = document.createElement('div');
+    flash.className = 'bf-cast-flash';
+    flash.style.color = color;
+    document.body.appendChild(flash);
+    var rune = document.createElement('div');
+    rune.className = 'bf-cast-runes';
+    rune.style.color = color;
+    rune.textContent = kind === 'object' ? '🧪' : '✦';
+    document.body.appendChild(rune);
+    setTimeout(function() { if (flash.parentNode) flash.remove(); if (rune.parentNode) rune.remove(); }, 1000);
+  }
+
+  function bfConfirmPlayCard(opts, onYes) {
+    var existing = document.getElementById('bf-confirm-overlay');
+    if (existing) existing.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'bf-confirm-overlay';
+    overlay.className = 'bf-confirm-overlay';
+    var manaLine = '';
+    var canPlay = true;
+    if (opts.kind === 'spell') {
+      var cost = Number(opts.manaCost || 0);
+      var mana = opts.mana;
+      if (mana !== null && mana !== undefined && cost > mana) canPlay = false;
+      manaLine = '<div class="bf-confirm-msg">Coste de maná: <b>' + cost + '</b>' +
+        (mana !== null && mana !== undefined ? ' · Maná disponible: <b>' + mana + '</b>' : '') + '</div>' +
+        (canPlay ? '' : '<div class="bf-confirm-msg" style="color:#ff8a8a">No tienes maná suficiente para lanzarlo.</div>');
+    }
+    overlay.innerHTML =
+      '<div class="bf-confirm-box">' +
+        '<div class="bf-confirm-body">' +
+          '<div class="bf-confirm-name" style="margin-top:14px">' + bfHandClean(opts.name) + '</div>' +
+          (opts.effect ? '<div class="bf-confirm-effect">' + bfHandClean(opts.effect) + '</div>' : '') +
+          manaLine +
+          '<div class="bf-confirm-msg">¿Jugar esta carta ahora? <b>Usará el turno del héroe activo.</b></div>' +
+          '<div class="bf-confirm-actions">' +
+            '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button>' +
+            (canPlay ? '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Jugar</button>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+    overlay.querySelector('#bf-confirm-no').onclick = close;
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+    var yes = overlay.querySelector('#bf-confirm-yes');
+    if (yes) yes.onclick = function() { close(); onYes(); };
+  }
+
+  // Intercept clicks on hand cards: confirm + animate, then run the game's own
+  // play action (which deducts mana, ends the turn, applies effects, etc.).
+  function bfBindHandPlay() {
+    document.querySelectorAll('.chip.bf-chip-card').forEach(function(chip) {
+      if (chip.dataset.bfPlayBound === '1') return;
+      // Capture the game's original click handler so we can run it on confirm.
+      var origOnclickAttr = chip.getAttribute('onclick');
+      var origOnclickProp = chip.onclick;
+      if (!origOnclickAttr && !origOnclickProp) return;
+      chip.dataset.bfPlayBound = '1';
+      // Remove the inline handler so our gate runs first.
+      chip.removeAttribute('onclick');
+      chip.onclick = null;
+      chip.addEventListener('click', function(e) {
+        // Ignore clicks on the remove "×" button.
+        if (e.target.closest('.bf-chip-x')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var name = chip.title || (chip.querySelector('.bf-chip-name') && chip.querySelector('.bf-chip-name').textContent) || '';
+        var found = bfFindItemByName(name);
+        var item = found ? found.item : null;
+        var kind = found ? found.kind : 'spell';
+        var run = function() {
+          bfPlayCastAnim(kind, item && (item.el || item.element));
+          setTimeout(function() {
+            if (origOnclickProp) origOnclickProp.call(chip, e);
+            else if (origOnclickAttr) { try { new Function('event', origOnclickAttr).call(chip, e); } catch (err) {} }
+          }, 240);
+        };
+        bfConfirmPlayCard({
+          name: name,
+          kind: kind,
+          effect: item ? (item.txt || item.desc || '') : '',
+          manaCost: item ? (item.mana || item.manaCost || item.cost || 0) : 0,
+          mana: kind === 'spell' ? bfActiveMana() : null,
+        }, run);
+      }, true);
+    });
+  }
+
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
@@ -2105,6 +2261,8 @@ function buildArtScript() {
     injectBattleHeroArt();
     injectRecruitHeroArt();
     injectTitleIcons();
+    injectActionPanelBg();
+    bfBindHandPlay();
     syncBattleFx();
   }
 
