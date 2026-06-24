@@ -1496,7 +1496,9 @@ function buildArtScript() {
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
       if (!item) return;
       var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
-      bfConfirm({ item: item, side: side, art: art }, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
+      var opts = { item: item, side: side, art: art };
+      if (!opts.item.txt && opts.item.desc) opts.item.txt = opts.item.desc;
+      bfConfirm(opts, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
     };
 
     var originalBuyObject = window.buyObject;
