@@ -43,11 +43,11 @@ export default function HeroCardFace({ hero, elite }) {
         <div className="mt-1 inline-block max-w-full rounded-full bg-[#08050caa] border border-[#ffd24a38] px-2 py-0.5 font-heading text-[10px] font-extrabold italic text-[#fff0bd]">{hero.title}{elite ? ' · ÉLITE' : ''}</div>
       </div>
 
-      <div className="absolute left-3 right-3 bottom-3 z-10 grid grid-cols-[40px_1fr] gap-2 items-center min-h-[96px] rounded-xl bg-black/55 border border-[#ffd24a55] px-2 py-2 pb-5 backdrop-blur-sm">
-        <div className={`w-10 h-10 rounded-full border-2 ${elite ? 'border-[#e0b2ff]' : 'border-[#ffe079]'}`} style={{ background: elite ? 'radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012)' : 'radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101)' }} />
+      <div className="absolute left-3 right-3 bottom-3 z-10 grid grid-cols-[34px_1fr] sm:grid-cols-[40px_1fr] gap-2 items-center max-h-[124px] sm:max-h-none min-h-[88px] sm:min-h-[96px] overflow-hidden rounded-xl bg-black/55 border border-[#ffd24a55] px-2 py-2 pb-5 backdrop-blur-sm">
+        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${elite ? 'border-[#e0b2ff]' : 'border-[#ffe079]'}`} style={{ background: elite ? 'radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012)' : 'radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101)' }} />
         <div>
-          <div className={`font-heading text-[11px] font-black uppercase leading-tight ${elite ? 'text-[#d9a2ff]' : 'text-[#ffe07b]'}`}>{abilityName}</div>
-          <div className="mt-1 text-[10.5px] font-bold leading-tight text-[#fff7ea]" style={{ textShadow: '0 2px 3px #000' }}>{abilityTxt}</div>
+          <div className={`font-heading text-[10px] sm:text-[11px] font-black uppercase leading-tight ${elite ? 'text-[#d9a2ff]' : 'text-[#ffe07b]'}`}>{abilityName}</div>
+          <div className="mt-1 text-[9px] sm:text-[10.5px] font-bold leading-snug text-[#fff7ea]" style={{ textShadow: '0 2px 3px #000' }}>{abilityTxt}</div>
         </div>
       </div>
       <div className="absolute left-14 bottom-3 z-20 text-[7px] font-black text-[#ffe7a8] bg-black/65 border border-[#ffd24a55] rounded-full px-1.5 py-0.5">Base Set · Nº {String(hero.num).padStart(3, '0')}</div>
