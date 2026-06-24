@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-guide-helper-v24';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-guide-prepare-v25';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -1903,8 +1903,12 @@ function buildArtScript() {
       return { t: '¡A la batalla!', m: 'Elige una <b>acción</b> con el héroe activo (atacar, hechizo u objeto). Vence a los <b>3 héroes</b> rivales.' };
     }
     if (id && id !== 's-title') {
+      var txt = (active && active.textContent) || '';
+      // "Preparar Partida" — choose game mode (vs IA / Multijugador). Not the auction.
+      if (/Preparar Partida|vs\\s*IA|Multijugador/i.test(txt) && !/Fase\\s*\\d|puja|subasta/i.test(txt)) {
+        return { t: 'Preparar Partida', m: 'Elige el modo: <b>vs IA</b> o <b>Multijugador</b>, escribe tu nombre y pulsa <b>Comenzar</b>.' };
+      }
       // Auction / recruit screens
-      var phase = active && /Fase\\s*\\d/i.test(active.textContent || '') ? '' : '';
       return { t: 'Fase de Subasta', m: 'Mira los <b>6 héroes</b> y haz una <b>puja sellada</b> por el que quieras. Quien ofrezca más se lo lleva. ¡No gastes todas las monedas!' };
     }
     return null;
@@ -1952,8 +1956,9 @@ function buildArtScript() {
     var id = active ? active.id : 's-title';
     var msg = guideMessageFor(id, active);
     if (!msg) return;
-    if (wrap.dataset.bfMsgId === id) return;
-    wrap.dataset.bfMsgId = id;
+    var key = id + '|' + msg.t;
+    if (wrap.dataset.bfMsgId === key) return;
+    wrap.dataset.bfMsgId = key;
     wrap.querySelector('.bf-guide-title').innerHTML = msg.t;
     wrap.querySelector('.bf-guide-text').innerHTML = msg.m;
   }
