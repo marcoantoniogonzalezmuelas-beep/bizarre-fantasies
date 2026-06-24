@@ -1955,7 +1955,10 @@ function buildArtScript() {
 Deno.serve(async (req) => {
   try {
     const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
-    const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now(), { cache: 'no-store' });
+    const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now() + '&r=' + Math.random().toString(36).slice(2), {
+      cache: 'reload',
+      headers: { 'Cache-Control': 'no-cache, no-store, max-age=0', 'Pragma': 'no-cache' },
+    });
     let html = await upstream.text();
 
     // Prevent in-game "back to start" buttons from reloading cached/raw HTML.

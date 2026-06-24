@@ -8,13 +8,14 @@ const MAX_LOAD_ATTEMPTS = 3;
 
 export default function Home() {
   const iframeRef = useRef(null);
-  const [html, setHtml] = useState('');
+  const [blobUrl, setBlobUrl] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    let currentBlobUrl = '';
 
     const loadGame = async (attempt = 1) => {
       try {
@@ -37,7 +38,11 @@ export default function Home() {
           loadGame(attempt + 1);
           return;
         }
-        setHtml(data);
+        // Serve the game through a fresh Blob URL so the iframe always loads new
+        // bytes — `srcDoc` can keep a stale rendered document in the preview.
+        const blob = new Blob([data], { type: 'text/html' });
+        currentBlobUrl = URL.createObjectURL(blob);
+        setBlobUrl(currentBlobUrl);
         setReloadKey((k) => k + 1);
         setLoading(false);
       } catch {
@@ -54,6 +59,7 @@ export default function Home() {
 
     return () => {
       cancelled = true;
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     };
   }, []);
 
@@ -83,12 +89,12 @@ export default function Home() {
         </div>
       </Link>
 
-      {html && (
+      {blobUrl && (
         <iframe
           key={reloadKey}
           ref={iframeRef}
           title="Bizarre Fantasies v5"
-          srcDoc={html}
+          src={blobUrl}
           className="w-full h-full border-0"
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
