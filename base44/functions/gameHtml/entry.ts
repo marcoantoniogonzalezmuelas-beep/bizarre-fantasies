@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-dbmap-v1';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-fixes-v2';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -899,7 +899,7 @@ function buildArtScript(dbArtMap) {
     // Match any .chip element whose name is a known bonus/restador
     document.querySelectorAll('.chip').forEach(function(chip) {
       if (chip.dataset.bfDone === '1') return;
-      var name = chip.textContent.trim();
+      var name = (chip.textContent || '').replace(/\s+/g, ' ').trim();
       var url = BONUS_ART_BY_NAME[name] || BONUS_ART_BY_KEY[bfKey(name)];
       if (!url) return;
       chip.dataset.bfDone = '1';
@@ -1819,9 +1819,6 @@ function buildArtScript(dbArtMap) {
         return box.innerHTML;
       };
       window.eqShopGrid.__bfArt = 1;
-      if (typeof window.renderEquip === 'function' && G && G.eqSide) {
-        try { window.renderEquip(G.eqSide); } catch (e) {}
-      }
     }
 
     window.bfOpenQuickShop = function(side, heroId, slot) {
@@ -1951,8 +1948,7 @@ function buildArtScript(dbArtMap) {
   // ---- Replace title emoji row with custom icon images ----
   function injectTitleIcons() {
     var row = document.querySelector('.title-emoji');
-    if (!row || row.dataset.bfIconsDone === '1') return;
-    row.dataset.bfIconsDone = '1';
+    if (!row || row.dataset.bfIconsDone === '1' || !row.parentNode) return;
     var icons = [
       { cls: 'bf-icon-cc', src: ICON_CC, label: 'CC' },
       { cls: 'bf-icon-ad', src: ICON_AD, label: 'AD' },
@@ -1970,6 +1966,7 @@ function buildArtScript(dbArtMap) {
       container.appendChild(div);
     });
     row.parentNode.insertBefore(container, row);
+    row.dataset.bfIconsDone = '1';
   }
 
   function injectArtIntoDOM() {
