@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-setup-v50';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-quit-v51';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -1380,18 +1380,12 @@ function buildArtScript() {
     // easier to follow. We add a short pause before each turn transition.
     if (typeof window.endTurn === 'function' && !window.endTurn.__bfSlow) {
       var originalEndTurn = window.endTurn;
-      window.endTurn = function() {
-        var args = arguments, self = this;
-        setTimeout(function() { originalEndTurn.apply(self, args); }, 520);
-      };
+      window.endTurn = function() { var args = arguments, self = this; setTimeout(function() { originalEndTurn.apply(self, args); }, 520); };
       window.endTurn.__bfSlow = 1;
     }
     if (typeof window.finishAct === 'function' && !window.finishAct.__bfSlow) {
       var originalFinishAct = window.finishAct;
-      window.finishAct = function() {
-        var args = arguments, self = this;
-        setTimeout(function() { originalFinishAct.apply(self, args); }, 360);
-      };
+      window.finishAct = function() { var args = arguments, self = this; setTimeout(function() { originalFinishAct.apply(self, args); }, 360); };
       window.finishAct.__bfSlow = 1;
     }
 
@@ -2399,11 +2393,14 @@ function buildArtScript() {
   function patchQuitToHome() {
     if (window.quitToHome && window.quitToHome.__bf) return;
     window.quitToHome = function() {
-      try {
-        var ok = window.confirm('¿Salir de la partida y volver a la pantalla inicial?');
-        if (!ok) return;
-      } catch (e) {}
-      window.parent.location.href = window.parent.location.pathname + '?bf=' + Date.now();
+      var ex = document.getElementById('bf-confirm-overlay'); if (ex) ex.remove();
+      var ov = document.createElement('div'); ov.id = 'bf-confirm-overlay'; ov.className = 'bf-confirm-overlay';
+      ov.innerHTML = '<div class="bf-confirm-box"><div class="bf-confirm-body"><div style="font-size:42px;margin-top:14px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6))">🚪</div><div class="bf-confirm-name" style="margin-top:6px">¿Salir de la partida?</div><div class="bf-confirm-msg">Volverás a la <b>pantalla inicial</b> y se perderá el progreso de esta partida.</div><div class="bf-confirm-actions"><button class="bf-confirm-btn bf-confirm-no" id="bf-quit-no">Cancelar</button><button class="bf-confirm-btn bf-confirm-yes" id="bf-quit-yes">Salir</button></div></div></div>';
+      document.body.appendChild(ov);
+      function bfQuitClose() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+      ov.querySelector('#bf-quit-no').onclick = bfQuitClose;
+      ov.addEventListener('click', function(e) { if (e.target === ov) bfQuitClose(); });
+      ov.querySelector('#bf-quit-yes').onclick = function() { bfQuitClose(); window.parent.location.href = window.parent.location.pathname + '?bf=' + Date.now(); };
     };
     window.quitToHome.__bf = 1;
   }
