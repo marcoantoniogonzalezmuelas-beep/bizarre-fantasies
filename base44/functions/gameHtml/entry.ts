@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-04-rolebig-v57';
+const GAME_PATCH_VERSION = 'bf-2026-07-04-rolenew-v58';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -207,7 +207,7 @@ function buildArtScript() {
       .bf-hero-title { display:block; margin:3px auto 0; max-width:92%; padding:2px 7px; border-radius:999px; color:#fff0bd; background:rgba(8,5,12,.62); border:1px solid rgba(255,210,74,.22); font-family:'Cinzel',serif; font-size:10.8px; line-height:1.08; font-weight:800; font-style:italic; text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22); text-align:center; letter-spacing:.12px; }
       .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
       .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
-      .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; } .bf-role-emblem { width:30px; height:30px; border-radius:50%; object-fit:cover; vertical-align:middle; filter:drop-shadow(0 1px 4px rgba(0,0,0,.65)); display:inline-block; } .phase-badge .bf-role-emblem { width:34px; height:34px; } .bf-hero-card .bf-role-emblem, .bf-type-medal .bf-role-emblem { width:30px; height:30px; }
+      .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; } .bf-role-emblem { width:40px; height:40px; border-radius:50%; object-fit:cover; vertical-align:middle; filter:drop-shadow(0 2px 5px rgba(0,0,0,.7)); display:inline-block; } .phase-badge .bf-role-emblem { width:44px; height:44px; } .bf-hero-card .bf-role-emblem { width:40px; height:40px; }
       .bf-heart { position:absolute; right:9px; bottom:164px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
       .bf-heart .cf-heart-ico { position:absolute; inset:0; font-size:54px; color:#e23d3a; line-height:52px; text-align:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)); }
       .bf-heart .cf-hp { position:relative; z-index:2; font-weight:1000; color:#fff; font-size:18px; text-shadow:0 2px 3px #000; }
@@ -593,10 +593,11 @@ function buildArtScript() {
       if (type === 'HE') return 'HECHICERÍA';
       return clean(type || 'HÉROE');
     }
-    var RBASE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
+
     var ROLE_EMBLEM = { CC: RBASE + '8632bdd66_generated_image.png', AD: RBASE + '2955a08aa_generated_image.png', HE: RBASE + '7b459765d_generated_image.png' };
     function typeIcon(type) {
-      if (ROLE_EMBLEM[type]) return '<img class="bf-role-emblem" src="' + ROLE_EMBLEM[type] + '" alt="">';
+      var RI = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' };
+      if (RI[type]) return '<img class="bf-role-emblem" src="' + RI[type] + '" alt="">';
       return '★';
     }
     function raceSigil(clan) {
