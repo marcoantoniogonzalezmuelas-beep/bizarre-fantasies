@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-art-v44';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-punk-v45';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -306,9 +306,7 @@ function buildArtScript() {
       .bhero.active-turn .bf-active-ring { border-color:rgba(255,210,74,.8); box-shadow:0 0 0 1px rgba(255,210,74,.4), 0 0 30px rgba(255,210,74,.5), inset 0 0 24px rgba(255,210,74,.22); animation:bfRingPulse 2.1s ease-in-out infinite; }
       .bf-active-tag { position:absolute; top:-11px; left:50%; transform:translateX(-50%); z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.6px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); padding:2px 12px; border-radius:999px; box-shadow:0 4px 12px rgba(255,210,74,.5); opacity:0; }
       .bhero.active-turn .bf-active-tag { opacity:1; animation:bfTagBob 2.1s ease-in-out infinite; }
-      @keyframes bfAuraBreath { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
-      @keyframes bfRingPulse { 0%,100%{box-shadow:0 0 0 1px rgba(255,210,74,.4),0 0 22px rgba(255,210,74,.4),inset 0 0 20px rgba(255,210,74,.18)} 50%{box-shadow:0 0 0 2px rgba(255,210,74,.6),0 0 40px rgba(255,210,74,.65),inset 0 0 28px rgba(255,210,74,.3)} }
-      @keyframes bfTagBob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-3px)} }
+      @keyframes bfAuraBreath { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} } @keyframes bfRingPulse { 0%,100%{box-shadow:0 0 0 1px rgba(255,210,74,.4),0 0 22px rgba(255,210,74,.4),inset 0 0 20px rgba(255,210,74,.18)} 50%{box-shadow:0 0 0 2px rgba(255,210,74,.6),0 0 40px rgba(255,210,74,.65),inset 0 0 28px rgba(255,210,74,.3)} } @keyframes bfTagBob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-3px)} }
 
       .bhero.fx-shake { animation:bfDamageShake .5s ease-in-out 1 !important; }
 
@@ -323,18 +321,11 @@ function buildArtScript() {
 
       /* Floating status emblem, always visible while the status is active */
       .bf-status-badge { position:absolute; top:6px; right:6px; z-index:6; display:flex; align-items:center; gap:4px; padding:3px 9px 3px 6px; border-radius:999px; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.3px; color:#fff; background:rgba(8,5,14,.82); border:1.5px solid currentColor; box-shadow:0 0 12px currentColor; animation:bfBadgeFloat 1.8s ease-in-out infinite; }
-      .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; }
-      .bf-status-paralyzed { color:#ffe14a; }
-      .bf-status-sleeping { color:#8aaaff; }
-      .bf-status-cursed { color:#c79bff; }
-      @keyframes bfBadgeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+      .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; } .bf-status-paralyzed { color:#ffe14a; } .bf-status-sleeping { color:#8aaaff; } .bf-status-cursed { color:#c79bff; }
+      @keyframes bfBadgeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} } @keyframes bfSleepZ { 0%{opacity:0;transform:translate(-50%,4px) scale(.7)} 30%{opacity:1} 100%{opacity:0;transform:translate(-30%,-22px) scale(1.1)} }
       .bf-sleep-z { position:absolute; left:50%; top:8%; z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; color:#9bb4ff; font-size:18px; text-shadow:0 0 10px #5a7fff; animation:bfSleepZ 2.6s ease-in-out infinite; }
-      @keyframes bfSleepZ { 0%{opacity:0;transform:translate(-50%,4px) scale(.7)} 30%{opacity:1} 100%{opacity:0;transform:translate(-30%,-22px) scale(1.1)} }
 
-      @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
-      @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-      @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} }
-      @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
+      @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} } @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} } @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} } @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
       .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:122% auto; background-position:center 20%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
@@ -354,11 +345,7 @@ function buildArtScript() {
       .fx-ring-heal { box-shadow:0 0 24px #51ff8a, inset 0 0 18px #51ff8a !important; }
       .fx-burst { mix-blend-mode:screen; filter:blur(.2px) saturate(1.4); }
       .fx-status, .fx-word, .fx-dmg { text-shadow:0 2px 6px #000,0 0 12px currentColor !important; font-weight:1000 !important; }
-      @keyframes bfHealPulse { 0%{transform:scale(1)} 45%{transform:scale(1.05)} 100%{transform:scale(1)} }
-      @keyframes bfParalyzeJolt { 0%,100%{transform:translateX(0)} 18%{transform:translateX(-5px) skewX(-3deg)} 36%{transform:translateX(6px) skewX(3deg)} 54%{transform:translateX(-4px)} 72%{transform:translateX(4px)} }
-      @keyframes bfFloatHit { 0%{opacity:0;transform:translate(-50%,-22%) scale(.7)} 16%{opacity:1;transform:translate(-50%,-52%) scale(1.22)} 30%{transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-118%) scale(.92)} }
-      @keyframes bfSlash { 0%{opacity:0;transform:rotate(-18deg) scaleX(0)} 30%{opacity:1;transform:rotate(-18deg) scaleX(1.08)} 100%{opacity:0;transform:rotate(-18deg) scaleX(1.3)} }
-      @keyframes bfHealRing { 0%{opacity:0;transform:scale(.35)} 25%{opacity:1} 100%{opacity:0;transform:scale(1.8)} }
+      @keyframes bfHealPulse { 0%{transform:scale(1)} 45%{transform:scale(1.05)} 100%{transform:scale(1)} } @keyframes bfParalyzeJolt { 0%,100%{transform:translateX(0)} 18%{transform:translateX(-5px) skewX(-3deg)} 36%{transform:translateX(6px) skewX(3deg)} 54%{transform:translateX(-4px)} 72%{transform:translateX(4px)} } @keyframes bfFloatHit { 0%{opacity:0;transform:translate(-50%,-22%) scale(.7)} 16%{opacity:1;transform:translate(-50%,-52%) scale(1.22)} 30%{transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-118%) scale(.92)} } @keyframes bfSlash { 0%{opacity:0;transform:rotate(-18deg) scaleX(0)} 30%{opacity:1;transform:rotate(-18deg) scaleX(1.08)} 100%{opacity:0;transform:rotate(-18deg) scaleX(1.3)} } @keyframes bfHealRing { 0%{opacity:0;transform:scale(.35)} 25%{opacity:1} 100%{opacity:0;transform:scale(1.8)} }
       .bhero.bf-dead { filter:saturate(.35) brightness(.66); }
       .bhero.bf-auto-elite .bf-battle-art { filter:saturate(1.35) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; }
       .bf-fx-death-smoke { position:absolute; left:0; right:0; bottom:-20px; height:110px; background:radial-gradient(circle at 45% 70%,rgba(15,15,18,.88),rgba(90,38,120,.36) 38%,transparent 72%); animation:bfDeathSmoke 1.1s ease-out forwards; }
@@ -462,15 +449,8 @@ function buildArtScript() {
       .bf-confirm-yes:hover { filter:brightness(1.08); }
       .bf-confirm-no { color:#efe9dc; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); }
       .bf-confirm-no:hover { background:rgba(255,255,255,.12); }
-      @keyframes bfFadeIn { from{opacity:0} to{opacity:1} }
-      @keyframes bfPopIn { from{opacity:0;transform:translateY(14px) scale(.94)} to{opacity:1;transform:none} }
-      @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} }
-      @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
-      @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} }
-      @keyframes bfEliteAura { 0%{opacity:0;transform:scale(.75) rotate(0)} 35%{opacity:1} 100%{opacity:0;transform:scale(1.25) rotate(18deg)} }
-      @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.6)} }
-      @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.5)} 35%{opacity:1;transform:scale(1.08)} 100%{opacity:0;transform:scale(1.3)} }
-      @keyframes bfBolt { 0%{opacity:0;transform:translateY(-10px) scale(.6)} 20%{opacity:1;transform:translateY(0) scale(1.14)} 100%{opacity:0;transform:translateY(12px) scale(.95)} }
+      @keyframes bfFadeIn { from{opacity:0} to{opacity:1} } @keyframes bfPopIn { from{opacity:0;transform:translateY(14px) scale(.94)} to{opacity:1;transform:none} } @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} } @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
+      @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} } @keyframes bfEliteAura { 0%{opacity:0;transform:scale(.75) rotate(0)} 35%{opacity:1} 100%{opacity:0;transform:scale(1.25) rotate(18deg)} } @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.6)} } @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.5)} 35%{opacity:1;transform:scale(1.08)} 100%{opacity:0;transform:scale(1.3)} } @keyframes bfBolt { 0%{opacity:0;transform:translateY(-10px) scale(.6)} 20%{opacity:1;transform:translateY(0) scale(1.14)} 100%{opacity:0;transform:translateY(12px) scale(.95)} }
 
       /* ---- ÉLITE in battle: flip the portrait + golden glow ---- */
       .bhero.bf-auto-elite .bf-battle-art { transform: scaleX(-1); filter: saturate(1.3) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; transition: transform .55s cubic-bezier(.2,.8,.3,1), filter .4s ease; }
@@ -535,11 +515,19 @@ function buildArtScript() {
       .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
       .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
 
-      /* ---- Guía (ave fantasía tipo chocobo) ---- */
-      .bf-guide { position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(560px,94vw); pointer-events:none; animation:bfFadeIn .35s ease; }
+      /* ---- Guía (ave fantasía tipo chocobo) — anclada a la IZQUIERDA ---- */
+      .bf-guide { position:fixed; top:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; }
       .bf-guide.bf-guide-hidden .bf-guide-bubble, .bf-guide.bf-guide-hidden .bf-guide-char { display:none; }
-      .bf-guide-char { position:relative; flex:0 0 auto; width:78px; height:78px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6)); cursor:pointer; }
-      .bf-guide-char img { width:100%; height:100%; object-fit:contain; display:block; }
+      .bf-guide-char { position:relative; flex:0 0 auto; width:78px; height:78px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6)); cursor:pointer; transition:transform .2s ease; }
+      .bf-guide-char img { width:100%; height:100%; object-fit:contain; display:block; transition:opacity .18s ease; }
+      /* Reaction animations (triggered on strong battle / equip events) */
+      .bf-guide-char.bf-react-cheer { animation:bfGuideCheer 1.1s ease-in-out 2; } .bf-guide-char.bf-react-wow { animation:bfGuideWow 1s ease-in-out 2; } .bf-guide-char.bf-react-shock { animation:bfGuideShock 0.9s ease-in-out 2; }
+      .bf-guide-char .bf-guide-spark { position:absolute; inset:-12px; z-index:-1; pointer-events:none; border-radius:50%; opacity:0; background:radial-gradient(circle,rgba(255,210,74,.6),rgba(255,160,40,.25) 42%,transparent 72%); }
+      .bf-guide-char.bf-react-cheer .bf-guide-spark, .bf-guide-char.bf-react-wow .bf-guide-spark { animation:bfGuideSpark 1.1s ease-out 2; } .bf-guide-char.bf-react-shock .bf-guide-spark { background:radial-gradient(circle,rgba(176,108,255,.55),rgba(80,20,120,.25) 42%,transparent 72%); animation:bfGuideSpark 1.1s ease-out 2; }
+      @keyframes bfGuideCheer { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-12px) rotate(-7deg) scale(1.12)} 50%{transform:translateY(-2px) rotate(5deg) scale(1.06)} 75%{transform:translateY(-10px) rotate(-4deg) scale(1.1)} } @keyframes bfGuideWow { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.22) rotate(3deg)} 60%{transform:scale(1.1) rotate(-3deg)} } @keyframes bfGuideShock { 0%,100%{transform:translateX(0) rotate(0)} 15%{transform:translateX(-7px) rotate(-5deg) scale(1.08)} 35%{transform:translateX(7px) rotate(5deg)} 55%{transform:translateX(-5px) rotate(-3deg)} 75%{transform:translateX(4px)} } @keyframes bfGuideSpark { 0%{opacity:0;transform:scale(.6)} 30%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.4)} }
+      /* Floating reaction word above Punkito */
+      .bf-guide-pop { position:absolute; left:50%; top:-18px; transform:translateX(-50%); z-index:5; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; font-size:13px; letter-spacing:.4px; white-space:nowrap; padding:3px 10px; border-radius:999px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 12px rgba(255,210,74,.55); animation:bfGuidePop 1.6s ease-out forwards; } .bf-guide-pop.bf-pop-shock { color:#fff; background:linear-gradient(180deg,#c79bff,#8a3df0 55%,#4c0b86); box-shadow:0 4px 12px rgba(160,80,255,.55); }
+      @keyframes bfGuidePop { 0%{opacity:0;transform:translate(-50%,8px) scale(.6)} 20%{opacity:1;transform:translate(-50%,0) scale(1.1)} 80%{opacity:1;transform:translate(-50%,-6px) scale(1)} 100%{opacity:0;transform:translate(-50%,-20px) scale(.9)} }
       .bf-guide-bubble { position:relative; pointer-events:auto; background:linear-gradient(180deg,#1c1533,#130d24); border:2px solid rgba(255,210,74,.6); border-radius:14px; padding:9px 30px 10px 13px; box-shadow:0 8px 24px rgba(0,0,0,.55),0 0 18px rgba(255,210,74,.14), inset 0 0 0 1px rgba(255,210,74,.1); }
       .bf-guide-bubble::before { content:''; position:absolute; left:-9px; bottom:14px; width:0; height:0; border-top:8px solid transparent; border-bottom:8px solid transparent; border-right:9px solid rgba(255,210,74,.6); }
       .bf-guide-title { font-family:'Cinzel',serif; font-weight:1000; font-size:12px; color:#ffd24a; letter-spacing:.3px; text-shadow:0 1px 2px #000; margin-bottom:2px; }
@@ -552,7 +540,7 @@ function buildArtScript() {
       .bf-guide-show.bf-guide-visible { display:block; }
       @keyframes bfGuideFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
       @media (max-width: 640px) {
-        .bf-guide { top:6px; gap:7px; max-width:96vw; }
+        .bf-guide { top:6px; left:6px; gap:7px; max-width:74vw; }
         .bf-guide-char { width:58px; height:58px; }
         .bf-guide-bubble { padding:7px 34px 8px 11px; }
         .bf-guide-title { font-size:11px; }
@@ -567,7 +555,7 @@ function buildArtScript() {
         .bf-quick-grid { grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important; }
         .chip.bf-chip-card { width:96px !important; height:131px !important; }
         .bf-confirm-box { width:min(420px,90vw) !important; }
-        .bf-guide { max-width:min(640px,92vw) !important; }
+        .bf-guide { max-width:min(460px,66vw) !important; }
         .bf-eq-hero-art { width:140px !important; }
         .eq-hero.bf-eq-hero-with-art { padding-left:140px !important; }
       }
@@ -1106,10 +1094,12 @@ function buildArtScript() {
     if (ev.k === 'death') {
       var dead = getBattleCard(ev.side, ev.id);
       playHeroFx(dead, 'death');
+      bfGuideReact('shock', '¡OH NO!');
       return;
     }
     if (ev.k === 'elite') {
       transformHeroToElite(getBattleCard(ev.side, ev.id));
+      bfGuideReact('wow', '¡RENACE!');
       return;
     }
     if (ev.k === 'heal') {
@@ -1552,7 +1542,7 @@ function buildArtScript() {
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
       if (!item) return;
       var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
-      bfConfirm({ item: item, side: side, art: art }, function() { originalBuySpell(side, id); });
+      bfConfirm({ item: item, side: side, art: art }, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
     };
 
     var originalBuyObject = window.buyObject;
@@ -1560,7 +1550,7 @@ function buildArtScript() {
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
       if (!item) return;
       var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
-      bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); });
+      bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
 
     var originalDoAssign = window.doAssign;
@@ -1573,7 +1563,7 @@ function buildArtScript() {
       var item = a.name ? { name: a.name, cost: a.cost, id: a.id, txt: full.txt || '', desc: full.desc || '' } : null;
       if (!item) return;
       var art = artFor(kind, indexInList(srcList, a.id));
-      bfConfirm({ item: item, side: side, hero: hero, art: art }, function() { originalDoAssign(side, heroId); });
+      bfConfirm({ item: item, side: side, hero: hero, art: art }, function() { originalDoAssign(side, heroId); bfGuideApprovePurchase(item); });
     };
 
     // Resolve an item's art + number by its INDEX inside the game's own list
@@ -1994,6 +1984,86 @@ function buildArtScript() {
   }
 
   var GUIDE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/292c04262_generated_image.png";
+  // Punkito's other looks: élite (Harley, battle-only) + reaction faces.
+  var GUIDE_ELITE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d7e007cd6_generated_image.png";
+  var GUIDE_FACE = { wow: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5071f94c_generated_image.png", cheer: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/51ec29abd_generated_image.png", shock: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/63a162077_generated_image.png" };
+
+  // Battle screen active? Punkito rides his Harley (élite look) only in battle.
+  function bfInBattle() { var b = document.getElementById('s-battle'); return !!(b && b.classList.contains('active')); }
+  // Idle look Punkito returns to: élite (Harley) in battle, normal elsewhere.
+  function bfGuideBaseImg() { return bfInBattle() ? GUIDE_ELITE_IMG : GUIDE_IMG; }
+
+  // Make Punkito react: swap to an expression face, animate + float a word,
+  // then settle back. Reactions don't stack. type: 'cheer' | 'wow' | 'shock'.
+  function bfGuideReact(type, word) {
+    var wrap = document.getElementById('bf-guide');
+    if (!wrap || window.__bfGuideHidden) return;
+    var charEl = wrap.querySelector('.bf-guide-char');
+    var img = charEl && charEl.querySelector('img');
+    if (!charEl || !img || charEl.dataset.bfReacting === '1') return;
+    charEl.dataset.bfReacting = '1';
+    var animMap = { cheer: 'bf-react-cheer', wow: 'bf-react-wow', shock: 'bf-react-shock' };
+    img.src = GUIDE_FACE[type] || GUIDE_FACE.wow;
+    charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock');
+    void charEl.offsetWidth;
+    charEl.classList.add(animMap[type] || 'bf-react-wow');
+    if (!charEl.querySelector('.bf-guide-spark')) { var spark = document.createElement('div'); spark.className = 'bf-guide-spark'; charEl.insertBefore(spark, charEl.firstChild); }
+    if (word) {
+      var pop = document.createElement('div');
+      pop.className = 'bf-guide-pop' + (type === 'shock' ? ' bf-pop-shock' : '');
+      pop.textContent = word; charEl.appendChild(pop);
+      setTimeout(function() { if (pop.parentNode) pop.remove(); }, 1700);
+    }
+    setTimeout(function() {
+      charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock');
+      img.src = bfGuideBaseImg(); charEl.dataset.bfReacting = '';
+    }, 2300);
+  }
+  window.bfGuideReact = bfGuideReact;
+
+  // Keep Punkito's idle look synced with the screen (Harley in battle).
+  function bfSyncGuideLook() {
+    var charEl = document.querySelector('#bf-guide .bf-guide-char');
+    var img = charEl && charEl.querySelector('img');
+    if (!img || charEl.dataset.bfReacting === '1') return;
+    var base = bfGuideBaseImg();
+    if (img.getAttribute('src') !== base) img.src = base;
+    var showImg = document.querySelector('#bf-guide-show img');
+    if (showImg && showImg.getAttribute('src') !== base) showImg.src = base;
+  }
+
+  // Detect strong battle/equip events and trigger a Punkito reaction. Watches:
+  // hero deaths (shock), revive/phoenix (wow), epic bonus appearing (wow).
+  function bfWatchGuideEvents() {
+    document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
+      var hp = readHeroHp(card);
+      if (hp === null) return;
+      if (card.dataset.bfGuideHp !== undefined) {
+        var old = parseInt(card.dataset.bfGuideHp, 10);
+        if (!isNaN(old) && old > 0 && hp <= 0) bfGuideReact('shock', '¡OH NO!');
+        else if (!isNaN(old) && old <= 0 && hp > 0) bfGuideReact('wow', '¡REVIVE!');
+      }
+      card.dataset.bfGuideHp = String(hp);
+    });
+    var bonusName = '';
+    document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
+      if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
+      var chip = lbl.nextElementSibling;
+      while (chip && (!chip.classList || !chip.classList.contains('chip'))) chip = chip.nextElementSibling;
+      if (chip) bonusName = chip.textContent.trim();
+    });
+    if (bonusName && bonusName !== window.__bfGuideBonus) {
+      window.__bfGuideBonus = bonusName;
+      if (/Épic|Convocatoria|Destino/i.test(bonusName)) bfGuideReact('wow', '¡ÉPICO!');
+    }
+  }
+  // Punkito approves powerful equip purchases (phoenix, plasma/thunder weapons…).
+  function bfGuideApprovePurchase(item) {
+    if (!item) return;
+    var name = (item.name || '') + ' ' + (item.id || '');
+    if (/f[eé]nix|phoenix|plasma|thunder|trueno|ca[ñn][oó]n|cannon|aegis|exo|arcan|revive|revivir|pluma/i.test(name)) bfGuideReact('cheer', '¡BUENA ELECCIÓN!');
+  }
+  window.bfGuideApprovePurchase = bfGuideApprovePurchase;
 
   // What the guide says on each screen. Resolved from the active screen id.
   function guideMessageFor(id, active) {
@@ -2270,6 +2340,8 @@ function buildArtScript() {
     injectActionPanelBg();
     bfBindHandPlay();
     syncBattleFx();
+    bfSyncGuideLook();
+    bfWatchGuideEvents();
   }
 
   // ---- OBSERVE DOM MUTATIONS (debounced via rAF so a burst of mutations
