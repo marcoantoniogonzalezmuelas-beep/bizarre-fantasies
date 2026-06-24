@@ -1809,8 +1809,8 @@ function buildArtScript() {
     if (__bfHandItemByName) return __bfHandItemByName;
     if (typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined') return null;
     var map = {};
-    (SPELLS || []).forEach(function(s) { if (s && s.name) map[s.name] = { item: s, kind: 'spell' }; });
-    (OBJECTS || []).forEach(function(o) { if (o && o.name) map[o.name] = { item: o, kind: 'object' }; });
+    (SPELLS || []).forEach(function(s) { if (s && s.name) { var copy = {}; for (var k in s) copy[k] = s[k]; map[s.name] = { item: copy, kind: 'spell' }; } });
+    (OBJECTS || []).forEach(function(o) { if (o && o.name) { var copy = {}; for (var k in o) copy[k] = o[k]; map[o.name] = { item: copy, kind: 'object' }; } });
     __bfHandItemByName = map;
     return map;
   }
@@ -1830,7 +1830,7 @@ function buildArtScript() {
     if (found.kind === 'spell' && manaCost) parts.push('coste ' + manaCost);
     // If nothing numeric was found, fall back to the card's own short text.
     if (!parts.length) {
-      var txt = it.txt || it.desc || '';
+      var txt = it.txt || it.desc || (it.description ? it.description : '');
       return txt.length > 46 ? txt.slice(0, 44) + '…' : txt;
     }
     return parts.join(' · ');
