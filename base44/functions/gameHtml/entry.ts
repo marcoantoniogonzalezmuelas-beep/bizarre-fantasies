@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-bonus-fullart-v18';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-equip-fullart-v19';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -382,12 +382,12 @@ function buildArtScript() {
         filter: blur(18px) saturate(1.3) contrast(1.16);
         transform: scale(1.28); opacity: 1;
       }
-      /* Sharp art layer */
+      /* Sharp art layer — full-bleed cover, identical to the catalog cards */
       .shop-card-art-sharp {
-        position: absolute; inset: -12px; z-index: 1;
+        position: absolute; inset: 0; z-index: 1;
         background-size: cover; background-position: center center; background-repeat: no-repeat;
         filter: saturate(1.14) contrast(1.12);
-        transform: scale(1.08);
+        transform: none;
       }
       /* Bonus / restador shown as a mini-card with the whole card visible */
       .bf-bonus-card {
@@ -440,7 +440,7 @@ function buildArtScript() {
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
         .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
-        .shop-card-art-sharp { inset: -8px !important; background-size: cover !important; background-position: center center !important; }
+        .shop-card-art-sharp { inset: 0 !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { aspect-ratio: 1 / 1 !important; height: auto !important; max-width: 100% !important; margin: 4px auto 7px !important; background:#07050b !important; }
         .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
@@ -551,9 +551,9 @@ function buildArtScript() {
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
-      .bf-quick-card { position:relative; overflow:hidden; min-height:172px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#0b0811; padding:86px 10px 10px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
-      .bf-quick-art { position:absolute; left:0; right:0; top:0; height:102px; background-size:cover; background-position:center; }
-      .bf-quick-card::after { content:''; position:absolute; left:0; right:0; top:0; height:112px; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.82) 100%); pointer-events:none; }
+      .bf-quick-card { position:relative; overflow:hidden; min-height:200px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#0b0811; padding:120px 10px 10px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
+      .bf-quick-art { position:absolute; inset:0; background-size:cover; background-position:center center; filter:saturate(1.14) contrast(1.12); }
+      .bf-quick-card::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0) 38%,rgba(0,0,0,.72) 74%,rgba(0,0,0,.92) 100%); pointer-events:none; }
       .bf-quick-card > *:not(.bf-quick-art) { position:relative; z-index:2; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:3; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; }
       .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.05; }
@@ -563,7 +563,7 @@ function buildArtScript() {
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; height:170px; overflow:hidden; background:#07050b; }
       .bf-confirm-art::before { content:''; position:absolute; inset:-30px; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:blur(20px) saturate(1.3) contrast(1.16); transform:scale(1.4); z-index:0; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-14px; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:scale(1.08); z-index:1; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:none; z-index:1; }
       .bf-confirm-art::after { content:''; position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 35%,rgba(18,13,34,.96) 100%); }
       .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
@@ -574,7 +574,7 @@ function buildArtScript() {
       .bf-view-wrap { display:flex; justify-content:center; padding:6px 0; }
       .bf-view-card { position:relative; width:min(320px,86vw); aspect-ratio:3/4.1; border-radius:18px; overflow:hidden; border:2.5px solid #caa14a; background:#07050b; box-shadow:0 14px 36px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,210,74,.14); }
       .bf-view-card .bf-view-fill { position:absolute; inset:-30px; background-image:var(--bf-art); background-size:cover; background-position:center; filter:blur(20px) saturate(1.3) contrast(1.16); transform:scale(1.4); z-index:0; }
-      .bf-view-card .bf-view-art { position:absolute; inset:-14px; background-image:var(--bf-art); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:scale(1.06); z-index:1; }
+      .bf-view-card .bf-view-art { position:absolute; inset:0; background-image:var(--bf-art); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:none; z-index:1; }
       .bf-view-card .bf-view-shade { position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.86) 100%); }
       .bf-view-coin { position:absolute; top:11px; left:11px; z-index:4; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; color:#4a2e03; font-size:19px; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; box-shadow:0 4px 10px rgba(0,0,0,.6); }
       .bf-view-num { position:absolute; top:14px; right:11px; z-index:4; font-size:9.5px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.66); border:1px solid rgba(255,210,74,.34); border-radius:999px; padding:3px 9px; }
@@ -785,15 +785,16 @@ function buildArtScript() {
     });
   }
 
-  // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
+  // ---- DOM injection for equipment shop cards — full-bleed like the catalog ----
   function injectEquipArt() {
     document.querySelectorAll('.shop-card').forEach(function(card) {
-      if (card.querySelector('.shop-card-art')) return;
+      if (card.classList.contains('has-art') || card.querySelector('.shop-card-art')) return;
       var bf = card.querySelector('.shop-bf span');
       if (!bf) return;
       var m = bf.textContent.match(/(\\d+)/);
       if (!m) return;
-      var url = NUM_ART[m[1]];
+      var no = m[1];
+      var url = NUM_ART[no];
       if (!url) return;
       var sharp = document.createElement('div');
       sharp.className = 'shop-card-art-sharp';
@@ -807,6 +808,19 @@ function buildArtScript() {
       card.insertBefore(sharp, card.firstChild);
       card.insertBefore(fill, card.firstChild);
       card.classList.add('has-art');
+      // "Ver carta" button (resolve the item id from its card number).
+      if (!card.querySelector('.bf-view-btn') && typeof MELEE !== 'undefined') {
+        var numForItem = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
+        var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
+        var match = allItems.find(function(it) { return String(numForItem(it)) === String(no); });
+        if (match) {
+          var btn = document.createElement('button');
+          btn.className = 'bf-view-btn';
+          btn.textContent = '🔍 Ver carta';
+          btn.setAttribute('onclick', 'event.stopPropagation();bfViewCard(&quot;' + match.id + '&quot;)');
+          card.appendChild(btn);
+        }
+      }
     });
   }
 
@@ -1861,6 +1875,7 @@ function buildArtScript() {
 
   function injectArtIntoDOM() {
     injectHeroArt();
+    injectEquipArt();
     injectBonusArt();
     injectBattleHeroArt();
     injectRecruitHeroArt();
