@@ -1,10 +1,8 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
 const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-dbmap-v1';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-bonus-fullart-v18';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -211,23 +209,8 @@ function buildNumArtMap() {
   return map;
 }
 
-// Fetch all Card records from DB and return a name→art_url map
-async function buildDbArtMap(base44) {
-  try {
-    const cards = await base44.asServiceRole.entities.Card.list('-created_date', 500);
-    const map = {};
-    for (const c of cards) {
-      if (c.name && c.art_url) map[c.name] = c.art_url;
-      if (c.name && c.elite_art_url) map[c.name + '__elite'] = c.elite_art_url;
-    }
-    return map;
-  } catch (e) {
-    return {};
-  }
-}
-
 // Build the JS injection snippet for the game HTML
-function buildArtScript(dbArtMap) {
+function buildArtScript() {
   const NUM_ART = buildNumArtMap();
   return `
 <script>
@@ -251,29 +234,18 @@ function buildArtScript(dbArtMap) {
   var ICON_CC = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/119c5390a_generated_image.png";
   var ICON_AD = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/93cdad509_generated_image.png";
   var ICON_HE = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ccdd4a1ec_generated_image.png";
-  // DB-sourced art map: name -> art_url (covers ALL card types from the Oracle DB)
-  var DB_ART = ${JSON.stringify(dbArtMap)};
   window.__BF_PATCH_VERSION = "${GAME_PATCH_VERSION}";
 
   function bfKey(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
 
-  // Resolve art for any card name: DB first, then local arrays
-  function artForName(name, elite) {
-    if (!name) return null;
-    if (elite && DB_ART[name + '__elite']) return DB_ART[name + '__elite'];
-    if (DB_ART[name]) return DB_ART[name];
-    return null;
-  }
-
-  // name -> bonus art lookup (DB-first, local fallback)
+  // name -> bonus art lookup
   var BONUS_ART_BY_NAME = {};
   var BONUS_ART_BY_KEY = {};
   BONUS_IDS.forEach(function(id, i) {
-    var url = DB_ART[BONUS_NAMES[i]] || BONUS_ART[i];
-    BONUS_ART_BY_NAME[BONUS_NAMES[i]] = url;
-    BONUS_ART_BY_KEY[bfKey(BONUS_NAMES[i])] = url;
+    BONUS_ART_BY_NAME[BONUS_NAMES[i]] = BONUS_ART[i];
+    BONUS_ART_BY_KEY[bfKey(BONUS_NAMES[i])] = BONUS_ART[i];
   });
   BONUS_ART_BY_KEY['patron de foria'] = BONUS_ART_BY_KEY['patron de forja'];
   BONUS_ART_BY_NAME['Convocatoria Épica'] = HERO_ELITE_ART[12];
@@ -292,14 +264,14 @@ function buildArtScript(dbArtMap) {
     'Cotidianos': '◈'
   };
 
-  // id -> art, name -> art lookups for heroes (DB-first, local fallback)
+  // id -> art, name -> art lookups for heroes
   var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
   HERO_IDS.forEach(function(id, i) {
+    ART_BY_ID[id] = HERO_ART[i];
+    ELITE_BY_ID[id] = HERO_ELITE_ART[i] || HERO_ART[i];
     var nm = HERO_NAMES[i];
-    ART_BY_ID[id] = DB_ART[nm] || HERO_ART[i];
-    ELITE_BY_ID[id] = DB_ART[nm + '__elite'] || HERO_ELITE_ART[i] || HERO_ART[i];
-    ART_BY_NAME[nm] = DB_ART[nm] || HERO_ART[i];
-    ELITE_BY_NAME[nm] = DB_ART[nm + '__elite'] || HERO_ELITE_ART[i] || HERO_ART[i];
+    ART_BY_NAME[nm] = HERO_ART[i];
+    ELITE_BY_NAME[nm] = HERO_ELITE_ART[i] || HERO_ART[i];
   });
 
   // ---- STYLES for injected art ----
@@ -410,12 +382,12 @@ function buildArtScript(dbArtMap) {
         filter: blur(18px) saturate(1.3) contrast(1.16);
         transform: scale(1.28); opacity: 1;
       }
-      /* Sharp art layer — full-bleed cover, identical to the catalog cards */
+      /* Sharp art layer */
       .shop-card-art-sharp {
-        position: absolute; inset: 0; z-index: 1;
+        position: absolute; inset: -12px; z-index: 1;
         background-size: cover; background-position: center center; background-repeat: no-repeat;
         filter: saturate(1.14) contrast(1.12);
-        transform: none;
+        transform: scale(1.08);
       }
       /* Bonus / restador shown as a mini-card with the whole card visible */
       .bf-bonus-card {
@@ -430,7 +402,7 @@ function buildArtScript(dbArtMap) {
       }
       .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(20px) saturate(1.35) contrast(1.18); transform: scale(1.45); opacity: 1; }
       .bf-bonus-card .bf-bonus-art {
-        inset: 0; background-size: cover; background-position: center center; z-index: 1; transform: none;
+        inset: 0; background-size: contain; background-position: center center; z-index: 1; transform: none;
         filter: saturate(1.12) contrast(1.1);
       }
       .bf-bonus-card .bf-bonus-shade {
@@ -468,9 +440,9 @@ function buildArtScript(dbArtMap) {
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
         .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
-        .shop-card-art-sharp { inset: 0 !important; background-size: cover !important; background-position: center center !important; }
+        .shop-card-art-sharp { inset: -8px !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { aspect-ratio: 1 / 1 !important; height: auto !important; max-width: 100% !important; margin: 4px auto 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -579,9 +551,9 @@ function buildArtScript(dbArtMap) {
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
-      .bf-quick-card { position:relative; overflow:hidden; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:10px; padding-top:130px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
-      .bf-quick-art { position:absolute; inset:0; background-size:cover; background-position:center center; filter:saturate(1.14) contrast(1.12); }
-      .bf-quick-card::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.75) 68%,rgba(0,0,0,.94) 100%); pointer-events:none; }
+      .bf-quick-card { position:relative; overflow:hidden; min-height:172px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#0b0811; padding:86px 10px 10px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
+      .bf-quick-art { position:absolute; left:0; right:0; top:0; height:102px; background-size:cover; background-position:center; }
+      .bf-quick-card::after { content:''; position:absolute; left:0; right:0; top:0; height:112px; background:linear-gradient(180deg,rgba(0,0,0,0) 30%,rgba(0,0,0,.82) 100%); pointer-events:none; }
       .bf-quick-card > *:not(.bf-quick-art) { position:relative; z-index:2; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:3; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; }
       .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.05; }
@@ -591,7 +563,7 @@ function buildArtScript(dbArtMap) {
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; height:170px; overflow:hidden; background:#07050b; }
       .bf-confirm-art::before { content:''; position:absolute; inset:-30px; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:blur(20px) saturate(1.3) contrast(1.16); transform:scale(1.4); z-index:0; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:none; z-index:1; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-14px; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:scale(1.08); z-index:1; }
       .bf-confirm-art::after { content:''; position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 35%,rgba(18,13,34,.96) 100%); }
       .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
@@ -602,7 +574,7 @@ function buildArtScript(dbArtMap) {
       .bf-view-wrap { display:flex; justify-content:center; padding:6px 0; }
       .bf-view-card { position:relative; width:min(320px,86vw); aspect-ratio:3/4.1; border-radius:18px; overflow:hidden; border:2.5px solid #caa14a; background:#07050b; box-shadow:0 14px 36px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,210,74,.14); }
       .bf-view-card .bf-view-fill { position:absolute; inset:-30px; background-image:var(--bf-art); background-size:cover; background-position:center; filter:blur(20px) saturate(1.3) contrast(1.16); transform:scale(1.4); z-index:0; }
-      .bf-view-card .bf-view-art { position:absolute; inset:0; background-image:var(--bf-art); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:none; z-index:1; }
+      .bf-view-card .bf-view-art { position:absolute; inset:-14px; background-image:var(--bf-art); background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); transform:scale(1.06); z-index:1; }
       .bf-view-card .bf-view-shade { position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.86) 100%); }
       .bf-view-coin { position:absolute; top:11px; left:11px; z-index:4; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; color:#4a2e03; font-size:19px; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; box-shadow:0 4px 10px rgba(0,0,0,.6); }
       .bf-view-num { position:absolute; top:14px; right:11px; z-index:4; font-size:9.5px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.66); border:1px solid rgba(255,210,74,.34); border-radius:999px; padding:3px 9px; }
@@ -664,7 +636,7 @@ function buildArtScript(dbArtMap) {
       @keyframes bfBadgePulse { 0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3)} 50%{box-shadow:0 4px 22px rgba(255,210,74,.7), inset 0 0 0 1px rgba(255,255,255,.45)} }
 
       /* ---- Lupa (zoom) en cartas de héroe ---- */
-      .bf-zoom-btn { position:absolute; top:36%; right:8px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.55); color:#ffe49a; box-shadow:0 3px 8px rgba(0,0,0,.5); transition:background .12s ease; padding:0; }
+      .bf-zoom-btn { position:absolute; top:50%; right:8px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.55); color:#ffe49a; box-shadow:0 3px 8px rgba(0,0,0,.5); transition:background .12s ease; padding:0; }
       .bf-zoom-btn:hover { background:rgba(255,210,74,.22); }
       .bf-zoom-overlay { position:fixed; inset:0; z-index:100001; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(6,4,12,.92); backdrop-filter:blur(6px); animation:bfFadeIn .2s ease; }
       .bf-zoom-cardwrap { position:relative; width:min(420px,90vw); height:min(640px,86vh); aspect-ratio:7/10; box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
@@ -813,91 +785,37 @@ function buildArtScript(dbArtMap) {
     });
   }
 
-  // ---- DOM injection for equipment shop cards — full-bleed like the catalog ----
-  // Resolves art by matching the card's visible name/text against game item arrays.
+  // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
   function injectEquipArt() {
-    if (typeof SPELLS === 'undefined') return;
-    var numForItem = function(it) { return (typeof cardNo === 'function' ? cardNo(it.id) : it.num) || it.num || 0; };
-    var SETS = [
-      [SPELLS || [], SPELL_ART, 'spell'],
-      [OBJECTS || [], OBJECT_ART, 'object'],
-      [MELEE || [], MELEE_ART, 'melee'],
-      [RANGED || [], RANGED_ART, 'ranged'],
-      [ARMORS || [], ARMOR_ART, 'armor'],
-    ];
-
     document.querySelectorAll('.shop-card').forEach(function(card) {
-      if (card.classList.contains('has-art') || card.querySelector('.shop-card-art')) return;
-
-      // 1) Try .shop-bf span (weapons/armor) — has a card number
-      var url = null, matchedItem = null;
+      if (card.querySelector('.shop-card-art')) return;
       var bf = card.querySelector('.shop-bf span');
-      if (bf) {
-        var mn = bf.textContent.match(/(\\d+)/);
-        if (mn) { url = NUM_ART[mn[1]]; }
-      }
-
-      // 2) Fallback: match by item name — DB-first, then local art arrays
-      if (!url) {
-        var cardText = card.textContent;
-        outer: for (var s = 0; s < SETS.length; s++) {
-          var list = SETS[s][0], arts = SETS[s][1];
-          for (var i = 0; i < list.length; i++) {
-            if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1) {
-              url = DB_ART[list[i].name] || arts[i] || null;
-              matchedItem = list[i];
-              break outer;
-            }
-          }
-        }
-      }
-
+      if (!bf) return;
+      var m = bf.textContent.match(/(\\d+)/);
+      if (!m) return;
+      var url = NUM_ART[m[1]];
       if (!url) return;
-
-      if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
-      card.style.overflow = 'hidden';
-      var fill = document.createElement('div');
-      fill.className = 'shop-card-art';
-      fill.style.backgroundImage = 'url("' + url + '")';
       var sharp = document.createElement('div');
       sharp.className = 'shop-card-art-sharp';
       sharp.style.backgroundImage = 'url("' + url + '")';
+      var fill = document.createElement('div');
+      fill.className = 'shop-card-art';
+      fill.style.backgroundImage = 'url("' + url + '")';
       var shade = document.createElement('div');
       shade.className = 'bf-shop-shade';
       card.insertBefore(shade, card.firstChild);
       card.insertBefore(sharp, card.firstChild);
       card.insertBefore(fill, card.firstChild);
       card.classList.add('has-art');
-
-      // "Ver carta" button
-      if (!card.querySelector('.bf-view-btn')) {
-        var item = matchedItem;
-        if (!item) {
-          // resolve from NUM_ART path
-          var bf2 = card.querySelector('.shop-bf span');
-          if (bf2) {
-            var mn2 = bf2.textContent.match(/(\\d+)/);
-            if (mn2) {
-              var allFlat = [].concat(SPELLS||[],OBJECTS||[],MELEE||[],RANGED||[],ARMORS||[]);
-              item = allFlat.find(function(it) { return String(numForItem(it)) === mn2[1]; });
-            }
-          }
-        }
-        if (item) {
-          var btn = document.createElement('button');
-          btn.className = 'bf-view-btn';
-          btn.textContent = '🔍 Ver carta';
-          btn.setAttribute('onclick', 'event.stopPropagation();bfViewCard(&quot;' + item.id + '&quot;)');
-          card.appendChild(btn);
-        }
-      }
     });
   }
 
   // ---- DOM injection for the round bonus/restador (turn its chip into a card) ----
   function injectBonusArt() {
-    // Match any .chip element whose name is a known bonus/restador
-    document.querySelectorAll('.chip').forEach(function(chip) {
+    document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
+      if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
+      var chip = lbl.nextElementSibling;
+      if (!chip || !chip.classList || !chip.classList.contains('chip')) return;
       if (chip.dataset.bfDone === '1') return;
       var name = chip.textContent.trim();
       var url = BONUS_ART_BY_NAME[name] || BONUS_ART_BY_KEY[bfKey(name)];
@@ -1723,14 +1641,13 @@ function buildArtScript(dbArtMap) {
         var list = sets[s][0] || [];
         for (var i = 0; i < list.length; i++) {
           if (list[i] && list[i].id === id) {
-            return { item: list[i], kind: sets[s][1], idx: i, art: shopArt(sets[s][1], i, list[i].name), num: numFor(list[i]) };
+            return { item: list[i], kind: sets[s][1], idx: i, art: shopArt(sets[s][1], i), num: numFor(list[i]) };
           }
         }
       }
       return null;
     }
-    function shopArt(kind, idx, name) {
-      if (name && DB_ART[name]) return DB_ART[name];
+    function shopArt(kind, idx) {
       var arr = kind === 'armor' ? ARMOR_ART : kind === 'ranged' ? RANGED_ART :
         kind === 'melee' ? MELEE_ART : kind === 'spell' ? SPELL_ART : OBJECT_ART;
       return (arr && arr[idx]) || '';
@@ -1756,7 +1673,6 @@ function buildArtScript(dbArtMap) {
     };
 
     // Rebuild the shop grid so every card shows full-bleed art + a "Ver carta" button.
-    // Works for ALL item types: weapons, armors, spells, objects.
     if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfArt) {
       var originalEqShopGrid = window.eqShopGrid;
       window.eqShopGrid = function(side) {
@@ -1764,43 +1680,14 @@ function buildArtScript(dbArtMap) {
         var box = document.createElement('div');
         box.innerHTML = html;
         box.querySelectorAll('.shop-card').forEach(function(card) {
-          // Try card number via .shop-bf span (weapons/armors)
-          var url = null, id = '';
           var span = card.querySelector('.shop-bf span');
           var no = span ? (span.textContent.match(/(\d+)/) || [])[1] : null;
-          if (no) url = NUM_ART[no];
-
-          // Fallback: match by item name — DB-first, then local art arrays
-          if (!url) {
-            var cardText = card.textContent;
-            var allSets = [
-              [SPELLS || [], SPELL_ART],
-              [OBJECTS || [], OBJECT_ART],
-              [MELEE || [], MELEE_ART],
-              [RANGED || [], RANGED_ART],
-              [ARMORS || [], ARMOR_ART],
-            ];
-            for (var s = 0; s < allSets.length; s++) {
-              var list = allSets[s][0], arts = allSets[s][1];
-              for (var i = 0; i < list.length; i++) {
-                if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1) {
-                  url = DB_ART[list[i].name] || arts[i] || null;
-                  if (url) { id = list[i].id; break; }
-                }
-              }
-              if (url) break;
-            }
-          }
-
+          var url = no ? NUM_ART[no] : null;
           if (!url) return;
-
-          // Resolve id from number if not yet set
-          if (!id && no) {
-            var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
-            var match = allItems.find(function(it) { return String(numFor(it)) === String(no); });
-            if (match) id = match.id;
-          }
-
+          var id = '';
+          var allItems = [].concat(MELEE || [], RANGED || [], ARMORS || [], SPELLS || [], OBJECTS || []);
+          var match = allItems.find(function(it) { return String(numFor(it)) === String(no); });
+          if (match) id = match.id;
           card.classList.add('has-art');
           var fill = document.createElement('div'); fill.className = 'shop-card-art'; fill.style.backgroundImage = 'url("' + url + '")';
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
@@ -1974,7 +1861,6 @@ function buildArtScript(dbArtMap) {
 
   function injectArtIntoDOM() {
     injectHeroArt();
-    injectEquipArt();
     injectBonusArt();
     injectBattleHeroArt();
     injectRecruitHeroArt();
@@ -2064,14 +1950,8 @@ function buildArtScript(dbArtMap) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
-
-    // Load DB art map and game HTML in parallel
-    const [dbArtMap, upstream] = await Promise.all([
-      buildDbArtMap(base44),
-      fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now(), { cache: 'no-store' }),
-    ]);
+    const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now(), { cache: 'no-store' });
     let html = await upstream.text();
 
     // Prevent in-game "back to start" buttons from reloading cached/raw HTML.
@@ -2079,7 +1959,7 @@ Deno.serve(async (req) => {
 
     // Inject art script right before </body> so the game's own script
     // (cardFace, HEROES, etc.) is already defined when we hook it.
-    const artScript = buildArtScript(dbArtMap);
+    const artScript = buildArtScript();
     if (html.includes('</body>')) {
       html = html.replace('</body>', artScript + '</body>');
     } else {
