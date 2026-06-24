@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-epic-bonus-v27';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-epic-offer-v28';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -1306,11 +1306,16 @@ function buildArtScript() {
     }
 
     function epicPoolForCurrentType() {
-      var type = G.curType;
+      // Derive the auction's type from the candidates themselves so we never
+      // depend on the exact name of the game's internal phase-type field.
+      var type = (G.cands && G.cands[0] && G.cands[0].type) || G.curType || G.phaseType || G.auctType;
       var usedIds = {};
       ['p','o'].forEach(function(side) { (G.team && G.team[side] || []).forEach(function(h) { usedIds[h.id] = true; }); });
       (G.cands || []).forEach(function(h) { if (h) usedIds[h.id] = true; });
-      return HEROES.filter(function(h) { return h.clan === 'Épicas' && h.type === type && !usedIds[h.id]; });
+      var pool = HEROES.filter(function(h) { return h.clan === 'Épicas' && (!type || h.type === type) && !usedIds[h.id]; });
+      // Fallback: if no epic matches this type, allow any unused epic.
+      if (!pool.length) pool = HEROES.filter(function(h) { return h.clan === 'Épicas' && !usedIds[h.id]; });
+      return pool;
     }
 
     function prepareEpicOffers() {
@@ -1377,12 +1382,19 @@ function buildArtScript() {
       return ret;
     };
 
+    function humanSide() {
+      if (typeof NET !== 'undefined' && NET.role === 'client' && NET.mySide) return NET.mySide;
+      return 'p';
+    }
+
     var originalBeginBidRound = window.beginBidRound;
     window.beginBidRound = function() {
       var ret = originalBeginBidRound.apply(this, arguments);
       prepareEpicOffers();
-      if (NET.role !== 'client') {
-        renderRecruit('p');
+      // Re-render the human's recruit screen so their epic (if any) shows up,
+      // and the rival's epic does NOT appear on the human's board.
+      renderRecruit(humanSide());
+      if (typeof NET !== 'undefined' && NET.role !== 'client') {
         netSync('s-recruit');
       }
       return ret;
