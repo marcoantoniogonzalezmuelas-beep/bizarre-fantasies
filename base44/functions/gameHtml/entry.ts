@@ -380,6 +380,9 @@ function buildArtScript() {
       .chip.bf-chip-card.bf-chip-has-info .bf-chip-name { bottom:auto; top:0; background:linear-gradient(180deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
+      .chip.bf-chip-card .bf-chip-play { position:absolute !important; bottom:2px; right:2px; z-index:3; width:24px; height:24px; border-radius:6px; background:linear-gradient(180deg,#51ff8a,#2cdd5f); border:1px solid #1fb84a; color:#0a1f0f; font-size:13px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; box-shadow:0 3px 10px rgba(81,255,138,.4); transition:transform .12s ease,box-shadow .12s ease; }
+      .chip.bf-chip-card .bf-chip-play:hover { transform:scale(1.1); box-shadow:0 5px 14px rgba(81,255,138,.6); }
+      .chip.bf-chip-card .bf-chip-play:active { transform:scale(.95); }
       .chip.bf-chip-card .bf-chip-name { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:3px 4px 4px; font-size:8.5px !important; line-height:1.04; font-weight:900; font-family:'Cinzel',serif; color:#fff5dc; text-align:center; text-transform:uppercase; letter-spacing:.1px; text-shadow:0 1px 2px #000,0 0 6px #000; background:linear-gradient(0deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); white-space:normal; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
@@ -1855,22 +1858,45 @@ function buildArtScript() {
       chip.insertBefore(art, chip.firstChild);
       chip.insertBefore(fill, chip.firstChild);
       // Card name label on top of the art (so the player can identify it).
-      var nm = document.createElement('div');
-      nm.className = 'bf-chip-name';
-      nm.textContent = name;
-      chip.appendChild(nm);
-      // Effect line (damage / heal / mana / short text) at the bottom — most
-      // useful during battle so the player knows what each card does.
-      var items = handItemByName();
-      var found = items ? items[name] : null;
-      var summary = handCardSummary(found);
-      if (summary) {
-        var info = document.createElement('div');
-        info.className = 'bf-chip-info';
-        info.textContent = summary;
-        chip.appendChild(info);
-        chip.classList.add('bf-chip-has-info');
-      }
+       var nm = document.createElement('div');
+       nm.className = 'bf-chip-name';
+       nm.textContent = name;
+       chip.appendChild(nm);
+       // Effect line (damage / heal / mana / short text) at the bottom — most
+       // useful during battle so the player knows what each card does.
+       var items = handItemByName();
+       var found = items ? items[name] : null;
+       var summary = handCardSummary(found);
+       if (summary) {
+         var info = document.createElement('div');
+         info.className = 'bf-chip-info';
+         info.textContent = summary;
+         chip.appendChild(info);
+         chip.classList.add('bf-chip-has-info');
+       }
+       // Quick play button (green) — execute immediately if enough mana
+       var playBtn = document.createElement('button');
+       playBtn.className = 'bf-chip-play';
+       playBtn.textContent = '▶';
+       playBtn.title = 'Jugar directamente';
+       playBtn.addEventListener('click', function(e) {
+         e.stopPropagation();
+         var item = found ? found.item : null;
+         if (item && found.kind === 'spell') {
+           var mana = bfActiveMana();
+           var cost = Number(item.mana || 0);
+           if (mana !== null && cost > mana) {
+             if (window.notif) notif('No tienes maná suficiente. Necesitas ' + cost + '.');
+             return;
+           }
+         }
+         bfPlayCastAnim(found ? found.kind : 'spell', item && (item.el || item.element));
+         setTimeout(function() {
+           if (origOnclickProp) origOnclickProp.call(chip, e);
+           else if (origOnclickAttr) { try { new Function('event', origOnclickAttr).call(chip, e); } catch (err) {} }
+         }, 240);
+       });
+       chip.appendChild(playBtn);
     });
   }
 
