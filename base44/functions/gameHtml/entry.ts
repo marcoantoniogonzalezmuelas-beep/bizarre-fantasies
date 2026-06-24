@@ -2,179 +2,39 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-optimize-v42';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-tidy-v43';
 
 const HERO_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0ae86f5cf_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3144fa0cc_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b3befffca_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b27af2a2e_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49da10371_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4b39462db_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/70e5ca186_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2321b345c_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7b6b1032e_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3bbcf59c0_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dc308d368_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a53c0e073_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/362ea0a4b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/861dbe1ad_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/72ce7dd1a_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ec5dbfd9_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5d35394d_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49c4de216_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a96095ce8_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dd9ae011d_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d9d830676_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/54365cb73_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b34bdb48f_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a237d8ffc_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/99d2f7a81_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dcee2560b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ed76b96e2_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a1aed5117_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/998c3949c_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3c97a29dd_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5a9d97619_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1bd2bdf6d_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/40de7f507_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a6a9e3561_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a291e62f4_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e72cf42e_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/95e8228cd_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5be72327_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c71c525b8_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0ad0be833_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3aedc4e62_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0b3987343_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2cfe0922c_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9c56aea64_generated_image.png',
-];
+  '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
+  '3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','72ce7dd1a','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8',
+  'dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c',
+  '3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','b5be72327','c71c525b8',
+  '0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64',
+].map(function(id){return 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';});
 
 const HERO_ELITE_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b2219417f_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a2abfb434_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4952ab881_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/01e96302a_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e908b3273_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/650b7ff27_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4d934fdf4_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f7954d1fc_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8bc966bfa_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/452bb4fb7_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/653c2036d_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/141eb7445_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ddf40d7ab_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/12f840fe3_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4cf89ac43_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8019f9f21_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8979eecb4_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/87c291158_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ace3347_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8d6e97ce2_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/33eb953a8_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ffd892ff4_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5a79e3638_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b08f41b13_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fb9937c69_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/04b64ecc7_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d9ef92043_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/40e91e893_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/437bbb48b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/35add4eeb_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0827725df_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2c7c03c8f_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d0512bd56_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ae296c827_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8cde88cb7_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ea100edfb_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7764cb9ea_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/84c9693dc_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/907ef8e72_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b96972130_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8959bebcc_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ce90f66_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4328395b6_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06c814afa_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/12a5ddb5c_generated_image.png',
-];
+  'b2219417f','a2abfb434','4952ab881','01e96302a','e908b3273','650b7ff27','4d934fdf4','f7954d1fc','8bc966bfa','452bb4fb7',
+  '653c2036d','141eb7445','ddf40d7ab','12f840fe3','4cf89ac43','8019f9f21','8979eecb4','87c291158','e7ace3347','8d6e97ce2',
+  '33eb953a8','ffd892ff4','5a79e3638','b08f41b13','fb9937c69','04b64ecc7','d9ef92043','40e91e893','437bbb48b','35add4eeb',
+  '0827725df','2c7c03c8f','d0512bd56','ae296c827','8cde88cb7','ea100edfb','7764cb9ea','84c9693dc','907ef8e72','b96972130',
+  '8959bebcc','e7ce90f66','4328395b6','06c814afa','12a5ddb5c',
+].map(function(id){return 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';});
 
-const MELEE_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2ef6e8fd8_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/90d5f4f20_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ca0217dac_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/79830b431_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5b6160a3_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a8ea859a5_generated_image.png',
-];
+const IMG_BASE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
+const toArt = function(id){ return IMG_BASE + id + '_generated_image.png'; };
 
-const RANGED_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2146a215b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab826c633_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/88e45b0a1_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/93554b1ee_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c8cf4c6d1_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06ce99379_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/08cb8f198_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/809f7051c_generated_image.png',
-];
+const MELEE_ART = ['2ef6e8fd8','90d5f4f20','ca0217dac','79830b431','b5b6160a3','a8ea859a5'].map(toArt);
 
-const ARMOR_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b989796b2_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/37519e06c_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4a38b42e1_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6889c5c36_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fefd71323_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2de5cea6a_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/244338b2e_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/adc154eaf_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/46890f673_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ed198ba53_generated_image.png',
-];
+const RANGED_ART = ['2146a215b','ab826c633','88e45b0a1','93554b1ee','c8cf4c6d1','06ce99379','08cb8f198','809f7051c'].map(toArt);
 
-const SPELL_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/16656e37c_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ecdf6d2c_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f07673381_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c9386b2a6_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77fcb19fb_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/75254b62e_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fbc82143b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0cc792c57_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/05dd1e130_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/938f0dfba_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/299116e86_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e1c0a659_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e73cbd75b_generated_image.png',
-];
+const ARMOR_ART = ['b989796b2','37519e06c','4a38b42e1','6889c5c36','fefd71323','2de5cea6a','244338b2e','adc154eaf','46890f673','ed198ba53'].map(toArt);
 
-const OBJECT_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/58d239c00_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1688e1433_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b9d6986f_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dd35e9e6b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/026d2d45d_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d138d9427_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6eec753dd_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4581afaa7_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b990b1173_generated_image.png',
-];
+const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b'].map(toArt);
 
-const BONUS_ART = [
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/88ffc8b21_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a644bca96_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a5d3ecf52_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a58e01097_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/664754ee3_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6c0160e33_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fbe03869b_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5369480ce_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5c4370fc_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/26219e884_generated_image.png',
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1acefc0e0_generated_image.png', // Bandolero Seco (matches DB)
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png', // Glitch (matches DB)
-];
+const OBJECT_ART = ['58d239c00','1688e1433','9b9d6986f','dd35e9e6b','026d2d45d','d138d9427','6eec753dd','4581afaa7','b990b1173'].map(toArt);
+
+// Last two match the DB: Bandolero Seco, Glitch.
+const BONUS_ART = ['88ffc8b21','a644bca96','a5d3ecf52','a58e01097','664754ee3','6c0160e33','fbe03869b','5369480ce','e5c4370fc','26219e884','1acefc0e0','77bc42e4f'].map(toArt);
 
 // Bonus / restador ids and display names, index-for-index with BONUS_ART.
 const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli"];
