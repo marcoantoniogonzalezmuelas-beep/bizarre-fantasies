@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-02-roleicons-quit-v55';
+const GAME_PATCH_VERSION = 'bf-2026-07-03-roleimg-v56';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -1143,7 +1143,7 @@ function buildArtScript() {
       window.rulesBody.__bf = 1;
     }
     if (typeof window.roleIcon === 'function' && !window.roleIcon.__bf) {
-      window.roleIcon = function(t) { var sym = t === 'CC' ? '⚔' : t === 'AD' ? '🏹' : '🔮'; return '<span class="bf-role-ico bf-role-' + (t === 'CC' ? 'cc' : t === 'AD' ? 'ad' : 'he') + '">' + sym + '</span>'; };
+      window.roleIcon = function(t) { var RB_R = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/', M = { CC: RB_R + '8632bdd66_generated_image.png', AD: RB_R + '2955a08aa_generated_image.png', HE: RB_R + '7b459765d_generated_image.png' }; return '<img class="bf-role-emblem" src="' + (M[t] || M.HE) + '" alt="">'; };
       window.roleIcon.__bf = 1;
     }
     if (typeof window.renderSetup === 'function' && !window.renderSetup.__bf) {
