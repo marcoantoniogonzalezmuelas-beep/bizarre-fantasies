@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-borders-foil-v37';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-cover-fit-v38';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -394,7 +394,7 @@ function buildArtScript() {
       }
       .bf-bonus-card .bf-bonus-fill { display: none; }
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: 0; background-size: 106% 106%; background-position: center center; background-repeat: no-repeat; z-index: 1;
+        position: absolute; inset: -3%; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1;
       }
       .bf-bonus-card .bf-bonus-shade { display: none; }
       .bf-bonus-card .bf-bonus-name { display: none; }
@@ -423,9 +423,9 @@ function buildArtScript() {
         .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
-        .shop-card-art-sharp { inset: 0 !important; background-size: 106% 106% !important; background-position: center center !important; }
+        .shop-card-art-sharp { inset: -3% !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: 0 !important; background-size: 106% 106% !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: -3% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
       }
 
       /* Battle/recruit hero thumbnails */
@@ -524,12 +524,12 @@ function buildArtScript() {
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
       .shop-card.has-art > *:not(.shop-card-art-sharp):not(.bf-view-btn) { display:none !important; }
       .shop-card-art { display:none !important; }
-      .shop-card-art-sharp { position:absolute; inset:0; z-index:1; background-size:106% 106%; background-position:center center; background-repeat:no-repeat; }
+      .shop-card-art-sharp { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
       .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
       .chip.bf-chip-card .bf-chip-fill { display:none; }
-      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:0; z-index:1; background-size:106% 106%; background-position:center; background-repeat:no-repeat; }
+      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
@@ -547,7 +547,7 @@ function buildArtScript() {
       /* Quick-shop card = the oracle card itself (cover + overscan + card ratio). */
       .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
       .bf-quick-fill { display:none; }
-      .bf-quick-art { position:absolute; inset:0; z-index:1; background-size:106% 106%; background-position:center; background-repeat:no-repeat; }
+      .bf-quick-art { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-cost) { display:none !important; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
       /* In-game styled confirm dialog */
