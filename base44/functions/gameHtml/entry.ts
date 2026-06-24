@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-fill-name-v39';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-quit-guideclose-v40';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -656,7 +656,7 @@ function buildArtScript() {
       .bf-guide-title { font-family:'Cinzel',serif; font-weight:1000; font-size:12px; color:#ffd24a; letter-spacing:.3px; text-shadow:0 1px 2px #000; margin-bottom:2px; }
       .bf-guide-text { font-size:12.5px; line-height:1.3; color:#f3ecff; font-weight:600; text-shadow:0 1px 2px #000; }
       .bf-guide-text b { color:#ffe49a; }
-      .bf-guide-x { position:absolute; top:5px; right:6px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(255,255,255,.1); color:#cbb9ee; font-size:11px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+      .bf-guide-x { position:absolute; top:3px; right:3px; width:24px; height:24px; border-radius:50%; border:none; background:rgba(255,255,255,.12); color:#cbb9ee; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5; }
       .bf-guide-x:hover { background:rgba(255,255,255,.2); color:#fff; }
       .bf-guide-show { position:fixed; top:10px; left:10px; z-index:90000; width:46px; height:46px; border-radius:50%; overflow:hidden; border:2px solid rgba(255,210,74,.6); background:#130d24; box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 14px rgba(255,210,74,.2); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
       .bf-guide-show img { width:100%; height:100%; object-fit:contain; display:block; }
@@ -665,9 +665,10 @@ function buildArtScript() {
       @media (max-width: 640px) {
         .bf-guide { top:6px; gap:7px; max-width:96vw; }
         .bf-guide-char { width:58px; height:58px; }
-        .bf-guide-bubble { padding:7px 26px 8px 11px; }
+        .bf-guide-bubble { padding:7px 34px 8px 11px; }
         .bf-guide-title { font-size:11px; }
         .bf-guide-text { font-size:11px; line-height:1.25; }
+        .bf-guide-x { top:2px; right:2px; width:30px; height:30px; font-size:16px; background:rgba(255,255,255,.18); }
       }
     \`;
     document.head.appendChild(style);
@@ -2148,16 +2149,33 @@ function buildArtScript() {
     updateGuide();
   }
 
+  // ---- "Salir" button → always return to the start screen reliably ----
+  // The base game's quitToHome() can leave stale state / not reset properly,
+  // so we force a clean reload back to the title screen.
+  function patchQuitToHome() {
+    if (window.quitToHome && window.quitToHome.__bf) return;
+    window.quitToHome = function() {
+      try {
+        var ok = window.confirm('¿Salir de la partida y volver a la pantalla inicial?');
+        if (!ok) return;
+      } catch (e) {}
+      window.parent.location.href = window.parent.location.pathname + '?bf=' + Date.now();
+    };
+    window.quitToHome.__bf = 1;
+  }
+
   // ---- MAIN INIT ----
   function init() {
     injectCoverStyle();
     applyCover();
+    patchQuitToHome();
 
     var attempts = 0;
     var patchedFace = false;
     var interval = setInterval(function() {
       attempts++;
       applyCover();
+      patchQuitToHome();
       patchGameRules();
       patchRaceModal();
       patchEquipmentUI();
