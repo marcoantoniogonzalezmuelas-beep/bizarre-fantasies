@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v22';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v23';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -402,7 +402,7 @@ function buildArtScript() {
       }
       .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(20px) saturate(1.35) contrast(1.18); transform: scale(1.45); opacity: 1; }
       .bf-bonus-card .bf-bonus-art {
-        inset: 0; background-size: contain; background-position: center center; z-index: 1; transform: none;
+        inset: 0; background-size: cover; background-position: center center; z-index: 1; transform: none;
         filter: saturate(1.12) contrast(1.1);
       }
       .bf-bonus-card .bf-bonus-shade {
@@ -442,7 +442,7 @@ function buildArtScript() {
         .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.3) contrast(1.16) !important; }
         .shop-card-art-sharp { inset: 0 !important; background-size: cover !important; background-position: center center !important; }
         .bf-bonus-card { aspect-ratio: 1 / 1 !important; height: auto !important; max-width: 100% !important; margin: 4px auto 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
         .bf-bonus-card .bf-bonus-name { font-size: 12.2px !important; bottom: 6px !important; }
       }
 
@@ -551,9 +551,9 @@ function buildArtScript() {
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
-      .bf-quick-card { position:relative; overflow:hidden; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#0b0811; padding:10px; padding-top:130px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
-      .bf-quick-art { position:absolute; inset:0; background-size:cover; background-position:center top; filter:saturate(1.14) contrast(1.12); }
-      .bf-quick-card::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,0) 35%,rgba(0,0,0,.78) 70%,rgba(0,0,0,.95) 100%); pointer-events:none; }
+      .bf-quick-card { position:relative; overflow:hidden; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:10px; padding-top:130px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
+      .bf-quick-art { position:absolute; inset:0; background-size:cover; background-position:center center; filter:saturate(1.14) contrast(1.12); }
+      .bf-quick-card::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.75) 68%,rgba(0,0,0,.94) 100%); pointer-events:none; }
       .bf-quick-card > *:not(.bf-quick-art) { position:relative; z-index:2; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:3; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; }
       .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.05; }
