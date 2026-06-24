@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-fixes-v3';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-dbmap-v1';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -241,8 +241,6 @@ function buildArtScript(dbArtMap) {
   var MELEE_ART = ${JSON.stringify(MELEE_ART)};
   var RANGED_ART = ${JSON.stringify(RANGED_ART)};
   var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
-  var SPELL_ART = ${JSON.stringify(SPELL_ART)};
-  var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
@@ -829,8 +827,7 @@ function buildArtScript(dbArtMap) {
     ];
 
     document.querySelectorAll('.shop-card').forEach(function(card) {
-      try {
-        if (card.classList.contains('has-art') || card.querySelector('.shop-card-art')) return;
+      if (card.classList.contains('has-art') || card.querySelector('.shop-card-art')) return;
 
       // 1) Try .shop-bf span (weapons/armor) — has a card number
       var url = null, matchedItem = null;
@@ -892,20 +889,17 @@ function buildArtScript(dbArtMap) {
           btn.textContent = '🔍 Ver carta';
           btn.setAttribute('onclick', 'event.stopPropagation();bfViewCard(&quot;' + item.id + '&quot;)');
           card.appendChild(btn);
-          }
-          }
-          } catch(e) {
-          // Error silencioso - continuar con siguiente card
-          }
-          });
-          }
+        }
+      }
+    });
+  }
 
   // ---- DOM injection for the round bonus/restador (turn its chip into a card) ----
   function injectBonusArt() {
     // Match any .chip element whose name is a known bonus/restador
     document.querySelectorAll('.chip').forEach(function(chip) {
       if (chip.dataset.bfDone === '1') return;
-      var name = (chip.textContent || '').replace(/\s+/g, ' ').trim();
+      var name = chip.textContent.trim();
       var url = BONUS_ART_BY_NAME[name] || BONUS_ART_BY_KEY[bfKey(name)];
       if (!url) return;
       chip.dataset.bfDone = '1';
@@ -1573,8 +1567,7 @@ function buildArtScript(dbArtMap) {
 
   function patchEquipmentUI() {
     if (window.__bfEquipPatched) return;
-    // Solo parchar si las funciones existen Y podemos acceder a MELEE, RANGED, ARMORS
-    if (typeof window.eqHeroCard !== 'function' || typeof window.doAssign !== 'function' || !MELEE || !RANGED || !ARMORS) return;
+    if (typeof window.eqHeroCard !== 'function' || typeof window.doAssign !== 'function') return;
     window.__bfEquipPatched = true;
 
     function clean(value) {
@@ -1826,6 +1819,9 @@ function buildArtScript(dbArtMap) {
         return box.innerHTML;
       };
       window.eqShopGrid.__bfArt = 1;
+      if (typeof window.renderEquip === 'function' && G && G.eqSide) {
+        try { window.renderEquip(G.eqSide); } catch (e) {}
+      }
     }
 
     window.bfOpenQuickShop = function(side, heroId, slot) {
@@ -1954,10 +1950,9 @@ function buildArtScript(dbArtMap) {
 
   // ---- Replace title emoji row with custom icon images ----
   function injectTitleIcons() {
-    if (window.__bfTitleIconsDone) return;
     var row = document.querySelector('.title-emoji');
-    if (!row || !row.parentNode) return;  // solo marca done si el elemento existe Y se insertó
-    if (row.dataset.bfIconsDone === '1') { window.__bfTitleIconsDone = true; return; }
+    if (!row || row.dataset.bfIconsDone === '1') return;
+    row.dataset.bfIconsDone = '1';
     var icons = [
       { cls: 'bf-icon-cc', src: ICON_CC, label: 'CC' },
       { cls: 'bf-icon-ad', src: ICON_AD, label: 'AD' },
@@ -1974,14 +1969,7 @@ function buildArtScript(dbArtMap) {
       div.appendChild(img);
       container.appendChild(div);
     });
-    try {
-      row.parentNode.insertBefore(container, row);
-      row.style.display = 'none';
-      row.dataset.bfIconsDone = '1';
-      window.__bfTitleIconsDone = true;
-    } catch(e) {
-      // Si falla, no marcar como done para reintentar
-    }
+    row.parentNode.insertBefore(container, row);
   }
 
   function injectArtIntoDOM() {
@@ -2036,8 +2024,6 @@ function buildArtScript(dbArtMap) {
 
   // ---- MAIN INIT ----
   function init() {
-    console.log('[BF] Patch v' + window.__BF_PATCH_VERSION + ' iniciando...');
-    console.log('[BF] DB_ART entries:', Object.keys(DB_ART).length);
     injectCoverStyle();
     applyCover();
 
@@ -2045,7 +2031,6 @@ function buildArtScript(dbArtMap) {
     var patchedFace = false;
     var interval = setInterval(function() {
       attempts++;
-      if (attempts === 1 || attempts % 10 === 0) console.log('[BF] Attempt', attempts, '— cardFace patched:', !!patchedFace, 'cardface elements:', document.querySelectorAll('.cardface').length);
       applyCover();
       patchGameRules();
       patchRaceModal();
