@@ -1,8 +1,10 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+
 const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-shopinv-v25';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-dbmap-v1';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -209,8 +211,23 @@ function buildNumArtMap() {
   return map;
 }
 
+// Fetch all Card records from DB and return a name→art_url map
+async function buildDbArtMap(base44) {
+  try {
+    const cards = await base44.asServiceRole.entities.Card.list('-created_date', 500);
+    const map = {};
+    for (const c of cards) {
+      if (c.name && c.art_url) map[c.name] = c.art_url;
+      if (c.name && c.elite_art_url) map[c.name + '__elite'] = c.elite_art_url;
+    }
+    return map;
+  } catch (e) {
+    return {};
+  }
+}
+
 // Build the JS injection snippet for the game HTML
-function buildArtScript() {
+function buildArtScript(dbArtMap) {
   const NUM_ART = buildNumArtMap();
   return `
 <script>
@@ -234,18 +251,29 @@ function buildArtScript() {
   var ICON_CC = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/119c5390a_generated_image.png";
   var ICON_AD = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/93cdad509_generated_image.png";
   var ICON_HE = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ccdd4a1ec_generated_image.png";
+  // DB-sourced art map: name -> art_url (covers ALL card types from the Oracle DB)
+  var DB_ART = ${JSON.stringify(dbArtMap)};
   window.__BF_PATCH_VERSION = "${GAME_PATCH_VERSION}";
 
   function bfKey(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
 
-  // name -> bonus art lookup
+  // Resolve art for any card name: DB first, then local arrays
+  function artForName(name, elite) {
+    if (!name) return null;
+    if (elite && DB_ART[name + '__elite']) return DB_ART[name + '__elite'];
+    if (DB_ART[name]) return DB_ART[name];
+    return null;
+  }
+
+  // name -> bonus art lookup (DB-first, local fallback)
   var BONUS_ART_BY_NAME = {};
   var BONUS_ART_BY_KEY = {};
   BONUS_IDS.forEach(function(id, i) {
-    BONUS_ART_BY_NAME[BONUS_NAMES[i]] = BONUS_ART[i];
-    BONUS_ART_BY_KEY[bfKey(BONUS_NAMES[i])] = BONUS_ART[i];
+    var url = DB_ART[BONUS_NAMES[i]] || BONUS_ART[i];
+    BONUS_ART_BY_NAME[BONUS_NAMES[i]] = url;
+    BONUS_ART_BY_KEY[bfKey(BONUS_NAMES[i])] = url;
   });
   BONUS_ART_BY_KEY['patron de foria'] = BONUS_ART_BY_KEY['patron de forja'];
   BONUS_ART_BY_NAME['Convocatoria Épica'] = HERO_ELITE_ART[12];
@@ -264,14 +292,14 @@ function buildArtScript() {
     'Cotidianos': '◈'
   };
 
-  // id -> art, name -> art lookups for heroes
+  // id -> art, name -> art lookups for heroes (DB-first, local fallback)
   var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
   HERO_IDS.forEach(function(id, i) {
-    ART_BY_ID[id] = HERO_ART[i];
-    ELITE_BY_ID[id] = HERO_ELITE_ART[i] || HERO_ART[i];
     var nm = HERO_NAMES[i];
-    ART_BY_NAME[nm] = HERO_ART[i];
-    ELITE_BY_NAME[nm] = HERO_ELITE_ART[i] || HERO_ART[i];
+    ART_BY_ID[id] = DB_ART[nm] || HERO_ART[i];
+    ELITE_BY_ID[id] = DB_ART[nm + '__elite'] || HERO_ELITE_ART[i] || HERO_ART[i];
+    ART_BY_NAME[nm] = DB_ART[nm] || HERO_ART[i];
+    ELITE_BY_NAME[nm] = DB_ART[nm + '__elite'] || HERO_ELITE_ART[i] || HERO_ART[i];
   });
 
   // ---- STYLES for injected art ----
@@ -809,14 +837,14 @@ function buildArtScript() {
         if (mn) { url = NUM_ART[mn[1]]; }
       }
 
-      // 2) Fallback: match by item name against all game arrays
+      // 2) Fallback: match by item name — DB-first, then local art arrays
       if (!url) {
         var cardText = card.textContent;
         outer: for (var s = 0; s < SETS.length; s++) {
           var list = SETS[s][0], arts = SETS[s][1];
           for (var i = 0; i < list.length; i++) {
             if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1) {
-              url = arts[i] || null;
+              url = DB_ART[list[i].name] || arts[i] || null;
               matchedItem = list[i];
               break outer;
             }
@@ -1695,13 +1723,14 @@ function buildArtScript() {
         var list = sets[s][0] || [];
         for (var i = 0; i < list.length; i++) {
           if (list[i] && list[i].id === id) {
-            return { item: list[i], kind: sets[s][1], idx: i, art: shopArt(sets[s][1], i), num: numFor(list[i]) };
+            return { item: list[i], kind: sets[s][1], idx: i, art: shopArt(sets[s][1], i, list[i].name), num: numFor(list[i]) };
           }
         }
       }
       return null;
     }
-    function shopArt(kind, idx) {
+    function shopArt(kind, idx, name) {
+      if (name && DB_ART[name]) return DB_ART[name];
       var arr = kind === 'armor' ? ARMOR_ART : kind === 'ranged' ? RANGED_ART :
         kind === 'melee' ? MELEE_ART : kind === 'spell' ? SPELL_ART : OBJECT_ART;
       return (arr && arr[idx]) || '';
@@ -1741,7 +1770,7 @@ function buildArtScript() {
           var no = span ? (span.textContent.match(/(\d+)/) || [])[1] : null;
           if (no) url = NUM_ART[no];
 
-          // Fallback: match by item name against all game arrays
+          // Fallback: match by item name — DB-first, then local art arrays
           if (!url) {
             var cardText = card.textContent;
             var allSets = [
@@ -1754,10 +1783,9 @@ function buildArtScript() {
             for (var s = 0; s < allSets.length; s++) {
               var list = allSets[s][0], arts = allSets[s][1];
               for (var i = 0; i < list.length; i++) {
-                if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1 && arts[i]) {
-                  url = arts[i];
-                  id = list[i].id;
-                  break;
+                if (list[i] && list[i].name && cardText.indexOf(list[i].name) !== -1) {
+                  url = DB_ART[list[i].name] || arts[i] || null;
+                  if (url) { id = list[i].id; break; }
                 }
               }
               if (url) break;
@@ -2036,8 +2064,14 @@ function buildArtScript() {
 
 Deno.serve(async (req) => {
   try {
+    const base44 = createClientFromRequest(req);
     const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
-    const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now(), { cache: 'no-store' });
+
+    // Load DB art map and game HTML in parallel
+    const [dbArtMap, upstream] = await Promise.all([
+      buildDbArtMap(base44),
+      fetch(SRC + '?bfv=' + GAME_PATCH_VERSION + '&t=' + Date.now(), { cache: 'no-store' }),
+    ]);
     let html = await upstream.text();
 
     // Prevent in-game "back to start" buttons from reloading cached/raw HTML.
@@ -2045,7 +2079,7 @@ Deno.serve(async (req) => {
 
     // Inject art script right before </body> so the game's own script
     // (cardFace, HEROES, etc.) is already defined when we hook it.
-    const artScript = buildArtScript();
+    const artScript = buildArtScript(dbArtMap);
     if (html.includes('</body>')) {
       html = html.replace('</body>', artScript + '</body>');
     } else {
