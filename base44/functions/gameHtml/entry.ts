@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-punkito-v30';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-shop-armor-fix-v31';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -538,8 +538,13 @@ function buildArtScript() {
       .bf-race-trait { position:relative; z-index:1; margin-top:4px; color:#ffe49a; font-weight:800; font-size:12.5px; line-height:1.25; }
       .bf-race-desc { position:relative; z-index:1; margin-top:7px; color:#efe9dc; font-size:13px; line-height:1.28; }
       .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
-      .shop-card.has-art { background: transparent !important; }
-      .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0.08) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,0.80) 100%); }
+      /* Shop card full-bleed art (degraded background) */
+      .shop-card { position:relative; overflow:hidden; }
+      .shop-card.has-art { background:#07050b !important; }
+      .shop-card.has-art > *:not(.shop-card-art):not(.shop-card-art-sharp):not(.bf-shop-shade) { position:relative; z-index:3; }
+      .shop-card-art { position:absolute; inset:-20px; z-index:0; background-size:cover; background-position:center center; background-repeat:no-repeat; filter:blur(18px) saturate(1.3) contrast(1.16); transform:scale(1.28); }
+      .shop-card-art-sharp { position:absolute; inset:-12px; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; filter:saturate(1.14) contrast(1.12); transform:scale(1.06); }
+      .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0.12) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,0.82) 100%); }
       /* Hand chips (spells/objects) — small art thumbnail before the name */
       .chip.bf-chip-art { display:inline-flex !important; align-items:center !important; gap:5px !important; padding-left:3px !important; }
       .bf-chip-thumb { flex:0 0 auto; width:24px; height:24px; border-radius:6px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.5); box-shadow:0 2px 5px rgba(0,0,0,.5); }
@@ -547,10 +552,9 @@ function buildArtScript() {
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
       .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:138px; z-index:1; background-size:cover; background-position:center 16%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
       .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.22) 58%,rgba(18,12,25,.92) 100%); }
-      /* Equipped item thumbnail inside a filled slot */
-      .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; }
+      /* Equipped item thumbnail inside a filled slot (no number) */
+      .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; display:flex; align-items:center; }
       .bf-slot-thumb { position:absolute; left:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:8px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.45); box-shadow:0 3px 8px rgba(0,0,0,.5); }
-      .bf-slot-num { position:absolute; left:6px; bottom:3px; z-index:2; font-size:7px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.78); border-radius:6px; padding:1px 4px; }
       .bf-quick-num { position:absolute; top:8px; right:8px; z-index:3; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:2px 7px; }
       .eq-slot.bf-slot-empty { display:flex; align-items:center; justify-content:space-between; gap:8px; }
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
@@ -1675,16 +1679,24 @@ function buildArtScript() {
       return map;
     }
 
-    // Inject a thumbnail + number into a filled equipment slot, matching by name.
-    function decorateFilledSlot(html, item) {
-      if (!item || !item.art) return html;
-      var thumb = '<div class="bf-slot-thumb" style="background-image:url(&quot;' + item.art + '&quot;)"></div>' +
-        '<div class="bf-slot-num">Nº ' + String(item.num || 0).padStart(3, '0') + '</div>';
-      // Add class + thumbnail to the next filled slot that doesn't have art yet.
-      return html.replace('<div class="eq-slot filled', '<div class="bf-slot-pending eq-slot filled').replace(
-        /<div class="bf-slot-pending eq-slot filled([^"]*)"([^>]*)>/,
-        '<div class="eq-slot filled bf-slot-art$1"$2>' + thumb
-      );
+    // Inject a thumbnail into a filled equipment slot, matching it to the slot
+    // whose text contains the item's name (so weapon vs armor never get mixed up).
+    function decorateSlotByName(html, name, art) {
+      if (!name || !art) return html;
+      var thumb = '<div class="bf-slot-thumb" style="background-image:url(&quot;' + art + '&quot;)"></div>';
+      var box = document.createElement('div');
+      box.innerHTML = html;
+      var slots = box.querySelectorAll('.eq-slot');
+      for (var i = 0; i < slots.length; i++) {
+        var slot = slots[i];
+        if (slot.classList.contains('bf-slot-art')) continue;
+        if (slot.textContent.indexOf(name) !== -1) {
+          slot.classList.add('bf-slot-art');
+          slot.insertAdjacentHTML('afterbegin', thumb);
+          break;
+        }
+      }
+      return box.innerHTML;
     }
 
     var originalEqHeroCard = window.eqHeroCard;
@@ -1698,9 +1710,9 @@ function buildArtScript() {
       }
       // Equipped weapon thumbnail
       var weapon = h.mwep || h.rwep;
-      if (weapon && byName[weapon.name]) html = decorateFilledSlot(html, byName[weapon.name]);
+      if (weapon && byName[weapon.name]) html = decorateSlotByName(html, weapon.name, byName[weapon.name].art);
       // Equipped armor thumbnail
-      if (h.armor && byName[h.armor.name]) html = decorateFilledSlot(html, byName[h.armor.name]);
+      if (h.armor && byName[h.armor.name]) html = decorateSlotByName(html, h.armor.name, byName[h.armor.name].art);
       if (!h.mwep && !h.rwep) {
         var weaponSlotPattern = new RegExp('<div class="eq-slot">Arma: vacía([\\\\s\\\\S]*?)</div>');
         html = html.replace(weaponSlotPattern, '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(&quot;' + side + '&quot;,&quot;' + h.id + '&quot;,&quot;weapon&quot;)"><span>Arma: vacía$1</span><button class="bf-slot-buy">Comprar</button></div>');
