@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-confirm-art-v26';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-epic-bonus-v27';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -1337,6 +1337,26 @@ function buildArtScript() {
       return originalApplyBonus.apply(this, arguments);
     };
 
+    function epicBonusById(id) {
+      return (BONUS || []).find(function(b) { return b && b.id === id; }) || null;
+    }
+
+    // After the game picks the round bonus, sometimes swap it for one of the
+    // two epic bonus cards so they actually show up during play.
+    function maybeForceEpicBonus() {
+      var self = epicBonusById('epic_self');
+      var rival = epicBonusById('epic_rival');
+      if (!self || !rival || !G.bonus) return;
+      ['p','o'].forEach(function(side) {
+        var cur = G.bonus[side];
+        // Don't override an already-epic pick.
+        if (cur && (cur.id === 'epic_self' || cur.id === 'epic_rival')) return;
+        var roll = Math.random();
+        if (roll < 0.18) G.bonus[side] = self;
+        else if (roll < 0.34) G.bonus[side] = rival;
+      });
+    }
+
     var originalStartAuctionPhase = window.startAuctionPhase;
     window.startAuctionPhase = function() {
       if (G.pools) {
@@ -1344,7 +1364,17 @@ function buildArtScript() {
           G.pools[t] = (G.pools[t] || []).filter(function(h) { return h.clan !== 'Épicas'; });
         });
       }
-      return originalStartAuctionPhase.apply(this, arguments);
+      var ret = originalStartAuctionPhase.apply(this, arguments);
+      // The original just set G.bonus + called applyBonus. Re-roll for epics and,
+      // if we swapped, re-apply the (now epic) bonus so its effect/flags trigger.
+      var before = { p: G.bonus && G.bonus.p, o: G.bonus && G.bonus.o };
+      maybeForceEpicBonus();
+      ['p','o'].forEach(function(side) {
+        if (G.bonus && G.bonus[side] !== before[side] && typeof window.applyBonus === 'function') {
+          window.applyBonus(side, G.bonus[side]);
+        }
+      });
+      return ret;
     };
 
     var originalBeginBidRound = window.beginBidRound;
