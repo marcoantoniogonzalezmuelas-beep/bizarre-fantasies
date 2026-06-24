@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-full-cards-v33';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-oracle-cover-v34';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -374,35 +374,17 @@ function buildArtScript() {
       .cf-he b,.cf-he span{color:#b06cff !important;}
       .cf-art.has-art .cf-stats { z-index:4 !important; background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.90) 58%) !important; }
       .cf-art.has-art .cf-heart { z-index:5 !important; }
-      /* Equipment / spell / object shop card art — full-bleed like bonus cards */
-      .shop-card { position: relative; overflow: hidden; }
-      .shop-card.has-art > * { position: relative; z-index: 2; }
-      /* Blurred fill */
-      .shop-card-art {
-        position: absolute; inset: -20px; z-index: 0;
-        background-size: cover; background-position: center center; background-repeat: no-repeat;
-        filter: blur(18px) saturate(1.3) contrast(1.16);
-        transform: scale(1.28); opacity: 1;
-      }
-      /* Sharp art layer — show the whole oracle card (no crop, no white edges) */
-      .shop-card-art-sharp {
-        position: absolute; inset: 0; z-index: 1;
-        background-size: contain; background-position: center center; background-repeat: no-repeat;
-      }
-      /* Bonus / restador shown as a mini-card with the whole card visible */
+      /* Bonus / restador = the oracle card itself. Card proportion + cover with
+         a tiny overscan to eat the white border the source images carry. */
       .bf-bonus-card {
         position: relative; display: block; border-radius: 13px; overflow: hidden;
-        aspect-ratio: 3 / 4.1; margin: 5px auto 8px; max-width: 250px; border: 2px solid rgba(255,210,74,0.68);
+        aspect-ratio: 3 / 4.1; margin: 5px auto 8px; max-width: 250px; width: 100%; border: 2px solid rgba(255,210,74,0.68);
         background: #07050b;
         box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,210,74,.10);
       }
-      .bf-bonus-card .bf-bonus-fill,
+      .bf-bonus-card .bf-bonus-fill { display: none; }
       .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: -40px; border-radius: 0; background-position: center center; background-repeat: no-repeat; z-index: 0;
-      }
-      .bf-bonus-card .bf-bonus-fill { background-size: cover; filter: blur(20px) saturate(1.2) brightness(.8); transform: scale(1.45); opacity: 1; }
-      .bf-bonus-card .bf-bonus-art {
-        inset: 0; background-size: contain; background-position: center center; z-index: 1; transform: none;
+        position: absolute; inset: -3px; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1;
       }
       .bf-bonus-card .bf-bonus-shade { display: none; }
       .bf-bonus-card .bf-bonus-name { display: none; }
@@ -431,10 +413,9 @@ function buildArtScript() {
         .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
-        .shop-card-art { inset: -14px !important; filter: blur(18px) saturate(1.2) brightness(.8) !important; }
-        .shop-card-art-sharp { inset: 0 !important; background-size: contain !important; background-position: center center !important; }
-        .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 220px !important; margin: 4px auto 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: 0 !important; transform: none !important; background-size: contain !important; background-position: center center !important; background-repeat: no-repeat !important; }
+        .shop-card-art-sharp { inset: -3px !important; background-size: cover !important; background-position: center center !important; }
+        .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; }
+        .bf-bonus-card .bf-bonus-art { inset: -3px !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
       }
 
       /* Battle/recruit hero thumbnails */
@@ -527,21 +508,18 @@ function buildArtScript() {
       .bf-race-trait { position:relative; z-index:1; margin-top:4px; color:#ffe49a; font-weight:800; font-size:12.5px; line-height:1.25; }
       .bf-race-desc { position:relative; z-index:1; margin-top:7px; color:#efe9dc; font-size:13px; line-height:1.28; }
       .bf-race-stats { position:relative; z-index:1; margin-top:8px; color:#cfc6dd; font-size:11px; line-height:1.25; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px; }
-      /* Shop card full-bleed art (degraded background) */
+      /* Shop card = the oracle card itself. Card proportion + cover with a tiny
+         overscan to eat the white border the source images carry. */
       .shop-card { position:relative; overflow:hidden; }
-      .shop-card.has-art { background:#07050b !important; }
-      .shop-card.has-art > *:not(.shop-card-art):not(.shop-card-art-sharp):not(.bf-shop-shade) { position:relative; z-index:3; }
-      .shop-card-art { position:absolute; inset:-20px; z-index:0; background-size:cover; background-position:center center; background-repeat:no-repeat; filter:blur(18px) saturate(1.3) contrast(1.16); transform:scale(1.28); }
-      .shop-card-art-sharp { position:absolute; inset:0; z-index:1; background-size:contain; background-position:center center; background-repeat:no-repeat; }
-      .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 80%,rgba(0,0,0,0.55) 100%); }
-      /* The oracle artwork already shows name/cost/text — hide the game's own labels */
-      .shop-card.has-art .shop-name, .shop-card.has-art .shop-bf, .shop-card.has-art .shop-sub, .shop-card.has-art .shop-txt { display:none !important; }
-      .shop-card.has-art { min-height:200px; }
+      .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
+      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.bf-view-btn) { display:none !important; }
+      .shop-card-art { display:none !important; }
+      .shop-card-art-sharp { position:absolute; inset:-3px; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
-      .chip.bf-chip-card { position:relative !important; width:84px !important; height:118px !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
+      .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
-      .chip.bf-chip-card .bf-chip-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(14px) saturate(1.2) brightness(.8); transform:scale(1.3); }
-      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:0; z-index:1; background-size:contain; background-position:center; background-repeat:no-repeat; }
+      .chip.bf-chip-card .bf-chip-fill { display:none; }
+      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-3px; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
       .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
@@ -556,22 +534,19 @@ function buildArtScript() {
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
-      .bf-quick-card { position:relative; overflow:hidden; min-height:260px; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:175px 11px 12px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); display:flex; flex-direction:column; justify-content:flex-end; }
-      .bf-quick-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(18px) saturate(1.2) brightness(.8); transform:scale(1.28); }
-      .bf-quick-art { position:absolute; top:6px; left:6px; right:6px; bottom:90px; z-index:1; background-size:contain; background-position:center; background-repeat:no-repeat; }
-      .bf-quick-card::after { content:''; position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,.86) 100%); pointer-events:none; }
-      .bf-quick-card > *:not(.bf-quick-fill):not(.bf-quick-art) { position:relative; z-index:3; }
+      /* Quick-shop card = the oracle card itself (cover + overscan + card ratio). */
+      .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
+      .bf-quick-fill { display:none; }
+      .bf-quick-art { position:absolute; inset:-3px; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
+      .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-cost) { display:none !important; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
-      .bf-quick-num { z-index:4; }
-      .bf-quick-name { color:#fff5dc; font-family:'Cinzel',serif; font-weight:900; line-height:1.08; text-shadow:0 2px 6px #000,0 0 12px #000; }
-      .bf-quick-txt { color:#f0e7ff; font-size:11px; line-height:1.25; margin-top:5px; text-shadow:0 1px 3px #000; }
       /* In-game styled confirm dialog */
       .bf-confirm-overlay { position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.72),rgba(8,5,14,.9)); backdrop-filter:blur(4px); animation:bfFadeIn .2s ease; }
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
-      .bf-confirm-art { position:relative; height:170px; overflow:hidden; background:#07050b; }
-      .bf-confirm-art::before { content:''; position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; filter:blur(20px) saturate(1.2) brightness(.8); transform:scale(1.4); z-index:0; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:6px; background-image:var(--bf-cart); background-size:contain; background-position:center; background-repeat:no-repeat; z-index:1; }
-      .bf-confirm-art::after { content:''; position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 35%,rgba(18,13,34,.96) 100%); }
+      .bf-confirm-art { position:relative; aspect-ratio:3 / 4.1; max-height:300px; overflow:hidden; background:#07050b; }
+      .bf-confirm-art::before { display:none; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-3px; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; z-index:1; }
+      .bf-confirm-art::after { display:none; }
       .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
       .bf-view-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid rgba(255,210,74,.6); background:rgba(8,5,14,.78); color:#ffe49a; border-radius:999px; padding:4px 12px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; backdrop-filter:blur(2px); transition:background .12s ease; }
@@ -580,8 +555,8 @@ function buildArtScript() {
       /* Full-size card view modal */
       .bf-view-wrap { display:flex; justify-content:center; padding:6px 0; }
       .bf-view-card { position:relative; width:min(320px,86vw); aspect-ratio:3/4.1; border-radius:18px; overflow:hidden; border:2.5px solid #caa14a; background:#07050b; box-shadow:0 14px 36px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,210,74,.14); }
-      .bf-view-card .bf-view-fill { position:absolute; inset:0; background-image:var(--bf-art); background-size:cover; background-position:center; filter:blur(20px) saturate(1.2) brightness(.8); transform:scale(1.4); z-index:0; }
-      .bf-view-card .bf-view-art { position:absolute; inset:0; background-image:var(--bf-art); background-size:contain; background-position:center; background-repeat:no-repeat; z-index:1; }
+      .bf-view-card .bf-view-fill { display:none; }
+      .bf-view-card .bf-view-art { position:absolute; inset:-3px; background-image:var(--bf-art); background-size:cover; background-position:center; background-repeat:no-repeat; z-index:1; }
       .bf-view-card .bf-view-shade { position:absolute; inset:0; z-index:2; background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.86) 100%); }
       .bf-view-coin { position:absolute; top:11px; left:11px; z-index:4; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; color:#4a2e03; font-size:19px; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; box-shadow:0 4px 10px rgba(0,0,0,.6); }
       .bf-view-num { position:absolute; top:14px; right:11px; z-index:4; font-size:9.5px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.66); border:1px solid rgba(255,210,74,.34); border-radius:999px; padding:3px 9px; }
@@ -594,7 +569,7 @@ function buildArtScript() {
       .bf-confirm-cost { position:absolute; top:10px; left:10px; z-index:2; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; color:#5a3d06; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; box-shadow:0 4px 10px rgba(0,0,0,.55); }
       .bf-confirm-num { position:absolute; top:12px; right:10px; z-index:2; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:3px 8px; }
       .bf-confirm-body { padding:4px 18px 18px; text-align:center; }
-      .bf-confirm-name { font-family:'Cinzel',serif; font-weight:1000; font-size:19px; color:#fff5dc; text-shadow:0 2px 6px #000; margin-top:-26px; position:relative; z-index:2; }
+      .bf-confirm-name { font-family:'Cinzel',serif; font-weight:1000; font-size:19px; color:#fff5dc; text-shadow:0 2px 6px #000; margin-top:6px; position:relative; z-index:2; }
       .bf-confirm-msg { color:#cfc6dd; font-size:13px; line-height:1.35; margin-top:8px; }
       .bf-confirm-msg b { color:#ffe49a; }
       .bf-confirm-actions { display:flex; gap:10px; margin-top:16px; }
@@ -828,14 +803,7 @@ function buildArtScript() {
       var sharp = document.createElement('div');
       sharp.className = 'shop-card-art-sharp';
       sharp.style.backgroundImage = 'url("' + url + '")';
-      var fill = document.createElement('div');
-      fill.className = 'shop-card-art';
-      fill.style.backgroundImage = 'url("' + url + '")';
-      var shade = document.createElement('div');
-      shade.className = 'bf-shop-shade';
-      card.insertBefore(shade, card.firstChild);
       card.insertBefore(sharp, card.firstChild);
-      card.insertBefore(fill, card.firstChild);
       card.classList.add('has-art');
     });
   }
@@ -1777,12 +1745,8 @@ function buildArtScript() {
           if (!url) return;
           var id = meta && meta.id;
           card.classList.add('has-art');
-          var fill = document.createElement('div'); fill.className = 'shop-card-art'; fill.style.backgroundImage = 'url("' + url + '")';
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
-          var shade = document.createElement('div'); shade.className = 'bf-shop-shade';
-          card.insertBefore(shade, card.firstChild);
           card.insertBefore(sharp, card.firstChild);
-          card.insertBefore(fill, card.firstChild);
           if (id) {
             var btn = document.createElement('button');
             btn.className = 'bf-view-btn';
