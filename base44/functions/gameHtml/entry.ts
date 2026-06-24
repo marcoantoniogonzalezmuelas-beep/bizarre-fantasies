@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-shopcatalog-fullart-v23';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-guide-helper-v24';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -646,6 +646,30 @@ function buildArtScript() {
       .bf-zoom-bonuswrap { position:relative; width:min(420px,90vw); height:min(560px,84vh); box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
       .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
+
+      /* ---- Guía (ave fantasía tipo chocobo) ---- */
+      .bf-guide { position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(560px,94vw); pointer-events:none; animation:bfFadeIn .35s ease; }
+      .bf-guide.bf-guide-hidden .bf-guide-bubble, .bf-guide.bf-guide-hidden .bf-guide-char { display:none; }
+      .bf-guide-char { position:relative; flex:0 0 auto; width:78px; height:78px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6)); cursor:pointer; }
+      .bf-guide-char img { width:100%; height:100%; object-fit:contain; display:block; }
+      .bf-guide-bubble { position:relative; pointer-events:auto; background:linear-gradient(180deg,#1c1533,#130d24); border:2px solid rgba(255,210,74,.6); border-radius:14px; padding:9px 30px 10px 13px; box-shadow:0 8px 24px rgba(0,0,0,.55),0 0 18px rgba(255,210,74,.14), inset 0 0 0 1px rgba(255,210,74,.1); }
+      .bf-guide-bubble::before { content:''; position:absolute; left:-9px; bottom:14px; width:0; height:0; border-top:8px solid transparent; border-bottom:8px solid transparent; border-right:9px solid rgba(255,210,74,.6); }
+      .bf-guide-title { font-family:'Cinzel',serif; font-weight:1000; font-size:12px; color:#ffd24a; letter-spacing:.3px; text-shadow:0 1px 2px #000; margin-bottom:2px; }
+      .bf-guide-text { font-size:12.5px; line-height:1.3; color:#f3ecff; font-weight:600; text-shadow:0 1px 2px #000; }
+      .bf-guide-text b { color:#ffe49a; }
+      .bf-guide-x { position:absolute; top:5px; right:6px; width:18px; height:18px; border-radius:50%; border:none; background:rgba(255,255,255,.1); color:#cbb9ee; font-size:11px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+      .bf-guide-x:hover { background:rgba(255,255,255,.2); color:#fff; }
+      .bf-guide-show { position:fixed; top:10px; left:10px; z-index:90000; width:46px; height:46px; border-radius:50%; overflow:hidden; border:2px solid rgba(255,210,74,.6); background:#130d24; box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 14px rgba(255,210,74,.2); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
+      .bf-guide-show img { width:100%; height:100%; object-fit:contain; display:block; }
+      .bf-guide-show.bf-guide-visible { display:block; }
+      @keyframes bfGuideFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+      @media (max-width: 640px) {
+        .bf-guide { top:6px; gap:7px; max-width:96vw; }
+        .bf-guide-char { width:58px; height:58px; }
+        .bf-guide-bubble { padding:7px 26px 8px 11px; }
+        .bf-guide-title { font-size:11px; }
+        .bf-guide-text { font-size:11px; line-height:1.25; }
+      }
     \`;
     document.head.appendChild(style);
   }
@@ -1865,6 +1889,75 @@ function buildArtScript() {
     row.parentNode.insertBefore(container, row);
   }
 
+  var GUIDE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/eae00ff7f_generated_image.png";
+
+  // What the guide says on each screen. Resolved from the active screen id.
+  function guideMessageFor(id, active) {
+    if (id === 's-title') {
+      return { t: '¡Hola, aventurero!', m: 'Soy <b>Plumas</b>, tu guía. Pulsa <b>Jugar</b> para empezar. Te explicaré cada paso.' };
+    }
+    if (id === 's-equip') {
+      return { t: 'Fase de Equipamiento', m: 'Da a cada héroe <b>1 arma</b> y <b>1 armadura</b>. Compra hechizos y objetos para tu mano. Cuando estés listo, pulsa <b>continuar</b>.' };
+    }
+    if (id === 's-battle') {
+      return { t: '¡A la batalla!', m: 'Elige una <b>acción</b> con el héroe activo (atacar, hechizo u objeto). Vence a los <b>3 héroes</b> rivales.' };
+    }
+    if (id && id !== 's-title') {
+      // Auction / recruit screens
+      var phase = active && /Fase\\s*\\d/i.test(active.textContent || '') ? '' : '';
+      return { t: 'Fase de Subasta', m: 'Mira los <b>6 héroes</b> y haz una <b>puja sellada</b> por el que quieras. Quien ofrezca más se lo lleva. ¡No gastes todas las monedas!' };
+    }
+    return null;
+  }
+
+  function ensureGuide() {
+    if (document.getElementById('bf-guide')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'bf-guide';
+    wrap.className = 'bf-guide';
+    wrap.innerHTML =
+      '<div class="bf-guide-char"><img src="' + GUIDE_IMG + '" alt="Guía"></div>' +
+      '<div class="bf-guide-bubble">' +
+        '<button class="bf-guide-x" aria-label="Ocultar guía">✕</button>' +
+        '<div class="bf-guide-title"></div>' +
+        '<div class="bf-guide-text"></div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    var show = document.createElement('button');
+    show.id = 'bf-guide-show';
+    show.className = 'bf-guide-show';
+    show.setAttribute('aria-label', 'Mostrar guía');
+    show.innerHTML = '<img src="' + GUIDE_IMG + '" alt="Guía">';
+    document.body.appendChild(show);
+
+    wrap.querySelector('.bf-guide-x').addEventListener('click', function() {
+      window.__bfGuideHidden = true;
+      wrap.classList.add('bf-guide-hidden');
+      show.classList.add('bf-guide-visible');
+    });
+    show.addEventListener('click', function() {
+      window.__bfGuideHidden = false;
+      wrap.classList.remove('bf-guide-hidden');
+      show.classList.remove('bf-guide-visible');
+    });
+  }
+
+  function updateGuide() {
+    ensureGuide();
+    var wrap = document.getElementById('bf-guide');
+    if (!wrap) return;
+    if (window.__bfGuideHidden) return;
+    var active = document.querySelector('.screen.active');
+    var id = active ? active.id : 's-title';
+    var msg = guideMessageFor(id, active);
+    if (!msg) return;
+    if (wrap.dataset.bfMsgId === id) return;
+    wrap.dataset.bfMsgId = id;
+    wrap.querySelector('.bf-guide-title').innerHTML = msg.t;
+    wrap.querySelector('.bf-guide-text').innerHTML = msg.m;
+  }
+
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
@@ -1913,6 +2006,7 @@ function buildArtScript() {
     layer.style.opacity = '1';
     // The game body has an opaque gradient background that would cover our fixed layer.
     document.body.style.background = 'transparent';
+    updateGuide();
   }
 
   // ---- MAIN INIT ----
