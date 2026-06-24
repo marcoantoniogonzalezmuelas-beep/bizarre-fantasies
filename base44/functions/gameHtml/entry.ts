@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-shop-armor-fix-v31';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-hand-cards-v32';
 
 const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0a701a388_generated_image.png',
@@ -545,9 +545,13 @@ function buildArtScript() {
       .shop-card-art { position:absolute; inset:-20px; z-index:0; background-size:cover; background-position:center center; background-repeat:no-repeat; filter:blur(18px) saturate(1.3) contrast(1.16); transform:scale(1.28); }
       .shop-card-art-sharp { position:absolute; inset:-12px; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; filter:saturate(1.14) contrast(1.12); transform:scale(1.06); }
       .bf-shop-shade { position:absolute; inset:0; z-index:2; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,0.12) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,0.82) 100%); }
-      /* Hand chips (spells/objects) — small art thumbnail before the name */
-      .chip.bf-chip-art { display:inline-flex !important; align-items:center !important; gap:5px !important; padding-left:3px !important; }
-      .bf-chip-thumb { flex:0 0 auto; width:24px; height:24px; border-radius:6px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.5); box-shadow:0 2px 5px rgba(0,0,0,.5); }
+      /* Hand cards (spells/objects) — full-art mini cards, no name, like a digital TCG */
+      .chip.bf-chip-card { position:relative !important; width:58px !important; height:80px !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.6) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,210,74,.12) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
+      .chip.bf-chip-card:hover { transform:translateY(-4px) scale(1.04); box-shadow:0 8px 20px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
+      .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:saturate(1.14) contrast(1.12); }
+      .chip.bf-chip-card .bf-chip-shade { position:absolute; inset:0; z-index:1; background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%); }
+      .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+      .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
       .bf-eq-hero-art { position:absolute; left:0; top:0; bottom:0; width:138px; z-index:1; background-size:cover; background-position:center 16%; border-right:1px solid rgba(255,210,74,.26); filter:saturate(1.12) contrast(1.08); }
@@ -1932,11 +1936,25 @@ function buildArtScript() {
       var url = map[name];
       if (!url) return;
       chip.dataset.bfHandArt = '1';
-      chip.classList.add('bf-chip-art');
-      var thumb = document.createElement('span');
-      thumb.className = 'bf-chip-thumb';
-      thumb.style.backgroundImage = 'url("' + url + '")';
-      chip.insertBefore(thumb, chip.firstChild);
+      chip.classList.add('bf-chip-card');
+      chip.title = name;
+      // Hide the chip's own text nodes (the name) without removing the original
+      // remove button (which carries the onclick to discard the card).
+      for (var n = 0; n < chip.childNodes.length; n++) {
+        var node = chip.childNodes[n];
+        if (node.nodeType === 3) node.textContent = '';
+      }
+      // Reposition the existing remove button ("×") to the card corner.
+      var removeBtn = chip.querySelector('button, .chip-x, span[onclick]');
+      if (removeBtn) removeBtn.classList.add('bf-chip-x');
+      // Full-bleed art + shade behind everything.
+      var art = document.createElement('div');
+      art.className = 'bf-chip-art-layer';
+      art.style.backgroundImage = 'url("' + url + '")';
+      var shade = document.createElement('div');
+      shade.className = 'bf-chip-shade';
+      chip.insertBefore(shade, chip.firstChild);
+      chip.insertBefore(art, chip.firstChild);
     });
   }
 
