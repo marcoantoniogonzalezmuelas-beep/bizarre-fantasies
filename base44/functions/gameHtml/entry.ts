@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v89';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v90';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -315,7 +315,7 @@ function buildArtScript() {
       @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} } @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} } @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} } @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
       .bf-ctb-thumb { position:absolute; left:3px; top:3px; bottom:3px; width:36px; border-radius:7px; background-size:cover; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); transform:scale(1.14); }
-      .bf-shop-mana { position:absolute; top:7px; left:7px; z-index:7; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; font-size:15px; color:#eaf4ff; background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a); border:2px solid #8fc4ff; box-shadow:0 3px 8px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.5); text-shadow:0 1px 2px rgba(0,0,0,.5); }
+      .bf-shop-mana { position:absolute; top:7px; right:7px; z-index:7; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; font-size:15px; color:#eaf4ff; background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a); border:2px solid #8fc4ff; box-shadow:0 3px 8px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.5); text-shadow:0 1px 2px rgba(0,0,0,.5); }
       .hero-acquired { position:relative !important; min-height:76px; padding-left:78px !important; overflow:hidden; }
       .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); overflow:hidden; }
       .bf-acq-thumb::before { content:''; position:absolute; inset:-9%; background-image:inherit; background-size:cover; background-position:center 18%; background-repeat:no-repeat; }
@@ -361,7 +361,8 @@ function buildArtScript() {
          overscan to eat the white border the source images carry. */
       .shop-card { position:relative; overflow:hidden; }
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
-      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt):not(.shop-coin):not(.shop-mana) { display:none !important; }
+      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt):not(.shop-coin):not(.bf-shop-mana) { display:none !important; }
+      .shop-card.has-art > .shop-coin { z-index: 7 !important; }
       .shop-card-art { display:none !important; }
       .shop-card-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .shop-card-art-sharp { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
