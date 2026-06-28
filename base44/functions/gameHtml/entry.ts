@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v99';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v100';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1168,8 +1168,8 @@ function buildArtScript() {
       return { add: (mb && mb.type === 'BID_ADD') ? Number(mb.effect || 0) : 0, sub: (ob && ob.type === 'BID_SUB') ? Number(ob.effect || 0) : 0 };
     };
 
-    // Min RAW bid so the FINAL value (raw + own bono − rival restador) >= cost.
-    window.minRawBid = function(side, h) { if (!h) return 0; var m = window.bidMods(side); return Math.max(0, Number(h.cost || 0) - m.add + m.sub); };
+    // Min RAW bid = hero's base cost only. Bonus/restador are visual markers, not a floor.
+    window.minRawBid = function(side, h) { if (!h) return 0; return Math.max(0, Number(h.cost || 0)); };
     function adjustBid(side, heroId, amount) {
       var h = findHero(heroId);
       if (!h) return amount;
