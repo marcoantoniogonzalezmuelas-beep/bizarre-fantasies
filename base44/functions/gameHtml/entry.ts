@@ -2337,8 +2337,6 @@ function buildArtScript() {
     bfWatchGuideEvents();
   }
 
-  // ---- OBSERVE DOM MUTATIONS (debounced via rAF so a burst of mutations
-  // triggers a single injection pass on the next frame, not dozens) ----
   function startObserver() {
     var scheduled = false;
     var observer = new MutationObserver(function() {
@@ -2468,6 +2466,10 @@ async function buildGameHtml() {
   var BTN_RACES = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5e41f1add_generated_image.png';
   html = html.replace("function roleIcon(t){return t==='CC'?'\ud83d\udde1\ufe0f':t==='AD'?'\ud83c\udff9':'\ud83d\udd2e';}", "function roleIcon(t){var E={CC:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png',AD:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png',HE:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png'};return '<img class=\"bf-role-emblem\" src=\"'+(E[t]||E.HE)+'\">';}").replace("try{ lobbyTeardown(); }catch(e){} location.reload(); }", "try{ lobbyTeardown(); }catch(e){} try{ window.top.location.href = window.top.location.pathname + '?bf=' + Date.now(); }catch(e){ location.reload(); } }").replace('onclick="startDemo()">\ud83c\udf93 Aprender a jugar</button>', 'onclick="startDemo()"><span class="tc-img"><img src="' + BTN_LEARN + '" alt=""></span><span>Aprende<br>a jugar</span></button>').replace('onclick="rulesModalStatic()">\ud83d\udcd6 C\u00f3mo se juega</button>', 'onclick="rulesModalStatic()"><span class="tc-img"><img src="' + BTN_RULES + '" alt=""></span><span>Cómo<br>se juega</span></button>').replace('onclick="racesModal()">\ud83e\uddec Razas</button>', 'onclick="racesModal()"><span class="tc-img"><img src="' + BTN_RACES + '" alt=""></span><span>Razas</span></button>').replace('<div class="coach-txt">${G._coachMsg?esc(G._coachMsg):\'\'}</div>', '<div class="coach-txt">${G._coachMsg||\'\'}</div>');
 
+  // Patch bonuses to apply to the bid instead of the wallet, plus new permanent bonuses
+  html = html.replace('function applyBonus(side,b){', 'function applyBonus(side,b){\n  if(window.bfApplyBonus) return window.bfApplyBonus(side,b);\n');
+  html = html.replace('function resolveBidRound(){', 'function resolveBidRound(){\n  if(window.bfResolveBidRound) return window.bfResolveBidRound();\n');
+
   // Inject art script right before </body> so the game's own script
   // (cardFace, HEROES, etc.) is already defined when we hook it.
   const artScript = buildArtScript();
@@ -2480,20 +2482,8 @@ Deno.serve(async (req) => {
   try {
     const html = await buildGameHtml();
 
-    return new Response(html, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'X-BF-Patch-Version': GAME_PATCH_VERSION,
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      }
-    });
+    return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-BF-Patch-Version': GAME_PATCH_VERSION, 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', 'Pragma': 'no-cache', 'Expires': '0' } });
   } catch (error) {
-    return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;color:#fff;background:#0e0a16;padding:24px">Error: ' + (error?.message || error) + '</body>', {
-      status: 500,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' }
-    });
+    return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;color:#fff;background:#0e0a16;padding:24px">Error: ' + (error?.message || error) + '</body>', { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
 });
