@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v110';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v111';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -615,46 +615,11 @@ function buildArtScript() {
   window.bfZoomCard = bfZoomCard;
 
   // ---- Full-screen bonus/restador zoom (lupa) — shows the whole bonus card enlarged ----
-  function bfZoomBonus(name, url) {
-    if (!url) return;
-    var existing = document.getElementById('bf-zoom-overlay');
-    if (existing) existing.remove();
-    var overlay = document.createElement('div');
-    overlay.id = 'bf-zoom-overlay';
-    overlay.className = 'bf-zoom-overlay';
-    overlay.innerHTML =
-      '<button class="bf-zoom-close" aria-label="Cerrar">✕</button>' +
-      '<div class="bf-zoom-bonuswrap">' +
-        '<div class="bf-bonus-card" style="height:100%;margin:0">' +
-          '<div class="bf-bonus-fill" style="background-image:url(\\'' + url + '\\')"></div>' +
-          '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
-          '<div class="bf-bonus-shade"></div>' +
-          '<div class="bf-bonus-name">' + name + '</div>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
-    overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.className === 'bf-zoom-close') close(); });
-    var wrap = overlay.querySelector('.bf-zoom-bonuswrap');
-    if (wrap) wrap.addEventListener('click', function(e) { e.stopPropagation(); });
-  }
+  function bfZoomBonus(name,url,found){if(!url)return;var ex=document.getElementById('bf-zoom-overlay');if(ex)ex.remove();var ov=document.createElement('div');ov.id='bf-zoom-overlay';ov.className='bf-zoom-overlay';var it=found?found.item:null;var ty=found?found.kind:'bonus';if(!it){var ob=typeof OBJECTS!=='undefined'?OBJECTS.find(function(o){return o&&o.name===name;}):null;var sp=typeof SPELLS!=='undefined'?SPELLS.find(function(s){return s&&s.name===name;}):null;var bo=typeof BONUS!=='undefined'?BONUS.find(function(b){return b&&b.name===name;}):null;if(ob){it=ob;ty='object';}else if(sp){it=sp;ty='spell';}else if(bo){it=bo;ty='bonus';}}var num=it?(it.num||it.number||0):0;var desc=it?(it.txt||it.description||''):'';var cost=it&&it.cost!=null&&it.cost!=='—'?it.cost:null;var TC={spell:'#8b6bff',melee:'#e0653f',ranged:'#3fb56a',armor:'#5a8fd6',object:'#d6b13f',bonus:'#d39b22'};var EC={fuego:'#d6552a',hielo:'#3aa0c8',rayo:'#caa12f',agua:'#2f7fd6',curacion:'#2f9d54',proteccion:'#caa12f',arcano:'#7a5fd0',estado:'#8a5fb0'};var bc=TC[ty]||'#d39b22';var tl=ty==='spell'?(it&&it.element?it.element.toUpperCase():(it?it.tag:'')):(it?it.tag:'');if(ty==='bonus')tl=it&&(it.type||it.tag)?(it.type||it.tag):'BON';var bg=ty==='spell'&&it&&it.element?(EC[it.element.toLowerCase()]||bc):bc;var sl=null;if(it){if(it.cc!=null)sl='+'+it.cc+' CC';else if(it.power!=null)sl='Pot. '+it.power;else if(it.hp!=null&&ty==='armor')sl='+'+it.hp+' HP';else if(it.mana!=null)sl='🔵 '+it.mana+' maná';}var ht='<div style="position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;background:#07050b;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid '+bc+'88;"><div style="position:absolute;inset:-20px;background-image:url(\\''+url+'\\');background-size:cover;background-position:center;filter:blur(18px) saturate(1.3) contrast(1.16);transform:scale(1.28);z-index:0;"></div><div style="position:absolute;inset:-12px;background-image:url(\\''+url+'\\');background-size:cover;background-position:center;filter:saturate(1.14) contrast(1.12);transform:scale(1.08);z-index:1;"></div><div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.05) 0%, transparent 40%, rgba(0,0,0,0.9) 100%);z-index:2;"></div><div style="position:absolute;left:12px;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;z-index:3;">'+(cost!=null?'<div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:\\'Rubik\\',sans-serif;font-weight:900;font-size:16px;color:#5a3d06;background:radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f);border:2px solid #7c5410;box-shadow:0 4px 10px rgba(0,0,0,0.5);">'+cost+'</div>':'')+(tl?'<span style="font-size:12px;font-weight:900;color:#fff;background:'+bg+';border-radius:999px;padding:3px 10px;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+tl+'</span>':'')+(sl?'<span style="font-size:12px;font-weight:900;color:#ffe49a;background:rgba(0,0,0,0.7);border-radius:999px;padding:3px 10px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+sl+'</span>':'')+'</div><div style="position:absolute;left:12px;right:12px;bottom:12px;text-align:center;border-radius:12px;background:rgba(0,0,0,0.75);border:1px solid '+bc+'66;padding:12px 16px 16px;backdrop-filter:blur(4px);z-index:3;"><div style="font-family:\\'Cinzel\\',serif;font-weight:900;font-size:22px;line-height:1.1;color:#fff5d9;text-shadow:0 2px 6px #000, 0 0 12px #000;margin-bottom:8px;text-transform:uppercase;">'+name+'</div>'+(desc?'<div style="font-family:\\'Rubik\\',sans-serif;font-size:14px;font-weight:700;line-height:1.3;color:#efe9dc;margin-bottom:14px;">'+desc+'</div>':'')+'<div style="font-family:\\'Rubik\\',sans-serif;font-size:10px;font-weight:900;color:#bdae87;letter-spacing:1px;text-transform:uppercase;">Base Set · Nº '+String(num).padStart(3,'0')+'</div></div><div style="position:absolute;right:8px;bottom:12px;z-index:4;width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,210,74,0.6);box-shadow:0 0 12px rgba(255,210,74,0.5);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" style="width:100%;height:100%;object-fit:contain;" /></div></div>';ov.innerHTML='<button class="bf-zoom-close" aria-label="Cerrar">✕</button><div class="bf-zoom-bonuswrap" style="width:100%;max-width:340px;aspect-ratio:3/5;">'+ht+'</div>';document.body.appendChild(ov);function cl(){if(ov.parentNode)ov.parentNode.removeChild(ov);}ov.addEventListener('click',function(e){if(e.target===ov||e.target.className==='bf-zoom-close')cl();});var w=ov.querySelector('.bf-zoom-bonuswrap');if(w)w.addEventListener('click',function(e){e.stopPropagation();});}
   window.bfZoomBonus = bfZoomBonus;
 
   // ---- DOM injection for hero cards (match by name) ----
-  function injectHeroArt() {
-    document.querySelectorAll('.cardface').forEach(function(card) {
-      var artDiv = card.querySelector('.cf-art');
-      if (!artDiv || artDiv.classList.contains('has-art')) return;
-      var nameEl = card.querySelector('.cf-name');
-      if (!nameEl) return;
-      var nameText = nameEl.textContent.replace(/★/g, '').trim();
-      var isElite = card.classList.contains('cf-elite');
-      var url = isElite ? (ELITE_BY_NAME[nameText] || ART_BY_NAME[nameText]) : ART_BY_NAME[nameText];
-      if (!url) return;
-      artDiv.style.setProperty('--bf-art', "url('" + url + "')");
-      artDiv.classList.add('has-art');
-    });
-  }
+  function injectHeroArt(){document.querySelectorAll('.cardface').forEach(function(c){var a=c.querySelector('.cf-art');if(!a||a.classList.contains('has-art'))return;var n=c.querySelector('.cf-name');if(!n)return;var nt=n.textContent.replace(/★/g,'').trim();var u=c.classList.contains('cf-elite')?(ELITE_BY_NAME[nt]||ART_BY_NAME[nt]):ART_BY_NAME[nt];if(!u)return;a.style.setProperty('--bf-art',"url('"+u+"')");a.classList.add('has-art');});}
 
   // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
   function injectEquipArt() {
@@ -1864,7 +1829,7 @@ function buildArtScript() {
       zoomBtn.title = 'Ampliar carta';
       zoomBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        bfZoomBonus(safeName, url);
+        bfZoomBonus(safeName, url, found);
       });
       chip.appendChild(zoomBtn);
     }
