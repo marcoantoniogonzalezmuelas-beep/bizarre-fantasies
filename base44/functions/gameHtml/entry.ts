@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v66';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v67';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -229,7 +229,7 @@ function buildArtScript() {
       .bf-ability-name { color:#ffe07b; font-family:'Cinzel',serif; font-size:12.6px; font-weight:1000; letter-spacing:.25px; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32); }
       .bf-hero-card.cf-elite .bf-ability-name { color:#d9a2ff; }
       .bf-ability-text { margin-top:3px; color:#fff7ea; font-size:12px; font-weight:700; line-height:1.25; text-shadow:0 2px 3px #000,0 0 8px #000; }
-      .bf-logo { position:absolute; right:7px; bottom:10px; z-index:8; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500); border:1.5px solid rgba(255,210,74,.6); box-shadow:0 0 10px rgba(255,210,74,.3),inset 0 0 6px rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:2px; }
+      .bf-logo { position:absolute; right:7px; bottom:10px; z-index:8; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500); border:1.5px solid rgba(255,210,74,.55); box-shadow:0 0 12px rgba(255,210,74,.45),inset 0 0 6px rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; }
       .bf-card-num { position:absolute; left:62px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
 
       /* Fallback for any old-format hero cards already on screen */
@@ -633,7 +633,7 @@ function buildArtScript() {
           '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
         '</div>' +
         '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
-        '<div class="bf-logo"><img src="' + LOGO_URL + '" alt="BF" style="width:32px;height:32px;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(255,210,74,.7))"></div>' +
+        '<div class="bf-logo"><img src="' + LOGO_URL + '" alt="BF" style="width:100%;height:100%;object-fit:contain;display:block;"></div>' +
       '</div>';
     };
     patched.__patched = true;

@@ -51,7 +51,9 @@ export default function HeroCardFace({ hero, elite }) {
         </div>
       </div>
       <div className="absolute left-14 bottom-3 z-20 text-[7px] font-black text-[#ffe7a8] bg-black/65 border border-[#ffd24a55] rounded-full px-1.5 py-0.5">Base Set · Nº {String(hero.num).padStart(3, '0')}</div>
-      <div className="absolute right-2 bottom-3 z-20 font-heading font-black text-[#ffd24a] text-sm bg-[#160b00] border border-[#d39b22] rounded-md px-1.5 py-0.5">BF</div>
+      <div className="absolute right-2 bottom-3 z-20 w-8 h-8 rounded-full overflow-hidden border-2 border-[#ffd24a99] shadow-[0_0_10px_rgba(255,210,74,.5)]" style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
+        <img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" alt="BF" className="w-full h-full object-contain" />
+      </div>
     </div>
   );
 }
