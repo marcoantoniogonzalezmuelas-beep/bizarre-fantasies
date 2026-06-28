@@ -3,46 +3,12 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v113';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v114';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
-const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','72ce7dd1a','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','b5be72327','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
-const HERO_ELITE_ART = ['b2219417f','a2abfb434','4952ab881','01e96302a','e908b3273','650b7ff27','4d934fdf4','f7954d1fc','8bc966bfa','452bb4fb7','653c2036d','141eb7445','ddf40d7ab','12f840fe3','4cf89ac43','8019f9f21','8979eecb4','87c291158','e7ace3347','8d6e97ce2','33eb953a8','ffd892ff4','5a79e3638','b08f41b13','fb9937c69','04b64ecc7','d9ef92043','40e91e893','437bbb48b','35add4eeb','0827725df','2c7c03c8f','d0512bd56','ae296c827','8cde88cb7','ea100edfb','7764cb9ea','84c9693dc','907ef8e72','b96972130','8959bebcc','e7ce90f66','4328395b6','06c814afa','12a5ddb5c'].map(toHArt);
-
-const IMG_BASE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
-const toArt = function(id){ return IMG_BASE + id + '_generated_image.png'; };
-
-const MELEE_ART = ['2ef6e8fd8','90d5f4f20','ca0217dac','79830b431','b5b6160a3','a8ea859a5'].map(toArt);
-
-const RANGED_ART = ['2146a215b','ab826c633','88e45b0a1','93554b1ee','c8cf4c6d1','06ce99379','08cb8f198','809f7051c'].map(toArt);
-
-const ARMOR_ART = ['b989796b2','37519e06c','4a38b42e1','6889c5c36','fefd71323','2de5cea6a','244338b2e','adc154eaf','46890f673','ed198ba53'].map(toArt);
-
-const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b'].map(toArt);
-const OBJECT_ART = ['58d239c00','1688e1433','9b9d6986f','dd35e9e6b','026d2d45d','d138d9427','6eec753dd','4581afaa7','b990b1173'].map(toArt);
-// Spell mana by name — the upstream SPELLS list has no `mana`, so we inject this and use it as fallback.
-const SPELL_MANA = {'Bola de Fuego':8,'Tormenta Ígnea':16,'Lanza de Hielo':9,'Rayo en Cadena':12,'Maremoto':15,'Curación':8,'Curación Divina':15,'Escudo de Maná':8,'Barrera Arcana':12,'Sueño':10,'Paralización':11,'Maldición':8,'Bendición':8};
-const BONUS_ART = ['88ffc8b21','a644bca96','a5d3ecf52','a58e01097','664754ee3','6c0160e33','fbe03869b','5369480ce','e5c4370fc','26219e884','1acefc0e0','77bc42e4f','0934ebffe','70f137c2b'].map(toArt);
-
-const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli","mina","roba"];
-const BONUS_NAMES = ["Gran Banquero","Corredor de Bolsa","Mercader Zeta","Nauta Financiero","La Prestamista","Patrón de Forja","Armero Real","El Pirata","La Corsaria","Hacker Nexus","Bandolero Seco","Glitch","Mina de Oro","Ladrón de Guante"];
-
-// Hero id order, matching the HERO_ART / HERO_ELITE_ART arrays index-for-index.
-const HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
-
-// Hero id -> display name (so we can match cards already rendered in the DOM by name).
-const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok","Gnarr","Vragnar","Morthex","Buck Ironclad","La Comadreja","Krunder Mec.","El Heavy","El Pijo","Patrón","Sylvara","Aelion","Zarmandis","Eredon","Alfredinho","Dixie Plasma","Skarla","Sylvex","Gorvak","El Futbolista","El Gamer","Retropoeta","Malachar","Serafis","Batu","Nixara","Vexal","Chivo","Solenne","Mantenimiento","Pacopiton","Hexara","Reverendo Hex","Doc Radiante","Zarmandis","Xerath","El Ajedrecista","El Rolero","El Político"];
-
-// Equipment ids by category, index-for-index with their art arrays. Also their
-// card numbers (cardNo) so we can match the "Nº X" shown on shop cards.
-const EQUIP = {
-  melee:  { ids:["mw_sword","mw_mace","mw_axe","mw_dagger","mw_plasma","mw_thunder"], nums:[59,60,61,62,63,64] },
-  ranged: { ids:["rw_sling","rw_cross","rw_pistol","rw_smg","rw_cannon","rw_plasma","rw_elfbow","rw_photon"], nums:[65,66,67,68,69,70,71,72] },
-  armor:  { ids:["ar_leather","ar_mail","ar_plate","ar_arcane","ar_aegis","ar_exo","ar_water","ar_thunder","ar_ice","ar_fire"], nums:[73,74,75,76,77,78,79,80,81,82] },
-  spell:  { ids:["sp_fire1","sp_fire2","sp_ice1","sp_ray1","sp_agua1","sp_heal1","sp_heal2","sp_prot1","sp_ward","sp_sleep","sp_para","sp_curse","sp_bless"], nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] },
-  object: { ids:["ob_pot","ob_potbig","ob_mana","ob_manabig","ob_shield","ob_cleanse","ob_bomb","ob_revive","ob_phoenix"], nums:[83,84,85,86,87,88,89,90,91] },
-};
+import { getGameConstants } from './gameConstants.js';
+const { HERO_ART, HERO_ELITE_ART, IMG_BASE, toArt, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP } = getGameConstants();
 
 // Build a number -> art map for all equipment (used to patch shop cards by their "Nº").
 function buildNumArtMap() {
@@ -1515,6 +1481,16 @@ function buildArtScript() {
         html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"');
         html = html.replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>');
       }
+      // Replace CC, AD, HE text with actual icons
+      html = html.replace(/CC<\/b>/g, '<img class="bf-role-emblem" src="' + window.__BF_ROLE_EMBLEM.CC + '" style="width:16px;height:16px;vertical-align:middle;display:inline-block"></b>')
+                 .replace(/AD<\/b>/g, '<img class="bf-role-emblem" src="' + window.__BF_ROLE_EMBLEM.AD + '" style="width:16px;height:16px;vertical-align:middle;display:inline-block"></b>')
+                 .replace(/HE<\/b>/g, '<img class="bf-role-emblem" src="' + window.__BF_ROLE_EMBLEM.HE + '" style="width:16px;height:16px;vertical-align:middle;display:inline-block"></b>');
+
+      // Remove the emoji to the left of the hero name (usually something like "⚔️ Nombre", "🏹 Nombre", "✦ Nombre")
+      html = html.replace(/<div class="eq-hero-name">([^<]*)<\/div>/g, function(match, p1) {
+        return '<div class="eq-hero-name">' + p1.replace(/^[\u2694\ufe0f\ud83c\udff9\ud83d\udd2e\u2728\u2605\u25c6\u25c7\u2694\u2600-\u26ff\u2700-\u27bf\ud83c-\ud83e\udc00-\udfff\u200d]+\s*/, '') + '</div>';
+      });
+
       // Equipped weapon thumbnail
       var weapon = h.mwep || h.rwep;
       if (weapon && byName[weapon.name]) html = decorateSlotByName(html, weapon.name, byName[weapon.name].art, weapon, h.mwep ? 'melee' : 'ranged');
@@ -1848,7 +1824,42 @@ function buildArtScript() {
     }
   }
 
+  function separateBattleHand() {
+    var hc = document.getElementById('hand-cont');
+    if (!hc || hc.dataset.bfSeparated === '1') return;
+    var spells = hc.querySelectorAll('.chip-spell');
+    var objects = hc.querySelectorAll('.chip-object');
+    if (spells.length === 0 || objects.length === 0) return;
+    hc.dataset.bfSeparated = '1';
+    
+    // Create new containers
+    var spellRow = document.createElement('div'); spellRow.className = 'hand-row';
+    var objectRow = document.createElement('div'); objectRow.className = 'hand-row';
+    var bonusRow = document.createElement('div'); bonusRow.className = 'hand-row';
+    
+    // Move items
+    var children = Array.from(hc.children);
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
+      if (child.classList.contains('chip-spell')) spellRow.appendChild(child);
+      else if (child.classList.contains('chip-object')) objectRow.appendChild(child);
+      else if (child.classList.contains('chip-bon')) bonusRow.appendChild(child);
+    }
+    
+    // Clear and rebuild
+    hc.innerHTML = '';
+    if (bonusRow.children.length > 0) {
+      hc.innerHTML += '<div class="hand-lbl">Bonificador</div>';
+      hc.appendChild(bonusRow);
+    }
+    hc.innerHTML += '<div class="hand-lbl">Hechizos</div>';
+    hc.appendChild(spellRow);
+    hc.innerHTML += '<div class="hand-lbl">Objetos</div>';
+    hc.appendChild(objectRow);
+  }
+
   function injectHandArt() {
+    separateBattleHand();
     var map = handArtByName();
     if (!map) return;
     document.querySelectorAll('.chip-spell, .chip-object').forEach(function(chip) {
