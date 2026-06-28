@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v111';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v112';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -415,7 +415,9 @@ function buildArtScript() {
 
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
       .bhero .bf-battle-gear { position:absolute; left:80px; bottom:6px; z-index:3; display:flex; gap:4px; }
-      .bhero .bf-gear-icon { width:26px; height:26px; border-radius:6px; background-size:cover; background-position:center; border:1.5px solid rgba(255,210,74,.55); box-shadow:0 2px 6px rgba(0,0,0,.6); background-color:#0a0710; }
+      .bhero .bf-gear-icon { position:relative; width:26px; height:26px; border-radius:6px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.55); box-shadow:0 2px 6px rgba(0,0,0,.6); background-color:#0a0710; cursor:pointer; transition:transform .12s ease; }
+      .bhero .bf-gear-icon:hover { border-color:#ffd24a; transform:scale(1.15); z-index:10; }
+      .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
       /* ---- Action panel of the active hero: AI battle background ---- */
       .bf-action-bg { position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 22%; background-repeat:no-repeat; opacity:.95; transition:background-image .4s ease; }
@@ -822,19 +824,26 @@ function buildArtScript() {
     card.dataset.bfGear = '1';
     var items = [];
     var w = hero.mwep || hero.rwep;
-    if (w) items.push(w);
-    if (hero.armor) items.push(hero.armor);
+    if (w) items.push({ it: w, kind: hero.mwep ? 'melee' : 'ranged' });
+    if (hero.armor) items.push({ it: hero.armor, kind: 'armor' });
     if (!items.length) return;
     var gearByName = window.__bfGearArtByName || {};
     var row = document.createElement('div');
     row.className = 'bf-battle-gear';
-    items.forEach(function(it) {
+    items.forEach(function(o) {
+      var it = o.it;
       var url = gearByName[it.name];
       if (!url) return;
       var icon = document.createElement('div');
       icon.className = 'bf-gear-icon';
       icon.title = it.name;
       icon.style.backgroundImage = 'url("' + url + '")';
+      icon.innerHTML = '<div class="bf-gear-zoom">🔍</div>';
+      icon.onclick = function(e) {
+        e.stopPropagation();
+        var safeName = String(it.name || '').replace(/'/g, "\\'");
+        bfZoomBonus(safeName, url, { item: it, kind: o.kind });
+      };
       row.appendChild(icon);
     });
     if (row.children.length) card.appendChild(row);
