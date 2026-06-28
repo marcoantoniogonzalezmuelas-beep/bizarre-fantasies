@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v85';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v86';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -1324,6 +1324,9 @@ function buildArtScript() {
 
     function minPoolCost(side){var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var m=Infinity;for(var i=0;i<pool.length;i++){var c=Number(pool[i]&&pool[i].cost||0);if(c<m)m=c;}return m===Infinity?5:m;}
     function roundsLeft(side){return Math.max(1,3-((G.team&&G.team[side]&&G.team[side].length)||0));}
+    // AI can't afford a hero: take equip-debt for the cheapest hero or skip — either way
+    // clear phaseNeeds so the auction advances to equip instead of looping on bad bids.
+    function bfAiNoCoin(side){var pool=((G.epicCands&&G.epicCands[side])||G.cands||[]).filter(function(x){return !!x;});var ch=pool.slice().sort(function(a,b){return Number(a&&a.cost||0)-Number(b&&b.cost||0);})[0];var team=(G.team&&G.team[side]&&G.team[side].length)||0;if(ch&&(team<1||isLastAuct()||Math.random()<0.5)){G.coins[side]=Math.max(Number((G.coins&&G.coins[side])||0),Number(ch.cost||0));G.bids[side]={heroId:ch.id,amount:Number(ch.cost||0)};}else{G.bids[side]={pass:true};if(G.phaseNeeds)G.phaseNeeds[side]=false;}}
     var originalAiBid = window.aiBid;
     window.aiBid = function(side) {
       var saved = G.cands;
@@ -1332,12 +1335,8 @@ function buildArtScript() {
       var bid = G.bids && G.bids[side];
       if (bid && !bid.pass) {
         var amt = adjustBid(side, bid.heroId, bid.amount);
-        if (amt === null) { G.bids[side] = { pass: true }; }
-        else {
-          var coins=Number((G.coins&&G.coins[side])||0), mc=minPoolCost(side), rl=roundsLeft(side);
-          var maxSpend=Math.max(mc, coins - mc*Math.max(0,rl-1));
-          G.bids[side].amount = Math.min(amt, maxSpend);
-        }
+        if (amt === null) { bfAiNoCoin(side); }
+        else { var coins=Number((G.coins&&G.coins[side])||0), mc=minPoolCost(side), rl=roundsLeft(side); G.bids[side].amount = Math.min(amt, Math.max(mc, coins - mc*Math.max(0,rl-1))); }
       }
       G.cands = saved;
     };
