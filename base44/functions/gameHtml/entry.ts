@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v83';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v84';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -406,9 +406,9 @@ function buildArtScript() {
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; aspect-ratio:3 / 4.1; max-height:300px; overflow:hidden; background:#07050b; display:flex; align-items:center; justify-content:center; }
       .bf-confirm-art .bf-confirm-art-fill { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; filter:blur(16px) saturate(1.3) brightness(.85); z-index:0; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; z-index:1; }
-      .bf-confirm-art::after { display:none; }
-      .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:-6%; background-image:var(--bf-cart); background-size:cover; background-position:center center; background-repeat:no-repeat; z-index:1; }
+      .bf-confirm-mana { position:absolute; top:10px; right:10px; z-index:4; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; font-size:17px; color:#eaf4ff; background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a); border:2px solid #8fc4ff; box-shadow:0 4px 10px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.5); text-shadow:0 1px 2px rgba(0,0,0,.5); }
+      .bf-confirm-art::after { display:none; } .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
       .bf-view-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid rgba(255,210,74,.6); background:rgba(8,5,14,.78); color:#ffe49a; border-radius:999px; padding:4px 12px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; backdrop-filter:blur(2px); transition:background .12s ease; }
       .bf-view-btn:hover { background:rgba(255,210,74,.22); color:#fff5dc; }
@@ -1487,7 +1487,7 @@ function buildArtScript() {
       overlay.className = 'bf-confirm-overlay';
       overlay.innerHTML =
         '<div class="bf-confirm-box">' +
-          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div><div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div></div>' : '') +
+          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (item.mana != null ? '<div class="bf-confirm-mana">' + item.mana + '</div>' : '<div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>') + '</div>' : '') +
           '<div class="bf-confirm-body">' +
             '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
             (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') +
