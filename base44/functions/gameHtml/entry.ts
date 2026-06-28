@@ -3,24 +3,12 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v93';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v94';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
-const HERO_ART = [
-  '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
-  '3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','72ce7dd1a','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8',
-  'dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c',
-  '3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','b5be72327','c71c525b8',
-  '0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64',
-].map(function(id){return 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';});
-
-const HERO_ELITE_ART = [
-  'b2219417f','a2abfb434','4952ab881','01e96302a','e908b3273','650b7ff27','4d934fdf4','f7954d1fc','8bc966bfa','452bb4fb7',
-  '653c2036d','141eb7445','ddf40d7ab','12f840fe3','4cf89ac43','8019f9f21','8979eecb4','87c291158','e7ace3347','8d6e97ce2',
-  '33eb953a8','ffd892ff4','5a79e3638','b08f41b13','fb9937c69','04b64ecc7','d9ef92043','40e91e893','437bbb48b','35add4eeb',
-  '0827725df','2c7c03c8f','d0512bd56','ae296c827','8cde88cb7','ea100edfb','7764cb9ea','84c9693dc','907ef8e72','b96972130',
-  '8959bebcc','e7ce90f66','4328395b6','06c814afa','12a5ddb5c',
-].map(function(id){return 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';});
+const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
+const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','72ce7dd1a','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','b5be72327','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
+const HERO_ELITE_ART = ['b2219417f','a2abfb434','4952ab881','01e96302a','e908b3273','650b7ff27','4d934fdf4','f7954d1fc','8bc966bfa','452bb4fb7','653c2036d','141eb7445','ddf40d7ab','12f840fe3','4cf89ac43','8019f9f21','8979eecb4','87c291158','e7ace3347','8d6e97ce2','33eb953a8','ffd892ff4','5a79e3638','b08f41b13','fb9937c69','04b64ecc7','d9ef92043','40e91e893','437bbb48b','35add4eeb','0827725df','2c7c03c8f','d0512bd56','ae296c827','8cde88cb7','ea100edfb','7764cb9ea','84c9693dc','907ef8e72','b96972130','8959bebcc','e7ce90f66','4328395b6','06c814afa','12a5ddb5c'].map(toHArt);
 
 const IMG_BASE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
 const toArt = function(id){ return IMG_BASE + id + '_generated_image.png'; };
@@ -756,6 +744,7 @@ function buildArtScript() {
       card.innerHTML =
         '<div class="bf-bonus-fill" style="background-image:url(\\'' + url + '\\')"></div>' +
         '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
+        '<div class="bf-hero-frame" style="border-radius:11px; z-index:2"></div>' +
         '<div class="bf-bonus-shade"></div>' +
         '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomBonus(\\'' + safeName + '\\',\\'' + url + '\\')" aria-label="Ampliar">🔍</button>' +
         '<div class="bf-bonus-name">' + name + '</div>';
@@ -2477,6 +2466,17 @@ async function buildGameHtml() {
   html = html.replace(resolveRoundOriginal, resolveRoundPatched);
   
   html = html.replace('`pujó <b class="pr-amt">${amt}</b> 🪙 por', '`pujó <b class="pr-amt">${side==="p"?r.bpAmtTxt||(amt+" 🪙"):r.boAmtTxt||(amt+" 🪙")}</b> por');
+
+  const recruitOriginal = 'const bid = mode===\\\'bid\\\'\\n    ? `<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\\\'${side}\\\',\\\'${h.id}\\\')">Pujar</button></div>`\\n    : `<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>`;';
+  const recruitPatched = `let bT = [];
+  if(G.bonus && G.bonus[side] && G.bonus[side].type==="BID_ADD") bT.push("+" + G.bonus[side].effect + " " + G.bonus[side].name);
+  let os = side === 'p' ? 'o' : 'p';
+  if(G.bonus && G.bonus[os] && G.bonus[os].type==="BID_SUB") bT.push("-" + G.bonus[os].effect + " " + G.bonus[os].name);
+  let bStr = bT.length ? \\\`<div style="font-size:10.5px; color:#ffd24a; text-align:center; line-height:1.2; margin-bottom:6px; font-weight:900; text-shadow:0 1px 3px #000,0 0 8px rgba(255,210,74,.4);">\${bT.join(', ')} a tu puja</div>\\\` : '';
+  const bid = mode==='bid'
+    ? \\\`<div class="hcard-bid-zone">\${bStr}<div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="0" max="\${G.coins[side]}" value="\${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div></div>\\\`
+    : \\\`<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>\\\`;`;
+  html = html.replace(recruitOriginal, recruitPatched);
 
   // Inject art script right before </body> so the game's own script
   // (cardFace, HEROES, etc.) is already defined when we hook it.
