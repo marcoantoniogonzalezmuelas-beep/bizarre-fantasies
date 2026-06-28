@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v77';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v78';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -1297,27 +1297,21 @@ function buildArtScript() {
       return ret;
     };
 
+    function isLastAuct(){var tl=(G.team&&G.team['p']&&G.team['p'].length)||0;if(tl>=2)return true;var c=(G.epicCands&&G.epicCands['p'])||G.cands||[];return c.length>0&&c[0]&&c[0].type==='HE';}
+    function bfNoCoinDialog(side,pool){var ex=document.getElementById('bf-confirm-overlay');if(ex)ex.remove();var ch=pool.slice().sort(function(a,b){return Number(a&&a.cost||0)-Number(b&&b.cost||0);})[0];var ov=document.createElement('div');ov.id='bf-confirm-overlay';ov.className='bf-confirm-overlay';ov.innerHTML='<div class="bf-confirm-box"><div class="bf-confirm-body"><div style="font-size:38px;margin-top:10px">💸</div><div class="bf-confirm-name" style="margin-top:6px">¡Sin monedas!</div><div class="bf-confirm-msg">No puedes pujar por ningún héroe de magia. Elige:</div><div class="bf-confirm-actions" style="flex-direction:column;gap:8px"><button class="bf-confirm-btn bf-confirm-yes" id="bf-nocoin-debt">🏦 Deuda de equipamiento<br><span style="font-size:10px;font-weight:600;opacity:.8">Te quedas con '+(ch?ch.name:'el más barato')+' y lo pagarás con tu presupuesto de equipo</span></button><button class="bf-confirm-btn bf-confirm-no" id="bf-nocoin-skip">⏩ Ir al equipamiento sin este héroe</button></div></div></div>';document.body.appendChild(ov);function bfNCD_close(){if(ov.parentNode)ov.parentNode.removeChild(ov);}ov.addEventListener('click',function(e){if(e.target===ov)bfNCD_close();});ov.querySelector('#bf-nocoin-debt').onclick=function(){bfNCD_close();if(ch){G.coins[side]=Math.max(Number((G.coins&&G.coins[side])||0),Number(ch.cost||0));G.bids[side]={heroId:ch.id,amount:Number(ch.cost||0)};if(typeof window.resolveBidRound==='function')window.resolveBidRound();}bfGuideReact('wow','¡DEUDA!');};ov.querySelector('#bf-nocoin-skip').onclick=function(){bfNCD_close();G.bids[side]={pass:true};if(typeof window.resolveBidRound==='function')window.resolveBidRound();bfGuideReact('shock','¡SIN HÉROE!');};};
     var originalSubmitBid = window.submitBid;
     window.submitBid = function(side, heroId) {
-      var inp = document.getElementById('bid_' + heroId);
-      var raw = inp ? (parseInt(inp.value || '0', 10) || 0) : 0;
-      var amt = adjustBid(side, heroId, raw);
-      var h = findHero(heroId);
+      var inp = document.getElementById('bid_' + heroId); var raw = inp ? (parseInt(inp.value || '0', 10) || 0) : 0;
+      var amt = adjustBid(side, heroId, raw); var h = findHero(heroId);
       if (amt === null) {
-        // Check if player can't afford *any* hero and warn via Punkito.
-        var coins=Number((G.coins&&G.coins[side])||0);
-        var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];
+        var coins=Number((G.coins&&G.coins[side])||0); var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];
         var cheapest=pool.reduce(function(m,x){return x&&Number(x.cost||0)<m?Number(x.cost||0):m;},Infinity);
-        if(coins<cheapest&&cheapest<Infinity){
-          bfGuideReact('shock','¡SIN MONEDAS!');
-          if(window.notif)notif('No puedes permitirte ningún héroe (necesitas '+cheapest+', tienes '+coins+'). Pasa turno o compra con deuda de equipamiento.');
-        } else if(window.notif&&h) notif('Necesitas al menos '+h.cost+' monedas para pujar por '+h.name+'.');
+        if(coins<cheapest&&cheapest<Infinity){bfGuideReact('shock','¡SIN MONEDAS!');if(isLastAuct()){bfNoCoinDialog(side,pool.filter(function(x){return !!x;}));}else if(window.notif)notif('No puedes permitirte ningún héroe (necesitas '+cheapest+', tienes '+coins+').');}
+        else if(window.notif&&h)notif('Necesitas al menos '+h.cost+' monedas para pujar por '+h.name+'.');
         return;
       }
-      if (inp) inp.value = String(amt);
-      return originalSubmitBid.apply(this, arguments);
+      if (inp) inp.value = String(amt); return originalSubmitBid.apply(this, arguments);
     };
-
     var originalNetBid = window.netBid;
     window.netBid = function(heroId, amount) {
       var amt = adjustBid('o', heroId, amount);
