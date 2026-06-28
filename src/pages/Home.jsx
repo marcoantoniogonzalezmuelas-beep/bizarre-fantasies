@@ -12,6 +12,13 @@ export default function Home() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
+  const [dbCount, setDbCount] = useState(105);
+
+  useEffect(() => {
+    base44.entities.Card.list('number', 200).then(cards => {
+      if (cards?.length) setDbCount(cards.length);
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,7 +92,7 @@ export default function Home() {
         </div>
         <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
           <div className="font-heading font-black text-[13px] text-[#e2b0ff] leading-none tracking-wide">Oráculo Bizarro</div>
-          <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">103 cartas · Base Set</div>
+          <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} cartas · Base Set</div>
         </div>
       </Link>
 
