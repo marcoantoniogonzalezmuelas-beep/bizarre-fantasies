@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v97';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v98';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1088,15 +1088,14 @@ function buildArtScript() {
       window.rulesBody = function() {
         return '<div class="rules-body">' +
           '<p><b>🎯 Objetivo:</b> arma un equipo de <b>3 héroes</b> y derrota a los 3 del rival.</p>' +
-          '<p><b>1 · Subasta (3 fases).</b> Una para cuerpo a cuerpo, otra para distancia y otra para magia. En cada fase verás <b>6 héroes</b> y eliges uno con una <b>puja sellada</b> (a ciegas): quien ofrezca más se lo lleva. Cada ronda trae un <b>bonificador</b> distinto (más monedas, o un castigo para el rival). Las monedas que no gastes pasan al Equipamiento.</p>' +
+          '<p><b>1 · Subasta (3 fases).</b> Una para cuerpo a cuerpo, otra para distancia y otra para magia. En cada fase verás <b>6 héroes</b> y eliges uno con una <b>puja sellada</b> (a ciegas): quien ofrezca más se lo lleva. Cada ronda trae un <b>bonificador</b> distinto y <b>único</b> (no se repite en toda la partida): más monedas, o un castigo para el rival. Las monedas que no gastes pasan al Equipamiento.</p>' +
           '<p><b>✦ Cartas Épicas.</b> Son las más poderosas y cuestan <b>+10 monedas</b>. Normalmente no aparecen en la subasta, pero ciertos bonificadores pueden hacer que <b>tú</b> (o tu <b>rival</b>) reciba una oferta Épica extra en esa puja.</p>' +
           '<p><b>2 · Equipamiento.</b> Con las monedas sobrantes (+ una base) equipas a cada héroe con <b>1 arma</b> (cuerpo a cuerpo <i>o</i> distancia) y <b>1 armadura</b>. Los hechizos y objetos van a tu <b>mano</b> para usarlos en combate.</p>' +
           '<p><b>3 · Combate por rondas.</b> Los turnos van en este orden: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, actúa antes quien tenga más velocidad).</p>' +
           '<ul><li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li><li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li><li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li></ul>' +
           '<p><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' +
           '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma o Ave Fénix).</p>' +
-          '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p>' +
-        '</div>';
+          '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p></div>';
       };
       window.rulesBody.__bf = 1;
     }
@@ -1127,9 +1126,7 @@ function buildArtScript() {
       BONUS.push({ id: 'epic_rival', name: 'Destino Épico Rival', type: 'RES', effect: 0, txt: 'En esta subasta tu rival verá una criatura Épica para pujar.' });
     }
 
-    // Force at least 6 candidates per auction round. The base game draws one
-    // hero per available race; we top it up with extra heroes from the pool.
-    // Épicas NEVER appear in the normal slate — only via G.epicCands.
+    // Force at least 6 candidates per auction round (épicas never in normal slate).
     var TARGET_CANDS = 6;
     if (typeof window.drawRaceSlate === 'function' && !window.drawRaceSlate.__bf6) {
       var originalDrawRaceSlate = window.drawRaceSlate;
@@ -1171,12 +1168,14 @@ function buildArtScript() {
       return { add: (mb && mb.type === 'BID_ADD') ? Number(mb.effect || 0) : 0, sub: (ob && ob.type === 'BID_SUB') ? Number(ob.effect || 0) : 0 };
     };
 
+    // Min RAW bid so the FINAL value (raw + own bono − rival restador) >= cost.
+    window.minRawBid = function(side, h) { if (!h) return 0; var m = window.bidMods(side); return Math.max(0, Number(h.cost || 0) - m.add + m.sub); };
     function adjustBid(side, heroId, amount) {
       var h = findHero(heroId);
       if (!h) return amount;
-      var coins = Number((G.coins && G.coins[side]) || 0);
-      if (coins < h.cost) return null;
-      return Math.min(coins, Math.max(Number(amount || 0), h.cost));
+      var coins = Number((G.coins && G.coins[side]) || 0), minRaw = window.minRawBid(side, h);
+      if (coins < minRaw) return null;
+      return Math.min(coins, Math.max(Number(amount || 0), minRaw));
     }
 
     // Live "Puja + Bono − Restador = Total final" readout under each bid input.
@@ -1187,8 +1186,7 @@ function buildArtScript() {
       var parts = ['<span style="color:#fff">' + raw + '</span>'];
       if (m.add) parts.push('<span style="color:#79e08a">+' + m.add + '</span>');
       if (m.sub) parts.push('<span style="color:#ff8a8a">\\u2212' + m.sub + '</span>');
-      var total = Math.max(0, raw + m.add - m.sub);
-      out.innerHTML = (m.add || m.sub) ? parts.join(' ') + ' <span style="color:#ffd24a">= ' + total + '</span>' : '<span style="color:#ffd24a">Puja final: ' + total + '</span>';
+      out.innerHTML = (m.add || m.sub) ? parts.join(' ') + ' <span style="color:#ffd24a">= ' + (raw + m.add - m.sub) + '</span>' : '<span style="color:#ffd24a">Puja final: ' + raw + '</span>';
     };
 
     function patchBidInputs() {
@@ -1197,9 +1195,10 @@ function buildArtScript() {
       all.forEach(function(h) {
         var inp = document.getElementById('bid_' + h.id);
         if (!inp) return;
-        inp.min = String(h.cost);
+        var minRaw = window.minRawBid('p', h);
+        inp.min = String(minRaw);
         var current = parseInt(inp.value || '0', 10) || 0;
-        if (current < h.cost) inp.value = String(Math.min(h.cost, Number((G.coins && (G.coins.p || G.coins.o)) || h.cost)));
+        if (current < minRaw) inp.value = String(Math.min(minRaw, Number((G.coins && (G.coins.p || G.coins.o)) || minRaw)));
         window.bfUpdateBidPreview(h.id);
       });
     }
@@ -1229,13 +1228,9 @@ function buildArtScript() {
       if (b && b.id === 'epic_rival') G.forceEpic[other(side)] = true;
       return originalApplyBonus.apply(this, arguments);
     };
+    function epicBonusById(id) { return (BONUS || []).find(function(b) { return b && b.id === id; }) || null; }
 
-    function epicBonusById(id) {
-      return (BONUS || []).find(function(b) { return b && b.id === id; }) || null;
-    }
-
-    // After the game picks the round bonus, sometimes swap it for one of the
-    // two epic bonus cards so they actually show up during play.
+    // Sometimes swap the round bonus for an epic bonus card so they show up.
     function maybeForceEpicBonus() {
       var self = epicBonusById('epic_self');
       var rival = epicBonusById('epic_rival');
@@ -1250,6 +1245,22 @@ function buildArtScript() {
       });
     }
 
+    // Bonus/restador cards are UNIQUE per game (epics exempt): once used as a
+    // round bonus for either side, a card never reappears in any later phase.
+    function enforceUniqueBonuses() {
+      if (!G.bonus) return;
+      var used = G.__bfUsedBonus || (G.__bfUsedBonus = {});
+      var pool = (BONUS || []).filter(function(b) { return b && b.id !== 'epic_self' && b.id !== 'epic_rival'; });
+      ['p','o'].forEach(function(side) {
+        var cur = G.bonus[side], oth = G.bonus[side === 'p' ? 'o' : 'p'], othId = oth && oth.id;
+        if (!cur || used[cur.id] || (othId && cur.id === othId)) {
+          var avail = pool.filter(function(b) { return !used[b.id] && b.id !== othId; });
+          if (avail.length) G.bonus[side] = avail[Math.floor(Math.random() * avail.length)];
+        }
+        if (G.bonus[side] && G.bonus[side].id) used[G.bonus[side].id] = true;
+      });
+    }
+
     var originalStartAuctionPhase = window.startAuctionPhase;
     window.startAuctionPhase = function() {
       if (G.pools) {
@@ -1258,10 +1269,9 @@ function buildArtScript() {
         });
       }
       var ret = originalStartAuctionPhase.apply(this, arguments);
-      // The original just set G.bonus + called applyBonus. Re-roll for epics and,
-      // if we swapped, re-apply the (now epic) bonus so its effect/flags trigger.
       var before = { p: G.bonus && G.bonus.p, o: G.bonus && G.bonus.o };
       maybeForceEpicBonus();
+      enforceUniqueBonuses();
       ['p','o'].forEach(function(side) {
         if (G.bonus && G.bonus[side] !== before[side] && typeof window.applyBonus === 'function') {
           window.applyBonus(side, G.bonus[side]);
@@ -2344,8 +2354,7 @@ function buildArtScript() {
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  // ---- APPLY AI BACKGROUNDS DIRECTLY (robust) ----
-  // We put the current screen background on a dedicated full-screen layer.
+  // ---- Screen background on a dedicated full-screen layer ----
   function ensureCoverLayer() {
     var layer = document.getElementById('bf-cover-layer');
     if (!layer) {
@@ -2379,9 +2388,7 @@ function buildArtScript() {
     updateGuide();
   }
 
-  // ---- "Salir" button → always return to the start screen reliably ----
-  // The base game's quitToHome() can leave stale state / not reset properly,
-  // so we force a clean reload back to the title screen.
+  // ---- "Salir" button → force a clean reload back to the title screen ----
   function patchQuitToHome() {
     var btn = document.getElementById('homeBtn');
     if (!btn || btn.dataset.bfQuit === '1') return;
@@ -2406,9 +2413,7 @@ function buildArtScript() {
     applyCover();
     patchQuitToHome();
 
-    // Startup loop: keep trying until the game's own functions are defined and
-    // patched, then stop. The MutationObserver takes over afterwards, so we no
-    // longer need perpetual intervals or per-click timers (less CPU, smoother).
+    // Startup loop: patch the game's functions once defined, then stop.
     var attempts = 0;
     var patchedFace = false;
     var interval = setInterval(function() {
@@ -2426,8 +2431,7 @@ function buildArtScript() {
 
     startObserver();
 
-    // The observer catches DOM changes; this only re-syncs the cover background
-    // on screen transitions (which may not mutate body children), throttled.
+    // Re-sync the cover background on screen transitions, throttled.
     var lastScreenId = '';
     setInterval(function() {
       var active = document.querySelector('.screen.active');
@@ -2477,8 +2481,7 @@ async function buildGameHtml() {
   const recruitPatched = `const bid = mode==='bid' ? \\\`<div class="hcard-bid-zone"><div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="\${h.cost}" max="\${G.coins[side]}" value="\${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview('\${h.id}')"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div><div id="bidcalc_\${h.id}" style="font-size:10.5px;text-align:center;line-height:1.2;margin-top:4px;font-weight:900;text-shadow:0 1px 3px #000;"></div></div>\\\` : \\\`<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>\\\`;`;
   html = html.replace(recruitOriginal, recruitPatched);
 
-  // Inject art script right before </body> so the game's own script
-  // (cardFace, HEROES, etc.) is already defined when we hook it.
+  // Inject art script right before </body> (after the game's script is defined).
   const artScript = buildArtScript();
   html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
   CACHED_HTML = html;
