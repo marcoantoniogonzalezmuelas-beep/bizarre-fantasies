@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v81';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v82';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -320,9 +320,8 @@ function buildArtScript() {
       .bf-acq-thumb { position:absolute; left:5px; top:5px; bottom:5px; width:66px; border-radius:11px; background-size:cover; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; border:0 !important; outline:0 !important; box-shadow:0 5px 12px rgba(0,0,0,.45); overflow:hidden; }
       .bf-acq-thumb::before { content:''; position:absolute; inset:-9%; background-image:inherit; background-size:cover; background-position:center 18%; background-repeat:no-repeat; }
       .bf-result-thumb { position:relative; display:inline-flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:10px; margin-right:9px; flex-shrink:0; background:#0a0710 !important; border:1.5px solid rgba(255,210,74,.45) !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); overflow:hidden; }
-      .bf-result-thumb img { position:absolute; inset:-14%; width:128%; height:128%; object-fit:cover; object-position:center 18%; display:block; border:0; outline:0; }
-      .pr-got { display:flex !important; align-items:center !important; gap:8px !important; flex-wrap:nowrap !important; }
-      .pr-got > * { vertical-align:middle; }
+      .bf-result-thumb img { position:absolute; inset:-14%; width:128%; height:128%; object-fit:cover; object-position:center 18%; display:block; border:0; outline:0; } .bf-chip-card .bf-chip-cost.bf-mana-cost { background:radial-gradient(circle at 35% 25%,#bfe3ff,#3a8bff 46%,#103a8a) !important; border-color:#8fc4ff !important; color:#eaf4ff !important; }
+      .pr-got { display:flex !important; align-items:center !important; gap:8px !important; flex-wrap:nowrap !important; } .pr-got > * { vertical-align:middle; }
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -1678,8 +1677,8 @@ function buildArtScript() {
           card.insertBefore(fill, card.firstChild);
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(sharp, card.firstChild);
-          // Mana cost badge (blue circle, top-left) for spell cards.
-          if (meta && meta.kind === 'spell' && meta.mana != null) { var mb = document.createElement('div'); mb.className = 'bf-shop-mana'; mb.textContent = meta.mana; card.appendChild(mb); }
+          var spMana = (meta && meta.kind === 'spell') ? meta.mana : (nameEl ? ((SPELLS || []).find(function(s){ return s && s.name === nameEl.textContent.trim(); }) || {}).mana : null);
+          if (spMana != null) { var mb = document.createElement('div'); mb.className = 'bf-shop-mana'; mb.textContent = spMana; card.appendChild(mb); }
           // Card name (stylized) over the image.
           if (nameEl) {
             var nm = document.createElement('div');
@@ -1842,7 +1841,7 @@ function buildArtScript() {
 
   function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr) {
     var costBadge = document.createElement('div');
-    costBadge.className = 'bf-chip-cost';
+    costBadge.className = 'bf-chip-cost' + (found && found.kind === 'spell' ? ' bf-mana-cost' : '');
     costBadge.textContent = (found && found.kind === 'spell') ? (found.item.mana || '0') : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
     chip.appendChild(costBadge);
     var playBtn = document.createElement('button');
