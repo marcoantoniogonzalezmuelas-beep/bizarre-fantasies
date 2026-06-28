@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v88';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v89';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -1677,7 +1677,7 @@ function buildArtScript() {
           card.insertBefore(fill, card.firstChild);
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(sharp, card.firstChild);
-          var spMana = (meta && meta.kind === 'spell' && nameEl) ? bfManaFor({ name: nameEl.textContent.trim(), mana: meta.mana }) : null;
+          var spMana = nameEl ? bfManaFor({ name: nameEl.textContent.trim(), mana: meta && meta.mana }) : null;
           if (spMana != null) { var mb = document.createElement('div'); mb.className = 'bf-shop-mana'; mb.textContent = spMana; card.appendChild(mb); }
           // Card name (stylized) over the image.
           if (nameEl) {
@@ -1841,8 +1841,9 @@ function buildArtScript() {
 
   function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr) {
     var costBadge = document.createElement('div');
-    costBadge.className = 'bf-chip-cost' + (found && found.kind === 'spell' ? ' bf-mana-cost' : '');
-    costBadge.textContent = (found && found.kind === 'spell') ? (bfManaFor(found.item) != null ? bfManaFor(found.item) : '0') : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
+    var chipMana = found && found.item ? bfManaFor(found.item) : null;
+    costBadge.className = 'bf-chip-cost' + (chipMana != null ? ' bf-mana-cost' : '');
+    costBadge.textContent = (chipMana != null) ? chipMana : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
     chip.appendChild(costBadge);
     var playBtn = document.createElement('button');
     playBtn.className = 'bf-chip-play';
