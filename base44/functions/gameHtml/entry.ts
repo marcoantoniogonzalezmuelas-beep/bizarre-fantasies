@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v87';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v88';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -547,7 +547,7 @@ function buildArtScript() {
         .bf-guide-bubble { padding:7px 34px 8px 11px; }
         .bf-guide-title { font-size:11px; }
         .bf-guide-text { font-size:11px; line-height:1.25; }
-        .bf-guide-x { top:2px; right:2px; width:30px; height:30px; font-size:16px; background:rgba(255,255,255,.18); }
+        .bf-guide-x { top:2px; right:2px; width:36px; height:36px; font-size:18px; background:rgba(255,255,255,.22); }
       }
 
       /* ---- Tablets (portrait + landscape): roomier than phones, tighter than desktop ---- */
@@ -2100,19 +2100,12 @@ function buildArtScript() {
     show.innerHTML = '<img src="' + GUIDE_IMG + '" alt="Guía">';
     document.body.appendChild(show);
 
-    wrap.querySelector('.bf-guide-x').addEventListener('click', function() {
-    window.__bfGuideHidden = true;
-    wrap.style.display = 'none';
-    show.classList.add('bf-guide-visible');
-    });
-    show.addEventListener('click', function() {
-    window.__bfGuideHidden = false;
-    wrap.style.display = ''; wrap.style.left = '8px'; wrap.style.top = '8px';
-    show.classList.remove('bf-guide-visible');
-    var titleEl = wrap.querySelector('.bf-guide-title'); var textEl = wrap.querySelector('.bf-guide-text');
-    if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle;
-    if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText;
-    });
+    function bfHideGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = true; wrap.style.display = 'none'; show.classList.add('bf-guide-visible'); }
+    function bfShowGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = false; wrap.style.display = ''; wrap.style.left = '8px'; wrap.style.top = '8px'; show.classList.remove('bf-guide-visible'); var titleEl = wrap.querySelector('.bf-guide-title'); var textEl = wrap.querySelector('.bf-guide-text'); if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle; if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText; }
+    // Bind click AND touchend so the close button works on mobile, where the guide's drag touch handlers can swallow the synthetic click.
+    var hideBtn = wrap.querySelector('.bf-guide-x');
+    hideBtn.addEventListener('click', bfHideGuide); hideBtn.addEventListener('touchend', bfHideGuide, { passive: false });
+    show.addEventListener('click', bfShowGuide); show.addEventListener('touchend', bfShowGuide, { passive: false });
     // Drag to reposition
     var dragState = null;
     var charDrag = wrap.querySelector('.bf-guide-char');
