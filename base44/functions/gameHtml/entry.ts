@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v67';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v68';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -2103,18 +2103,17 @@ function buildArtScript() {
     document.body.appendChild(show);
 
     wrap.querySelector('.bf-guide-x').addEventListener('click', function() {
-      window.__bfGuideHidden = true;
-      wrap.classList.add('bf-guide-hidden');
-      show.classList.add('bf-guide-visible');
+    window.__bfGuideHidden = true;
+    wrap.style.display = 'none';
+    show.classList.add('bf-guide-visible');
     });
     show.addEventListener('click', function() {
-      window.__bfGuideHidden = false;
-      wrap.classList.remove('bf-guide-hidden');
-      show.classList.remove('bf-guide-visible');
-      var titleEl = wrap.querySelector('.bf-guide-title');
-      var textEl = wrap.querySelector('.bf-guide-text');
-      if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle;
-      if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText;
+    window.__bfGuideHidden = false;
+    wrap.style.display = ''; wrap.style.left = '8px'; wrap.style.top = '8px';
+    show.classList.remove('bf-guide-visible');
+    var titleEl = wrap.querySelector('.bf-guide-title'); var textEl = wrap.querySelector('.bf-guide-text');
+    if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle;
+    if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText;
     });
     // Drag to reposition
     var dragState = null;
