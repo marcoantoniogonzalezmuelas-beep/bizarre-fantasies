@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v112';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v113';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -344,7 +344,9 @@ function buildArtScript() {
       .bf-eq-hero-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(18,12,25,.22) 58%,rgba(18,12,25,.92) 100%); }
       /* Equipped item thumbnail inside a filled slot (no number) */
       .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; display:flex; align-items:center; }
-      .bf-slot-thumb { position:absolute; left:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:8px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.45); box-shadow:0 3px 8px rgba(0,0,0,.5); }
+      .bf-slot-thumb { position:absolute; left:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:8px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.45); box-shadow:0 3px 8px rgba(0,0,0,.5); cursor:pointer; transition:transform .12s ease; background-color:#0a0710; }
+      .bf-slot-thumb:hover { border-color:#ffd24a; transform:translateY(-50%) scale(1.15); z-index:10; }
+      .bf-slot-zoom { position:absolute; bottom:-4px; right:-4px; font-size:10.5px; background:rgba(0,0,0,.8); border-radius:50%; width:18px; height:18px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
       .bf-quick-num { position:absolute; top:8px; right:8px; z-index:3; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:2px 7px; } .eq-slot.bf-slot-empty { display:flex; align-items:center; justify-content:space-between; gap:8px; }
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
@@ -1484,9 +1486,11 @@ function buildArtScript() {
 
     // Inject a thumbnail into a filled equipment slot, matching it to the slot
     // whose text contains the item's name (so weapon vs armor never get mixed up).
-    function decorateSlotByName(html, name, art) {
+    function decorateSlotByName(html, name, art, item, kind) {
       if (!name || !art) return html;
-      var thumb = '<div class="bf-slot-thumb" style="background-image:url(&quot;' + art + '&quot;)"></div>';
+      var safeName = String(name).replace(/'/g, "\\'");
+      var jsonItem = encodeURIComponent(JSON.stringify(item || {}));
+      var thumb = '<div class="bf-slot-thumb" style="background-image:url(&quot;' + art + '&quot;)" onclick="event.stopPropagation(); bfZoomBonus(&quot;' + safeName + '&quot;, &quot;' + art + '&quot;, { item: JSON.parse(decodeURIComponent(&quot;' + jsonItem + '&quot;)), kind: &quot;' + kind + '&quot; })"><div class="bf-slot-zoom">🔍</div></div>';
       var box = document.createElement('div');
       box.innerHTML = html;
       var slots = box.querySelectorAll('.eq-slot');
@@ -1513,9 +1517,9 @@ function buildArtScript() {
       }
       // Equipped weapon thumbnail
       var weapon = h.mwep || h.rwep;
-      if (weapon && byName[weapon.name]) html = decorateSlotByName(html, weapon.name, byName[weapon.name].art);
+      if (weapon && byName[weapon.name]) html = decorateSlotByName(html, weapon.name, byName[weapon.name].art, weapon, h.mwep ? 'melee' : 'ranged');
       // Equipped armor thumbnail
-      if (h.armor && byName[h.armor.name]) html = decorateSlotByName(html, h.armor.name, byName[h.armor.name].art);
+      if (h.armor && byName[h.armor.name]) html = decorateSlotByName(html, h.armor.name, byName[h.armor.name].art, h.armor, 'armor');
       if (!h.mwep && !h.rwep) {
         var weaponSlotPattern = new RegExp('<div class="eq-slot">Arma: vacía([\\\\s\\\\S]*?)</div>');
         html = html.replace(weaponSlotPattern, '<div class="eq-slot bf-slot-empty" onclick="event.stopPropagation();bfOpenQuickShop(&quot;' + side + '&quot;,&quot;' + h.id + '&quot;,&quot;weapon&quot;)"><span>Arma: vacía$1</span><button class="bf-slot-buy">Comprar</button></div>');
