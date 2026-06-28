@@ -68,14 +68,17 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, children }) {
       {/* Top badges */}
       <div className="absolute left-3 right-3 top-3 flex justify-between items-start" style={{ zIndex: 3 }}>
         {children}
-        <span className="font-heading font-black text-[#ffd24a] text-sm bg-[#160b00] border border-[#d39b22] rounded-md px-1.5 py-0.5">BF</span>
       </div>
 
       {/* Bottom info panel */}
-      <div className="absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 py-3 backdrop-blur-sm" style={{ borderColor: `${borderColor}44`, zIndex: 3 }}>
+      <div className="absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 py-3 pb-4 backdrop-blur-sm" style={{ borderColor: `${borderColor}44`, zIndex: 3 }}>
         <div className="font-heading font-black text-base leading-tight text-[#fff5d9]" style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
         <div className="mt-1.5 text-[11px] font-bold leading-snug text-[#efe9dc]">{item.txt || item.description}</div>
-        <div className="mt-2 text-[8px] font-black text-[#bdae87]">Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
+        <div className="mt-3 text-[8px] font-black text-[#bdae87]">Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
+      </div>
+
+      <div className="absolute right-2 bottom-3 z-10 w-8 h-8 rounded-full overflow-hidden border-2 border-[#ffd24a99] shadow-[0_0_10px_rgba(255,210,74,.5)]" style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
+        <img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" alt="Punkito" className="w-full h-full object-contain" />
       </div>
     </div>
   );
