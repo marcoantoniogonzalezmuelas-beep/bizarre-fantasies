@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v79';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v80';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -1139,15 +1139,18 @@ function buildArtScript() {
 
     // Force at least 6 candidates per auction round. The base game draws one
     // hero per available race; we top it up with extra heroes from the pool.
+    // Épicas NEVER appear in the normal slate — only via G.epicCands.
     var TARGET_CANDS = 6;
     if (typeof window.drawRaceSlate === 'function' && !window.drawRaceSlate.__bf6) {
       var originalDrawRaceSlate = window.drawRaceSlate;
       window.drawRaceSlate = function(pool) {
-        var out = originalDrawRaceSlate.apply(this, arguments) || [];
+        // Strip épicas from pool before handing it to the original function.
+        var safePool = (pool || []).filter(function(h) { return h && h.clan !== 'Épicas'; });
+        var out = (originalDrawRaceSlate.apply(this, [safePool]) || []).filter(function(h) { return h && h.clan !== 'Épicas'; });
         if (out.length >= TARGET_CANDS) return out;
         var chosen = {};
         out.forEach(function(h) { if (h) chosen[h.id] = true; });
-        var rest = (pool || []).filter(function(h) { return h && !chosen[h.id]; });
+        var rest = safePool.filter(function(h) { return h && !chosen[h.id]; });
         // shuffle the remaining pool
         for (var i = rest.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
