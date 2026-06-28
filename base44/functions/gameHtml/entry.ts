@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v90';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v91';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -1332,11 +1332,15 @@ function buildArtScript() {
     window.aiBid = function(side) {
       var saved = G.cands;
       if (G.epicCands && G.epicCands[side]) G.cands = G.epicCands[side];
-      originalAiBid.apply(this, arguments);
-      var bid = G.bids && G.bids[side];
-      if (bid && !bid.pass) {
+      try { originalAiBid.apply(this, arguments); } catch(e) {}
+      if (!G.bids) G.bids = {};
+      var bid = G.bids[side];
+      if (!bid) {
+        if (G.acq && G.acq[side]) G.bids[side] = {pass: true};
+        else bfAiNoCoin(side);
+      } else if (!bid.pass) {
         var amt = adjustBid(side, bid.heroId, bid.amount);
-        if (amt === null) { bfAiNoCoin(side); }
+        if (amt === null) { if (G.acq && G.acq[side]) G.bids[side] = {pass: true}; else bfAiNoCoin(side); }
         else { var coins=Number((G.coins&&G.coins[side])||0), mc=minPoolCost(side), rl=roundsLeft(side); G.bids[side].amount = Math.min(amt, Math.max(mc, coins - mc*Math.max(0,rl-1))); }
       }
       G.cands = saved;
