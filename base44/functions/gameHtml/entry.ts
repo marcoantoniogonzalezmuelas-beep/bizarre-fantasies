@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v70';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v71';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -2464,7 +2464,7 @@ async function buildGameHtml() {
   const RB = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
   var BTN_LEARN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/843af3814_generated_image.png';
   var BTN_RULES = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0848f4ffb_generated_image.png';
-  var BTN_RACES = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0d5777e9a_generated_image.png';
+  var BTN_RACES = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5e41f1add_generated_image.png';
   html = html.replace("function roleIcon(t){return t==='CC'?'\ud83d\udde1\ufe0f':t==='AD'?'\ud83c\udff9':'\ud83d\udd2e';}", "function roleIcon(t){var E={CC:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png',AD:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png',HE:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png'};return '<img class=\"bf-role-emblem\" src=\"'+(E[t]||E.HE)+'\">';}").replace("try{ lobbyTeardown(); }catch(e){} location.reload(); }", "try{ lobbyTeardown(); }catch(e){} try{ window.top.location.href = window.top.location.pathname + '?bf=' + Date.now(); }catch(e){ location.reload(); } }").replace('onclick="startDemo()">\ud83c\udf93 Aprender a jugar</button>', 'onclick="startDemo()"><span class="tc-img"><img src="' + BTN_LEARN + '" alt=""></span><span>Aprende<br>a jugar</span></button>').replace('onclick="rulesModalStatic()">\ud83d\udcd6 C\u00f3mo se juega</button>', 'onclick="rulesModalStatic()"><span class="tc-img"><img src="' + BTN_RULES + '" alt=""></span><span>Cómo<br>se juega</span></button>').replace('onclick="racesModal()">\ud83e\uddec Razas</button>', 'onclick="racesModal()"><span class="tc-img"><img src="' + BTN_RACES + '" alt=""></span><span>Razas</span></button>');
 
   // Inject art script right before </body> so the game's own script
