@@ -361,7 +361,7 @@ function buildArtScript() {
          overscan to eat the white border the source images carry. */
       .shop-card { position:relative; overflow:hidden; }
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
-      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt) { display:none !important; }
+      .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt):not(.shop-coin):not(.shop-mana) { display:none !important; }
       .shop-card-art { display:none !important; }
       .shop-card-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .shop-card-art-sharp { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
@@ -1486,7 +1486,7 @@ function buildArtScript() {
       overlay.className = 'bf-confirm-overlay';
       overlay.innerHTML =
         '<div class="bf-confirm-box">' +
-          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (bfManaFor(item) != null ? '<div class="bf-confirm-mana">' + bfManaFor(item) + '</div>' : '<div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>') + '</div>' : '') +
+          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (bfManaFor(item) != null ? '<div class="bf-confirm-mana">' + bfManaFor(item) + '</div>' : '') + '</div>' : '') +
           '<div class="bf-confirm-body">' +
             '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
             (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') +
