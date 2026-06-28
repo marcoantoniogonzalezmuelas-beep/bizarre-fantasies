@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v103';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v104';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -295,6 +295,8 @@ function buildArtScript() {
       .bf-result-thumb { position:relative; display:inline-flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:10px; margin-right:9px; flex-shrink:0; background:#0a0710 !important; border:1.5px solid rgba(255,210,74,.45) !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.38); overflow:hidden; }
       .bf-result-thumb img { position:absolute; inset:-14%; width:128%; height:128%; object-fit:cover; object-position:center 18%; display:block; border:0; outline:0; } .bf-chip-card .bf-chip-cost.bf-mana-cost { background:radial-gradient(circle at 35% 25%,#bfe3ff,#3a8bff 46%,#103a8a) !important; border-color:#8fc4ff !important; color:#eaf4ff !important; }
       .pr-got { display:flex !important; align-items:center !important; gap:8px !important; flex-wrap:nowrap !important; } .pr-got > * { vertical-align:middle; }
+      .pr-box{display:flex;flex-direction:column;gap:9px;}.pr-row{display:grid !important;grid-template-columns:1fr;gap:4px !important;align-items:start;padding:11px 13px !important;border-radius:13px !important;background:linear-gradient(180deg,rgba(20,14,38,.6),rgba(10,7,20,.72)) !important;border:1px solid rgba(255,210,74,.18) !important;}.pr-row.pr-you{border-color:rgba(255,210,74,.45) !important;box-shadow:0 0 0 1px rgba(255,210,74,.12) inset;}.pr-name{font-family:'Cinzel',serif !important;font-weight:1000 !important;font-size:14px !important;color:#fff5dc !important;letter-spacing:.2px;}.pr-bid{font-size:12.5px !important;color:#efe9dc !important;line-height:1.35 !important;}.pr-amt{color:#ffd24a !important;}.pr-win{color:#54e876 !important;font-weight:900 !important;}.pr-verdict{margin-top:4px;padding:11px 13px;border-radius:13px;background:rgba(8,5,14,.55);border:1px solid rgba(255,210,74,.26);color:#fff7ea;font-size:13px;line-height:1.4;text-align:center;}
+      .bsum-wrap{margin-top:14px;border-radius:16px;overflow:hidden;border:1.5px solid rgba(255,210,74,.4);background:linear-gradient(180deg,rgba(24,17,44,.72),rgba(12,8,22,.82));box-shadow:0 10px 28px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,210,74,.1);}.bsum-head{padding:10px 14px;font-family:'Cinzel',serif;font-weight:1000;font-size:13.5px;letter-spacing:.3px;color:#ffe49a;text-align:center;text-transform:uppercase;background:linear-gradient(180deg,rgba(255,210,74,.16),rgba(255,210,74,.04));border-bottom:1px solid rgba(255,210,74,.22);text-shadow:0 1px 3px #000;}.bsum-row{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(255,210,74,.12);}.bsum-row:last-child{border-bottom:none;}.bsum-row-you{background:rgba(255,210,74,.06);}.bsum-thumb{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:1000;font-size:25px;color:#fff7dc;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%);border:2.5px solid var(--c,#caa14a);text-shadow:0 2px 4px #000,0 0 10px var(--c,#caa14a);box-shadow:0 4px 12px rgba(0,0,0,.5),0 0 14px color-mix(in srgb, var(--c,#caa14a) 40%, transparent);}.bsum-main{min-width:0;display:flex;flex-direction:column;gap:4px;}.bsum-player{font-family:'Cinzel',serif;font-weight:1000;font-size:13.5px;color:#fff5dc;display:flex;align-items:center;gap:7px;}.bsum-you{font-family:'Rubik',sans-serif;font-size:9px;font-weight:900;letter-spacing:.4px;color:#3a2600;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);padding:1px 7px;border-radius:999px;}.bsum-rival{font-family:'Rubik',sans-serif;font-size:9px;font-weight:900;letter-spacing:.4px;color:#cfc6dd;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:1px 7px;border-radius:999px;}.bsum-hero{font-size:13px;font-weight:800;color:#ffe49a;line-height:1.2;}.bsum-hero.bsum-pass{color:#cbb9ee;font-style:italic;font-weight:600;}.bsum-bonus{display:flex;flex-wrap:wrap;gap:4px;margin-top:1px;}.bsum-tag{font-size:10px;font-weight:900;padding:2px 8px;border-radius:999px;line-height:1.3;white-space:nowrap;}.bsum-add{color:#0e2a17;background:linear-gradient(180deg,#8cf2a6,#33d65f);}.bsum-sub{color:#fff;background:linear-gradient(180deg,#ff8a8a,#e0322f);}.bsum-none{color:#bdae87;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);}.bsum-cost{text-align:right;line-height:1.15;}.bsum-cost-raw{font-size:10px;font-weight:700;color:#cfc6dd;}.bsum-cost-fin{font-family:'Cinzel',serif;font-size:19px;font-weight:1000;color:#ffd24a;text-shadow:0 2px 5px #000,0 0 12px rgba(255,210,74,.35);}.bsum-cost-lbl{font-size:8.5px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;color:#bdae87;}.bsum-cost-pass{font-size:22px;color:#6b5e8a;text-align:right;}.bsum-flag{font-size:18px;}.bsum-win{color:#54e876;text-shadow:0 0 8px rgba(84,232,118,.6);}
       .bhero.bf-fx-damage { animation:bfDamageShake .5s ease-in-out 1 !important; box-shadow:0 0 0 2px rgba(255,72,66,.60),0 0 22px rgba(255,72,66,.42) !important; }
       .bhero.bf-fx-heal { animation:bfHealPulse .9s ease-out 1 !important; box-shadow:0 0 0 2px rgba(81,255,138,.70),0 0 26px rgba(81,255,138,.48), inset 0 0 18px rgba(81,255,138,.24) !important; }
       .bhero.bf-fx-paralyze { animation:bfParalyzeJolt .8s steps(2,end) 1 !important; box-shadow:0 0 0 2px rgba(255,210,74,.75),0 0 28px rgba(255,210,74,.55) !important; }
@@ -1167,17 +1169,6 @@ function buildArtScript() {
       return Math.min(coins, Math.max(Number(amount || 0), minRaw));
     }
 
-    // Live "Puja + Bono − Restador = Total final" readout under each bid input.
-    window.bfUpdateBidPreview = function(heroId) {
-      var inp = document.getElementById('bid_' + heroId), out = document.getElementById('bidcalc_' + heroId);
-      if (!inp || !out) return;
-      var raw = parseInt(inp.value || '0', 10) || 0, m = window.bidMods('p');
-      var parts = ['<span style="color:#fff">' + raw + '</span>'];
-      if (m.add) parts.push('<span style="color:#79e08a">+' + m.add + '</span>');
-      if (m.sub) parts.push('<span style="color:#ff8a8a">\\u2212' + m.sub + '</span>');
-      out.innerHTML = (m.add || m.sub) ? parts.join(' ') + ' <span style="color:#ffd24a">= ' + (raw + m.add - m.sub) + '</span>' : '<span style="color:#ffd24a">Puja final: ' + raw + '</span>';
-    };
-
     // Bid scoreboard under each hero card: hero cost + this round's bonus (adder/subtractor, 0 if none) + final bid value.
     window.bfUpdateBidPreview = function(heroId){var box=document.getElementById('bidcalc_'+heroId);if(!box)return;var side=humanSide();var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var h=(pool||[]).find(function(x){return x&&x.id===heroId;});if(!h)return;var inp=document.getElementById('bid_'+heroId);var raw=inp?(parseInt(inp.value||'0',10)||0):Number(h.cost||0);var cost=Number(h.cost||0);var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],delta=0,label='';if(mb&&mb.type==='BID_ADD'){delta+=Number(mb.effect||0);label='+'+Number(mb.effect||0)+' '+mb.name;}if(rb&&rb.type==='BID_SUB'){delta-=Number(rb.effect||0);label=(label?label+' · ':'')+'-'+Number(rb.effect||0)+' '+rb.name;}var fin=Math.max(0,raw+delta);var bc=delta>0?'#54e876':delta<0?'#ff6b6b':'#bdae87';box.innerHTML='<div style="color:#ffe49a">Coste del personaje: <b>'+cost+'</b> 🪙</div><div style="color:'+bc+'">Bonificador: <b>'+(delta>0?'+':'')+delta+' 🪙</b>'+(label?' <span style="font-weight:700;opacity:.85">('+label+')</span>':'')+'</div><div style="color:#FFD24A">Valor final de la puja: <b>'+fin+'</b> 🪙</div>';};
 
@@ -1949,32 +1940,22 @@ function buildArtScript() {
   }
 
   function injectRecruitHeroArt() {
-    document.querySelectorAll('.hero-acquired').forEach(function(card) {
-      if (card.dataset.bfAcqArt === '1') return;
-      var on = card.getAttribute('onclick') || '';
-      var hit = on.split("heroInfo('")[1];
-      var id = hit ? hit.split("'")[0] : '';
-      var url = id ? ART_BY_ID[id] : null;
-      if (!url) return;
-      var thumb = document.createElement('div');
-      thumb.className = 'bf-acq-thumb';
-      thumb.style.backgroundImage = 'url("' + url + '")';
-      card.insertBefore(thumb, card.firstChild);
-      card.dataset.bfAcqArt = '1';
-    });
-    document.querySelectorAll('.pr-got').forEach(function(row) {
-      if (row.dataset.bfResultArt === '1') return;
-      var b = row.querySelector('b');
-      if (!b) return;
-      var url = ART_BY_NAME[b.textContent.trim()];
-      if (!url) return;
-      var thumb = document.createElement('span');
-      thumb.className = 'bf-result-thumb';
-      var timg = document.createElement('img'); timg.src = url; timg.alt = '';
-      thumb.appendChild(timg);
-      row.insertBefore(thumb, row.firstChild);
-      row.dataset.bfResultArt = '1';
-    });
+    document.querySelectorAll('.hero-acquired').forEach(function(card){if(card.dataset.bfAcqArt==='1')return;var on=card.getAttribute('onclick')||'',hit=on.split("heroInfo('")[1],id=hit?hit.split("'")[0]:'',url=id?ART_BY_ID[id]:null;if(!url)return;var thumb=document.createElement('div');thumb.className='bf-acq-thumb';thumb.style.backgroundImage='url("'+url+'")';card.insertBefore(thumb,card.firstChild);card.dataset.bfAcqArt='1';});
+    document.querySelectorAll('.pr-got').forEach(function(row){if(row.dataset.bfResultArt==='1')return;var b=row.querySelector('b');if(!b)return;var url=ART_BY_NAME[b.textContent.trim()];if(!url)return;var thumb=document.createElement('span');thumb.className='bf-result-thumb';var timg=document.createElement('img');timg.src=url;timg.alt='';thumb.appendChild(timg);row.insertBefore(thumb,row.firstChild);row.dataset.bfResultArt='1';});
+  }
+
+  // Round summary table on the auction result panel: each player's applied bonuses + final card cost.
+  function injectAuctionSummary() {
+    var box=document.querySelector('.pr-box');
+    if(!box||box.dataset.bfSummary==='1'||typeof G==='undefined'||!G.phaseResult)return;
+    var r=G.phaseResult;
+    function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
+    function bInfo(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],d=0,t=[];if(mb&&mb.type==='BID_ADD'){var e=Number(mb.effect||0);d+=e;t.push('<span class="bsum-tag bsum-add">+'+e+' 🪙 · '+esc(mb.name)+'</span>');}if(rb&&rb.type==='BID_SUB'){var s=Number(rb.effect||0);d-=s;t.push('<span class="bsum-tag bsum-sub">−'+s+' 🪙 · '+esc(rb.name)+'</span>');}return{d:d,html:t.length?t.join(''):'<span class="bsum-tag bsum-none">sin bonificador</span>'};}
+    function rowH(side){var pass=side==='p'?r.pPass:r.oPass,name=side==='p'?r.bpName:r.boName,raw=Number((side==='p'?r.bpAmt:r.boAmt)||0),got=side==='p'?r.gotP:r.gotO,bi=bInfo(side),fin=Math.max(0,raw+bi.d),hero=(G.cands||[]).find(function(h){return h&&h.name===name;})||((G.team&&G.team[side])||[]).slice(-1)[0],col=(hero&&hero.clanColor)||'#caa14a',sym=hero?(RACE_SIGILS[hero.clan]||'◆'):'◆',tag=side==='p'?'<span class="bsum-you">TÚ</span>':((typeof NET!=='undefined'&&NET.role)?'<span class="bsum-rival">rival</span>':'<span class="bsum-rival">IA</span>');return '<div class="bsum-row'+(side==='p'?' bsum-row-you':'')+'"><div class="bsum-thumb" style="--c:'+col+'">'+sym+'</div><div class="bsum-main"><div class="bsum-player">'+esc((G.names&&G.names[side])||'')+' '+tag+'</div>'+(pass?'<div class="bsum-hero bsum-pass">conserva su héroe y pasa</div>':'<div class="bsum-hero">'+esc(name||'—')+'</div><div class="bsum-bonus">'+bi.html+'</div>')+'</div>'+(pass?'<div class="bsum-cost-pass">—</div>':'<div class="bsum-cost"><div class="bsum-cost-raw">puja '+raw+' 🪙</div><div class="bsum-cost-fin">'+fin+' 🪙</div><div class="bsum-cost-lbl">coste final</div></div>')+(got?'<div class="bsum-flag bsum-win">✓</div>':'')+'</div>';}
+    box.dataset.bfSummary='1';
+    var wrap=document.createElement('div');wrap.className='bsum-wrap';
+    wrap.innerHTML='<div class="bsum-head">Resumen de la ronda · bonificadores y coste final</div>'+rowH('p')+rowH('o');
+    box.parentNode.insertBefore(wrap,box.nextSibling);
   }
 
   // ---- Logo above title ----
@@ -2336,6 +2317,7 @@ function buildArtScript() {
     injectBonusArt();
     injectBattleHeroArt();
     injectRecruitHeroArt();
+    injectAuctionSummary();
     injectTitleIcons();
     injectActionPanelBg();
     bfBindHandPlay();
