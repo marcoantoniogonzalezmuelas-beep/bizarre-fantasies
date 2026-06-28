@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v71';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v72';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -149,9 +149,8 @@ function buildArtScript() {
       #s-setup .mode-icon{width:70px!important;height:70px!important;margin:0 auto 12px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:34px!important;line-height:1!important;box-shadow:inset 0 2px 4px rgba(255,255,255,.4),inset 0 -4px 8px rgba(0,0,0,.45),0 4px 12px rgba(0,0,0,.5)!important;border:2px solid rgba(255,255,255,.4)!important;text-shadow:0 2px 4px rgba(0,0,0,.6)!important}#s-setup .mode-card:nth-child(1) .mode-icon{background:radial-gradient(circle at 36% 26%,#cfe0ff,#5a86ff 44%,#1a2c7a 80%)!important}#s-setup .mode-card:nth-child(2) .mode-icon{background:radial-gradient(circle at 36% 26%,#ffe0c2,#ff9b3a 44%,#8a3d0c 80%)!important}#s-setup .mode-label{font-family:'Cinzel',serif!important;font-weight:1000!important;font-size:18px!important;color:#fff5dc!important;text-shadow:0 2px 4px #000!important}#s-setup .mode-sub{margin-top:4px!important;font-size:12px!important;color:#cfc6dd!important;line-height:1.3!important}#s-setup .note-box{margin:4px 0 14px!important;padding:11px 13px!important;border-radius:12px!important;background:rgba(8,5,14,.55)!important;border:1px solid rgba(255,210,74,.26)!important;color:#efe9dc!important;font-size:13px!important;line-height:1.4!important}#s-setup .note-box b{color:#ffe49a!important}#s-setup .ig{margin:4px 0 14px!important}#s-setup .ig label{display:block!important;margin-bottom:6px!important;font-family:'Cinzel',serif!important;font-weight:900!important;font-size:13px!important;color:#ffd24a!important;letter-spacing:.3px!important}#s-setup .ig input{width:100%!important;padding:12px 14px!important;border-radius:11px!important;background:rgba(8,5,14,.6)!important;border:2px solid rgba(255,210,74,.3)!important;color:#fff5dc!important;font-size:15px!important;font-weight:600!important;outline:none!important;transition:border-color .14s ease,box-shadow .14s ease!important}#s-setup .ig input:focus{border-color:#ffd24a!important;box-shadow:0 0 0 3px rgba(255,210,74,.18)!important}#s-setup .row-btns{display:flex!important;gap:10px!important;margin-top:6px!important}#s-setup .row-btns .btn{flex:1!important;padding:13px 12px!important;border-radius:12px!important;font-family:'Cinzel',serif!important;font-weight:900!important;font-size:15px!important;cursor:pointer!important;border:1px solid rgba(255,255,255,.18)!important;background:rgba(255,255,255,.06)!important;color:#efe9dc!important;transition:transform .12s ease,filter .12s ease!important}#s-setup .row-btns .btn:hover{transform:translateY(-2px)!important;filter:brightness(1.08)!important}#s-setup .row-btns .btn.primary{color:#3a2600!important;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f)!important;border:none!important;box-shadow:0 6px 16px rgba(255,210,74,.4)!important}
       .title-emoji{display:none!important}.title-links{margin-top:26px!important;gap:16px!important;justify-content:center!important}.title-links .btn.sm{width:142px!important;min-height:128px!important;display:inline-flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:10px!important;padding:18px 12px 15px!important;border-radius:20px!important;font-family:'Cinzel',serif!important;font-weight:1000!important;font-size:14px!important;letter-spacing:.3px!important;line-height:1.15!important;text-align:center!important;color:#fff7e9!important;background:linear-gradient(165deg,rgba(255,255,255,.10),rgba(8,5,16,.55))!important;border:1.8px solid var(--tc-bd,#ffd24a)!important;box-shadow:0 12px 30px rgba(0,0,0,.55),inset 0 0 26px var(--tc-gl,rgba(255,210,74,.18))!important;text-shadow:0 2px 5px rgba(0,0,0,.75)!important;transition:transform .16s ease,box-shadow .22s ease,filter .22s ease!important}.title-links .btn.sm:hover{transform:translateY(-6px) scale(1.05)!important;filter:brightness(1.08)!important}.title-links .btn.sm .tc-img{width:72px!important;height:72px!important;border-radius:50%!important;overflow:hidden!important;border:2px solid var(--tc-bd,#ffd24a)!important;box-shadow:0 0 18px var(--tc-gl,rgba(255,210,74,.35))!important;flex-shrink:0!important;display:flex!important;align-items:center!important;justify-content:center!important;background:#09070d!important}.title-links .btn.sm .tc-img img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}.title-links .btn.sm span:last-child{display:block!important;text-align:center!important}.title-links .btn.sm:nth-child(1){--tc-bd:#7ad6ff;--tc-gl:rgba(122,214,255,.28)}.title-links .btn.sm:nth-child(2){--tc-bd:#ffd24a;--tc-gl:rgba(255,210,74,.28)}.title-links .btn.sm:nth-child(3){--tc-bd:#c79bff;--tc-gl:rgba(199,155,255,.28)}
       .bf-title-logo{display:flex!important;justify-content:center!important;margin-bottom:14px!important}.bf-title-logo img{width:172px;height:172px;object-fit:contain;border-radius:50%;border:4px solid rgba(255,210,74,.75);box-shadow:0 0 48px rgba(255,210,74,.7),0 0 90px rgba(192,91,255,.45);filter:drop-shadow(0 0 22px rgba(255,210,74,.9));animation:bfIconFloat 3.2s ease-in-out infinite}
-      .bf-title-icons{display:flex!important;gap:18px!important;justify-content:center!important;align-items:center!important;margin-top:16px!important}.bf-title-icon{width:72px!important;height:72px!important;border-radius:50%!important;overflow:hidden!important;border:2px solid rgba(255,210,74,.5)!important;box-shadow:0 0 22px rgba(255,210,74,.38)!important;background:#0a0710!important;animation:bfIconFloat 3.2s ease-in-out infinite!important}.bf-title-icon:nth-child(2){animation-delay:-1.1s!important}.bf-title-icon:nth-child(3){animation-delay:-2.2s!important}.bf-title-icon img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
       @keyframes bfIconFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.06)}}
-      @media(max-width:640px){.title-links{gap:11px!important}.title-links .btn.sm{width:104px!important;min-height:108px!important;font-size:12px!important;padding:14px 8px 12px!important}.title-links .btn.sm .tc-img{width:56px!important;height:56px!important}.bf-title-icon{width:58px!important;height:58px!important}}
+      @media(max-width:640px){.title-links{gap:11px!important}.title-links .btn.sm{width:104px!important;min-height:108px!important;font-size:12px!important;padding:14px 8px 12px!important}.title-links .btn.sm .tc-img{width:56px!important;height:56px!important}}
       /* Real 3D flip, with corrected back face */
       .flip3d { perspective: 1300px !important; }
       .flip3d-inner { transform-style: preserve-3d !important; transition: transform .62s cubic-bezier(.2,.72,.2,1) !important; will-change: transform !important; }
@@ -1958,7 +1957,7 @@ function buildArtScript() {
     });
   }
 
-  // ---- Logo above title + role icons (CC/AD/HE) below nav buttons ----
+  // ---- Logo above title ----
   function injectTitleIcons() {
     var row = document.querySelector('.title-emoji');
     if (!row || row.dataset.bfIconsDone === '1') return;
@@ -1971,17 +1970,6 @@ function buildArtScript() {
       var lw = document.createElement('div'); lw.className = 'bf-title-logo';
       lw.innerHTML = '<img src="' + LOGO_URL + '" alt="Bizarre Fantasies">';
       if (gtitle) gtitle.parentNode.insertBefore(lw, gtitle); else titleScreen.insertBefore(lw, titleScreen.firstChild);
-    }
-    // CC / AD / HE icon row below the nav buttons
-    var links = titleScreen.querySelector('.title-links');
-    if (links && !titleScreen.querySelector('.bf-title-icons')) {
-      var icRow = document.createElement('div'); icRow.className = 'bf-title-icons';
-      [{src:ICON_CC,label:'CC'},{src:ICON_AD,label:'AD'},{src:ICON_HE,label:'HE'}].forEach(function(ic) {
-        var d = document.createElement('div'); d.className = 'bf-title-icon';
-        var im = document.createElement('img'); im.src = ic.src; im.alt = ic.label;
-        d.appendChild(im); icRow.appendChild(d);
-      });
-      links.parentNode.insertBefore(icRow, links.nextSibling);
     }
   }
 
