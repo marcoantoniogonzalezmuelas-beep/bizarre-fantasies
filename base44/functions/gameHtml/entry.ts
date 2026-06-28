@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v75';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v76';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -1114,7 +1114,7 @@ function buildArtScript() {
     }
     if (typeof window.renderSetup === 'function' && !window.renderSetup.__bf) {
       var bfOrigRenderSetup = window.renderSetup;
-      window.renderSetup = function() { var r = bfOrigRenderSetup.apply(this, arguments); var box = document.getElementById('s-setup'); if (box) { var ic = box.querySelectorAll('.mode-icon'); if (ic[0]) { ic[0].textContent = ''; ic[0].style.backgroundImage = 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6a8371b6d_generated_image.png")'; ic[0].style.backgroundSize = 'cover'; ic[0].style.backgroundPosition = 'center'; } if (ic[1]) { ic[1].textContent = ''; ic[1].style.backgroundImage = 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/392a70151_generated_image.png")'; ic[1].style.backgroundSize = 'cover'; ic[1].style.backgroundPosition = 'center'; } } return r; };
+      window.renderSetup = function() { var r = bfOrigRenderSetup.apply(this, arguments); var box = document.getElementById('s-setup'); if (box) { var ic = box.querySelectorAll('.mode-icon'); var urls = ['https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6a8371b6d_generated_image.png','https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/392a70151_generated_image.png']; ic.forEach(function(el,i){if(!urls[i])return;el.textContent='';el.style.cssText='background:none!important;padding:0!important;overflow:hidden!important;';var img=document.createElement('img');img.src=urls[i];img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;';el.appendChild(img);}); } return r; };
       window.renderSetup.__bf = 1;
     }
 
