@@ -2,8 +2,8 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v63';
-const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6b4b36941_generated_image.png';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v64';
+const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -149,6 +149,7 @@ function buildArtScript() {
       #s-setup .mode-icon { width:70px !important; height:70px !important; margin:0 auto 12px !important; border-radius:50% !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:34px !important; line-height:1 !important; box-shadow:inset 0 2px 4px rgba(255,255,255,.4), inset 0 -4px 8px rgba(0,0,0,.45), 0 4px 12px rgba(0,0,0,.5) !important; border:2px solid rgba(255,255,255,.4) !important; text-shadow:0 2px 4px rgba(0,0,0,.6) !important; } #s-setup .mode-card:nth-child(1) .mode-icon { background:radial-gradient(circle at 36% 26%,#cfe0ff,#5a86ff 44%,#1a2c7a 80%) !important; } #s-setup .mode-card:nth-child(2) .mode-icon { background:radial-gradient(circle at 36% 26%,#ffe0c2,#ff9b3a 44%,#8a3d0c 80%) !important; } #s-setup .mode-label { font-family:'Cinzel',serif !important; font-weight:1000 !important; font-size:18px !important; color:#fff5dc !important; text-shadow:0 2px 4px #000 !important; } #s-setup .mode-sub { margin-top:4px !important; font-size:12px !important; color:#cfc6dd !important; line-height:1.3 !important; } #s-setup .note-box { margin:4px 0 14px !important; padding:11px 13px !important; border-radius:12px !important; background:rgba(8,5,14,.55) !important; border:1px solid rgba(255,210,74,.26) !important; color:#efe9dc !important; font-size:13px !important; line-height:1.4 !important; } #s-setup .note-box b { color:#ffe49a !important; } #s-setup .ig { margin:4px 0 14px !important; } #s-setup .ig label { display:block !important; margin-bottom:6px !important; font-family:'Cinzel',serif !important; font-weight:900 !important; font-size:13px !important; color:#ffd24a !important; letter-spacing:.3px !important; } #s-setup .ig input { width:100% !important; padding:12px 14px !important; border-radius:11px !important; background:rgba(8,5,14,.6) !important; border:2px solid rgba(255,210,74,.3) !important; color:#fff5dc !important; font-size:15px !important; font-weight:600 !important; outline:none !important; transition:border-color .14s ease,box-shadow .14s ease !important; } #s-setup .ig input:focus { border-color:#ffd24a !important; box-shadow:0 0 0 3px rgba(255,210,74,.18) !important; } #s-setup .row-btns { display:flex !important; gap:10px !important; margin-top:6px !important; } #s-setup .row-btns .btn { flex:1 !important; padding:13px 12px !important; border-radius:12px !important; font-family:'Cinzel',serif !important; font-weight:900 !important; font-size:15px !important; cursor:pointer !important; border:1px solid rgba(255,255,255,.18) !important; background:rgba(255,255,255,.06) !important; color:#efe9dc !important; transition:transform .12s ease,filter .12s ease !important; } #s-setup .row-btns .btn:hover { transform:translateY(-2px) !important; filter:brightness(1.08) !important; } #s-setup .row-btns .btn.primary { color:#3a2600 !important; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f) !important; border:none !important; box-shadow:0 6px 16px rgba(255,210,74,.4) !important; }
       /* Title screen icon row — replaced by sprite sheet icons */
       .title-emoji { display: none !important; } .title-links { margin-top:26px !important; gap:16px !important; } .title-links .btn.sm { width:142px !important; min-height:128px !important; flex-direction:column !important; gap:10px !important; padding:18px 12px 15px !important; border-radius:20px !important; font-family:'Cinzel',serif !important; font-weight:1000 !important; font-size:14px !important; letter-spacing:.3px !important; line-height:1.15 !important; text-align:center !important; color:#fff7e9 !important; background:linear-gradient(165deg,rgba(255,255,255,.10),rgba(8,5,16,.55)) !important; border:1.8px solid var(--tc-bd,#ffd24a) !important; box-shadow:0 12px 30px rgba(0,0,0,.55),inset 0 0 26px var(--tc-gl,rgba(255,210,74,.18)) !important; text-shadow:0 2px 5px rgba(0,0,0,.75) !important; transition:transform .16s ease,box-shadow .22s ease,filter .22s ease !important; } .title-links .btn.sm:hover { transform:translateY(-6px) scale(1.05) !important; box-shadow:0 18px 40px rgba(0,0,0,.62),inset 0 0 34px var(--tc-gl,rgba(255,210,74,.32)) !important; filter:brightness(1.08) !important; } .title-links .btn.sm .tc-emoji { width:66px !important; height:66px !important; display:flex !important; align-items:center !important; justify-content:center !important; font-size:34px !important; border-radius:50% !important; background:radial-gradient(circle at 36% 28%,rgba(255,255,255,.45),var(--tc-bd,#ffd24a) 40%,rgba(0,0,0,.6) 80%) !important; border:2px solid var(--tc-bd,#ffd24a) !important; box-shadow:inset 0 2px 6px rgba(255,255,255,.3),inset 0 -4px 8px rgba(0,0,0,.4),0 5px 14px rgba(0,0,0,.5) !important; text-shadow:0 2px 4px rgba(0,0,0,.6) !important; } .title-links .btn.sm:nth-child(1) { --tc-bd:#7ad6ff; --tc-gl:rgba(122,214,255,.22); } .title-links .btn.sm:nth-child(2) { --tc-bd:#ffd24a; --tc-gl:rgba(255,210,74,.22); } .title-links .btn.sm:nth-child(3) { --tc-bd:#c79bff; --tc-gl:rgba(199,155,255,.24); } @media (max-width:640px) { .title-links { gap:11px !important; } .title-links .btn.sm { width:104px !important; min-height:108px !important; font-size:12px !important; padding:14px 8px 12px !important; } .title-links .btn.sm .tc-emoji { width:54px !important; height:54px !important; font-size:27px !important; } }
+      .bf-title-logo { display:flex !important; justify-content:center !important; margin-bottom:12px !important; } .bf-title-logo img { width:140px; height:140px; object-fit:contain; filter:drop-shadow(0 0 28px rgba(255,210,74,.7)) drop-shadow(0 0 60px rgba(192,91,255,.45)); animation:bfIconFloat 3.2s ease-in-out infinite; border-radius:50%; }
       .bf-title-icons { display: flex !important; gap: 18px !important; justify-content: center !important; align-items: center !important; margin-bottom: 8px !important; }
       .bf-title-icon { width:72px !important; height:72px !important; border-radius:50% !important; overflow:hidden !important; border:2px solid rgba(255,210,74,0.5) !important; box-shadow:0 0 22px rgba(255,210,74,0.38), 0 0 8px rgba(0,0,0,0.7) !important; background:#0a0710 !important; animation:bfIconFloat 3.2s ease-in-out infinite !important; position:relative !important; cursor:default !important; }
       .bf-title-icon:nth-child(2) { animation-delay:-1.1s !important; } .bf-title-icon:nth-child(3) { animation-delay:-2.2s !important; }
@@ -1964,28 +1965,27 @@ function buildArtScript() {
     });
   }
 
-  // ---- Replace title emoji row with custom icon images ----
+  // ---- Replace title emoji row with custom icon images + big logo ----
   function injectTitleIcons() {
     var row = document.querySelector('.title-emoji');
     if (!row || row.dataset.bfIconsDone === '1') return;
     row.dataset.bfIconsDone = '1';
-    var icons = [
-      { cls: 'bf-icon-cc', src: ICON_CC, label: 'CC' },
-      { cls: 'bf-icon-ad', src: ICON_AD, label: 'AD' },
-      { cls: 'bf-icon-he', src: ICON_HE, label: 'HE' },
-    ];
     var container = document.createElement('div');
     container.className = 'bf-title-icons';
-    icons.forEach(function(ic) {
-      var div = document.createElement('div');
-      div.className = 'bf-title-icon ' + ic.cls;
-      var img = document.createElement('img');
-      img.src = ic.src;
-      img.alt = ic.label;
-      div.appendChild(img);
-      container.appendChild(div);
+    [{cls:'bf-icon-cc',src:ICON_CC,label:'CC'},{cls:'bf-icon-ad',src:ICON_AD,label:'AD'},{cls:'bf-icon-he',src:ICON_HE,label:'HE'}].forEach(function(ic) {
+      var d = document.createElement('div'); d.className = 'bf-title-icon ' + ic.cls;
+      var im = document.createElement('img'); im.src = ic.src; im.alt = ic.label;
+      d.appendChild(im); container.appendChild(d);
     });
     row.parentNode.insertBefore(container, row);
+    // Big Punkito logo above the game title
+    var titleScreen = document.getElementById('s-title');
+    if (titleScreen && !titleScreen.querySelector('.bf-title-logo')) {
+      var gtitle = titleScreen.querySelector('.gtitle');
+      var lw = document.createElement('div'); lw.className = 'bf-title-logo';
+      lw.innerHTML = '<img src="' + LOGO_URL + '" alt="Bizarre Fantasies">';
+      if (gtitle) gtitle.parentNode.insertBefore(lw, gtitle); else titleScreen.insertBefore(lw, titleScreen.firstChild);
+    }
   }
 
   var GUIDE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/292c04262_generated_image.png";
@@ -2117,11 +2117,11 @@ function buildArtScript() {
       if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText;
     });
     // Drag to reposition
-    var charEl2 = wrap.querySelector('.bf-guide-char');
     var dragState = null;
-    function onDragMove(cx, cy) { if (!dragState) return; var nx = Math.max(0, Math.min(window.innerWidth - 120, cx - dragState.sx)); var ny = Math.max(0, Math.min(window.innerHeight - 60, cy - dragState.sy)); wrap.style.left = nx + 'px'; wrap.style.top = ny + 'px'; }
-    charEl2.addEventListener('mousedown', function(e) { if (e.button !== 0) return; dragState = { sx: e.clientX - wrap.offsetLeft, sy: e.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; e.preventDefault(); });
-    charEl2.addEventListener('touchstart', function(e) { var t = e.touches[0]; dragState = { sx: t.clientX - wrap.offsetLeft, sy: t.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; }, { passive: true });
+    var charDrag = wrap.querySelector('.bf-guide-char');
+    function onDragMove(cx, cy) { if (!dragState) return; wrap.style.left = Math.max(0, Math.min(window.innerWidth - 120, cx - dragState.sx)) + 'px'; wrap.style.top = Math.max(0, Math.min(window.innerHeight - 60, cy - dragState.sy)) + 'px'; }
+    charDrag.addEventListener('mousedown', function(e) { if (e.button) return; dragState = { sx: e.clientX - wrap.offsetLeft, sy: e.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; e.preventDefault(); });
+    charDrag.addEventListener('touchstart', function(e) { var t = e.touches[0]; dragState = { sx: t.clientX - wrap.offsetLeft, sy: t.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; }, { passive: true });
     document.addEventListener('mousemove', function(e) { onDragMove(e.clientX, e.clientY); });
     document.addEventListener('touchmove', function(e) { onDragMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
     document.addEventListener('mouseup', function() { dragState = null; wrap.style.transition = ''; });
