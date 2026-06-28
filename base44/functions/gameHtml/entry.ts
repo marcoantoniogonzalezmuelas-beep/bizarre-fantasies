@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v98';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v99';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1250,7 +1250,7 @@ function buildArtScript() {
     function enforceUniqueBonuses() {
       if (!G.bonus) return;
       var used = G.__bfUsedBonus || (G.__bfUsedBonus = {});
-      var pool = (BONUS || []).filter(function(b) { return b && b.id !== 'epic_self' && b.id !== 'epic_rival'; });
+      var pool = (BONUS || []).filter(function(b) { return b && b.id; });
       ['p','o'].forEach(function(side) {
         var cur = G.bonus[side], oth = G.bonus[side === 'p' ? 'o' : 'p'], othId = oth && oth.id;
         if (!cur || used[cur.id] || (othId && cur.id === othId)) {
