@@ -2,7 +2,8 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-24-punkito-v62';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v63';
+const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6b4b36941_generated_image.png';
 
 const HERO_ART = [
   '0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e',
@@ -93,6 +94,7 @@ function buildArtScript() {
   var AUCTION_BG = "${AUCTION_BG}";
   var SHOP_BG = "${SHOP_BG}";
   var BATTLE_BG = "${BATTLE_BG}";
+  var LOGO_URL = "${LOGO_URL}";
   var ACTION_BG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9e0b3119e_generated_image.png";
   var ICON_CC = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/119c5390a_generated_image.png";
   var ICON_AD = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/93cdad509_generated_image.png";
@@ -226,7 +228,7 @@ function buildArtScript() {
       .bf-ability-name { color:#ffe07b; font-family:'Cinzel',serif; font-size:12.6px; font-weight:1000; letter-spacing:.25px; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32); }
       .bf-hero-card.cf-elite .bf-ability-name { color:#d9a2ff; }
       .bf-ability-text { margin-top:3px; color:#fff7ea; font-size:12px; font-weight:700; line-height:1.25; text-shadow:0 2px 3px #000,0 0 8px #000; }
-      .bf-logo { position:absolute; right:8px; bottom:11px; z-index:8; font-family:'Cinzel',serif; font-weight:1000; color:#ffd24a; font-size:16px; line-height:1; letter-spacing:-1px; padding:4px 5px 3px; border-radius:7px; background:linear-gradient(135deg,#0a0500,#2b1600 55%,#050300); border:1.5px solid #d39b22; text-shadow:0 0 8px rgba(255,210,74,.6),0 1px 1px #000; box-shadow:0 0 9px rgba(255,210,74,.25), inset 0 0 8px rgba(255,210,74,.12); }
+      .bf-logo { position:absolute; right:7px; bottom:10px; z-index:8; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500); border:1.5px solid rgba(255,210,74,.6); box-shadow:0 0 10px rgba(255,210,74,.3),inset 0 0 6px rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:2px; }
       .bf-card-num { position:absolute; left:62px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
 
       /* Fallback for any old-format hero cards already on screen */
@@ -519,33 +521,36 @@ function buildArtScript() {
       .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
       .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
 
-      /* ---- Guía (ave fantasía tipo chocobo) — anclada a la IZQUIERDA ---- */
-      .bf-guide { position:fixed; top:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; }
-      .bf-guide.bf-guide-hidden .bf-guide-bubble, .bf-guide.bf-guide-hidden .bf-guide-char { display:none; }
-      .bf-guide-char { position:relative; flex:0 0 auto; width:78px; height:78px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6)); cursor:pointer; transition:transform .2s ease; }
+      /* ---- Guía Punkito: draggable, animado ---- */
+      .bf-guide { position:fixed; top:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; user-select:none; }
+      .bf-guide.bf-guide-hidden .bf-guide-bubble { display:none; }
+      .bf-guide-char { position:relative; flex:0 0 auto; width:88px; height:88px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 14px rgba(0,0,0,.7)); cursor:grab; transition:transform .2s ease,filter .2s ease; }
+      .bf-guide-char:hover { filter:drop-shadow(0 8px 20px rgba(255,210,74,.6)); transform:scale(1.08); }
+      .bf-guide-char:active { cursor:grabbing; }
       .bf-guide-char img { width:100%; height:100%; object-fit:contain; display:block; transition:opacity .18s ease; }
-      /* Reaction animations (triggered on strong battle / equip events) */
       .bf-guide-char.bf-react-cheer { animation:bfGuideCheer 1.1s ease-in-out 2; } .bf-guide-char.bf-react-wow { animation:bfGuideWow 1s ease-in-out 2; } .bf-guide-char.bf-react-shock { animation:bfGuideShock 0.9s ease-in-out 2; }
-      .bf-guide-char .bf-guide-spark { position:absolute; inset:-12px; z-index:-1; pointer-events:none; border-radius:50%; opacity:0; background:radial-gradient(circle,rgba(255,210,74,.6),rgba(255,160,40,.25) 42%,transparent 72%); }
+      .bf-guide-char.bf-battle-ride { animation:bfBattleRide 2.2s cubic-bezier(.22,1,.36,1) forwards !important; filter:drop-shadow(0 8px 24px rgba(255,160,40,.9)) !important; z-index:99999 !important; }
+      @keyframes bfBattleRide { 0%{transform:translateX(0) scale(1)} 15%{transform:translateX(10vw) scale(1.35) rotate(-8deg)} 50%{transform:translateX(calc(50vw - 44px)) scale(1.55) rotate(-5deg)} 70%{transform:translateX(calc(50vw - 44px)) scale(1.6) rotate(0)} 85%{transform:translateX(calc(50vw - 44px)) scale(1.5) rotate(5deg)} 100%{transform:translateX(0) scale(1) rotate(0)} }
+      .bf-guide-char .bf-guide-spark { position:absolute; inset:-14px; z-index:-1; pointer-events:none; border-radius:50%; opacity:0; background:radial-gradient(circle,rgba(255,210,74,.7),rgba(255,160,40,.3) 42%,transparent 72%); }
       .bf-guide-char.bf-react-cheer .bf-guide-spark, .bf-guide-char.bf-react-wow .bf-guide-spark { animation:bfGuideSpark 1.1s ease-out 2; } .bf-guide-char.bf-react-shock .bf-guide-spark { background:radial-gradient(circle,rgba(176,108,255,.55),rgba(80,20,120,.25) 42%,transparent 72%); animation:bfGuideSpark 1.1s ease-out 2; }
-      @keyframes bfGuideCheer { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-12px) rotate(-7deg) scale(1.12)} 50%{transform:translateY(-2px) rotate(5deg) scale(1.06)} 75%{transform:translateY(-10px) rotate(-4deg) scale(1.1)} } @keyframes bfGuideWow { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.22) rotate(3deg)} 60%{transform:scale(1.1) rotate(-3deg)} } @keyframes bfGuideShock { 0%,100%{transform:translateX(0) rotate(0)} 15%{transform:translateX(-7px) rotate(-5deg) scale(1.08)} 35%{transform:translateX(7px) rotate(5deg)} 55%{transform:translateX(-5px) rotate(-3deg)} 75%{transform:translateX(4px)} } @keyframes bfGuideSpark { 0%{opacity:0;transform:scale(.6)} 30%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.4)} }
-      /* Floating reaction word above Punkito */
-      .bf-guide-pop { position:absolute; left:50%; top:-18px; transform:translateX(-50%); z-index:5; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; font-size:13px; letter-spacing:.4px; white-space:nowrap; padding:3px 10px; border-radius:999px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 12px rgba(255,210,74,.55); animation:bfGuidePop 1.6s ease-out forwards; } .bf-guide-pop.bf-pop-shock { color:#fff; background:linear-gradient(180deg,#c79bff,#8a3df0 55%,#4c0b86); box-shadow:0 4px 12px rgba(160,80,255,.55); }
-      @keyframes bfGuidePop { 0%{opacity:0;transform:translate(-50%,8px) scale(.6)} 20%{opacity:1;transform:translate(-50%,0) scale(1.1)} 80%{opacity:1;transform:translate(-50%,-6px) scale(1)} 100%{opacity:0;transform:translate(-50%,-20px) scale(.9)} }
-      .bf-guide-bubble { position:relative; pointer-events:auto; background:linear-gradient(180deg,#1c1533,#130d24); border:2px solid rgba(255,210,74,.6); border-radius:14px; padding:9px 30px 10px 13px; box-shadow:0 8px 24px rgba(0,0,0,.55),0 0 18px rgba(255,210,74,.14), inset 0 0 0 1px rgba(255,210,74,.1); }
+      @keyframes bfGuideCheer { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-14px) rotate(-8deg) scale(1.18)} 50%{transform:translateY(-3px) rotate(6deg) scale(1.08)} 75%{transform:translateY(-12px) rotate(-5deg) scale(1.14)} } @keyframes bfGuideWow { 0%,100%{transform:scale(1) rotate(0)} 30%{transform:scale(1.28) rotate(4deg)} 60%{transform:scale(1.12) rotate(-4deg)} } @keyframes bfGuideShock { 0%,100%{transform:translateX(0) rotate(0)} 15%{transform:translateX(-9px) rotate(-6deg) scale(1.1)} 35%{transform:translateX(9px) rotate(6deg)} 55%{transform:translateX(-6px) rotate(-4deg)} 75%{transform:translateX(5px)} } @keyframes bfGuideSpark { 0%{opacity:0;transform:scale(.6)} 30%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.5)} }
+      .bf-guide-pop { position:absolute; left:50%; top:-20px; transform:translateX(-50%); z-index:5; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; font-size:13px; letter-spacing:.4px; white-space:nowrap; padding:3px 10px; border-radius:999px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 12px rgba(255,210,74,.55); animation:bfGuidePop 1.6s ease-out forwards; } .bf-guide-pop.bf-pop-shock { color:#fff; background:linear-gradient(180deg,#c79bff,#8a3df0 55%,#4c0b86); box-shadow:0 4px 12px rgba(160,80,255,.55); }
+      @keyframes bfGuidePop { 0%{opacity:0;transform:translate(-50%,8px) scale(.6)} 20%{opacity:1;transform:translate(-50%,0) scale(1.15)} 80%{opacity:1;transform:translate(-50%,-8px) scale(1)} 100%{opacity:0;transform:translate(-50%,-22px) scale(.9)} }
+      .bf-guide-bubble { position:relative; pointer-events:auto; background:linear-gradient(180deg,#1c1533,#130d24); border:2px solid rgba(255,210,74,.6); border-radius:14px; padding:9px 30px 10px 13px; box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 22px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.1); animation:bfBubblePulse 4s ease-in-out infinite; }
+      @keyframes bfBubblePulse { 0%,100%{box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 14px rgba(255,210,74,.1),inset 0 0 0 1px rgba(255,210,74,.1)} 50%{box-shadow:0 8px 28px rgba(0,0,0,.6),0 0 28px rgba(255,210,74,.28),inset 0 0 0 1px rgba(255,210,74,.18)} }
       .bf-guide-bubble::before { content:''; position:absolute; left:-9px; bottom:14px; width:0; height:0; border-top:8px solid transparent; border-bottom:8px solid transparent; border-right:9px solid rgba(255,210,74,.6); }
-      .bf-guide-title { font-family:'Cinzel',serif; font-weight:1000; font-size:12px; color:#ffd24a; letter-spacing:.3px; text-shadow:0 1px 2px #000; margin-bottom:2px; }
-      .bf-guide-text { font-size:12.5px; line-height:1.3; color:#f3ecff; font-weight:600; text-shadow:0 1px 2px #000; }
+      .bf-guide-title { font-family:'Cinzel',serif; font-weight:1000; font-size:12px; color:#ffd24a; letter-spacing:.3px; text-shadow:0 1px 2px #000; margin-bottom:3px; }
+      .bf-guide-text { font-size:12.5px; line-height:1.32; color:#f3ecff; font-weight:600; text-shadow:0 1px 2px #000; }
       .bf-guide-text b { color:#ffe49a; }
       .bf-guide-x { position:absolute; top:3px; right:3px; width:24px; height:24px; border-radius:50%; border:none; background:rgba(255,255,255,.12); color:#cbb9ee; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5; }
       .bf-guide-x:hover { background:rgba(255,255,255,.2); color:#fff; }
-      .bf-guide-show { position:fixed; top:10px; left:10px; z-index:90000; width:46px; height:46px; border-radius:50%; overflow:hidden; border:2px solid rgba(255,210,74,.6); background:#130d24; box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 14px rgba(255,210,74,.2); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
+      .bf-guide-show { position:fixed; top:10px; left:10px; z-index:90000; width:52px; height:52px; border-radius:50%; overflow:hidden; border:2.5px solid rgba(255,210,74,.7); background:#130d24; box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 18px rgba(255,210,74,.28); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
       .bf-guide-show img { width:100%; height:100%; object-fit:contain; display:block; }
       .bf-guide-show.bf-guide-visible { display:block; }
-      @keyframes bfGuideFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+      @keyframes bfGuideFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
       @media (max-width: 640px) {
         .bf-guide { top:6px; left:6px; gap:7px; max-width:74vw; }
-        .bf-guide-char { width:58px; height:58px; }
+        .bf-guide-char { width:64px; height:64px; }
         .bf-guide-bubble { padding:7px 34px 8px 11px; }
         .bf-guide-title { font-size:11px; }
         .bf-guide-text { font-size:11px; line-height:1.25; }
@@ -627,7 +632,7 @@ function buildArtScript() {
           '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
         '</div>' +
         '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
-        '<div class="bf-logo">BF</div>' +
+        '<div class="bf-logo"><img src="' + LOGO_URL + '" alt="BF" style="width:32px;height:32px;object-fit:contain;display:block;filter:drop-shadow(0 0 6px rgba(255,210,74,.7))"></div>' +
       '</div>';
     };
     patched.__patched = true;
@@ -2002,22 +2007,22 @@ function buildArtScript() {
     var img = charEl && charEl.querySelector('img');
     if (!charEl || !img || charEl.dataset.bfReacting === '1') return;
     charEl.dataset.bfReacting = '1';
-    var animMap = { cheer: 'bf-react-cheer', wow: 'bf-react-wow', shock: 'bf-react-shock' };
     img.src = GUIDE_FACE[type] || GUIDE_FACE.wow;
-    charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock');
+    charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock', 'bf-battle-ride');
     void charEl.offsetWidth;
+    // In battle: do a dramatic ride-to-center animation on cheer/wow
+    if (bfInBattle() && (type === 'cheer' || type === 'wow')) {
+      charEl.classList.add('bf-battle-ride');
+      if (!charEl.querySelector('.bf-guide-spark')) { var spark2 = document.createElement('div'); spark2.className = 'bf-guide-spark'; charEl.insertBefore(spark2, charEl.firstChild); }
+      if (word) { var pop2 = document.createElement('div'); pop2.className = 'bf-guide-pop'; pop2.textContent = word; charEl.appendChild(pop2); setTimeout(function() { if (pop2.parentNode) pop2.remove(); }, 1700); }
+      setTimeout(function() { charEl.classList.remove('bf-battle-ride'); img.src = bfGuideBaseImg(); charEl.dataset.bfReacting = ''; }, 2300);
+      return;
+    }
+    var animMap = { cheer: 'bf-react-cheer', wow: 'bf-react-wow', shock: 'bf-react-shock' };
     charEl.classList.add(animMap[type] || 'bf-react-wow');
     if (!charEl.querySelector('.bf-guide-spark')) { var spark = document.createElement('div'); spark.className = 'bf-guide-spark'; charEl.insertBefore(spark, charEl.firstChild); }
-    if (word) {
-      var pop = document.createElement('div');
-      pop.className = 'bf-guide-pop' + (type === 'shock' ? ' bf-pop-shock' : '');
-      pop.textContent = word; charEl.appendChild(pop);
-      setTimeout(function() { if (pop.parentNode) pop.remove(); }, 1700);
-    }
-    setTimeout(function() {
-      charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock');
-      img.src = bfGuideBaseImg(); charEl.dataset.bfReacting = '';
-    }, 2300);
+    if (word) { var pop = document.createElement('div'); pop.className = 'bf-guide-pop' + (type === 'shock' ? ' bf-pop-shock' : ''); pop.textContent = word; charEl.appendChild(pop); setTimeout(function() { if (pop.parentNode) pop.remove(); }, 1700); }
+    setTimeout(function() { charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock'); img.src = bfGuideBaseImg(); charEl.dataset.bfReacting = ''; }, 2300);
   }
   window.bfGuideReact = bfGuideReact;
 
@@ -2038,24 +2043,12 @@ function buildArtScript() {
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
       var hp = readHeroHp(card);
       if (hp === null) return;
-      if (card.dataset.bfGuideHp !== undefined) {
-        var old = parseInt(card.dataset.bfGuideHp, 10);
-        if (!isNaN(old) && old > 0 && hp <= 0) bfGuideReact('shock', '¡OH NO!');
-        else if (!isNaN(old) && old <= 0 && hp > 0) bfGuideReact('wow', '¡REVIVE!');
-      }
+      if (card.dataset.bfGuideHp !== undefined) { var old = parseInt(card.dataset.bfGuideHp, 10); if (!isNaN(old) && old > 0 && hp <= 0) bfGuideReact('shock', '¡OH NO!'); else if (!isNaN(old) && old <= 0 && hp > 0) bfGuideReact('wow', '¡REVIVE!'); }
       card.dataset.bfGuideHp = String(hp);
     });
     var bonusName = '';
-    document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
-      if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
-      var chip = lbl.nextElementSibling;
-      while (chip && (!chip.classList || !chip.classList.contains('chip'))) chip = chip.nextElementSibling;
-      if (chip) bonusName = chip.textContent.trim();
-    });
-    if (bonusName && bonusName !== window.__bfGuideBonus) {
-      window.__bfGuideBonus = bonusName;
-      if (/Épic|Convocatoria|Destino/i.test(bonusName)) bfGuideReact('wow', '¡ÉPICO!');
-    }
+    document.querySelectorAll('.hand-lbl').forEach(function(lbl) { if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return; var chip = lbl.nextElementSibling; while (chip && (!chip.classList || !chip.classList.contains('chip'))) chip = chip.nextElementSibling; if (chip) bonusName = chip.textContent.trim(); });
+    if (bonusName && bonusName !== window.__bfGuideBonus) { window.__bfGuideBonus = bonusName; if (/Épic|Convocatoria|Destino/i.test(bonusName)) bfGuideReact('wow', '¡ÉPICO!'); }
   }
   // Punkito approves powerful equip purchases (phoenix, plasma/thunder weapons…).
   function bfGuideApprovePurchase(item) {
@@ -2118,23 +2111,43 @@ function buildArtScript() {
       window.__bfGuideHidden = false;
       wrap.classList.remove('bf-guide-hidden');
       show.classList.remove('bf-guide-visible');
+      var titleEl = wrap.querySelector('.bf-guide-title');
+      var textEl = wrap.querySelector('.bf-guide-text');
+      if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle;
+      if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText;
     });
+    // Drag to reposition
+    var charEl2 = wrap.querySelector('.bf-guide-char');
+    var dragState = null;
+    function onDragMove(cx, cy) { if (!dragState) return; var nx = Math.max(0, Math.min(window.innerWidth - 120, cx - dragState.sx)); var ny = Math.max(0, Math.min(window.innerHeight - 60, cy - dragState.sy)); wrap.style.left = nx + 'px'; wrap.style.top = ny + 'px'; }
+    charEl2.addEventListener('mousedown', function(e) { if (e.button !== 0) return; dragState = { sx: e.clientX - wrap.offsetLeft, sy: e.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; e.preventDefault(); });
+    charEl2.addEventListener('touchstart', function(e) { var t = e.touches[0]; dragState = { sx: t.clientX - wrap.offsetLeft, sy: t.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; }, { passive: true });
+    document.addEventListener('mousemove', function(e) { onDragMove(e.clientX, e.clientY); });
+    document.addEventListener('touchmove', function(e) { onDragMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    document.addEventListener('mouseup', function() { dragState = null; wrap.style.transition = ''; });
+    document.addEventListener('touchend', function() { dragState = null; wrap.style.transition = ''; });
   }
 
   function updateGuide() {
     ensureGuide();
     var wrap = document.getElementById('bf-guide');
     if (!wrap) return;
-    if (window.__bfGuideHidden) return;
     var active = document.querySelector('.screen.active');
     var id = active ? active.id : 's-title';
     var msg = guideMessageFor(id, active);
     if (!msg) return;
+    // Always update on screen change; ignore __bfGuideHidden for message sync
     var key = id + '|' + msg.t;
-    if (wrap.dataset.bfMsgId === key) return;
-    wrap.dataset.bfMsgId = key;
-    wrap.querySelector('.bf-guide-title').innerHTML = msg.t;
-    wrap.querySelector('.bf-guide-text').innerHTML = msg.m;
+    if (wrap.dataset.bfMsgId !== key) {
+      wrap.dataset.bfMsgId = key;
+      // Store so show-button re-open always has fresh content
+      wrap.dataset.bfLastTitle = msg.t;
+      wrap.dataset.bfLastText = msg.m;
+      var titleEl = wrap.querySelector('.bf-guide-title');
+      var textEl = wrap.querySelector('.bf-guide-text');
+      if (titleEl) titleEl.innerHTML = msg.t;
+      if (textEl) textEl.innerHTML = msg.m;
+    }
   }
 
   // ---- (A) Active hero's action panel: their own AI battle art as background,
