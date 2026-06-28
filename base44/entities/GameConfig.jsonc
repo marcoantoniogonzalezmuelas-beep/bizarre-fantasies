@@ -1,0 +1,44 @@
+{
+  "name": "GameConfig",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Config key identifier (e.g. 'patch_version', 'game_html')"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label"
+    },
+    "value": {
+      "type": "string",
+      "description": "Config value"
+    },
+    "value_long": {
+      "type": "string",
+      "description": "Long text value (e.g. full HTML override)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "html",
+        "toggle",
+        "number"
+      ],
+      "default": "text"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes for this config entry"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "key",
+    "label"
+  ]
+}
