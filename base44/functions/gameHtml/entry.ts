@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v100';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v101';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -147,36 +147,14 @@ function buildArtScript() {
       .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
 
       /* Premium full-art hero cards */
-      .bf-hero-card {
-        position: relative !important; height: 100% !important; overflow: hidden !important;
-        border-radius: 18px !important; border: 2.5px solid var(--clan,#caa14a) !important;
-        background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important;
-      }
-      .bf-hero-bg {
-        position: absolute; inset: -8%; z-index: 0; pointer-events: none;
-        background-image: var(--bf-art); background-size: cover; background-position: center center; background-repeat: no-repeat;
-        filter: saturate(1.12) contrast(1.08);
-      }
-      .bf-hero-card::before {
-        content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-        background:
-          linear-gradient(180deg, rgba(0,0,0,.54) 0%, rgba(0,0,0,.12) 20%, rgba(0,0,0,0) 42%, rgba(0,0,0,.12) 64%, rgba(0,0,0,.68) 100%),
-          radial-gradient(circle at 50% 4%, rgba(255,210,74,.20), rgba(0,0,0,0) 28%);
-      }
-      .bf-hero-card.cf-elite::before {
-        background:
-          linear-gradient(180deg, rgba(16,0,34,.58) 0%, rgba(20,0,42,.10) 24%, rgba(0,0,0,0) 43%, rgba(18,0,35,.16) 66%, rgba(0,0,0,.70) 100%),
-          radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%);
-      }
+      .bf-hero-card { position: relative !important; height: 100% !important; overflow: hidden !important; border-radius: 18px !important; border: 2.5px solid var(--clan,#caa14a) !important; background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important; }
+      .bf-hero-bg { position: absolute; inset: -8%; z-index: 0; pointer-events: none; background-image: var(--bf-art); background-size: cover; background-position: center center; background-repeat: no-repeat; filter: saturate(1.12) contrast(1.08); }
+      .bf-hero-card::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.54) 0%, rgba(0,0,0,.12) 20%, rgba(0,0,0,0) 42%, rgba(0,0,0,.12) 64%, rgba(0,0,0,.68) 100%), radial-gradient(circle at 50% 4%, rgba(255,210,74,.20), rgba(0,0,0,0) 28%); }
+      .bf-hero-card.cf-elite::before { background: linear-gradient(180deg, rgba(16,0,34,.58) 0%, rgba(20,0,42,.10) 24%, rgba(0,0,0,0) 43%, rgba(18,0,35,.16) 66%, rgba(0,0,0,.70) 100%), radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%); }
       /* Épicas: borde foiled holográfico animado */
       .bf-hero-card.cf-epic { border-color:transparent !important; box-shadow:0 10px 28px rgba(0,0,0,.65), 0 0 24px rgba(255,170,80,.4) !important; }
-      .bf-hero-card.cf-epic .bf-foil { position:absolute; inset:-3px; z-index:6; border-radius:21px; padding:3px; pointer-events:none;
-        background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);
-        background-size:300% 300%; animation:bfFoilShift 4s linear infinite;
-        -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); mask-composite:exclude;
-        filter:drop-shadow(0 0 8px rgba(255,200,120,.7)); }
-      .bf-hero-card.cf-epic::after { content:''; position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:18px;
-        background:linear-gradient(125deg,transparent 30%,rgba(255,255,255,.18) 47%,transparent 62%); background-size:250% 250%; animation:bfFoilShift 4s linear infinite; mix-blend-mode:screen; }
+      .bf-hero-card.cf-epic .bf-foil { position:absolute; inset:-3px; z-index:6; border-radius:21px; padding:3px; pointer-events:none; background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a); background-size:300% 300%; animation:bfFoilShift 4s linear infinite; -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); mask-composite:exclude; filter:drop-shadow(0 0 8px rgba(255,200,120,.7)); }
+      .bf-hero-card.cf-epic::after { content:''; position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:18px; background:linear-gradient(125deg,transparent 30%,rgba(255,255,255,.18) 47%,transparent 62%); background-size:250% 250%; animation:bfFoilShift 4s linear infinite; mix-blend-mode:screen; }
       @keyframes bfFoilShift { 0%{background-position:0% 0%} 100%{background-position:300% 300%} }
       .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
       .bf-hero-top, .bf-hero-band { display:none !important; }
@@ -273,9 +251,16 @@ function buildArtScript() {
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
       .bhero.active-turn { animation:bfHeroActive 2.1s ease-in-out infinite !important; z-index:5 !important; }
       .bhero.active-turn .bf-battle-art { width:138px !important; filter:saturate(1.3) contrast(1.16) brightness(1.08) drop-shadow(0 0 16px rgba(255,210,74,.55)) !important; transform:scale(1.04); }
-      .bf-active-aura { position:absolute; inset:-14px; z-index:0; pointer-events:none; border-radius:22px;
-        background:radial-gradient(120% 120% at 0% 50%, rgba(255,210,74,.42), rgba(255,160,40,.18) 38%, rgba(255,210,74,0) 70%);
-        opacity:0; transition:opacity .45s ease; animation:bfAuraBreath 2.4s ease-in-out infinite; }
+      .bf-active-aura { position:absolute; inset:-14px; z-index:0; pointer-events:none; border-radius:22px; background:radial-gradient(120% 120% at 0% 50%, rgba(255,210,74,.42), rgba(255,160,40,.18) 38%, rgba(255,210,74,0) 70%); opacity:0; transition:opacity .45s ease; animation:bfAuraBreath 2.4s ease-in-out infinite; }
+      /* "Equipar con IA" button */
+      .bf-autoequip-btn { display:flex; align-items:center; gap:10px; width:100%; margin:0 0 14px; padding:14px 18px; border-radius:16px; cursor:pointer; border:2px solid #c79bff; background:linear-gradient(120deg,#7a3df0,#c06bff 45%,#ff7adf 100%); background-size:200% 200%; color:#fff; font-family:'Cinzel',serif; font-weight:1000; box-shadow:0 8px 26px rgba(160,80,255,.5), inset 0 1px 2px rgba(255,255,255,.35); text-shadow:0 2px 4px rgba(0,0,0,.5); animation:bfAeShift 4s ease infinite; transition:transform .14s ease, filter .14s ease; }
+      .bf-autoequip-btn:hover { transform:translateY(-3px); filter:brightness(1.1); box-shadow:0 12px 34px rgba(160,80,255,.7); }
+      .bf-autoequip-btn:active { transform:scale(.97); }
+      .bf-autoequip-btn .bf-ae-spark { font-size:24px; line-height:1; filter:drop-shadow(0 0 8px #fff); animation:bfAeSpin 3s linear infinite; }
+      .bf-autoequip-btn .bf-ae-txt { font-size:17px; letter-spacing:.4px; }
+      .bf-autoequip-btn .bf-ae-sub { margin-left:auto; font-family:'Rubik',sans-serif; font-weight:700; font-size:10.5px; opacity:.92; text-transform:none; letter-spacing:0; }
+      @keyframes bfAeShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+      @keyframes bfAeSpin { 0%{transform:rotate(0) scale(1)} 50%{transform:rotate(180deg) scale(1.2)} 100%{transform:rotate(360deg) scale(1)} }
       .bhero.active-turn .bf-active-aura { opacity:1; }
       .bf-active-ring { position:absolute; inset:-3px; z-index:0; pointer-events:none; border-radius:18px; border:2px solid rgba(255,210,74,.0); }
       .bhero.active-turn .bf-active-ring { border-color:rgba(255,210,74,.8); box-shadow:0 0 0 1px rgba(255,210,74,.4), 0 0 30px rgba(255,210,74,.5), inset 0 0 24px rgba(255,210,74,.22); animation:bfRingPulse 2.1s ease-in-out infinite; }
@@ -361,8 +346,11 @@ function buildArtScript() {
       .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-info { position:absolute; left:0; right:0; bottom:0; z-index:3; padding:2px 3px 3px; font-size:7.5px !important; line-height:1.1; font-weight:800; font-family:'Rubik',sans-serif; color:#cfeaff; text-align:center; text-shadow:0 1px 2px #000,0 0 4px #000; background:linear-gradient(0deg,rgba(4,8,16,.95),rgba(4,8,16,.6) 70%,transparent); white-space:normal; }
       .chip.bf-chip-card.bf-chip-has-info .bf-chip-name { bottom:auto; top:0; background:linear-gradient(180deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); }
-      .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:2px; right:2px; z-index:3; width:18px; height:18px; border-radius:50%; background:rgba(8,5,14,.82); border:1px solid rgba(255,120,120,.6); color:#ff9a9a; font-size:11px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
-      .chip.bf-chip-card .bf-chip-x:hover { background:rgba(255,80,80,.35); color:#fff; }
+      .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:4px; right:4px; z-index:4; min-width:24px; height:24px; padding:0 7px 0 6px; border-radius:999px; background:linear-gradient(180deg,#ff6a6a,#e0322f 60%,#a01210); border:1.5px solid #ffb0ad; color:#fff; font-size:0; line-height:1; font-weight:1000; display:inline-flex; align-items:center; justify-content:center; gap:3px; cursor:pointer; box-shadow:0 3px 9px rgba(224,50,47,.5), inset 0 1px 1px rgba(255,255,255,.4); transition:transform .12s ease, filter .12s ease; }
+      .chip.bf-chip-card .bf-chip-x::before { content:'🪙'; font-size:11px; line-height:1; }
+      .chip.bf-chip-card .bf-chip-x::after { content:'Vender'; font-size:8.5px; font-weight:1000; letter-spacing:.2px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+      .chip.bf-chip-card .bf-chip-x:hover { filter:brightness(1.1); transform:scale(1.06); }
+      .chip.bf-chip-card .bf-chip-x:active { transform:scale(.94); }
       .chip.bf-chip-card .bf-chip-cost { position:absolute !important; top:4px; left:4px; z-index:3; width:28px; height:28px; border-radius:50%; background:radial-gradient(circle at 35% 25%,#fff2a7,#ff7a22 32%,#8c1108); border:2px solid #ffc444; color:#1a0a00; font-size:12px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.6); }
       .chip.bf-chip-card .bf-chip-play { position:absolute !important; top:50%; left:50%; transform:translate(-50%,-50%); z-index:3; width:32px; height:32px; border-radius:6px; background:linear-gradient(180deg,#51ff8a,#2cdd5f); border:1px solid #1fb84a; color:#0a1f0f; font-size:16px; line-height:1; font-weight:900; display:none; align-items:center; justify-content:center; cursor:pointer; padding:0; box-shadow:0 3px 10px rgba(81,255,138,.4); transition:all .12s ease; }
       .chip.bf-chip-card .bf-chip-play.bf-show { display:flex; }
@@ -577,6 +565,7 @@ function buildArtScript() {
     if (typeof window.cardFace !== 'function' || window.cardFace.__patched) return !!(window.cardFace && window.cardFace.__patched);
 
     var RB='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/',ROLE_EMBLEM={CC:RB+'ab147bafb_generated_image.png',AD:RB+'fd388871c_generated_image.png',HE:RB+'cfd5e317c_generated_image.png'};
+    window.__BF_ROLE_EMBLEM = ROLE_EMBLEM;
     function clean(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
     function typeLabel(t){if(t==='CC')return'CUERPO A CUERPO';if(t==='AD')return'A DISTANCIA';if(t==='HE')return'MAGIA';return clean(t||'HÉROE');}
     function typeIcon(t){if(ROLE_EMBLEM[t])return'<img class="bf-role-emblem" src="'+ROLE_EMBLEM[t]+'" alt="">';return'★';}
@@ -1799,6 +1788,26 @@ function buildArtScript() {
       overlay.querySelector('#bf-confirm-yes').onclick = function() { close(); onYes(); };
     }
 
+    // ---- AI auto-equip: optimize gear purchases for the whole team ----
+    function bfEqCoins(side){return Number((G.equipCoins&&G.equipCoins[side])||0);}
+    function bfBest(list,budget){var b=null,bs=-1;(list||[]).forEach(function(it){if(!it)return;var c=Number(it.cost||0);if(c>budget)return;var s=Number(it.power||0)+Number(it.cc||0)+Number(it.ad||0)+Number(it.he||0)+Number(it.hp||0)+Number(it.def||0)+c*0.35;if(s>bs){bs=s;b=it;}});return b;}
+    function bfBuyGear(side,heroId,kind,item){G.assign={kind:kind,id:item.id,cost:item.cost,name:item.name};if(typeof originalDoAssign==='function')originalDoAssign(side,heroId);}
+    function bfAutoEquip(side){
+      var team=((G.team&&G.team[side])||[]).filter(Boolean).sort(function(a,b){return Number(b.cost||0)-Number(a.cost||0);}),n=0;
+      team.forEach(function(h){
+        if(!h.mwep&&!h.rwep){var rng=h.type==='AD',k=rng?'ranged':'melee',w=bfBest(rng?(typeof RANGED!=='undefined'?RANGED:[]):(typeof MELEE!=='undefined'?MELEE:[]),bfEqCoins(side));if(!w&&rng){w=bfBest(typeof MELEE!=='undefined'?MELEE:[],bfEqCoins(side));k='melee';}if(w){bfBuyGear(side,h.id,k,w);n++;}}
+        if(!h.armor){var a=bfBest(typeof ARMORS!=='undefined'?ARMORS:[],bfEqCoins(side));if(a){bfBuyGear(side,h.id,'armor',a);n++;}}
+      });
+      var picks=[];(typeof SPELLS!=='undefined'?SPELLS:[]).forEach(function(s){if(s)picks.push({it:s,k:'spell'});});(typeof OBJECTS!=='undefined'?OBJECTS:[]).forEach(function(o){if(o)picks.push({it:o,k:'object'});});
+      picks.sort(function(a,b){return Number(b.it.cost||0)-Number(a.it.cost||0);});var added=0;
+      picks.forEach(function(p){if(added>=3||Number(p.it.cost||0)>bfEqCoins(side))return;if(p.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,p.it.id);added++;n++;}else if(p.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,p.it.id);added++;n++;}});
+      if(typeof window.renderEquip==='function'){try{window.renderEquip(side);}catch(e){}}
+      if(window.notif)notif(n>0?('⚡ La IA equipó a tu equipo ('+n+' adquisiciones). Ajusta lo que quieras antes de la batalla.'):'No quedan monedas para equipar automáticamente.');
+      bfGuideReact('cheer','¡OPTIMIZADO!');
+    }
+    window.bfAutoEquip=bfAutoEquip;
+    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');if(!sc||!sc.classList.contains('active')||document.getElementById('bf-autoequip-btn'))return;var side=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:(G.eqSide||'p');var host=sc.querySelector('.eq-wrap, .equip-wrap, .panel, .screen-inner')||sc;var b=document.createElement('button');b.id='bf-autoequip-btn';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span>';b.onclick=function(e){e.stopPropagation();bfAutoEquip(side);};host.insertBefore(b,host.firstChild);};
+
     if (typeof window.eqDone === 'function' && !window.eqDone.__bfWarn) {
       var originalEqDone = window.eqDone;
       window.eqDone = function(side) {
@@ -1880,25 +1889,6 @@ function buildArtScript() {
       }, 240);
     });
     chip.appendChild(playBtn);
-    var zoomBtn = document.createElement('button');
-    zoomBtn.className = 'bf-chip-zoom';
-    zoomBtn.textContent = '🔍';
-    zoomBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var m = document.createElement('div');
-      m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;';
-      m.addEventListener('click', function() { m.remove(); });
-      var x = document.createElement('button');
-      x.textContent = '×';
-      x.style.cssText = 'position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid rgba(255,210,74,.6);color:#ffe49a;font-size:18px;font-weight:900;cursor:pointer;z-index:10000;';
-      x.addEventListener('click', function() { m.remove(); });
-      m.appendChild(x);
-      var c = chip.cloneNode(true);
-      c.style.cssText = 'width:280px;aspect-ratio:3/4.1;';
-      m.appendChild(c);
-      document.body.appendChild(m);
-    });
-    chip.appendChild(zoomBtn);
     if (document.getElementById('s-battle') && document.getElementById('s-battle').classList.contains('active')) {
       playBtn.classList.add('bf-show');
     }
@@ -2310,7 +2300,7 @@ function buildArtScript() {
       chip.removeAttribute('onclick');
       chip.onclick = null;
       chip.addEventListener('click', function(e) {
-        if (e.target.closest('.bf-chip-x') || e.target.closest('.bf-chip-play') || e.target.closest('.bf-chip-zoom')) return;
+        if (e.target.closest('.bf-chip-x') || e.target.closest('.bf-chip-play')) return;
         e.preventDefault();
         e.stopPropagation();
         var name = chip.title || (chip.querySelector('.bf-chip-name') && chip.querySelector('.bf-chip-name').textContent) || '';
@@ -2329,9 +2319,16 @@ function buildArtScript() {
     });
   }
 
+  // Unify CC/AD/HE icons: swap loose role emojis for the same image emblems used on hero cards.
+  var BF_ROLE_EMOJI = { '\u2694\ufe0f':'CC','\u2694':'CC','\ud83c\udff9':'AD','\ud83d\udd2e':'HE' };
+  function bfRoleEmblemImg(t){var u=(window.__BF_ROLE_EMBLEM||{})[t];return u?'<img class="bf-role-emblem" src="'+u+'" alt="'+t+'" style="width:18px;height:18px;vertical-align:middle;display:inline-block">':'';}
+  function unifyRoleIcons(){var scope=document.getElementById('s-equip');if(!scope)return;var ems=Object.keys(BF_ROLE_EMOJI),w=document.createTreeWalker(scope,NodeFilter.SHOW_TEXT,null),hits=[],n;while((n=w.nextNode())){var t=n.nodeValue;if(t)for(var i=0;i<ems.length;i++)if(t.indexOf(ems[i])!==-1){hits.push(n);break;}}hits.forEach(function(tn){var p=tn.parentNode;if(!p)return;var h=tn.nodeValue;ems.forEach(function(e){if(h.indexOf(e)!==-1)h=h.split(e).join(bfRoleEmblemImg(BF_ROLE_EMOJI[e]));});var s=document.createElement('span');s.innerHTML=h;p.replaceChild(s,tn);});}
+
   function injectArtIntoDOM() {
     injectHeroArt();
     injectEquipArt();
+    if (window.__bfInjectAutoEquipBtn) window.__bfInjectAutoEquipBtn();
+    unifyRoleIcons();
     injectHandArt();
     injectBonusArt();
     injectBattleHeroArt();
