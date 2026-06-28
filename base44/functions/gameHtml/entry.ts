@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v109';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v110';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -323,18 +323,20 @@ function buildArtScript() {
       .chip.bf-chip-card .bf-chip-art-layer { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .chip.bf-chip-card .bf-chip-info { position:absolute; left:0; right:0; bottom:0; z-index:3; padding:2px 3px 3px; font-size:7.5px !important; line-height:1.1; font-weight:800; font-family:'Rubik',sans-serif; color:#cfeaff; text-align:center; text-shadow:0 1px 2px #000,0 0 4px #000; background:linear-gradient(0deg,rgba(4,8,16,.95),rgba(4,8,16,.6) 70%,transparent); white-space:normal; }
       .chip.bf-chip-card.bf-chip-has-info .bf-chip-name { bottom:auto; top:0; background:linear-gradient(180deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); }
-      .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:4px; right:4px; z-index:4; min-width:24px; height:24px; padding:0 7px 0 6px; border-radius:999px; background:linear-gradient(180deg,#ff6a6a,#e0322f 60%,#a01210); border:1.5px solid #ffb0ad; color:#fff; font-size:0; line-height:1; font-weight:1000; display:inline-flex; align-items:center; justify-content:center; gap:3px; cursor:pointer; box-shadow:0 3px 9px rgba(224,50,47,.5), inset 0 1px 1px rgba(255,255,255,.4); transition:transform .12s ease, filter .12s ease; }
-      .chip.bf-chip-card .bf-chip-x::before { content:'🪙'; font-size:11px; line-height:1; }
-      .chip.bf-chip-card .bf-chip-x::after { content:'Vender'; font-size:8.5px; font-weight:1000; letter-spacing:.2px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+      .chip.bf-chip-card .bf-chip-x { position:absolute !important; top:4px; right:4px; z-index:4; width:22px; height:22px; padding:0; border-radius:50%; background:linear-gradient(180deg,#ff6a6a,#e0322f 60%,#a01210); border:1.5px solid #ffb0ad; color:#fff; font-size:0; line-height:1; font-weight:1000; display:inline-flex; align-items:center; justify-content:center; gap:0; cursor:pointer; box-shadow:0 3px 9px rgba(224,50,47,.5), inset 0 1px 1px rgba(255,255,255,.4); transition:transform .12s ease, filter .12s ease; }
+      .chip.bf-chip-card .bf-chip-x::before { content:'✕'; font-size:13px; line-height:1; text-shadow:0 1px 2px rgba(0,0,0,.6); }
+      .chip.bf-chip-card .bf-chip-x::after { display:none; }
       .chip.bf-chip-card .bf-chip-x:hover { filter:brightness(1.1); transform:scale(1.06); }
       .chip.bf-chip-card .bf-chip-x:active { transform:scale(.94); }
       .chip.bf-chip-card .bf-chip-cost { position:absolute !important; top:4px; left:4px; z-index:3; width:28px; height:28px; border-radius:50%; background:radial-gradient(circle at 35% 25%,#fff2a7,#ff7a22 32%,#8c1108); border:2px solid #ffc444; color:#1a0a00; font-size:12px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.6); }
-      .chip.bf-chip-card .bf-chip-play { position:absolute !important; top:50%; left:50%; transform:translate(-50%,-50%); z-index:3; width:32px; height:32px; border-radius:6px; background:linear-gradient(180deg,#51ff8a,#2cdd5f); border:1px solid #1fb84a; color:#0a1f0f; font-size:16px; line-height:1; font-weight:900; display:none; align-items:center; justify-content:center; cursor:pointer; padding:0; box-shadow:0 3px 10px rgba(81,255,138,.4); transition:all .12s ease; }
+      .chip.bf-chip-card.bf-chip-has-info .bf-chip-cost { top: 22px; }
+      .chip.bf-chip-card.bf-chip-has-info .bf-chip-x { top: 22px; }
+      .chip.bf-chip-card .bf-chip-play { position:absolute !important; top:72%; left:50%; transform:translate(-50%,-50%); z-index:3; width:32px; height:32px; border-radius:50%; background:linear-gradient(180deg,#51ff8a,#2cdd5f); border:1px solid #1fb84a; color:#0a1f0f; font-size:16px; font-weight:900; display:none; align-items:center; justify-content:center; cursor:pointer; padding:0; box-shadow:0 3px 10px rgba(81,255,138,.4); transition:all .12s ease; }
       .chip.bf-chip-card .bf-chip-play.bf-show { display:flex; }
-      .chip.bf-chip-card .bf-chip-play:hover { transform:scale(1.1); box-shadow:0 5px 14px rgba(81,255,138,.6); }
-      .chip.bf-chip-card .bf-chip-play:active { transform:scale(.95); }
-      .chip.bf-chip-card .bf-chip-zoom { position:absolute !important; top:4px; right:4px; z-index:3; width:24px; height:24px; border-radius:4px; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.5); color:#ffe49a; font-size:12px; line-height:1; font-weight:900; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; transition:transform .12s ease; }
-      .chip.bf-chip-card .bf-chip-zoom:hover { background:rgba(0,0,0,.85); color:#fff5dc; transform:scale(1.15); }
+      .chip.bf-chip-card .bf-chip-play:hover { transform:translate(-50%,-50%) scale(1.1); box-shadow:0 5px 14px rgba(81,255,138,.6); }
+      .chip.bf-chip-card .bf-chip-play:active { transform:translate(-50%,-50%) scale(.95); }
+      .chip.bf-chip-card .bf-chip-zoom { position:absolute !important; top:45%; left:50%; transform:translate(-50%,-50%); z-index:3; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.5); color:#ffe49a; font-size:14px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; transition:all .12s ease; box-shadow:0 3px 8px rgba(0,0,0,.5); }
+      .chip.bf-chip-card .bf-chip-zoom:hover { background:rgba(255,210,74,.3); transform:translate(-50%,-50%) scale(1.15); }
       .chip.bf-chip-card .bf-chip-name { position:absolute; left:0; right:0; bottom:0; z-index:2; padding:3px 4px 4px; font-size:8.5px !important; line-height:1.04; font-weight:900; font-family:'Cinzel',serif; color:#fff5dc; text-align:center; text-transform:uppercase; letter-spacing:.1px; text-shadow:0 1px 2px #000,0 0 6px #000; background:linear-gradient(0deg,rgba(8,5,14,.92),rgba(8,5,14,.55) 60%,transparent); white-space:normal; }
       .eq-hero.bf-eq-hero-with-art { position:relative !important; min-height:176px; padding-left:150px !important; overflow:hidden; }
       .eq-hero.bf-eq-hero-with-art > *:not(.bf-eq-hero-art) { position:relative; z-index:2; }
@@ -1406,11 +1408,7 @@ function buildArtScript() {
       });
     }
     function findHero(s,i){return((G.team&&G.team[s])||[]).find(function(h){return h&&h.id===i;});}
-    function closeAnyModal() {
-      var close = document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');
-      if (close) close.click();
-      else if (typeof window.closeModal === 'function') closeModal();
-    }
+    function closeAnyModal(){var c=document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');if(c)c.click();else if(typeof window.closeModal==='function')closeModal();}
 
     // Game-styled confirmation dialog. Calls onYes() if the player confirms.
     // artUrl is optional (used for the preview banner).
@@ -1826,7 +1824,7 @@ function buildArtScript() {
     return txt.length > 50 ? txt.slice(0, 48) + '…' : txt;
   }
 
-  function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr) {
+  function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr, url, name) {
     var costBadge = document.createElement('div');
     var chipMana = found && found.item ? bfManaFor(found.item) : null;
     costBadge.className = 'bf-chip-cost' + (chipMana != null ? ' bf-mana-cost' : '');
@@ -1857,6 +1855,19 @@ function buildArtScript() {
     if (document.getElementById('s-battle') && document.getElementById('s-battle').classList.contains('active')) {
       playBtn.classList.add('bf-show');
     }
+
+    if (url) {
+      var safeName = String(name || '').replace(/'/g, "\\'");
+      var zoomBtn = document.createElement('button');
+      zoomBtn.className = 'bf-chip-zoom';
+      zoomBtn.textContent = '🔍';
+      zoomBtn.title = 'Ampliar carta';
+      zoomBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        bfZoomBonus(safeName, url);
+      });
+      chip.appendChild(zoomBtn);
+    }
   }
 
   function injectHandArt() {
@@ -1864,24 +1875,18 @@ function buildArtScript() {
     if (!map) return;
     document.querySelectorAll('.chip-spell, .chip-object').forEach(function(chip) {
       if (chip.dataset.bfHandArt === '1') return;
-      // The chip text is the item name plus the "×" remove button — read the
-      // leading text node only.
       var name = (chip.childNodes[0] && chip.childNodes[0].textContent || '').trim();
       var url = map[name];
       if (!url) return;
       chip.dataset.bfHandArt = '1';
       chip.classList.add('bf-chip-card');
       chip.title = name;
-      // Hide the chip's own text nodes (the name) without removing the original
-      // remove button (which carries the onclick to discard the card).
       for (var n = 0; n < chip.childNodes.length; n++) {
         var node = chip.childNodes[n];
         if (node.nodeType === 3) node.textContent = '';
       }
-      // Reposition the existing remove button ("×") to the card corner.
       var removeBtn = chip.querySelector('button, .chip-x, span[onclick]');
       if (removeBtn) removeBtn.classList.add('bf-chip-x');
-      // Blurred fill (hides white borders) + the whole card shown with "contain".
       var art = document.createElement('div');
       art.className = 'bf-chip-art-layer';
       art.style.backgroundImage = 'url("' + url + '")';
@@ -1890,12 +1895,10 @@ function buildArtScript() {
       fill.style.backgroundImage = 'url("' + url + '")';
       chip.insertBefore(art, chip.firstChild);
       chip.insertBefore(fill, chip.firstChild);
-      // Card name label on top of the art (so the player can identify it).
        var nm = document.createElement('div');
        nm.className = 'bf-chip-name';
        nm.textContent = name;
        chip.appendChild(nm);
-       // Effect line + cost badge + play button + zoom
        var items = handItemByName();
        var found = items ? items[name] : null;
        var summary = handCardSummary(found);
@@ -1906,7 +1909,7 @@ function buildArtScript() {
          chip.appendChild(info);
          chip.classList.add('bf-chip-has-info');
        }
-       bfAddChipButtons(chip, found, chip.onclick, chip.getAttribute('onclick'));
+       bfAddChipButtons(chip, found, chip.onclick, chip.getAttribute('onclick'), url, name);
     });
   }
 
