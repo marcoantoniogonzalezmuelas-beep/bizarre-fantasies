@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v105';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v106';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1171,12 +1171,12 @@ function buildArtScript() {
 
     // Net bonus delta this round: adder on your own side + subtractor coming from the rival.
     window.bfBidDelta = function(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],delta=0,label='';if(mb&&mb.type==='BID_ADD'){delta+=Number(mb.effect||0);label='+'+Number(mb.effect||0)+' '+mb.name;}if(rb&&rb.type==='BID_SUB'){delta-=Number(rb.effect||0);label=(label?label+' · ':'')+'-'+Number(rb.effect||0)+' '+rb.name;}return{delta:delta,label:label};};
-    // Suggested final bid = hero cost plus your own adder bonus (the rival's subtractor never lowers
-    // the floor below the hero cost, so it's only shown as context). Clamped to coins and the minimum.
-    window.bfDefaultBid = function(side,h){if(!h)return 0;var cost=Number(h.cost||0);var mb=G.bonus&&G.bonus[side];var add=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0;var minRaw=window.minRawBid(side,h);var coins=Number((G.coins&&G.coins[side])||0);return Math.min(coins,Math.max(minRaw,cost+add));};
-    // The input value IS the final bid (= what you pay, = what decides the winner). Your own adder is
-    // already baked into the suggested number; the rival's subtractor is shown only as context.
-    window.bfUpdateBidPreview = function(heroId){var box=document.getElementById('bidcalc_'+heroId);if(!box)return;var side=humanSide();var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var h=(pool||[]).find(function(x){return x&&x.id===heroId;});if(!h)return;var cost=Number(h.cost||0);var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)];var add=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0;var sub=(rb&&rb.type==='BID_SUB')?Number(rb.effect||0):0;var html='<div style="color:#ffe49a">Coste del personaje: <b>'+cost+'</b> 🪙</div>';if(add>0)html+='<div style="color:#54e876">Tu bonificador: <b>+'+add+' 🪙</b> <span style="font-weight:700;opacity:.85">('+mb.name+')</span></div>';if(sub>0)html+='<div style="color:#ff6b6b">El rival te resta: <b>−'+sub+' 🪙</b> <span style="font-weight:700;opacity:.85">('+rb.name+') · puja más bajo si quieres</span></div>';html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">↕ Tu puja es el coste final que pagas</div>';box.innerHTML=html;};
+    // The bid is just the bid (it decides the winner). Bonuses are NOT baked in — they only adjust
+    // what you pay AFTER winning. So the suggested starting value is simply the hero cost.
+    window.bfDefaultBid = function(side,h){if(!h)return 0;var cost=Number(h.cost||0);var minRaw=window.minRawBid(side,h);var coins=Number((G.coins&&G.coins[side])||0);return Math.min(coins,Math.max(minRaw,cost));};
+    // Preview: show the player what they'll ACTUALLY pay if they win with the current bid —
+    // own adder lowers the paid cost, the rival's subtractor raises it. Bonuses never touch the bid.
+    window.bfUpdateBidPreview = function(heroId){var box=document.getElementById('bidcalc_'+heroId);if(!box)return;var side=humanSide();var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var h=(pool||[]).find(function(x){return x&&x.id===heroId;});if(!h)return;var inp=document.getElementById('bid_'+heroId);var bid=inp?(parseInt(inp.value||'0',10)||0):Number(h.cost||0);var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)];var add=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0;var sub=(rb&&rb.type==='BID_SUB')?Number(rb.effect||0):0;var paid=Math.max(0,bid-add+sub);var html='<div style="color:#ffe49a">Tu puja: <b>'+bid+'</b> 🪙</div>';if(add>0)html+='<div style="color:#54e876">Tu bonificador: <b>−'+add+' 🪙 al pagar</b> <span style="font-weight:700;opacity:.85">('+mb.name+')</span></div>';if(sub>0)html+='<div style="color:#ff6b6b">El rival te resta: <b>+'+sub+' 🪙 al pagar</b> <span style="font-weight:700;opacity:.85">('+rb.name+')</span></div>';if(add>0||sub>0)html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás: <b>'+paid+' 🪙</b></div>';else html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás <b>'+bid+' 🪙</b></div>';box.innerHTML=html;};
 
     function patchBidInputs() {
       var all = (G.cands || []).slice();
@@ -1187,7 +1187,7 @@ function buildArtScript() {
         var side = humanSide();
         var minRaw = window.minRawBid(side, h);
         inp.min = String(minRaw);
-        // Default the field to the suggested final bid (cost adjusted by this round's bonus),
+        // Default the field to the hero cost (the bid is just the bid; bonuses apply on payment),
         // unless the player has already set a valid value of their own.
         if (!inp.dataset.bfTouched) inp.value = String(window.bfDefaultBid(side, h));
         var current = parseInt(inp.value || '0', 10) || 0;
@@ -1342,7 +1342,7 @@ function buildArtScript() {
       } else if (!bid.pass) {
         var amt = adjustBid(side, bid.heroId, bid.amount);
         if (amt === null) { if (G.acq && G.acq[side]) G.bids[side] = {pass: true}; else bfAiNoCoin(side); }
-        else { var coins=Number((G.coins&&G.coins[side])||0), mc=minPoolCost(side), rl=roundsLeft(side); var base=Math.min(amt, Math.max(mc, coins - mc*Math.max(0,rl-1))); var mb=G.bonus&&G.bonus[side], add=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0; G.bids[side].amount = Math.max(0, Math.min(coins, base + add)); }
+        else { var coins=Number((G.coins&&G.coins[side])||0), mc=minPoolCost(side), rl=roundsLeft(side); var base=Math.min(amt, Math.max(mc, coins - mc*Math.max(0,rl-1))); G.bids[side].amount = Math.max(0, Math.min(coins, base)); }
       }
       G.cands = saved;
       if (typeof window.checkBids === 'function') window.checkBids();
@@ -1961,11 +1961,11 @@ function buildArtScript() {
     if(!box||box.dataset.bfSummary==='1'||typeof G==='undefined'||!G.phaseResult)return;
     var r=G.phaseResult;
     function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
-    function bInfo(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],d=0,t=[];if(mb&&mb.type==='BID_ADD'){var e=Number(mb.effect||0);d+=e;t.push('<span class="bsum-tag bsum-add">+'+e+' 🪙 · '+esc(mb.name)+'</span>');}if(rb&&rb.type==='BID_SUB'){var s=Number(rb.effect||0);d-=s;t.push('<span class="bsum-tag bsum-sub">−'+s+' 🪙 · '+esc(rb.name)+'</span>');}return{d:d,html:t.length?t.join(''):'<span class="bsum-tag bsum-none">sin bonificador</span>'};}
-    function rowH(side){var pass=side==='p'?r.pPass:r.oPass,name=side==='p'?r.bpName:r.boName,fin=Number((side==='p'?r.bpAmt:r.boAmt)||0),got=side==='p'?r.gotP:r.gotO,bi=bInfo(side),hero=(G.cands||[]).find(function(h){return h&&h.name===name;})||((G.team&&G.team[side])||[]).slice(-1)[0],col=(hero&&hero.clanColor)||'#caa14a',sym=hero?(RACE_SIGILS[hero.clan]||'◆'):'◆',tag=side==='p'?'<span class="bsum-you">TÚ</span>':((typeof NET!=='undefined'&&NET.role)?'<span class="bsum-rival">rival</span>':'<span class="bsum-rival">IA</span>');return '<div class="bsum-row'+(side==='p'?' bsum-row-you':'')+'"><div class="bsum-thumb" style="--c:'+col+'">'+sym+'</div><div class="bsum-main"><div class="bsum-player">'+esc((G.names&&G.names[side])||'')+' '+tag+'</div>'+(pass?'<div class="bsum-hero bsum-pass">conserva su héroe y pasa</div>':'<div class="bsum-hero">'+esc(name||'—')+'</div><div class="bsum-bonus">'+bi.html+'</div>')+'</div>'+(pass?'<div class="bsum-cost-pass">—</div>':'<div class="bsum-cost"><div class="bsum-cost-fin">'+fin+' 🪙</div><div class="bsum-cost-lbl">coste final</div></div>')+(got?'<div class="bsum-flag bsum-win">✓</div>':'')+'</div>';}
+    function bInfo(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],add=0,sub=0,t=[];if(mb&&mb.type==='BID_ADD'){add=Number(mb.effect||0);t.push('<span class="bsum-tag bsum-add">−'+add+' 🪙 al pagar · '+esc(mb.name)+'</span>');}if(rb&&rb.type==='BID_SUB'){sub=Number(rb.effect||0);t.push('<span class="bsum-tag bsum-sub">+'+sub+' 🪙 al pagar · '+esc(rb.name)+'</span>');}return{add:add,sub:sub,html:t.length?t.join(''):'<span class="bsum-tag bsum-none">sin bonificador</span>'};}
+    function rowH(side){var pass=side==='p'?r.pPass:r.oPass,name=side==='p'?r.bpName:r.boName,bid=Number((side==='p'?r.bpAmt:r.boAmt)||0),got=side==='p'?r.gotP:r.gotO,bi=bInfo(side),won=!!got,paid=Math.max(0,bid-bi.add+bi.sub),hero=(G.cands||[]).find(function(h){return h&&h.name===name;})||((G.team&&G.team[side])||[]).slice(-1)[0],col=(hero&&hero.clanColor)||'#caa14a',sym=hero?(RACE_SIGILS[hero.clan]||'◆'):'◆',tag=side==='p'?'<span class="bsum-you">TÚ</span>':((typeof NET!=='undefined'&&NET.role)?'<span class="bsum-rival">rival</span>':'<span class="bsum-rival">IA</span>');var costCell=pass?'<div class="bsum-cost-pass">—</div>':'<div class="bsum-cost"><div class="bsum-cost-fin">'+(won?paid:bid)+' 🪙</div><div class="bsum-cost-lbl">'+(won?'pagado':'pujó '+bid)+'</div></div>';return '<div class="bsum-row'+(side==='p'?' bsum-row-you':'')+'"><div class="bsum-thumb" style="--c:'+col+'">'+sym+'</div><div class="bsum-main"><div class="bsum-player">'+esc((G.names&&G.names[side])||'')+' '+tag+'</div>'+(pass?'<div class="bsum-hero bsum-pass">conserva su héroe y pasa</div>':'<div class="bsum-hero">'+esc(name||'—')+'</div><div class="bsum-bonus">'+bi.html+'</div>')+'</div>'+costCell+(got?'<div class="bsum-flag bsum-win">✓</div>':'')+'</div>';}
     box.dataset.bfSummary='1';
     var wrap=document.createElement('div');wrap.className='bsum-wrap';
-    wrap.innerHTML='<div class="bsum-head">Resumen de la ronda · bonificadores y coste final</div>'+rowH('p')+rowH('o');
+    wrap.innerHTML='<div class="bsum-head">Resumen de la ronda · puja y coste pagado</div>'+rowH('p')+rowH('o');
     box.parentNode.insertBefore(wrap,box.nextSibling);
   }
 
@@ -2470,6 +2470,13 @@ async function buildGameHtml() {
   // decided by that bid directly and that exact amount is paid — the bonus is NOT re-applied here.
   const resolveRoundPatched = 'function resolveBidRound(){const bp=G.bids.p,bo=G.bids.o;const pBid=bp&&!bp.pass,oBid=bo&&!bo.pass;let contested=false,winner=null,contestId=null;if(pBid&&oBid&&bp.heroId===bo.heroId){contested=true;contestId=bp.heroId;winner=(bp.amount>=bo.amount)?"p":"o";award(winner,contestId,winner==="p"?bp.amount:bo.amount);G.phaseNeeds[winner]=false;G.phaseNeeds[other(winner)]=true;}else{if(pBid){award("p",bp.heroId,bp.amount);G.phaseNeeds.p=false;}if(oBid){award("o",bo.heroId,bo.amount);G.phaseNeeds.o=false;}}G.phaseResult={phase:G.aIndex,sub:G.subRound,contested,winner,contestName:contested?((byId(G.cands,contestId)||{}).name)||"—":"",pPass:!pBid,oPass:!oBid,bpName:pBid?(((byId(G.cands,bp.heroId)||{}).name)||"—"):"",boName:oBid?(((byId(G.cands,bo.heroId)||{}).name)||"—"):"",bpAmt:pBid?bp.amount:0,boAmt:oBid?bo.amount:0,gotP:G.phaseNeeds.p?null:nameOf(phaseHeroOf("p")),gotO:G.phaseNeeds.o?null:nameOf(phaseHeroOf("o")),needMore:(G.phaseNeeds.p||G.phaseNeeds.o)};show("s-recruit");renderRecruit("p");netSync("s-recruit");}';
   html = html.replace(resolveRoundOriginal, resolveRoundPatched);
+
+  // Payment adjustment: the bid decides the winner, but bonuses DON'T count toward coins.
+  // When a side wins, the coins actually deducted = bid − own adder + rival's subtractor.
+  // (Own adder makes the hero cheaper to pay; rival's subtractor makes it costlier.)
+  const awardOriginal = 'function award(side,heroId,amount){\n  const tmpl=byId(G.cands,heroId)||byId(HEROES,heroId);\n  G.coins[side]=Math.max(0,G.coins[side]-amount);\n  const inst=makeInstance(tmpl); inst.boughtFor=amount; G.team[side].push(inst);';
+  const awardPatched = 'function award(side,heroId,amount){\n  const tmpl=byId(G.cands,heroId)||byId(HEROES,heroId);\n  var _mb=G.bonus&&G.bonus[side],_rb=G.bonus&&G.bonus[other(side)];\n  var _add=(_mb&&_mb.type==="BID_ADD")?Number(_mb.effect||0):0;\n  var _sub=(_rb&&_rb.type==="BID_SUB")?Number(_rb.effect||0):0;\n  var _paid=Math.max(0,Number(amount||0)-_add+_sub);\n  G.coins[side]=Math.max(0,G.coins[side]-_paid);\n  const inst=makeInstance(tmpl); inst.boughtFor=_paid; G.team[side].push(inst);';
+  html = html.replace(awardOriginal, awardPatched);
 
   const recruitOriginal = '<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div>';
   const recruitPatched = '<div class="hcard-bid-zone" style="flex-direction:column;align-items:stretch"><div style="display:flex;gap:6px"><input style="flex:1" class="bid-mini-input" id="bid_${h.id}" type="number" min="${h.cost}" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview(\'${h.id}\')"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div><div id="bidcalc_${h.id}" style="font-size:10.5px;text-align:center;line-height:1.25;margin-top:5px;font-weight:900;text-shadow:0 1px 3px #000;background:rgba(8,5,14,.6);border:1px solid rgba(255,210,74,.25);border-radius:8px;padding:4px 6px;"></div></div>';
