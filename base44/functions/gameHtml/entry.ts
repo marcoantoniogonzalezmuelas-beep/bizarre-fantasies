@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v78';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v79';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -192,8 +192,9 @@ function buildArtScript() {
       @keyframes bfFoilShift { 0%{background-position:0% 0%} 100%{background-position:300% 300%} }
       .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
       .bf-hero-top, .bf-hero-band { display:none !important; }
-      .bf-race-sigil { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff7dc; font-family:'Cinzel',serif; font-size:25px; font-weight:1000; background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%); border:2px solid var(--clan,#caa14a); text-shadow:0 2px 4px #000,0 0 10px var(--clan,#caa14a); box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 15px color-mix(in srgb, var(--clan,#caa14a) 45%, transparent); }
+      .bf-race-sigil { position:relative; display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; color:#fff7dc; font-family:'Cinzel',serif; font-size:15px; font-weight:1000; background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%); border:1.5px solid var(--clan,#caa14a); text-shadow:0 2px 4px #000,0 0 8px var(--clan,#caa14a); box-shadow:0 3px 8px rgba(0,0,0,.5); flex-shrink:0; }
       .bf-nameplate { position:absolute; left:15px; right:15px; bottom:108px; z-index:4; text-align:center; padding:4px 9px 5px; border-radius:10px; background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14)); border:1px solid rgba(255,210,74,.18); backdrop-filter:blur(1.5px); }
+      .bf-nameplate-clan { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:5px; }
       .bf-hero-name { display:block; margin:0 auto; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(15px, 5.4vw, 21px); line-height:1; color:#fff5dc; text-transform:uppercase; letter-spacing:.15px; text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95); overflow-wrap:anywhere; text-align:center; }
       .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000; }
       .bf-hero-title { display:block; margin:3px auto 0; max-width:92%; padding:2px 7px; border-radius:999px; color:#fff0bd; background:rgba(8,5,12,.62); border:1px solid rgba(255,210,74,.22); font-family:'Cinzel',serif; font-size:10.8px; line-height:1.08; font-weight:800; font-style:italic; text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22); text-align:center; letter-spacing:.12px; }
@@ -219,7 +220,7 @@ function buildArtScript() {
       .bf-hero-card.cf-elite .bf-ability-name { color:#d9a2ff; }
       .bf-ability-text { margin-top:3px; color:#fff7ea; font-size:12px; font-weight:700; line-height:1.25; text-shadow:0 2px 3px #000,0 0 8px #000; }
       .bf-logo { position:absolute; right:7px; bottom:10px; z-index:8; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500); border:1.5px solid rgba(255,210,74,.55); box-shadow:0 0 12px rgba(255,210,74,.45),inset 0 0 6px rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; }
-      .bf-card-num { position:absolute; left:62px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
+      .bf-card-num { position:absolute; left:9px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
 
       /* Fallback for any old-format hero cards already on screen */
       .cf-art.has-art::before { content:''; position:absolute; inset:-4%; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center center; background-repeat:no-repeat; }
@@ -251,7 +252,7 @@ function buildArtScript() {
       @media (max-width: 640px) {
         .cardface, .bf-hero-card { max-width: 100% !important; }
         .bf-hero-bg, .cf-art.has-art::before { inset: -8% !important; background-size: cover !important; background-position: center center !important; }
-        .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; }
+        .bf-race-sigil { width: 24px !important; height: 24px !important; font-size: 13px !important; }
         .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; }
         .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
         .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; }
@@ -268,7 +269,7 @@ function buildArtScript() {
         .bf-ability-name { font-size: 10.2px !important; line-height: 1.1 !important; }
         .bf-ability-text { font-size: 9.8px !important; line-height: 1.16 !important; }
         .bf-zoom-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; right: 6px !important; }
-        .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
+        .bf-card-num { left: 7px !important; bottom: 9px !important; font-size: 7.6px !important; }
         .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
         .shop-card { max-width: 100% !important; }
         .shop-card-art-sharp { inset: -3% !important; background-size: cover !important; background-position: center center !important; }
@@ -611,14 +612,13 @@ function buildArtScript() {
         '<div class="bf-hero-bg"></div>' +
         '<div class="bf-hero-frame"></div>' +
         '<div class="bf-coin">' + clean(h.cost) + '</div>' +
-        '<div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + clean(raceSigil(h.clan)) + '</div>' +
         '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' +
         '<div class="bf-stats">' +
           '<div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div>' +
           '<div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div>' +
           '<div class="bf-stat bf-stat-he"><span>HE</span><b>' + clean(he) + '</b></div>' +
         '</div>' +
-        '<div class="bf-nameplate"><div class="bf-hero-name">' + clean(h.name) + '</div><div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div></div>' +
+        '<div class="bf-nameplate"><div class="bf-hero-name">' + clean(h.name) + '</div><div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div><div class="bf-nameplate-clan"><div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + clean(raceSigil(h.clan)) + '</div><span style="font-family:\'Cinzel\',serif;font-size:9px;font-weight:800;color:var(--clan,#caa14a);letter-spacing:.3px;text-shadow:0 1px 2px #000">' + clean(h.clan || '') + '</span></div></div>' +
         '<div class="bf-heart"><span class="cf-heart-ico">❤</span><span class="cf-hp">' + clean(hp) + '</span></div>' +
         '<div class="bf-ability-panel">' +
           '<div class="bf-ability-orb"></div>' +
