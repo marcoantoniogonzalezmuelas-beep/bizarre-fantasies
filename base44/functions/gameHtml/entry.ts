@@ -1735,19 +1735,39 @@ function buildArtScript() {
 
     // ---- AI auto-equip: optimize gear purchases for the whole team ----
     function bfEqCoins(side){return Number((G.equipCoins&&G.equipCoins[side])||0);}
-    function bfBest(list,budget){var b=null,bs=-1;(list||[]).forEach(function(it){if(!it)return;var c=Number(it.cost||0);if(c>budget)return;var s=Number(it.power||0)+Number(it.cc||0)+Number(it.ad||0)+Number(it.he||0)+Number(it.hp||0)+Number(it.def||0)+c*0.35;if(s>bs){bs=s;b=it;}});return b;}
-    function bfBuyGear(side,heroId,kind,item){G.assign={kind:kind,id:item.id,cost:item.cost,name:item.name};if(typeof originalDoAssign==='function')originalDoAssign(side,heroId);}
+    function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
     function bfAutoEquip(side){
-      var team=((G.team&&G.team[side])||[]).filter(Boolean).sort(function(a,b){return Number(b.cost||0)-Number(a.cost||0);}),n=0;
-      team.forEach(function(h){
-        if(!h.mwep&&!h.rwep){var rng=h.type==='AD',k=rng?'ranged':'melee',w=bfBest(rng?(typeof RANGED!=='undefined'?RANGED:[]):(typeof MELEE!=='undefined'?MELEE:[]),bfEqCoins(side));if(!w&&rng){w=bfBest(typeof MELEE!=='undefined'?MELEE:[],bfEqCoins(side));k='melee';}if(w){bfBuyGear(side,h.id,k,w);n++;}}
-        if(!h.armor){var a=bfBest(typeof ARMORS!=='undefined'?ARMORS:[],bfEqCoins(side));if(a){bfBuyGear(side,h.id,'armor',a);n++;}}
-      });
-      var picks=[];(typeof SPELLS!=='undefined'?SPELLS:[]).forEach(function(s){if(s)picks.push({it:s,k:'spell'});});(typeof OBJECTS!=='undefined'?OBJECTS:[]).forEach(function(o){if(o)picks.push({it:o,k:'object'});});
-      picks.sort(function(a,b){return Number(b.it.cost||0)-Number(a.it.cost||0);});var added=0;
-      picks.forEach(function(p){if(added>=3||Number(p.it.cost||0)>bfEqCoins(side))return;if(p.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,p.it.id);added++;n++;}else if(p.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,p.it.id);added++;n++;}});
-      if(typeof window.renderEquip==='function'){try{window.renderEquip(side);}catch(e){}}
-      if(window.notif)notif(n>0?('⚡ La IA equipó a tu equipo ('+n+' adquisiciones). Ajusta lo que quieras antes de la batalla.'):'No quedan monedas para equipar automáticamente.');
+      var tm=((G.team&&G.team[side])||[]).filter(Boolean), ml=typeof MELEE!=='undefined'?MELEE:[], rg=typeof RANGED!=='undefined'?RANGED:[], am=typeof ARMORS!=='undefined'?ARMORS:[], sp=typeof SPELLS!=='undefined'?SPELLS:[], ob=typeof OBJECTS!=='undefined'?OBJECTS:[];
+      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0}, mH=0, hC=0;
+      tm.forEach(function(h,i){if(h){g.w[i]=!!(h.mwep||h.rwep);g.a[i]=!!h.armor;if(h.he>mH)mH=h.he;if(h.type==='HE')hC++;}});
+      function sc(it,h,k){
+        var s=0; if(k==='melee'||k==='ranged'||k==='armor'){
+          if(it.cc)s+=it.cc*(h.type==='CC'?2.5:0.5);if(it.power)s+=it.power*(h.type==='AD'?2.5:0.8);
+          if(it.hp)s+=it.hp*1.2;if(it.def)s+=it.def*2;if(it.mana)s+=it.mana*(h.type==='HE'?1.5:0.5);if(it.he)s+=it.he*(h.type==='HE'?2.5:0.5);
+          return s*(k==='ranged'&&h.type==='AD'?3:k==='melee'&&h.type==='CC'?3:k==='armor'?2.2:1);
+        } else {
+          s+=(it.power||0)*(1+mH*0.15)*1.5+(it.heal||0)*2+(it.mana||0)*1.5;
+          if(/Curación Divina|Maremoto|Tormenta|Cadena|Fuego/i.test(it.name||''))s+=15;
+          if(/f[eé]nix|despertar/i.test(it.name||''))s+=25;
+          return s*(1+hC*0.6);
+        }
+      }
+      var b=0, MC=3;
+      for(var iter=0;iter<18;iter++){
+        var bd=bfEqCoins(side);if(bd<=0)break;
+        var eM=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])eM++;if(tm[i]&&!g.a[i])eM++;}
+        var bs=null,bS=-1;
+        var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
+          var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
+        for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
+        if(g.h<3){sp.forEach(function(s){ev('spell',s,null,null);});ob.forEach(function(o){ev('object',o,null,null);});}
+        if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
+        if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);g.h++;b++;}
+        else if(bs.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,bs.it.id);g.h++;b++;}
+        else{bfBuyGear(side,bs.h.id,bs.k,bs.it);if(bs.k==='armor')g.a[bs.hi]=true;else g.w[bs.hi]=true;b++;}
+      }
+      if(typeof window.renderEquip==='function')try{window.renderEquip(side);}catch(e){}
+      if(window.notif)notif(b>0?'⚡ La IA equipó a tu equipo ('+b+' adquisiciones).':'No quedan monedas para equipar automáticamente.');
       bfGuideReact('cheer','¡OPTIMIZADO!');
     }
     window.bfAutoEquip=bfAutoEquip;
