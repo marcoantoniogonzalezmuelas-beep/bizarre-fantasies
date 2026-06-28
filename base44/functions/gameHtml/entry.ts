@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v107';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v108';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1907,7 +1907,8 @@ function buildArtScript() {
       var hero=(G.cands||[]).find(function(h){return h&&h.name===name;})||((G.team&&G.team[side])||[]).slice(-1)[0],col=(hero&&hero.clanColor)||'#caa14a',url=hero?ART_BY_NAME[hero.name]:null,sym=hero?(RACE_SIGILS[hero.clan]||'◆'):'◆',tag=side==='p'?'<span class="bsum-you">TÚ</span>':((typeof NET!=='undefined'&&NET.role)?'<span class="bsum-rival">rival</span>':'<span class="bsum-rival">IA</span>');
       var costCell=pass?'<div class="bsum-cost-pass">—</div>':'<div class="bsum-cost"><div class="bsum-cost-fin">'+(won?paid:bid)+' 🪙</div><div class="bsum-cost-lbl">'+(won?'pagado':'pujó '+bid)+'</div></div>';
       var thumbHtml=url?'<div class="bsum-thumb bsum-thumb-img" style="--c:'+col+';background-image:url(\\''+url+'\\')"></div>':'<div class="bsum-thumb" style="--c:'+col+'">'+sym+'</div>';
-      return '<div class="bsum-row'+(side==='p'?' bsum-row-you':'')+'">'+thumbHtml+'<div class="bsum-main"><div class="bsum-player">'+esc((G.names&&G.names[side])||'')+' '+tag+'</div>'+(pass?'<div class="bsum-hero bsum-pass">conserva su héroe y pasa</div>':'<div class="bsum-hero">'+esc(name||'—')+'</div><div class="bsum-bonus">'+bi.html+'</div>')+'</div>'+costCell+(got?'<div class="bsum-flag bsum-win">✓</div>':'')+'</div>';
+      var winBadge=won?'<div style="font-size:10px;font-weight:900;color:#54e876;text-transform:uppercase;letter-spacing:0.5px;background:rgba(84,232,118,0.15);border:1px solid rgba(84,232,118,0.4);padding:2px 6px;border-radius:6px;display:inline-block;margin-top:2px;">★ GANÓ LA PUJA</div>':'';
+      return '<div class="bsum-row'+(side==='p'?' bsum-row-you':'')+'" style="position:relative">'+thumbHtml+'<div class="bsum-main"><div class="bsum-player">'+esc((G.names&&G.names[side])||'')+' '+tag+'</div>'+(pass?'<div class="bsum-hero bsum-pass">conserva su héroe y pasa</div>':'<div class="bsum-hero">'+esc(name||'—')+'</div><div class="bsum-bonus">'+bi.html+'</div>'+winBadge)+'</div>'+costCell+'</div>';
     }
     box.dataset.bfSummary='1';
     var verdict = box.querySelector('.pr-verdict');
