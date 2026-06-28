@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v94';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v95';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1165,12 +1165,22 @@ function buildArtScript() {
       return null;
     }
 
+    window.getMinBid = function(side, h) {
+      if(!h) return 0;
+      var minB = Number(h.cost || 0);
+      var mb = G.bonus && G.bonus[side], ob = G.bonus && G.bonus[side === 'p' ? 'o' : 'p'];
+      if(mb && mb.type === 'BID_ADD') minB -= mb.effect;
+      if(ob && ob.type === 'BID_SUB') minB += ob.effect;
+      return Math.max(0, minB);
+    };
+
     function adjustBid(side, heroId, amount) {
       var h = findHero(heroId);
       if (!h) return amount;
       var coins = Number((G.coins && G.coins[side]) || 0);
-      if (coins < h.cost) return null;
-      return Math.min(coins, Math.max(Number(amount || 0), h.cost));
+      var minB = window.getMinBid(side, h);
+      if (coins < minB) return null;
+      return Math.min(coins, Math.max(Number(amount || 0), minB));
     }
 
     function patchBidInputs() {
@@ -1179,24 +1189,14 @@ function buildArtScript() {
       all.forEach(function(h) {
         var inp = document.getElementById('bid_' + h.id);
         if (!inp) return;
-        inp.min = String(h.cost);
+        var minB = window.getMinBid ? window.getMinBid('p', h) : Number(h.cost || 0);
+        inp.min = String(minB);
         var current = parseInt(inp.value || '0', 10) || 0;
-        if (current < h.cost) inp.value = String(Math.min(h.cost, Number((G.coins && (G.coins.p || G.coins.o)) || h.cost)));
+        if (current < minB) inp.value = String(Math.min(minB, Number((G.coins && G.coins.p) || minB)));
       });
     }
 
-    function epicPoolForCurrentType() {
-      // Derive the auction's type from the candidates themselves so we never
-      // depend on the exact name of the game's internal phase-type field.
-      var type = (G.cands && G.cands[0] && G.cands[0].type) || G.curType || G.phaseType || G.auctType;
-      var usedIds = {};
-      ['p','o'].forEach(function(side) { (G.team && G.team[side] || []).forEach(function(h) { usedIds[h.id] = true; }); });
-      (G.cands || []).forEach(function(h) { if (h) usedIds[h.id] = true; });
-      var pool = HEROES.filter(function(h) { return h.clan === 'Épicas' && (!type || h.type === type) && !usedIds[h.id]; });
-      // Fallback: if no epic matches this type, allow any unused epic.
-      if (!pool.length) pool = HEROES.filter(function(h) { return h.clan === 'Épicas' && !usedIds[h.id]; });
-      return pool;
-    }
+    function epicPoolForCurrentType(){var t=(G.cands&&G.cands[0]&&G.cands[0].type)||G.curType||G.phaseType||G.auctType;var u={};['p','o'].forEach(function(s){(G.team&&G.team[s]||[]).forEach(function(h){u[h.id]=1;});});(G.cands||[]).forEach(function(h){if(h)u[h.id]=1;});var p=HEROES.filter(function(h){return h.clan==='Épicas'&&(!t||h.type===t)&&!u[h.id];});if(!p.length)p=HEROES.filter(function(h){return h.clan==='Épicas'&&!u[h.id];});return p;}
 
     function prepareEpicOffers() {
       G.epicCands = {};
@@ -1312,7 +1312,7 @@ function buildArtScript() {
       return originalNetBid.call(this, heroId, amt);
     };
 
-    function minPoolCost(side){var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var m=Infinity;for(var i=0;i<pool.length;i++){var c=Number(pool[i]&&pool[i].cost||0);if(c<m)m=c;}return m===Infinity?5:m;}
+    function minPoolCost(side){var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var m=Infinity;for(var i=0;i<pool.length;i++){if(!pool[i])continue;var c=window.getMinBid?window.getMinBid(side,pool[i]):Number(pool[i].cost||0);if(c<m)m=c;}return m===Infinity?5:m;}
     function roundsLeft(side){return Math.max(1,3-((G.team&&G.team[side]&&G.team[side].length)||0));}
     // AI can't afford a hero: take equip-debt for the cheapest hero or skip — either way
     // clear phaseNeeds so the auction advances to equip instead of looping on bad bids.
@@ -2469,12 +2469,14 @@ async function buildGameHtml() {
 
   const recruitOriginal = 'const bid = mode===\\\'bid\\\'\\n    ? `<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\\\'${side}\\\',\\\'${h.id}\\\')">Pujar</button></div>`\\n    : `<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>`;';
   const recruitPatched = `let bT = [];
-  if(G.bonus && G.bonus[side] && G.bonus[side].type==="BID_ADD") bT.push("+" + G.bonus[side].effect + " " + G.bonus[side].name);
+  let minB = h.cost;
+  if(G.bonus && G.bonus[side] && G.bonus[side].type==="BID_ADD"){ bT.push("+" + G.bonus[side].effect + " (valor)"); minB -= G.bonus[side].effect; }
   let os = side === 'p' ? 'o' : 'p';
-  if(G.bonus && G.bonus[os] && G.bonus[os].type==="BID_SUB") bT.push("-" + G.bonus[os].effect + " " + G.bonus[os].name);
-  let bStr = bT.length ? \\\`<div style="font-size:10.5px; color:#ffd24a; text-align:center; line-height:1.2; margin-bottom:6px; font-weight:900; text-shadow:0 1px 3px #000,0 0 8px rgba(255,210,74,.4);">\${bT.join(', ')} a tu puja</div>\\\` : '';
+  if(G.bonus && G.bonus[os] && G.bonus[os].type==="BID_SUB"){ bT.push("-" + G.bonus[os].effect + " (valor)"); minB += G.bonus[os].effect; }
+  minB = Math.max(0, minB);
+  let bStr = bT.length ? \\\`<div style="font-size:10px; color:#ffd24a; text-align:center; line-height:1.1; margin-bottom:4px; font-weight:900; text-shadow:0 1px 3px #000,0 0 8px rgba(255,210,74,.4);">\${bT.join(', ')}<br><span style="color:#fff">Puja mínima ajustada: \${minB}</span></div>\\\` : '';
   const bid = mode==='bid'
-    ? \\\`<div class="hcard-bid-zone">\${bStr}<div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="0" max="\${G.coins[side]}" value="\${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div></div>\\\`
+    ? \\\`<div class="hcard-bid-zone">\${bStr}<div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="\${minB}" max="\${G.coins[side]}" value="\${Math.min(minB,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div></div>\\\`
     : \\\`<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>\\\`;`;
   html = html.replace(recruitOriginal, recruitPatched);
 
