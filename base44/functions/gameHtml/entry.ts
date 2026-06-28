@@ -136,33 +136,8 @@ function buildArtScript() {
       .bf-title-logo{display:flex!important;justify-content:center!important;margin-bottom:14px!important}.bf-title-logo img{width:172px;height:172px;object-fit:contain;border-radius:50%;border:4px solid rgba(255,210,74,.75);box-shadow:0 0 48px rgba(255,210,74,.7),0 0 90px rgba(192,91,255,.45);filter:drop-shadow(0 0 22px rgba(255,210,74,.9));animation:bfIconFloat 3.2s ease-in-out infinite}
       @keyframes bfIconFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-7px) scale(1.06)}}
       @media(max-width:640px){.title-links{gap:11px!important}.title-links .btn.sm{width:104px!important;min-height:108px!important;font-size:12px!important;padding:14px 8px 12px!important}.title-links .btn.sm .tc-img{width:56px!important;height:56px!important}}
-      /* Real 3D flip, with corrected back face */
-      .flip3d { perspective: 1300px !important; }
-      .flip3d-inner { transform-style: preserve-3d !important; transition: transform .62s cubic-bezier(.2,.72,.2,1) !important; will-change: transform !important; }
-      .flip3d.flipped .flip3d-inner { transform: rotateY(180deg) !important; }
-      .flip3d .face { backface-visibility: hidden !important; -webkit-backface-visibility: hidden !important; transform-style: preserve-3d !important; }
-      .flip3d .face.front { transform: rotateY(0deg) translateZ(1px) !important; }
-      .flip3d .face.back { transform: rotateY(180deg) translateZ(1px) !important; }
-      .face.back .bf-hero-card.cf-elite .bf-hero-bg,
-      .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
-
-      /* Premium full-art hero cards */
-      .bf-hero-card { position: relative !important; height: 100% !important; overflow: hidden !important; border-radius: 18px !important; border: 2.5px solid var(--clan,#caa14a) !important; background: #09070d !important; box-shadow: 0 10px 28px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,210,74,.24) !important; }
-      .bf-hero-bg { position: absolute; inset: -8%; z-index: 0; pointer-events: none; background-image: var(--bf-art); background-size: cover; background-position: center center; background-repeat: no-repeat; filter: saturate(1.12) contrast(1.08); }
-      .bf-hero-card::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.54) 0%, rgba(0,0,0,.12) 20%, rgba(0,0,0,0) 42%, rgba(0,0,0,.12) 64%, rgba(0,0,0,.68) 100%), radial-gradient(circle at 50% 4%, rgba(255,210,74,.20), rgba(0,0,0,0) 28%); }
-      .bf-hero-card.cf-elite::before { background: linear-gradient(180deg, rgba(16,0,34,.58) 0%, rgba(20,0,42,.10) 24%, rgba(0,0,0,0) 43%, rgba(18,0,35,.16) 66%, rgba(0,0,0,.70) 100%), radial-gradient(circle at 50% 4%, rgba(192,91,255,.28), rgba(0,0,0,0) 30%); }
-      /* Épicas: borde foiled holográfico animado */
-      .bf-hero-card.cf-epic { border-color:transparent !important; box-shadow:0 10px 28px rgba(0,0,0,.65), 0 0 24px rgba(255,170,80,.4) !important; }
-      .bf-hero-card.cf-epic .bf-foil { position:absolute; inset:-3px; z-index:6; border-radius:21px; padding:3px; pointer-events:none; background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a); background-size:300% 300%; animation:bfFoilShift 4s linear infinite; -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); mask-composite:exclude; filter:drop-shadow(0 0 8px rgba(255,200,120,.7)); }
-      .bf-hero-card.cf-epic::after { content:''; position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:18px; background:linear-gradient(125deg,transparent 30%,rgba(255,255,255,.18) 47%,transparent 62%); background-size:250% 250%; animation:bfFoilShift 4s linear infinite; mix-blend-mode:screen; }
-      @keyframes bfFoilShift { 0%{background-position:0% 0%} 100%{background-position:300% 300%} }
-      .bf-hero-frame { position:absolute; inset:7px; z-index:2; border:1px solid rgba(255,210,74,.36); border-radius:14px; pointer-events:none; box-shadow: inset 0 0 18px rgba(0,0,0,.72); }
-      .bf-hero-top, .bf-hero-band { display:none !important; }
-      .bf-race-sigil { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff7dc; font-family:'Cinzel',serif; font-size:25px; font-weight:1000; background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%); border:2px solid var(--clan,#caa14a); text-shadow:0 2px 4px #000,0 0 10px var(--clan,#caa14a); box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 15px color-mix(in srgb, var(--clan,#caa14a) 45%, transparent); }
-      .bf-nameplate { position:absolute; left:15px; right:15px; bottom:108px; z-index:4; text-align:center; padding:4px 9px 5px; border-radius:10px; background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14)); border:1px solid rgba(255,210,74,.18); backdrop-filter:blur(1.5px); }
-      .bf-hero-name { display:block; margin:0 auto; font-family:'Cinzel',serif; font-weight:900; font-size:clamp(15px, 5.4vw, 21px); line-height:1; color:#fff5dc; text-transform:uppercase; letter-spacing:.15px; text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95); overflow-wrap:anywhere; text-align:center; }
-      .bf-hero-card.cf-elite .bf-hero-name { color:#ffd66a; text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000; }
-      .bf-hero-title { display:block; margin:3px auto 0; max-width:92%; padding:2px 7px; border-radius:999px; color:#fff0bd; background:rgba(8,5,12,.62); border:1px solid rgba(255,210,74,.22); font-family:'Cinzel',serif; font-size:10.8px; line-height:1.08; font-weight:800; font-style:italic; text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22); text-align:center; letter-spacing:.12px; }
+      .flip3d{perspective:1300px!important}.flip3d-inner{transform-style:preserve-3d!important;transition:transform .62s cubic-bezier(.2,.72,.2,1)!important;will-change:transform!important}.flip3d.flipped .flip3d-inner{transform:rotateY(180deg)!important}.flip3d .face{backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;transform-style:preserve-3d!important}.flip3d .face.front{transform:rotateY(0deg) translateZ(1px)!important}.flip3d .face.back{transform:rotateY(180deg) translateZ(1px)!important}.face.back .bf-hero-card.cf-elite .bf-hero-bg,.face.back .cf-elite .cf-art.has-art::before{transform:none!important}.bf-hero-card{position:relative!important;height:100%!important;overflow:hidden!important;border-radius:18px!important;border:2.5px solid var(--clan,#caa14a)!important;background:#09070d!important;box-shadow:0 10px 28px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,210,74,.24)!important}.bf-hero-bg{position:absolute;inset:-8%;z-index:0;pointer-events:none;background-image:var(--bf-art);background-size:cover;background-position:center center;background-repeat:no-repeat;filter:saturate(1.12) contrast(1.08)}.bf-hero-card::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.54) 0%,rgba(0,0,0,.12) 20%,rgba(0,0,0,0) 42%,rgba(0,0,0,.12) 64%,rgba(0,0,0,.68) 100%),radial-gradient(circle at 50% 4%,rgba(255,210,74,.20),rgba(0,0,0,0) 28%)}.bf-hero-card.cf-elite::before{background:linear-gradient(180deg,rgba(16,0,34,.58) 0%,rgba(20,0,42,.10) 24%,rgba(0,0,0,0) 43%,rgba(18,0,35,.16) 66%,rgba(0,0,0,.70) 100%),radial-gradient(circle at 50% 4%,rgba(192,91,255,.28),rgba(0,0,0,0) 30%)}
+      .bf-hero-card.cf-epic{border-color:transparent!important;box-shadow:0 10px 28px rgba(0,0,0,.65),0 0 24px rgba(255,170,80,.4)!important}.bf-hero-card.cf-epic .bf-foil{position:absolute;inset:-3px;z-index:6;border-radius:21px;padding:3px;pointer-events:none;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 4s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;filter:drop-shadow(0 0 8px rgba(255,200,120,.7))}.bf-hero-card.cf-epic::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:18px;background:linear-gradient(125deg,transparent 30%,rgba(255,255,255,.18) 47%,transparent 62%);background-size:250% 250%;animation:bfFoilShift 4s linear infinite;mix-blend-mode:screen}@keyframes bfFoilShift{0%{background-position:0% 0%}100%{background-position:300% 300%}}.bf-hero-frame{position:absolute;inset:7px;z-index:2;border:1px solid rgba(255,210,74,.36);border-radius:14px;pointer-events:none;box-shadow:inset 0 0 18px rgba(0,0,0,.72)}.bf-hero-top,.bf-hero-band{display:none!important}.bf-race-sigil{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:5;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff7dc;font-family:'Cinzel',serif;font-size:25px;font-weight:1000;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%);border:2px solid var(--clan,#caa14a);text-shadow:0 2px 4px #000,0 0 10px var(--clan,#caa14a);box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 15px color-mix(in srgb,var(--clan,#caa14a) 45%,transparent)}.bf-nameplate{position:absolute;left:15px;right:15px;bottom:108px;z-index:4;text-align:center;padding:4px 9px 5px;border-radius:10px;background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14));border:1px solid rgba(255,210,74,.18);backdrop-filter:blur(1.5px)}.bf-hero-name{display:block;margin:0 auto;font-family:'Cinzel',serif;font-weight:900;font-size:clamp(15px,5.4vw,21px);line-height:1;color:#fff5dc;text-transform:uppercase;letter-spacing:.15px;text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95);overflow-wrap:anywhere;text-align:center}.bf-hero-card.cf-elite .bf-hero-name{color:#ffd66a;text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000}.bf-hero-title{display:block;margin:3px auto 0;max-width:92%;padding:2px 7px;border-radius:999px;color:#fff0bd;background:rgba(8,5,12,.62);border:1px solid rgba(255,210,74,.22);font-family:'Cinzel',serif;font-size:10.8px;line-height:1.08;font-weight:800;font-style:italic;text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22);text-align:center;letter-spacing:.12px}
       .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
       .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
       .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; } .bf-role-emblem { width:40px; height:40px; border-radius:50%; object-fit:cover; vertical-align:middle; filter:drop-shadow(0 2px 5px rgba(0,0,0,.7)); display:inline-block; } .phase-badge .bf-role-emblem { width:44px; height:44px; } .bf-hero-card .bf-role-emblem { width:40px; height:40px; }
@@ -1159,43 +1134,12 @@ function buildArtScript() {
       return { add: (mb && mb.type === 'BID_ADD') ? Number(mb.effect || 0) : 0, sub: (ob && ob.type === 'BID_SUB') ? Number(ob.effect || 0) : 0 };
     };
 
-    // Min RAW bid = hero's base cost only. Bonus/restador are visual markers, not a floor.
-    window.minRawBid = function(side, h) { if (!h) return 0; return Math.max(0, Number(h.cost || 0)); };
-    function adjustBid(side, heroId, amount) {
-      var h = findHero(heroId);
-      if (!h) return amount;
-      var coins = Number((G.coins && G.coins[side]) || 0), minRaw = window.minRawBid(side, h);
-      if (coins < minRaw) return null;
-      return Math.min(coins, Math.max(Number(amount || 0), minRaw));
-    }
-
-    // Net bonus delta this round: adder on your own side + subtractor coming from the rival.
-    window.bfBidDelta = function(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],delta=0,label='';if(mb&&mb.type==='BID_ADD'){delta+=Number(mb.effect||0);label='+'+Number(mb.effect||0)+' '+mb.name;}if(rb&&rb.type==='BID_SUB'){delta-=Number(rb.effect||0);label=(label?label+' · ':'')+'-'+Number(rb.effect||0)+' '+rb.name;}return{delta:delta,label:label};};
-    // The bid is just the bid (it decides the winner). Bonuses are NOT baked in — they only adjust
-    // what you pay AFTER winning. So the suggested starting value is simply the hero cost.
-    window.bfDefaultBid = function(side,h){if(!h)return 0;var cost=Number(h.cost||0);var minRaw=window.minRawBid(side,h);var coins=Number((G.coins&&G.coins[side])||0);return Math.min(coins,Math.max(minRaw,cost));};
-    // Preview: show the player what they'll ACTUALLY pay if they win with the current bid —
-    // own adder lowers the paid cost, the rival's subtractor raises it. Bonuses never touch the bid.
-    window.bfUpdateBidPreview = function(heroId){var box=document.getElementById('bidcalc_'+heroId);if(!box)return;var side=humanSide();var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var h=(pool||[]).find(function(x){return x&&x.id===heroId;});if(!h)return;var inp=document.getElementById('bid_'+heroId);var bid=inp?(parseInt(inp.value||'0',10)||0):Number(h.cost||0);var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)];var add=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0;var sub=(rb&&rb.type==='BID_SUB')?Number(rb.effect||0):0;var paid=Math.max(0,bid-add+sub);var html='<div style="color:#ffe49a">Tu puja: <b>'+bid+'</b> 🪙</div>';if(add>0)html+='<div style="color:#54e876">Tu bonificador: <b>−'+add+' 🪙 al pagar</b> <span style="font-weight:700;opacity:.85">('+mb.name+')</span></div>';if(sub>0)html+='<div style="color:#ff6b6b">El rival te resta: <b>+'+sub+' 🪙 al pagar</b> <span style="font-weight:700;opacity:.85">('+rb.name+')</span></div>';if(add>0||sub>0)html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás: <b>'+paid+' 🪙</b></div>';else html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás <b>'+bid+' 🪙</b></div>';box.innerHTML=html;};
-
-    function patchBidInputs() {
-      var all = (G.cands || []).slice();
-      if (G.epicCands) Object.values(G.epicCands).forEach(function(list) { all = all.concat(list || []); });
-      all.forEach(function(h) {
-        var inp = document.getElementById('bid_' + h.id);
-        if (!inp) return;
-        var side = humanSide();
-        var minRaw = window.minRawBid(side, h);
-        inp.min = String(minRaw);
-        // Default the field to the hero cost (the bid is just the bid; bonuses apply on payment),
-        // unless the player has already set a valid value of their own.
-        if (!inp.dataset.bfTouched) inp.value = String(window.bfDefaultBid(side, h));
-        var current = parseInt(inp.value || '0', 10) || 0;
-        if (current < minRaw) inp.value = String(Math.min(minRaw, Number((G.coins && G.coins[side]) || minRaw)));
-        if (!inp.dataset.bfTouchBound) { inp.dataset.bfTouchBound = '1'; inp.addEventListener('input', function(){ this.dataset.bfTouched = '1'; }); }
-        window.bfUpdateBidPreview(h.id);
-      });
-    }
+    window.minRawBid=function(s,h){return!h?0:Math.max(0,Number(h.cost||0));};
+    window.bfBidDelta=function(s){var mb=G.bonus&&G.bonus[s],rb=G.bonus&&G.bonus[other(s)],d=0,l='';if(mb&&mb.type==='BID_ADD'){d+=Number(mb.effect||0);l='+'+Number(mb.effect||0)+' '+mb.name;}if(rb&&rb.type==='BID_SUB'){d-=Number(rb.effect||0);l=(l?l+' · ':'')+'-'+Number(rb.effect||0)+' '+rb.name;}return{delta:d,label:l};};
+    window.bfDefaultBid=function(s,h){if(!h)return 0;var m=window.bidMods(s);return Math.max(0,Number(h.cost||0)+m.add-m.sub);};
+    window.bfUpdateBidPreview=function(id){var bx=document.getElementById('bidcalc_'+id);if(!bx)return;var s=humanSide(),h=((G.epicCands&&G.epicCands[s])||G.cands||[]).find(function(x){return x&&x.id===id;});if(!h)return;var inp=document.getElementById('bid_'+id),bid=inp?(parseInt(inp.value||'0',10)||0):window.bfDefaultBid(s,h),mb=G.bonus&&G.bonus[s],rb=G.bonus&&G.bonus[other(s)],a=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0,u=(rb&&rb.type==='BID_SUB')?Number(rb.effect||0):0,pd=Math.max(0,bid-a+u),html='<div style="color:#ffe49a">Tu puja: <b>'+bid+'</b> 🪙</div>';if(a>0)html+='<div style="color:#54e876">Tu bonificador: <b>−'+a+' 🪙 al pagar</b> <span>('+mb.name+')</span></div>';if(u>0)html+='<div style="color:#ff6b6b">El rival te resta: <b>+'+u+' 🪙 al pagar</b> <span>('+rb.name+')</span></div>';html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás: <b>'+pd+' 🪙</b></div>';bx.innerHTML=html;};
+    function adjustBid(s,id,amt){var h=findHero(id);if(!h)return amt;var c=Number((G.coins&&G.coins[s])||0),mr=window.minRawBid(s,h),m=window.bidMods(s),mx=c+m.add-m.sub;if(mx<mr)return null;var b=Number(amt||0);return b<mr?mr:(b>mx?mx:b);}
+    function patchBidInputs(){var all=(G.cands||[]).slice();if(G.epicCands)Object.values(G.epicCands).forEach(function(l){all=all.concat(l||[]);});all.forEach(function(h){var inp=document.getElementById('bid_'+h.id);if(!inp)return;var s=humanSide(),mr=window.minRawBid(s,h);inp.min=String(mr);if(!inp.dataset.bfTouched)inp.value=String(window.bfDefaultBid(s,h));if(!inp.dataset.bfTouchBound){inp.dataset.bfTouchBound='1';inp.addEventListener('input',function(){this.dataset.bfTouched='1';});}window.bfUpdateBidPreview(h.id);});}
 
     function epicPoolForCurrentType(){var t=(G.cands&&G.cands[0]&&G.cands[0].type)||G.curType||G.phaseType||G.auctType;var u={};['p','o'].forEach(function(s){(G.team&&G.team[s]||[]).forEach(function(h){u[h.id]=1;});});(G.cands||[]).forEach(function(h){if(h)u[h.id]=1;});var p=HEROES.filter(function(h){return h.clan==='Épicas'&&(!t||h.type===t)&&!u[h.id];});if(!p.length)p=HEROES.filter(function(h){return h.clan==='Épicas'&&!u[h.id];});return p;}
 
@@ -1305,17 +1249,15 @@ function buildArtScript() {
     function isLastAuct(){var tl=(G.team&&G.team['p']&&G.team['p'].length)||0;if(tl>=2)return true;var c=(G.epicCands&&G.epicCands['p'])||G.cands||[];return c.length>0&&c[0]&&c[0].type==='HE';}
     function bfNoCoinDialog(side,pool){var ex=document.getElementById('bf-confirm-overlay');if(ex)ex.remove();var ch=pool.slice().sort(function(a,b){return Number(a&&a.cost||0)-Number(b&&b.cost||0);})[0];var ov=document.createElement('div');ov.id='bf-confirm-overlay';ov.className='bf-confirm-overlay';ov.innerHTML='<div class="bf-confirm-box"><div class="bf-confirm-body"><div style="font-size:38px;margin-top:10px">💸</div><div class="bf-confirm-name" style="margin-top:6px">¡Sin monedas!</div><div class="bf-confirm-msg">No puedes pujar por ningún héroe de magia. Elige:</div><div class="bf-confirm-actions" style="flex-direction:column;gap:8px"><button class="bf-confirm-btn bf-confirm-yes" id="bf-nocoin-debt">🏦 Deuda de equipamiento<br><span style="font-size:10px;font-weight:600;opacity:.8">Te quedas con '+(ch?ch.name:'el más barato')+' y lo pagarás con tu presupuesto de equipo</span></button><button class="bf-confirm-btn bf-confirm-no" id="bf-nocoin-skip">⏩ Ir al equipamiento sin este héroe</button></div></div></div>';document.body.appendChild(ov);function bfNCD_close(){if(ov.parentNode)ov.parentNode.removeChild(ov);}ov.addEventListener('click',function(e){if(e.target===ov)bfNCD_close();});ov.querySelector('#bf-nocoin-debt').onclick=function(){bfNCD_close();if(ch){G.coins[side]=Math.max(Number((G.coins&&G.coins[side])||0),Number(ch.cost||0));G.bids[side]={heroId:ch.id,amount:Number(ch.cost||0)};if(typeof window.resolveBidRound==='function')window.resolveBidRound();}bfGuideReact('wow','¡DEUDA!');};ov.querySelector('#bf-nocoin-skip').onclick=function(){bfNCD_close();G.bids[side]={pass:true};if(typeof window.resolveBidRound==='function')window.resolveBidRound();bfGuideReact('shock','¡SIN HÉROE!');};};
     var originalSubmitBid = window.submitBid;
-    window.submitBid = function(side, heroId) {
-      var inp = document.getElementById('bid_' + heroId); var raw = inp ? (parseInt(inp.value || '0', 10) || 0) : 0;
-      var amt = adjustBid(side, heroId, raw); var h = findHero(heroId);
-      if (amt === null) {
-        var coins=Number((G.coins&&G.coins[side])||0); var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];
-        var cheapest=pool.reduce(function(m,x){return x&&Number(x.cost||0)<m?Number(x.cost||0):m;},Infinity);
-        if(coins<cheapest&&cheapest<Infinity){bfGuideReact('shock','¡SIN MONEDAS!');if(isLastAuct()){bfNoCoinDialog(side,pool.filter(function(x){return !!x;}));}else if(window.notif)notif('No puedes permitirte ningún héroe (necesitas '+cheapest+', tienes '+coins+').');}
-        else if(window.notif&&h)notif('Necesitas al menos '+h.cost+' monedas para pujar por '+h.name+'.');
+    window.submitBid = function(s, id) {
+      var inp=document.getElementById('bid_'+id),raw=inp?(parseInt(inp.value||'0',10)||0):0,amt=adjustBid(s,id,raw),h=findHero(id);
+      if(amt===null){
+        var c=Number((G.coins&&G.coins[s])||0),p=(G.epicCands&&G.epicCands[s])||G.cands||[],ch=p.reduce(function(m,x){return x&&Number(x.cost||0)<m?Number(x.cost||0):m;},Infinity),m=window.bidMods(s),req=ch-m.add+m.sub;
+        if(c<req&&ch<Infinity){bfGuideReact('shock','¡SIN MONEDAS!');if(isLastAuct())bfNoCoinDialog(s,p.filter(function(x){return !!x;}));else if(window.notif)notif('No puedes permitirte ningún héroe (necesitas '+req+', tienes '+c+').');}
+        else if(window.notif&&h)notif('Necesitas '+(Number(h.cost||0)-m.add+m.sub)+' monedas para pujar por '+h.name+'.');
         return;
       }
-      if (inp) inp.value = String(amt); return originalSubmitBid.apply(this, arguments);
+      if(inp)inp.value=String(amt);return originalSubmitBid.apply(this,arguments);
     };
     var originalNetBid = window.netBid;
     window.netBid = function(heroId, amount) {
@@ -1329,23 +1271,21 @@ function buildArtScript() {
     // AI can't afford a hero: take equip-debt for the cheapest hero or skip — either way
     // clear phaseNeeds so the auction advances to equip instead of looping on bad bids.
     function bfAiNoCoin(side){var pool=((G.epicCands&&G.epicCands[side])||G.cands||[]).filter(function(x){return !!x;});var ch=pool.slice().sort(function(a,b){return Number(a&&a.cost||0)-Number(b&&b.cost||0);})[0];var team=(G.team&&G.team[side]&&G.team[side].length)||0;if(ch&&team<3){G.coins[side]=Math.max(Number((G.coins&&G.coins[side])||0),Number(ch.cost||0));G.bids[side]={heroId:ch.id,amount:Number(ch.cost||0)};}else{G.bids[side]={pass:true};if(G.phaseNeeds)G.phaseNeeds[side]=false;}}
-    var originalAiBid = window.aiBid;
-    window.aiBid = function(side) {
-      var saved = G.cands;
-      if (G.epicCands && G.epicCands[side]) G.cands = G.epicCands[side];
-      try { originalAiBid.apply(this, arguments); } catch(e) {}
-      if (!G.bids) G.bids = {};
-      var bid = G.bids[side];
-      if (!bid) {
-        if (G.acq && G.acq[side]) G.bids[side] = {pass: true};
-        else bfAiNoCoin(side);
-      } else if (!bid.pass) {
-        var amt = adjustBid(side, bid.heroId, bid.amount);
-        if (amt === null) { if (G.acq && G.acq[side]) G.bids[side] = {pass: true}; else bfAiNoCoin(side); }
-        else { var coins=Number((G.coins&&G.coins[side])||0), mc=minPoolCost(side), rl=roundsLeft(side); var base=Math.min(amt, Math.max(mc, coins - mc*Math.max(0,rl-1))); G.bids[side].amount = Math.max(0, Math.min(coins, base)); }
+    var originalAiBid=window.aiBid;
+    window.aiBid=function(s){
+      var sv=G.cands;if(G.epicCands&&G.epicCands[s])G.cands=G.epicCands[s];
+      try{originalAiBid.apply(this,arguments);}catch(e){}
+      if(!G.bids)G.bids={};var b=G.bids[s];
+      if(!b){if(G.acq&&G.acq[s])G.bids[s]={pass:true};else bfAiNoCoin(s);}
+      else if(!b.pass){
+        var amt=adjustBid(s,b.heroId,b.amount);
+        if(amt===null){if(G.acq&&G.acq[s])G.bids[s]={pass:true};else bfAiNoCoin(s);}
+        else{
+          var c=Number((G.coins&&G.coins[s])||0),mc=minPoolCost(s),m=window.bidMods(s),mx=Math.max(mc,c-mc*Math.max(0,roundsLeft(s)-1)),h=findHero(b.heroId),mr=window.minRawBid(s,h);
+          G.bids[s].amount=Math.max(mr,Math.min(amt,mx+m.add-m.sub));
+        }
       }
-      G.cands = saved;
-      if (typeof window.checkBids === 'function') window.checkBids();
+      G.cands=sv;if(typeof window.checkBids==='function')window.checkBids();
     };
 
     var originalResolveBidRound = window.resolveBidRound;
