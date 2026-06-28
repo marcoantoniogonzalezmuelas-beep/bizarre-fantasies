@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-06-28-punkito-v92';
+const EXPECTED_PATCH_VERSION = 'bf-2026-06-28-punkito-v93';
 const MAX_LOAD_ATTEMPTS = 3;
 
 export default function Home() {
@@ -12,7 +12,7 @@ export default function Home() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
-  const [dbCount, setDbCount] = useState(105);
+  const [dbCount, setDbCount] = useState(107);
 
   useEffect(() => {
     base44.entities.Card.list('number', 200).then(cards => {

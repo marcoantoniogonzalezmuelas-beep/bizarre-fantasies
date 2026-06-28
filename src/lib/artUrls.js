@@ -179,4 +179,6 @@ export const BONUS_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/26219e884_generated_image.png', // Hacker Nexus
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1acefc0e0_generated_image.png', // Bandolero Seco
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/77bc42e4f_generated_image.png', // Glitch
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0934ebffe_generated_image.png', // Mina de Oro
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/70f137c2b_generated_image.png', // Ladrón de Guante
 ];

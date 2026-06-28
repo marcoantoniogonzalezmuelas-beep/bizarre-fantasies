@@ -131,18 +131,20 @@ export const OBJECTS = [
 ];
 
 export const BONUSES = [
-  { id:"ban", num:92, name:"Gran Banquero", type:"BON", txt:"+25 monedas para esta subasta." },
-  { id:"cor", num:93, name:"Corredor de Bolsa", type:"BON", txt:"+20 monedas esta subasta." },
-  { id:"mer", num:94, name:"Mercader Zeta", type:"BON", txt:"+15 monedas esta subasta." },
-  { id:"nau", num:95, name:"Nauta Financiero", type:"BON", txt:"+18 monedas esta subasta." },
-  { id:"pre", num:96, name:"La Prestamista", type:"BON", txt:"+22 monedas ahora, -8 la próxima ronda." },
+  { id:"ban", num:92, name:"Gran Banquero", type:"BID_ADD", txt:"+25 al valor de tu puja." },
+  { id:"cor", num:93, name:"Corredor de Bolsa", type:"BID_ADD", txt:"+20 al valor de tu puja." },
+  { id:"mer", num:94, name:"Mercader Zeta", type:"BID_ADD", txt:"+15 al valor de tu puja." },
+  { id:"nau", num:95, name:"Nauta Financiero", type:"BID_ADD", txt:"+18 al valor de tu puja." },
+  { id:"pre", num:96, name:"La Prestamista", type:"BID_ADD", txt:"+22 a tu puja ahora, -8 monedas la próxima ronda." },
   { id:"for_", num:97, name:"Patrón de Forja", type:"EQP", txt:"+20 monedas para la fase de EQUIPAMIENTO." },
   { id:"arm", num:98, name:"Armero Real", type:"EQP", txt:"+15 monedas para la fase de EQUIPAMIENTO." },
-  { id:"pir", num:99, name:"El Pirata", type:"RES", txt:"El rival pierde 20 monedas esta ronda." },
-  { id:"cor2", num:100, name:"La Corsaria", type:"RES", txt:"El rival pierde 25 monedas esta ronda." },
-  { id:"hac", num:101, name:"Hacker Nexus", type:"RES", txt:"El rival pierde 15 monedas esta ronda." },
-  { id:"ban2", num:102, name:"Bandolero Seco", type:"RES", txt:"El rival pierde 12 monedas esta ronda." },
-  { id:"gli", num:103, name:"Glitch", type:"RES", txt:"El rival pierde 10 monedas esta ronda." },
+  { id:"pir", num:99, name:"El Pirata", type:"BID_SUB", txt:"El rival sufre -20 a su puja." },
+  { id:"cor2", num:100, name:"La Corsaria", type:"BID_SUB", txt:"El rival sufre -25 a su puja." },
+  { id:"hac", num:101, name:"Hacker Nexus", type:"BID_SUB", txt:"El rival sufre -15 a su puja." },
+  { id:"ban2", num:102, name:"Bandolero Seco", type:"BID_SUB", txt:"El rival sufre -12 a su puja." },
+  { id:"gli", num:103, name:"Glitch", type:"BID_SUB", txt:"El rival sufre -10 a su puja." },
+  { id:"mina", num:104, name:"Mina de Oro", type:"PERM", txt:"+15 monedas a tu total (permanente)." },
+  { id:"roba", num:105, name:"Ladrón de Guante", type:"PERM", txt:"El rival pierde 15 monedas (permanente)." }
 ];
 
 export const RACES = [
@@ -163,6 +165,6 @@ export const CATEGORIES = [
   { key: "melee", label: "Armas C/C", count: 6 },
   { key: "armors", label: "Armaduras", count: 10 },
   { key: "objects", label: "Objetos", count: 9 },
-  { key: "bonuses", label: "Bonificadores", count: 12 },
+  { key: "bonuses", label: "Bonificadores", count: 14 },
   { key: "races", label: "Razas", count: 8 },
 ];
