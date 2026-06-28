@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v84';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v85';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -31,13 +31,12 @@ const RANGED_ART = ['2146a215b','ab826c633','88e45b0a1','93554b1ee','c8cf4c6d1',
 const ARMOR_ART = ['b989796b2','37519e06c','4a38b42e1','6889c5c36','fefd71323','2de5cea6a','244338b2e','adc154eaf','46890f673','ed198ba53'].map(toArt);
 
 const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b'].map(toArt);
-
 const OBJECT_ART = ['58d239c00','1688e1433','9b9d6986f','dd35e9e6b','026d2d45d','d138d9427','6eec753dd','4581afaa7','b990b1173'].map(toArt);
-
+// Spell mana by name — the upstream SPELLS list has no `mana`, so we inject this and use it as fallback.
+const SPELL_MANA = {'Bola de Fuego':8,'Tormenta Ígnea':16,'Lanza de Hielo':9,'Rayo en Cadena':12,'Maremoto':15,'Curación':8,'Curación Divina':15,'Escudo de Maná':8,'Barrera Arcana':12,'Sueño':10,'Paralización':11,'Maldición':8,'Bendición':8};
 // Last two match the DB: Bandolero Seco, Glitch.
 const BONUS_ART = ['88ffc8b21','a644bca96','a5d3ecf52','a58e01097','664754ee3','6c0160e33','fbe03869b','5369480ce','e5c4370fc','26219e884','1acefc0e0','77bc42e4f'].map(toArt);
 
-// Bonus / restador ids and display names, index-for-index with BONUS_ART.
 const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli"];
 const BONUS_NAMES = ["Gran Banquero","Corredor de Bolsa","Mercader Zeta","Nauta Financiero","La Prestamista","Patrón de Forja","Armero Real","El Pirata","La Corsaria","Hacker Nexus","Bandolero Seco","Glitch"];
 
@@ -87,6 +86,7 @@ function buildArtScript() {
   var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
   var SPELL_ART = ${JSON.stringify(SPELL_ART)};
   var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
+  var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
@@ -1487,7 +1487,7 @@ function buildArtScript() {
       overlay.className = 'bf-confirm-overlay';
       overlay.innerHTML =
         '<div class="bf-confirm-box">' +
-          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (item.mana != null ? '<div class="bf-confirm-mana">' + item.mana + '</div>' : '<div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>') + '</div>' : '') +
+          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (bfManaFor(item) != null ? '<div class="bf-confirm-mana">' + bfManaFor(item) + '</div>' : '<div class="bf-confirm-num">Nº ' + String(no || 0).padStart(3, '0') + '</div>') + '</div>' : '') +
           '<div class="bf-confirm-body">' +
             '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
             (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') +
@@ -1678,7 +1678,7 @@ function buildArtScript() {
           card.insertBefore(fill, card.firstChild);
           var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(sharp, card.firstChild);
-          var spMana = (meta && meta.kind === 'spell') ? meta.mana : (nameEl ? ((SPELLS || []).find(function(s){ return s && s.name === nameEl.textContent.trim(); }) || {}).mana : null);
+          var spMana = (meta && meta.kind === 'spell' && nameEl) ? bfManaFor({ name: nameEl.textContent.trim(), mana: meta.mana }) : null;
           if (spMana != null) { var mb = document.createElement('div'); mb.className = 'bf-shop-mana'; mb.textContent = spMana; card.appendChild(mb); }
           // Card name (stylized) over the image.
           if (nameEl) {
@@ -1843,7 +1843,7 @@ function buildArtScript() {
   function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr) {
     var costBadge = document.createElement('div');
     costBadge.className = 'bf-chip-cost' + (found && found.kind === 'spell' ? ' bf-mana-cost' : '');
-    costBadge.textContent = (found && found.kind === 'spell') ? (found.item.mana || '0') : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
+    costBadge.textContent = (found && found.kind === 'spell') ? (bfManaFor(found.item) != null ? bfManaFor(found.item) : '0') : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
     chip.appendChild(costBadge);
     var playBtn = document.createElement('button');
     playBtn.className = 'bf-chip-play';
@@ -1854,7 +1854,7 @@ function buildArtScript() {
       var item = found ? found.item : null;
       if (item && found.kind === 'spell') {
         var mana = bfActiveMana();
-        var cost = Number(item.mana || 0);
+        var cost = Number(bfManaFor(item) || 0);
         if (mana !== null && cost > mana) {
           if (window.notif) notif('No tienes maná suficiente. Necesitas ' + cost + '.');
           return;
@@ -2318,7 +2318,7 @@ function buildArtScript() {
             else if (origOnclickAttr) { try { new Function('event', origOnclickAttr).call(chip, e); } catch (err) {} }
           }, 240);
         };
-        bfConfirmPlayCard({name: name, kind: kind, effect: item ? (item.txt || item.desc || '') : '', manaCost: item ? (item.mana || item.manaCost || item.cost || 0) : 0, mana: kind === 'spell' ? bfActiveMana() : null}, run);
+        bfConfirmPlayCard({name: name, kind: kind, effect: item ? (item.txt || item.desc || '') : '', manaCost: item ? (bfManaFor(item) != null ? bfManaFor(item) : (item.manaCost || item.cost || 0)) : 0, mana: kind === 'spell' ? bfActiveMana() : null}, run);
       }, true);
     });
   }
