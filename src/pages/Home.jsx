@@ -8,7 +8,7 @@ const MAX_LOAD_ATTEMPTS = 3;
 
 export default function Home() {
   const iframeRef = useRef(null);
-  const [blobUrl, setBlobUrl] = useState('');
+  const [html, setHtml] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
@@ -22,7 +22,6 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
-    let currentBlobUrl = '';
 
     const loadGame = async (attempt = 1) => {
       try {
@@ -45,11 +44,9 @@ export default function Home() {
           loadGame(attempt + 1);
           return;
         }
-        // Serve the game through a fresh Blob URL so the iframe always loads new
-        // bytes — `srcDoc` can keep a stale rendered document in the preview.
-        const blob = new Blob([data], { type: 'text/html' });
-        currentBlobUrl = URL.createObjectURL(blob);
-        setBlobUrl(currentBlobUrl);
+        // Render the game through srcDoc — blob: URLs can be blocked inside the
+        // embedded preview iframe, leaving the page blank. srcDoc is reliable.
+        setHtml(data);
         setReloadKey((k) => k + 1);
         setLoading(false);
       } catch {
@@ -66,7 +63,6 @@ export default function Home() {
 
     return () => {
       cancelled = true;
-      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     };
   }, []);
 
@@ -96,12 +92,12 @@ export default function Home() {
         </div>
       </Link>
 
-      {blobUrl && (
+      {html && (
         <iframe
           key={reloadKey}
           ref={iframeRef}
           title="Bizarre Fantasies v5"
-          src={blobUrl}
+          srcDoc={html}
           className="w-full h-full border-0"
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
