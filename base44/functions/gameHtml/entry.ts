@@ -2,7 +2,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v82';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v83';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const HERO_ART = [
@@ -389,8 +389,7 @@ function buildArtScript() {
       /* Equipped item thumbnail inside a filled slot (no number) */
       .eq-slot.bf-slot-art { position:relative; padding-left:54px !important; min-height:50px; display:flex; align-items:center; }
       .bf-slot-thumb { position:absolute; left:6px; top:50%; transform:translateY(-50%); width:42px; height:42px; border-radius:8px; background-size:cover; background-position:center; border:1px solid rgba(255,210,74,.45); box-shadow:0 3px 8px rgba(0,0,0,.5); }
-      .bf-quick-num { position:absolute; top:8px; right:8px; z-index:3; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:2px 7px; }
-      .eq-slot.bf-slot-empty { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+      .bf-quick-num { position:absolute; top:8px; right:8px; z-index:3; font-size:9px; font-weight:900; color:#ffe7a8; background:rgba(0,0,0,.7); border:1px solid rgba(255,210,74,.32); border-radius:999px; padding:2px 7px; } .eq-slot.bf-slot-empty { display:flex; align-items:center; justify-content:space-between; gap:8px; }
       .bf-slot-buy { border:1px solid rgba(255,210,74,.55); background:rgba(255,210,74,.12); color:#ffe49a; border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; }
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
@@ -398,8 +397,10 @@ function buildArtScript() {
       .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
       .bf-quick-fill { display:block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .bf-quick-art { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
-      .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-fill):not(.bf-quick-cost) { display:none !important; }
+      .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-fill):not(.bf-quick-cost):not(.bf-quick-name):not(.bf-quick-txt) { display:none !important; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
+      .bf-quick-name { position:absolute; left:5px; right:5px; bottom:42px; z-index:4; text-align:center; font-family:'Cinzel',serif; font-weight:1000; font-size:12.5px; line-height:1.05; color:#fff5dc; text-transform:uppercase; letter-spacing:.2px; text-shadow:0 2px 5px #000,0 0 10px #000; padding:2px 5px; border-radius:7px; background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.55),rgba(0,0,0,0)); }
+      .bf-quick-txt { position:absolute; left:5px; right:5px; bottom:5px; z-index:4; padding:4px 6px; border-radius:7px; background:rgba(8,5,14,.86); border:1px solid rgba(255,210,74,.3); color:#fff7ea; font-size:9px; font-weight:700; line-height:1.2; text-align:center; max-height:34px; overflow:hidden; text-shadow:0 1px 2px #000; }
       /* In-game styled confirm dialog */
       .bf-confirm-overlay { position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:20px; background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.72),rgba(8,5,14,.9)); backdrop-filter:blur(4px); animation:bfFadeIn .2s ease; }
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
