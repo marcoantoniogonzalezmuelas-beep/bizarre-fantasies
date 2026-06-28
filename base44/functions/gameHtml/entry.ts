@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v101';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v103';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1177,6 +1177,9 @@ function buildArtScript() {
       if (m.sub) parts.push('<span style="color:#ff8a8a">\\u2212' + m.sub + '</span>');
       out.innerHTML = (m.add || m.sub) ? parts.join(' ') + ' <span style="color:#ffd24a">= ' + (raw + m.add - m.sub) + '</span>' : '<span style="color:#ffd24a">Puja final: ' + raw + '</span>';
     };
+
+    // Bid scoreboard under each hero card: hero cost + this round's bonus (adder/subtractor, 0 if none) + final bid value.
+    window.bfUpdateBidPreview = function(heroId){var box=document.getElementById('bidcalc_'+heroId);if(!box)return;var side=humanSide();var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var h=(pool||[]).find(function(x){return x&&x.id===heroId;});if(!h)return;var inp=document.getElementById('bid_'+heroId);var raw=inp?(parseInt(inp.value||'0',10)||0):Number(h.cost||0);var cost=Number(h.cost||0);var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],delta=0,label='';if(mb&&mb.type==='BID_ADD'){delta+=Number(mb.effect||0);label='+'+Number(mb.effect||0)+' '+mb.name;}if(rb&&rb.type==='BID_SUB'){delta-=Number(rb.effect||0);label=(label?label+' · ':'')+'-'+Number(rb.effect||0)+' '+rb.name;}var fin=Math.max(0,raw+delta);var bc=delta>0?'#54e876':delta<0?'#ff6b6b':'#bdae87';box.innerHTML='<div style="color:#ffe49a">Coste del personaje: <b>'+cost+'</b> 🪙</div><div style="color:'+bc+'">Bonificador: <b>'+(delta>0?'+':'')+delta+' 🪙</b>'+(label?' <span style="font-weight:700;opacity:.85">('+label+')</span>':'')+'</div><div style="color:#FFD24A">Valor final de la puja: <b>'+fin+'</b> 🪙</div>';};
 
     function patchBidInputs() {
       var all = (G.cands || []).slice();
@@ -2474,8 +2477,8 @@ async function buildGameHtml() {
   html = html.replace(resolveRoundOriginal, resolveRoundPatched);
   html = html.replace('`pujó <b class="pr-amt">${amt}</b> 🪙 por', '`pujó <b class="pr-amt">${side==="p"?r.bpAmtTxt||(amt+" 🪙"):r.boAmtTxt||(amt+" 🪙")}</b> por');
 
-  const recruitOriginal = 'const bid = mode===\\\'bid\\\'\\n    ? `<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\\\'${side}\\\',\\\'${h.id}\\\')">Pujar</button></div>`\\n    : `<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>`;';
-  const recruitPatched = `const bid = mode==='bid' ? \\\`<div class="hcard-bid-zone"><div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="\${h.cost}" max="\${G.coins[side]}" value="\${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview('\${h.id}')"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div><div id="bidcalc_\${h.id}" style="font-size:10.5px;text-align:center;line-height:1.2;margin-top:4px;font-weight:900;text-shadow:0 1px 3px #000;"></div></div>\\\` : \\\`<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>\\\`;`;
+  const recruitOriginal = '<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div>';
+  const recruitPatched = '<div class="hcard-bid-zone" style="flex-direction:column;align-items:stretch"><div style="display:flex;gap:6px"><input style="flex:1" class="bid-mini-input" id="bid_${h.id}" type="number" min="${h.cost}" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview(\'${h.id}\')"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div><div id="bidcalc_${h.id}" style="font-size:10.5px;text-align:center;line-height:1.25;margin-top:5px;font-weight:900;text-shadow:0 1px 3px #000;background:rgba(8,5,14,.6);border:1px solid rgba(255,210,74,.25);border-radius:8px;padding:4px 6px;"></div></div>';
   html = html.replace(recruitOriginal, recruitPatched);
 
   // Inject art script right before </body> (after the game's script is defined).
