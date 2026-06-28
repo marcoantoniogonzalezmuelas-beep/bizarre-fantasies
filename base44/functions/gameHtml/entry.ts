@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v95';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v96';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1165,23 +1165,31 @@ function buildArtScript() {
       return null;
     }
 
-    window.getMinBid = function(side, h) {
-      if(!h) return 0;
-      var minB = Number(h.cost || 0);
+    // Bonus modifiers on the FINAL bid value: add = own bonus, sub = rival restador.
+    window.bidMods = function(side) {
       var mb = G.bonus && G.bonus[side], ob = G.bonus && G.bonus[side === 'p' ? 'o' : 'p'];
-      if(mb && mb.type === 'BID_ADD') minB -= mb.effect;
-      if(ob && ob.type === 'BID_SUB') minB += ob.effect;
-      return Math.max(0, minB);
+      return { add: (mb && mb.type === 'BID_ADD') ? Number(mb.effect || 0) : 0, sub: (ob && ob.type === 'BID_SUB') ? Number(ob.effect || 0) : 0 };
     };
 
     function adjustBid(side, heroId, amount) {
       var h = findHero(heroId);
       if (!h) return amount;
       var coins = Number((G.coins && G.coins[side]) || 0);
-      var minB = window.getMinBid(side, h);
-      if (coins < minB) return null;
-      return Math.min(coins, Math.max(Number(amount || 0), minB));
+      if (coins < h.cost) return null;
+      return Math.min(coins, Math.max(Number(amount || 0), h.cost));
     }
+
+    // Live "Puja + Bono − Restador = Total final" readout under each bid input.
+    window.bfUpdateBidPreview = function(heroId) {
+      var inp = document.getElementById('bid_' + heroId), out = document.getElementById('bidcalc_' + heroId);
+      if (!inp || !out) return;
+      var raw = parseInt(inp.value || '0', 10) || 0, m = window.bidMods('p');
+      var parts = ['<span style="color:#fff">' + raw + '</span>'];
+      if (m.add) parts.push('<span style="color:#79e08a">+' + m.add + '</span>');
+      if (m.sub) parts.push('<span style="color:#ff8a8a">\\u2212' + m.sub + '</span>');
+      var total = Math.max(0, raw + m.add - m.sub);
+      out.innerHTML = (m.add || m.sub) ? parts.join(' ') + ' <span style="color:#ffd24a">= ' + total + '</span>' : '<span style="color:#ffd24a">Puja final: ' + total + '</span>';
+    };
 
     function patchBidInputs() {
       var all = (G.cands || []).slice();
@@ -1189,10 +1197,10 @@ function buildArtScript() {
       all.forEach(function(h) {
         var inp = document.getElementById('bid_' + h.id);
         if (!inp) return;
-        var minB = window.getMinBid ? window.getMinBid('p', h) : Number(h.cost || 0);
-        inp.min = String(minB);
+        inp.min = String(h.cost);
         var current = parseInt(inp.value || '0', 10) || 0;
-        if (current < minB) inp.value = String(Math.min(minB, Number((G.coins && G.coins.p) || minB)));
+        if (current < h.cost) inp.value = String(Math.min(h.cost, Number((G.coins && (G.coins.p || G.coins.o)) || h.cost)));
+        window.bfUpdateBidPreview(h.id);
       });
     }
 
@@ -1312,7 +1320,7 @@ function buildArtScript() {
       return originalNetBid.call(this, heroId, amt);
     };
 
-    function minPoolCost(side){var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var m=Infinity;for(var i=0;i<pool.length;i++){if(!pool[i])continue;var c=window.getMinBid?window.getMinBid(side,pool[i]):Number(pool[i].cost||0);if(c<m)m=c;}return m===Infinity?5:m;}
+    function minPoolCost(side){var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var m=Infinity;for(var i=0;i<pool.length;i++){var c=Number(pool[i]&&pool[i].cost||0);if(c<m)m=c;}return m===Infinity?5:m;}
     function roundsLeft(side){return Math.max(1,3-((G.team&&G.team[side]&&G.team[side].length)||0));}
     // AI can't afford a hero: take equip-debt for the cheapest hero or skip — either way
     // clear phaseNeeds so the auction advances to equip instead of looping on bad bids.
@@ -2468,15 +2476,8 @@ async function buildGameHtml() {
   html = html.replace('`pujó <b class="pr-amt">${amt}</b> 🪙 por', '`pujó <b class="pr-amt">${side==="p"?r.bpAmtTxt||(amt+" 🪙"):r.boAmtTxt||(amt+" 🪙")}</b> por');
 
   const recruitOriginal = 'const bid = mode===\\\'bid\\\'\\n    ? `<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\\\'${side}\\\',\\\'${h.id}\\\')">Pujar</button></div>`\\n    : `<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>`;';
-  const recruitPatched = `let bT = [];
-  let minB = h.cost;
-  if(G.bonus && G.bonus[side] && G.bonus[side].type==="BID_ADD"){ bT.push("+" + G.bonus[side].effect + " (valor)"); minB -= G.bonus[side].effect; }
-  let os = side === 'p' ? 'o' : 'p';
-  if(G.bonus && G.bonus[os] && G.bonus[os].type==="BID_SUB"){ bT.push("-" + G.bonus[os].effect + " (valor)"); minB += G.bonus[os].effect; }
-  minB = Math.max(0, minB);
-  let bStr = bT.length ? \\\`<div style="font-size:10px; color:#ffd24a; text-align:center; line-height:1.1; margin-bottom:4px; font-weight:900; text-shadow:0 1px 3px #000,0 0 8px rgba(255,210,74,.4);">\${bT.join(', ')}<br><span style="color:#fff">Puja mínima ajustada: \${minB}</span></div>\\\` : '';
-  const bid = mode==='bid'
-    ? \\\`<div class="hcard-bid-zone">\${bStr}<div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="\${minB}" max="\${G.coins[side]}" value="\${Math.min(minB,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div></div>\\\`
+  const recruitPatched = `const bid = mode==='bid'
+    ? \\\`<div class="hcard-bid-zone"><div style="display:flex;gap:4px;"><input style="flex:1" class="bid-mini-input" id="bid_\${h.id}" type="number" min="\${h.cost}" max="\${G.coins[side]}" value="\${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview('\${h.id}')"><button class="btn-bid-card" onclick="submitBid('\${side}','\${h.id}')">Pujar</button></div><div id="bidcalc_\${h.id}" style="font-size:10.5px;text-align:center;line-height:1.2;margin-top:4px;font-weight:900;text-shadow:0 1px 3px #000;"></div></div>\\\`
     : \\\`<div class="hcard-preview-note">🔒 vende tu héroe para pujar</div>\\\`;`;
   html = html.replace(recruitOriginal, recruitPatched);
 
