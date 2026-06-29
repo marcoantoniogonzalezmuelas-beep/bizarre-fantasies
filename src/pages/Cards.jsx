@@ -126,7 +126,7 @@ export default function Cards() {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
+      <div className="relative max-w-7xl mx-auto px-4 py-6">
         {/* Filters for heroes */}
         {tab === 'heroes' && (
           <div className="flex flex-wrap gap-2 mb-6">

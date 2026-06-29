@@ -107,12 +107,13 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
     
     {zoomOpen && (
       <div
-        className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-[#06040c]/95 backdrop-blur-md"
+        className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-cover bg-center backdrop-blur-sm"
+        style={{ backgroundImage: 'linear-gradient(rgba(6,4,12,.72), rgba(6,4,12,.88)), url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
         onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
       >
         <button
           onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
-          className="fixed top-4 right-4 z-[100002] h-12 px-4 rounded-full flex items-center gap-2 justify-center bg-black/85 border-2 border-[#ffd24a] text-[#ffe49a] hover:bg-black hover:text-white active:scale-95 transition-all shadow-[0_0_22px_rgba(255,210,74,.45)] font-black text-sm"
+          className="fixed top-4 right-4 z-[100010] h-12 px-4 rounded-full flex items-center gap-2 justify-center bg-black/90 border-2 border-[#ffd24a] text-[#ffe49a] hover:bg-black hover:text-white active:scale-95 transition-all shadow-[0_0_24px_rgba(255,210,74,.65)] font-black text-sm"
           aria-label="Cerrar zoom y volver al Oráculo"
         >
           <X size={22} />
