@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v114';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-tankear-v115';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -195,6 +195,17 @@ function buildArtScript() {
       .bf-flake-a { left:18%; top:-12%; animation-delay:0s; } .bf-flake-b { left:54%; top:-18%; font-size:12px; animation-delay:1.1s; } .bf-flake-c { left:80%; top:-10%; font-size:17px; animation-delay:2s; }
       .bf-status-frozen { color:#8fe6ff; }
       .bf-fx-frost-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(150,225,255,.55) 22%,rgba(120,195,255,.2) 46%,transparent 72%); animation:bfBigBlast 1s ease-out forwards; }
+      /* ---- TANK MODE: a beastly armored juggernaut soaking every hit ---- */
+      .bhero.s-tank { box-shadow:0 0 0 2px rgba(255,170,60,.85), 0 0 26px rgba(255,140,30,.6), inset 0 0 22px rgba(255,160,40,.25) !important; }
+      .bhero.s-tank .bf-battle-art { filter:saturate(1.2) contrast(1.14) brightness(1.04) drop-shadow(0 0 14px rgba(255,160,40,.7)) !important; }
+      .bf-status-tank { color:#ffb43a; }
+      .bf-tank-shield { position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; overflow:hidden; animation:bfFrostIn .4s ease-out; }
+      .bf-tank-shield::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%,rgba(255,190,80,.22),transparent 62%),linear-gradient(180deg,transparent 40%,rgba(255,150,40,.16) 100%); }
+      .bf-tank-ring { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:7; pointer-events:none; font-size:22px; filter:drop-shadow(0 0 8px #ffae3c); animation:bfTankPulse 1.9s ease-in-out infinite; }
+      .bf-fx-tank-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(255,235,180,.92),rgba(255,170,60,.5) 26%,rgba(255,130,30,.2) 50%,transparent 74%); animation:bfBigBlast 1s ease-out forwards; }
+      @keyframes bfTankPulse { 0%,100%{transform:translateX(-50%) scale(1);opacity:.85} 50%{transform:translateX(-50%) scale(1.18);opacity:1} }
+      .bf-jrpg-tank { border:2px solid rgba(255,170,60,.78) !important; background:linear-gradient(135deg,rgba(60,32,8,.96),rgba(20,10,4,.98)) !important; box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,170,60,.18),0 0 18px rgba(255,140,30,.28) !important; }
+      .bf-jrpg-tank.bf-tank-on { animation:bfBadgePulse 1.6s ease-in-out infinite; }
       @keyframes bfFrostIn { 0%{opacity:0;transform:scale(1.08)} 100%{opacity:1;transform:none} }
       @keyframes bfFlakeFall { 0%{opacity:0;transform:translateY(0) rotate(0)} 12%{opacity:1} 100%{opacity:.2;transform:translateY(150px) rotate(220deg)} }
 
@@ -511,22 +522,14 @@ function buildArtScript() {
     if (typeof window.cardFace !== 'function') return;
     var h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; });
     if (!h) return;
-    var existing = document.getElementById('bf-zoom-overlay');
-    if (existing) existing.remove();
-    var overlay = document.createElement('div');
-    overlay.id = 'bf-zoom-overlay';
-    overlay.className = 'bf-zoom-overlay';
-    overlay.innerHTML =
-      '<button class="bf-zoom-close" aria-label="Cerrar">✕</button>' +
-      '<div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '</div>';
+    var existing = document.getElementById('bf-zoom-overlay'); if (existing) existing.remove();
+    var overlay = document.createElement('div'); overlay.id = 'bf-zoom-overlay'; overlay.className = 'bf-zoom-overlay';
+    overlay.innerHTML = '<button class="bf-zoom-close" aria-label="Cerrar">✕</button><div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '</div>';
     document.body.appendChild(overlay);
-    // Don't let the zoomed card's own lupa button re-trigger inside the modal.
-    var innerBtn = overlay.querySelector('.bf-zoom-cardwrap .bf-zoom-btn');
-    if (innerBtn) innerBtn.remove();
+    var innerBtn = overlay.querySelector('.bf-zoom-cardwrap .bf-zoom-btn'); if (innerBtn) innerBtn.remove();
     function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
     overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.className === 'bf-zoom-close') close(); });
-    var wrap = overlay.querySelector('.bf-zoom-cardwrap');
-    if (wrap) wrap.addEventListener('click', function(e) { e.stopPropagation(); });
+    var wrap = overlay.querySelector('.bf-zoom-cardwrap'); if (wrap) wrap.addEventListener('click', function(e) { e.stopPropagation(); });
   }
   window.bfZoomCard = bfZoomCard;
 
@@ -661,10 +664,17 @@ function buildArtScript() {
     sleeping:  { ico: '💤', label: 'DORMIDO',    cls: 'bf-status-sleeping' },
     frozen:    { ico: '❄', label: 'CONGELADO',   cls: 'bf-status-frozen' },
     cursed:    { ico: '☠', label: 'MALDITO',     cls: 'bf-status-cursed' },
+    tank:      { ico: '🛡️', label: 'TANQUEANDO',  cls: 'bf-status-tank' },
   };
 
   // Ensure the active hero has its dramatic aura/ring/tag layers, and that every
   // hero shows a floating status badge matching its current condition.
+  // Is this battle card a hero currently in TANK mode (absorbing every hit)?
+  function heroIsTank(card) {
+    var id = heroIdFromCard(card), side = (String(card.id || '').split('_')[1]) || 'p';
+    var h = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(x) { return x && x.id === id; });
+    return !!(h && h.alive && h._bfTank);
+  }
   function decorateBattleHeroState(card) {
     if (!card || !card.isConnected) return;
     if (!card.querySelector('.bf-active-aura')) {
@@ -673,8 +683,12 @@ function buildArtScript() {
       var tag = document.createElement('div'); tag.className = 'bf-active-tag'; tag.textContent = '★ SU TURNO';
       card.insertBefore(ring, card.firstChild); card.insertBefore(aura, card.firstChild); card.appendChild(tag);
     }
-    var st = heroStatusOf(card), badge = card.querySelector('.bf-status-badge');
-    // Frost overlay layer (animated ice sheet) shown only while frozen.
+    // Tank overlay (armored shield + juggernaut ring) shown only while tanking.
+    var tank = heroIsTank(card); card.classList.toggle('s-tank', tank);
+    var tankEl = card.querySelector('.bf-tank-shield');
+    if (tank) { if (!tankEl) { tankEl = document.createElement('div'); tankEl.className = 'bf-tank-shield'; tankEl.innerHTML = '<div class="bf-tank-ring">🛡️</div>'; card.appendChild(tankEl); } }
+    else if (tankEl) tankEl.remove();
+    var st = heroStatusOf(card) || (tank ? 'tank' : ''), badge = card.querySelector('.bf-status-badge');
     card.classList.toggle('s-frozen', st === 'frozen');
     var frost = card.querySelector('.bf-frost');
     if (st === 'frozen') { if (!frost) { frost = document.createElement('div'); frost.className = 'bf-frost'; frost.innerHTML = '<div class="bf-frost-sheet"></div><div class="bf-frost-crack"></div><span class="bf-frost-flake bf-flake-a">❄</span><span class="bf-frost-flake bf-flake-b">❅</span><span class="bf-frost-flake bf-flake-c">❄</span>'; card.appendChild(frost); } }
@@ -710,7 +724,6 @@ function buildArtScript() {
     card.dataset.bfAutoElite = '1'; card.classList.add('bf-auto-elite', 'elite-mode');
     addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
   }
-  // Permanent death animation (gravestone / RIP) for a hero that dies for good.
   function playTrueDeath(card) {
     if (!card || !card.isConnected) return;
     card.classList.add('bf-dead', 'bf-truedead');
@@ -742,11 +755,8 @@ function buildArtScript() {
   function playHeroFx(card, type, value) {
     if (!card || !card.isConnected) return;
     var cls = type === 'heal' || type === 'revive' ? 'bf-fx-heal' : (type === 'paralyze' ? 'bf-fx-paralyze' : 'bf-fx-damage');
-    card.classList.remove('bf-fx-damage', 'bf-fx-heal', 'bf-fx-paralyze');
-    void card.offsetWidth;
-    card.classList.add(cls);
+    card.classList.remove('bf-fx-damage', 'bf-fx-heal', 'bf-fx-paralyze'); void card.offsetWidth; card.classList.add(cls);
     setTimeout(function() { card.classList.remove(cls); }, 760);
-
     if (type === 'damage') {
       var big = Math.abs(value || 0) >= 18 ? '<div class="bf-fx-bigblast"></div>' : '';
       addOverlayFx(card, big + '<div class="bf-fx-slash"></div><div class="bf-fx-float bf-fx-dmg">-' + Math.abs(value || 0) + '</div>', 950);
@@ -756,14 +766,8 @@ function buildArtScript() {
       card.classList.remove('bf-dead');
       addOverlayFx(card, '<div class="bf-fx-phoenix">🔥</div><div class="bf-fx-float bf-fx-heal-txt">REVIVE</div>', 1100);
     } else if (type === 'death') {
-      // Second fall (was already elite) => permanent death with gravestone.
-      // First fall => the game itself revives it in elite form (handled by class watch).
-      if (card.classList.contains('bf-auto-elite') || card.classList.contains('elite-mode')) {
-        playTrueDeath(card);
-      } else {
-        card.classList.add('bf-dead');
-        addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150);
-      }
+      if (card.classList.contains('bf-auto-elite') || card.classList.contains('elite-mode')) { playTrueDeath(card); }
+      else { card.classList.add('bf-dead'); addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150); }
     } else {
       addOverlayFx(card, '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>', 950);
     }
@@ -910,6 +914,61 @@ function buildArtScript() {
     };
     window.flushFx.__bfEnhanced = true;
   }
+
+  // Pop the tank "soak" fx on a battle card by hero id (both sides searched).
+  function bfTankBurstById(id) { ['p', 'o'].forEach(function(s) { var c = getBattleCard(s, id); if (c) addOverlayFx(c, '<div class="bf-fx-tank-burst"></div>', 850); }); }
+
+  function patchTankRules() {
+    if (window.__bfTankPatched || typeof window.dealDamage !== 'function' || typeof G === 'undefined') return;
+    window.__bfTankPatched = true;
+    // The active hero declares itself a tank: until its next turn (and while alive)
+    // it absorbs every hit aimed at its allies. Uses the turn like any action.
+    window.bfTankear = function() {
+      if (typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function') { sendIntent('bfTank', {}); return; }
+      var BB = (typeof B !== 'undefined') ? B : null, h = (BB && BB.current) ? getHero(BB.current.side, BB.current.id) : null;
+      if (!h) return;
+      h._bfTank = true;
+      if (typeof pushLog === 'function') pushLog('li', h.name + ' se planta como TANQUE y absorberá los golpes de su equipo.');
+      var card = getBattleCard(BB.current.side, h.id);
+      if (card) addOverlayFx(card, '<div class="bf-fx-tank-burst"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#ffb43a">🛡️ TANQUE</div>', 1200);
+      if (typeof bfGuideReact === 'function') bfGuideReact('cheer', '¡MURO!');
+      if (typeof finishAct === 'function') finishAct();
+    };
+    // Living ally tank on the same team as the target (never the target itself).
+    function bfTankProtector(target) {
+      if (!target) return null;
+      var side = tSide(target);
+      return (G.team && G.team[side] || []).find(function(x) { return x && x.alive && x._bfTank && x !== target; }) || null;
+    }
+    // Redirect any hit aimed at a protected ally onto the tank that's soaking.
+    var originalDealDamage = window.dealDamage;
+    window.dealDamage = function(target, amount, opts) {
+      var prot = bfTankProtector(target);
+      if (prot) {
+        if (typeof pushLog === 'function') pushLog('li', '🛡️ ' + prot.name + ' intercepta el golpe dirigido a ' + target.name + '.');
+        bfTankBurstById(prot.id);
+        return originalDealDamage.call(this, prot, amount, opts);
+      }
+      return originalDealDamage.apply(this, arguments);
+    };
+    // Tank protection lasts until the tank's OWN next turn — clear it then.
+    if (typeof window.stepTurn === 'function' && !window.stepTurn.__bfTank) {
+      var originalStepTurn = window.stepTurn;
+      window.stepTurn = function() {
+        var BB = (typeof B !== 'undefined') ? B : null;
+        if (BB && BB.current) { var cur = getHero(BB.current.side, BB.current.id); if (cur && cur._bfTank) cur._bfTank = false; }
+        return originalStepTurn.apply(this, arguments);
+      };
+      window.stepTurn.__bfTank = 1;
+    }
+    // Multiplayer: handle the client's tank intent on the host.
+    if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfTank) {
+      var originalHandleIntent = window.handleIntent;
+      window.handleIntent = function(kind, data) { if (kind === 'bfTank') return window.bfTankear(); return originalHandleIntent.apply(this, arguments); };
+      window.handleIntent.__bfTank = 1;
+    }
+  }
+  window.__bfPatchTankRules = patchTankRules;
 
   function patchGameRules() {
     if (window.__bfRulesPatched || typeof HEROES === 'undefined' || typeof BONUS === 'undefined' || typeof G === 'undefined') return;
@@ -1317,35 +1376,13 @@ function buildArtScript() {
     // Game-styled confirmation dialog. Calls onYes() if the player confirms.
     // artUrl is optional (used for the preview banner).
     function bfConfirm(opts, onYes) {
-      var item = opts.item;
-      if (!item) return;
-      var cost = Number(item.cost || 0);
-      var coins = Number((G.equipCoins && G.equipCoins[opts.side]) || 0);
-      if (coins < cost) {
-        if (window.notif) notif('No tienes monedas suficientes para comprar ' + item.name + '.');
-        return;
-      }
-      var existing = document.getElementById('bf-confirm-overlay');
-      if (existing) existing.remove();
-      var no = numFor(item);
-      var target = opts.hero ? ' y equiparlo a <b>' + clean(opts.hero.name) + '</b>' : '';
-      var effectTxt = item.txt || item.desc || '';
-      var overlay = document.createElement('div');
-      overlay.id = 'bf-confirm-overlay';
-      overlay.className = 'bf-confirm-overlay';
-      overlay.innerHTML =
-        '<div class="bf-confirm-box">' +
-          (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (bfManaFor(item) != null ? '<div class="bf-confirm-mana">' + bfManaFor(item) + '</div>' : '') + '</div>' : '') +
-          '<div class="bf-confirm-body">' +
-            '<div class="bf-confirm-name">' + clean(item.name) + '</div>' +
-            (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') +
-            '<div class="bf-confirm-msg">¿Comprar por <b>' + cost + ' monedas</b>' + target + '?</div>' +
-            '<div class="bf-confirm-actions">' +
-              '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button>' +
-              '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Comprar</button>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
+      var item = opts.item; if (!item) return;
+      var cost = Number(item.cost || 0), coins = Number((G.equipCoins && G.equipCoins[opts.side]) || 0);
+      if (coins < cost) { if (window.notif) notif('No tienes monedas suficientes para comprar ' + item.name + '.'); return; }
+      var existing = document.getElementById('bf-confirm-overlay'); if (existing) existing.remove();
+      var target = opts.hero ? ' y equiparlo a <b>' + clean(opts.hero.name) + '</b>' : '', effectTxt = item.txt || item.desc || '';
+      var overlay = document.createElement('div'); overlay.id = 'bf-confirm-overlay'; overlay.className = 'bf-confirm-overlay';
+      overlay.innerHTML = '<div class="bf-confirm-box">' + (opts.art ? '<div class="bf-confirm-art" style="--bf-cart:url(&quot;' + opts.art + '&quot;)"><div class="bf-confirm-art-fill"></div><div class="bf-confirm-art-sharp"></div><div class="bf-confirm-cost">' + cost + '</div>' + (bfManaFor(item) != null ? '<div class="bf-confirm-mana">' + bfManaFor(item) + '</div>' : '') + '</div>' : '') + '<div class="bf-confirm-body"><div class="bf-confirm-name">' + clean(item.name) + '</div>' + (effectTxt ? '<div class="bf-confirm-effect">' + clean(effectTxt) + '</div>' : '') + '<div class="bf-confirm-msg">¿Comprar por <b>' + cost + ' monedas</b>' + target + '?</div><div class="bf-confirm-actions"><button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button><button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Comprar</button></div></div></div>';
       document.body.appendChild(overlay);
       function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
       overlay.querySelector('#bf-confirm-no').onclick = close;
@@ -1631,22 +1668,9 @@ function buildArtScript() {
     }
 
     function bfWarnConfirm(title, message, onYes) {
-      var existing = document.getElementById('bf-confirm-overlay');
-      if (existing) existing.remove();
-      var overlay = document.createElement('div');
-      overlay.id = 'bf-confirm-overlay';
-      overlay.className = 'bf-confirm-overlay';
-      overlay.innerHTML =
-        '<div class="bf-confirm-box">' +
-          '<div class="bf-confirm-body">' +
-            '<div class="bf-confirm-name" style="margin-top:14px">' + title + '</div>' +
-            '<div class="bf-confirm-msg">' + message + '</div>' +
-            '<div class="bf-confirm-actions">' +
-              '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Volver a equipar</button>' +
-              '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Entrar igual</button>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
+      var existing = document.getElementById('bf-confirm-overlay'); if (existing) existing.remove();
+      var overlay = document.createElement('div'); overlay.id = 'bf-confirm-overlay'; overlay.className = 'bf-confirm-overlay';
+      overlay.innerHTML = '<div class="bf-confirm-box"><div class="bf-confirm-body"><div class="bf-confirm-name" style="margin-top:14px">' + title + '</div><div class="bf-confirm-msg">' + message + '</div><div class="bf-confirm-actions"><button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Volver a equipar</button><button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Entrar igual</button></div></div></div>';
       document.body.appendChild(overlay);
       function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
       overlay.querySelector('#bf-confirm-no').onclick = close;
@@ -2113,7 +2137,18 @@ function buildArtScript() {
     }
     
     var m = p.querySelector('.jrpg-menu'); if (m) m.style.display = 'grid';
+    // Inject the "Tanquear" action button as the last option in the menu.
+    if (m && h && !m.querySelector('.bf-tank-btn')) {
+      var alreadyTank = !!h._bfTank;
+      var tb = document.createElement('div');
+      tb.className = 'jrpg-btn bf-tank-btn bf-jrpg-tank' + (alreadyTank ? ' bf-tank-on' : '');
+      tb.style.cssText = 'grid-column:1/-1;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:12px;padding:12px 14px;border-radius:16px;color:#fff5dc;cursor:pointer;text-shadow:0 2px 4px #000;';
+      tb.innerHTML = '<div style="width:50px;height:50px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 16px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06a526041_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="flex:1"><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:15px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Tanqueando' : 'Tanquear') + '</div><div style="color:#f3ecff;text-transform:none;font-family:&quot;Rubik&quot;,sans-serif;font-weight:600;font-size:12.5px;line-height:1.3;text-shadow:0 1px 3px #000;">Absorbe todos los golpes a tu equipo hasta tu próximo turno.</div></div>';
+      if (!alreadyTank) tb.onclick = function(e) { e.stopPropagation(); if (typeof window.bfTankear === 'function') window.bfTankear(); };
+      m.appendChild(tb);
+    }
     p.querySelectorAll('.jrpg-btn').forEach(function(btn) {
+      if (btn.classList.contains('bf-tank-btn')) return;
       if (btn.dataset.bfIco === '1') return;
       btn.dataset.bfIco = '1';
       btn.style.cssText = 'position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:"Cinzel",serif;font-weight:1000;font-size:14px;padding:10px 8px;border-radius:14px;border:1px solid rgba(255,210,74,0.4);background:linear-gradient(180deg,rgba(20,10,35,0.85),rgba(10,5,15,0.95));color:#fff5dc;box-shadow:0 6px 16px rgba(0,0,0,0.5),inset 0 1px 1px rgba(255,255,255,0.1);text-shadow:0 2px 4px #000;transition:transform 0.15s ease,box-shadow 0.15s ease,border-color 0.15s ease;text-align:center;line-height:1.15;cursor:pointer;';
@@ -2208,42 +2243,21 @@ function buildArtScript() {
   }
 
   function bfConfirmPlayCard(opts, onYes) {
-    var existing = document.getElementById('bf-confirm-overlay');
-    if (existing) existing.remove();
-    var overlay = document.createElement('div');
-    overlay.id = 'bf-confirm-overlay';
-    overlay.className = 'bf-confirm-overlay';
-    var manaLine = '';
-    var canPlay = true;
+    var existing = document.getElementById('bf-confirm-overlay'); if (existing) existing.remove();
+    var overlay = document.createElement('div'); overlay.id = 'bf-confirm-overlay'; overlay.className = 'bf-confirm-overlay';
+    var manaLine = '', canPlay = true;
     if (opts.kind === 'spell') {
-      var cost = Number(opts.manaCost || 0);
-      var mana = opts.mana;
+      var cost = Number(opts.manaCost || 0), mana = opts.mana;
       if (mana !== null && mana !== undefined && cost > mana) canPlay = false;
-      manaLine = '<div class="bf-confirm-msg">Coste de maná: <b>' + cost + '</b>' +
-        (mana !== null && mana !== undefined ? ' · Maná del Héroe: <b>' + mana + '</b>' : '') + '</div>' +
-        (canPlay ? '' : '<div class="bf-confirm-msg" style="color:#ff8a8a;margin-top:6px;font-weight:700">El héroe activo no tiene maná suficiente.</div>');
+      manaLine = '<div class="bf-confirm-msg">Coste de maná: <b>' + cost + '</b>' + (mana !== null && mana !== undefined ? ' · Maná del Héroe: <b>' + mana + '</b>' : '') + '</div>' + (canPlay ? '' : '<div class="bf-confirm-msg" style="color:#ff8a8a;margin-top:6px;font-weight:700">El héroe activo no tiene maná suficiente.</div>');
     }
     var effectiveHtml = opts.effective ? '<div class="bf-confirm-effect" style="background:rgba(20,10,30,0.8);border-color:#b06cff;text-align:center;font-size:14.5px;">' + opts.effective + '</div>' : '';
-    overlay.innerHTML =
-      '<div class="bf-confirm-box">' +
-        '<div class="bf-confirm-body">' +
-          '<div class="bf-confirm-name" style="margin-top:14px">' + bfHandClean(opts.name) + '</div>' +
-          (opts.effect ? '<div class="bf-confirm-effect">' + bfHandClean(opts.effect) + '</div>' : '') +
-          effectiveHtml +
-          manaLine +
-          '<div class="bf-confirm-msg">¿Jugar esta carta ahora? <b>Usará el turno del héroe activo.</b></div>' +
-          '<div class="bf-confirm-actions">' +
-            '<button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button>' +
-            (canPlay ? '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Jugar</button>' : '') +
-          '</div>' +
-        '</div>' +
-      '</div>';
+    overlay.innerHTML = '<div class="bf-confirm-box"><div class="bf-confirm-body"><div class="bf-confirm-name" style="margin-top:14px">' + bfHandClean(opts.name) + '</div>' + (opts.effect ? '<div class="bf-confirm-effect">' + bfHandClean(opts.effect) + '</div>' : '') + effectiveHtml + manaLine + '<div class="bf-confirm-msg">¿Jugar esta carta ahora? <b>Usará el turno del héroe activo.</b></div><div class="bf-confirm-actions"><button class="bf-confirm-btn bf-confirm-no" id="bf-confirm-no">Cancelar</button>' + (canPlay ? '<button class="bf-confirm-btn bf-confirm-yes" id="bf-confirm-yes">Jugar</button>' : '') + '</div></div></div>';
     document.body.appendChild(overlay);
     function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
     overlay.querySelector('#bf-confirm-no').onclick = close;
     overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
-    var yes = overlay.querySelector('#bf-confirm-yes');
-    if (yes) yes.onclick = function() { close(); onYes(); };
+    var yes = overlay.querySelector('#bf-confirm-yes'); if (yes) yes.onclick = function() { close(); onYes(); };
   }
 
   // Intercept clicks on hand cards: confirm + animate, then run the game's own
@@ -2395,6 +2409,7 @@ function buildArtScript() {
       applyCover();
       patchQuitToHome();
       patchGameRules();
+      if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
       patchCombatFx();
