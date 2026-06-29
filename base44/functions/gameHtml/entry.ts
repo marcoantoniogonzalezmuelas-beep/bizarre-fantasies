@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-tank-icon-v117';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-status-fx-v118';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -173,41 +173,34 @@ function buildArtScript() {
       /* ---- STATUS EFFECTS: strong, unmistakable visuals ---- */
       .bhero.s-paralyzed .bf-battle-art { filter:saturate(1.45) contrast(1.2) drop-shadow(0 0 12px #ffe14a); animation:bfZap .5s steps(2,end) infinite; }
       .bhero.s-paralyzed { box-shadow:0 0 0 2px rgba(255,225,74,.7), 0 0 24px rgba(255,225,74,.45) !important; }
-      .bhero.s-sleeping .bf-battle-art { filter:saturate(.55) contrast(.9) brightness(.7) blur(.4px); }
+      .bhero.s-sleeping .bf-battle-art { filter:saturate(.55) contrast(.9) brightness(.7) blur(.4px); animation:bfSleepBreath 3.6s ease-in-out infinite; }
       .bhero.s-sleeping { box-shadow:0 0 0 2px rgba(120,160,255,.6), 0 0 22px rgba(120,160,255,.4) !important; }
       .bhero.s-cursed .bf-battle-art { filter:saturate(.78) contrast(1.22) hue-rotate(255deg) drop-shadow(0 0 11px #b06cff); }
       .bhero.s-cursed { box-shadow:0 0 0 2px rgba(176,108,255,.65), 0 0 22px rgba(176,108,255,.45) !important; }
+      .bhero.s-blessed .bf-battle-art { filter:saturate(1.2) contrast(1.05) brightness(1.12) drop-shadow(0 0 12px #ffe9a0) !important; } .bhero.s-blessed { box-shadow:0 0 0 2px rgba(255,230,150,.8), 0 0 26px rgba(255,210,90,.55) !important; }
       .bhero.elite-mode .bf-battle-art { filter:saturate(1.25) contrast(1.12) drop-shadow(0 0 10px #ffd24a); }
 
       /* Floating status emblem, always visible while the status is active */
-      .bf-status-badge { position:absolute; top:6px; right:6px; z-index:6; display:flex; align-items:center; gap:4px; padding:3px 9px 3px 6px; border-radius:999px; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.3px; color:#fff; background:rgba(8,5,14,.82); border:1.5px solid currentColor; box-shadow:0 0 12px currentColor; animation:bfBadgeFloat 1.8s ease-in-out infinite; }
-      .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; } .bf-status-paralyzed { color:#ffe14a; } .bf-status-sleeping { color:#8aaaff; } .bf-status-cursed { color:#c79bff; }
-      @keyframes bfBadgeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} } @keyframes bfSleepZ { 0%{opacity:0;transform:translate(-50%,4px) scale(.7)} 30%{opacity:1} 100%{opacity:0;transform:translate(-30%,-22px) scale(1.1)} }
-      .bf-sleep-z { position:absolute; left:50%; top:8%; z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; color:#9bb4ff; font-size:18px; text-shadow:0 0 10px #5a7fff; animation:bfSleepZ 2.6s ease-in-out infinite; }
+      .bf-status-badge { position:absolute; top:6px; right:6px; z-index:7; display:flex; align-items:center; gap:4px; padding:3px 9px 3px 6px; border-radius:999px; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.3px; color:#fff; background:rgba(8,5,14,.82); border:1.5px solid currentColor; box-shadow:0 0 12px currentColor; animation:bfBadgeFloat 1.8s ease-in-out infinite; }
+      .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; } .bf-status-paralyzed { color:#ffe14a; } .bf-status-sleeping { color:#8aaaff; } .bf-status-cursed { color:#c79bff; } .bf-status-blessed { color:#ffe49a; }
+      @keyframes bfBadgeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} } @keyframes bfSleepBreath { 0%,100%{transform:scale(1)} 50%{transform:scale(1.018)} } @keyframes bfSleepZRise { 0%{opacity:0;transform:translate(0,6px) rotate(-8deg) scale(.6)} 18%{opacity:1} 80%{opacity:.9} 100%{opacity:0;transform:translate(22px,-46px) rotate(12deg) scale(1.15)} } @keyframes bfSheepHop { 0%{left:-30%;transform:translateY(0)} 8%,24%,40%,56%{transform:translateY(-10px)} 16%,32%,48%,64%{transform:translateY(0)} 100%{left:118%;transform:translateY(0)} } @keyframes bfSheepCount { 0%,40%{opacity:0;transform:translate(-50%,6px) scale(.7)} 50%{opacity:1;transform:translate(-50%,0) scale(1.1)} 70%{opacity:1} 85%,100%{opacity:0;transform:translate(-50%,-12px) scale(.9)} } @keyframes bfArc { 0%,100%{opacity:0} 4%{opacity:1} 9%{opacity:.2} 13%{opacity:.9} 18%{opacity:0} } @keyframes bfBoltFlick { 0%,100%{opacity:.15;transform:scale(.9)} 50%{opacity:1;transform:scale(1.25)} } @keyframes bfCursePulse { 0%,100%{opacity:.4} 50%{opacity:.85} } @keyframes bfRuneRise { 0%{opacity:0;transform:translateY(0) rotate(0) scale(.6)} 20%{opacity:1} 80%{opacity:.85} 100%{opacity:0;transform:translateY(-120px) rotate(140deg) scale(1.1)} } @keyframes bfBlessRays { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} } @keyframes bfHaloBob { 0%,100%{transform:translateX(-50%) translateY(0);opacity:.9} 50%{transform:translateX(-50%) translateY(-4px);opacity:1} } @keyframes bfBlessTwinkle { 0%,100%{opacity:.2;transform:scale(.7) rotate(0)} 50%{opacity:1;transform:scale(1.2) rotate(45deg)} }
+      .bf-fx-overlay { position:absolute; inset:0; z-index:7; pointer-events:none; border-radius:inherit; overflow:hidden; }
+      .bf-sleep-z { position:absolute; left:54%; bottom:34%; font-family:'Cinzel',serif; font-weight:1000; color:#bcd0ff; text-shadow:0 0 10px #5a7fff,0 2px 4px #000; animation:bfSleepZRise 3s ease-in-out infinite; } .bf-sleep-z.z1{font-size:15px} .bf-sleep-z.z2{font-size:20px;left:60%;animation-delay:.9s} .bf-sleep-z.z3{font-size:26px;left:66%;animation-delay:1.8s}
+      .bf-sleep-sheep { position:absolute; bottom:14%; left:-30%; font-size:26px; filter:drop-shadow(0 3px 5px rgba(0,0,0,.6)); animation:bfSheepHop 4.4s linear infinite; } .bf-sleep-count { position:absolute; bottom:30%; left:50%; z-index:8; font-family:'Cinzel',serif; font-weight:1000; font-size:13px; color:#fff5dc; text-shadow:0 0 8px #5a7fff,0 2px 4px #000; opacity:0; animation:bfSheepCount 4.4s linear infinite; }
+      .bf-shock-fx::before, .bf-shock-fx::after { content:''; position:absolute; inset:0; background:linear-gradient(118deg,transparent 44%,rgba(255,239,140,.9) 47%,#fffbe0 49%,rgba(255,239,140,.9) 51%,transparent 54%),linear-gradient(-72deg,transparent 60%,rgba(255,230,90,.8) 63%,#fff 65%,transparent 68%); mix-blend-mode:screen; opacity:0; animation:bfArc 1.5s steps(1,end) infinite; } .bf-shock-fx::after { animation-delay:.55s; transform:scaleX(-1) scaleY(.9); } .bf-shock-bolt { position:absolute; font-size:18px; color:#fff7c0; filter:drop-shadow(0 0 8px #ffe14a); animation:bfBoltFlick 1.1s steps(2,end) infinite; } .bf-shock-bolt.b1{top:14%;left:18%} .bf-shock-bolt.b2{top:62%;right:16%;font-size:14px;animation-delay:.4s} .bf-shock-bolt.b3{top:38%;left:60%;font-size:22px;animation-delay:.75s}
+      .bf-curse-fx::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 78%,rgba(120,40,180,.45),transparent 60%); mix-blend-mode:screen; animation:bfCursePulse 2.4s ease-in-out infinite; } .bf-curse-rune { position:absolute; bottom:-10%; font-size:18px; color:#d6a8ff; text-shadow:0 0 10px #9a3df0,0 0 4px #fff; animation:bfRuneRise 3.6s ease-in infinite; } .bf-curse-rune.r1{left:24%} .bf-curse-rune.r2{left:50%;font-size:24px;animation-delay:1.2s} .bf-curse-rune.r3{left:72%;font-size:15px;animation-delay:2.2s}
+      .bf-bless-fx::before { content:''; position:absolute; inset:-40%; background:conic-gradient(from 0deg,rgba(255,235,150,0) 0deg,rgba(255,235,150,.32) 18deg,rgba(255,235,150,0) 36deg,rgba(255,235,150,.32) 54deg,rgba(255,235,150,0) 72deg,rgba(255,235,150,.32) 90deg,rgba(255,235,150,0) 108deg); mix-blend-mode:screen; animation:bfBlessRays 9s linear infinite; } .bf-bless-halo { position:absolute; top:8%; left:50%; transform:translateX(-50%); width:54px; height:18px; border-radius:50%; border:3px solid rgba(255,224,121,.95); box-shadow:0 0 16px rgba(255,210,90,.85),inset 0 0 8px rgba(255,235,150,.6); animation:bfHaloBob 2.4s ease-in-out infinite; } .bf-bless-spark { position:absolute; font-size:14px; color:#fff6cf; text-shadow:0 0 10px #ffd24a; animation:bfBlessTwinkle 1.8s ease-in-out infinite; } .bf-bless-spark.s1{top:30%;left:20%} .bf-bless-spark.s2{top:55%;right:18%;font-size:11px;animation-delay:.6s} .bf-bless-spark.s3{top:70%;left:46%;font-size:17px;animation-delay:1.1s}
+      .bf-fx-bless-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,235,.95),rgba(255,224,121,.55) 24%,rgba(255,200,80,.2) 48%,transparent 72%); animation:bfBigBlast 1s ease-out forwards; }
       /* ---- FROZEN: animated ice sheet over the whole hero card ---- */
-      .bhero.s-frozen .bf-battle-art { filter:saturate(1.05) brightness(.92) contrast(1.05) hue-rotate(-12deg) drop-shadow(0 0 10px #8fe6ff) !important; }
-      .bhero.s-frozen { box-shadow:0 0 0 2px rgba(140,225,255,.7), 0 0 24px rgba(120,200,255,.5) !important; }
-      .bf-frost { position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; overflow:hidden; animation:bfFrostIn .5s ease-out; }
-      .bf-frost-sheet { position:absolute; inset:0; background:linear-gradient(135deg,rgba(180,235,255,.42),rgba(120,195,255,.16) 40%,rgba(180,235,255,.34) 100%),radial-gradient(circle at 22% 18%,rgba(255,255,255,.6),transparent 26%),radial-gradient(circle at 78% 72%,rgba(255,255,255,.5),transparent 24%); mix-blend-mode:screen; box-shadow:inset 0 0 26px rgba(180,235,255,.7); }
-      .bf-frost-sheet::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(58deg,transparent 0 7px,rgba(255,255,255,.16) 7px 8px),repeating-linear-gradient(-58deg,transparent 0 9px,rgba(190,240,255,.14) 9px 10px); }
-      .bf-frost-crack { position:absolute; inset:0; background:radial-gradient(circle at 50% 46%,transparent 38%,rgba(255,255,255,.5) 39%,transparent 41%),linear-gradient(72deg,transparent 47%,rgba(255,255,255,.55) 48%,transparent 49%),linear-gradient(-40deg,transparent 55%,rgba(220,248,255,.45) 56%,transparent 57%); opacity:.7; }
-      .bf-frost-flake { position:absolute; color:#eaffff; font-size:15px; text-shadow:0 0 8px #8fe6ff; animation:bfFlakeFall 3.4s linear infinite; }
-      .bf-flake-a { left:18%; top:-12%; animation-delay:0s; } .bf-flake-b { left:54%; top:-18%; font-size:12px; animation-delay:1.1s; } .bf-flake-c { left:80%; top:-10%; font-size:17px; animation-delay:2s; }
-      .bf-status-frozen { color:#8fe6ff; }
+      .bhero.s-frozen .bf-battle-art { filter:saturate(1.05) brightness(.92) contrast(1.05) hue-rotate(-12deg) drop-shadow(0 0 10px #8fe6ff) !important; } .bhero.s-frozen { box-shadow:0 0 0 2px rgba(140,225,255,.7), 0 0 24px rgba(120,200,255,.5) !important; } .bf-frost { position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; overflow:hidden; animation:bfFrostIn .5s ease-out; } .bf-status-frozen { color:#8fe6ff; }
+      .bf-frost-sheet { position:absolute; inset:0; background:linear-gradient(135deg,rgba(180,235,255,.42),rgba(120,195,255,.16) 40%,rgba(180,235,255,.34) 100%),radial-gradient(circle at 22% 18%,rgba(255,255,255,.6),transparent 26%),radial-gradient(circle at 78% 72%,rgba(255,255,255,.5),transparent 24%); mix-blend-mode:screen; box-shadow:inset 0 0 26px rgba(180,235,255,.7); } .bf-frost-sheet::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(58deg,transparent 0 7px,rgba(255,255,255,.16) 7px 8px),repeating-linear-gradient(-58deg,transparent 0 9px,rgba(190,240,255,.14) 9px 10px); }
+      .bf-frost-crack { position:absolute; inset:0; background:radial-gradient(circle at 50% 46%,transparent 38%,rgba(255,255,255,.5) 39%,transparent 41%),linear-gradient(72deg,transparent 47%,rgba(255,255,255,.55) 48%,transparent 49%),linear-gradient(-40deg,transparent 55%,rgba(220,248,255,.45) 56%,transparent 57%); opacity:.7; } .bf-frost-flake { position:absolute; color:#eaffff; font-size:15px; text-shadow:0 0 8px #8fe6ff; animation:bfFlakeFall 3.4s linear infinite; } .bf-flake-a { left:18%; top:-12%; animation-delay:0s; } .bf-flake-b { left:54%; top:-18%; font-size:12px; animation-delay:1.1s; } .bf-flake-c { left:80%; top:-10%; font-size:17px; animation-delay:2s; }
       .bf-fx-frost-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(150,225,255,.55) 22%,rgba(120,195,255,.2) 46%,transparent 72%); animation:bfBigBlast 1s ease-out forwards; }
       /* ---- TANK MODE: a beastly armored juggernaut soaking every hit ---- */
-      .bhero.s-tank { box-shadow:0 0 0 2px rgba(255,170,60,.85), 0 0 26px rgba(255,140,30,.6), inset 0 0 22px rgba(255,160,40,.25) !important; }
-      .bhero.s-tank .bf-battle-art { filter:saturate(1.2) contrast(1.14) brightness(1.04) drop-shadow(0 0 14px rgba(255,160,40,.7)) !important; }
-      .bf-status-tank { color:#ffb43a; }
-      .bf-tank-shield { position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; overflow:hidden; animation:bfFrostIn .4s ease-out; }
-      .bf-tank-shield::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%,rgba(255,190,80,.22),transparent 62%),linear-gradient(180deg,transparent 40%,rgba(255,150,40,.16) 100%); }
-      .bf-tank-ring { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:7; pointer-events:none; font-size:22px; filter:drop-shadow(0 0 8px #ffae3c); animation:bfTankPulse 1.9s ease-in-out infinite; }
-      .bf-fx-tank-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(255,235,180,.92),rgba(255,170,60,.5) 26%,rgba(255,130,30,.2) 50%,transparent 74%); animation:bfBigBlast 1s ease-out forwards; }
-      @keyframes bfTankPulse { 0%,100%{transform:translateX(-50%) scale(1);opacity:.85} 50%{transform:translateX(-50%) scale(1.18);opacity:1} }
-      .bf-jrpg-tank { border:2px solid rgba(255,170,60,.78) !important; background:linear-gradient(135deg,rgba(60,32,8,.96),rgba(20,10,4,.98)) !important; box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,170,60,.18),0 0 18px rgba(255,140,30,.28) !important; } .bf-jrpg-tank:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 10px 26px rgba(255,140,30,.5),inset 0 0 0 1px rgba(255,170,60,.3),0 0 22px rgba(255,140,30,.45) !important; }
-      .bf-jrpg-tank.bf-tank-on { animation:bfBadgePulse 1.6s ease-in-out infinite; }
-      @keyframes bfFrostIn { 0%{opacity:0;transform:scale(1.08)} 100%{opacity:1;transform:none} }
-      @keyframes bfFlakeFall { 0%{opacity:0;transform:translateY(0) rotate(0)} 12%{opacity:1} 100%{opacity:.2;transform:translateY(150px) rotate(220deg)} }
+      .bhero.s-tank { box-shadow:0 0 0 2px rgba(255,170,60,.85), 0 0 26px rgba(255,140,30,.6), inset 0 0 22px rgba(255,160,40,.25) !important; } .bhero.s-tank .bf-battle-art { filter:saturate(1.2) contrast(1.14) brightness(1.04) drop-shadow(0 0 14px rgba(255,160,40,.7)) !important; } .bf-status-tank { color:#ffb43a; } .bf-tank-shield { position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; overflow:hidden; animation:bfFrostIn .4s ease-out; }
+      .bf-tank-shield::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%,rgba(255,190,80,.22),transparent 62%),linear-gradient(180deg,transparent 40%,rgba(255,150,40,.16) 100%); } .bf-tank-ring { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:7; pointer-events:none; font-size:22px; filter:drop-shadow(0 0 8px #ffae3c); animation:bfTankPulse 1.9s ease-in-out infinite; } .bf-fx-tank-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(255,235,180,.92),rgba(255,170,60,.5) 26%,rgba(255,130,30,.2) 50%,transparent 74%); animation:bfBigBlast 1s ease-out forwards; }
+      @keyframes bfTankPulse { 0%,100%{transform:translateX(-50%) scale(1);opacity:.85} 50%{transform:translateX(-50%) scale(1.18);opacity:1} } @keyframes bfFrostIn { 0%{opacity:0;transform:scale(1.08)} 100%{opacity:1;transform:none} } @keyframes bfFlakeFall { 0%{opacity:0;transform:translateY(0) rotate(0)} 12%{opacity:1} 100%{opacity:.2;transform:translateY(150px) rotate(220deg)} }
+      .bf-jrpg-tank { border:2px solid rgba(255,170,60,.78) !important; background:linear-gradient(135deg,rgba(60,32,8,.96),rgba(20,10,4,.98)) !important; box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,170,60,.18),0 0 18px rgba(255,140,30,.28) !important; } .bf-jrpg-tank:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 10px 26px rgba(255,140,30,.5),inset 0 0 0 1px rgba(255,170,60,.3),0 0 22px rgba(255,140,30,.45) !important; } .bf-jrpg-tank.bf-tank-on { animation:bfBadgePulse 1.6s ease-in-out infinite; }
 
       @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} } @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} } @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} } @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
@@ -656,15 +649,19 @@ function buildArtScript() {
     if (card.classList.contains('s-sleeping') || /dorm|sue[ñn]/i.test(t)) return 'sleeping';
     if (heroIsFrozen(card)) return 'frozen';
     if (card.classList.contains('s-cursed') || /maldi|maldec/i.test(t)) return 'cursed';
+    if (card.classList.contains('s-blessed') || /bendi|bendec|bless/i.test(t)) return 'blessed';
     return '';
   }
 
+  // Rich animated overlay markup per status (sleeping zzz+sheep, paralyzed arcs, cursed runes, blessed halo).
+  var STATUS_FX_HTML = {
+    sleeping: '<div class="bf-fx-overlay bf-sleep-fx"><span class="bf-sleep-z z1">Z</span><span class="bf-sleep-z z2">z</span><span class="bf-sleep-z z3">z</span><span class="bf-sleep-sheep">🐑</span><span class="bf-sleep-count">+1</span></div>',
+    paralyzed: '<div class="bf-fx-overlay bf-shock-fx"><span class="bf-shock-bolt b1">⚡</span><span class="bf-shock-bolt b2">⚡</span><span class="bf-shock-bolt b3">⚡</span></div>',
+    cursed: '<div class="bf-fx-overlay bf-curse-fx"><span class="bf-curse-rune r1">☠</span><span class="bf-curse-rune r2">⛧</span><span class="bf-curse-rune r3">☠</span></div>',
+    blessed: '<div class="bf-fx-overlay bf-bless-fx"><div class="bf-bless-halo"></div><span class="bf-bless-spark s1">✦</span><span class="bf-bless-spark s2">✧</span><span class="bf-bless-spark s3">✦</span></div>',
+  };
   var STATUS_INFO = {
-    paralyzed: { ico: '⚡', label: 'PARALIZADO', cls: 'bf-status-paralyzed' },
-    sleeping:  { ico: '💤', label: 'DORMIDO',    cls: 'bf-status-sleeping' },
-    frozen:    { ico: '❄', label: 'CONGELADO',   cls: 'bf-status-frozen' },
-    cursed:    { ico: '☠', label: 'MALDITO',     cls: 'bf-status-cursed' },
-    tank:      { ico: '🛡️', label: 'TANQUEANDO',  cls: 'bf-status-tank' },
+    paralyzed: { ico: '⚡', label: 'PARALIZADO', cls: 'bf-status-paralyzed' }, sleeping: { ico: '💤', label: 'DORMIDO', cls: 'bf-status-sleeping' }, frozen: { ico: '❄', label: 'CONGELADO', cls: 'bf-status-frozen' }, cursed: { ico: '☠', label: 'MALDITO', cls: 'bf-status-cursed' }, blessed: { ico: '😇', label: 'BENDITO', cls: 'bf-status-blessed' }, tank: { ico: '🛡️', label: 'TANQUEANDO', cls: 'bf-status-tank' },
   };
 
   // Ensure the active hero has its dramatic aura/ring/tag layers, and that every
@@ -690,12 +687,13 @@ function buildArtScript() {
     else if (tankEl) tankEl.remove();
     var st = heroStatusOf(card) || (tank ? 'tank' : ''), badge = card.querySelector('.bf-status-badge');
     card.classList.toggle('s-frozen', st === 'frozen');
+    ['sleeping','paralyzed','cursed','blessed'].forEach(function(s){ card.classList.toggle('s-' + s, st === s); });
     var frost = card.querySelector('.bf-frost');
     if (st === 'frozen') { if (!frost) { frost = document.createElement('div'); frost.className = 'bf-frost'; frost.innerHTML = '<div class="bf-frost-sheet"></div><div class="bf-frost-crack"></div><span class="bf-frost-flake bf-flake-a">❄</span><span class="bf-frost-flake bf-flake-b">❅</span><span class="bf-frost-flake bf-flake-c">❄</span>'; card.appendChild(frost); } }
     else if (frost) frost.remove();
     if (!st) {
       if (badge) badge.remove();
-      var z = card.querySelector('.bf-sleep-z'); if (z) z.remove();
+      var z = card.querySelector('.bf-fx-overlay'); if (z) z.remove();
       card.dataset.bfStatus = ''; return;
     }
     if (card.dataset.bfStatus !== st) {
@@ -704,8 +702,8 @@ function buildArtScript() {
       b.className = 'bf-status-badge ' + info.cls;
       b.innerHTML = '<span class="bf-status-ico">' + info.ico + '</span>' + info.label;
       card.appendChild(b);
-      var existingZ = card.querySelector('.bf-sleep-z'); if (existingZ) existingZ.remove();
-      if (st === 'sleeping') { var zz = document.createElement('div'); zz.className = 'bf-sleep-z'; zz.textContent = 'Z'; card.appendChild(zz); }
+      var existingFx = card.querySelector('.bf-fx-overlay'); if (existingFx) existingFx.remove();
+      if (STATUS_FX_HTML[st]) { var wrap = document.createElement('div'); wrap.innerHTML = STATUS_FX_HTML[st]; card.appendChild(wrap.firstChild); }
       card.dataset.bfStatus = st;
     }
   }
@@ -811,7 +809,8 @@ function buildArtScript() {
     if (!info) return;
     if (st === 'paralyzed') { playHeroFx(card, 'paralyze'); return; }
     if (st === 'frozen') { addOverlayFx(card, '<div class="bf-fx-frost-burst"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#8fe6ff">❄ CONGELADO</div>', 1300); return; }
-    var color = st === 'sleeping' ? '#8aaaff' : '#c79bff';
+    if (st === 'blessed') { addOverlayFx(card, '<div class="bf-fx-bless-burst"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#ffe49a">😇 BENDITO</div>', 1300); return; }
+    var color = st === 'sleeping' ? '#8aaaff' : st === 'blessed' ? '#ffe49a' : st === 'paralyzed' ? '#ffe14a' : '#c79bff';
     addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:' + color + '">' + info.ico + ' ' + info.label + '</div>', 1300);
   }
 
