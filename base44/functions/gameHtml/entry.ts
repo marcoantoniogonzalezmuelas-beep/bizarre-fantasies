@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-tank-layout-v116';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-tank-icon-v117';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -2144,7 +2144,7 @@ function buildArtScript() {
       var tb = document.createElement('div');
       tb.className = 'jrpg-btn bf-tank-btn bf-jrpg-tank' + (alreadyTank ? ' bf-tank-on' : '');
       tb.style.cssText = 'position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px;border-radius:14px;color:#fff5dc;cursor:pointer;text-shadow:0 2px 4px #000;text-align:center;line-height:1.15;transition:transform .15s ease,box-shadow .15s ease;';
-      tb.innerHTML = '<div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 12px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 auto"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06a526041_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:13px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Tanqueando' : 'Tanquear') + '</div>';
+      tb.innerHTML = '<div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 12px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 auto"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5ca5c078_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:13px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Tanqueando' : 'Tanquear') + '</div>';
       if (!alreadyTank) tb.onclick = function(e) { e.stopPropagation(); if (typeof window.bfTankear === 'function') window.bfTankear(); };
       m.appendChild(tb);
     }
