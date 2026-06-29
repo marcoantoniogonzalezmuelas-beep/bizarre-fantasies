@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Cards from './pages/Cards';
 import RacesPage from './pages/RacesPage';
+import AdminCards from './pages/AdminCards';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -37,6 +38,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/admin" element={<AdminCards />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/races" element={<RacesPage />} />
       <Route path="*" element={<PageNotFound />} />

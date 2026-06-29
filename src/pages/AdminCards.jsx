@@ -1,0 +1,72 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import CardFields from '@/components/admin/CardFields';
+import CardList from '@/components/admin/CardList';
+
+const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '' };
+const numericFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp'];
+
+function cleanPayload(form) {
+  const payload = { ...form };
+  delete payload.image_prompt;
+  delete payload.id;
+  delete payload.created_date;
+  delete payload.updated_date;
+  delete payload.created_by_id;
+  numericFields.forEach((field) => { if (payload[field] === '' || payload[field] == null) delete payload[field]; else payload[field] = Number(payload[field]); });
+  Object.keys(payload).forEach((key) => { if (payload[key] === '') delete payload[key]; });
+  if (!payload.card_id && payload.name) payload.card_id = payload.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  return payload;
+}
+
+export default function AdminCards() {
+  const [user, setUser] = useState(null);
+  const [checking, setChecking] = useState(true);
+  const [cards, setCards] = useState([]);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  const [form, setForm] = useState(emptyCard);
+  const [editingId, setEditingId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false)); }, []);
+  useEffect(() => { if (user?.role === 'admin') loadCards(); }, [user]);
+
+  async function loadCards() { const list = await base44.entities.Card.list('number', 300); setCards(list || []); }
+  function onChange(name, value) { setForm(prev => ({ ...prev, [name]: value })); }
+  function startNew() { setEditingId(null); setForm(emptyCard); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function startEdit(card) { setEditingId(card.id); setForm({ ...emptyCard, ...card, image_prompt: '' }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  async function saveCard() {
+    if (!form.name || !form.category) return;
+    setSaving(true);
+    const payload = cleanPayload(form);
+    if (editingId) await base44.entities.Card.update(editingId, payload);
+    else await base44.entities.Card.create(payload);
+    await loadCards();
+    setSaving(false);
+    startNew();
+  }
+
+  async function generateImage() {
+    if (!form.image_prompt) return;
+    setGenerating(true);
+    const prompt = `Ilustración de carta fantasy bizarra para un juego de cartas. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable, sin texto ni logos. Indicaciones del admin: ${form.image_prompt}`;
+    const result = await base44.integrations.Core.GenerateImage({ prompt });
+    setForm(prev => ({ ...prev, art_url: result?.url || prev.art_url }));
+    setGenerating(false);
+  }
+
+  const filteredCards = useMemo(() => cards.filter(card => {
+    const matchesCategory = category === 'all' || card.category === category;
+    const text = `${card.name || ''} ${card.title || ''} ${card.clan || ''} ${card.type || ''}`.toLowerCase();
+    return matchesCategory && text.includes(query.toLowerCase());
+  }), [cards, query, category]);
+
+  if (checking) return <div className="min-h-screen bg-[#0e0a16] p-8 text-[#efe9dc]">Cargando backoffice...</div>;
+  if (user?.role !== 'admin') return <div className="min-h-screen bg-[#0e0a16] p-8 text-center text-[#efe9dc]"><h1 className="font-heading text-3xl font-black">Backoffice Admin</h1><p className="mt-4 text-[#cfc6dd]">Esta zona sólo está disponible para administradores.</p><Link to="/" className="mt-6 inline-block rounded-xl bg-[#ffd24a] px-5 py-3 font-black text-[#3a2600]">Volver al juego</Link></div>;
+
+  return <div className="min-h-screen bg-[#0e0a16] px-4 py-6 text-[#efe9dc] md:px-8"><div className="mx-auto max-w-7xl"><div className="mb-6 flex flex-wrap items-center justify-between gap-3"><div><h1 className="font-heading text-3xl font-black text-[#fff5dc]">Backoffice de cartas</h1><p className="mt-1 text-sm text-[#cfc6dd]">Crea cartas por tipo y raza, genera imágenes con IA y edita la base de datos actual.</p></div><Link to="/" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Volver al juego</Link></div><div className="grid gap-6 lg:grid-cols-[1.08fr_.92fr]"><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">{editingId ? 'Editar carta' : 'Crear carta nueva'}</h2>{editingId && <button onClick={startNew} className="rounded-lg border border-[#ffd24a44] px-3 py-1.5 text-xs font-black text-[#ffe49a]">Nueva carta</button>}</div>{form.art_url && <img src={form.art_url} alt="Vista previa" className="mb-4 h-56 w-full rounded-2xl border border-[#ffd24a44] object-cover" />}<CardFields form={form} onChange={onChange} onGenerate={generateImage} generating={generating} /><button onClick={saveCard} disabled={saving || !form.name} className="mt-5 w-full rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><div className="my-4 grid gap-3 md:grid-cols-[1fr_170px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="race">Razas</option></select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
+}
