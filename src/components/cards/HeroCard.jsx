@@ -13,10 +13,10 @@ export default function HeroCard({ hero, onClick }) {
         {/* Lupa: ampliar la carta completa (cara actualmente visible) */}
         <button
           onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
-          className="absolute top-2 right-12 z-30 w-9 h-9 rounded-full flex items-center justify-center bg-black/65 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/85 hover:text-[#fff5dc] transition-colors shadow-lg"
+          className="absolute top-[26%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-7 h-7 rounded-full flex items-center justify-center bg-black/55 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/85 hover:text-[#fff5dc] transition-colors shadow-lg"
           aria-label="Ampliar"
         >
-          <Search size={16} />
+          <Search size={13} />
         </button>
 
         <div
