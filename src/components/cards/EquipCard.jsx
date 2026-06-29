@@ -51,7 +51,7 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
             src={artUrl}
             alt={item.name}
             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            style={{ filter: 'saturate(1.14) contrast(1.12)', zIndex: 1 }}
+            style={{ filter: 'saturate(1.14) contrast(1.12)', transform: 'scale(1.12)', zIndex: 1 }}
           />
         ) : (
           <>
@@ -64,7 +64,7 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'blur(18px) saturate(1.3) contrast(1.16)',
-                transform: 'scale(1.28)',
+                transform: 'scale(1.35)',
                 zIndex: 0,
               }}
             />
@@ -77,7 +77,7 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'saturate(1.14) contrast(1.12)',
-                transform: 'scale(1.08)',
+                transform: 'scale(1.15)',
                 zIndex: 1,
               }}
             />
