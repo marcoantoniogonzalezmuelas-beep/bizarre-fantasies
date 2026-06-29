@@ -374,7 +374,7 @@ function buildArtScript() {
       @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
 
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
-      .bhero .bf-battle-gear { position:absolute; left:108px; bottom:34px; z-index:3; display:flex; gap:6px; }
+      .bhero .bf-battle-gear { position:absolute; left:108px; bottom:6px; z-index:3; display:flex; gap:6px; }
       .bhero .bf-gear-icon { position:relative; width:30px; height:30px; border-radius:8px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.6); box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.2); background-color:#0a0710; cursor:pointer; transition:transform .12s ease, border-color .12s ease; }
       .bhero .bf-gear-icon:hover { border-color:#ffd24a; transform:scale(1.15); z-index:10; }
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
