@@ -1402,7 +1402,7 @@ function buildArtScript() {
     var originalBuySpell = window.buySpell;
      window.buySpell = function(side, id) {
        var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
-       if (!item || (G.hand&&G.hand[side]&&G.hand[side].find(function(c){return c.id===id;}))) { if(item&&window.notif)notif("¡Ya tienes este hechizo!"); return; }
+       if (!item) return;
        var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
        var itemCopy = {};for(var p in item)itemCopy[p]=item[p];itemCopy.txt=itemCopy.txt||itemCopy.desc||'';
        var opts = { item: itemCopy, side: side, art: art };
@@ -1708,7 +1708,7 @@ function buildArtScript() {
         var eM=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])eM++;if(tm[i]&&!g.a[i])eM++;}
         var bs=null,bS=-1;
         var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
-          if(k==='spell'&&G.hand&&G.hand[side]&&G.hand[side].find(function(x){return x.id===it.id;}))return; var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
+          var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
         if(g.h<3){sp.forEach(function(s){ev('spell',s,null,null);});ob.forEach(function(o){ev('object',o,null,null);});}
         if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
