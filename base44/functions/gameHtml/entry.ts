@@ -2096,7 +2096,7 @@ function buildArtScript() {
     return hero ? { hero: hero, id: id, side: side, card: card } : { hero: null, id: id, side: side, card: card };
   }
 
-  function bfEsc(v){return clean(v);}
+  function bfEsc(v){if(v==null)return '';return String(v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
 
   function injectActionPanelBg() {
     var b = document.getElementById('s-battle');
@@ -2146,7 +2146,7 @@ function buildArtScript() {
         ic.style.cssText = 'background:none;border:none;box-shadow:none;width:auto;height:auto;margin:0 0 4px;';
       }
       if (btn.classList.contains('ability') && h) {
-         var t = el ? (h.eTxt || h.abilityTxt) : h.abilityTxt, inIco = btn.querySelector('.jrpg-info');
+         var t = (el ? (h.eTxt || h.eAbilityTxt) : '') || h.abilityTxt || h.abText || h.abilityText || h.text || h.txt || h.desc || h.description || '', inIco = btn.querySelector('.jrpg-info');
          if (inIco) {
             inIco.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-left:auto;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.6);border:1.5px solid rgba(255,210,74,0.6);color:#ffe49a;font-size:17px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,0.5);transition:all 0.12s ease;';
             inIco.innerHTML = 'ℹ️';
