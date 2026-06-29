@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-tankear-v115';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-tank-layout-v116';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -204,7 +204,7 @@ function buildArtScript() {
       .bf-tank-ring { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:7; pointer-events:none; font-size:22px; filter:drop-shadow(0 0 8px #ffae3c); animation:bfTankPulse 1.9s ease-in-out infinite; }
       .bf-fx-tank-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(255,235,180,.92),rgba(255,170,60,.5) 26%,rgba(255,130,30,.2) 50%,transparent 74%); animation:bfBigBlast 1s ease-out forwards; }
       @keyframes bfTankPulse { 0%,100%{transform:translateX(-50%) scale(1);opacity:.85} 50%{transform:translateX(-50%) scale(1.18);opacity:1} }
-      .bf-jrpg-tank { border:2px solid rgba(255,170,60,.78) !important; background:linear-gradient(135deg,rgba(60,32,8,.96),rgba(20,10,4,.98)) !important; box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,170,60,.18),0 0 18px rgba(255,140,30,.28) !important; }
+      .bf-jrpg-tank { border:2px solid rgba(255,170,60,.78) !important; background:linear-gradient(135deg,rgba(60,32,8,.96),rgba(20,10,4,.98)) !important; box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,170,60,.18),0 0 18px rgba(255,140,30,.28) !important; } .bf-jrpg-tank:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 10px 26px rgba(255,140,30,.5),inset 0 0 0 1px rgba(255,170,60,.3),0 0 22px rgba(255,140,30,.45) !important; }
       .bf-jrpg-tank.bf-tank-on { animation:bfBadgePulse 1.6s ease-in-out infinite; }
       @keyframes bfFrostIn { 0%{opacity:0;transform:scale(1.08)} 100%{opacity:1;transform:none} }
       @keyframes bfFlakeFall { 0%{opacity:0;transform:translateY(0) rotate(0)} 12%{opacity:1} 100%{opacity:.2;transform:translateY(150px) rotate(220deg)} }
@@ -2136,14 +2136,15 @@ function buildArtScript() {
        if (sbg) sbg.remove();
     }
     
-    var m = p.querySelector('.jrpg-menu'); if (m) m.style.display = 'grid';
-    // Inject the "Tanquear" action button as the last option in the menu.
+    var m = p.querySelector('.jrpg-menu'); if (m) { m.style.display = 'grid'; m.style.gridTemplateColumns = 'repeat(3,1fr)'; }
+    // Inject the "Tanquear" action button: compact cell next to "Defender" so the
+    // panel reads as 3 buttons (CC/AD/HE) · ability (full width) · 3 buttons (item/defend/tank).
     if (m && h && !m.querySelector('.bf-tank-btn')) {
       var alreadyTank = !!h._bfTank;
       var tb = document.createElement('div');
       tb.className = 'jrpg-btn bf-tank-btn bf-jrpg-tank' + (alreadyTank ? ' bf-tank-on' : '');
-      tb.style.cssText = 'grid-column:1/-1;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:12px;padding:12px 14px;border-radius:16px;color:#fff5dc;cursor:pointer;text-shadow:0 2px 4px #000;';
-      tb.innerHTML = '<div style="width:50px;height:50px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 16px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06a526041_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="flex:1"><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:15px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Tanqueando' : 'Tanquear') + '</div><div style="color:#f3ecff;text-transform:none;font-family:&quot;Rubik&quot;,sans-serif;font-weight:600;font-size:12.5px;line-height:1.3;text-shadow:0 1px 3px #000;">Absorbe todos los golpes a tu equipo hasta tu próximo turno.</div></div>';
+      tb.style.cssText = 'position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px;border-radius:14px;color:#fff5dc;cursor:pointer;text-shadow:0 2px 4px #000;text-align:center;line-height:1.15;transition:transform .15s ease,box-shadow .15s ease;';
+      tb.innerHTML = '<div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 12px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 auto"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06a526041_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:13px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Tanqueando' : 'Tanquear') + '</div>';
       if (!alreadyTank) tb.onclick = function(e) { e.stopPropagation(); if (typeof window.bfTankear === 'function') window.bfTankear(); };
       m.appendChild(tb);
     }
