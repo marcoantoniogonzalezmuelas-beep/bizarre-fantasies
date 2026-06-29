@@ -2072,74 +2072,69 @@ function buildArtScript() {
   function bfEsc(v){return clean(v);}
 
   function injectActionPanelBg() {
-    var battle = document.getElementById('s-battle');
-    if (!battle || !battle.classList.contains('active')) return;
-    var btns = battle.querySelectorAll('button');
-    var host = null;
-    for (var i = 0; i < btns.length; i++) {
-      var t = (btns[i].textContent || '').trim();
-      if (/Atacar|Hechizo|Objeto|Pasar turno|Pasar/i.test(t)) { host = btns[i].parentElement; break; }
+    var b = document.getElementById('s-battle');
+    if (!b || !b.classList.contains('active')) return;
+    var p = b.querySelector('.active-hero-panel');
+    if (!p) return;
+    p.classList.add('bf-action-host');
+    var bg = p.querySelector('.bf-action-bg');
+    if (!bg) { bg = document.createElement('div'); bg.className = 'bf-action-bg'; p.insertBefore(bg, p.firstChild); }
+    if (!p.querySelector('.bf-action-embers')) { var em = document.createElement('div'); em.className = 'bf-action-embers'; p.insertBefore(em, bg.nextSibling); }
+    var a = bfActiveHero(), h = a && a.hero, el = a && a.card && (a.card.classList.contains('elite-mode') || a.card.classList.contains('bf-auto-elite'));
+    var url = ACTION_BG;
+    if (a && a.id) url = (el ? (ELITE_BY_ID[a.id] || ART_BY_ID[a.id]) : ART_BY_ID[a.id]) || ACTION_BG;
+    if (p.dataset.bfActionArt !== url) { bg.style.setProperty('--bf-action-art', 'url("'+url+'")'); p.dataset.bfActionArt = url; }
+    
+    // Check and show status
+    var st = (a && a.card) ? heroStatusOf(a.card) : '';
+    if (st && typeof STATUS_INFO !== 'undefined') {
+       var sinfo = STATUS_INFO[st];
+       if (sinfo) {
+          var sbg = p.querySelector('.bf-action-status');
+          if (!sbg) { sbg = document.createElement('div'); sbg.className = 'bf-action-status'; p.insertBefore(sbg, bg.nextSibling); }
+          var scolor = st === 'sleeping' ? '#8aaaff' : st === 'cursed' ? '#c79bff' : '#ffe14a';
+          sbg.style.cssText = 'position:relative;z-index:2;margin-bottom:10px;text-align:center;padding:6px;border-radius:10px;background:rgba(8,5,14,0.85);border:1px solid '+scolor+';color:'+scolor+';font-family:"Cinzel",serif;font-weight:1000;letter-spacing:0.5px;box-shadow:0 0 12px '+scolor;
+          sbg.innerHTML = '<span style="font-size:16px">' + sinfo.ico + '</span> ' + sinfo.label;
+       }
+    } else {
+       var sbg = p.querySelector('.bf-action-status');
+       if (sbg) sbg.remove();
     }
-    if (!host) return;
-    host.classList.add('bf-action-host');
-    var bg = host.querySelector('.bf-action-bg');
-    if (!bg) {
-      bg = document.createElement('div');
-      bg.className = 'bf-action-bg';
-      host.insertBefore(bg, host.firstChild);
-    }
-    if (!host.querySelector('.bf-action-embers')) { var embers = document.createElement('div'); embers.className = 'bf-action-embers'; host.insertBefore(embers, bg.nextSibling); }
-    var actionBtns = host.querySelectorAll('button');
-    actionBtns.forEach(function(btn) {
-       var t = (btn.textContent || '').trim().toLowerCase();
-       if (btn.dataset.bfIconized) return;
-       btn.dataset.bfIconized = '1';
-       btn.style.cssText = 'position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;font-family:"Cinzel", serif;font-weight:1000;font-size:14px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,210,74,0.4);background:linear-gradient(180deg, rgba(30,20,50,0.8), rgba(15,10,25,0.95));color:#fff5dc;box-shadow:0 6px 16px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);text-shadow:0 2px 4px #000;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease';
-       var icon = '⚡';
-       if (t.indexOf('atacar') !== -1) icon = '⚔️'; else if (t.indexOf('hechizo') !== -1) icon = '✨'; else if (t.indexOf('objeto') !== -1) icon = '🧪'; else if (t.indexOf('pasar') !== -1 || t.indexOf('defender') !== -1) icon = '🛡️';
-       btn.innerHTML = '<span style="font-size:18px;filter:drop-shadow(0 0 4px rgba(255,210,74,0.5))">' + icon + '</span> <span>' + btn.innerHTML + '</span>';
-       btn.onmouseenter = function() { btn.style.transform = 'translateY(-3px) scale(1.02)'; btn.style.borderColor = '#ffd24a'; btn.style.boxShadow = '0 8px 24px rgba(255,210,74,0.3), inset 0 1px 1px rgba(255,255,255,0.2)'; };
-       btn.onmouseleave = function() { btn.style.transform = 'none'; btn.style.borderColor = 'rgba(255,210,74,0.4)'; btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1)'; };
+    
+    var m = p.querySelector('.jrpg-menu'); if (m) m.style.display = 'grid';
+    p.querySelectorAll('.jrpg-btn').forEach(function(btn) {
+      if (btn.dataset.bfIco === '1') return;
+      btn.dataset.bfIco = '1';
+      btn.style.cssText = 'position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-family:"Cinzel",serif;font-weight:1000;font-size:14px;padding:10px 8px;border-radius:14px;border:1px solid rgba(255,210,74,0.4);background:linear-gradient(180deg,rgba(20,10,35,0.85),rgba(10,5,15,0.95));color:#fff5dc;box-shadow:0 6px 16px rgba(0,0,0,0.5),inset 0 1px 1px rgba(255,255,255,0.1);text-shadow:0 2px 4px #000;transition:transform 0.15s ease,box-shadow 0.15s ease,border-color 0.15s ease;text-align:center;line-height:1.15;cursor:pointer;';
+      btn.onmouseenter = function() { if(!btn.classList.contains('disabled')) { btn.style.transform='translateY(-3px) scale(1.02)';btn.style.borderColor='#ffd24a';btn.style.boxShadow='0 8px 24px rgba(255,210,74,0.3),inset 0 1px 1px rgba(255,255,255,0.2)'; }};
+      btn.onmouseleave = function() { btn.style.transform='none';btn.style.borderColor='rgba(255,210,74,0.4)';btn.style.boxShadow='0 6px 16px rgba(0,0,0,0.5),inset 0 1px 1px rgba(255,255,255,0.1)'; };
+      var ic = btn.querySelector('.jrpg-btn-icon'), iu = '';
+      if (btn.classList.contains('cc')) iu = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fefda0ace_generated_image.png';
+      else if (btn.classList.contains('ad')) iu = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/210f89d43_generated_image.png';
+      else if (btn.classList.contains('he')) iu = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7c59e1ff7_generated_image.png';
+      else if (btn.classList.contains('item')) iu = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/90ff926d5_generated_image.png';
+      else if (btn.classList.contains('defend')) iu = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1d9e5fb8f_generated_image.png';
+      if (iu && ic) {
+        ic.innerHTML = '<img src="'+iu+'" style="width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,210,74,0.6);box-shadow:0 0 12px rgba(255,210,74,0.5);display:block;margin:0 auto;object-fit:cover;">';
+        ic.style.cssText = 'background:none;border:none;box-shadow:none;width:auto;height:auto;margin:0 0 4px;';
+      }
+      if (btn.classList.contains('ability') && h) {
+         var t = el ? (h.eTxt || h.abilityTxt) : h.abilityTxt, inIco = btn.querySelector('.jrpg-info');
+         if (inIco) inIco.style.display = 'none';
+         btn.style.cssText += 'grid-column:1/-1;flex-direction:row;justify-content:flex-start;text-align:left;padding:12px 14px;';
+         if (ic) ic.innerHTML = '<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72);display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:24px;font-weight:900;">✦</div>';
+         var lbl = btn.querySelector('.jrpg-btn-label');
+         if (lbl) {
+           lbl.innerHTML = '<div style="color:#ffe07b;font-size:15.5px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+'</div><div style="font-family:\\\'Rubik\\',sans-serif;font-size:12px;font-weight:700;color:#fff7ea;text-transform:none;letter-spacing:0;line-height:1.3;text-shadow:0 1px 3px #000">'+bfEsc(t)+'</div>';
+           lbl.style.flex = '1';
+         }
+         var v = btn.querySelector('.jrpg-btn-val');
+         if (v) v.style.cssText = 'margin-left:auto;font-size:16px;padding:6px 12px;background:rgba(0,0,0,0.5);border-radius:8px;border:1px solid rgba(255,210,74,0.3);';
+      } else {
+         var lbl = btn.querySelector('.jrpg-btn-label');
+         if (lbl) lbl.style.fontSize = '12px';
+      }
     });
-
-    // Resolve the active hero so we can use their portrait + ability.
-    var active = bfActiveHero();
-    var hero = active && active.hero;
-    var elite = active && active.card && (active.card.classList.contains('elite-mode') || active.card.classList.contains('bf-auto-elite'));
-    // Background = the active hero's battle art (elite art when in elite form),
-    // falling back to the generic battle background.
-    var artUrl = ACTION_BG;
-    if (active && active.id) {
-      artUrl = (elite ? (ELITE_BY_ID[active.id] || ART_BY_ID[active.id]) : ART_BY_ID[active.id]) || ACTION_BG;
-    }
-    if (host.dataset.bfActionArt !== artUrl) {
-      bg.style.setProperty('--bf-action-art', 'url("' + artUrl + '")');
-      host.dataset.bfActionArt = artUrl;
-    }
-
-    // Banner with the active hero's name + ability, placed at the top of panel.
-    if (hero) {
-      var ability = elite ? (hero.eAbility || hero.ability) : hero.ability;
-      var abilityTxt = elite ? (hero.eTxt || hero.abilityTxt) : hero.abilityTxt;
-      var key = active.id + '|' + (elite ? 'e' : 'n');
-      var banner = host.querySelector('.bf-active-banner');
-      if (!banner) {
-        banner = document.createElement('div');
-        banner.className = 'bf-active-banner';
-        host.insertBefore(banner, bg.nextSibling);
-      }
-      if (banner.dataset.bfKey !== key) {
-        banner.dataset.bfKey = key;
-        banner.className = 'bf-active-banner' + (elite ? ' bf-banner-elite' : '');
-        banner.innerHTML =
-          '<div class="bf-ab-orb"></div>' +
-          '<div>' +
-            '<div class="bf-ab-hero">' + bfEsc(hero.name) + (elite ? ' ★' : '') + '</div>' +
-            (ability ? '<div class="bf-ab-name">' + bfEsc(ability) + '</div>' : '') +
-            (abilityTxt ? '<div class="bf-ab-text">' + bfEsc(abilityTxt) + '</div>' : '') +
-          '</div>';
-      }
-    }
   }
 
   // ---- (B) Play a hand card (spell/object) with a confirm + cast animation ----
