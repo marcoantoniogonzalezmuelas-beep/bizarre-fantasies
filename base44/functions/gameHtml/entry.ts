@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v116';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v113';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -316,7 +316,6 @@ function buildArtScript() {
       .shop-card-art { display:none !important; }
       .shop-card-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .shop-card-art-sharp { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
-      .hand-section > .hand-lbl:first-child { display: none !important; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
       .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
@@ -1044,23 +1043,9 @@ function buildArtScript() {
       };
       window.rulesBody.__bf = 1;
     }
-
-    if (typeof window.heroEmoji === 'function' && !window.heroEmoji.__bfPatched) {
-      window.heroEmoji = function(h) {
-        var sigil = typeof RACE_SIGILS !== 'undefined' ? (RACE_SIGILS[h.clan] || '◆') : '◆';
-        return '<span style="font-family:\'Cinzel\',serif;color:#ffd24a;font-size:15px;margin-right:2px;display:inline-block;transform:translateY(1px);text-shadow:0 1px 2px #000;">' + sigil + '</span>';
-      };
-      window.heroEmoji.__bfPatched = 1;
-    }
-    if (typeof window.handChips === 'function' && !window.handChips.__bfSeparated) {
-      window.handChips = function(side) {
-        function clean(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch]; }); }
-        var sp = (G.spellbook[side]||[]).map(function(id) { var s = typeof byId === 'function' ? byId(SPELLS, id) : {name:id,txt:''}; return '<span class="chip chip-spell" title="' + clean(s.txt) + '">' + clean(s.name) + '</span>'; }).join('');
-        var it = (G.items[side]||[]).map(function(o) { return '<span class="chip chip-object" title="' + clean(o.txt) + '">' + clean(o.name) + '</span>'; }).join('');
-        return '<div class="hand-lbl" style="margin-top:-6px;">Hechizos</div><div class="hand-chips" style="margin-bottom:8px">' + (sp||'<span style="color:#666;font-size:11px">vacía</span>') + '</div>' +
-               '<div class="hand-lbl">Objetos</div><div class="hand-chips">' + (it||'<span style="color:#666;font-size:11px">vacía</span>') + '</div>';
-      };
-      window.handChips.__bfSeparated = 1;
+    if (typeof window.roleIcon === 'function' && !window.roleIcon.__bf) {
+      window.roleIcon = function(t) { var M = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' }; return '<img class="bf-role-emblem" src="' + (M[t] || M.HE) + '" alt="">'; };
+      window.roleIcon.__bf = 1;
     }
     if (typeof window.renderSetup === 'function' && !window.renderSetup.__bf) {
       var bfOrigRenderSetup = window.renderSetup;
@@ -1526,16 +1511,6 @@ function buildArtScript() {
       var html = originalEqHeroCard.apply(this, arguments);
       var byName = itemArtByName();
       var url = ART_BY_ID[h && h.id] || '';
-      
-      html = html.replace(/<span class="hcard-type[^>]*>([^<]+)<\/span>/, function(match, role) {
-        var r = role.trim();
-        var M = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' };
-        if (M[r]) {
-          return '<span style="display:inline-flex;align-items:center;justify-content:center;"><img class="bf-role-emblem" src="' + M[r] + '" alt="' + r + '"></span>';
-        }
-        return match;
-      });
-
       if (url && html.indexOf('bf-eq-hero-art') === -1) {
         html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"');
         html = html.replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>');
@@ -2452,7 +2427,7 @@ async function buildGameHtml() {
   var BTN_LEARN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/843af3814_generated_image.png';
   var BTN_RULES = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0848f4ffb_generated_image.png';
   var BTN_RACES = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5e41f1add_generated_image.png';
-  html = html.replace("try{ lobbyTeardown(); }catch(e){} location.reload(); }", "try{ lobbyTeardown(); }catch(e){} try{ window.top.location.href = window.top.location.pathname + '?bf=' + Date.now(); }catch(e){ location.reload(); } }").replace('onclick="startDemo()">\ud83c\udf93 Aprender a jugar</button>', 'onclick="startDemo()"><span class="tc-img"><img src="' + BTN_LEARN + '" alt=""></span><span>Aprende<br>a jugar</span></button>').replace('onclick="rulesModalStatic()">\ud83d\udcd6 C\u00f3mo se juega</button>', 'onclick="rulesModalStatic()"><span class="tc-img"><img src="' + BTN_RULES + '" alt=""></span><span>Cómo<br>se juega</span></button>').replace('onclick="racesModal()">\ud83e\uddec Razas</button>', 'onclick="racesModal()"><span class="tc-img"><img src="' + BTN_RACES + '" alt=""></span><span>Razas</span></button>').replace('<div class="coach-txt">${G._coachMsg?esc(G._coachMsg):\'\'}</div>', '<div class="coach-txt">${G._coachMsg||\'\'}</div>');
+  html = html.replace("function roleIcon(t){return t==='CC'?'\ud83d\udde1\ufe0f':t==='AD'?'\ud83c\udff9':'\ud83d\udd2e';}", "function roleIcon(t){var E={CC:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png',AD:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png',HE:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png'};return '<img class=\"bf-role-emblem\" src=\"'+(E[t]||E.HE)+'\">';}").replace("try{ lobbyTeardown(); }catch(e){} location.reload(); }", "try{ lobbyTeardown(); }catch(e){} try{ window.top.location.href = window.top.location.pathname + '?bf=' + Date.now(); }catch(e){ location.reload(); } }").replace('onclick="startDemo()">\ud83c\udf93 Aprender a jugar</button>', 'onclick="startDemo()"><span class="tc-img"><img src="' + BTN_LEARN + '" alt=""></span><span>Aprende<br>a jugar</span></button>').replace('onclick="rulesModalStatic()">\ud83d\udcd6 C\u00f3mo se juega</button>', 'onclick="rulesModalStatic()"><span class="tc-img"><img src="' + BTN_RULES + '" alt=""></span><span>Cómo<br>se juega</span></button>').replace('onclick="racesModal()">\ud83e\uddec Razas</button>', 'onclick="racesModal()"><span class="tc-img"><img src="' + BTN_RACES + '" alt=""></span><span>Razas</span></button>').replace('<div class="coach-txt">${G._coachMsg?esc(G._coachMsg):\'\'}</div>', '<div class="coach-txt">${G._coachMsg||\'\'}</div>');
 
   // Re-define bonuses array, styles, logic and resolution
   html = html.replace('const BONUS=[{"id": "ban"', 'const BONUS=[{"id": "mina", "name": "Mina de Oro", "type": "PERM", "effect": 15, "txt": "+15 monedas a tu bolsa (permanente)."}, {"id": "roba", "name": "Ladrón de Guante", "type": "PERM", "effect": 15, "txt": "El rival pierde 15 monedas (permanente)."}, {"id": "ban"').replace(/"type": "BON"/g, '"type": "BID_ADD"').replace(/"type": "RES"/g, '"type": "BID_SUB"');
