@@ -11,7 +11,7 @@ export default function RacesPage() {
         <div className="flex items-center gap-3 mb-8">
           <Link to="/" className="text-[#a89fbb] hover:text-[#FFD24A] transition-colors"><ArrowLeft size={20} /></Link>
           <h1 className="font-heading font-extrabold text-2xl text-[#FFD24A] tracking-wider">RAZAS</h1>
-          <span className="text-xs text-[#a89fbb]">8 razas · potenciadores aplicados en batalla</span>
+          <span className="text-xs text-[#a89fbb]">9 razas · potenciadores aplicados en batalla</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {RACES.map(r => <RaceCard key={r.name} race={r} />)}

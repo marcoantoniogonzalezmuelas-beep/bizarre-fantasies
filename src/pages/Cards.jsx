@@ -15,7 +15,7 @@ const TABS = [
   { key: 'melee', label: 'Armas C/C' },
   { key: 'armors', label: 'Armaduras' },
   { key: 'objects', label: 'Objetos' },
-  { key: 'tokens', label: 'Tokens' },
+  { key: 'tokens', label: 'Bizarros' },
   { key: 'bonuses', label: 'Bonificadores' },
   { key: 'races', label: 'Razas' },
 ];
@@ -180,13 +180,19 @@ export default function Cards() {
           </div>
         )}
         {tab === 'tokens' && (
-          tokens.length === 0 ? (
-            <div className="text-center py-16 text-[#a89fbb]">Aún no hay tokens en el catálogo.</div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {tokens.map(token => <HeroCard key={token.id} hero={token} onClick={h => setSelectedHero(h)} />)}
+          <>
+            <div className="mb-6 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2" style={{ background: '#caa14a18', border: '1px solid #caa14a55', color: '#ffe49a' }}>
+              <span className="text-lg">⊛</span>
+              <span>Los <strong>Bizarros</strong> no salen en subasta. Solo aparecen en plena batalla de forma sorpresiva e impredecible.</span>
             </div>
-          )
+            {tokens.length === 0 ? (
+              <div className="text-center py-16 text-[#a89fbb]">Aún no hay Bizarros en el catálogo.</div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {tokens.map(token => <HeroCard key={token.id} hero={token} onClick={h => setSelectedHero(h)} />)}
+              </div>
+            )}
+          </>
         )}
         {tab === 'bonuses' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">

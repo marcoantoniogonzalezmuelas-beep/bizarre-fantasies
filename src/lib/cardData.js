@@ -7,7 +7,8 @@ export const CLAN_COLORS = {
   "Elfos": "#33aa66",
   "Magos": "#6644cc",
   "Épicas": "#cc88ff",
-  "Cotidianos": "#e0498b"
+  "Cotidianos": "#e0498b",
+  "Bizarros": "#caa14a"
 };
 
 export const CLAN_SYMBOLS = {
@@ -18,7 +19,8 @@ export const CLAN_SYMBOLS = {
   "Elfos": "⟐",
   "Magos": "✧",
   "Épicas": "◆",
-  "Cotidianos": "◈"
+  "Cotidianos": "◈",
+  "Bizarros": "⊛"
 };
 
 export const HEROES = [
@@ -156,6 +158,7 @@ export const RACES = [
   { name:"Magos", color:"#6644cc", elite:"30%", trait:"MAGIA +3 · Enorme reserva de maná · Físico −4 · Resiste magia", desc:"Maestros arcanos. Poder mágico y reserva de maná colosales, pero en combate cuerpo a cuerpo son un desastre.", stats:"CC -4 | AD 0 | HE +3 | Vel 0 | Mana +16 | Res.fis 0 | Res.mag +2" },
   { name:"Épicas", color:"#cc88ff", elite:"45%", trait:"Todo +1 · Buena reserva de maná · Resiste todo · Renace 45%", desc:"Seres legendarios. Sobresalen en todas las facetas y renacen con un poderoso 45% de vida.", stats:"CC +1 | AD +1 | HE +1 | Vel +1 | Mana +9 | Res.fis +1 | Res.mag +1" },
   { name:"Cotidianos", color:"#e0498b", elite:"32%", trait:"Versátiles · Distancia +1 · Velocidad +1 · Buena reserva de maná", desc:"Héroes de la vida real. Imprevisibles y con recursos para todo.", stats:"CC 0 | AD +1 | HE 0 | Vel +1 | Mana +7 | Res.fis +1 | Res.mag 0" },
+  { name:"Bizarros", color:"#caa14a", elite:"—", trait:"Héroes sorpresa · No salen en subasta", desc:"Criaturas imposibles que jamás aparecen en la subasta. Solo emergen en plena batalla, de forma sorpresiva e impredecible, para dar un giro al combate.", stats:"⚠ No comprables · Aparición aleatoria durante el juego" },
 ];
 
 export const CATEGORIES = [
