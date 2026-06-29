@@ -1861,33 +1861,7 @@ function buildArtScript() {
        bfAddChipButtons(chip, found, chip.onclick, chip.getAttribute('onclick'), url, name);
     });
     
-    ['p', 'o'].forEach(function(side) {
-       var handZone = document.getElementById('hand_' + side);
-       if (!handZone) return;
-       var spells = [], objects = [];
-       Array.from(handZone.children).forEach(function(c) {
-          if (c.classList.contains('chip-spell')) spells.push(c);
-          else if (c.classList.contains('chip-object')) objects.push(c);
-       });
-       if (spells.length || objects.length) {
-          var sepSpells = handZone.querySelector('.bf-hand-sep-spells');
-          if (!sepSpells && spells.length > 0) {
-             sepSpells = document.createElement('div'); sepSpells.className = 'bf-hand-sep-spells';
-             sepSpells.style.cssText = 'width:100%;font-size:12px;color:#c79bff;font-family:Cinzel,serif;font-weight:1000;margin-bottom:6px;';
-             sepSpells.innerHTML = '✨ HECHIZOS';
-          }
-          var sep = handZone.querySelector('.bf-hand-sep');
-          if (!sep && objects.length > 0 && spells.length > 0) {
-             sep = document.createElement('div'); sep.className = 'bf-hand-sep';
-             sep.style.cssText = 'width:100%;height:0;border-bottom:1px dashed rgba(255,210,74,0.4);margin:8px 0 6px;position:relative;';
-             sep.innerHTML = '<span style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#0e0a16;padding:0 8px;font-size:11px;color:#51ff8a;font-family:Cinzel,serif;font-weight:900">🧪 OBJETOS</span>';
-          }
-          if (sepSpells && !sepSpells.parentNode) handZone.appendChild(sepSpells);
-          spells.forEach(function(c) { handZone.appendChild(c); });
-          if (sep && !sep.parentNode) handZone.appendChild(sep);
-          objects.forEach(function(c) { handZone.appendChild(c); });
-       }
-    });
+    // Battle hand natively separates spells and objects now.
   }
 
   function injectRecruitHeroArt() {
@@ -2481,6 +2455,11 @@ async function buildGameHtml() {
   const recruitOriginal = '<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div>';
   const recruitPatched = '<div class="hcard-bid-zone" style="flex-direction:column;align-items:stretch"><div style="display:flex;gap:6px"><input style="flex:1" class="bid-mini-input" id="bid_${h.id}" type="number" min="${h.cost}" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview(\'${h.id}\')"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div><div id="bidcalc_${h.id}" style="font-size:10.5px;text-align:center;line-height:1.25;margin-top:5px;font-weight:900;text-shadow:0 1px 3px #000;background:rgba(8,5,14,.6);border:1px solid rgba(255,210,74,.25);border-radius:8px;padding:4px 6px;"></div></div>';
   html = html.replace(recruitOriginal, recruitPatched);
+
+  // Separate Spells and Objects in battle hand and add ID to hand section so bfAddChipButtons can attach zoom, mana and cast buttons
+  const hcRe = new RegExp('function handChips\\\\(side\\\\)\\\\{[\\\\s\\\\S]*?<\\\\/div>\\\\`;\\\\n\\\\}');
+  html = html.replace(hcRe, 'function handChips(side){const sp=(G.spellbook[side]||[]).map(id=>{const s=byId(SPELLS,id);return "<span class=\\"chip chip-spell\\" title=\\""+esc(s.txt)+"\\">"+esc(s.name)+"</span>";}).join("")||"<span style=\\"color:#666;font-size:11px\\">—</span>";const it=(G.items[side]||[]).map(o=>"<span class=\\"chip chip-object\\" title=\\""+esc(o.txt)+"\\">"+esc(o.name)+"</span>").join("")||"<span style=\\"color:#666;font-size:11px\\">—</span>";return "<div class=\\"hand-lbl\\">Mano · Hechizos</div><div class=\\"hand-chips\\" style=\\"margin-bottom:8px\\">"+sp+"</div><div class=\\"hand-lbl\\">Mano · Objetos</div><div class=\\"hand-chips\\">"+it+"</div>";}');
+  html = html.replace('<div class="hand-section"><div class="hand-lbl">Mano</div>${handChips(side)}</div>', '<div class="hand-section" id="hand_${side}">${handChips(side)}</div>');
 
   // Inject art script right before </body> (after the game's script is defined).
   const artScript = buildArtScript();
