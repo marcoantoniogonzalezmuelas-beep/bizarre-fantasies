@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-status-fx-v118';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-phoenix-heal2-v119';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -2481,9 +2481,8 @@ async function buildGameHtml() {
   html = html.replace(hcRe, 'function handChips(side){const sp=(G.spellbook[side]||[]).map(id=>{const s=byId(SPELLS,id);return "<span class=\\"chip chip-spell\\" title=\\""+esc(s.txt)+"\\">"+esc(s.name)+"</span>";}).join("")||"<span style=\\"color:#666;font-size:11px\\">—</span>";const it=(G.items[side]||[]).map(o=>"<span class=\\"chip chip-object\\" title=\\""+esc(o.txt)+"\\">"+esc(o.name)+"</span>").join("")||"<span style=\\"color:#666;font-size:11px\\">—</span>";return "<div class=\\"hand-lbl\\">Mano · Hechizos</div><div class=\\"hand-chips\\" style=\\"margin-bottom:8px\\">"+sp+"</div><div class=\\"hand-lbl\\">Mano · Objetos</div><div class=\\"hand-chips\\">"+it+"</div>";}');
   html = html.replace('<div class="hand-section"><div class="hand-lbl">Mano</div>${handChips(side)}</div>', '<div class="hand-section" id="hand_${side}">${handChips(side)}</div>');
 
-  // Inject art script right before </body> (after the game's script is defined).
-  const artScript = buildArtScript();
-  html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
+  html = html.replace('"txt": "Revive a TODOS tus h\u00e9roes ca\u00eddos. La carta cumbre."', '"txt": "Cura a DOS h\u00e9roes y les restaura toda la vida. La carta cumbre."').replace("case 'reviveAll':{let any=false;G.team[allies].forEach(t=>{if(!t.alive){reviveHero(t,0.5);pushFx({k:'elite',side:tSide(t),id:t.id});any=true;}});pushLog('lx',`${o.name}: ${any?'\u00a1todos reviven!':'no hab\u00eda ca\u00eddos.'}`);consume();finishAct();return;}", "case 'reviveAll':{pendTarget('Primer h\u00e9roe a curar',allies,(t1)=>{t1.hp=t1.maxHp;pushFx({k:'elite',side:tSide(t1),id:t1.id});pushLog('lg',`${o.name}: ${t1.name} a vida completa.`);pendTarget('Segundo h\u00e9roe a curar',allies,(t2)=>{t2.hp=t2.maxHp;pushFx({k:'elite',side:tSide(t2),id:t2.id});pushLog('lg',`${o.name}: ${t2.name} a vida completa.`);consume();finishAct();});});return;}").replace("case 'reviveAll':{let any=false;G.team[allies].forEach(t=>{if(!t.alive){reviveHero(t,0.5);any=true;}});pushLog('lx',`${o.name}: ${any?'todos reviven':'sin ca\u00eddos'}.`);break;}", "case 'reviveAll':{const _t=living(allies).sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)).slice(0,2);_t.forEach(t=>{t.hp=t.maxHp;pushFx({k:'elite',side:tSide(t),id:t.id});});pushLog('lx',`${o.name}: ${_t.length?_t.map(t=>t.name).join(' y ')+' a vida completa':'sin objetivos'}.`);break;}");
+  const artScript = buildArtScript(); html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
   CACHED_HTML = html;
   return html;
 }
