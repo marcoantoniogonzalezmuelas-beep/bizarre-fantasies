@@ -1791,7 +1791,8 @@ function buildArtScript() {
   }
 
   function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr, url, name) {
-    var isMyHand = !!chip.closest('#hand_' + humanSide());
+    var mySide = (typeof NET !== 'undefined' && NET.role === 'client' && NET.mySide) ? NET.mySide : 'p';
+    var isMyHand = !!chip.closest('#hand_' + mySide);
     var costBadge = document.createElement('div');
     var chipMana = found && found.item ? bfManaFor(found.item) : null;
     costBadge.className = 'bf-chip-cost' + (chipMana != null ? ' bf-mana-cost' : '');
