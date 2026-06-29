@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v113';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v114';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1179,20 +1179,36 @@ function buildArtScript() {
 
     var originalStartAuctionPhase = window.startAuctionPhase;
     window.startAuctionPhase = function() {
+      // Intercept applyBonus so we can finalize G.bonus before its effects and UI rendering
+      var realApply = window.applyBonus;
+      window.applyBonus = function(side, b) { /* delayed */ };
+      
       if (G.pools) {
         ['CC','AD','HE'].forEach(function(t) {
           G.pools[t] = (G.pools[t] || []).filter(function(h) { return h.clan !== 'Épicas'; });
         });
       }
+      
       var ret = originalStartAuctionPhase.apply(this, arguments);
-      var before = { p: G.bonus && G.bonus.p, o: G.bonus && G.bonus.o };
+      
+      window.applyBonus = realApply;
+      
       maybeForceEpicBonus();
       enforceUniqueBonuses();
+      
       ['p','o'].forEach(function(side) {
-        if (G.bonus && G.bonus[side] !== before[side] && typeof window.applyBonus === 'function') {
+        if (G.bonus && G.bonus[side] && typeof window.applyBonus === 'function') {
           window.applyBonus(side, G.bonus[side]);
         }
       });
+      
+      if (typeof window.renderRecruit === 'function') {
+         window.renderRecruit('p');
+      }
+      if (typeof window.netSync === 'function') {
+         window.netSync('s-recruit');
+      }
+      
       return ret;
     };
 
@@ -1902,7 +1918,7 @@ function buildArtScript() {
     if(!box||box.dataset.bfSummary==='1'||typeof G==='undefined'||!G.phaseResult)return;
     var r=G.phaseResult;
     function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
-    function bInfo(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],add=0,sub=0,t=[];if(mb&&mb.type==='BID_ADD'){add=Number(mb.effect||0);t.push('<span class="bsum-tag bsum-add">−'+add+' 🪙 al pagar · '+esc(mb.name)+'</span>');}if(rb&&rb.type==='BID_SUB'){sub=Number(rb.effect||0);t.push('<span class="bsum-tag bsum-sub">+'+sub+' 🪙 al pagar · '+esc(rb.name)+'</span>');}return{add:add,sub:sub,html:t.length?t.join(''):'<span class="bsum-tag bsum-none">sin bonificador</span>'};}
+    function bInfo(side){var mb=G.bonus&&G.bonus[side],rb=G.bonus&&G.bonus[other(side)],add=0,sub=0,t=[];var sec=(side==='o')?' (Oculto)':'';if(mb){if(mb.type==='BID_ADD'){add=Number(mb.effect||0);t.push('<span class="bsum-tag bsum-add">−'+add+' 🪙 al pagar · '+esc(mb.name)+sec+'</span>');}else if(mb.type==='PERM'||mb.type==='EQP'||mb.type==='BON'){t.push('<span class="bsum-tag bsum-none">'+esc(mb.name)+sec+'</span>');}}if(rb&&rb.type==='BID_SUB'){sub=Number(rb.effect||0);t.push('<span class="bsum-tag bsum-sub">+'+sub+' 🪙 al pagar · '+esc(rb.name)+'</span>');}return{add:add,sub:sub,html:t.length?t.join(''):'<span class="bsum-tag bsum-none">sin bonificador</span>'};}
     function rowH(side){
       var pass=side==='p'?r.pPass:r.oPass,name=side==='p'?r.bpName:r.boName,bid=Number((side==='p'?r.bpAmt:r.boAmt)||0),got=side==='p'?r.gotP:r.gotO,bi=bInfo(side),won=!!got,paid=Math.max(0,bid-bi.add+bi.sub);
       var hero=(G.cands||[]).find(function(h){return h&&h.name===name;})||((G.team&&G.team[side])||[]).slice(-1)[0],col=(hero&&hero.clanColor)||'#caa14a',url=hero?ART_BY_NAME[hero.name]:null,sym=hero?(RACE_SIGILS[hero.clan]||'◆'):'◆',tag=side==='p'?'<span class="bsum-you">TÚ</span>':((typeof NET!=='undefined'&&NET.role)?'<span class="bsum-rival">rival</span>':'<span class="bsum-rival">IA</span>');
