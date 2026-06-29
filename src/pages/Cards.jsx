@@ -101,12 +101,19 @@ export default function Cards() {
   }, [heroes, search, clanFilter, typeFilter]);
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0d0a14, #0a0810)' }}>
+    <div className="min-h-screen relative bg-[#050308]">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none opacity-30 bg-center bg-cover"
+        style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
+      />
+      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14cc] via-[#0a081066] to-[#050308ee]" />
+
       {/* Header */}
       <div className="sticky top-0 z-20 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link to="/" className="-ml-2 p-2.5 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-[#ffffff10] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={24} /></Link>
-          <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">CATÁLOGO</h1>
+          <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">ORÁCULO BIZARRO</h1>
           <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} cartas · Base Set</span>
         </div>
 
@@ -121,7 +128,7 @@ export default function Cards() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
         {/* Filters for heroes */}
         {tab === 'heroes' && (
           <div className="flex flex-wrap gap-2 mb-6">
