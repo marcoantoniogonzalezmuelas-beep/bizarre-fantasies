@@ -4,7 +4,7 @@ import { SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } fr
 import EquipCardZoomModal from '@/components/cards/EquipCardZoomModal';
 
 const TYPE_COLORS = {
-  spell: '#8b6bff', melee: '#e0653f', ranged: '#3fb56a', armor: '#5a8fd6', object: '#d6b13f', bonus: '#d39b22', token: '#caa14a',
+  spell: '#8b6bff', melee: '#e0653f', ranged: '#3fb56a', armor: '#5a8fd6', object: '#d6b13f', bonus: '#d39b22',
 };
 
 const ELEMENT_COLORS = {
@@ -112,20 +112,16 @@ export default function EquipCard({ item, type, onClick, zoomable = true }) {
     );
   }
 
-  // Spell / melee / ranged / armor / object / token — same full-bleed layout
+  // Spell / melee / ranged / armor / object — same full-bleed layout
   const tagLabel = type === 'spell'
     ? (item.element?.toUpperCase() || item.tag)
-    : type === 'token'
-    ? (item.type || item.tag)
     : item.tag;
 
   const tagBg = type === 'spell' && item.element
     ? ELEMENT_COLORS[item.element] || borderColor
     : borderColor;
 
-  const statLine = type === 'token'
-    ? `${item.cc}/${item.ad}/${item.he} · ❤${item.hp}`
-    : item.cc != null
+  const statLine = item.cc != null
     ? `+${item.cc} CC`
     : item.power != null
     ? `Pot. ${item.power}`
