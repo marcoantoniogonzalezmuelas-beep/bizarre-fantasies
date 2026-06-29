@@ -36,10 +36,10 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
       {zoomable && (
         <button
           onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
-          className="absolute top-2 right-2 z-[5] w-11 h-11 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/85 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
+          className="absolute right-[46px] bottom-3 z-[25] w-8 h-8 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
           aria-label="Ampliar"
         >
-          <Search size={18} />
+          <Search size={14} />
         </button>
       )}
       {zoomOpen && (
