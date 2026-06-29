@@ -44,36 +44,46 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
         </button>
       )}
       {zoomOpen && <EquipCardZoomModal item={item} type={type} onClose={() => setZoomOpen(false)} />}
-      {/* Full-bleed art, bleed past edges to hide white borders */}
+      {/* Full-bleed art */}
       {artUrl && (
-        <>
-          {/* Blurred fill layer */}
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              inset: '-20px',
-              backgroundImage: `url("${artUrl}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(18px) saturate(1.3) contrast(1.16)',
-              transform: 'scale(1.28)',
-              zIndex: 0,
-            }}
+        fill ? (
+          /* Zoom mode: simple cover image filling the card, same approach as hero face */
+          <img
+            src={artUrl}
+            alt={item.name}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            style={{ filter: 'saturate(1.14) contrast(1.12)', zIndex: 1 }}
           />
-          {/* Sharp art layer */}
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              inset: '-12px',
-              backgroundImage: `url("${artUrl}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'saturate(1.14) contrast(1.12)',
-              transform: 'scale(1.08)',
-              zIndex: 1,
-            }}
-          />
-        </>
+        ) : (
+          <>
+            {/* Blurred fill layer */}
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                inset: '-20px',
+                backgroundImage: `url("${artUrl}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'blur(18px) saturate(1.3) contrast(1.16)',
+                transform: 'scale(1.28)',
+                zIndex: 0,
+              }}
+            />
+            {/* Sharp art layer */}
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                inset: '-12px',
+                backgroundImage: `url("${artUrl}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                filter: 'saturate(1.14) contrast(1.12)',
+                transform: 'scale(1.08)',
+                zIndex: 1,
+              }}
+            />
+          </>
+        )
       )}
 
       {/* Gradient shade at bottom */}

@@ -2,14 +2,15 @@ import React from 'react';
 import { X } from 'lucide-react';
 import EquipCard from '@/components/cards/EquipCard';
 
-// Full-screen zoom for an equipment-style card (spell/melee/ranged/armor/object/bonus/token).
-// Reuses the EquipCard layout, enlarged and centered.
+// Full-screen zoom for an equipment-style card (spell/melee/ranged/armor/object/bonus).
+// Shows the WHOLE card (art + name + description) enlarged and centered,
+// exactly like the hero zoom modal.
 export default function EquipCardZoomModal({ item, type, onClose }) {
   if (!item) return null;
+
   return (
     <div
-      className="fixed inset-0 z-[100001] flex items-center justify-center p-4"
-      style={{ background: 'rgba(6,4,12,0.92)', backdropFilter: 'blur(6px)' }}
+      className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-[#06040c]/95 backdrop-blur-md"
       onClick={onClose}
     >
       <button
