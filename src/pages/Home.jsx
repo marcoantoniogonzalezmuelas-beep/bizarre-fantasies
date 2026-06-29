@@ -82,6 +82,45 @@ const DRAGGABLE_GUIDE_PATCH = `
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchGuideDrag);
   else patchGuideDrag();
   new MutationObserver(patchGuideDrag).observe(document.documentElement, { childList:true, subtree:true });
+
+  function patchMobileBidSteppers(){
+    document.querySelectorAll('input.bid-mini-input[id^="bid_"]').forEach(function(input){
+      if (input.dataset.bfMobileStepper === '1') return;
+      input.dataset.bfMobileStepper = '1';
+      input.inputMode = 'numeric';
+      input.step = input.step || '1';
+      var row = input.parentElement;
+      if (!row) return;
+      function change(delta){
+        var min = Number(input.min || 0);
+        var max = Number(input.max || 9999);
+        var value = Number(input.value || min);
+        input.value = String(Math.max(min, Math.min(max, value + delta)));
+        input.dataset.bfTouched = '1';
+        input.dispatchEvent(new Event('input', { bubbles:true }));
+      }
+      var minus = document.createElement('button');
+      minus.type = 'button';
+      minus.className = 'bf-mobile-bid-stepper bf-mobile-bid-minus';
+      minus.textContent = '−';
+      minus.setAttribute('aria-label', 'Bajar puja');
+      minus.onclick = function(e){ e.preventDefault(); e.stopPropagation(); change(-1); };
+      var plus = document.createElement('button');
+      plus.type = 'button';
+      plus.className = 'bf-mobile-bid-stepper bf-mobile-bid-plus';
+      plus.textContent = '+';
+      plus.setAttribute('aria-label', 'Subir puja');
+      plus.onclick = function(e){ e.preventDefault(); e.stopPropagation(); change(1); };
+      row.insertBefore(minus, input);
+      row.insertBefore(plus, input.nextSibling);
+    });
+  }
+
+  var bidStyle = document.createElement('style');
+  bidStyle.textContent = '.bf-mobile-bid-stepper{display:none}@media(max-width:640px){.hcard-bid-zone>div:first-child{align-items:center!important}.bf-mobile-bid-stepper{display:inline-flex!important;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid rgba(255,210,74,.65);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-size:22px;font-weight:1000;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:0;flex:0 0 34px}.bid-mini-input{min-width:48px!important;text-align:center!important}}';
+  document.head.appendChild(bidStyle);
+  patchMobileBidSteppers();
+  new MutationObserver(patchMobileBidSteppers).observe(document.documentElement, { childList:true, subtree:true });
 })();
 </script>
 `;
