@@ -1806,19 +1806,12 @@ function buildArtScript() {
       playBtn.title = 'Jugar carta';
       playBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        var item = found ? found.item : null;
         var kind = found ? found.kind : 'spell';
-        var run = function() {
-          bfPlayCastAnim(kind, item && (item.el || item.element));
-          setTimeout(function() {
-            if (origOnclickProp) origOnclickProp.call(chip, e);
-            else if (origOnclickAttr) { try { new Function('event', origOnclickAttr).call(chip, e); } catch (err) {} }
-          }, 240);
-        };
-        var activeHero = document.querySelector('.bhero.active-turn');
-        var effective = bfCalcEffective(kind, item, activeHero, false);
-        var mCost = item ? (chipMana != null ? chipMana : (item.manaCost || item.cost || 0)) : 0;
-        bfConfirmPlayCard({name: name, kind: kind, effect: item ? (item.txt || item.desc || '') : '', manaCost: mCost, mana: kind === 'spell' ? bfActiveMana() : null, effective: effective}, run);
+        if (kind === 'spell' && typeof window.actSpellMenu === 'function') {
+           window.actSpellMenu();
+        } else if (kind === 'object' && typeof window.actItemMenu === 'function') {
+           window.actItemMenu();
+        }
       });
       chip.appendChild(playBtn);
       if (document.getElementById('s-battle') && document.getElementById('s-battle').classList.contains('active')) playBtn.classList.add('bf-show');
