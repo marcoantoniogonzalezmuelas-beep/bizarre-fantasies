@@ -25,11 +25,11 @@ function gameArt(item, type) {
 }
 
 // Shared full-bleed card: art fills the whole card (same as bonus cards), text overlay at bottom.
-function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = true, children }) {
+function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = true, fill = false, children }) {
   const [zoomOpen, setZoomOpen] = useState(false);
   return (
     <div
-      className="relative h-[320px] rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1"
+      className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
       style={{ border: `2px solid ${borderColor}88` }}
       onClick={() => onClick?.(item)}
     >
@@ -98,13 +98,13 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
   );
 }
 
-export default function EquipCard({ item, type, onClick, zoomable = true }) {
+export default function EquipCard({ item, type, onClick, zoomable = true, fill = false }) {
   const borderColor = TYPE_COLORS[type] || '#3c3158';
   const artUrl = gameArt(item, type);
 
   if (type === 'bonus') {
     return (
-      <FullBleedCard item={item} type={type} borderColor="#d39b22" artUrl={artUrl} onClick={onClick} zoomable={zoomable}>
+      <FullBleedCard item={item} type={type} borderColor="#d39b22" artUrl={artUrl} onClick={onClick} zoomable={zoomable} fill={fill}>
         <span className="rounded-full bg-black/70 border border-[#ffd24a66] px-2 py-1 text-[10px] font-black text-[#ffe49a]">
           {item.type || item.tag || 'BON'}
         </span>
@@ -132,7 +132,7 @@ export default function EquipCard({ item, type, onClick, zoomable = true }) {
     : null;
 
   return (
-    <FullBleedCard item={item} type={type} borderColor={borderColor} artUrl={artUrl} onClick={onClick} zoomable={zoomable}>
+    <FullBleedCard item={item} type={type} borderColor={borderColor} artUrl={artUrl} onClick={onClick} zoomable={zoomable} fill={fill}>
       <div className="flex flex-col gap-1">
         {/* Cost coin */}
         {item.cost != null && item.cost !== '—' && (
