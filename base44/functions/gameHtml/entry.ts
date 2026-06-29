@@ -986,7 +986,7 @@ function buildArtScript() {
           '<p><b>3 · Combate por rondas.</b> Los turnos van en este orden: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, actúa antes quien tenga más velocidad).</p>' +
           '<ul><li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li><li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li><li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li></ul>' +
           '<p><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' +
-          '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma o Ave Fénix).</p>' +
+          '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma Fénix para revivir, o Ave Fénix para curar a dos héroes a vida completa).</p>' +
           '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p></div>';
       };
       window.rulesBody.__bf = 1;
