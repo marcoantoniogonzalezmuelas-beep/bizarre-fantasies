@@ -2,32 +2,6 @@ import React, { useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 
-// Zoom Modal inline to avoid circular dependencies
-function EquipCardZoomModal({ item, type, onClose }) {
-  if (!item) return null;
-  return (
-    <div
-      className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-[#06040c]/95 backdrop-blur-md"
-      onClick={onClose}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-5 right-5 z-10 w-14 h-14 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 active:scale-95 transition-all shadow-lg"
-        aria-label="Cerrar"
-      >
-        <X size={28} />
-      </button>
-      <div
-        className="relative w-full max-w-[420px]"
-        style={{ aspectRatio: '7 / 10', maxHeight: '92vh' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <EquipCard item={item} type={type} zoomable={false} fill />
-      </div>
-    </div>
-  );
-}
-
 const TYPE_COLORS = {
   spell: '#8b6bff', melee: '#e0653f', ranged: '#3fb56a', armor: '#5a8fd6', object: '#d6b13f', bonus: '#d39b22',
 };
@@ -192,5 +166,31 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
         )}
       </div>
     </FullBleedCard>
+  );
+}
+
+// Zoom Modal moved to bottom to ensure EquipCard is fully initialized
+function EquipCardZoomModal({ item, type, onClose }) {
+  if (!item) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-[#06040c]/95 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-5 right-5 z-10 w-14 h-14 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 active:scale-95 transition-all shadow-lg"
+        aria-label="Cerrar"
+      >
+        <X size={28} />
+      </button>
+      <div
+        className="relative w-full max-w-[420px]"
+        style={{ aspectRatio: '7 / 10', maxHeight: '92vh' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EquipCard item={item} type={type} zoomable={false} fill />
+      </div>
+    </div>
   );
 }
