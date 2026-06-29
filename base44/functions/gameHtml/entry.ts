@@ -1691,21 +1691,29 @@ function buildArtScript() {
           return s*(1+hC*0.6);
         }
       }
-      var b=0, MC=3;
-      for(var iter=0;iter<24;iter++){
-        var bd=bfEqCoins(side);if(bd<=0)break;
-        var eM=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])eM++;if(tm[i]&&!g.a[i])eM++;}
-        var bs=null,bS=-1;
-        var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
-          var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
-        for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
-        sp.forEach(function(s){if(!bfHasSpell(s.id)){ev('spell',s,null,null);}});
-        ob.forEach(function(o){if(bfItemCopies(o.id)<3){ev('object',o,null,null);}});
-        if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
-        if(bs.k==='spell'&&typeof originalBuySpell==='function'){if(bfHasSpell(bs.it.id))continue;originalBuySpell(side,bs.it.id);g.h++;b++;g.nSp++;}
-        else if(bs.k==='object'&&typeof originalBuyObject==='function'){if(bfItemCopies(bs.it.id)>=3)continue;originalBuyObject(side,bs.it.id);g.h++;b++;g.nObj++;}
-        else{bfBuyGear(side,bs.h.id,bs.k,bs.it);if(bs.k==='armor')g.a[bs.hi]=true;else g.w[bs.hi]=true;b++;}
+      var b=0;
+      function bfMissingGear(){var n=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])n++;if(tm[i]&&!g.a[i])n++;}return n;}
+      // Best item of a gear kind for a hero under a price cap (cap lets us buy cheaper gear to free coins for spells/objects).
+      function bfBestGear(h,kind,cap){var list=kind==='armor'?am:(kind==='ranged'?rg:ml),best=null,bs=-1;list.forEach(function(it){var c=Number(it.cost||0);if(c<=0||c>cap)return;var v=sc(it,h,kind),rs=v+(v/Math.max(1,c))*2;if(rs>bs){bs=rs;best=it;}});return best;}
+      // PHASE 1 — weapons + armor for all 3 heroes first; reserve 1 coin per other empty slot so the cheapest gear stays affordable.
+      for(var gi=0;gi<48;gi++){
+        var bd=bfEqCoins(side);if(bd<=0)break;var missing=bfMissingGear();if(missing===0)break;
+        var cap=Math.max(1,bd-(missing-1)),pick=null;
+        for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;
+          if(!g.w[i]){var rk=h.type==='AD'?'ranged':'melee',w=bfBestGear(h,rk,cap)||bfBestGear(h,h.type==='AD'?'melee':'ranged',cap);if(w){var wk=ml.indexOf(w)!==-1?'melee':'ranged',v=sc(w,h,wk);if(!pick||v>pick.v)pick={k:wk,it:w,hi:i,h:h,v:v};}}
+          if(!g.a[i]){var a=bfBestGear(h,'armor',cap);if(a){var av=sc(a,h,'armor');if(!pick||av>pick.v)pick={k:'armor',it:a,hi:i,h:h,v:av};}}
+        }
+        if(!pick)break;
+        bfBuyGear(side,pick.h.id,pick.k,pick.it);if(pick.k==='armor')g.a[pick.hi]=true;else g.w[pick.hi]=true;b++;
       }
+      // PHASE 2 — spells with the remaining budget.
+      for(var si=0;si<12;si++){var bd2=bfEqCoins(side);if(bd2<=0)break;var bSp=null,bSpS=-1;
+        sp.forEach(function(s){if(bfHasSpell(s.id))return;var c=Number(s.cost||0);if(c<=0||c>bd2)return;var v=sc(s,null,'spell'),rs=v+(v/Math.max(1,c))*2;if(rs>bSpS){bSpS=rs;bSp=s;}});
+        if(!bSp||typeof originalBuySpell!=='function')break;originalBuySpell(side,bSp.id);g.nSp++;b++;}
+      // PHASE 3 — objects last, up to 3 copies each.
+      for(var oi=0;oi<18;oi++){var bd3=bfEqCoins(side);if(bd3<=0)break;var bOb=null,bObS=-1;
+        ob.forEach(function(o){if(bfItemCopies(o.id)>=3)return;var c=Number(o.cost||0);if(c<=0||c>bd3)return;var v=sc(o,null,'object'),rs=v+(v/Math.max(1,c))*2;if(rs>bObS){bObS=rs;bOb=o;}});
+        if(!bOb||typeof originalBuyObject!=='function')break;originalBuyObject(side,bOb.id);g.nObj++;b++;}
       if(typeof window.renderEquip==='function')try{window.renderEquip(side);}catch(e){}
       if(window.notif)notif(b>0?'⚡ La IA equipó a tu equipo ('+b+' adquisiciones).':'No quedan monedas para equipar automáticamente.');
       bfGuideReact('cheer','¡OPTIMIZADO!');
