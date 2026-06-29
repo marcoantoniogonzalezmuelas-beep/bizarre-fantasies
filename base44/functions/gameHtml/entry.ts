@@ -402,9 +402,9 @@ function buildArtScript() {
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
       /* ---- Action panel of the active hero: AI battle background ---- */
-      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center; filter:saturate(1.2) contrast(1.1); opacity:.5; animation:bfPan 20s alternate infinite ease-in-out; }
+      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:120% auto; background-position:top center; filter:saturate(1.2) contrast(1.1); opacity:.5; animation:bfPan 16s alternate infinite ease-in-out; }
       .bf-action-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 10%, rgba(0,0,0,0) 0%, rgba(10,7,18,.85) 60%, rgba(10,7,18,1) 100%); }
-      @keyframes bfPan { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.15) translate(-2%, 2%); } }
+      @keyframes bfPan { 0% { background-position: center 5%; transform: scale(1.05); } 100% { background-position: center 95%; transform: scale(1.15); } }
       .bf-action-embers { position:absolute; inset:0; z-index:1; pointer-events:none; background-image:radial-gradient(circle, #ffd24a 1.5px, transparent 1.5px); background-size: 32px 32px; opacity:0.12; animation:bfEmbers 12s linear infinite; }
       @keyframes bfEmbers { 0% { background-position: 0 0; } 100% { background-position: -64px -128px; } }
       .bf-action-host { position:relative !important; overflow:hidden; border-radius:14px; }
@@ -1807,6 +1807,14 @@ function buildArtScript() {
     costBadge.textContent = (chipMana != null) ? chipMana : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
     chip.appendChild(costBadge);
     
+    if (found) {
+        if (found.kind === 'spell') {
+            chip.style.cssText += 'border-color:#c79bff !important;box-shadow:0 4px 16px rgba(199,155,255,0.45) !important;';
+        } else if (found.kind === 'object') {
+            chip.style.cssText += 'border-color:#ffd24a !important;box-shadow:0 4px 16px rgba(255,210,74,0.45) !important;';
+        }
+    }
+    
     if (isMyHand) {
       var playBtn = document.createElement('button');
       playBtn.className = 'bf-chip-play';
@@ -2128,16 +2136,21 @@ function buildArtScript() {
       }
       if (btn.classList.contains('ability') && h) {
          var t = el ? (h.eTxt || h.abilityTxt) : h.abilityTxt, inIco = btn.querySelector('.jrpg-info');
-         if (inIco) inIco.style.display = 'none';
+         if (inIco) {
+            inIco.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-left:auto;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.6);border:1.5px solid rgba(255,210,74,0.6);color:#ffe49a;font-size:17px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,0.5);transition:all 0.12s ease;';
+            inIco.innerHTML = 'ℹ️';
+            inIco.onmouseenter = function() { inIco.style.background = 'rgba(255,210,74,0.3)'; inIco.style.transform = 'scale(1.1)'; };
+            inIco.onmouseleave = function() { inIco.style.background = 'rgba(0,0,0,0.6)'; inIco.style.transform = 'none'; };
+         }
          btn.style.cssText += 'grid-column:1/-1;flex-direction:row;justify-content:flex-start;text-align:left;padding:12px 14px;';
          if (ic) ic.innerHTML = '<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72);display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:24px;font-weight:900;">✦</div>';
          var lbl = btn.querySelector('.jrpg-btn-label');
          if (lbl) {
-           lbl.innerHTML = '<div style="color:#ffe07b;font-size:15.5px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+'</div><div style="font-family:\\\'Rubik\\',sans-serif;font-size:12px;font-weight:700;color:#fff7ea;text-transform:none;letter-spacing:0;line-height:1.3;text-shadow:0 1px 3px #000">'+bfEsc(t)+'</div>';
+           lbl.innerHTML = '<div style="color:#ffe07b;font-size:15.5px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+'</div><div style="font-family:&quot;Rubik&quot;,sans-serif;font-size:12px;font-weight:700;color:#fff7ea;text-transform:none;letter-spacing:0;line-height:1.3;text-shadow:0 1px 3px #000">'+(typeof bfEsc === 'function' ? bfEsc(t) : t)+'</div>';
            lbl.style.flex = '1';
          }
          var v = btn.querySelector('.jrpg-btn-val');
-         if (v) v.style.cssText = 'margin-left:auto;font-size:16px;padding:6px 12px;background:rgba(0,0,0,0.5);border-radius:8px;border:1px solid rgba(255,210,74,0.3);';
+         if (v) v.style.display = 'none';
       } else {
          var lbl = btn.querySelector('.jrpg-btn-label');
          if (lbl) lbl.style.fontSize = '12px';
