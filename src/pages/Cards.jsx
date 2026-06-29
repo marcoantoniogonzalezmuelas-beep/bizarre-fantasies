@@ -101,13 +101,11 @@ export default function Cards() {
   }, [heroes, search, clanFilter, typeFilter]);
 
   return (
-    <div className="min-h-screen relative bg-[#050308]">
-      {/* Background Image */}
-      <div 
-        className="fixed inset-0 z-0 pointer-events-none opacity-30 bg-center bg-cover"
-        style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
-      />
-      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14cc] via-[#0a081066] to-[#050308ee]" />
+    <div
+      className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
+    >
+      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14aa] via-[#0a081055] to-[#050308dd]" />
 
       {/* Header */}
       <div className="sticky top-0 z-20 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
