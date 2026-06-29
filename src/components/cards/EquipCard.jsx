@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Search } from 'lucide-react';
 import { SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
+import EquipCardZoomModal from '@/components/cards/EquipCardZoomModal';
 
 const TYPE_COLORS = {
-  spell: '#8b6bff', melee: '#e0653f', ranged: '#3fb56a', armor: '#5a8fd6', object: '#d6b13f', bonus: '#d39b22',
+  spell: '#8b6bff', melee: '#e0653f', ranged: '#3fb56a', armor: '#5a8fd6', object: '#d6b13f', bonus: '#d39b22', token: '#caa14a',
 };
 
 const ELEMENT_COLORS = {
@@ -23,13 +25,25 @@ function gameArt(item, type) {
 }
 
 // Shared full-bleed card: art fills the whole card (same as bonus cards), text overlay at bottom.
-function FullBleedCard({ item, type, borderColor, artUrl, onClick, children }) {
+function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = true, children }) {
+  const [zoomOpen, setZoomOpen] = useState(false);
   return (
     <div
       className="relative h-[320px] rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1"
       style={{ border: `2px solid ${borderColor}88` }}
       onClick={() => onClick?.(item)}
     >
+      {/* Lupa: ampliar la carta completa */}
+      {zoomable && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
+          className="absolute top-2 right-2 z-[5] w-9 h-9 rounded-full flex items-center justify-center bg-black/65 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/85 hover:text-[#fff5dc] transition-colors shadow-lg"
+          aria-label="Ampliar"
+        >
+          <Search size={16} />
+        </button>
+      )}
+      {zoomOpen && <EquipCardZoomModal item={item} type={type} onClose={() => setZoomOpen(false)} />}
       {/* Full-bleed art, bleed past edges to hide white borders */}
       {artUrl && (
         <>
@@ -84,13 +98,13 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, children }) {
   );
 }
 
-export default function EquipCard({ item, type, onClick }) {
+export default function EquipCard({ item, type, onClick, zoomable = true }) {
   const borderColor = TYPE_COLORS[type] || '#3c3158';
   const artUrl = gameArt(item, type);
 
   if (type === 'bonus') {
     return (
-      <FullBleedCard item={item} type={type} borderColor="#d39b22" artUrl={artUrl} onClick={onClick}>
+      <FullBleedCard item={item} type={type} borderColor="#d39b22" artUrl={artUrl} onClick={onClick} zoomable={zoomable}>
         <span className="rounded-full bg-black/70 border border-[#ffd24a66] px-2 py-1 text-[10px] font-black text-[#ffe49a]">
           {item.type || item.tag || 'BON'}
         </span>
@@ -98,16 +112,20 @@ export default function EquipCard({ item, type, onClick }) {
     );
   }
 
-  // Spell / melee / ranged / armor / object — same full-bleed layout
+  // Spell / melee / ranged / armor / object / token — same full-bleed layout
   const tagLabel = type === 'spell'
     ? (item.element?.toUpperCase() || item.tag)
+    : type === 'token'
+    ? (item.type || item.tag)
     : item.tag;
 
   const tagBg = type === 'spell' && item.element
     ? ELEMENT_COLORS[item.element] || borderColor
     : borderColor;
 
-  const statLine = item.cc != null
+  const statLine = type === 'token'
+    ? `${item.cc}/${item.ad}/${item.he} · ❤${item.hp}`
+    : item.cc != null
     ? `+${item.cc} CC`
     : item.power != null
     ? `Pot. ${item.power}`
@@ -118,7 +136,7 @@ export default function EquipCard({ item, type, onClick }) {
     : null;
 
   return (
-    <FullBleedCard item={item} type={type} borderColor={borderColor} artUrl={artUrl} onClick={onClick}>
+    <FullBleedCard item={item} type={type} borderColor={borderColor} artUrl={artUrl} onClick={onClick} zoomable={zoomable}>
       <div className="flex flex-col gap-1">
         {/* Cost coin */}
         {item.cost != null && item.cost !== '—' && (

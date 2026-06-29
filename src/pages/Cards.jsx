@@ -15,6 +15,7 @@ const TABS = [
   { key: 'melee', label: 'Armas C/C' },
   { key: 'armors', label: 'Armaduras' },
   { key: 'objects', label: 'Objetos' },
+  { key: 'tokens', label: 'Tokens' },
   { key: 'bonuses', label: 'Bonificadores' },
   { key: 'races', label: 'Razas' },
 ];
@@ -79,8 +80,10 @@ export default function Cards() {
     return () => { active = false; };
   }, []);
 
+  const isToken = (c) => String(c.card_id || '').startsWith('tk_');
   const hasDbCards = dbCards.length > 0;
-  const heroes = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero').map(normalizeHero) : HEROES, [dbCards, hasDbCards]);
+  const heroes = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero' && !isToken(c)).map(normalizeHero) : HEROES, [dbCards, hasDbCards]);
+  const tokens = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero' && isToken(c)).map(normalizeItem) : [], [dbCards, hasDbCards]);
   const spells = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'spell').map(normalizeItem) : SPELLS, [dbCards, hasDbCards]);
   const ranged = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'ranged_weapon').map(normalizeItem) : RANGED_WEAPONS, [dbCards, hasDbCards]);
   const melee = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'melee_weapon').map(normalizeItem) : MELEE_WEAPONS, [dbCards, hasDbCards]);
@@ -175,6 +178,15 @@ export default function Cards() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {objects.map(o => <EquipCard key={o.id} item={o} type="object" />)}
           </div>
+        )}
+        {tab === 'tokens' && (
+          tokens.length === 0 ? (
+            <div className="text-center py-16 text-[#a89fbb]">Aún no hay tokens en el catálogo.</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {tokens.map(t => <EquipCard key={t.id} item={{ ...t, cost: '—' }} type="token" />)}
+            </div>
+          )
         )}
         {tab === 'bonuses' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
