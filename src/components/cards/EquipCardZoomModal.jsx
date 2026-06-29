@@ -19,7 +19,11 @@ export default function EquipCardZoomModal({ item, type, onClose }) {
       >
         <X size={22} />
       </button>
-      <div className="w-[min(360px,90vw)]" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="origin-center"
+        style={{ width: 360, transform: 'scale(min(1.8, calc(90vh / 320), calc(94vw / 360)))' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <EquipCard item={item} type={type} zoomable={false} />
       </div>
     </div>
