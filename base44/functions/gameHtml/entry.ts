@@ -138,29 +138,7 @@ function buildArtScript() {
       @media(max-width:640px){.title-links{gap:11px!important}.title-links .btn.sm{width:104px!important;min-height:108px!important;font-size:12px!important;padding:14px 8px 12px!important}.title-links .btn.sm .tc-img{width:56px!important;height:56px!important}}
       .flip3d{perspective:1300px!important}.flip3d-inner{transform-style:preserve-3d!important;transition:transform .62s cubic-bezier(.2,.72,.2,1)!important;will-change:transform!important}.flip3d.flipped .flip3d-inner{transform:rotateY(180deg)!important}.flip3d .face{backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;transform-style:preserve-3d!important}.flip3d .face.front{transform:rotateY(0deg) translateZ(1px)!important}.flip3d .face.back{transform:rotateY(180deg) translateZ(1px)!important}.face.back .bf-hero-card.cf-elite .bf-hero-bg,.face.back .cf-elite .cf-art.has-art::before{transform:none!important}.bf-hero-card{position:relative!important;height:100%!important;overflow:hidden!important;border-radius:18px!important;border:2.5px solid var(--clan,#caa14a)!important;background:#09070d!important;box-shadow:0 10px 28px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,210,74,.24)!important}.bf-hero-bg{position:absolute;inset:-8%;z-index:0;pointer-events:none;background-image:var(--bf-art);background-size:cover;background-position:center center;background-repeat:no-repeat;filter:saturate(1.12) contrast(1.08)}.bf-hero-card::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.54) 0%,rgba(0,0,0,.12) 20%,rgba(0,0,0,0) 42%,rgba(0,0,0,.12) 64%,rgba(0,0,0,.68) 100%),radial-gradient(circle at 50% 4%,rgba(255,210,74,.20),rgba(0,0,0,0) 28%)}.bf-hero-card.cf-elite::before{background:linear-gradient(180deg,rgba(16,0,34,.58) 0%,rgba(20,0,42,.10) 24%,rgba(0,0,0,0) 43%,rgba(18,0,35,.16) 66%,rgba(0,0,0,.70) 100%),radial-gradient(circle at 50% 4%,rgba(192,91,255,.28),rgba(0,0,0,0) 30%)}
       .bf-hero-card.cf-epic{border-color:transparent!important;box-shadow:0 10px 28px rgba(0,0,0,.65),0 0 24px rgba(255,170,80,.4)!important}.bf-hero-card.cf-epic .bf-foil{position:absolute;inset:-3px;z-index:6;border-radius:21px;padding:3px;pointer-events:none;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 4s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;filter:drop-shadow(0 0 8px rgba(255,200,120,.7))}.bf-hero-card.cf-epic::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:18px;background:linear-gradient(125deg,transparent 30%,rgba(255,255,255,.18) 47%,transparent 62%);background-size:250% 250%;animation:bfFoilShift 4s linear infinite;mix-blend-mode:screen}@keyframes bfFoilShift{0%{background-position:0% 0%}100%{background-position:300% 300%}}.bf-hero-frame{position:absolute;inset:7px;z-index:2;border:1px solid rgba(255,210,74,.36);border-radius:14px;pointer-events:none;box-shadow:inset 0 0 18px rgba(0,0,0,.72)}.bf-hero-top,.bf-hero-band{display:none!important}.bf-race-sigil{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:5;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff7dc;font-family:'Cinzel',serif;font-size:25px;font-weight:1000;background:radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%);border:2px solid var(--clan,#caa14a);text-shadow:0 2px 4px #000,0 0 10px var(--clan,#caa14a);box-shadow:0 4px 12px rgba(0,0,0,.55),0 0 15px color-mix(in srgb,var(--clan,#caa14a) 45%,transparent)}.bf-nameplate{position:absolute;left:15px;right:15px;bottom:108px;z-index:4;text-align:center;padding:4px 9px 5px;border-radius:10px;background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14));border:1px solid rgba(255,210,74,.18);backdrop-filter:blur(1.5px)}.bf-hero-name{display:block;margin:0 auto;font-family:'Cinzel',serif;font-weight:900;font-size:clamp(15px,5.4vw,21px);line-height:1;color:#fff5dc;text-transform:uppercase;letter-spacing:.15px;text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95);overflow-wrap:anywhere;text-align:center}.bf-hero-card.cf-elite .bf-hero-name{color:#ffd66a;text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000}.bf-hero-title{display:block;margin:3px auto 0;max-width:92%;padding:2px 7px;border-radius:999px;color:#fff0bd;background:rgba(8,5,12,.62);border:1px solid rgba(255,210,74,.22);font-family:'Cinzel',serif;font-size:10.8px;line-height:1.08;font-weight:800;font-style:italic;text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22);text-align:center;letter-spacing:.12px}
-      .bf-coin { position:absolute; top:9px; left:9px; z-index:5; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-size:18px; font-weight:1000; box-shadow:0 4px 10px rgba(0,0,0,.65), inset 0 1px 2px rgba(255,255,255,.62); }
-      .bf-type-medal { position:absolute; top:10px; right:9px; z-index:5; width:42px; height:50px; border-radius:50%; background:rgba(0,0,0,.66); border:1.5px solid rgba(255,210,74,.5); color:#ead49a; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 10px rgba(0,0,0,.55); }
-      .bf-type-medal span { font-size:7.5px; line-height:1; font-weight:800; letter-spacing:.2px; margin-top:1px; } .bf-role-emblem { width:40px; height:40px; border-radius:50%; object-fit:cover; vertical-align:middle; filter:drop-shadow(0 2px 5px rgba(0,0,0,.7)); display:inline-block; } .phase-badge .bf-role-emblem { width:44px; height:44px; } .bf-hero-card .bf-role-emblem { width:40px; height:40px; }
-      .bf-heart { position:absolute; right:9px; bottom:164px; z-index:4; width:58px; height:52px; display:flex; align-items:center; justify-content:center; }
-      .bf-heart .cf-heart-ico { position:absolute; inset:0; font-size:54px; color:#e23d3a; line-height:52px; text-align:center; filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)); }
-      .bf-heart .cf-hp { position:relative; z-index:2; font-weight:1000; color:#fff; font-size:18px; text-shadow:0 2px 3px #000; }
-      .bf-stats { position:absolute; left:16px; right:16px; bottom:158px; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:7px 50px 7px 8px; border-radius:10px; background:linear-gradient(180deg,rgba(9,7,13,.36),rgba(9,7,13,.58)); border:1px solid rgba(255,210,74,.18); box-shadow:0 3px 12px rgba(0,0,0,.36); backdrop-filter:blur(2px); }
-      .bf-stat { text-align:center; font-weight:900; line-height:1; text-shadow:0 1px 2px #000,0 0 8px #000; }
-      .bf-stat span { display:block; font-size:9px; letter-spacing:1px; margin-bottom:2px; }
-      .bf-stat b { display:block; font-size:20px; }
-      .bf-stat-cc span,.bf-stat-cc b { color:#ff4b45; }
-      .bf-stat-ad span,.bf-stat-ad b { color:#54e876; }
-      .bf-stat-he span,.bf-stat-he b { color:#b06cff; }
-      .bf-ability-panel { position:absolute; left:11px; right:11px; bottom:11px; z-index:3; min-height:99px; display:grid; grid-template-columns:44px 1fr; gap:9px; align-items:center; padding:9px 10px 20px 9px; border-radius:11px; background:linear-gradient(180deg,rgba(19,12,7,.30),rgba(4,3,5,.62)); border:1px solid rgba(255,210,74,.34); box-shadow:0 -2px 18px rgba(0,0,0,.42), inset 0 0 0 1px rgba(255,255,255,.05); backdrop-filter:blur(2px); }
-      .bf-ability-orb { position:relative; width:40px; height:40px; border-radius:50%; background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101); border:2px solid rgba(255,224,121,.82); box-shadow:0 0 16px rgba(255,95,25,.72), inset 0 0 10px rgba(255,255,255,.18); }
-      .bf-ability-orb::before { content:'✦'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff7d7; font-size:23px; font-weight:900; text-shadow:0 0 8px #fff,0 2px 4px #000; }
-      .bf-ability-orb::after { content:''; position:absolute; inset:-5px; border-radius:50%; border:1px solid rgba(255,210,74,.34); box-shadow:0 0 14px rgba(255,210,74,.32); }
-      .bf-hero-card.cf-elite .bf-ability-orb { background:radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012); box-shadow:0 0 17px rgba(190,91,255,.82), inset 0 0 10px rgba(255,255,255,.16); }
-      .bf-ability-name { color:#ffe07b; font-family:'Cinzel',serif; font-size:12.6px; font-weight:1000; letter-spacing:.25px; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32); }
-      .bf-hero-card.cf-elite .bf-ability-name { color:#d9a2ff; }
-      .bf-ability-text { margin-top:3px; color:#fff7ea; font-size:12px; font-weight:700; line-height:1.25; text-shadow:0 2px 3px #000,0 0 8px #000; }
-      .bf-logo { position:absolute; right:7px; bottom:10px; z-index:8; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500); border:1.5px solid rgba(255,210,74,.55); box-shadow:0 0 12px rgba(255,210,74,.45),inset 0 0 6px rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; }
-      .bf-card-num { position:absolute; left:62px; bottom:13px; z-index:8; color:#ffe7a8; font-size:8.5px; font-weight:900; letter-spacing:.25px; padding:2px 7px; border-radius:999px; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.32); text-shadow:0 1px 2px #000; }
+      .bf-coin{position:absolute;top:9px;left:9px;z-index:5;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614);border:2px solid #6f4809;color:#4a2e03;font-size:18px;font-weight:1000;box-shadow:0 4px 10px rgba(0,0,0,.65),inset 0 1px 2px rgba(255,255,255,.62)}.bf-type-medal{position:absolute;top:10px;right:9px;z-index:5;width:42px;height:50px;border-radius:50%;background:rgba(0,0,0,.66);border:1.5px solid rgba(255,210,74,.5);color:#ead49a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 10px rgba(0,0,0,.55)}.bf-type-medal span{font-size:7.5px;line-height:1;font-weight:800;letter-spacing:.2px;margin-top:1px}.bf-role-emblem{width:40px;height:40px;border-radius:50%;object-fit:cover;vertical-align:middle;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7));display:inline-block}.phase-badge .bf-role-emblem{width:44px;height:44px}.bf-hero-card .bf-role-emblem{width:40px;height:40px}.bf-heart{position:absolute;right:9px;bottom:164px;z-index:4;width:58px;height:52px;display:flex;align-items:center;justify-content:center}.bf-heart .cf-heart-ico{position:absolute;inset:0;font-size:54px;color:#e23d3a;line-height:52px;text-align:center;filter:drop-shadow(0 3px 5px rgba(0,0,0,.85))}.bf-heart .cf-hp{position:relative;z-index:2;font-weight:1000;color:#fff;font-size:18px;text-shadow:0 2px 3px #000}.bf-stats{position:absolute;left:16px;right:16px;bottom:158px;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:7px 50px 7px 8px;border-radius:10px;background:linear-gradient(180deg,rgba(9,7,13,.36),rgba(9,7,13,.58));border:1px solid rgba(255,210,74,.18);box-shadow:0 3px 12px rgba(0,0,0,.36);backdrop-filter:blur(2px)}.bf-stat{text-align:center;font-weight:900;line-height:1;text-shadow:0 1px 2px #000,0 0 8px #000}.bf-stat span{display:block;font-size:9px;letter-spacing:1px;margin-bottom:2px}.bf-stat b{display:block;font-size:20px}.bf-stat-cc span,.bf-stat-cc b{color:#ff4b45}.bf-stat-ad span,.bf-stat-ad b{color:#54e876}.bf-stat-he span,.bf-stat-he b{color:#b06cff}.bf-ability-panel{position:absolute;left:11px;right:11px;bottom:11px;z-index:3;min-height:99px;display:grid;grid-template-columns:44px 1fr;gap:9px;align-items:center;padding:9px 10px 20px 9px;border-radius:11px;background:linear-gradient(180deg,rgba(19,12,7,.30),rgba(4,3,5,.62));border:1px solid rgba(255,210,74,.34);box-shadow:0 -2px 18px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.05);backdrop-filter:blur(2px)}.bf-ability-orb{position:relative;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72),inset 0 0 10px rgba(255,255,255,.18)}.bf-ability-orb::before{content:'✦';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:23px;font-weight:900;text-shadow:0 0 8px #fff,0 2px 4px #000}.bf-ability-orb::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(255,210,74,.34);box-shadow:0 0 14px rgba(255,210,74,.32)}.bf-hero-card.cf-elite .bf-ability-orb{background:radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012);box-shadow:0 0 17px rgba(190,91,255,.82),inset 0 0 10px rgba(255,255,255,.16)}.bf-ability-name{color:#ffe07b;font-family:'Cinzel',serif;font-size:12.6px;font-weight:1000;letter-spacing:.25px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)}.bf-hero-card.cf-elite .bf-ability-name{color:#d9a2ff}.bf-ability-text{margin-top:3px;color:#fff7ea;font-size:12px;font-weight:700;line-height:1.25;text-shadow:0 2px 3px #000,0 0 8px #000}.bf-logo{position:absolute;right:7px;bottom:10px;z-index:8;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);border:1.5px solid rgba(255,210,74,.55);box-shadow:0 0 12px rgba(255,210,74,.45),inset 0 0 6px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden}.bf-card-num{position:absolute;left:62px;bottom:13px;z-index:8;color:#ffe7a8;font-size:8.5px;font-weight:900;letter-spacing:.25px;padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.62);border:1px solid rgba(255,210,74,.32);text-shadow:0 1px 2px #000}
 
       /* Fallback for any old-format hero cards already on screen */
       .cf-art.has-art::before { content:''; position:absolute; inset:-4%; z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:cover; background-position:center center; background-repeat:no-repeat; }
@@ -422,8 +400,11 @@ function buildArtScript() {
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
       /* ---- Action panel of the active hero: AI battle background ---- */
-      .bf-action-bg { position:absolute; inset:0; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 22%; background-repeat:no-repeat; opacity:.95; transition:background-image .4s ease; }
-      .bf-action-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,7,18,.74) 0%,rgba(10,7,18,.55) 38%,rgba(10,7,18,.9) 100%); }
+      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center; filter:saturate(1.2) contrast(1.1); opacity:.5; animation:bfPan 20s alternate infinite ease-in-out; }
+      .bf-action-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 10%, rgba(0,0,0,0) 0%, rgba(10,7,18,.85) 60%, rgba(10,7,18,1) 100%); }
+      @keyframes bfPan { 0% { transform: scale(1) translate(0,0); } 100% { transform: scale(1.15) translate(-2%, 2%); } }
+      .bf-action-embers { position:absolute; inset:0; z-index:1; pointer-events:none; background-image:radial-gradient(circle, #ffd24a 1.5px, transparent 1.5px); background-size: 32px 32px; opacity:0.12; animation:bfEmbers 12s linear infinite; }
+      @keyframes bfEmbers { 0% { background-position: 0 0; } 100% { background-position: -64px -128px; } }
       .bf-action-host { position:relative !important; overflow:hidden; border-radius:14px; }
       .bf-action-host > *:not(.bf-action-bg):not(.bf-active-banner) { position:relative; z-index:1; }
       /* Active hero banner: name + ability, shown at the top of the action panel */
@@ -500,45 +481,11 @@ function buildArtScript() {
       .bf-guide-show { position:fixed; top:10px; left:10px; z-index:90000; width:52px; height:52px; border-radius:50%; overflow:hidden; border:2.5px solid rgba(255,210,74,.7); background:#130d24; box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 18px rgba(255,210,74,.28); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
       .bf-guide-show img { width:100%; height:100%; object-fit:contain; display:block; }
       .bf-guide-show.bf-guide-visible { display:block; }
-      @keyframes bfGuideFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-      @media (max-width: 640px) {
-        .bf-guide { top:6px; left:6px; gap:7px; max-width:74vw; }
-        .bf-guide-char { width:64px; height:64px; }
-        .bf-guide-bubble { padding:7px 34px 8px 11px; }
-        .bf-guide-title { font-size:11px; }
-        .bf-guide-text { font-size:11px; line-height:1.25; }
-        .bf-guide-x { top:2px; right:2px; width:36px; height:36px; font-size:18px; background:rgba(255,255,255,.22); }
-      }
-
-      /* ---- Tablets (portrait + landscape): roomier than phones, tighter than desktop ---- */
-      @media (min-width: 641px) and (max-width: 1024px) {
-        .bf-hero-bg, .cf-art.has-art::before { inset:-7% !important; background-size:cover !important; background-position:center center !important; }
-        .bf-race-list { grid-template-columns:repeat(auto-fit,minmax(260px,1fr)) !important; }
-        .bf-quick-grid { grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important; }
-        .chip.bf-chip-card { width:96px !important; height:131px !important; }
-        .bf-confirm-box { width:min(420px,90vw) !important; }
-        .bf-guide { max-width:min(460px,66vw) !important; }
-        .bf-eq-hero-art { width:140px !important; }
-        .eq-hero.bf-eq-hero-with-art { padding-left:140px !important; }
-      }
-
-      /* ---- Small phones: shrink hand cards & confirm dialog so they always fit ---- */
-      @media (max-width: 420px) {
-        .chip.bf-chip-card { width:76px !important; height:104px !important; }
-        .bf-confirm-box { width:96vw !important; }
-        .bf-confirm-name { font-size:17px !important; }
-        .bf-confirm-btn { font-size:13px !important; padding:10px 8px !important; }
-        .bf-action-bg { background-position:center 35% !important; }
-        .bf-quick-grid { grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) !important; }
-      }
-
-      /* ---- Landscape phones: keep the guide & action panel out of the way ---- */
-      @media (max-height: 480px) and (orientation: landscape) {
-        .bf-guide { top:4px !important; }
-        .bf-guide-char { width:50px !important; height:50px !important; }
-        .bf-guide-bubble { padding:6px 30px 7px 10px !important; }
-        .bf-guide-text { font-size:10.5px !important; }
-      }
+      @keyframes bfGuideFloat { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-10px) rotate(2deg)} 75%{transform:translateY(5px) rotate(-2deg)} }
+      @media (max-width:640px) { .bf-guide{top:6px;left:6px;gap:7px;max-width:74vw} .bf-guide-char{width:64px;height:64px} .bf-guide-bubble{padding:7px 34px 8px 11px} .bf-guide-title{font-size:11px} .bf-guide-text{font-size:11px;line-height:1.25} .bf-guide-x{top:2px;right:2px;width:36px;height:36px;font-size:18px;background:rgba(255,255,255,.22)} }
+      @media (min-width:641px) and (max-width:1024px) { .bf-hero-bg,.cf-art.has-art::before{inset:-7%!important;background-size:cover!important;background-position:center center!important} .bf-race-list{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important} .bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important} .chip.bf-chip-card{width:96px!important;height:131px!important} .bf-confirm-box{width:min(420px,90vw)!important} .bf-guide{max-width:min(460px,66vw)!important} .bf-eq-hero-art{width:140px!important} .eq-hero.bf-eq-hero-with-art{padding-left:140px!important} }
+      @media (max-width:420px) { .chip.bf-chip-card{width:76px!important;height:104px!important} .bf-confirm-box{width:96vw!important} .bf-confirm-name{font-size:17px!important} .bf-confirm-btn{font-size:13px!important;padding:10px 8px!important} .bf-action-bg{background-position:center 35%!important} .bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important} }
+      @media (max-height:480px) and (orientation:landscape) { .bf-guide{top:4px!important} .bf-guide-char{width:50px!important;height:50px!important} .bf-guide-bubble{padding:6px 30px 7px 10px!important} .bf-guide-text{font-size:10.5px!important} }
     \`;
     document.head.appendChild(style);
   }
@@ -1025,6 +972,7 @@ function buildArtScript() {
   function patchGameRules() {
     if (window.__bfRulesPatched || typeof HEROES === 'undefined' || typeof BONUS === 'undefined' || typeof G === 'undefined') return;
     window.__bfRulesPatched = true;
+    if (typeof window.modal === 'function' && !window.modal.__bfHooked) { var origModal = window.modal; window.modal = function(html) { if (bfInBattle() && html && typeof html === 'string') { var temp = document.createElement('div'); temp.innerHTML = html; var modified = false, active = bfActiveHero(); if (active && active.hero) { temp.querySelectorAll('button').forEach(function(el) { var found = bfFindItemByName(el.textContent || ''); if (found && found.item) { var eff = bfCalcEffective(found.kind, found.item, active.card, true); if (eff && !el.dataset.bfEff) { el.dataset.bfEff = '1'; var ed = document.createElement('div'); ed.innerHTML = eff; ed.style.cssText = 'font-size:11.5px;margin-top:3px;font-weight:700;text-transform:none;letter-spacing:0;color:'+(found.kind==='spell'?'#ff9eb5':'#8effb2'); el.appendChild(ed); modified = true; } } }); } if (modified) html = temp.innerHTML; } return origModal.apply(this, arguments); }; window.modal.__bfHooked = true; }
 
     // Updated "how to play" rules, in plain language, including the new rules
     // (6 candidates per auction, Epic offers, epic cost +10).
@@ -1219,6 +1167,13 @@ function buildArtScript() {
 
     var originalBeginBidRound = window.beginBidRound;
     window.beginBidRound = function() {
+      if (!G.forceEpic) G.forceEpic = {};
+      ['p','o'].forEach(function(side) {
+        if (G.bonus && G.bonus[side]) {
+          if (G.bonus[side].id === 'epic_self') G.forceEpic[side] = true;
+          if (G.bonus[side].id === 'epic_rival') G.forceEpic[side==='p'?'o':'p'] = true;
+        }
+      });
       var ret = originalBeginBidRound.apply(this, arguments);
       prepareEpicOffers();
       // Re-render the human's recruit screen so their epic (if any) shows up,
@@ -1819,35 +1774,36 @@ function buildArtScript() {
   }
 
   function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr, url, name) {
+    var isMyHand = !!chip.closest('#hand_' + humanSide());
     var costBadge = document.createElement('div');
     var chipMana = found && found.item ? bfManaFor(found.item) : null;
     costBadge.className = 'bf-chip-cost' + (chipMana != null ? ' bf-mana-cost' : '');
     costBadge.textContent = (chipMana != null) ? chipMana : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
     chip.appendChild(costBadge);
-    var playBtn = document.createElement('button');
-    playBtn.className = 'bf-chip-play';
-    playBtn.textContent = '▶';
-    playBtn.title = 'Jugar directamente';
-    playBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var item = found ? found.item : null;
-      if (item && found.kind === 'spell') {
-        var mana = bfActiveMana();
-        var cost = Number(bfManaFor(item) || 0);
-        if (mana !== null && cost > mana) {
-          if (window.notif) notif('No tienes maná suficiente. Necesitas ' + cost + '.');
-          return;
-        }
-      }
-      bfPlayCastAnim(found ? found.kind : 'spell', item && (item.el || item.element));
-      setTimeout(function() {
-        if (origOnclickProp) origOnclickProp.call(chip, e);
-        else if (origOnclickAttr) { try { new Function('event', origOnclickAttr).call(chip, e); } catch (err) {} }
-      }, 240);
-    });
-    chip.appendChild(playBtn);
-    if (document.getElementById('s-battle') && document.getElementById('s-battle').classList.contains('active')) {
-      playBtn.classList.add('bf-show');
+    
+    if (isMyHand) {
+      var playBtn = document.createElement('button');
+      playBtn.className = 'bf-chip-play';
+      playBtn.innerHTML = '✦';
+      playBtn.title = 'Jugar carta';
+      playBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var item = found ? found.item : null;
+        var kind = found ? found.kind : 'spell';
+        var run = function() {
+          bfPlayCastAnim(kind, item && (item.el || item.element));
+          setTimeout(function() {
+            if (origOnclickProp) origOnclickProp.call(chip, e);
+            else if (origOnclickAttr) { try { new Function('event', origOnclickAttr).call(chip, e); } catch (err) {} }
+          }, 240);
+        };
+        var activeHero = document.querySelector('.bhero.active-turn');
+        var effective = bfCalcEffective(kind, item, activeHero, false);
+        var mCost = item ? (chipMana != null ? chipMana : (item.manaCost || item.cost || 0)) : 0;
+        bfConfirmPlayCard({name: name, kind: kind, effect: item ? (item.txt || item.desc || '') : '', manaCost: mCost, mana: kind === 'spell' ? bfActiveMana() : null, effective: effective}, run);
+      });
+      chip.appendChild(playBtn);
+      if (document.getElementById('s-battle') && document.getElementById('s-battle').classList.contains('active')) playBtn.classList.add('bf-show');
     }
 
     if (url) {
@@ -1875,35 +1831,44 @@ function buildArtScript() {
       chip.dataset.bfHandArt = '1';
       chip.classList.add('bf-chip-card');
       chip.title = name;
-      for (var n = 0; n < chip.childNodes.length; n++) {
-        var node = chip.childNodes[n];
-        if (node.nodeType === 3) node.textContent = '';
-      }
+      for (var n = 0; n < chip.childNodes.length; n++) { var node = chip.childNodes[n]; if (node.nodeType === 3) node.textContent = ''; }
       var removeBtn = chip.querySelector('button, .chip-x, span[onclick]');
       if (removeBtn) removeBtn.classList.add('bf-chip-x');
-      var art = document.createElement('div');
-      art.className = 'bf-chip-art-layer';
-      art.style.backgroundImage = 'url("' + url + '")';
-      var fill = document.createElement('div');
-      fill.className = 'bf-chip-fill';
-      fill.style.backgroundImage = 'url("' + url + '")';
-      chip.insertBefore(art, chip.firstChild);
-      chip.insertBefore(fill, chip.firstChild);
-       var nm = document.createElement('div');
-       nm.className = 'bf-chip-name';
-       nm.textContent = name;
-       chip.appendChild(nm);
-       var items = handItemByName();
-       var found = items ? items[name] : null;
-       var summary = handCardSummary(found);
-       if (summary) {
-         var info = document.createElement('div');
-         info.className = 'bf-chip-info';
-         info.textContent = summary;
-         chip.appendChild(info);
-         chip.classList.add('bf-chip-has-info');
-       }
+      var art = document.createElement('div'); art.className = 'bf-chip-art-layer'; art.style.backgroundImage = 'url("' + url + '")';
+      var fill = document.createElement('div'); fill.className = 'bf-chip-fill'; fill.style.backgroundImage = 'url("' + url + '")';
+      chip.insertBefore(art, chip.firstChild); chip.insertBefore(fill, chip.firstChild);
+       var nm = document.createElement('div'); nm.className = 'bf-chip-name'; nm.textContent = name; chip.appendChild(nm);
+       var items = handItemByName(); var found = items ? items[name] : null; var summary = handCardSummary(found);
+       if (summary) { var info = document.createElement('div'); info.className = 'bf-chip-info'; info.textContent = summary; chip.appendChild(info); chip.classList.add('bf-chip-has-info'); }
        bfAddChipButtons(chip, found, chip.onclick, chip.getAttribute('onclick'), url, name);
+    });
+    
+    ['p', 'o'].forEach(function(side) {
+       var handZone = document.getElementById('hand_' + side);
+       if (!handZone) return;
+       var spells = [], objects = [];
+       Array.from(handZone.children).forEach(function(c) {
+          if (c.classList.contains('chip-spell')) spells.push(c);
+          else if (c.classList.contains('chip-object')) objects.push(c);
+       });
+       if (spells.length || objects.length) {
+          var sepSpells = handZone.querySelector('.bf-hand-sep-spells');
+          if (!sepSpells && spells.length > 0) {
+             sepSpells = document.createElement('div'); sepSpells.className = 'bf-hand-sep-spells';
+             sepSpells.style.cssText = 'width:100%;font-size:12px;color:#c79bff;font-family:Cinzel,serif;font-weight:1000;margin-bottom:6px;';
+             sepSpells.innerHTML = '✨ HECHIZOS';
+          }
+          var sep = handZone.querySelector('.bf-hand-sep');
+          if (!sep && objects.length > 0 && spells.length > 0) {
+             sep = document.createElement('div'); sep.className = 'bf-hand-sep';
+             sep.style.cssText = 'width:100%;height:0;border-bottom:1px dashed rgba(255,210,74,0.4);margin:8px 0 6px;position:relative;';
+             sep.innerHTML = '<span style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:#0e0a16;padding:0 8px;font-size:11px;color:#51ff8a;font-family:Cinzel,serif;font-weight:900">🧪 OBJETOS</span>';
+          }
+          if (sepSpells && !sepSpells.parentNode) handZone.appendChild(sepSpells);
+          spells.forEach(function(c) { handZone.appendChild(c); });
+          if (sep && !sep.parentNode) handZone.appendChild(sep);
+          objects.forEach(function(c) { handZone.appendChild(c); });
+       }
     });
   }
 
@@ -2124,8 +2089,6 @@ function buildArtScript() {
   function injectActionPanelBg() {
     var battle = document.getElementById('s-battle');
     if (!battle || !battle.classList.contains('active')) return;
-    // Find the action buttons panel (contains the turn actions). We locate the
-    // closest container that holds action buttons like Atacar/Hechizo/Objeto/Pasar.
     var btns = battle.querySelectorAll('button');
     var host = null;
     for (var i = 0; i < btns.length; i++) {
@@ -2140,6 +2103,19 @@ function buildArtScript() {
       bg.className = 'bf-action-bg';
       host.insertBefore(bg, host.firstChild);
     }
+    if (!host.querySelector('.bf-action-embers')) { var embers = document.createElement('div'); embers.className = 'bf-action-embers'; host.insertBefore(embers, bg.nextSibling); }
+    var actionBtns = host.querySelectorAll('button');
+    actionBtns.forEach(function(btn) {
+       var t = (btn.textContent || '').trim().toLowerCase();
+       if (btn.dataset.bfIconized) return;
+       btn.dataset.bfIconized = '1';
+       btn.style.cssText = 'position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;font-family:"Cinzel", serif;font-weight:1000;font-size:14px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,210,74,0.4);background:linear-gradient(180deg, rgba(30,20,50,0.8), rgba(15,10,25,0.95));color:#fff5dc;box-shadow:0 6px 16px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);text-shadow:0 2px 4px #000;transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease';
+       var icon = '⚡';
+       if (t.indexOf('atacar') !== -1) icon = '⚔️'; else if (t.indexOf('hechizo') !== -1) icon = '✨'; else if (t.indexOf('objeto') !== -1) icon = '🧪'; else if (t.indexOf('pasar') !== -1 || t.indexOf('defender') !== -1) icon = '🛡️';
+       btn.innerHTML = '<span style="font-size:18px;filter:drop-shadow(0 0 4px rgba(255,210,74,0.5))">' + icon + '</span> <span>' + btn.innerHTML + '</span>';
+       btn.onmouseenter = function() { btn.style.transform = 'translateY(-3px) scale(1.02)'; btn.style.borderColor = '#ffd24a'; btn.style.boxShadow = '0 8px 24px rgba(255,210,74,0.3), inset 0 1px 1px rgba(255,255,255,0.2)'; };
+       btn.onmouseleave = function() { btn.style.transform = 'none'; btn.style.borderColor = 'rgba(255,210,74,0.4)'; btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1)'; };
+    });
 
     // Resolve the active hero so we can use their portrait + ability.
     var active = bfActiveHero();
@@ -2215,6 +2191,23 @@ function buildArtScript() {
     setTimeout(function() { if (flash.parentNode) flash.remove(); if (rune.parentNode) rune.remove(); }, 1000);
   }
 
+  function bfCalcEffective(kind, item, heroCard, forInline) {
+     if (!item || !heroCard) return '';
+     var id = heroIdFromCard(heroCard);
+     var side = (String(heroCard.id || '').split('_')[1]) || 'p';
+     var h = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(x) { return x && x.id === id; });
+     if (!h) return '';
+     var he = h.eliteMode ? h.eHe : h.he;
+     if (kind === 'spell') {
+        if (item.power) return forInline ? 'Daño: ' + (item.power * he) : 'Daño efectivo: <b style="color:#ff4b45">' + (item.power * he) + '</b> (Pot ' + item.power + ' × HE ' + he + ')';
+        if (item.heal) return forInline ? 'Cura: ' + (item.heal * he) : 'Curación efectiva: <b style="color:#51ff8a">+' + (item.heal * he) + ' HP</b> (Cura ' + item.heal + ' × HE ' + he + ')';
+     } else if (kind === 'object') {
+        if (item.mana) return forInline ? '+' + item.mana + ' Maná' : 'Restaura <b style="color:#3aa0ff">' + item.mana + ' Maná</b>';
+        if (item.heal) return forInline ? '+' + item.heal + ' HP' : 'Restaura <b style="color:#51ff8a">+' + item.heal + ' HP</b>';
+     }
+     return '';
+  }
+
   function bfConfirmPlayCard(opts, onYes) {
     var existing = document.getElementById('bf-confirm-overlay');
     if (existing) existing.remove();
@@ -2228,14 +2221,16 @@ function buildArtScript() {
       var mana = opts.mana;
       if (mana !== null && mana !== undefined && cost > mana) canPlay = false;
       manaLine = '<div class="bf-confirm-msg">Coste de maná: <b>' + cost + '</b>' +
-        (mana !== null && mana !== undefined ? ' · Maná disponible: <b>' + mana + '</b>' : '') + '</div>' +
-        (canPlay ? '' : '<div class="bf-confirm-msg" style="color:#ff8a8a">No tienes maná suficiente para lanzarlo.</div>');
+        (mana !== null && mana !== undefined ? ' · Maná del Héroe: <b>' + mana + '</b>' : '') + '</div>' +
+        (canPlay ? '' : '<div class="bf-confirm-msg" style="color:#ff8a8a;margin-top:6px;font-weight:700">El héroe activo no tiene maná suficiente.</div>');
     }
+    var effectiveHtml = opts.effective ? '<div class="bf-confirm-effect" style="background:rgba(20,10,30,0.8);border-color:#b06cff;text-align:center;font-size:14.5px;">' + opts.effective + '</div>' : '';
     overlay.innerHTML =
       '<div class="bf-confirm-box">' +
         '<div class="bf-confirm-body">' +
           '<div class="bf-confirm-name" style="margin-top:14px">' + bfHandClean(opts.name) + '</div>' +
           (opts.effect ? '<div class="bf-confirm-effect">' + bfHandClean(opts.effect) + '</div>' : '') +
+          effectiveHtml +
           manaLine +
           '<div class="bf-confirm-msg">¿Jugar esta carta ahora? <b>Usará el turno del héroe activo.</b></div>' +
           '<div class="bf-confirm-actions">' +
