@@ -51,12 +51,55 @@ export default function AdminCards() {
     startNew();
   }
 
+  async function cropAndUpload(url) {
+    // Load image, draw cropped 7:10 version onto canvas, upload the result
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = async () => {
+        const TARGET_W = 700;
+        const TARGET_H = 1000;
+        const srcRatio = img.width / img.height;
+        const dstRatio = TARGET_W / TARGET_H;
+        let sx, sy, sw, sh;
+        if (srcRatio > dstRatio) {
+          // source wider than target → crop sides
+          sh = img.height;
+          sw = img.height * dstRatio;
+          sx = (img.width - sw) / 2;
+          sy = 0;
+        } else {
+          // source taller than target → crop top/bottom
+          sw = img.width;
+          sh = img.width / dstRatio;
+          sx = 0;
+          sy = (img.height - sh) / 2;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = TARGET_W;
+        canvas.height = TARGET_H;
+        canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, TARGET_W, TARGET_H);
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], 'card_art.jpg', { type: 'image/jpeg' });
+          const uploaded = await base44.integrations.Core.UploadFile({ file });
+          resolve(uploaded?.file_url || url);
+        }, 'image/jpeg', 0.92);
+      };
+      img.onerror = () => resolve(url);
+      img.src = url;
+    });
+  }
+
   async function generateImage() {
     if (!form.image_prompt) return;
     setGenerating(true);
     const prompt = `Ilustración FULL-BLEED de carta fantasy bizarra para un juego de cartas, ocupando todo el lienzo de borde a borde. Prohibido añadir marco, borde blanco, margen, passepartout, tarjeta dentro de la imagen, texto o logos. La ilustración debe llenar completamente el encuadre, con el personaje/objeto grande y centrado. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable. Indicaciones del admin: ${form.image_prompt}`;
     const result = await base44.integrations.Core.GenerateImage({ prompt });
-    setForm(prev => ({ ...prev, art_url: result?.url || prev.art_url }));
+    const rawUrl = result?.url;
+    if (rawUrl) {
+      const croppedUrl = await cropAndUpload(rawUrl);
+      setForm(prev => ({ ...prev, art_url: croppedUrl }));
+    }
     setGenerating(false);
   }
 
