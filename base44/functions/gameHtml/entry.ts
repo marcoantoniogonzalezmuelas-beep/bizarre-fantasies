@@ -1787,9 +1787,9 @@ function buildArtScript() {
     
     if (found) {
         if (found.kind === 'spell') {
-            chip.style.cssText += 'border-color:#c79bff !important;box-shadow:0 4px 16px rgba(199,155,255,0.45) !important;';
+            chip.style.cssText += 'border-width:3.5px !important;border-color:#c79bff !important;box-shadow:0 4px 16px rgba(199,155,255,0.45) !important;';
         } else if (found.kind === 'object') {
-            chip.style.cssText += 'border-color:#ffd24a !important;box-shadow:0 4px 16px rgba(255,210,74,0.45) !important;';
+            chip.style.cssText += 'border-width:3.5px !important;border-color:#ffd24a !important;box-shadow:0 4px 16px rgba(255,210,74,0.45) !important;';
         }
     }
     
@@ -1964,9 +1964,9 @@ function buildArtScript() {
     if(nw&&!nw.classList.contains('hid')){
       var l=document.querySelector('.b-log')||document.getElementById('b-log')||document.querySelector('.log-box')||document.querySelector('.battle-log')||document.querySelector('.jrpg-log')||document.getElementById('jrpg-log')||document.querySelector('.coach-txt');
       if(l){
-        var es=l.querySelectorAll('div, span, p'),lh='';
-        if(es.length) lh=es[es.length-1].innerHTML;
-        else{var ps=l.innerHTML.split(/<br\\s*\\/?>/i).filter(function(s){return s.trim().length>0;});if(ps.length)lh=ps[ps.length-1];}
+        var es=l.children,lh='';
+        if(es.length) lh=es[0].innerHTML;
+        else{var ps=l.innerHTML.split(/<br\\s*\\/?>/i).filter(function(s){return s.trim().length>0;});if(ps.length)lh=ps[0];}
         if(lh&&nw.dataset.last!==lh){
           nw.dataset.last=lh;document.getElementById('bf-nar-txt').innerHTML=lh;
           var ch=nw.querySelector('.bf-nar-ch');ch.style.animation='none';void ch.offsetWidth;ch.style.animation='bfGuideFloat 3.2s ease-in-out infinite';
@@ -2147,7 +2147,7 @@ function buildArtScript() {
          if (ic) ic.innerHTML = '<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72);display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:24px;font-weight:900;">✦</div>';
          var lbl = btn.querySelector('.jrpg-btn-label');
          if (lbl) {
-           lbl.innerHTML = '<div style="color:#ffe07b;font-size:15.5px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+'</div><div style="font-family:&quot;Rubik&quot;,sans-serif;font-size:12px;font-weight:700;color:#fff7ea;text-transform:none;letter-spacing:0;line-height:1.3;text-shadow:0 1px 3px #000">'+(typeof bfEsc === 'function' ? bfEsc(t) : t)+'</div>';
+           lbl.innerHTML = '<div style="color:#ffe07b;font-size:14px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+': <span style="color:#fff7ea;text-transform:none;font-family:&quot;Rubik&quot;,sans-serif;font-weight:700;letter-spacing:0;text-shadow:0 1px 3px #000;">'+(typeof bfEsc === 'function' ? bfEsc(t) : t)+'</span></div>';
            lbl.style.flex = '1';
          }
          var v = btn.querySelector('.jrpg-btn-val');
