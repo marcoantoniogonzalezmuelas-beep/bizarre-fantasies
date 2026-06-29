@@ -196,14 +196,16 @@ function buildArtScript() {
       }
 
       /* Battle/recruit hero thumbnails */
-      .bhero { overflow:hidden !important; min-height:108px; padding-left:92px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
+      .bhero { overflow:hidden !important; min-height:108px; padding-left:102px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:130px; z-index:1; background-size:118% auto; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); }
-      .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); }
+      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:138px; z-index:1; background-size:126% auto; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); cursor:pointer; }
+      .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); pointer-events:none; }
+      .bf-battle-zoom { position:absolute; left:6px; bottom:6px; z-index:10; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.6); border:1.5px solid rgba(255,210,74,.5); color:#ffe49a; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; transition:all .15s ease; box-shadow:0 3px 8px rgba(0,0,0,.5); }
+      .bf-battle-zoom:hover { background:rgba(255,210,74,.3); transform:scale(1.15); }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
       .bhero.active-turn { animation:bfHeroActive 2.1s ease-in-out infinite !important; z-index:5 !important; }
-      .bhero.active-turn .bf-battle-art { width:138px !important; filter:saturate(1.3) contrast(1.16) brightness(1.08) drop-shadow(0 0 16px rgba(255,210,74,.55)) !important; transform:scale(1.04); }
+      .bhero.active-turn .bf-battle-art { width:146px !important; filter:saturate(1.3) contrast(1.16) brightness(1.08) drop-shadow(0 0 16px rgba(255,210,74,.55)) !important; transform:scale(1.04); }
       .bf-active-aura { position:absolute; inset:-14px; z-index:0; pointer-events:none; border-radius:22px; background:radial-gradient(120% 120% at 0% 50%, rgba(255,210,74,.42), rgba(255,160,40,.18) 38%, rgba(255,210,74,0) 70%); opacity:0; transition:opacity .45s ease; animation:bfAuraBreath 2.4s ease-in-out infinite; }
       /* "Equipar con IA" button */
       .bf-autoequip-btn { display:flex; align-items:center; gap:10px; width:100%; margin:0 0 14px; padding:14px 18px; border-radius:16px; cursor:pointer; border:2px solid #c79bff; background:linear-gradient(120deg,#7a3df0,#c06bff 45%,#ff7adf 100%); background-size:200% 200%; color:#fff; font-family:'Cinzel',serif; font-weight:1000; box-shadow:0 8px 26px rgba(160,80,255,.5), inset 0 1px 2px rgba(255,255,255,.35); text-shadow:0 2px 4px rgba(0,0,0,.5); animation:bfAeShift 4s ease infinite; transition:transform .14s ease, filter .14s ease; }
@@ -394,8 +396,8 @@ function buildArtScript() {
       @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
 
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
-      .bhero .bf-battle-gear { position:absolute; left:80px; bottom:6px; z-index:3; display:flex; gap:4px; }
-      .bhero .bf-gear-icon { position:relative; width:26px; height:26px; border-radius:6px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.55); box-shadow:0 2px 6px rgba(0,0,0,.6); background-color:#0a0710; cursor:pointer; transition:transform .12s ease; }
+      .bhero .bf-battle-gear { position:absolute; left:108px; bottom:6px; z-index:3; display:flex; gap:6px; }
+      .bhero .bf-gear-icon { position:relative; width:30px; height:30px; border-radius:8px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.6); box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.2); background-color:#0a0710; cursor:pointer; transition:transform .12s ease, border-color .12s ease; }
       .bhero .bf-gear-icon:hover { border-color:#ffd24a; transform:scale(1.15); z-index:10; }
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
@@ -661,7 +663,13 @@ function buildArtScript() {
       var art = document.createElement('div');
       art.className = 'bf-battle-art';
       art.style.backgroundImage = 'url("' + url + '")';
+      art.onclick = function(e) { e.stopPropagation(); bfZoomCard(id, card.classList.contains('elite-mode') || card.classList.contains('bf-auto-elite') ? 'elite' : 'normal'); };
       card.insertBefore(art, card.firstChild);
+      var z = document.createElement('div');
+      z.className = 'bf-battle-zoom';
+      z.innerHTML = '🔍';
+      z.onclick = art.onclick;
+      card.insertBefore(z, art.nextSibling);
       card.dataset.bfBattleArt = '1';
       injectBattleGear(card);
     });
