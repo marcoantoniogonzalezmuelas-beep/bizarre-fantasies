@@ -1370,8 +1370,9 @@ function buildArtScript() {
 
     var originalBuySpell = window.buySpell;
     window.buySpell = function(side, id) {
-      if (typeof G !== 'undefined' && G.hand && G.hand[side] && G.hand[side].find(function(c){return c.id === id;})) {
-        if (window.notif) notif('Los hechizos son únicos. Ya tienes este hechizo.');
+      // Spells are UNIQUE cards: only one copy allowed. They live in G.spellbook[side] (array of ids).
+      if (typeof G !== 'undefined' && G.spellbook && G.spellbook[side] && G.spellbook[side].indexOf(id) !== -1) {
+        if (window.notif) notif('Los hechizos son cartas únicas: ya tienes este hechizo.');
         return;
       }
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
@@ -1382,10 +1383,22 @@ function buildArtScript() {
        bfConfirm(opts, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
      };
 
+    // How many copies of an object id the side already holds (G.items[side] = array of copies).
+    function bfObjectCount(side, id) {
+      var list = (typeof G !== 'undefined' && G.items && G.items[side]) || [];
+      var n = 0;
+      for (var i = 0; i < list.length; i++) if (list[i] && list[i].id === id) n++;
+      return n;
+    }
     var originalBuyObject = window.buyObject;
     window.buyObject = function(side, id) {
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
       if (!item) return;
+      // Objects: up to 3 copies of the same object.
+      if (bfObjectCount(side, id) >= 3) {
+        if (window.notif) notif('Máximo 3 copias de ' + item.name + '.');
+        return;
+      }
       var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
@@ -1659,9 +1672,11 @@ function buildArtScript() {
     function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
     function bfAutoEquip(side){
       var tm=((G.team&&G.team[side])||[]).filter(Boolean), ml=typeof MELEE!=='undefined'?MELEE:[], rg=typeof RANGED!=='undefined'?RANGED:[], am=typeof ARMORS!=='undefined'?ARMORS:[], sp=typeof SPELLS!=='undefined'?SPELLS:[], ob=typeof OBJECTS!=='undefined'?OBJECTS:[];
-      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0, nObj:0, nSp:0}, mH=0, hC=0;
+      var ownedSpells=(G.spellbook&&G.spellbook[side])||[], ownedItems=(G.items&&G.items[side])||[];
+      var g={w:[],a:[],h:ownedSpells.length+ownedItems.length, nObj:ownedItems.length, nSp:ownedSpells.length}, mH=0, hC=0;
       tm.forEach(function(h,i){if(h){g.w[i]=!!(h.mwep||h.rwep);g.a[i]=!!h.armor;if(h.he>mH)mH=h.he;if(h.type==='HE')hC++;}});
-      if(G.hand&&G.hand[side]){G.hand[side].forEach(function(c){if(ob.find(function(o){return o.id===c.id;}))g.nObj++;if(sp.find(function(s){return s.id===c.id;}))g.nSp++;});}
+      function bfHasSpell(id){return ((G.spellbook&&G.spellbook[side])||[]).indexOf(id)!==-1;}
+      function bfItemCopies(id){var l=(G.items&&G.items[side])||[],n=0;for(var x=0;x<l.length;x++)if(l[x]&&l[x].id===id)n++;return n;}
       function sc(it,h,k){
         var s=0; if(k==='melee'||k==='ranged'||k==='armor'){
           if(it.cc)s+=it.cc*(h.type==='CC'?2.5:0.5);if(it.power)s+=it.power*(h.type==='AD'?2.5:0.8);
@@ -1684,11 +1699,11 @@ function buildArtScript() {
         var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
           var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
-        sp.forEach(function(s){if(!G.hand[side]||!G.hand[side].find(function(c){return c.id===s.id;})){ev('spell',s,null,null);}});
-        ob.forEach(function(o){ev('object',o,null,null);});
+        sp.forEach(function(s){if(!bfHasSpell(s.id)){ev('spell',s,null,null);}});
+        ob.forEach(function(o){if(bfItemCopies(o.id)<3){ev('object',o,null,null);}});
         if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
-        if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);g.h++;b++;g.nSp++;}
-        else if(bs.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,bs.it.id);g.h++;b++;g.nObj++;}
+        if(bs.k==='spell'&&typeof originalBuySpell==='function'){if(bfHasSpell(bs.it.id))continue;originalBuySpell(side,bs.it.id);g.h++;b++;g.nSp++;}
+        else if(bs.k==='object'&&typeof originalBuyObject==='function'){if(bfItemCopies(bs.it.id)>=3)continue;originalBuyObject(side,bs.it.id);g.h++;b++;g.nObj++;}
         else{bfBuyGear(side,bs.h.id,bs.k,bs.it);if(bs.k==='armor')g.a[bs.hi]=true;else g.w[bs.hi]=true;b++;}
       }
       if(typeof window.renderEquip==='function')try{window.renderEquip(side);}catch(e){}
