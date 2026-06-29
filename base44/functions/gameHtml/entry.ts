@@ -131,47 +131,14 @@ function buildArtScript() {
       .cf-art.has-art .cf-heart { z-index:5 !important; }
       /* Bonus / restador = the oracle card itself. Card proportion + cover with
          a tiny overscan to eat the white border the source images carry. */
-      .bf-bonus-card {
-        position: relative; display: block; border-radius: 13px; overflow: hidden;
-        aspect-ratio: 3 / 4.1; margin: 5px auto 8px; max-width: 250px; width: 100%; border: 2px solid rgba(255,210,74,0.68);
-        background: #07050b;
-        box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,210,74,.10);
-      }
+      .bf-bonus-card { position: relative; display: block; border-radius: 13px; overflow: hidden; aspect-ratio: 3 / 4.1; margin: 5px auto 8px; max-width: 250px; width: 100%; border: 2px solid rgba(255,210,74,0.68); background: #07050b; box-shadow: 0 7px 20px rgba(0,0,0,0.52), inset 0 0 0 1px rgba(255,210,74,.10); }
       .bf-bonus-card .bf-bonus-fill { display: block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
-      .bf-bonus-card .bf-bonus-art {
-        position: absolute; inset: -3%; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1;
-      }
+      .bf-bonus-card .bf-bonus-art { position: absolute; inset: -3%; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1; }
       .bf-bonus-card .bf-bonus-shade { display: none; }
       .bf-bonus-card .bf-bonus-name { position:absolute; left:0; right:0; bottom:0; z-index:3; padding:5px 6px 8px; font-size:12px; font-weight:900; font-family:'Cinzel',serif; color:#fff5dc; text-align:center; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 8px #000; background:linear-gradient(0deg,rgba(8,5,14,.95),rgba(8,5,14,.6) 60%,transparent); }
 
       /* Mobile card fit: keep art and text inside the phone frame */
-      @media (max-width: 640px) {
-        .cardface, .bf-hero-card { max-width: 100% !important; }
-        .bf-hero-bg, .cf-art.has-art::before { inset: -8% !important; background-size: cover !important; background-position: center center !important; }
-        .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; }
-        .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; }
-        .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; }
-        .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; }
-        .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; }
-        .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; }
-        .bf-stats { left: 10px !important; right: 10px !important; bottom: 150px !important; padding: 6px 45px 6px 7px !important; }
-        .bf-stat b { font-size: 17px !important; }
-        .bf-heart { right: 8px !important; bottom: 154px !important; width: 50px !important; height: 46px !important; }
-        .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; }
-        .bf-heart .cf-hp { font-size: 16px !important; }
-        .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 90px !important; max-height: 138px !important; overflow: hidden !important; grid-template-columns: 34px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; align-items: start !important; }
-        .bf-ability-orb { width: 32px !important; height: 32px !important; margin-top: 1px !important; }
-        .bf-ability-orb::before { font-size: 18px !important; }
-        .bf-ability-name { font-size: 10.2px !important; line-height: 1.1 !important; }
-        .bf-ability-text { font-size: 9.8px !important; line-height: 1.16 !important; }
-        .bf-zoom-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; right: 6px !important; }
-        .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; }
-        .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; }
-        .shop-card { max-width: 100% !important; }
-        .shop-card-art-sharp { inset: -3% !important; background-size: cover !important; background-position: center center !important; }
-        .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; }
-        .bf-bonus-card .bf-bonus-art { inset: -3% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; }
-      }
+      @media (max-width: 640px) { .cardface, .bf-hero-card { max-width: 100% !important; } .bf-hero-bg, .cf-art.has-art::before { inset: -8% !important; background-size: cover !important; background-position: center center !important; } .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; } .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; } .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; } .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; } .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; } .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; } .bf-stats { left: 10px !important; right: 10px !important; bottom: 150px !important; padding: 6px 45px 6px 7px !important; } .bf-stat b { font-size: 17px !important; } .bf-heart { right: 8px !important; bottom: 154px !important; width: 50px !important; height: 46px !important; } .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; } .bf-heart .cf-hp { font-size: 16px !important; } .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 90px !important; max-height: 138px !important; overflow: hidden !important; grid-template-columns: 34px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; align-items: start !important; } .bf-ability-orb { width: 32px !important; height: 32px !important; margin-top: 1px !important; } .bf-ability-orb::before { font-size: 18px !important; } .bf-ability-name { font-size: 10.2px !important; line-height: 1.1 !important; } .bf-ability-text { font-size: 9.8px !important; line-height: 1.16 !important; } .bf-zoom-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; right: 6px !important; } .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; } .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; } .shop-card { max-width: 100% !important; } .shop-card-art-sharp { inset: -3% !important; background-size: cover !important; background-position: center center !important; } .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; } .bf-bonus-card .bf-bonus-art { inset: -3% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; } }
 
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:108px; padding-left:102px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
@@ -466,8 +433,10 @@ function buildArtScript() {
       @media(min-width:641px) and (max-width:1024px){.bf-hero-bg,.cf-art.has-art::before{inset:-7%!important;background-size:cover!important}.bf-race-list{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important}.bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important}.chip.bf-chip-card{width:96px!important;height:131px!important}.bf-confirm-box{width:min(420px,90vw)!important}.bf-guide{max-width:min(460px,66vw)!important}}
       @media(max-width:420px){.chip.bf-chip-card{width:76px!important;height:104px!important}.bf-confirm-box{width:96vw!important}.bf-confirm-btn{font-size:13px!important;padding:10px 8px!important}.bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important}}
       @media(max-height:480px) and (orientation:landscape){.bf-guide{top:4px!important}.bf-guide-char{width:50px!important;height:50px!important}.bf-guide-bubble{padding:6px 30px 7px 10px!important}}
+      html.bf-locked,html.bf-locked body{font-size:17px!important}html.bf-locked .screen{max-width:1180px!important;margin-left:auto!important;margin-right:auto!important}html.bf-locked .chip.bf-chip-card{width:84px!important;height:116px!important}@media(max-width:420px){html.bf-locked .chip.bf-chip-card{width:76px!important;height:104px!important}}html.bf-locked .bf-role-emblem{width:18px;height:18px}html.bf-locked .bf-gear-icon{width:34px;height:34px}
     \`;
     document.head.appendChild(style);
+    document.documentElement.classList.add('bf-locked');
   }
 
   // ---- PATCH cardFace (heroes) — premium full-art layout ----
