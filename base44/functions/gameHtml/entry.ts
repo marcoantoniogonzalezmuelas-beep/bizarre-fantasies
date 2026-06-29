@@ -1400,10 +1400,14 @@ function buildArtScript() {
     function indexInList(l,i){for(var x=0;x<(l||[]).length;x++)if(l[x]&&l[x].id===i)return x;return -1;}
 
     var originalBuySpell = window.buySpell;
-     window.buySpell = function(side, id) {
-       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
-       if (!item) return;
-       var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
+    window.buySpell = function(side, id) {
+      if (typeof G !== 'undefined' && G.hand && G.hand[side] && G.hand[side].find(function(c){return c.id === id;})) {
+        if (window.notif) notif('Los hechizos son únicos. Ya tienes este hechizo.');
+        return;
+      }
+      var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
+      if (!item) return;
+      var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
        var itemCopy = {};for(var p in item)itemCopy[p]=item[p];itemCopy.txt=itemCopy.txt||itemCopy.desc||'';
        var opts = { item: itemCopy, side: side, art: art };
        bfConfirm(opts, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
@@ -1686,9 +1690,9 @@ function buildArtScript() {
     function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
     function bfAutoEquip(side){
       var tm=((G.team&&G.team[side])||[]).filter(Boolean), ml=typeof MELEE!=='undefined'?MELEE:[], rg=typeof RANGED!=='undefined'?RANGED:[], am=typeof ARMORS!=='undefined'?ARMORS:[], sp=typeof SPELLS!=='undefined'?SPELLS:[], ob=typeof OBJECTS!=='undefined'?OBJECTS:[];
-      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0, nObj:0}, mH=0, hC=0;
+      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0, nObj:0, nSp:0}, mH=0, hC=0;
       tm.forEach(function(h,i){if(h){g.w[i]=!!(h.mwep||h.rwep);g.a[i]=!!h.armor;if(h.he>mH)mH=h.he;if(h.type==='HE')hC++;}});
-      if(G.hand&&G.hand[side]){G.hand[side].forEach(function(c){if(ob.find(function(o){return o.id===c.id;}))g.nObj++;});}
+      if(G.hand&&G.hand[side]){G.hand[side].forEach(function(c){if(ob.find(function(o){return o.id===c.id;}))g.nObj++;if(sp.find(function(s){return s.id===c.id;}))g.nSp++;});}
       function sc(it,h,k){
         var s=0; if(k==='melee'||k==='ranged'||k==='armor'){
           if(it.cc)s+=it.cc*(h.type==='CC'?2.5:0.5);if(it.power)s+=it.power*(h.type==='AD'?2.5:0.8);
@@ -1698,21 +1702,23 @@ function buildArtScript() {
           s+=(it.power||0)*(1+mH*0.15)*1.5+(it.heal||0)*2+(it.mana||0)*1.5;
           if(/Curación Divina|Maremoto|Tormenta|Cadena|Fuego/i.test(it.name||''))s+=15;
           if(/f[eé]nix|despertar/i.test(it.name||''))s+=25;
-          if(k==='object')s+=30+(g.nObj===0?50:0);
+          if(k==='object')s+=40+(g.nObj===0?60:0);
+          if(k==='spell')s+=30+(g.nSp===0?60:0);
           return s*(1+hC*0.6);
         }
       }
       var b=0, MC=3;
-      for(var iter=0;iter<18;iter++){
+      for(var iter=0;iter<24;iter++){
         var bd=bfEqCoins(side);if(bd<=0)break;
         var eM=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])eM++;if(tm[i]&&!g.a[i])eM++;}
         var bs=null,bS=-1;
         var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
           var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
-        if(g.h<3){sp.forEach(function(s){ev('spell',s,null,null);});ob.forEach(function(o){ev('object',o,null,null);});}
+        sp.forEach(function(s){if(!G.hand[side]||!G.hand[side].find(function(c){return c.id===s.id;})){ev('spell',s,null,null);}});
+        ob.forEach(function(o){ev('object',o,null,null);});
         if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
-        if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);g.h++;b++;}
+        if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);g.h++;b++;g.nSp++;}
         else if(bs.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,bs.it.id);g.h++;b++;g.nObj++;}
         else{bfBuyGear(side,bs.h.id,bs.k,bs.it);if(bs.k==='armor')g.a[bs.hi]=true;else g.w[bs.hi]=true;b++;}
       }
@@ -2150,7 +2156,8 @@ function buildArtScript() {
          if (ic) ic.innerHTML = '<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72);display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:24px;font-weight:900;">✦</div>';
          var lbl = btn.querySelector('.jrpg-btn-label');
          if (lbl) {
-           lbl.innerHTML = '<div style="color:#ffe07b;font-size:14px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+': <span style="color:#fff7ea;text-transform:none;font-family:&quot;Rubik&quot;,sans-serif;font-weight:700;letter-spacing:0;text-shadow:0 1px 3px #000;">'+(typeof bfEsc === 'function' ? bfEsc(t) : t)+'</span></div>';
+           var abName = lbl.textContent.replace(/:$/, '').trim();
+           lbl.innerHTML = '<div style="color:#ffe07b;font-size:14px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+abName+'</div><div style="color:#fff7ea;text-transform:none;font-family:&quot;Rubik&quot;,sans-serif;font-weight:700;font-size:12px;letter-spacing:0;line-height:1.2;text-shadow:0 1px 3px #000;">'+(typeof bfEsc === 'function' ? bfEsc(t) : t)+'</div>';
            lbl.style.flex = '1';
          }
          var v = btn.querySelector('.jrpg-btn-val');
