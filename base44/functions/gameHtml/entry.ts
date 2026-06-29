@@ -482,10 +482,10 @@ function buildArtScript() {
       .bf-guide-show img { width:100%; height:100%; object-fit:contain; display:block; }
       .bf-guide-show.bf-guide-visible { display:block; }
       @keyframes bfGuideFloat { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-10px) rotate(2deg)} 75%{transform:translateY(5px) rotate(-2deg)} }
-      @media (max-width:640px) { .bf-guide{top:6px;left:6px;gap:7px;max-width:74vw} .bf-guide-char{width:64px;height:64px} .bf-guide-bubble{padding:7px 34px 8px 11px} .bf-guide-title{font-size:11px} .bf-guide-text{font-size:11px;line-height:1.25} .bf-guide-x{top:2px;right:2px;width:36px;height:36px;font-size:18px;background:rgba(255,255,255,.22)} }
-      @media (min-width:641px) and (max-width:1024px) { .bf-hero-bg,.cf-art.has-art::before{inset:-7%!important;background-size:cover!important;background-position:center center!important} .bf-race-list{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important} .bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important} .chip.bf-chip-card{width:96px!important;height:131px!important} .bf-confirm-box{width:min(420px,90vw)!important} .bf-guide{max-width:min(460px,66vw)!important} .bf-eq-hero-art{width:140px!important} .eq-hero.bf-eq-hero-with-art{padding-left:140px!important} }
-      @media (max-width:420px) { .chip.bf-chip-card{width:76px!important;height:104px!important} .bf-confirm-box{width:96vw!important} .bf-confirm-name{font-size:17px!important} .bf-confirm-btn{font-size:13px!important;padding:10px 8px!important} .bf-action-bg{background-position:center 35%!important} .bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important} }
-      @media (max-height:480px) and (orientation:landscape) { .bf-guide{top:4px!important} .bf-guide-char{width:50px!important;height:50px!important} .bf-guide-bubble{padding:6px 30px 7px 10px!important} .bf-guide-text{font-size:10.5px!important} }
+      @media(max-width:640px){.bf-guide{top:6px;left:6px;gap:7px;max-width:74vw}.bf-guide-char{width:64px;height:64px}.bf-guide-bubble{padding:7px 34px 8px 11px}.bf-guide-title{font-size:11px}.bf-guide-text{font-size:11px;line-height:1.25}}
+      @media(min-width:641px) and (max-width:1024px){.bf-hero-bg,.cf-art.has-art::before{inset:-7%!important;background-size:cover!important}.bf-race-list{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important}.bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important}.chip.bf-chip-card{width:96px!important;height:131px!important}.bf-confirm-box{width:min(420px,90vw)!important}.bf-guide{max-width:min(460px,66vw)!important}}
+      @media(max-width:420px){.chip.bf-chip-card{width:76px!important;height:104px!important}.bf-confirm-box{width:96vw!important}.bf-confirm-btn{font-size:13px!important;padding:10px 8px!important}.bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important}}
+      @media(max-height:480px) and (orientation:landscape){.bf-guide{top:4px!important}.bf-guide-char{width:50px!important;height:50px!important}.bf-guide-bubble{padding:6px 30px 7px 10px!important}}
     \`;
     document.head.appendChild(style);
   }
@@ -1700,8 +1700,9 @@ function buildArtScript() {
     function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
     function bfAutoEquip(side){
       var tm=((G.team&&G.team[side])||[]).filter(Boolean), ml=typeof MELEE!=='undefined'?MELEE:[], rg=typeof RANGED!=='undefined'?RANGED:[], am=typeof ARMORS!=='undefined'?ARMORS:[], sp=typeof SPELLS!=='undefined'?SPELLS:[], ob=typeof OBJECTS!=='undefined'?OBJECTS:[];
-      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0}, mH=0, hC=0;
+      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0, nObj:0}, mH=0, hC=0;
       tm.forEach(function(h,i){if(h){g.w[i]=!!(h.mwep||h.rwep);g.a[i]=!!h.armor;if(h.he>mH)mH=h.he;if(h.type==='HE')hC++;}});
+      if(G.hand&&G.hand[side]){G.hand[side].forEach(function(c){if(ob.find(function(o){return o.id===c.id;}))g.nObj++;});}
       function sc(it,h,k){
         var s=0; if(k==='melee'||k==='ranged'||k==='armor'){
           if(it.cc)s+=it.cc*(h.type==='CC'?2.5:0.5);if(it.power)s+=it.power*(h.type==='AD'?2.5:0.8);
@@ -1711,6 +1712,7 @@ function buildArtScript() {
           s+=(it.power||0)*(1+mH*0.15)*1.5+(it.heal||0)*2+(it.mana||0)*1.5;
           if(/Curación Divina|Maremoto|Tormenta|Cadena|Fuego/i.test(it.name||''))s+=15;
           if(/f[eé]nix|despertar/i.test(it.name||''))s+=25;
+          if(k==='object')s+=30+(g.nObj===0?50:0);
           return s*(1+hC*0.6);
         }
       }
@@ -1725,7 +1727,7 @@ function buildArtScript() {
         if(g.h<3){sp.forEach(function(s){ev('spell',s,null,null);});ob.forEach(function(o){ev('object',o,null,null);});}
         if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
         if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);g.h++;b++;}
-        else if(bs.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,bs.it.id);g.h++;b++;}
+        else if(bs.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,bs.it.id);g.h++;b++;g.nObj++;}
         else{bfBuyGear(side,bs.h.id,bs.k,bs.it);if(bs.k==='armor')g.a[bs.hi]=true;else g.w[bs.hi]=true;b++;}
       }
       if(typeof window.renderEquip==='function')try{window.renderEquip(side);}catch(e){}
