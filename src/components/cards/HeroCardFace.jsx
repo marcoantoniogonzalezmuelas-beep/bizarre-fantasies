@@ -3,6 +3,13 @@ import { CLAN_COLORS, CLAN_SYMBOLS } from '@/lib/cardData';
 
 const TYPE_ICON = { CC: '⚔', AD: '🏹', HE: '✦' };
 
+// AI-generated ability emblems by hero type (CC melee, AD ranged, HE magic).
+export const ABILITY_ICON = {
+  CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/705b92520_generated_image.png',
+  AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4ed918861_generated_image.png',
+  HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/78ce43e5c_generated_image.png',
+};
+
 // A single hero card face (normal or elite). Self-contained so it can be
 // rendered both at grid size and enlarged inside the zoom modal.
 export default function HeroCardFace({ hero, elite }) {
@@ -44,7 +51,9 @@ export default function HeroCardFace({ hero, elite }) {
       </div>
 
       <div className="absolute left-3 right-3 bottom-3 z-10 grid grid-cols-[34px_1fr] sm:grid-cols-[40px_1fr] gap-2 items-center max-h-[124px] sm:max-h-none min-h-[88px] sm:min-h-[96px] overflow-hidden rounded-xl bg-black/55 border border-[#ffd24a55] px-2 py-2 pb-5 backdrop-blur-sm">
-        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${elite ? 'border-[#e0b2ff]' : 'border-[#ffe079]'}`} style={{ background: elite ? 'radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012)' : 'radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101)' }} />
+        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 ${elite ? 'border-[#e0b2ff] shadow-[0_0_10px_rgba(192,106,255,.55)]' : 'border-[#ffe079] shadow-[0_0_10px_rgba(255,170,40,.5)]'}`} style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
+          <img src={ABILITY_ICON[hero.type] || ABILITY_ICON.HE} alt="" className="w-full h-full object-cover" />
+        </div>
         <div>
           <div className={`font-heading text-[10px] sm:text-[11px] font-black uppercase leading-tight ${elite ? 'text-[#d9a2ff]' : 'text-[#ffe07b]'}`}>{abilityName}</div>
           <div className="mt-1 text-[9px] sm:text-[10.5px] font-bold leading-snug text-[#fff7ea]" style={{ textShadow: '0 2px 3px #000' }}>{abilityTxt}</div>
