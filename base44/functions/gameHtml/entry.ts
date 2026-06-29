@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v114';
+const GAME_PATCH_VERSION = 'bf-2026-06-28-punkito-v115';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1044,10 +1044,7 @@ function buildArtScript() {
       };
       window.rulesBody.__bf = 1;
     }
-    if (typeof window.roleIcon === 'function' && !window.roleIcon.__bf) {
-      window.roleIcon = function(t) { var M = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' }; return '<img class="bf-role-emblem" src="' + (M[t] || M.HE) + '" alt="">'; };
-      window.roleIcon.__bf = 1;
-    }
+
     if (typeof window.heroEmoji === 'function' && !window.heroEmoji.__bfPatched) {
       window.heroEmoji = function(h) {
         var sigil = typeof RACE_SIGILS !== 'undefined' ? (RACE_SIGILS[h.clan] || '◆') : '◆';
@@ -1531,8 +1528,10 @@ function buildArtScript() {
       var url = ART_BY_ID[h && h.id] || '';
       
       html = html.replace(/<span class="hcard-type[^>]*>([^<]+)<\/span>/, function(match, role) {
-        if (typeof window.roleIcon === 'function') {
-          return '<span style="display:inline-flex;align-items:center;justify-content:center;">' + window.roleIcon(role.trim()) + '</span>';
+        var r = role.trim();
+        var M = { CC: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png', AD: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png', HE: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png' };
+        if (M[r]) {
+          return '<span style="display:inline-flex;align-items:center;justify-content:center;"><img class="bf-role-emblem" src="' + M[r] + '" alt="' + r + '"></span>';
         }
         return match;
       });
