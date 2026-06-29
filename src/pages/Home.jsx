@@ -3,8 +3,88 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-06-28-punkito-v114';
+const EXPECTED_PATCH_VERSION = 'bf-2026-06-29-transformer-v120';
 const MAX_LOAD_ATTEMPTS = 3;
+
+const DRAGGABLE_GUIDE_PATCH = `
+<script>
+(function(){
+  if (window.__bfGuideDragHomePatch) return;
+  window.__bfGuideDragHomePatch = true;
+
+  function patchGuideDrag(){
+    var wrap = document.getElementById('bf-guide');
+    if (!wrap || wrap.dataset.bfHomeDrag === '1') return;
+    wrap.dataset.bfHomeDrag = '1';
+    wrap.style.pointerEvents = 'auto';
+    wrap.style.touchAction = 'none';
+    wrap.style.cursor = 'grab';
+
+    function clamp(x, y){
+      var maxX = Math.max(0, window.innerWidth - (wrap.offsetWidth || 260) - 8);
+      var maxY = Math.max(0, window.innerHeight - (wrap.offsetHeight || 100) - 8);
+      wrap.style.left = Math.max(0, Math.min(maxX, x)) + 'px';
+      wrap.style.top = Math.max(0, Math.min(maxY, y)) + 'px';
+    }
+
+    function loadPos(){
+      try {
+        var pos = JSON.parse(sessionStorage.getItem('bfGuidePos') || 'null');
+        if (pos) clamp(Number(pos.x || 8), Number(pos.y || 8));
+      } catch (e) {}
+    }
+
+    function savePos(){
+      try { sessionStorage.setItem('bfGuidePos', JSON.stringify({ x: wrap.offsetLeft, y: wrap.offsetTop })); } catch (e) {}
+    }
+
+    function point(e){ return e.touches && e.touches[0] ? e.touches[0] : e; }
+    var drag = null;
+
+    function start(e){
+      if (e.target && e.target.closest && e.target.closest('.bf-guide-x')) return;
+      var p = point(e);
+      drag = { sx: p.clientX - wrap.offsetLeft, sy: p.clientY - wrap.offsetTop };
+      wrap.style.transition = 'none';
+      wrap.style.cursor = 'grabbing';
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function move(e){
+      if (!drag) return;
+      var p = point(e);
+      clamp(p.clientX - drag.sx, p.clientY - drag.sy);
+      e.preventDefault();
+    }
+
+    function end(){
+      if (!drag) return;
+      drag = null;
+      wrap.style.transition = '';
+      wrap.style.cursor = 'grab';
+      savePos();
+    }
+
+    loadPos();
+    wrap.addEventListener('mousedown', start);
+    wrap.addEventListener('touchstart', start, { passive:false });
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, { passive:false });
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchend', end);
+  }
+
+  var style = document.createElement('style');
+  style.textContent = '.bf-guide{pointer-events:auto!important;touch-action:none!important;cursor:grab!important}.bf-guide-char,.bf-guide-bubble{pointer-events:auto!important}.bf-guide-x{cursor:pointer!important}';
+  document.head.appendChild(style);
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchGuideDrag);
+  else patchGuideDrag();
+  new MutationObserver(patchGuideDrag).observe(document.documentElement, { childList:true, subtree:true });
+})();
+</script>
+`;
 
 export default function Home() {
   const iframeRef = useRef(null);
@@ -46,7 +126,8 @@ export default function Home() {
         }
         // Render the game through srcDoc — blob: URLs can be blocked inside the
         // embedded preview iframe, leaving the page blank. srcDoc is reliable.
-        setHtml(data);
+        const patchedData = data.includes('</body>') ? data.replace('</body>', DRAGGABLE_GUIDE_PATCH + '</body>') : data + DRAGGABLE_GUIDE_PATCH;
+        setHtml(patchedData);
         setReloadKey((k) => k + 1);
         setLoading(false);
       } catch {
