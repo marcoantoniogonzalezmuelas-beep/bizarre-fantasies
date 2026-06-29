@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-29-phoenix-heal2-v119';
+const GAME_PATCH_VERSION = 'bf-2026-06-29-transformer-v120';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -365,6 +365,7 @@ function buildArtScript() {
       .bhero.bf-auto-elite { box-shadow: 0 0 0 2px rgba(255,176,0,.6), 0 0 22px rgba(255,176,0,.4) !important; }
       .bf-fx-elite-flip { position:absolute; inset:0; z-index:5; pointer-events:none; background:radial-gradient(circle at 50% 45%,rgba(255,210,74,.55),rgba(255,176,0,.15) 45%,transparent 72%); animation:bfEliteFlash .6s ease-out forwards; }
       @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
+      .bhero.bf-transforming { animation:bfTransformShake .9s ease-in-out; } .bhero.bf-transforming .bf-battle-art { animation:bfTransformBlur .9s ease-in-out; } .bf-fx-transform-ring { position:absolute; inset:-6px; z-index:5; pointer-events:none; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(199,155,255,.65),rgba(138,61,240,.28) 42%,transparent 72%); animation:bfTransformRing 1.3s ease-out forwards; } .bf-fx-transform-q { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); z-index:6; font-family:'Cinzel',serif; font-weight:1000; font-size:66px; color:#f0e2ff; text-shadow:0 0 18px #c79bff,0 3px 8px #000; animation:bfTransformQ 1.3s cubic-bezier(.2,.8,.3,1) forwards; } @keyframes bfTransformRing { 0%{opacity:0;transform:scale(.4) rotate(0)} 25%{opacity:1} 100%{opacity:0;transform:scale(1.7) rotate(180deg)} } @keyframes bfTransformQ { 0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-20deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(12deg)} 65%{transform:translate(-50%,-50%) scale(1) rotate(-6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.9)} } @keyframes bfTransformShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px) rotate(-3deg)} 40%{transform:translateX(7px) rotate(3deg)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} } @keyframes bfTransformBlur { 0%{filter:none} 45%{filter:blur(6px) saturate(2) hue-rotate(60deg)} 100%{filter:none} }
 
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
       .bhero .bf-battle-gear { position:absolute; left:6px; bottom:6px; z-index:6; display:flex; flex-direction:row; gap:5px; padding:3px; border-radius:10px; background:rgba(8,5,14,.55); backdrop-filter:blur(2px); box-shadow:0 2px 8px rgba(0,0,0,.5); }
@@ -712,8 +713,7 @@ function buildArtScript() {
     addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
   }
   function playTrueDeath(card) {
-    if (!card || !card.isConnected) return;
-    card.classList.add('bf-dead', 'bf-truedead');
+    if (!card || !card.isConnected) return; card.classList.add('bf-dead', 'bf-truedead');
     addOverlayFx(card, '<div class="bf-fx-grave-shade"></div><div class="bf-fx-grave">🪦</div><div class="bf-fx-float bf-fx-status-txt">R.I.P.</div>', 1400);
   }
 
@@ -2413,7 +2413,7 @@ function buildArtScript() {
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
-      patchCombatFx();
+      patchCombatFx(); patchTransformer();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
       if ((patchedFace && attempts > 8) || attempts > 60) clearInterval(interval);
