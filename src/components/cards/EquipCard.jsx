@@ -27,43 +27,23 @@ function gameArt(item, type) {
 function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = true, fill = false, children }) {
   const [zoomOpen, setZoomOpen] = useState(false);
   return (
-    <div
-      className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
-      style={{ border: `2px solid ${borderColor}88` }}
-      onClick={() => onClick?.(item)}
-    >
-      {/* Lupa: ampliar la carta completa */}
-      {zoomable && (
-        <button
-          onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
-          className="absolute right-[46px] bottom-3 z-[25] w-8 h-8 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
-          aria-label="Ampliar"
-        >
-          <Search size={14} />
-        </button>
-      )}
-      {zoomOpen && (
-        <div
-          className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-[#06040c]/95 backdrop-blur-md"
-          onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
-        >
+    <>
+      <div
+        className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
+        style={{ border: `2px solid ${borderColor}88` }}
+        onClick={() => onClick?.(item)}
+      >
+        {/* Lupa: ampliar la carta completa */}
+        {zoomable && (
           <button
-            onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
-            className="absolute top-5 right-5 z-10 w-14 h-14 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 active:scale-95 transition-all shadow-lg"
-            aria-label="Cerrar"
+            onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
+            className="absolute right-[46px] bottom-3 z-[25] w-8 h-8 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
+            aria-label="Ampliar"
           >
-            <X size={28} />
+            <Search size={14} />
           </button>
-          <div
-            className="relative w-full max-w-[420px]"
-            style={{ aspectRatio: '7 / 10', maxHeight: '92vh' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <EquipCard item={item} type={type} zoomable={false} fill />
-          </div>
-        </div>
-      )}
-      {/* Full-bleed art */}
+        )}
+        {/* Full-bleed art */}
       {artUrl && (
         fill ? (
           /* Zoom mode: simple cover image filling the card, same approach as hero face */
@@ -124,6 +104,29 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
         <img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" alt="Punkito" className="w-full h-full object-contain" />
       </div>
     </div>
+    
+    {zoomOpen && (
+      <div
+        className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-[#06040c]/95 backdrop-blur-md"
+        onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
+      >
+        <button
+          onClick={(e) => { e.stopPropagation(); setZoomOpen(false); }}
+          className="absolute top-5 right-5 z-10 w-14 h-14 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 active:scale-95 transition-all shadow-lg"
+          aria-label="Cerrar"
+        >
+          <X size={28} />
+        </button>
+        <div
+          className="relative w-full max-w-[420px]"
+          style={{ aspectRatio: '7 / 10', maxHeight: '92vh' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <EquipCard item={item} type={type} zoomable={false} fill />
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
