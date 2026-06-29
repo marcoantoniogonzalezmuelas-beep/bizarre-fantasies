@@ -1250,7 +1250,19 @@ function buildArtScript() {
         if (amt === null) G.bids[side] = { pass: true };
         else G.bids[side].amount = amt;
       });
-      return originalResolveBidRound.apply(this, arguments);
+      var ret = originalResolveBidRound.apply(this, arguments);
+      // Fix missing Epic names in auction result if the original logic failed to resolve them
+      if (G.phaseResult) {
+         if ((!G.phaseResult.bpName || G.phaseResult.bpName === '—') && G.bids && G.bids.p && !G.bids.p.pass) {
+            var hp = findHero(G.bids.p.heroId);
+            if (hp) G.phaseResult.bpName = hp.name;
+         }
+         if ((!G.phaseResult.boName || G.phaseResult.boName === '—') && G.bids && G.bids.o && !G.bids.o.pass) {
+            var ho = findHero(G.bids.o.heroId);
+            if (ho) G.phaseResult.boName = ho.name;
+         }
+      }
+      return ret;
     };
 
     // Slow down the combat pacing a touch so the (now bigger) animations are
