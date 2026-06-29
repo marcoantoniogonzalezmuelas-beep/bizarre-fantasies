@@ -19,10 +19,14 @@ const RANGED_ART = ['2146a215b','ab826c633','88e45b0a1','93554b1ee','c8cf4c6d1',
 
 const ARMOR_ART = ['b989796b2','37519e06c','4a38b42e1','6889c5c36','fefd71323','2de5cea6a','244338b2e','adc154eaf','46890f673','ed198ba53'].map(toArt);
 
-const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b'].map(toArt);
+const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b','e0c8c5f87'].map(toArt);
+// Token heroes (Nº 109-113): la buffarra, lavadora, bañador con rositas, caja de zapatos, pez espada de tres ojos. Stats flojos (<5), vida <=25, habilidades absurdas.
+const TOKEN_ART = ['677d6bde3','5fde36306','707fa83e5','7b2be0479','1bc6fc19d'].map(toArt);
+const TRANSFORMER_ART = toArt('e0c8c5f87');
+const TOKENS = [{id:'tk_buf',name:'La Buffarra',title:'Carburador Viviente',clan:'Cotidianos',clanColor:'#caa14a',type:'CC',cost:0,num:109,cc:3,ad:1,he:2,hp:18,eCc:3,eAd:1,eHe:2,eHp:18,ability:'Petardeo',abilityTxt:'Hace "brum brum" muy fuerte. No pasa nada en absoluto.',eAbility:'Petardeo',eTxt:'Hace "brum brum" muy fuerte. No pasa nada en absoluto.',akind:'tk_none'},{id:'tk_lav',name:'La Lavadora',title:'Centrifugado Final',clan:'Cotidianos',clanColor:'#7ad6ff',type:'HE',cost:0,num:110,cc:1,ad:2,he:4,hp:22,eCc:1,eAd:2,eHe:4,eHp:22,ability:'Centrifugado',abilityTxt:'Pone un programa de 90 minutos. Tarda un rato y no hace nada.',eAbility:'Centrifugado',eTxt:'Pone un programa de 90 minutos. Tarda un rato y no hace nada.',akind:'tk_none'},{id:'tk_ban',name:'El Bañador',title:'Rositas Serigrafiadas',clan:'Cotidianos',clanColor:'#ff9ed1',type:'AD',cost:0,num:111,cc:2,ad:3,he:1,hp:15,eCc:2,eAd:3,eHe:1,eHp:15,ability:'Cocinar Paella',abilityTxt:'Cocina una paella a un héroe aliado y le sube 5 de vida.',eAbility:'Cocinar Paella',eTxt:'Cocina una paella a un héroe aliado y le sube 5 de vida.',akind:'tk_paella'},{id:'tk_caj',name:'La Caja de Zapatos',title:'Cartón Legendario',clan:'Cotidianos',clanColor:'#d6a14a',type:'CC',cost:0,num:112,cc:4,ad:2,he:1,hp:25,eCc:4,eAd:2,eHe:1,eHp:25,ability:'Guardar un Zapato',abilityTxt:'Guarda un zapato dentro. Nadie sabe para qué.',eAbility:'Guardar un Zapato',eTxt:'Guarda un zapato dentro. Nadie sabe para qué.',akind:'tk_none'},{id:'tk_pez',name:'El Pez Espada',title:'De Tres Ojos',clan:'Cotidianos',clanColor:'#3fd0c8',type:'AD',cost:0,num:113,cc:2,ad:4,he:3,hp:20,eCc:2,eAd:4,eHe:3,eHp:20,ability:'Servir un Licor',abilityTxt:'Sirve un licor a un rival y le quita 3 de vida.',eAbility:'Servir un Licor',eTxt:'Sirve un licor a un rival y le quita 3 de vida.',akind:'tk_licor'}];
 const OBJECT_ART = ['58d239c00','1688e1433','9b9d6986f','dd35e9e6b','026d2d45d','d138d9427','6eec753dd','4581afaa7','b990b1173'].map(toArt);
 // Spell mana by name — the upstream SPELLS list has no `mana`, so we inject this and use it as fallback.
-const SPELL_MANA = {'Bola de Fuego':8,'Tormenta Ígnea':16,'Lanza de Hielo':9,'Rayo en Cadena':12,'Maremoto':15,'Curación':8,'Curación Divina':15,'Escudo de Maná':8,'Barrera Arcana':12,'Sueño':10,'Paralización':11,'Maldición':8,'Bendición':8};
+const SPELL_MANA = {'Bola de Fuego':8,'Tormenta Ígnea':16,'Lanza de Hielo':9,'Rayo en Cadena':12,'Maremoto':15,'Curación':8,'Curación Divina':15,'Escudo de Maná':8,'Barrera Arcana':12,'Sueño':10,'Paralización':11,'Maldición':8,'Bendición':8,'Transformer':20};
 const BONUS_ART = ['88ffc8b21','a644bca96','a5d3ecf52','a58e01097','664754ee3','6c0160e33','fbe03869b','5369480ce','e5c4370fc','26219e884','1acefc0e0','77bc42e4f','0934ebffe','70f137c2b'].map(toArt);
 
 const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli","mina","roba"];
@@ -52,6 +56,9 @@ function buildArtScript() {
   var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
   var SPELL_ART = ${JSON.stringify(SPELL_ART)};
   var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
+  var TOKENS = ${JSON.stringify(TOKENS)};
+  var TOKEN_ART = ${JSON.stringify(TOKEN_ART)};
+  var TRANSFORMER_ART = "${TRANSFORMER_ART}";
   var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
@@ -101,6 +108,8 @@ function buildArtScript() {
     ART_BY_NAME[nm] = HERO_ART[i];
     ELITE_BY_NAME[nm] = HERO_ELITE_ART[i] || HERO_ART[i];
   });
+  // Register token art (used when a hero is transformed into a token mid-battle).
+  TOKENS.forEach(function(t, i) { var u = TOKEN_ART[i]; if (!u) return; ART_BY_ID[t.id] = u; ELITE_BY_ID[t.id] = u; ART_BY_NAME[t.name] = u; ELITE_BY_NAME[t.name] = u; });
 
   // ---- STYLES for injected art ----
   function injectCoverStyle() {
@@ -513,8 +522,7 @@ function buildArtScript() {
   // ---- Full-screen card zoom (lupa) — shows the WHOLE card (art + stats + ability), enlarged ----
   function bfZoomCard(heroId, variant) {
     if (typeof window.cardFace !== 'function') return;
-    var h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; });
-    if (!h) return;
+    var h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; }); if (!h) return;
     var existing = document.getElementById('bf-zoom-overlay'); if (existing) existing.remove();
     var overlay = document.createElement('div'); overlay.id = 'bf-zoom-overlay'; overlay.className = 'bf-zoom-overlay';
     overlay.innerHTML = '<button class="bf-zoom-close" aria-label="Cerrar">✕</button><div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '</div>';
@@ -537,32 +545,15 @@ function buildArtScript() {
   function injectEquipArt() {
     document.querySelectorAll('.shop-card').forEach(function(card) {
       if (card.dataset.bfShopArt === '1') return;
-      var bf = card.querySelector('.shop-bf span');
-      if (!bf) return;
-      var m = bf.textContent.match(/(\\d+)/);
-      if (!m) return;
-      var url = NUM_ART[m[1]];
-      if (!url) return;
-      // Capture the card name BEFORE we hide it, so we can re-show it on top.
-      var nameEl = card.querySelector('.shop-name');
-      var nameTxt = nameEl ? nameEl.textContent.trim() : '';
+      var bf = card.querySelector('.shop-bf span'); if (!bf) return;
+      var m = bf.textContent.match(/(\\d+)/); if (!m) return;
+      var url = NUM_ART[m[1]]; if (!url) return;
+      var nameEl = card.querySelector('.shop-name'), nameTxt = nameEl ? nameEl.textContent.trim() : '';
       card.dataset.bfShopArt = '1';
-      var fill = document.createElement('div');
-      fill.className = 'shop-card-fill';
-      fill.style.backgroundImage = 'url("' + url + '")';
-      card.insertBefore(fill, card.firstChild);
-      var sharp = document.createElement('div');
-      sharp.className = 'shop-card-art-sharp';
-      sharp.style.backgroundImage = 'url("' + url + '")';
-      card.insertBefore(sharp, card.firstChild);
+      var fill = document.createElement('div'); fill.className = 'shop-card-fill'; fill.style.backgroundImage = 'url("' + url + '")'; card.insertBefore(fill, card.firstChild);
+      var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")'; card.insertBefore(sharp, card.firstChild);
       card.classList.add('has-art');
-      // Re-add the name on top of the art (the original .shop-name is hidden).
-      if (nameTxt && !card.querySelector('.bf-shop-name')) {
-        var nm = document.createElement('div');
-        nm.className = 'bf-shop-name';
-        nm.textContent = nameTxt;
-        card.appendChild(nm);
-      }
+      if (nameTxt && !card.querySelector('.bf-shop-name')) { var nm = document.createElement('div'); nm.className = 'bf-shop-name'; nm.textContent = nameTxt; card.appendChild(nm); }
     });
   }
 
@@ -620,15 +611,13 @@ function buildArtScript() {
       var art = document.createElement('div'); art.className = 'bf-battle-art'; art.style.backgroundImage = 'url("' + url + '")';
       art.onclick = function(e) { e.stopPropagation(); bfZoomCard(id, card.classList.contains('elite-mode') || card.classList.contains('bf-auto-elite') ? 'elite' : 'normal'); };
       card.insertBefore(art, card.firstChild);
-      var z = document.createElement('div'); z.className = 'bf-battle-zoom'; z.innerHTML = '🔍'; z.onclick = art.onclick;
-      card.insertBefore(z, art.nextSibling); card.dataset.bfBattleArt = '1'; injectBattleGear(card);
+      var z = document.createElement('div'); z.className = 'bf-battle-zoom'; z.innerHTML = '🔍'; z.onclick = art.onclick; card.insertBefore(z, art.nextSibling); card.dataset.bfBattleArt = '1'; injectBattleGear(card);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(slot) {
       if (slot.dataset.bfCtbArt === '1') return;
       var nm = slot.querySelector('.ctb-hero-name'); if (!nm) return;
       var url = ART_BY_NAME[nm.textContent.trim()]; if (!url) return;
-      var thumb = document.createElement('div'); thumb.className = 'bf-ctb-thumb'; thumb.style.backgroundImage = 'url("' + url + '")';
-      slot.insertBefore(thumb, slot.firstChild); slot.dataset.bfCtbArt = '1';
+      var thumb = document.createElement('div'); thumb.className = 'bf-ctb-thumb'; thumb.style.backgroundImage = 'url("' + url + '")'; slot.insertBefore(thumb, slot.firstChild); slot.dataset.bfCtbArt = '1';
     });
   }
 
@@ -755,20 +744,11 @@ function buildArtScript() {
     var cls = type === 'heal' || type === 'revive' ? 'bf-fx-heal' : (type === 'paralyze' ? 'bf-fx-paralyze' : 'bf-fx-damage');
     card.classList.remove('bf-fx-damage', 'bf-fx-heal', 'bf-fx-paralyze'); void card.offsetWidth; card.classList.add(cls);
     setTimeout(function() { card.classList.remove(cls); }, 760);
-    if (type === 'damage') {
-      var big = Math.abs(value || 0) >= 18 ? '<div class="bf-fx-bigblast"></div>' : '';
-      addOverlayFx(card, big + '<div class="bf-fx-slash"></div><div class="bf-fx-float bf-fx-dmg">-' + Math.abs(value || 0) + '</div>', 950);
-    } else if (type === 'heal') {
-      addOverlayFx(card, '<div class="bf-fx-heal-ring"></div><div class="bf-fx-float bf-fx-heal-txt">+' + Math.abs(value || 0) + '</div>', 950);
-    } else if (type === 'revive') {
-      card.classList.remove('bf-dead');
-      addOverlayFx(card, '<div class="bf-fx-phoenix">🔥</div><div class="bf-fx-float bf-fx-heal-txt">REVIVE</div>', 1100);
-    } else if (type === 'death') {
-      if (card.classList.contains('bf-auto-elite') || card.classList.contains('elite-mode')) { playTrueDeath(card); }
-      else { card.classList.add('bf-dead'); addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150); }
-    } else {
-      addOverlayFx(card, '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>', 950);
-    }
+    if (type === 'damage') { var big = Math.abs(value || 0) >= 18 ? '<div class="bf-fx-bigblast"></div>' : ''; addOverlayFx(card, big + '<div class="bf-fx-slash"></div><div class="bf-fx-float bf-fx-dmg">-' + Math.abs(value || 0) + '</div>', 950); }
+    else if (type === 'heal') { addOverlayFx(card, '<div class="bf-fx-heal-ring"></div><div class="bf-fx-float bf-fx-heal-txt">+' + Math.abs(value || 0) + '</div>', 950); }
+    else if (type === 'revive') { card.classList.remove('bf-dead'); addOverlayFx(card, '<div class="bf-fx-phoenix">🔥</div><div class="bf-fx-float bf-fx-heal-txt">REVIVE</div>', 1100); }
+    else if (type === 'death') { if (card.classList.contains('bf-auto-elite') || card.classList.contains('elite-mode')) { playTrueDeath(card); } else { card.classList.add('bf-dead'); addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150); } }
+    else { addOverlayFx(card, '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>', 950); }
   }
 
   function syncBattleFx() {
@@ -838,11 +818,8 @@ function buildArtScript() {
     var p = document.createElement('div');
     p.className = 'bf-fx-projectile ' + (kind === 'arrow' ? 'bf-fx-arrow-proj' : 'bf-fx-bullet');
     p.textContent = kind === 'arrow' ? '➤' : '•';
-    p.style.left = from.x + 'px';
-    p.style.top = from.y + 'px';
-    p.style.color = color || (kind === 'arrow' ? '#c6ff8a' : '#ffe49a');
-    var ang = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
-    p.style.transform = 'translate(-50%,-50%) rotate(' + ang + 'deg)';
+    p.style.left = from.x + 'px'; p.style.top = from.y + 'px'; p.style.color = color || (kind === 'arrow' ? '#c6ff8a' : '#ffe49a');
+    var ang = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI; p.style.transform = 'translate(-50%,-50%) rotate(' + ang + 'deg)';
     document.body.appendChild(p);
     requestAnimationFrame(function() { p.style.left = to.x + 'px'; p.style.top = to.y + 'px'; });
     setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 430);
@@ -850,11 +827,8 @@ function buildArtScript() {
 
   function launchMagic(from, to, el) {
     if (!from || !to) return;
-    var orb = document.createElement('div');
-    orb.className = 'bf-fx-magic-orb';
-    orb.style.color = elementColor(el);
-    orb.style.left = from.x + 'px';
-    orb.style.top = from.y + 'px';
+    var orb = document.createElement('div'); orb.className = 'bf-fx-magic-orb';
+    orb.style.color = elementColor(el); orb.style.left = from.x + 'px'; orb.style.top = from.y + 'px';
     document.body.appendChild(orb);
     requestAnimationFrame(function() { orb.style.left = to.x + 'px'; orb.style.top = to.y + 'px'; orb.style.transform = 'scale(1.35)'; });
     setTimeout(function() { if (orb.parentNode) orb.parentNode.removeChild(orb); }, 560);
@@ -862,46 +836,25 @@ function buildArtScript() {
 
   function enhanceCombatEvent(ev) {
     if (!ev || !ev.k) return;
-    if (ev.k === 'arrow') {
-      launchProjectile(targetCenter(ev.fromSide, ev.fromId), targetCenter(ev.toSide, ev.toId), 'arrow', '#c6ff8a');
-      return;
-    }
+    if (ev.k === 'arrow') { launchProjectile(targetCenter(ev.fromSide, ev.fromId), targetCenter(ev.toSide, ev.toId), 'arrow', '#c6ff8a'); return; }
     if (ev.k === 'hit') {
-      var card = getBattleCard(ev.side, ev.id);
-      if (!card) return;
+      var card = getBattleCard(ev.side, ev.id); if (!card) return;
       if (ev.dtype === 'ranged') addOverlayFx(card, '<div class="bf-fx-bigblast"></div>', 740);
       if (ev.dtype === 'spell') addOverlayFx(card, '<div class="bf-fx-spell-wave" style="color:#c79bff"></div>', 780);
       if (Number(ev.dmg || 0) >= 22) addOverlayFx(card, '<div class="bf-fx-bigblast"></div><div class="bf-fx-float bf-fx-dmg">CRÍTICO</div>', 950);
       return;
     }
     if (ev.k === 'spell') {
-      var target = getBattleCard(ev.toSide, ev.toId);
-      if (!target) return;
+      var target = getBattleCard(ev.toSide, ev.toId); if (!target) return;
       var actor = document.querySelector('.bhero.active-turn') || target;
       launchMagic(cardCenter(actor), cardCenter(target), ev.el);
       addOverlayFx(target, '<div class="bf-fx-spell-wave" style="color:' + elementColor(ev.el) + '"></div>', 820);
       return;
     }
-    if (ev.k === 'death') {
-      var dead = getBattleCard(ev.side, ev.id);
-      playHeroFx(dead, 'death');
-      bfGuideReact('shock', '¡OH NO!');
-      return;
-    }
-    if (ev.k === 'elite') {
-      transformHeroToElite(getBattleCard(ev.side, ev.id));
-      bfGuideReact('wow', '¡RENACE!');
-      return;
-    }
-    if (ev.k === 'heal') {
-      var healed = getBattleCard(ev.side, ev.id);
-      if (healed && healed.classList.contains('bf-dead')) playHeroFx(healed, 'revive', ev.amt);
-      return;
-    }
-    if (ev.k === 'manaup' || ev.k === 'shieldup' || ev.k === 'wardup') {
-      var buff = getBattleCard(ev.side || ev.toSide, ev.id || ev.toId);
-      if (buff) addOverlayFx(buff, '<div class="bf-fx-elite-aura"></div>', 900);
-    }
+    if (ev.k === 'death') { playHeroFx(getBattleCard(ev.side, ev.id), 'death'); bfGuideReact('shock', '¡OH NO!'); return; }
+    if (ev.k === 'elite') { transformHeroToElite(getBattleCard(ev.side, ev.id)); bfGuideReact('wow', '¡RENACE!'); return; }
+    if (ev.k === 'heal') { var healed = getBattleCard(ev.side, ev.id); if (healed && healed.classList.contains('bf-dead')) playHeroFx(healed, 'revive', ev.amt); return; }
+    if (ev.k === 'manaup' || ev.k === 'shieldup' || ev.k === 'wardup') { var buff = getBattleCard(ev.side || ev.toSide, ev.id || ev.toId); if (buff) addOverlayFx(buff, '<div class="bf-fx-elite-aura"></div>', 900); }
   }
 
   function patchCombatFx() {
@@ -968,6 +921,54 @@ function buildArtScript() {
     }
   }
   window.__bfPatchTankRules = patchTankRules;
+
+  // ---- TRANSFORMER spell + token heroes ----
+  function patchTransformer() {
+    if (window.__bfTransformerPatched || typeof SPELLS === 'undefined' || typeof HEROES === 'undefined' || typeof G === 'undefined' || typeof window.castSpell !== 'function') return;
+    window.__bfTransformerPatched = true;
+    TOKENS.forEach(function(t) { if (!HEROES.some(function(h){return h && h.id===t.id;})) HEROES.push(t); });
+    if (!SPELLS.some(function(s){return s && s.id==='sp_transform';})) SPELLS.push({ id:'sp_transform', name:'Transformer', element:'arcano', kind:'transform', base:1, mana:20, cost:25, foil:true, num:108, txt:'Transforma a un héroe en otro aleatorio y sorpresivo.' });
+    function bfMorph(t, by) {
+      var tk = TOKENS[Math.floor(Math.random()*TOKENS.length)], old = t.name;
+      ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','akind','num'].forEach(function(k){ t[k]=tk[k]; });
+      t._token=tk.id; t.eliteMode=false; t.eliteUsed=true; t.abilityUsed=false; t._mods=[]; t.shield=0; t.sleep=0; t.para=0; t.skip=0; t.silence=0; t.evade=0; t.maxHp=tk.hp; t.hp=tk.hp; t.mwep=null; t.rwep=null; t.armor=null;
+      if (typeof pushFx==='function') pushFx({ k:'transform', side:tSide(t), id:t.id, tokenId:tk.id });
+      if (typeof pushLog==='function') pushLog('lx', by + ': ¡' + old + ' se transforma en ' + tk.name + '!');
+    }
+    window.bfMorphHero = bfMorph;
+    var origCast = window.castSpell;
+    window.castSpell = function(id) {
+      if (id !== 'sp_transform') return origCast.apply(this, arguments);
+      if (typeof NET !== 'undefined' && NET.role === 'client') { if(typeof sendIntent==='function') sendIntent('castSpell',{id:id}); return; }
+      var side=B.current.side, h=getHero(side,B.current.id), s=byId(SPELLS,id);
+      if (h.mana < s.mana) { if(window.notif) notif('Maná insuficiente'); return; }
+      pendTarget('Héroe a transformar', enemySide(side), function(t){ h.mana-=s.mana; bfMorph(t, h.name+' lanza Transformer'); if(typeof finishAct==='function') finishAct(); });
+    };
+    if (typeof window.castSpell_AI === 'function') {
+      var origAi = window.castSpell_AI;
+      window.castSpell_AI = function(side,h,s,target){
+        if (!s || s.kind !== 'transform') return origAi.apply(this, arguments);
+        h.mana -= s.mana;
+        var tgt = target || living(enemySide(side)).sort(function(a,b){return (b.cc+b.ad+b.he)-(a.cc+a.ad+a.he);})[0];
+        if (tgt) bfMorph(tgt, h.name+' lanza Transformer'); if (typeof endTurn==='function') endTurn();
+      };
+    }
+    if (typeof window.flushFx === 'function' && !window.flushFx.__bfTransform) {
+      var origFlush = window.flushFx;
+      window.flushFx = function(list){ origFlush.apply(this, arguments); setTimeout(function(){ (list||[]).forEach(function(ev){
+        if (!ev || ev.k!=='transform') return;
+        var card = getBattleCard(ev.side, ev.id); if (!card) return;
+        var url = ART_BY_ID[ev.tokenId], art = card.querySelector('.bf-battle-art');
+        addOverlayFx(card, '<div class="bf-fx-transform-ring"></div><div class="bf-fx-transform-q">?</div><div class="bf-fx-float bf-fx-status-txt" style="color:#c79bff">✦ TRANSFORM ✦</div>', 1400);
+        card.classList.add('bf-transforming');
+        setTimeout(function(){ if (art && url) art.style.backgroundImage='url("'+url+'")'; }, 360);
+        setTimeout(function(){ card.classList.remove('bf-transforming'); }, 1300);
+        if (typeof bfGuideReact==='function') bfGuideReact('wow','¡TRANSFORM!');
+      }); }, 20); };
+      window.flushFx.__bfTransform = 1;
+    }
+  }
+  window.__bfPatchTransformer = patchTransformer;
 
   function patchGameRules() {
     if (window.__bfRulesPatched || typeof HEROES === 'undefined' || typeof BONUS === 'undefined' || typeof G === 'undefined') return;
