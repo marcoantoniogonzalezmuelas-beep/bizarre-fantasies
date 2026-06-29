@@ -1116,28 +1116,36 @@ function buildArtScript() {
       // Intercept applyBonus so we can finalize G.bonus before its effects and UI rendering
       var realApply = window.applyBonus;
       window.applyBonus = function(side, b) { /* delayed */ };
+      
       if (G.pools) {
         ['CC','AD','HE'].forEach(function(t) {
           G.pools[t] = (G.pools[t] || []).filter(function(h) { return h.clan !== 'Épicas'; });
         });
       }
+      
       var ret = originalStartAuctionPhase.apply(this, arguments);
+      
       window.applyBonus = realApply;
+      
       maybeForceEpicBonus();
       enforceUniqueBonuses();
+      
       ['p','o'].forEach(function(side) {
         if (G.bonus && G.bonus[side] && typeof window.applyBonus === 'function') {
           window.applyBonus(side, G.bonus[side]);
         }
       });
+      
       // We must call prepareEpicOffers here so they are ready NOW (for the current round).
       prepareEpicOffers();
+      
       if (typeof window.renderRecruit === 'function') {
          window.renderRecruit('p');
       }
       if (typeof window.netSync === 'function') {
          window.netSync('s-recruit');
       }
+      
       return ret;
     };
 
@@ -1313,8 +1321,12 @@ function buildArtScript() {
   function patchRaceModal() {
     if (window.__bfRaceModalPatched || typeof CLAN_PROFILE === 'undefined' || typeof modal !== 'function') return;
     window.__bfRaceModalPatched = true;
-    function clean(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'})[c];});}
-    function fmt(v){return (v>0?'+':'')+v;}
+    function clean(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+      });
+    }
+    function fmt(value) { return (value > 0 ? '+' : '') + value; }
     window.racesModal = function() {
       var names = Object.keys(CLAN_PROFILE);
       var rows = names.map(function(name) {
@@ -1338,7 +1350,11 @@ function buildArtScript() {
     if (typeof window.eqHeroCard !== 'function' || typeof window.doAssign !== 'function') return;
     window.__bfEquipPatched = true;
 
-    function clean(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'})[c];});}
+    function clean(value) {
+      return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
+      });
+    }
     function findHero(s,i){return((G.team&&G.team[s])||[]).find(function(h){return h&&h.id===i;});}
     function closeAnyModal(){var c=document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');if(c)c.click();else if(typeof window.closeModal==='function')closeModal();}
 
@@ -1385,7 +1401,7 @@ function buildArtScript() {
 
     var originalBuySpell = window.buySpell;
     window.buySpell = function(side, id) {
-      if (typeof G !== 'undefined' && G.spellbook && (G.spellbook[side]||[]).indexOf(id) !== -1) {
+      if (typeof G !== 'undefined' && G.hand && G.hand[side] && G.hand[side].find(function(c){return c.id === id;})) {
         if (window.notif) notif('Los hechizos son únicos. Ya tienes este hechizo.');
         return;
       }
@@ -1579,17 +1595,10 @@ function buildArtScript() {
           // "Comprar" button — buys this item (spells/objects to hand, weapons/armor
           // need a hero so we open the quick-shop chooser via the assign flow).
           if (id && meta) {
-            var hasSpell = meta.kind === 'spell' && G && G.spellbook && (G.spellbook[side]||[]).indexOf(id) !== -1;
             var btn = document.createElement('button');
             btn.className = 'bf-buy-btn';
-            if (hasSpell) {
-              btn.textContent = '❌ Ya lo tienes';
-              btn.style.opacity = '0.5';
-              btn.style.cursor = 'not-allowed';
-            } else {
-              btn.textContent = '🛒 Comprar';
-              btn.setAttribute('onclick', 'event.stopPropagation();bfShopBuy(&quot;' + side + '&quot;,&quot;' + meta.kind + '&quot;,&quot;' + id + '&quot;)');
-            }
+            btn.textContent = '🛒 Comprar';
+            btn.setAttribute('onclick', 'event.stopPropagation();bfShopBuy(&quot;' + side + '&quot;,&quot;' + meta.kind + '&quot;,&quot;' + id + '&quot;)');
             card.appendChild(btn);
           }
         });
@@ -1681,9 +1690,9 @@ function buildArtScript() {
     function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
     function bfAutoEquip(side){
       var tm=((G.team&&G.team[side])||[]).filter(Boolean), ml=typeof MELEE!=='undefined'?MELEE:[], rg=typeof RANGED!=='undefined'?RANGED:[], am=typeof ARMORS!=='undefined'?ARMORS:[], sp=typeof SPELLS!=='undefined'?SPELLS:[], ob=typeof OBJECTS!=='undefined'?OBJECTS:[];
-      var ownSp=(G.spellbook&&G.spellbook[side])||[], ownOb=(G.items&&G.items[side])||[];
-      var g={w:[],a:[],h:ownSp.length+ownOb.length, nObj:ownOb.length, nSp:ownSp.length}, mH=0, hC=0;
+      var g={w:[],a:[],h:(G.hand&&G.hand[side]&&G.hand[side].length)||0, nObj:0, nSp:0}, mH=0, hC=0;
       tm.forEach(function(h,i){if(h){g.w[i]=!!(h.mwep||h.rwep);g.a[i]=!!h.armor;if(h.he>mH)mH=h.he;if(h.type==='HE')hC++;}});
+      if(G.hand&&G.hand[side]){G.hand[side].forEach(function(c){if(ob.find(function(o){return o.id===c.id;}))g.nObj++;if(sp.find(function(s){return s.id===c.id;}))g.nSp++;});}
       function sc(it,h,k){
         var s=0; if(k==='melee'||k==='ranged'||k==='armor'){
           if(it.cc)s+=it.cc*(h.type==='CC'?2.5:0.5);if(it.power)s+=it.power*(h.type==='AD'?2.5:0.8);
@@ -1706,10 +1715,10 @@ function buildArtScript() {
         var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
           var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
-        sp.forEach(function(s){if(ownSp.indexOf(s.id)===-1){ev('spell',s,null,null);}});
+        sp.forEach(function(s){if(!G.hand[side]||!G.hand[side].find(function(c){return c.id===s.id;})){ev('spell',s,null,null);}});
         ob.forEach(function(o){ev('object',o,null,null);});
         if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
-        if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);ownSp.push(bs.it.id);g.h++;b++;g.nSp++;}
+        if(bs.k==='spell'&&typeof originalBuySpell==='function'){originalBuySpell(side,bs.it.id);g.h++;b++;g.nSp++;}
         else if(bs.k==='object'&&typeof originalBuyObject==='function'){originalBuyObject(side,bs.it.id);g.h++;b++;g.nObj++;}
         else{bfBuyGear(side,bs.h.id,bs.k,bs.it);if(bs.k==='armor')g.a[bs.hi]=true;else g.w[bs.hi]=true;b++;}
       }
@@ -1781,6 +1790,7 @@ function buildArtScript() {
     costBadge.className = 'bf-chip-cost' + (chipMana != null ? ' bf-mana-cost' : '');
     costBadge.textContent = (chipMana != null) ? chipMana : ((found && (found.kind === 'object' || found.kind === 'equipment')) ? (found.item.cost || '0') : '0');
     chip.appendChild(costBadge);
+    
     if (found) {
         if (found.kind === 'spell') {
             chip.style.cssText += 'border-width:3.5px !important;border-color:#c79bff !important;box-shadow:0 4px 16px rgba(199,155,255,0.45) !important;';
@@ -1788,6 +1798,7 @@ function buildArtScript() {
             chip.style.cssText += 'border-width:3.5px !important;border-color:#ffd24a !important;box-shadow:0 4px 16px rgba(255,210,74,0.45) !important;';
         }
     }
+    
     if (isMyHand) {
       var playBtn = document.createElement('button');
       playBtn.className = 'bf-chip-play';
@@ -1842,6 +1853,7 @@ function buildArtScript() {
        if (summary) { var info = document.createElement('div'); info.className = 'bf-chip-info'; info.textContent = summary; chip.appendChild(info); chip.classList.add('bf-chip-has-info'); }
        bfAddChipButtons(chip, found, chip.onclick, chip.getAttribute('onclick'), url, name);
     });
+    
     // Battle hand natively separates spells and objects now.
   }
 
@@ -2098,6 +2110,7 @@ function buildArtScript() {
     var url = ACTION_BG;
     if (a && a.id) url = (el ? (ELITE_BY_ID[a.id] || ART_BY_ID[a.id]) : ART_BY_ID[a.id]) || ACTION_BG;
     if (p.dataset.bfActionArt !== url) { bg.style.setProperty('--bf-action-art', 'url("'+url+'")'); p.dataset.bfActionArt = url; }
+    
     // Check and show status
     var st = (a && a.card) ? heroStatusOf(a.card) : '';
     if (st && typeof STATUS_INFO !== 'undefined') {
@@ -2113,6 +2126,7 @@ function buildArtScript() {
        var sbg = p.querySelector('.bf-action-status');
        if (sbg) sbg.remove();
     }
+    
     var m = p.querySelector('.jrpg-menu'); if (m) m.style.display = 'grid';
     p.querySelectorAll('.jrpg-btn').forEach(function(btn) {
       if (btn.dataset.bfIco === '1') return;
