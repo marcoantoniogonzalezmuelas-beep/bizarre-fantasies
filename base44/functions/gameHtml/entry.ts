@@ -1024,9 +1024,9 @@ function buildArtScript() {
     if (typeof window.drawRaceSlate === 'function' && !window.drawRaceSlate.__bf6) {
       var originalDrawRaceSlate = window.drawRaceSlate;
       window.drawRaceSlate = function(pool) {
-        // Strip épicas from pool before handing it to the original function.
-        var safePool = (pool || []).filter(function(h) { return h && h.clan !== 'Épicas'; });
-        var out = (originalDrawRaceSlate.apply(this, [safePool]) || []).filter(function(h) { return h && h.clan !== 'Épicas'; });
+        // Strip épicas and Bizarros from pool before handing it to the original function.
+        var safePool = (pool || []).filter(function(h) { return h && h.clan !== 'Épicas' && !String(h.id || '').startsWith('tk_'); });
+        var out = (originalDrawRaceSlate.apply(this, [safePool]) || []).filter(function(h) { return h && h.clan !== 'Épicas' && !String(h.id || '').startsWith('tk_'); });
         if (out.length >= TARGET_CANDS) return out;
         var chosen = {};
         out.forEach(function(h) { if (h) chosen[h.id] = true; });
