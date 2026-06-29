@@ -14,10 +14,10 @@ export default function HeroCardZoomModal({ hero, elite, onClose }) {
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full flex items-center justify-center bg-black/60 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/85"
+        className="absolute top-5 right-5 z-10 w-14 h-14 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 active:scale-95 transition-all shadow-lg"
         aria-label="Cerrar"
       >
-        <X size={20} />
+        <X size={28} />
       </button>
       <div
         className="relative w-full max-w-[420px]"
