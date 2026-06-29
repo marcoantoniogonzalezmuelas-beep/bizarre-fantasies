@@ -2428,21 +2428,8 @@ function buildArtScript() {
 // assemble once per deploy and serve every later request straight from memory.
 let CACHED_HTML = null;
 
-// Self-contained, already-patched ("baked") game. This file is the upstream
-// HTML with EVERY patch + style + art script already applied, frozen once and
-// uploaded to our own storage. We no longer depend on the old third-party HTML.
-const BAKED_GAME_URL = 'https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/3e05a3a4e_bizarre_fantasies_baked.html';
-
 async function buildGameHtml() {
   if (CACHED_HTML) return CACHED_HTML;
-  const upstream = await fetch(BAKED_GAME_URL + '?bfv=' + GAME_PATCH_VERSION, { cache: 'no-store' });
-  const html = await upstream.text();
-  CACHED_HTML = html;
-  return html;
-}
-
-// Legacy builder kept only for reference / regeneration; no longer called.
-async function _legacyBuildGameHtml() {
   const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
   const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION, { cache: 'no-store' });
   let html = await upstream.text();
