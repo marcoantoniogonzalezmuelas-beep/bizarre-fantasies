@@ -374,7 +374,7 @@ function buildArtScript() {
       @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
 
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
-      .bhero .bf-battle-gear { position:absolute; left:108px; bottom:6px; z-index:3; display:flex; gap:6px; }
+      .bhero .bf-battle-gear { position:absolute; left:108px; bottom:34px; z-index:3; display:flex; gap:6px; }
       .bhero .bf-gear-icon { position:relative; width:30px; height:30px; border-radius:8px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.6); box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.2); background-color:#0a0710; cursor:pointer; transition:transform .12s ease, border-color .12s ease; }
       .bhero .bf-gear-icon:hover { border-color:#ffd24a; transform:scale(1.15); z-index:10; }
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
@@ -441,7 +441,7 @@ function buildArtScript() {
       .bf-guide-char { position:relative; flex:0 0 auto; width:88px; height:88px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 14px rgba(0,0,0,.7)); cursor:grab; transition:transform .2s ease,filter .2s ease; }
       .bf-guide-char:hover { filter:drop-shadow(0 8px 20px rgba(255,210,74,.6)); transform:scale(1.08); }
       .bf-guide-char:active { cursor:grabbing; }
-      .bf-guide-char img { width:100%; height:100%; object-fit:contain; display:block; transition:opacity .18s ease; }
+      .bf-guide-char img { width:100%; height:100%; object-fit:contain; display:block; transition:opacity .18s ease; -webkit-mask-image:radial-gradient(circle at center, black 55%, transparent 72%); mask-image:radial-gradient(circle at center, black 55%, transparent 72%); }
       .bf-guide-char.bf-react-cheer { animation:bfGuideCheer 1.1s ease-in-out 2; } .bf-guide-char.bf-react-wow { animation:bfGuideWow 1s ease-in-out 2; } .bf-guide-char.bf-react-shock { animation:bfGuideShock 0.9s ease-in-out 2; }
       .bf-guide-char.bf-battle-ride { animation:bfBattleRide 2.2s cubic-bezier(.22,1,.36,1) forwards !important; filter:drop-shadow(0 8px 24px rgba(255,160,40,.9)) !important; z-index:99999 !important; }
       @keyframes bfBattleRide { 0%{transform:translateX(0) scale(1)} 15%{transform:translateX(10vw) scale(1.35) rotate(-8deg)} 50%{transform:translateX(calc(50vw - 44px)) scale(1.55) rotate(-5deg)} 70%{transform:translateX(calc(50vw - 44px)) scale(1.6) rotate(0)} 85%{transform:translateX(calc(50vw - 44px)) scale(1.5) rotate(5deg)} 100%{transform:translateX(0) scale(1) rotate(0)} }
@@ -1402,7 +1402,7 @@ function buildArtScript() {
     var originalBuySpell = window.buySpell;
      window.buySpell = function(side, id) {
        var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
-       if (!item) return;
+       if (!item || (G.hand&&G.hand[side]&&G.hand[side].find(function(c){return c.id===id;}))) { if(item&&window.notif)notif("¡Ya tienes este hechizo!"); return; }
        var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
        var itemCopy = {};for(var p in item)itemCopy[p]=item[p];itemCopy.txt=itemCopy.txt||itemCopy.desc||'';
        var opts = { item: itemCopy, side: side, art: art };
@@ -1708,7 +1708,7 @@ function buildArtScript() {
         var eM=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])eM++;if(tm[i]&&!g.a[i])eM++;}
         var bs=null,bS=-1;
         var ev=function(k,it,hi,h){if(!it)return;var c=Number(it.cost||0);if(c>bd||c<=0)return;if(bd-c<(eM-(k==='melee'||k==='ranged'||k==='armor'?1:0))*MC)return;
-          var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
+          if(k==='spell'&&G.hand&&G.hand[side]&&G.hand[side].find(function(x){return x.id===it.id;}))return; var v=sc(it,h,k),rs=v+(v/Math.max(1,c))*2;if(rs>bS){bS=rs;bs={k:k,it:it,hi:hi,h:h};}};
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;if(!g.w[i]){var r=h.type==='AD';(r?rg:ml).forEach(function(w){ev(r?'ranged':'melee',w,i,h);});if(r)ml.forEach(function(w){ev('melee',w,i,h);});if(h.type==='HE')rg.forEach(function(w){ev('ranged',w,i,h);});}if(!g.a[i])am.forEach(function(a){ev('armor',a,i,h);});}
         if(g.h<3){sp.forEach(function(s){ev('spell',s,null,null);});ob.forEach(function(o){ev('object',o,null,null);});}
         if(!bs){if(eM>0&&MC>0){MC=0;continue;}break;}
@@ -1950,18 +1950,37 @@ function buildArtScript() {
   // Detect strong battle/equip events and trigger a Punkito reaction. Watches:
   // hero deaths (shock), revive/phoenix (wow), epic bonus appearing (wow).
   function bfWatchGuideEvents() {
-    if(!document.getElementById('bf-narrator')&&bfInBattle()){
+    if (!bfInBattle()) {
+      var n = document.getElementById('bf-narrator');
+      if(n) n.parentNode.removeChild(n);
+      var oldG = document.getElementById('bf-guide'), oldS = document.getElementById('bf-guide-show');
+      if(oldG && !window.__bfGuideHidden) oldG.style.display='';
+      if(oldS && window.__bfGuideHidden) oldS.style.display='';
+    } else if (!document.getElementById('bf-narrator')) {
       var log=document.querySelector('.b-log')||document.getElementById('b-log')||document.querySelector('.log-box')||document.querySelector('.battle-log')||document.querySelector('.jrpg-log')||document.getElementById('jrpg-log')||document.querySelector('.coach-txt');
       if(log){
+        var oldG = document.getElementById('bf-guide'), oldS = document.getElementById('bf-guide-show');
+        if(oldG) oldG.style.display='none';
+        if(oldS) oldS.style.display='none';
         var w=document.createElement('div');w.id='bf-narrator';
-        w.innerHTML='<style>.bf-nar{display:flex;align-items:flex-end;gap:12px;margin:0 auto 12px;max-width:min(440px,90vw);animation:bfFadeIn .4s ease;z-index:10}.bf-nar.hid{display:none!important}.bf-nar-ch{width:74px;height:74px;flex-shrink:0;animation:bfGuideFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.7))}.bf-nar-ch img{width:100%;height:100%;object-fit:contain;filter:saturate(1.2) drop-shadow(0 0 8px rgba(255,210,74,.4))}.bf-nar-bub{position:relative;background:linear-gradient(180deg,#1c1533,#130d24);border:2px solid rgba(255,210,74,.6);border-radius:14px;padding:12px 34px 12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,210,74,.15);flex:1;animation:bfBubblePulse 4s ease-in-out infinite}.bf-nar-bub::before{content:"";position:absolute;left:-10px;bottom:20px;border-width:8px 10px 8px 0;border-style:solid;border-color:transparent rgba(255,210,74,.6) transparent transparent}.bf-nar-bub::after{content:"";position:absolute;left:-7px;bottom:20px;border-width:8px 10px 8px 0;border-style:solid;border-color:transparent #130d24 transparent transparent;z-index:1}.bf-nar-tt{font-family:"Cinzel",serif;font-weight:1000;font-size:11.5px;color:#ffd24a;letter-spacing:.3px;text-shadow:0 1px 2px #000;margin-bottom:4px}.bf-nar-tx{font-size:13px;line-height:1.35;color:#f3ecff;font-weight:600;text-shadow:0 1px 2px #000}.bf-nar-tx b{color:#ffe49a}.bf-nar-off{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);color:#cbb9ee;border:none;cursor:pointer;font-size:14px;z-index:2}.bf-nar-off:hover{background:rgba(255,255,255,.2);color:#fff}@keyframes bfTextPop{0%{opacity:0;transform:translateY(4px) scale(0.98)}100%{opacity:1;transform:translateY(0) scale(1)}}@media(max-width:640px){.bf-nar{gap:8px}.bf-nar-ch{width:60px;height:60px}.bf-nar-bub{padding:10px 30px 10px 12px}.bf-nar-tx{font-size:12px}}</style>'+
-        '<div class="bf-nar-ch"><img src="'+GUIDE_ELITE_IMG+'" alt="Punkito"></div><div class="bf-nar-bub"><button class="bf-nar-off">✕</button><div class="bf-nar-tt">Punkito Élite narra:</div><div class="bf-nar-tx" id="bf-nar-txt">¡A luchar!</div></div>';
-        w.className='bf-nar';log.parentNode.insertBefore(w,log);
-        w.querySelector('.bf-nar-off').onclick=function(){w.classList.add('hid');};
+        w.innerHTML='<style>.bf-nar{position:fixed;bottom:100px;right:20px;display:flex;align-items:flex-end;gap:12px;margin:0;max-width:min(440px,90vw);animation:bfBattleRide 1.5s cubic-bezier(.22,1,.36,1) forwards;z-index:90000;user-select:none;touch-action:none}.bf-nar.hid .bf-nar-bub{display:none}.bf-nar-ch{width:88px;height:88px;flex-shrink:0;animation:bfGuideFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 8px rgba(255,210,74,.4));cursor:grab}.bf-nar-ch:active{cursor:grabbing}.bf-nar-ch img{width:100%;height:100%;object-fit:contain;filter:saturate(1.2);-webkit-mask-image:radial-gradient(circle at center, black 55%, transparent 72%);mask-image:radial-gradient(circle at center, black 55%, transparent 72%);}.bf-nar-bub{position:relative;background:linear-gradient(180deg,#1c1533,#130d24);border:2px solid rgba(255,210,74,.6);border-radius:14px;padding:12px 34px 12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,210,74,.15);flex:1;animation:bfBubblePulse 4s ease-in-out infinite}.bf-nar-bub::before{content:"";position:absolute;right:-10px;bottom:20px;border-width:8px 0 8px 10px;border-style:solid;border-color:transparent transparent transparent rgba(255,210,74,.6)}.bf-nar-bub::after{content:"";position:absolute;right:-7px;bottom:20px;border-width:8px 0 8px 10px;border-style:solid;border-color:transparent transparent transparent #130d24;z-index:1}.bf-nar-tt{font-family:"Cinzel",serif;font-weight:1000;font-size:11.5px;color:#ffd24a;letter-spacing:.3px;text-shadow:0 1px 2px #000;margin-bottom:4px}.bf-nar-tx{font-size:13px;line-height:1.35;color:#f3ecff;font-weight:600;text-shadow:0 1px 2px #000}.bf-nar-tx b{color:#ffe49a}.bf-nar-off{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);color:#cbb9ee;border:none;cursor:pointer;font-size:14px;z-index:2}.bf-nar-off:hover{background:rgba(255,255,255,.2);color:#fff}@keyframes bfTextPop{0%{opacity:0;transform:translateY(4px) scale(0.98)}100%{opacity:1;transform:translateY(0) scale(1)}}@media(max-width:640px){.bf-nar{gap:8px}.bf-nar-ch{width:60px;height:60px}.bf-nar-bub{padding:10px 30px 10px 12px}.bf-nar-tx{font-size:12px}}</style>'+
+        '<div class="bf-nar-bub"><button class="bf-nar-off">✕</button><div class="bf-nar-tt">Punkito Élite:</div><div class="bf-nar-tx" id="bf-nar-txt">¡Soy el narrador! Arrástrame y toca mi icono para abrir o cerrar mi globo.</div></div><div class="bf-nar-ch"><img src="'+GUIDE_ELITE_IMG+'" alt="Punkito"></div>';
+        w.className='bf-nar';document.body.appendChild(w);
+        w.querySelector('.bf-nar-off').onclick=function(e){ e.stopPropagation(); w.classList.add('hid'); };
+        w.querySelector('.bf-nar-ch').onclick=function(){ if(w.classList.contains('hid')) w.classList.remove('hid'); };
+        var nDrag=null, chDrag=w.querySelector('.bf-nar-ch');
+        function nDragM(cx, cy) { if(!nDrag)return; w.style.right='auto'; w.style.left=Math.max(0, Math.min(window.innerWidth-100, cx-nDrag.sx))+'px'; w.style.top=Math.max(0, Math.min(window.innerHeight-60, cy-nDrag.sy))+'px'; w.style.bottom='auto'; }
+        chDrag.addEventListener('mousedown', function(e){ if(e.button)return; nDrag={sx:e.clientX-w.offsetLeft, sy:e.clientY-w.offsetTop}; w.style.transition='none'; w.style.animation='none'; e.preventDefault();});
+        chDrag.addEventListener('touchstart', function(e){ var t=e.touches[0]; nDrag={sx:t.clientX-w.offsetLeft, sy:t.clientY-w.offsetTop}; w.style.transition='none'; w.style.animation='none'; }, {passive:true});
+        document.addEventListener('mousemove', function(e){ nDragM(e.clientX, e.clientY); });
+        document.addEventListener('touchmove', function(e){ nDragM(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+        document.addEventListener('mouseup', function(){ nDrag=null; });
+        document.addEventListener('touchend', function(){ nDrag=null; });
+        w.dataset.last = "INTRO";
       }
     }
     var nw=document.getElementById('bf-narrator');
-    if(nw&&!nw.classList.contains('hid')){
+    if(nw){
       var l=document.querySelector('.b-log')||document.getElementById('b-log')||document.querySelector('.log-box')||document.querySelector('.battle-log')||document.querySelector('.jrpg-log')||document.getElementById('jrpg-log')||document.querySelector('.coach-txt');
       if(l){
         var es=l.children,lh='';
@@ -2140,17 +2159,13 @@ function buildArtScript() {
       }
       if (btn.classList.contains('ability') && h) {
          var t = el ? (h.eTxt || h.abilityTxt) : h.abilityTxt, inIco = btn.querySelector('.jrpg-info');
-         if (inIco) {
-            inIco.style.cssText = 'display:flex;align-items:center;justify-content:center;margin-left:auto;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.6);border:1.5px solid rgba(255,210,74,0.6);color:#ffe49a;font-size:17px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,0.5);transition:all 0.12s ease;';
-            inIco.innerHTML = 'ℹ️';
-            inIco.onmouseenter = function() { inIco.style.background = 'rgba(255,210,74,0.3)'; inIco.style.transform = 'scale(1.1)'; };
-            inIco.onmouseleave = function() { inIco.style.background = 'rgba(0,0,0,0.6)'; inIco.style.transform = 'none'; };
-         }
-         btn.style.cssText += 'grid-column:1/-1;flex-direction:row;justify-content:flex-start;text-align:left;padding:12px 14px;';
-         if (ic) ic.innerHTML = '<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72);display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:24px;font-weight:900;">✦</div>';
+         if (inIco) inIco.style.display = 'none'; // hide info icon as text is displayed directly
+         btn.style.cssText += 'grid-column:1/-1;flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;text-align:left;padding:8px 12px;';
+         if (ic) ic.innerHTML = '<div style="width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 12px rgba(255,95,25,.72);flex-shrink:0;"></div>';
          var lbl = btn.querySelector('.jrpg-btn-label');
          if (lbl) {
-           lbl.innerHTML = '<div style="color:#ffe07b;font-size:14px;margin-bottom:3px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)">'+lbl.textContent+': <span style="color:#fff7ea;text-transform:none;font-family:&quot;Rubik&quot;,sans-serif;font-weight:700;letter-spacing:0;text-shadow:0 1px 3px #000;">'+(typeof bfEsc === 'function' ? bfEsc(t) : t)+'</span></div>';
+           var abName = el ? (h.eAbility || h.abilityName || lbl.textContent) : (h.abilityName || h.ability || lbl.textContent);
+           lbl.innerHTML = '<div style="display:flex;flex-direction:column;gap:3px;"><div style="color:#ffd24a;font-family:'Cinzel',serif;font-weight:1000;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">' + (typeof bfEsc === 'function' ? bfEsc(abName) : abName) + '</div><div style="color:#fff;font-family:'Rubik',sans-serif;font-weight:700;font-size:12px;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.8);">' + (typeof bfEsc === 'function' ? bfEsc(t) : t) + '</div></div>';
            lbl.style.flex = '1';
          }
          var v = btn.querySelector('.jrpg-btn-val');
