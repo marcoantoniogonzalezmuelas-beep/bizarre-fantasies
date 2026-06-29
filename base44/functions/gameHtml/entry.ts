@@ -141,9 +141,9 @@ function buildArtScript() {
       @media (max-width: 640px) { .cardface, .bf-hero-card { max-width: 100% !important; } .bf-hero-bg, .cf-art.has-art::before { inset: -8% !important; background-size: cover !important; background-position: center center !important; } .bf-race-sigil { top: 9px !important; width: 39px !important; height: 39px !important; font-size: 21px !important; } .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; } .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; } .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; } .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; } .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; } .bf-stats { left: 10px !important; right: 10px !important; bottom: 150px !important; padding: 6px 45px 6px 7px !important; } .bf-stat b { font-size: 17px !important; } .bf-heart { right: 8px !important; bottom: 154px !important; width: 50px !important; height: 46px !important; } .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; } .bf-heart .cf-hp { font-size: 16px !important; } .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 90px !important; max-height: 138px !important; overflow: hidden !important; grid-template-columns: 34px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; align-items: start !important; } .bf-ability-orb { width: 32px !important; height: 32px !important; margin-top: 1px !important; } .bf-ability-orb::before { font-size: 18px !important; } .bf-ability-name { font-size: 10.2px !important; line-height: 1.1 !important; } .bf-ability-text { font-size: 9.8px !important; line-height: 1.16 !important; } .bf-zoom-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; right: 6px !important; } .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; } .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; } .shop-card { max-width: 100% !important; } .shop-card-art-sharp { inset: -3% !important; background-size: cover !important; background-position: center center !important; } .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; } .bf-bonus-card .bf-bonus-art { inset: -3% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; } }
 
       /* Battle/recruit hero thumbnails */
-      .bhero { overflow:hidden !important; min-height:108px; padding-left:102px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
+      .bhero { overflow:hidden !important; min-height:126px; padding-left:132px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
-      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:138px; z-index:1; background-size:126% auto; background-position:center 18%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); cursor:pointer; }
+      .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:170px; z-index:1; background-size:122% auto; background-position:center 16%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); cursor:pointer; }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); pointer-events:none; }
       .bf-battle-zoom { position:absolute; left:6px; bottom:6px; z-index:10; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.6); border:1.5px solid rgba(255,210,74,.5); color:#ffe49a; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; transition:all .15s ease; box-shadow:0 3px 8px rgba(0,0,0,.5); }
       .bf-battle-zoom:hover { background:rgba(255,210,74,.3); transform:scale(1.15); }
@@ -184,6 +184,19 @@ function buildArtScript() {
       .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; } .bf-status-paralyzed { color:#ffe14a; } .bf-status-sleeping { color:#8aaaff; } .bf-status-cursed { color:#c79bff; }
       @keyframes bfBadgeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} } @keyframes bfSleepZ { 0%{opacity:0;transform:translate(-50%,4px) scale(.7)} 30%{opacity:1} 100%{opacity:0;transform:translate(-30%,-22px) scale(1.1)} }
       .bf-sleep-z { position:absolute; left:50%; top:8%; z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; color:#9bb4ff; font-size:18px; text-shadow:0 0 10px #5a7fff; animation:bfSleepZ 2.6s ease-in-out infinite; }
+      /* ---- FROZEN: animated ice sheet over the whole hero card ---- */
+      .bhero.s-frozen .bf-battle-art { filter:saturate(1.05) brightness(.92) contrast(1.05) hue-rotate(-12deg) drop-shadow(0 0 10px #8fe6ff) !important; }
+      .bhero.s-frozen { box-shadow:0 0 0 2px rgba(140,225,255,.7), 0 0 24px rgba(120,200,255,.5) !important; }
+      .bf-frost { position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; overflow:hidden; animation:bfFrostIn .5s ease-out; }
+      .bf-frost-sheet { position:absolute; inset:0; background:linear-gradient(135deg,rgba(180,235,255,.42),rgba(120,195,255,.16) 40%,rgba(180,235,255,.34) 100%),radial-gradient(circle at 22% 18%,rgba(255,255,255,.6),transparent 26%),radial-gradient(circle at 78% 72%,rgba(255,255,255,.5),transparent 24%); mix-blend-mode:screen; box-shadow:inset 0 0 26px rgba(180,235,255,.7); }
+      .bf-frost-sheet::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(58deg,transparent 0 7px,rgba(255,255,255,.16) 7px 8px),repeating-linear-gradient(-58deg,transparent 0 9px,rgba(190,240,255,.14) 9px 10px); }
+      .bf-frost-crack { position:absolute; inset:0; background:radial-gradient(circle at 50% 46%,transparent 38%,rgba(255,255,255,.5) 39%,transparent 41%),linear-gradient(72deg,transparent 47%,rgba(255,255,255,.55) 48%,transparent 49%),linear-gradient(-40deg,transparent 55%,rgba(220,248,255,.45) 56%,transparent 57%); opacity:.7; }
+      .bf-frost-flake { position:absolute; color:#eaffff; font-size:15px; text-shadow:0 0 8px #8fe6ff; animation:bfFlakeFall 3.4s linear infinite; }
+      .bf-flake-a { left:18%; top:-12%; animation-delay:0s; } .bf-flake-b { left:54%; top:-18%; font-size:12px; animation-delay:1.1s; } .bf-flake-c { left:80%; top:-10%; font-size:17px; animation-delay:2s; }
+      .bf-status-frozen { color:#8fe6ff; }
+      .bf-fx-frost-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.9),rgba(150,225,255,.55) 22%,rgba(120,195,255,.2) 46%,transparent 72%); animation:bfBigBlast 1s ease-out forwards; }
+      @keyframes bfFrostIn { 0%{opacity:0;transform:scale(1.08)} 100%{opacity:1;transform:none} }
+      @keyframes bfFlakeFall { 0%{opacity:0;transform:translateY(0) rotate(0)} 12%{opacity:1} 100%{opacity:.2;transform:translateY(150px) rotate(220deg)} }
 
       @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} } @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} } @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} } @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:104px !important; padding-left:43px !important; overflow:hidden; }
@@ -341,8 +354,8 @@ function buildArtScript() {
       @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
 
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
-      .bhero .bf-battle-gear { position:absolute; left:108px; bottom:6px; z-index:3; display:flex; gap:6px; }
-      .bhero .bf-gear-icon { position:relative; width:30px; height:30px; border-radius:8px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.6); box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.2); background-color:#0a0710; cursor:pointer; transition:transform .12s ease, border-color .12s ease; }
+      .bhero .bf-battle-gear { position:absolute; left:6px; bottom:6px; z-index:6; display:flex; flex-direction:row; gap:5px; padding:3px; border-radius:10px; background:rgba(8,5,14,.55); backdrop-filter:blur(2px); box-shadow:0 2px 8px rgba(0,0,0,.5); }
+      .bhero .bf-gear-icon { position:relative; width:32px; height:32px; border-radius:8px; background-size:140%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.6); box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.2); background-color:#0a0710; cursor:pointer; transition:transform .12s ease, border-color .12s ease; }
       .bhero .bf-gear-icon:hover { border-color:#ffd24a; transform:scale(1.15); z-index:10; }
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
@@ -606,34 +619,20 @@ function buildArtScript() {
     buildGearArtByName();
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
       if (card.dataset.bfBattleArt === '1') { injectBattleGear(card); return; }
-      var parts = card.id.split('_');
-      var id = parts[parts.length - 1];
-      var url = ART_BY_ID[id] || ELITE_BY_ID[id];
+      var parts = card.id.split('_'), id = parts[parts.length - 1], url = ART_BY_ID[id] || ELITE_BY_ID[id];
       if (!url) { injectBattleGear(card); return; }
-      var art = document.createElement('div');
-      art.className = 'bf-battle-art';
-      art.style.backgroundImage = 'url("' + url + '")';
+      var art = document.createElement('div'); art.className = 'bf-battle-art'; art.style.backgroundImage = 'url("' + url + '")';
       art.onclick = function(e) { e.stopPropagation(); bfZoomCard(id, card.classList.contains('elite-mode') || card.classList.contains('bf-auto-elite') ? 'elite' : 'normal'); };
       card.insertBefore(art, card.firstChild);
-      var z = document.createElement('div');
-      z.className = 'bf-battle-zoom';
-      z.innerHTML = '🔍';
-      z.onclick = art.onclick;
-      card.insertBefore(z, art.nextSibling);
-      card.dataset.bfBattleArt = '1';
-      injectBattleGear(card);
+      var z = document.createElement('div'); z.className = 'bf-battle-zoom'; z.innerHTML = '🔍'; z.onclick = art.onclick;
+      card.insertBefore(z, art.nextSibling); card.dataset.bfBattleArt = '1'; injectBattleGear(card);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(slot) {
       if (slot.dataset.bfCtbArt === '1') return;
-      var nm = slot.querySelector('.ctb-hero-name');
-      if (!nm) return;
-      var url = ART_BY_NAME[nm.textContent.trim()];
-      if (!url) return;
-      var thumb = document.createElement('div');
-      thumb.className = 'bf-ctb-thumb';
-      thumb.style.backgroundImage = 'url("' + url + '")';
-      slot.insertBefore(thumb, slot.firstChild);
-      slot.dataset.bfCtbArt = '1';
+      var nm = slot.querySelector('.ctb-hero-name'); if (!nm) return;
+      var url = ART_BY_NAME[nm.textContent.trim()]; if (!url) return;
+      var thumb = document.createElement('div'); thumb.className = 'bf-ctb-thumb'; thumb.style.backgroundImage = 'url("' + url + '")';
+      slot.insertBefore(thumb, slot.firstChild); slot.dataset.bfCtbArt = '1';
     });
   }
 
@@ -642,10 +641,17 @@ function buildArtScript() {
   function isHeroParalyzed(c){return c.classList.contains('s-paralyzed')||/par[aá]li/i.test(statusText(c));}
 
   // Resolve the current status of a battle hero: 'paralyzed' | 'sleeping' | 'cursed' | ''.
+  function heroIsFrozen(card) {
+    if (/congel/i.test(statusText(card))) return true;
+    var id = heroIdFromCard(card), side = (String(card.id || '').split('_')[1]) || 'p';
+    var h = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(x) { return x && x.id === id; });
+    return !!(h && h.alive && h._mods && h._mods.some(function(m) { return m && Number(m.vel) < 0; }));
+  }
   function heroStatusOf(card) {
     var t = statusText(card);
     if (card.classList.contains('s-paralyzed') || /par[aá]li/i.test(t)) return 'paralyzed';
     if (card.classList.contains('s-sleeping') || /dorm|sue[ñn]/i.test(t)) return 'sleeping';
+    if (heroIsFrozen(card)) return 'frozen';
     if (card.classList.contains('s-cursed') || /maldi|maldec/i.test(t)) return 'cursed';
     return '';
   }
@@ -653,6 +659,7 @@ function buildArtScript() {
   var STATUS_INFO = {
     paralyzed: { ico: '⚡', label: 'PARALIZADO', cls: 'bf-status-paralyzed' },
     sleeping:  { ico: '💤', label: 'DORMIDO',    cls: 'bf-status-sleeping' },
+    frozen:    { ico: '❄', label: 'CONGELADO',   cls: 'bf-status-frozen' },
     cursed:    { ico: '☠', label: 'MALDITO',     cls: 'bf-status-cursed' },
   };
 
@@ -664,30 +671,27 @@ function buildArtScript() {
       var aura = document.createElement('div'); aura.className = 'bf-active-aura';
       var ring = document.createElement('div'); ring.className = 'bf-active-ring';
       var tag = document.createElement('div'); tag.className = 'bf-active-tag'; tag.textContent = '★ SU TURNO';
-      card.insertBefore(ring, card.firstChild);
-      card.insertBefore(aura, card.firstChild);
-      card.appendChild(tag);
+      card.insertBefore(ring, card.firstChild); card.insertBefore(aura, card.firstChild); card.appendChild(tag);
     }
-    var st = heroStatusOf(card);
-    var badge = card.querySelector('.bf-status-badge');
+    var st = heroStatusOf(card), badge = card.querySelector('.bf-status-badge');
+    // Frost overlay layer (animated ice sheet) shown only while frozen.
+    card.classList.toggle('s-frozen', st === 'frozen');
+    var frost = card.querySelector('.bf-frost');
+    if (st === 'frozen') { if (!frost) { frost = document.createElement('div'); frost.className = 'bf-frost'; frost.innerHTML = '<div class="bf-frost-sheet"></div><div class="bf-frost-crack"></div><span class="bf-frost-flake bf-flake-a">❄</span><span class="bf-frost-flake bf-flake-b">❅</span><span class="bf-frost-flake bf-flake-c">❄</span>'; card.appendChild(frost); } }
+    else if (frost) frost.remove();
     if (!st) {
       if (badge) badge.remove();
       var z = card.querySelector('.bf-sleep-z'); if (z) z.remove();
-      card.dataset.bfStatus = '';
-      return;
+      card.dataset.bfStatus = ''; return;
     }
     if (card.dataset.bfStatus !== st) {
       if (badge) badge.remove();
-      var info = STATUS_INFO[st];
-      var b = document.createElement('div');
+      var info = STATUS_INFO[st], b = document.createElement('div');
       b.className = 'bf-status-badge ' + info.cls;
       b.innerHTML = '<span class="bf-status-ico">' + info.ico + '</span>' + info.label;
       card.appendChild(b);
       var existingZ = card.querySelector('.bf-sleep-z'); if (existingZ) existingZ.remove();
-      if (st === 'sleeping') {
-        var zz = document.createElement('div'); zz.className = 'bf-sleep-z'; zz.textContent = 'Z';
-        card.appendChild(zz);
-      }
+      if (st === 'sleeping') { var zz = document.createElement('div'); zz.className = 'bf-sleep-z'; zz.textContent = 'Z'; card.appendChild(zz); }
       card.dataset.bfStatus = st;
     }
   }
@@ -696,24 +700,16 @@ function buildArtScript() {
 
   function addOverlayFx(card, html, ms) {
     if (!card || !card.isConnected) return;
-    var fx = document.createElement('div');
-    fx.className = 'bf-combat-fx';
-    fx.innerHTML = html;
-    card.appendChild(fx);
+    var fx = document.createElement('div'); fx.className = 'bf-combat-fx'; fx.innerHTML = html; card.appendChild(fx);
     setTimeout(function() { if (fx.parentNode) fx.parentNode.removeChild(fx); }, ms || 1000);
   }
-
   function transformHeroToElite(card) {
     if (!card || card.dataset.bfAutoElite === '1') return;
-    var id = heroIdFromCard(card);
-    var eliteUrl = ELITE_BY_ID[id];
-    var art = card.querySelector('.bf-battle-art');
+    var id = heroIdFromCard(card), eliteUrl = ELITE_BY_ID[id], art = card.querySelector('.bf-battle-art');
     if (art && eliteUrl) art.style.backgroundImage = 'url("' + eliteUrl + '")';
-    card.dataset.bfAutoElite = '1';
-    card.classList.add('bf-auto-elite', 'elite-mode');
+    card.dataset.bfAutoElite = '1'; card.classList.add('bf-auto-elite', 'elite-mode');
     addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
   }
-
   // Permanent death animation (gravestone / RIP) for a hero that dies for good.
   function playTrueDeath(card) {
     if (!card || !card.isConnected) return;
@@ -724,33 +720,20 @@ function buildArtScript() {
   // Inject thumbnails of the hero's equipped weapon + armor onto a battle card.
   function injectBattleGear(card) {
     if (!card || card.dataset.bfGear === '1') return;
-    var id = heroIdFromCard(card);
-    var side = (String(card.id || '').split('_')[1]) || 'p';
+    var id = heroIdFromCard(card), side = (String(card.id || '').split('_')[1]) || 'p';
     var hero = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(h) { return h && h.id === id; });
     if (!hero) return;
     card.dataset.bfGear = '1';
-    var items = [];
-    var w = hero.mwep || hero.rwep;
+    var items = [], w = hero.mwep || hero.rwep;
     if (w) items.push({ it: w, kind: hero.mwep ? 'melee' : 'ranged' });
     if (hero.armor) items.push({ it: hero.armor, kind: 'armor' });
     if (!items.length) return;
-    var gearByName = window.__bfGearArtByName || {};
-    var row = document.createElement('div');
-    row.className = 'bf-battle-gear';
+    var gearByName = window.__bfGearArtByName || {}, row = document.createElement('div'); row.className = 'bf-battle-gear';
     items.forEach(function(o) {
-      var it = o.it;
-      var url = gearByName[it.name];
-      if (!url) return;
-      var icon = document.createElement('div');
-      icon.className = 'bf-gear-icon';
-      icon.title = it.name;
-      icon.style.backgroundImage = 'url("' + url + '")';
+      var it = o.it, url = gearByName[it.name]; if (!url) return;
+      var icon = document.createElement('div'); icon.className = 'bf-gear-icon'; icon.title = it.name; icon.style.backgroundImage = 'url("' + url + '")';
       icon.innerHTML = '<div class="bf-gear-zoom">🔍</div>';
-      icon.onclick = function(e) {
-        e.stopPropagation();
-        var safeName = String(it.name || '').replace(/'/g, "\\'");
-        bfZoomBonus(safeName, url, { item: it, kind: o.kind });
-      };
+      icon.onclick = function(e) { e.stopPropagation(); bfZoomBonus(String(it.name || '').replace(/'/g, "\\'"), url, { item: it, kind: o.kind }); };
       row.appendChild(icon);
     });
     if (row.children.length) card.appendChild(row);
@@ -823,6 +806,7 @@ function buildArtScript() {
     var info = STATUS_INFO[st];
     if (!info) return;
     if (st === 'paralyzed') { playHeroFx(card, 'paralyze'); return; }
+    if (st === 'frozen') { addOverlayFx(card, '<div class="bf-fx-frost-burst"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#8fe6ff">❄ CONGELADO</div>', 1300); return; }
     var color = st === 'sleeping' ? '#8aaaff' : '#c79bff';
     addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:' + color + '">' + info.ico + ' ' + info.label + '</div>', 1300);
   }
