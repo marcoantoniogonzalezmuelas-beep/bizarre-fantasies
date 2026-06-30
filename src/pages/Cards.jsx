@@ -46,8 +46,8 @@ const normalizeHero = (card) => ({
   abilityTxt: card.ability_text,
   eAbility: card.elite_ability_name,
   eTxt: card.elite_ability_text,
-  art: HERO_ART[Number(card.number || 0) - 1] || card.art_url,
-  eliteArt: HERO_ELITE_ART[Number(card.number || 0) - 1] || card.elite_art_url,
+  art: card.art_url || HERO_ART[Number(card.number || 0) - 1],
+  eliteArt: card.elite_art_url || HERO_ELITE_ART[Number(card.number || 0) - 1],
 });
 
 const normalizeItem = (card) => ({
@@ -55,7 +55,7 @@ const normalizeItem = (card) => ({
   id: card.card_id,
   num: card.number,
   txt: card.description,
-  art: card.category === 'bonus' ? (card.art_url || gameArtFor(card.category, card.number)) : (gameArtFor(card.category, card.number) || card.art_url),
+  art: card.art_url || gameArtFor(card.category, card.number),
   element: card.category === 'spell' ? card.type : undefined,
   tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
 });

@@ -111,10 +111,10 @@
     rgba(255, 255, 255, 0.05) 60%, 
     transparent 100%);
   background-size: 300% 300%;
-  
-  opacity: 0.35;
+  mix-blend-mode: color-dodge;
+  opacity: 0.25;
   pointer-events: none;
-  z-index: 5;
+  z-index: 4;
   animation: foil-rainbow 6s ease-in-out infinite;
 }
 

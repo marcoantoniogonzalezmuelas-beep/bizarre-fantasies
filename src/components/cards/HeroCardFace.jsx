@@ -29,9 +29,9 @@ export default function HeroCardFace({ hero, elite }) {
 
   return (
     <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${isFoiled ? 'card-foiled' : ''} ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: isFoiled ? '#ffb43a' : (elite ? '#ffb43a' : color), boxShadow: isFoiled ? '0 0 20px rgba(255, 210, 74, 0.4), inset 0 0 20px rgba(255, 210, 74, 0.2)' : '' }}>
-      {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" style={{ transform: 'scale(1.12)' }} />}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
-      <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
+      {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" style={{ transform: 'scale(1.12)', zIndex: 1 }} />}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" style={{ zIndex: 2 }} />
+      <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" style={{ zIndex: 2 }} />
 
       <div className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center text-[#fff7dc] font-heading text-2xl font-black shadow-lg" style={{ background: 'radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%)', border: `2px solid ${color}`, textShadow: `0 2px 4px #000,0 0 10px ${color}` }}>{symbol}</div>
