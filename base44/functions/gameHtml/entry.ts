@@ -154,8 +154,10 @@ function buildArtScript() {
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
       .bf-battle-art { position:absolute; left:-22px; top:-22px; bottom:-22px; width:170px; z-index:1; background-size:122% auto; background-position:center 16%; background-repeat:no-repeat; background-color:#0a0710; filter:saturate(1.12) contrast(1.08); opacity:.96; border:0 !important; outline:0 !important; box-shadow:none !important; transition:filter .4s ease, transform .5s cubic-bezier(.2,.8,.3,1); cursor:pointer; }
       .bf-battle-art::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%); pointer-events:none; }
-      .bf-battle-zoom { position:absolute; left:6px; bottom:6px; z-index:10; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.6); border:1.5px solid rgba(255,210,74,.5); color:#ffe49a; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; transition:all .15s ease; box-shadow:0 3px 8px rgba(0,0,0,.5); }
+      .bf-battle-zoom { position:absolute; left:6px; top:6px; z-index:10; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.6); border:1.5px solid rgba(255,210,74,.5); color:#ffe49a; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; transition:all .15s ease; box-shadow:0 3px 8px rgba(0,0,0,.5); }
       .bf-battle-zoom:hover { background:rgba(255,210,74,.3); transform:scale(1.15); }
+      .picking-target .bhero { cursor: crosshair !important; box-shadow: 0 0 0 3px rgba(255,210,74,0.6), 0 0 20px rgba(255,210,74,0.4) !important; transition: all 0.2s; }
+      .picking-target .bhero:hover { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.6) !important; }
 
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
       .bhero.active-turn { animation:bfHeroActive 2.1s ease-in-out infinite !important; z-index:5 !important; }
@@ -612,8 +614,7 @@ function buildArtScript() {
       if(e){if(u)e.style.backgroundImage='url("'+u+'")';c.dataset.bfBattleArt=t;injectBattleGear(c);return;}
       if(!u){injectBattleGear(c);return;}
       var a=document.createElement('div');a.className='bf-battle-art';a.style.backgroundImage='url("'+u+'")';
-      a.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal');};
-      c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=a.onclick;c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
+      c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal');};c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(l) {
       var n=l.querySelector('.ctb-hero-name');if(!n)return;var nx=n.textContent.replace(/★/g,'').trim(),u=ART_BY_NAME[nx];if(!u||l.dataset.bfCtbArt===nx)return;

@@ -35,9 +35,35 @@ export default function AdminCards() {
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false)); }, []);
   useEffect(() => { if (user?.role === 'admin') loadCards(); }, [user]);
 
-  async function loadCards() { const list = await base44.entities.Card.list('number', 300); setCards(list || []); }
-  function onChange(name, value) { setForm(prev => ({ ...prev, [name]: value })); }
-  function startNew() { setEditingId(null); setForm(emptyCard); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  async function loadCards() {
+    const list = await base44.entities.Card.list('number', 300);
+    setCards(list || []);
+    setForm(prev => {
+      if (!prev.number && list && list.length > 0) {
+        const maxNum = list.reduce((m, c) => Math.max(m, Number(c.number || 0)), 0);
+        return { ...prev, number: maxNum + 1 };
+      }
+      return prev;
+    });
+  }
+  function onChange(name, value) {
+    setForm(prev => {
+      const next = { ...prev, [name]: value };
+      if (name === 'name') {
+        const oldDerived = prev.name ? prev.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') : '';
+        if (!prev.card_id || prev.card_id === oldDerived) {
+          next.card_id = value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+        }
+      }
+      return next;
+    });
+  }
+  function startNew() {
+    const maxNum = cards.reduce((max, c) => Math.max(max, Number(c.number || 0)), 0);
+    setEditingId(null);
+    setForm({ ...emptyCard, number: maxNum > 0 ? maxNum + 1 : '' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   function startEdit(card) { setEditingId(card.id); setForm({ ...emptyCard, ...card, image_prompt: '' }); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   async function saveCard() {
