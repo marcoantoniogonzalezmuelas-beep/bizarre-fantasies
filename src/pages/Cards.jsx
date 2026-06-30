@@ -46,8 +46,8 @@ const normalizeHero = (card) => ({
   abilityTxt: card.ability_text,
   eAbility: card.elite_ability_name,
   eTxt: card.elite_ability_text,
-  art: card.art_url || HERO_ART[Number(card.number || 0) - 1],
-  eliteArt: card.elite_art_url || HERO_ELITE_ART[Number(card.number || 0) - 1],
+  art: HERO_ART[Number(card.number || 0) - 1] || card.art_url,
+  eliteArt: HERO_ELITE_ART[Number(card.number || 0) - 1] || card.elite_art_url,
 });
 
 const normalizeItem = (card) => ({
