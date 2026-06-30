@@ -127,10 +127,9 @@ const DRAGGABLE_GUIDE_PATCH = `
 
 export default function Home() {
   const iframeRef = useRef(null);
-  const [html, setHtml] = useState('');
+  const [blobUrl, setBlobUrl] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [reloadKey, setReloadKey] = useState(0);
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -143,6 +142,7 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
+    let createdUrl = '';
 
     const loadGame = async (attempt = 1) => {
       try {
@@ -160,24 +160,20 @@ export default function Home() {
         if (cancelled) return;
         const data = typeof res.data === 'string' ? res.data : String(res.data);
         if (!data || data.length < 1000) throw new Error('empty');
-        // Prefer the newest version: if the served HTML isn't the expected
-        // version yet (CDN/browser cache), retry a few times to get it. BUT a
-        // valid game must NEVER be blocked — once retries run out, render
-        // whatever valid HTML we have instead of showing the error screen.
-        if (data.indexOf(EXPECTED_PATCH_VERSION) === -1 && attempt < MAX_LOAD_ATTEMPTS) {
-          setTimeout(() => loadGame(attempt + 1), 400 * attempt);
-          return;
-        }
-        // Render the game through srcDoc — blob: URLs can be blocked inside the
-        // embedded preview iframe, leaving the page blank. srcDoc is reliable.
-        const patchedData = data.includes('</body>') ? data.replace('</body>', DRAGGABLE_GUIDE_PATCH + '</body>') : data + DRAGGABLE_GUIDE_PATCH;
-        setHtml(patchedData);
-        setReloadKey((k) => k + 1);
+
+        // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
+        // attribute) hangs on production/mobile. A Blob URL loads large HTML
+        // reliably across browsers and devices.
+        const patchedData = data.includes('</body>')
+          ? data.replace('</body>', DRAGGABLE_GUIDE_PATCH + '</body>')
+          : data + DRAGGABLE_GUIDE_PATCH;
+        createdUrl = URL.createObjectURL(new Blob([patchedData], { type: 'text/html' }));
+        setBlobUrl(createdUrl);
         setLoading(false);
       } catch {
         if (cancelled) return;
         if (attempt < MAX_LOAD_ATTEMPTS) {
-          loadGame(attempt + 1);
+          setTimeout(() => loadGame(attempt + 1), 400 * attempt);
           return;
         }
         setError(true);
@@ -188,6 +184,7 @@ export default function Home() {
 
     return () => {
       cancelled = true;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
     };
   }, []);
 
@@ -217,12 +214,12 @@ export default function Home() {
         </div>
       </Link>
 
-      {html && (
+      {blobUrl && (
         <iframe
-          key={reloadKey}
           ref={iframeRef}
           title="Bizarre Fantasies v5"
-          srcDoc={html}
+          src={blobUrl}
+          onLoad={() => setLoading(false)}
           className="w-full h-full border-0"
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
