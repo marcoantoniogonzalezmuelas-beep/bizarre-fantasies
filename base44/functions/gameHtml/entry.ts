@@ -61,7 +61,8 @@ function buildArtScript(dbCards) {
     cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, 
     eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, 
     ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, 
-    clanColor: c.clan_color, foiled: c.foiled }));
+    clanColor: c.clan_color
+  }));
 
   return `
 <script>
@@ -523,7 +524,7 @@ function buildArtScript(dbCards) {
       var isEpic = h.clan === 'Épicas';
       var url = elite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
       var safeUrl = String(url || '').replace(/'/g, '%27');
-      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + (isEpic ? ' cf-epic' : '') + (h.foiled || isEpic ? ' card-foiled' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' +
+      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + (isEpic ? ' cf-epic' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' +
         (isEpic ? '<div class="bf-foil"></div>' : '') +
         '<div class="bf-hero-bg"></div>' +
         '<div class="bf-hero-frame"></div>' +
@@ -1999,48 +2000,7 @@ function buildArtScript(dbCards) {
     }
     if(!document.getElementById('bf-narrator')&&bfInBattle()){
       var w=document.createElement('div');w.id='bf-narrator';
-      w.innerHTML='<style>.bf-nar{position:fixed;top:8px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:12px;width:min(440px,92vw);z-index:90001;animation:bfNarRide 4.6s cubic-bezier(.16,.84,.3,1)}.bf-nar.hid{display:none!important}.bf-nar-ch{position:relative;width:84px;height:84px;flex-shrink:0;animation:bfGuideFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.7))}.bf-nar-ch img{width:100%;height:100%;object-fit:contain;background:transparent!important;filter:saturate(1.2) drop-shadow(0 0 8px rgba(255,210,74,.4))}.bf-nar-dust{position:absolute;left:-30px;bottom:6px;width:46px;height:30px;border-radius:50%;background:radial-gradient(circle,rgba(255,210,74,.55),rgba(255,160,40,.18) 50%,transparent 72%);opacity:0;animation:bfNarDust 4.6s ease-out}.bf-nar-bub{position:relative;background:linear-gradient(180deg,#1c1533,#130d24);border:2px solid rgba(255,210,74,.6);border-radius:14px;padding:12px 34px 12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,210,74,.15);flex:1;animation:bfBubblePulse 4s ease-in-out infinite}.bf-nar-bub::before{content:"";position:absolute;left:-10px;bottom:20px;border-width:8px 10px 8px 0;border-style:solid;border-color:transparent rgba(255,210,74,.6) transparent transparent}.bf-nar-bub::after{content:"";position:absolute;left:-7px;bottom:20px;border-width:8px 10px 8px 0;border-style:solid;border-color:transparent #130d24 transparent transparent;z-index:1}.bf-nar-tt{font-family:"Cinzel",serif;font-weight:1000;font-size:11.5px;color:#ffd24a;letter-spacing:.3px;text-shadow:0 1px 2px #000;margin-bottom:4px}.bf-nar-tx{font-size:13px;line-height:1.35;color:#f3ecff;font-weight:600;text-shadow:0 1px 2px #000}.bf-nar-tx b{color:#ffe49a}.bf-nar-off{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);color:#cbb9ee;border:none;cursor:pointer;font-size:14px;z-index:2}.bf-nar-off:hover{background:rgba(255,255,255,.2);color:#fff}@keyframes bfTextPop{0%{opacity:0;transform:translateY(4px) scale(0.98)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes bfNarRide{0%{transform:translateX(-210%) rotate(-7deg) scale(.78);opacity:0}12%{opacity:1}50%{transform:translateX(6%) rotate(2deg) scale(1.07)}68%{transform:translateX(-4%) rotate(-1.5deg) scale(1.02)}82%{transform:translateX(1%) rotate(.5deg) scale(1)}100%{transform:translateX(-50%) rotate(0) scale(1);left:50%}}@keyframes bfNarDust{0%{opacity:0;transform:translateX(0) scale(.6)}20%{opacity:.9}55%{opacity:.7}100%{opacity:0;transform:translateX(-80px) scale(1.7)}}@media(max-width:640px){.bf-nar{gap:8px;top:6px}.bf-nar-ch{width:66px;height:66px}.bf-nar-bub{padding:10px 30px 10px 12px}.bf-nar-tx{font-size:12px}}
-@keyframes foil-shine {
-  0% { transform: translateX(-150%) skewX(-30deg); }
-  100% { transform: translateX(250%) skewX(-30deg); }
-}
-@keyframes foil-rainbow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-.card-foiled {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 15px rgba(255, 210, 74, 0.5), inset 0 0 10px rgba(255, 210, 74, 0.3) !important;
-}
-.card-foiled::before {
-  content: "";
-  position: absolute;
-  inset: -10px;
-  background: linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, 0.05) 20%, rgba(255, 210, 74, 0.4) 30%, rgba(255, 100, 200, 0.4) 40%, rgba(100, 200, 255, 0.4) 50%, rgba(255, 255, 255, 0.05) 60%, transparent 100%);
-  background-size: 300% 300%;
-  mix-blend-mode: color-dodge;
-  opacity: 0.6;
-  pointer-events: none;
-  z-index: 15;
-  animation: foil-rainbow 6s ease-in-out infinite;
-}
-.card-foiled::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 150%;
-  height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transform: translateX(-150%) skewX(-30deg);
-  animation: foil-shine 4s infinite;
-  pointer-events: none;
-  z-index: 16;
-  mix-blend-mode: overlay;
-}
-</style>'+
+      w.innerHTML='<style>.bf-nar{position:fixed;top:8px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-end;gap:12px;width:min(440px,92vw);z-index:90001;animation:bfNarRide 4.6s cubic-bezier(.16,.84,.3,1)}.bf-nar.hid{display:none!important}.bf-nar-ch{position:relative;width:84px;height:84px;flex-shrink:0;animation:bfGuideFloat 3.2s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(0,0,0,.7))}.bf-nar-ch img{width:100%;height:100%;object-fit:contain;background:transparent!important;filter:saturate(1.2) drop-shadow(0 0 8px rgba(255,210,74,.4))}.bf-nar-dust{position:absolute;left:-30px;bottom:6px;width:46px;height:30px;border-radius:50%;background:radial-gradient(circle,rgba(255,210,74,.55),rgba(255,160,40,.18) 50%,transparent 72%);opacity:0;animation:bfNarDust 4.6s ease-out}.bf-nar-bub{position:relative;background:linear-gradient(180deg,#1c1533,#130d24);border:2px solid rgba(255,210,74,.6);border-radius:14px;padding:12px 34px 12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,210,74,.15);flex:1;animation:bfBubblePulse 4s ease-in-out infinite}.bf-nar-bub::before{content:"";position:absolute;left:-10px;bottom:20px;border-width:8px 10px 8px 0;border-style:solid;border-color:transparent rgba(255,210,74,.6) transparent transparent}.bf-nar-bub::after{content:"";position:absolute;left:-7px;bottom:20px;border-width:8px 10px 8px 0;border-style:solid;border-color:transparent #130d24 transparent transparent;z-index:1}.bf-nar-tt{font-family:"Cinzel",serif;font-weight:1000;font-size:11.5px;color:#ffd24a;letter-spacing:.3px;text-shadow:0 1px 2px #000;margin-bottom:4px}.bf-nar-tx{font-size:13px;line-height:1.35;color:#f3ecff;font-weight:600;text-shadow:0 1px 2px #000}.bf-nar-tx b{color:#ffe49a}.bf-nar-off{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);color:#cbb9ee;border:none;cursor:pointer;font-size:14px;z-index:2}.bf-nar-off:hover{background:rgba(255,255,255,.2);color:#fff}@keyframes bfTextPop{0%{opacity:0;transform:translateY(4px) scale(0.98)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes bfNarRide{0%{transform:translateX(-210%) rotate(-7deg) scale(.78);opacity:0}12%{opacity:1}50%{transform:translateX(6%) rotate(2deg) scale(1.07)}68%{transform:translateX(-4%) rotate(-1.5deg) scale(1.02)}82%{transform:translateX(1%) rotate(.5deg) scale(1)}100%{transform:translateX(-50%) rotate(0) scale(1);left:50%}}@keyframes bfNarDust{0%{opacity:0;transform:translateX(0) scale(.6)}20%{opacity:.9}55%{opacity:.7}100%{opacity:0;transform:translateX(-80px) scale(1.7)}}@media(max-width:640px){.bf-nar{gap:8px;top:6px}.bf-nar-ch{width:66px;height:66px}.bf-nar-bub{padding:10px 30px 10px 12px}.bf-nar-tx{font-size:12px}}</style>'+
       '<div class="bf-nar-ch"><div class="bf-nar-dust"></div><img src="'+GUIDE_ELITE_IMG+'" alt="Punkito"></div><div class="bf-nar-bub"><button class="bf-nar-off">✕</button><div class="bf-nar-tt">Punkito Élite narra:</div><div class="bf-nar-tx" id="bf-nar-txt">¡A luchar!</div></div>';
       w.className='bf-nar';document.body.appendChild(w);
       w.querySelector('.bf-nar-off').onclick=function(){w.classList.add('hid');};

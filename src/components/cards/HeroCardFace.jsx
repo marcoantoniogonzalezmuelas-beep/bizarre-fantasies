@@ -24,11 +24,8 @@ export default function HeroCardFace({ hero, elite }) {
   const abilityTxt = elite ? hero.eTxt : hero.abilityTxt;
   const artUrl = elite ? (hero.eliteArt || hero.art) : hero.art;
 
-  const isEpic = hero.clan === 'Épicas';
-  const isFoiled = hero.foiled || isEpic;
-
   return (
-    <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${isFoiled ? 'card-foiled' : ''} ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: isFoiled ? '#ffb43a' : (elite ? '#ffb43a' : color), boxShadow: isFoiled ? '0 0 20px rgba(255, 210, 74, 0.4), inset 0 0 20px rgba(255, 210, 74, 0.2)' : '' }}>
+    <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: elite ? '#ffb43a' : color }}>
       {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" style={{ transform: 'scale(1.12)' }} />}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
       <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
