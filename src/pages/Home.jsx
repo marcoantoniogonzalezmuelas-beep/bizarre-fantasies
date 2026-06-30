@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-06-29-transformer-v120';
-const MAX_LOAD_ATTEMPTS = 3;
+const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
 <script>
@@ -160,10 +160,15 @@ export default function Home() {
         if (cancelled) return;
         const data = typeof res.data === 'string' ? res.data : String(res.data);
         if (!data || data.length < 1000) throw new Error('empty');
-        // If the served HTML isn't the expected version, the response was cached — retry.
-        if (data.indexOf(EXPECTED_PATCH_VERSION) === -1 && attempt < MAX_LOAD_ATTEMPTS) {
-          loadGame(attempt + 1);
-          return;
+        // NEVER render an old version. If the served HTML isn't the expected
+        // version, keep retrying (with a small backoff) instead of showing it.
+        if (data.indexOf(EXPECTED_PATCH_VERSION) === -1) {
+          if (attempt < MAX_LOAD_ATTEMPTS) {
+            setTimeout(() => loadGame(attempt + 1), 400 * attempt);
+            return;
+          }
+          // Exhausted retries and still wrong version — show error, not the old UI.
+          throw new Error('stale-version');
         }
         // Render the game through srcDoc — blob: URLs can be blocked inside the
         // embedded preview iframe, leaving the page blank. srcDoc is reliable.

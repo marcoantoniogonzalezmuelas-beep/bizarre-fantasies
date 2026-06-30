@@ -2473,7 +2473,6 @@ function buildArtScript(dbCards) {
 // In-memory cache of the fully assembled HTML, keyed by patch version. The
 // upstream file only changes when we bump GAME_PATCH_VERSION, so we fetch +
 // assemble once per deploy and serve every later request straight from memory.
-let CACHED_HTML = null;
 
 async function buildGameHtml(req) {
   // CACHE removed so cards reload on refresh
@@ -2518,7 +2517,7 @@ async function buildGameHtml(req) {
   const dbCards = await base44.asServiceRole.entities.Card.list('number', 1000);
   const artScript = buildArtScript(dbCards || []);
  html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
-  CACHED_HTML = html;
+  // caching disabled: always regenerate fresh HTML
   return html;
 }
 
