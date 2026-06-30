@@ -84,8 +84,8 @@
 
 
 @keyframes foil-shine {
-  0% { transform: translateX(-150%) skewX(-30deg); }
-  100% { transform: translateX(250%) skewX(-30deg); }
+  0% { transform: translateX(-160%) skewX(-22deg); }
+  100% { transform: translateX(320%) skewX(-22deg); }
 }
 @keyframes foil-rainbow {
   0% { background-position: 0% 50%; }
@@ -98,42 +98,47 @@
   overflow: hidden;
 }
 
+/* Holographic rainbow sheen — vivid diagonal spectrum that drifts across the card */
 .card-foiled::before {
   content: "";
   position: absolute;
-  inset: -10px;
-  background: linear-gradient(125deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.05) 20%, 
-    rgba(255, 210, 74, 0.4) 30%, 
-    rgba(255, 100, 200, 0.4) 40%, 
-    rgba(100, 200, 255, 0.4) 50%, 
-    rgba(255, 255, 255, 0.05) 60%, 
-    transparent 100%);
-  background-size: 300% 300%;
-  
-  opacity: 0.35;
+  inset: 0;
+  background:
+    linear-gradient(115deg,
+      transparent 8%,
+      rgba(255, 0, 128, 0.35) 22%,
+      rgba(255, 200, 0, 0.40) 34%,
+      rgba(0, 255, 170, 0.38) 46%,
+      rgba(0, 170, 255, 0.40) 58%,
+      rgba(180, 80, 255, 0.38) 70%,
+      transparent 86%);
+  background-size: 220% 220%;
+  mix-blend-mode: screen;
+  opacity: 0.55;
   pointer-events: none;
   z-index: 5;
-  animation: foil-rainbow 6s ease-in-out infinite;
+  animation: foil-rainbow 5s ease-in-out infinite;
 }
 
+/* Bright glare sweep — the "tilt the card in the light" highlight */
 .card-foiled::after {
   content: "";
   position: absolute;
-  top: 0;
+  top: -25%;
   left: 0;
-  width: 150%;
-  height: 100%;
-  background: linear-gradient(to right, 
-    transparent, 
-    rgba(255, 255, 255, 0.4), 
+  width: 45%;
+  height: 150%;
+  background: linear-gradient(to right,
+    transparent,
+    rgba(255, 255, 255, 0.18) 40%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0.18) 60%,
     transparent);
-  transform: translateX(-150%) skewX(-30deg);
-  animation: foil-shine 4s infinite;
+  transform: translateX(-160%) skewX(-22deg);
+  mix-blend-mode: screen;
+  animation: foil-shine 3.6s ease-in-out infinite;
   pointer-events: none;
   z-index: 6;
-  
 }
 
 @layer base {
