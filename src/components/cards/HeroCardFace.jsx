@@ -42,7 +42,7 @@ export default function HeroCardFace({ hero, elite }) {
       <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
 
       <div className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'radial-gradient(circle at 35% 25%,rgba(255,255,255,.22),rgba(0,0,0,.72) 80%)', border: `2px solid ${color}`, boxShadow: `0 0 12px ${color}66` }}>
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ background: `${color}22`, border: `2px solid ${color}`, boxShadow: `0 0 12px ${color}66` }}>
         <ClanSigil clan={hero.clan} size={28} />
       </div>
       <div className="absolute top-2.5 right-2 z-10 w-11 h-12 rounded-full bg-black/70 border border-[#ffd24a88] text-[#ead49a] flex flex-col items-center justify-center text-xl shadow-lg">

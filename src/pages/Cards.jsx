@@ -136,11 +136,20 @@ export default function Cards() {
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar héroe..." className="w-full pl-9 pr-3 py-2.5 text-sm bg-[#15101f] border border-[#3c3158] rounded-lg text-[#efe9dc] focus:outline-none focus:border-[#b8902a]" />
             </div>
             <div className="flex gap-1 flex-wrap">
-              {HERO_CLANS.map(c => (
-                <button key={c} onClick={() => setClanFilter(c)} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border transition-all ${clanFilter === c ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
-                  {c !== 'Todos' && <ClanSigil clan={c} size={16} className="mr-1 -mt-0.5" />}{c}
-                </button>
-              ))}
+              {HERO_CLANS.map(c => {
+                const CLAN_COLORS_MAP = { Guerreros:'#cc3333', Druidas:'#33aa44', 'No-muertos':'#7a2a8a', Vaqueros:'#C9A227', Elfos:'#33aa66', Magos:'#6644cc', Épicas:'#cc88ff', Cotidianos:'#e0498b' };
+                const col = CLAN_COLORS_MAP[c];
+                return (
+                  <button key={c} onClick={() => setClanFilter(c)} className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-2 rounded-lg border transition-all ${clanFilter === c ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
+                    {c !== 'Todos' && (
+                      <span className="rounded-full flex items-center justify-center shrink-0" style={{ width: 22, height: 22, background: col ? `${col}33` : 'transparent', border: col ? `1.5px solid ${col}` : 'none' }}>
+                        <ClanSigil clan={c} size={13} />
+                      </span>
+                    )}
+                    {c}
+                  </button>
+                );
+              })}
             </div>
             <div className="flex gap-1">
               {HERO_TYPES.map(t => (
