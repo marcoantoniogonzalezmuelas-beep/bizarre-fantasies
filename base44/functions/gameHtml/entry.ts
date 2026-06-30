@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-races-v129';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-races-v130';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -931,7 +931,8 @@ function buildArtScript(dbCards) {
     if (!SPELLS.some(function(s){return s && s.id==='sp_transform';})) SPELLS.push({ id:'sp_transform', name:'Transformer', element:'arcano', kind:'transform', base:1, mana:20, cost:25, foil:true, num:108, txt:'Transforma a un héroe en otro aleatorio y sorpresivo.' });
     function bfMorph(t, by) {
       var tk = TOKENS[Math.floor(Math.random()*TOKENS.length)], old = t.name;
-      ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','akind','num'].forEach(function(k){ t[k]=tk[k]; });
+      ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','akind','num','art','eliteArt'].forEach(function(k){ t[k]=tk[k]; });
+      ART_BY_ID[t.id] = tk.art || ART_BY_ID[tk.id] || ART_BY_ID[t.id]; ELITE_BY_ID[t.id] = tk.eliteArt || tk.art || ELITE_BY_ID[tk.id] || ART_BY_ID[t.id];
       // Reset elite state so the transformed token can ALSO renace Élite when it
       // dies — from the moment it enters play it behaves like any other hero.
       t._token=tk.id; t.eliteMode=false; t.eliteUsed=false; t.abilityUsed=false; t._mods=[]; t.shield=0; t.sleep=0; t.para=0; t.skip=0; t.silence=0; t.evade=0; t.maxHp=tk.hp; t.hp=tk.hp; t.mwep=null; t.rwep=null; t.armor=null;
