@@ -80,13 +80,74 @@ const DRAGGABLE_GUIDE_PATCH = `
     document.addEventListener('touchend', end);
   }
 
+  // The collapsed circular button (#bf-guide-show) should also be draggable.
+  // We must keep its click-to-reopen working, so we only treat a gesture as a
+  // drag once the pointer moves past a small threshold; a plain tap still opens.
+  function patchShowDrag(){
+    var btn = document.getElementById('bf-guide-show');
+    if (!btn || btn.dataset.bfHomeDrag === '1') return;
+    btn.dataset.bfHomeDrag = '1';
+    btn.style.touchAction = 'none';
+
+    function clampS(x, y){
+      var maxX = Math.max(0, window.innerWidth - (btn.offsetWidth || 64) - 4);
+      var maxY = Math.max(0, window.innerHeight - (btn.offsetHeight || 64) - 4);
+      btn.style.left = Math.max(0, Math.min(maxX, x)) + 'px';
+      btn.style.top = Math.max(0, Math.min(maxY, y)) + 'px';
+      btn.style.right = 'auto';
+      btn.style.bottom = 'auto';
+    }
+
+    function loadPosS(){
+      try {
+        var pos = JSON.parse(sessionStorage.getItem('bfGuideShowPos') || 'null');
+        if (pos) clampS(Number(pos.x), Number(pos.y));
+      } catch (e) {}
+    }
+
+    function pointS(e){ return e.touches && e.touches[0] ? e.touches[0] : e; }
+    var st = null;
+
+    function startS(e){
+      var p = pointS(e);
+      st = { sx: p.clientX - btn.offsetLeft, sy: p.clientY - btn.offsetTop, ox: p.clientX, oy: p.clientY, moved: false };
+      btn.style.transition = 'none';
+    }
+    function moveS(e){
+      if (!st) return;
+      var p = pointS(e);
+      if (!st.moved && Math.abs(p.clientX - st.ox) + Math.abs(p.clientY - st.oy) < 6) return;
+      st.moved = true;
+      clampS(p.clientX - st.sx, p.clientY - st.sy);
+      e.preventDefault();
+    }
+    function endS(){
+      if (!st) return;
+      btn.style.transition = '';
+      if (st.moved) { try { sessionStorage.setItem('bfGuideShowPos', JSON.stringify({ x: btn.offsetLeft, y: btn.offsetTop })); } catch (e) {} btn.dataset.bfDragged = '1'; setTimeout(function(){ btn.dataset.bfDragged = ''; }, 50); }
+      st = null;
+    }
+
+    loadPosS();
+    btn.addEventListener('mousedown', startS);
+    btn.addEventListener('touchstart', startS, { passive:false });
+    document.addEventListener('mousemove', moveS);
+    document.addEventListener('touchmove', moveS, { passive:false });
+    document.addEventListener('mouseup', endS);
+    document.addEventListener('touchend', endS);
+    // Swallow the click that follows a real drag so it doesn't reopen the bubble.
+    btn.addEventListener('click', function(e){ if (btn.dataset.bfDragged === '1') { e.preventDefault(); e.stopPropagation(); } }, true);
+  }
+
+  function patchAllGuideDrag(){ patchGuideDrag(); patchShowDrag(); }
+
   var style = document.createElement('style');
-  style.textContent = '.bf-guide{pointer-events:auto!important;touch-action:none!important;cursor:grab!important}.bf-guide-char,.bf-guide-bubble{pointer-events:auto!important}.bf-guide-x{cursor:pointer!important}';
+  style.textContent = '.bf-guide{pointer-events:auto!important;touch-action:none!important;cursor:grab!important}.bf-guide-char,.bf-guide-bubble{pointer-events:auto!important}.bf-guide-x{cursor:pointer!important}.bf-guide-show{cursor:grab!important;touch-action:none!important}.bf-guide-show:active{cursor:grabbing!important}';
   document.head.appendChild(style);
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchGuideDrag);
-  else patchGuideDrag();
-  new MutationObserver(patchGuideDrag).observe(document.documentElement, { childList:true, subtree:true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchAllGuideDrag);
+  else patchAllGuideDrag();
+  new MutationObserver(patchAllGuideDrag).observe(document.documentElement, { childList:true, subtree:true });
 
   function patchMobileBidSteppers(){
     document.querySelectorAll('input.bid-mini-input[id^="bid_"]').forEach(function(input){
