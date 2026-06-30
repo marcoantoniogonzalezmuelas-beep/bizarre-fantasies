@@ -95,3 +95,6 @@
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes bfFoilShift { 0% { background-position: 0% 0%; } 100% { background-position: 300% 300%; } }
+@keyframes bfFoilShine { 0% { background-position: 120% 0%; } 100% { background-position: -40% 0%; } }

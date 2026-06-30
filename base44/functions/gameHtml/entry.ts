@@ -285,6 +285,11 @@ function buildArtScript(dbCards) {
       /* Shop card = the oracle card itself. Card proportion + cover with a tiny
          overscan to eat the white border the source images carry. */
       .shop-card { position:relative; overflow:hidden; }
+      /* Foil / holographic effect for special spell cards (Transformer) */
+      .bf-foil-card { border-color: transparent !important; box-shadow:0 10px 28px rgba(0,0,0,.65), 0 0 26px rgba(150,210,255,.5) !important; }
+      .bf-foil-card::before { content:''; position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; mix-blend-mode:screen; opacity:.55; background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a); background-size:300% 300%; animation:bfFoilShift 4.5s linear infinite; }
+      .bf-foil-shine { position:absolute; inset:0; z-index:7; pointer-events:none; border-radius:inherit; background:linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, rgba(255,255,255,.85) 50%, rgba(255,255,255,.55) 52%, transparent 65%); background-size:250% 250%; mix-blend-mode:screen; animation:bfFoilShine 3.2s ease-in-out infinite; }
+      @keyframes bfFoilShine { 0%{background-position:120% 0%} 100%{background-position:-40% 0%} }
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
       .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt):not(.shop-coin):not(.bf-shop-mana) { display:none !important; }
       .shop-card.has-art > .shop-coin { z-index: 7 !important; }
@@ -1620,6 +1625,7 @@ function buildArtScript(dbCards) {
             nm.className = 'bf-shop-name';
             nm.textContent = nameEl.textContent.trim();
             card.appendChild(nm);
+            if (nm.textContent === 'Transformer') { card.classList.add('bf-foil-card'); if (!card.querySelector('.bf-foil-shine')) { var fsh = document.createElement('div'); fsh.className = 'bf-foil-shine'; card.appendChild(fsh); } }
           }
           // Card text strip at the bottom of the image.
           if (meta && meta.txt) {
@@ -1874,6 +1880,7 @@ function buildArtScript(dbCards) {
       if (!url) return;
       chip.dataset.bfHandArt = '1';
       chip.classList.add('bf-chip-card');
+      if (name === 'Transformer') { chip.classList.add('bf-foil-card'); if (!chip.querySelector('.bf-foil-shine')) { var cfsh = document.createElement('div'); cfsh.className = 'bf-foil-shine'; chip.appendChild(cfsh); } }
       chip.title = name;
       for (var n = 0; n < chip.childNodes.length; n++) { var node = chip.childNodes[n]; if (node.nodeType === 3) node.textContent = ''; }
       var removeBtn = chip.querySelector('button, .chip-x, span[onclick]');
