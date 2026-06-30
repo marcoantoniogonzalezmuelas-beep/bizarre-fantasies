@@ -155,7 +155,9 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
     ? ELEMENT_COLORS[item.element] || borderColor
     : borderColor;
 
-  const statLine = item.cc != null
+  const statLine = type === 'spell' && item.mana != null
+    ? `🔵 ${item.mana} maná`
+    : item.cc != null
     ? `+${item.cc} CC`
     : item.power != null
     ? `Pot. ${item.power}`
