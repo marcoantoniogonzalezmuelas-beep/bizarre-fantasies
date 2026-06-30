@@ -16,7 +16,9 @@ export const COACH_PUNKITO_PATCH = `
     // El coach del tutorial muestra a Punkito estudiante en vez del emoji 🧙.
     '#coach .coach-ico{display:none!important}',
     '#coach .bf-coach-punkito{flex:0 0 auto;width:74px;height:74px;display:flex;align-items:flex-end;justify-content:center;position:relative;animation:bfStudHop 1.8s ease-in-out infinite}',
-    '#coach .bf-coach-punkito img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) drop-shadow(0 0 12px rgba(255,210,74,.4));transform-origin:bottom center;animation:bfStudWobble 2.6s ease-in-out infinite}',
+    // La imagen trae fondo blanco sólido; con mix-blend-mode:multiply el blanco
+    // se funde con el fondo oscuro del diálogo y desaparece, dejando solo la figura.
+    '#coach .bf-coach-punkito img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;filter:contrast(1.06) saturate(1.08);transform-origin:bottom center;animation:bfStudWobble 2.6s ease-in-out infinite}',
     // Gorrito de graduación ya va en la imagen; añadimos chispitas chulas.
     '#coach .bf-coach-punkito::after{content:"";position:absolute;top:-4px;right:-2px;width:14px;height:14px;background:radial-gradient(circle,#fff6c8 0%,#ffd24a 45%,transparent 70%);border-radius:50%;animation:bfStudSpark 1.4s ease-in-out infinite}',
     '@media(max-width:560px){#coach .bf-coach-punkito{width:56px;height:56px}}',
