@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import CardFields from '@/components/admin/CardFields';
 import CardList from '@/components/admin/CardList';
+import { CLAN_COLORS } from '@/lib/cardData';
 
 const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '' };
 const numericFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp'];
@@ -46,6 +47,53 @@ export default function AdminCards() {
       return prev;
     });
   }
+  const [generatingStats, setGeneratingStats] = useState(false);
+
+  async function generateStats() {
+    if (!form.name || !form.clan) return;
+    setGeneratingStats(true);
+    try {
+      const prompt = `Actúa como diseñador del juego de cartas Bizarre Fantasies.
+      Genera estadísticas y habilidades para esta carta:
+      Nombre: ${form.name}
+      Raza/Clan: ${form.clan}
+      Categoría: ${form.category}
+      
+      Reglas de balance:
+      - Media de stats (cc, ad, he, power) debe rondar de 1 a 10.
+      - Hp de un héroe debe rondar entre 15 a 45.
+      - Cost debe ser un valor de 10 a 30 (salvo tokens o similares).
+      - Mana suele rondar entre 8 a 15 (si es héroe, el max mana).
+      - Escribe habilidades originales y locas que tengan sinergia con su raza, con un nombre corto (ability_name) y la descripción (ability_text).
+      - Si es Héroe, genera su versión Élite (elite_cc, elite_ad, elite_he, elite_hp, elite_ability_name, elite_ability_text) aumentando stats y mejorando su habilidad ligeramente.
+      - El campo 'type' en héroes suele ser CC, AD o HE.
+      
+      IMPORTANTE: No devuelvas ningún texto extra, solo un JSON estricto con las siguientes claves (si no aplican usa null o vacío):
+      "cost", "cc", "ad", "he", "hp", "mana", "power", "type", "ability_name", "ability_text", "elite_cc", "elite_ad", "elite_he", "elite_hp", "elite_ability_name", "elite_ability_text", "description", "title"`;
+      
+      const response = await base44.integrations.Core.InvokeLLM({ 
+        prompt, 
+        response_json_schema: { 
+          type: "object", 
+          properties: {
+            cost: { type: "number" }, cc: { type: "number" }, ad: { type: "number" }, he: { type: "number" }, hp: { type: "number" }, mana: { type: "number" }, power: { type: "number" }, type: { type: "string" }, ability_name: { type: "string" }, ability_text: { type: "string" }, elite_cc: { type: "number" }, elite_ad: { type: "number" }, elite_he: { type: "number" }, elite_hp: { type: "number" }, elite_ability_name: { type: "string" }, elite_ability_text: { type: "string" }, description: { type: "string" }, title: { type: "string" }
+          }
+        } 
+      });
+      
+      const resData = response || {};
+      setForm(prev => ({
+        ...prev,
+        ...resData
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("No se pudieron generar los stats.");
+    } finally {
+      setGeneratingStats(false);
+    }
+  }
+
   function onChange(name, value) {
     setForm(prev => {
       const next = { ...prev, [name]: value };
@@ -54,6 +102,9 @@ export default function AdminCards() {
         if (!prev.card_id || prev.card_id === oldDerived) {
           next.card_id = value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
         }
+      }
+      if (name === 'clan' && CLAN_COLORS[value]) {
+        next.clan_color = CLAN_COLORS[value];
       }
       return next;
     });
@@ -149,5 +200,5 @@ export default function AdminCards() {
   return <div className="min-h-screen bg-[#0e0a16] px-4 py-6 text-[#efe9dc] md:px-8"><div className="mx-auto max-w-7xl"><div className="mb-6 flex flex-wrap items-center justify-between gap-3"><div><h1 className="font-heading text-3xl font-black text-[#fff5dc]">Backoffice de cartas</h1><p className="mt-1 text-sm text-[#cfc6dd]">Crea cartas por tipo y raza, genera imágenes con IA y edita la base de datos actual.</p></div><Link to="/" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Volver al juego</Link></div><div className="grid gap-6 lg:grid-cols-[1.08fr_.92fr]"><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">{editingId ? 'Editar carta' : 'Crear carta nueva'}</h2>{editingId && <button onClick={startNew} className="rounded-lg border border-[#ffd24a44] px-3 py-1.5 text-xs font-black text-[#ffe49a]">Nueva carta</button>}</div><div className="mb-4 flex gap-4">
   {form.art_url && <div className="flex-1 flex h-72 w-full items-center justify-center rounded-2xl border border-[#ffd24a44] bg-black/45 p-3"><img src={form.art_url} alt="Principal" className="h-full w-full object-contain" /></div>}
   {form.elite_art_url && <div className="flex-1 flex h-72 w-full items-center justify-center rounded-2xl border border-[#c05bff44] bg-black/45 p-3"><img src={form.elite_art_url} alt="Élite" className="h-full w-full object-contain" /></div>}
-</div><CardFields form={form} onChange={onChange} onGenerate={generateImage} generating={generating} onUpload={uploadImage} uploading={uploading} /><button onClick={saveCard} disabled={saving || !form.name} className="mt-5 w-full rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><div className="my-4 grid gap-3 md:grid-cols-[1fr_170px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="race">Razas</option></select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
+</div><CardFields form={{ ...form, onGenerateStats: generateStats, generatingStats }} onChange={onChange} onGenerate={generateImage} generating={generating} onUpload={uploadImage} uploading={uploading} /><button onClick={saveCard} disabled={saving || !form.name} className="mt-5 w-full rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><div className="my-4 grid gap-3 md:grid-cols-[1fr_170px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="race">Razas</option></select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
 }
