@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-shopfoil-v123';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-sigils-v124';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -110,16 +110,7 @@ function buildArtScript(dbCards) {
   BONUS_ART_BY_KEY[bfKey('Convocatoria Épica')] = HERO_ELITE_ART[12];
   BONUS_ART_BY_KEY[bfKey('Destino Épico Rival')] = HERO_ELITE_ART[23];
 
-  var RACE_SIGILS = {
-    'Guerreros': '⚔',
-    'Druidas': '❦',
-    'No-muertos': '☠',
-    'Vaqueros': '✦',
-    'Elfos': '⟐',
-    'Magos': '✧',
-    'Épicas': '◆',
-    'Cotidianos': '◈'
-  };
+  var RACE_SIGILS = {'Guerreros':'🗡️','Druidas':'🌿','No-muertos':'💀','Vaqueros':'🤠','Elfos':'🏹','Magos':'🔮','Épicas':'💎','Cotidianos':'🎭','Bizarros':'🎲'};
 
   // id -> art, name -> art lookups for heroes
   var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
