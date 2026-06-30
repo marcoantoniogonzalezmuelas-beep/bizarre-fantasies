@@ -238,9 +238,18 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const patchedData = data.includes('</body>')
+        let patchedData = data.includes('</body>')
           ? data.replace('</body>', DRAGGABLE_GUIDE_PATCH + '</body>')
           : data + DRAGGABLE_GUIDE_PATCH;
+        if (IS_MOBILE) {
+          // En móvil queremos la MISMA vista que en ordenador: fijamos un ancho
+          // de escritorio y permitimos zoom/scroll con los dedos, en vez de la
+          // versión responsive estrecha. Sustituimos el meta viewport del juego.
+          patchedData = patchedData.replace(
+            /<meta\s+name=["']viewport["'][^>]*>/i,
+            '<meta name="viewport" content="width=1200, user-scalable=yes, initial-scale=0.3, minimum-scale=0.1, maximum-scale=3">'
+          );
+        }
         if (IS_MOBILE) {
           // En móvil los iframes con blob: URL grandes a veces no renderizan.
           // srcDoc carga el HTML de forma fiable en navegadores móviles.
