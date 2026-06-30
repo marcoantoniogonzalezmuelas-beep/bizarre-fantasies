@@ -169,5 +169,5 @@ export const CATEGORIES = [
   { key: "armors", label: "Armaduras", count: 10 },
   { key: "objects", label: "Objetos", count: 9 },
   { key: "bonuses", label: "Bonificadores", count: 14 },
-  { key: "races", label: "Razas", count: 8 },
+  { key: "races", label: "Razas", count: 9 },
 ];
