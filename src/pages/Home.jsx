@@ -208,12 +208,6 @@ export default function Home() {
           <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
         </div>
       )}
-      {isAdmin && (
-        <Link to="/admin" className="absolute top-4 left-4 z-20 rounded-xl border border-[#ffd24a66] bg-[#120a1e]/85 px-3 py-2 text-xs font-black text-[#ffe49a] shadow-lg backdrop-blur-sm hover:bg-[#ffd24a] hover:text-[#3a2600]">
-          Admin cartas
-        </Link>
-      )}
-
       {/* Oráculo Bizarro — acceso al catálogo */}
       <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
         <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
