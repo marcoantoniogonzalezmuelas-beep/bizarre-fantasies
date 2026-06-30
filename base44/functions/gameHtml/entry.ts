@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-shopfoil-v122';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-shopfoil-v123';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -590,7 +590,7 @@ function buildArtScript(dbCards) {
       var fill = document.createElement('div'); fill.className = 'shop-card-fill'; fill.style.backgroundImage = 'url("' + url + '")'; card.insertBefore(fill, card.firstChild);
       var sharp = document.createElement('div'); sharp.className = 'shop-card-art-sharp'; sharp.style.backgroundImage = 'url("' + url + '")'; card.insertBefore(sharp, card.firstChild);
       card.classList.add('has-art');
-      if (nameTxt && !card.querySelector('.bf-shop-name')) { var nm = document.createElement('div'); nm.className = 'bf-shop-name'; nm.textContent = nameTxt; card.appendChild(nm); } if (nameTxt === 'Transformer') { card.classList.add('bf-foil-card'); if (!card.querySelector('.bf-foil-shine')) { var ef = document.createElement('div'); ef.className = 'bf-foil-shine'; card.appendChild(ef); } }
+      if (nameTxt && !card.querySelector('.bf-shop-name')) { var nm = document.createElement('div'); nm.className = 'bf-shop-name'; nm.textContent = nameTxt; card.appendChild(nm); } if (nameTxt === 'Transformer') { card.style.borderColor = 'rgba(255,233,168,.67)'; if (!card.querySelector('.bf-foil-layer')) { var fl = document.createElement('div'); fl.className = 'bf-foil-layer'; fl.style.cssText = 'position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite'; card.appendChild(fl); } if (!card.querySelector('.bf-foil-shine')) { var ef = document.createElement('div'); ef.className = 'bf-foil-shine'; card.appendChild(ef); } }
     });
   }
 
