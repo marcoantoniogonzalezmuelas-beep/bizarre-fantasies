@@ -6,7 +6,7 @@ export default function RaceCard({ race }) {
     <div className="rounded-xl overflow-hidden" style={{ background: '#0e0b16', border: `2px solid ${race.color}` }}>
       <div className="flex items-center justify-between px-4 py-3" style={{ background: `${race.color}22`, borderBottom: `1px solid ${race.color}44` }}>
         <div className="flex items-center gap-3">
-          <div className="rounded-full flex items-center justify-center shrink-0" style={{ width: 44, height: 44, background: 'radial-gradient(circle at 35% 25%,rgba(255,255,255,.18),rgba(0,0,0,.65) 80%)', border: `2px solid ${race.color}`, boxShadow: `0 0 12px ${race.color}55` }}>
+          <div className="rounded-full flex items-center justify-center shrink-0" style={{ width: 44, height: 44, background: `${race.color}22`, border: `2px solid ${race.color}`, boxShadow: `0 0 12px ${race.color}55` }}>
             <ClanSigil clan={race.name} size={26} />
           </div>
           <h3 className="font-heading font-extrabold text-lg" style={{ color: race.color }}>{race.name}</h3>
