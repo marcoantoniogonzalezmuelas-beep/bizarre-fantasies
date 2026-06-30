@@ -2010,7 +2010,7 @@ function buildArtScript(dbCards) {
   // What the guide says on each screen. Resolved from the active screen id.
   function guideMessageFor(id, active) {
     if (id === 's-title') {
-      return { t: '¡Hola, aventurero!', m: 'Soy <b>Punkito</b>, tu guía. Pulsa <b>Jugar</b> para empezar. Te explicaré cada paso.' };
+      return { t: '¡Hola, aventurero!', m: 'Soy <b>Punkito</b>, tu guía. Pulsa <b>Comenzar</b> para empezar.' };
     }
     if (id === 's-equip') {
       return { t: 'Fase de Equipamiento', m: 'Para equipar un arma o armadura: <b>1)</b> pulsa la carta de la tienda para <b>seleccionarla</b>, <b>2)</b> luego pulsa <b>«Comprar»</b> en el héroe al que se la quieras poner. Los hechizos y objetos van a tu <b>mano</b>. Cuando termines, pulsa <b>«Listo — a la batalla»</b>.' };

@@ -33,10 +33,11 @@ const DRAGGABLE_GUIDE_PATCH = `
         var pos = JSON.parse(sessionStorage.getItem('bfGuidePos') || 'null');
         if (pos) { clamp(Number(pos.x || 8), Number(pos.y || 8)); return; }
       } catch (e) {}
-      // Posición inicial (como en la captura): centro-izquierda, sin solaparse
-      // con el anagrama de BF de arriba del todo.
-      var defX = 8;
-      var defY = Math.round(window.innerHeight * 0.45);
+      // Posición inicial: centrado horizontalmente y bajo los botones del
+      // menú (Aprender a jugar / Cómo se juega / Razas), no pegado al borde.
+      var w = wrap.offsetWidth || 260;
+      var defX = Math.round((window.innerWidth - w) / 2);
+      var defY = Math.round(window.innerHeight * 0.62);
       clamp(defX, defY);
     }
 
