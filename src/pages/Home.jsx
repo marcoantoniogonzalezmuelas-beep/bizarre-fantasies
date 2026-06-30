@@ -37,7 +37,7 @@ const DRAGGABLE_GUIDE_PATCH = `
       // menú (Aprender a jugar / Cómo se juega / Razas), no pegado al borde.
       var w = wrap.offsetWidth || 260;
       var defX = Math.round((window.innerWidth - w) / 2);
-      var defY = Math.round(window.innerHeight * 0.62);
+      var defY = Math.round(window.innerHeight * 0.42);
       clamp(defX, defY);
     }
 
