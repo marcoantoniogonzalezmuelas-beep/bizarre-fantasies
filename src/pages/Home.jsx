@@ -160,15 +160,13 @@ export default function Home() {
         if (cancelled) return;
         const data = typeof res.data === 'string' ? res.data : String(res.data);
         if (!data || data.length < 1000) throw new Error('empty');
-        // NEVER render an old version. If the served HTML isn't the expected
-        // version, keep retrying (with a small backoff) instead of showing it.
-        if (data.indexOf(EXPECTED_PATCH_VERSION) === -1) {
-          if (attempt < MAX_LOAD_ATTEMPTS) {
-            setTimeout(() => loadGame(attempt + 1), 400 * attempt);
-            return;
-          }
-          // Exhausted retries and still wrong version — show error, not the old UI.
-          throw new Error('stale-version');
+        // Prefer the newest version: if the served HTML isn't the expected
+        // version yet (CDN/browser cache), retry a few times to get it. BUT a
+        // valid game must NEVER be blocked — once retries run out, render
+        // whatever valid HTML we have instead of showing the error screen.
+        if (data.indexOf(EXPECTED_PATCH_VERSION) === -1 && attempt < MAX_LOAD_ATTEMPTS) {
+          setTimeout(() => loadGame(attempt + 1), 400 * attempt);
+          return;
         }
         // Render the game through srcDoc — blob: URLs can be blocked inside the
         // embedded preview iframe, leaving the page blank. srcDoc is reliable.
