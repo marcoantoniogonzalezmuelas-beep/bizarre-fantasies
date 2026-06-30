@@ -286,9 +286,9 @@ function buildArtScript(dbCards) {
          overscan to eat the white border the source images carry. */
       .shop-card { position:relative; overflow:hidden; }
       /* Foil / holographic effect for special spell cards (Transformer) */
-      .bf-foil-card { border-color: transparent !important; box-shadow:0 10px 28px rgba(0,0,0,.65), 0 0 26px rgba(150,210,255,.5) !important; }
-      .bf-foil-card::before { content:''; position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; mix-blend-mode:screen; opacity:.55; background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a); background-size:300% 300%; animation:bfFoilShift 4.5s linear infinite; }
-      .bf-foil-shine { position:absolute; inset:0; z-index:7; pointer-events:none; border-radius:inherit; background:linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, rgba(255,255,255,.85) 50%, rgba(255,255,255,.55) 52%, transparent 65%); background-size:250% 250%; mix-blend-mode:screen; animation:bfFoilShine 3.2s ease-in-out infinite; }
+      .bf-foil-card { border-color: rgba(255,233,168,.67) !important; box-shadow:0 10px 28px rgba(0,0,0,.65), 0 0 14px rgba(255,225,150,.32) !important; }
+      .bf-foil-card::before { content:''; position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; mix-blend-mode:soft-light; opacity:.4; background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a); background-size:300% 300%; animation:bfFoilShift 9s linear infinite; }
+      .bf-foil-shine { position:absolute; inset:0; z-index:7; pointer-events:none; border-radius:inherit; opacity:.6; background:linear-gradient(110deg, transparent 42%, rgba(255,255,255,.35) 49%, rgba(255,255,255,.5) 50%, rgba(255,255,255,.35) 51%, transparent 58%); background-size:250% 250%; mix-blend-mode:screen; animation:bfFoilShine 5.5s ease-in-out infinite; }
       @keyframes bfFoilShine { 0%{background-position:120% 0%} 100%{background-position:-40% 0%} }
       .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
       .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt):not(.shop-coin):not(.bf-shop-mana) { display:none !important; }

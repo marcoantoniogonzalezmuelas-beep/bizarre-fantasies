@@ -31,7 +31,7 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
     <>
       <div
         className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
-        style={{ border: `2px solid ${isFoil ? 'transparent' : borderColor + '88'}`, boxShadow: isFoil ? '0 10px 26px rgba(0,0,0,.55), 0 0 26px rgba(150,210,255,.5)' : undefined }}
+        style={{ border: `2px solid ${isFoil ? '#ffe9a8aa' : borderColor + '88'}`, boxShadow: isFoil ? '0 10px 26px rgba(0,0,0,.55), 0 0 14px rgba(255,225,150,.32)' : undefined }}
         onClick={() => onClick?.(item)}
       >
         {/* Lupa: ampliar la carta completa */}
@@ -89,16 +89,16 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
       {/* Gradient shade at bottom */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/80" style={{ zIndex: 2 }} />
 
-      {/* Foil / holographic effect for special spell cards (Transformer) */}
+      {/* Subtle foil / holographic effect (Pokémon-style) for special spell cards (Transformer) */}
       {isFoil && (
         <>
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ zIndex: 4, mixBlendMode: 'screen', opacity: 0.55, background: 'linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a)', backgroundSize: '300% 300%', animation: 'bfFoilShift 4.5s linear infinite' }}
+            style={{ zIndex: 4, mixBlendMode: 'soft-light', opacity: 0.4, background: 'linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a)', backgroundSize: '300% 300%', animation: 'bfFoilShift 9s linear infinite' }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
-            style={{ zIndex: 5, mixBlendMode: 'screen', background: 'linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, rgba(255,255,255,.85) 50%, rgba(255,255,255,.55) 52%, transparent 65%)', backgroundSize: '250% 250%', animation: 'bfFoilShine 3.2s ease-in-out infinite' }}
+            style={{ zIndex: 5, mixBlendMode: 'screen', opacity: 0.6, background: 'linear-gradient(110deg, transparent 42%, rgba(255,255,255,.35) 49%, rgba(255,255,255,.5) 50%, rgba(255,255,255,.35) 51%, transparent 58%)', backgroundSize: '250% 250%', animation: 'bfFoilShine 5.5s ease-in-out infinite' }}
           />
         </>
       )}
