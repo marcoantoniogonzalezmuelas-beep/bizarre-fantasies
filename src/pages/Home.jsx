@@ -117,7 +117,7 @@ const DRAGGABLE_GUIDE_PATCH = `
   }
 
   var bidStyle = document.createElement('style');
-  bidStyle.textContent = '.bf-mobile-bid-stepper{display:none}@media(max-width:640px){.hcard-bid-zone>div:first-child{align-items:center!important}.bf-mobile-bid-stepper{display:inline-flex!important;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1.5px solid rgba(255,210,74,.65);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-size:22px;font-weight:1000;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:0;flex:0 0 34px}.bid-mini-input{min-width:48px!important;text-align:center!important}}';
+  bidStyle.textContent = '.hcard-bid-zone>div:first-child{align-items:center!important;flex-wrap:wrap!important}.bf-mobile-bid-stepper{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(255,210,74,.7);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-size:24px;font-weight:1000;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:0;flex:0 0 38px;cursor:pointer;user-select:none}.bf-mobile-bid-stepper:active{transform:scale(.92)}.bid-mini-input{min-width:54px!important;text-align:center!important}';
   document.head.appendChild(bidStyle);
   patchMobileBidSteppers();
   new MutationObserver(patchMobileBidSteppers).observe(document.documentElement, { childList:true, subtree:true });
