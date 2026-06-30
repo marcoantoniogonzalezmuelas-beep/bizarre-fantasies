@@ -24,10 +24,20 @@ export default function HeroCardFace({ hero, elite }) {
   const abilityTxt = elite ? hero.eTxt : hero.abilityTxt;
   const artUrl = elite ? (hero.eliteArt || hero.art) : hero.art;
 
+  const isFoil = hero.clan === 'Épicas';
+
   return (
-    <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: elite ? '#ffb43a' : color }}>
+    <div className={`absolute inset-0 rounded-[18px] overflow-hidden border-2 bg-[#09070d] ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: isFoil ? '#ffe9a8aa' : (elite ? '#ffb43a' : color), boxShadow: isFoil ? '0 10px 28px rgba(0,0,0,.65), 0 0 14px rgba(255,225,150,.32)' : undefined }}>
       {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" style={{ transform: 'scale(1.12)' }} />}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
+
+      {/* Subtle foil / holographic effect (Pokémon-style) for Épicas heroes */}
+      {isFoil && (
+        <>
+          <div className="absolute inset-0 pointer-events-none z-[5]" style={{ mixBlendMode: 'soft-light', opacity: 0.4, background: 'linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a)', backgroundSize: '300% 300%', animation: 'bfFoilShift 9s linear infinite' }} />
+          <div className="absolute inset-0 pointer-events-none z-[6]" style={{ mixBlendMode: 'screen', opacity: 0.6, background: 'linear-gradient(110deg, transparent 42%, rgba(255,255,255,.35) 49%, rgba(255,255,255,.5) 50%, rgba(255,255,255,.35) 51%, transparent 58%)', backgroundSize: '250% 250%', animation: 'bfFoilShine 5.5s ease-in-out infinite' }} />
+        </>
+      )}
       <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
 
       <div className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
