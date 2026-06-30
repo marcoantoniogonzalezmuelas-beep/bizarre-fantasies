@@ -644,11 +644,11 @@ function buildArtScript(dbCards) {
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(c) {
       var p=c.id.split('_'), s=p[1], i=p[p.length-1], h=(typeof G!=='undefined'&&G.team&&G.team[s]||[]).find(function(x){return x&&x.id===i;});
       var t=(h&&h._token)?h._token:i, u=ART_BY_ID[t]||ELITE_BY_ID[t], e=c.querySelector('.bf-battle-art');
+      if(h&&h.clan==='Épicas'&&!c.querySelector('.bf-epic-foil')){var fo=document.createElement('div');fo.className='bf-epic-foil';fo.style.cssText='position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite';c.appendChild(fo);}
       if(c.dataset.bfBattleArt===t){injectBattleGear(c);return;}
       if(e){if(u)e.style.backgroundImage='url("'+u+'")';c.dataset.bfBattleArt=t;injectBattleGear(c);return;}
       if(!u){injectBattleGear(c);return;}
-      var a=document.createElement('div');a.className='bf-battle-art';a.style.backgroundImage='url("'+u+'")';
-      c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal');};c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
+      var a=document.createElement('div');a.className='bf-battle-art';a.style.backgroundImage='url("'+u+'")';c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal');};c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(l) {
       var n=l.querySelector('.ctb-hero-name');if(!n)return;var nx=n.textContent.replace(/★/g,'').trim(),u=ART_BY_NAME[nx];if(!u||l.dataset.bfCtbArt===nx)return;
@@ -1529,8 +1529,8 @@ function buildArtScript(dbCards) {
       var byName = itemArtByName();
       var url = ART_BY_ID[h && h.id] || '';
       if (url && html.indexOf('bf-eq-hero-art') === -1) {
-        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"');
-        html = html.replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>');
+        var epicFoil = (h && h.clan === 'Épicas') ? '<div style="position:absolute;left:-10px;top:-10px;bottom:-10px;width:150px;z-index:2;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite"></div>' : '';
+        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"').replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>' + epicFoil);
       }
       // Equipped weapon thumbnail
       var weapon = h.mwep || h.rwep;
