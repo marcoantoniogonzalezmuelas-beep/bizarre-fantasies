@@ -9,7 +9,7 @@ export const COACH_PUNKITO_PATCH = `
   if (window.__bfCoachPunkito) return;
   window.__bfCoachPunkito = true;
 
-  var STUDENT_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c061e9628_generated_image.png";
+  var STUDENT_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/321c5b771_generated_image.png";
 
   var st = document.createElement('style');
   st.textContent = [
