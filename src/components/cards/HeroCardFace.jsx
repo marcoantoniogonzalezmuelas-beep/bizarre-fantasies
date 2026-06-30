@@ -1,5 +1,6 @@
 import React from 'react';
-import { CLAN_COLORS, CLAN_SYMBOLS } from '@/lib/cardData';
+import { CLAN_COLORS } from '@/lib/cardData';
+import ClanSigil from '@/components/cards/ClanSigil';
 
 const TYPE_ICON = { CC: '⚔', AD: '🏹', HE: '✦' };
 
@@ -14,7 +15,6 @@ export const ABILITY_ICON = {
 // rendered both at grid size and enlarged inside the zoom modal.
 export default function HeroCardFace({ hero, elite }) {
   const color = CLAN_COLORS[hero.clan] || '#caa14a';
-  const symbol = CLAN_SYMBOLS[hero.clan] || '◆';
 
   const cc = elite ? hero.eCc : hero.cc;
   const ad = elite ? hero.eAd : hero.ad;
@@ -42,7 +42,9 @@ export default function HeroCardFace({ hero, elite }) {
       <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
 
       <div className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center text-[#fff7dc] font-heading text-2xl font-black shadow-lg" style={{ background: 'radial-gradient(circle at 35% 25%,rgba(255,255,255,.42),rgba(255,210,74,.18) 38%,rgba(0,0,0,.72) 72%)', border: `2px solid ${color}`, textShadow: `0 2px 4px #000,0 0 10px ${color}` }}>{symbol}</div>
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center shadow-lg" style={{ background: 'radial-gradient(circle at 35% 25%,rgba(255,255,255,.22),rgba(0,0,0,.72) 80%)', border: `2px solid ${color}`, boxShadow: `0 0 12px ${color}66` }}>
+        <ClanSigil clan={hero.clan} size={28} />
+      </div>
       <div className="absolute top-2.5 right-2 z-10 w-11 h-12 rounded-full bg-black/70 border border-[#ffd24a88] text-[#ead49a] flex flex-col items-center justify-center text-xl shadow-lg">
         <span>{TYPE_ICON[hero.type] || '★'}</span><span className="text-[7px] font-black leading-none">{hero.type}</span>
       </div>

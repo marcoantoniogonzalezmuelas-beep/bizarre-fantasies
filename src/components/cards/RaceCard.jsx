@@ -1,14 +1,12 @@
 import React from 'react';
-import { CLAN_SYMBOLS } from '@/lib/cardData';
+import ClanSigil from '@/components/cards/ClanSigil';
 
 export default function RaceCard({ race }) {
-  const symbol = CLAN_SYMBOLS[race.name] || '🛡️';
-
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: '#0e0b16', border: `2px solid ${race.color}` }}>
       <div className="flex items-center justify-between px-4 py-3" style={{ background: `${race.color}22`, borderBottom: `1px solid ${race.color}44` }}>
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{symbol}</span>
+          <ClanSigil clan={race.name} size={32} />
           <h3 className="font-heading font-extrabold text-lg" style={{ color: race.color }}>{race.name}</h3>
         </div>
         <span className="text-xs font-bold text-[#efe9dc] bg-[#15101f] px-2 py-1 rounded-lg" style={{ border: `1px solid ${race.color}66` }}>

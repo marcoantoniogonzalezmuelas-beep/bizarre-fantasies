@@ -5,7 +5,8 @@ import { ArrowLeft, Search } from 'lucide-react';
 import HeroCard from '@/components/cards/HeroCard';
 import EquipCard from '@/components/cards/EquipCard';
 import RaceCard from '@/components/cards/RaceCard';
-import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES, CLAN_COLORS, CLAN_SYMBOLS } from '@/lib/cardData';
+import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES, RACES } from '@/lib/cardData';
+import ClanSigil from '@/components/cards/ClanSigil';
 import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 
 const TABS = [
@@ -137,7 +138,7 @@ export default function Cards() {
             <div className="flex gap-1 flex-wrap">
               {HERO_CLANS.map(c => (
                 <button key={c} onClick={() => setClanFilter(c)} className={`text-xs font-semibold px-2.5 py-2 rounded-lg border transition-all ${clanFilter === c ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
-                  {c !== 'Todos' && <span className="mr-0.5">{CLAN_SYMBOLS[c]}</span>}{c}
+                  {c !== 'Todos' && <ClanSigil clan={c} size={16} className="mr-1 -mt-0.5" />}{c}
                 </button>
               ))}
             </div>
@@ -187,7 +188,7 @@ export default function Cards() {
         {tab === 'tokens' && (
           <>
             <div className="mb-6 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2" style={{ background: '#caa14a18', border: '1px solid #caa14a55', color: '#ffe49a' }}>
-              <span className="text-lg">⊛</span>
+              <span className="text-lg">🎲</span>
               <span>Los <strong>Bizarros</strong> no salen en subasta. Solo aparecen en plena batalla de forma sorpresiva e impredecible.</span>
             </div>
             {tokens.length === 0 ? (
