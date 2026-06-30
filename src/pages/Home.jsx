@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { MATCH_MODE_PATCH } from '@/lib/matchModePatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-06-30-races-v136';
@@ -238,9 +239,10 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH;
         let patchedData = data.includes('</body>')
-          ? data.replace('</body>', DRAGGABLE_GUIDE_PATCH + '</body>')
-          : data + DRAGGABLE_GUIDE_PATCH;
+          ? data.replace('</body>', INJECT + '</body>')
+          : data + INJECT;
         if (IS_MOBILE) {
           // En móvil queremos la MISMA vista que en ordenador: fijamos un ancho
           // de escritorio y permitimos zoom/scroll con los dedos, en vez de la
