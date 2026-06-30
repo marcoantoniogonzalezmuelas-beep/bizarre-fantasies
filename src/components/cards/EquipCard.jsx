@@ -29,8 +29,8 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
   return (
     <>
       <div
-        className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
-        style={{ border: `2px solid ${borderColor}88` }}
+        className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'} ${item.foiled ? 'card-foiled' : ''}`}
+        style={{ border: `2px solid ${item.foiled ? '#ffd24a' : borderColor}88`, boxShadow: item.foiled ? '0 0 20px rgba(255, 210, 74, 0.4), 0 10px 26px rgba(0,0,0,.55)' : '' }}
         onClick={() => onClick?.(item)}
       >
         {/* Lupa: ampliar la carta completa */}

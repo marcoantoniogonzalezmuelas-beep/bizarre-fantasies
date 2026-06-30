@@ -100,7 +100,7 @@
       "type": "string",
       "description": "URL of elite version art"
     },
-    "in_auction": {
+    "foiled": {"type": "boolean", "description": "If true, the card has a foil effect"}, "in_auction": {
       "type": "boolean",
       "description": "If true, the hero is available in auctions"
     }
