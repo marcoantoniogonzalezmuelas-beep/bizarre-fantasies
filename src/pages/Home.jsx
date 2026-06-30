@@ -241,9 +241,11 @@ export default function Home() {
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
         const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH;
-        let patchedData = data.includes('</body>')
-          ? data.replace('</body>', INJECT + '</body>')
-          : data + INJECT;
+        // Portada: "EDICIÓN V5" → "Base Set".
+        let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set');
+        let patchedData = baseData.includes('</body>')
+          ? baseData.replace('</body>', INJECT + '</body>')
+          : baseData + INJECT;
         if (IS_MOBILE) {
           // En móvil queremos la MISMA vista que en ordenador: fijamos un ancho
           // de escritorio y permitimos zoom/scroll con los dedos, en vez de la
