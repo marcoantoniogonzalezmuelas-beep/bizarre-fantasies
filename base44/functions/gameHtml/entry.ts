@@ -1589,7 +1589,7 @@ function buildArtScript(dbCards) {
         var byName = {};
         function reg(list, kind) {
           (list || []).forEach(function(it, i) {
-            if (it && it.name) byName[it.name] = { id: it.id, art: shopArt(kind, i), kind: kind, txt: it.txt || '', mana: it.mana, foil: !!(it.foil || it.foiled || /foil/i.test(String(it.tag || ''))) };
+            if (it && it.name) byName[it.name] = { id: it.id, art: shopArt(kind, i), kind: kind, txt: it.txt || '', mana: it.mana };
           });
         }
         reg(MELEE, 'melee'); reg(RANGED, 'ranged'); reg(ARMORS, 'armor'); reg(SPELLS, 'spell'); reg(OBJECTS, 'object');
@@ -1606,7 +1606,6 @@ function buildArtScript(dbCards) {
           if (!url) return;
           var id = meta && meta.id;
           card.classList.add('has-art');
-          if (meta && meta.foil) card.classList.add('card-foiled');
           card.dataset.bfShopArt = '1';
           var fill = document.createElement('div'); fill.className = 'shop-card-fill'; fill.style.backgroundImage = 'url("' + url + '")';
           card.insertBefore(fill, card.firstChild);
@@ -2013,31 +2012,33 @@ function buildArtScript(dbCards) {
 .card-foiled {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 24px rgba(255, 210, 74, 0.5), inset 0 0 20px rgba(255, 210, 74, 0.18) !important;
+  box-shadow: 0 0 15px rgba(255, 210, 74, 0.5), inset 0 0 10px rgba(255, 210, 74, 0.3) !important;
 }
 .card-foiled::before {
   content: "";
   position: absolute;
-  inset: -18%;
-  background: conic-gradient(from 40deg at 50% 45%, rgba(255,42,166,.28), rgba(80,210,255,.32), rgba(255,233,99,.34), rgba(132,255,152,.24), rgba(255,42,166,.28)), linear-gradient(125deg, transparent 12%, rgba(255,255,255,.45) 22%, transparent 32%, rgba(137,215,255,.28) 48%, transparent 64%, rgba(255,210,74,.32) 78%, transparent 90%);
-  background-size: 220% 220%;
-  opacity: .52;
+  inset: -10px;
+  background: linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, 0.05) 20%, rgba(255, 210, 74, 0.4) 30%, rgba(255, 100, 200, 0.4) 40%, rgba(100, 200, 255, 0.4) 50%, rgba(255, 255, 255, 0.05) 60%, transparent 100%);
+  background-size: 300% 300%;
+  mix-blend-mode: color-dodge;
+  opacity: 0.6;
   pointer-events: none;
-  z-index: 4;
-  animation: foil-rainbow 4.8s ease-in-out infinite;
+  z-index: 15;
+  animation: foil-rainbow 6s ease-in-out infinite;
 }
 .card-foiled::after {
   content: "";
   position: absolute;
-  top: -20%;
-  left: -55%;
-  width: 72%;
-  height: 150%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.56), rgba(255,235,150,.42), transparent);
-  transform: translateX(-135%) rotate(12deg);
-  animation: foil-shine 3.2s ease-in-out infinite;
+  top: 0;
+  left: 0;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: translateX(-150%) skewX(-30deg);
+  animation: foil-shine 4s infinite;
   pointer-events: none;
-  z-index: 5;
+  z-index: 16;
+  mix-blend-mode: overlay;
 }
 </style>'+
       '<div class="bf-nar-ch"><div class="bf-nar-dust"></div><img src="'+GUIDE_ELITE_IMG+'" alt="Punkito"></div><div class="bf-nar-bub"><button class="bf-nar-off">✕</button><div class="bf-nar-tt">Punkito Élite narra:</div><div class="bf-nar-tx" id="bf-nar-txt">¡A luchar!</div></div>';

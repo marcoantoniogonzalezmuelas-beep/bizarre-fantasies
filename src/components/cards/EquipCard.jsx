@@ -24,28 +24,13 @@ function gameArt(item, type) {
 }
 
 // Shared full-bleed card: art fills the whole card (same as bonus cards), text overlay at bottom.
-function isFoiledItem(item) {
-  return Boolean(item?.foiled || item?.foil || String(item?.tag || '').toLowerCase().includes('foil'));
-}
-
-function FoilOverlay() {
-  return (
-    <>
-      <div className="absolute inset-0 pointer-events-none foil-rainbow-layer" style={{ zIndex: 4 }} />
-      <div className="absolute inset-0 pointer-events-none foil-sparkle-layer" style={{ zIndex: 5 }} />
-      <div className="absolute inset-0 pointer-events-none foil-sweep-layer" style={{ zIndex: 6 }} />
-    </>
-  );
-}
-
 function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = true, fill = false, children }) {
   const [zoomOpen, setZoomOpen] = useState(false);
-  const isFoiled = isFoiledItem(item);
   return (
     <>
       <div
-        className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
-        style={{ border: `2px solid ${isFoiled ? '#ffd24a' : borderColor}88`, boxShadow: isFoiled ? '0 0 24px rgba(255, 210, 74, 0.48), 0 10px 26px rgba(0,0,0,.55), inset 0 0 20px rgba(255, 210, 74, 0.18)' : '' }}
+        className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'} ${item.foiled ? 'card-foiled' : ''}`}
+        style={{ border: `2px solid ${item.foiled ? '#ffd24a' : borderColor}88`, boxShadow: item.foiled ? '0 0 20px rgba(255, 210, 74, 0.4), 0 10px 26px rgba(0,0,0,.55)' : '' }}
         onClick={() => onClick?.(item)}
       >
         {/* Lupa: ampliar la carta completa */}
@@ -102,7 +87,6 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
 
       {/* Gradient shade at bottom */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/80" style={{ zIndex: 2 }} />
-      {isFoiled && <FoilOverlay />}
 
       {/* Top badges */}
       <div className="absolute left-3 right-3 top-3 flex justify-between items-start" style={{ zIndex: 10 }}>
