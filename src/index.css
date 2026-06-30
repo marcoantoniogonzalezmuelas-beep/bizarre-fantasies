@@ -112,9 +112,9 @@
     transparent 100%);
   background-size: 300% 300%;
   mix-blend-mode: color-dodge;
-  opacity: 0.25;
+  opacity: 0.6;
   pointer-events: none;
-  z-index: 4;
+  z-index: 15;
   animation: foil-rainbow 6s ease-in-out infinite;
 }
 
@@ -132,8 +132,8 @@
   transform: translateX(-150%) skewX(-30deg);
   animation: foil-shine 4s infinite;
   pointer-events: none;
-  z-index: 6;
-  
+  z-index: 16;
+  mix-blend-mode: overlay;
 }
 
 @layer base {

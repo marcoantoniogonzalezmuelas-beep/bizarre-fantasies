@@ -89,18 +89,18 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/80" style={{ zIndex: 2 }} />
 
       {/* Top badges */}
-      <div className="absolute left-3 right-3 top-3 flex justify-between items-start" style={{ zIndex: 10 }}>
+      <div className="absolute left-3 right-3 top-3 flex justify-between items-start" style={{ zIndex: 3 }}>
         {children}
       </div>
 
       {/* Bottom info panel */}
-      <div className={`absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 backdrop-blur-sm ${fill ? 'py-5 pb-6' : 'py-3 pb-4'}`} style={{ borderColor: `${borderColor}44`, zIndex: 10 }}>
+      <div className={`absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 backdrop-blur-sm ${fill ? 'py-5 pb-6' : 'py-3 pb-4'}`} style={{ borderColor: `${borderColor}44`, zIndex: 3 }}>
         <div className={`font-heading font-black leading-tight text-[#fff5d9] ${fill ? 'text-2xl' : 'text-base'}`} style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
         <div className={`mt-1.5 font-bold leading-snug text-[#efe9dc] ${fill ? 'text-[14px]' : 'text-[11px]'}`}>{item.txt || item.description}</div>
         <div className={`mt-3 font-black text-[#bdae87] ${fill ? 'text-[10px]' : 'text-[8px]'}`}>Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
       </div>
 
-      <div className={`absolute right-2 bottom-3 z-20 rounded-full overflow-hidden border-2 border-[#ffd24a99] shadow-[0_0_10px_rgba(255,210,74,.5)] ${fill ? 'w-11 h-11' : 'w-8 h-8'}`} style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
+      <div className={`absolute right-2 bottom-3 z-10 rounded-full overflow-hidden border-2 border-[#ffd24a99] shadow-[0_0_10px_rgba(255,210,74,.5)] ${fill ? 'w-11 h-11' : 'w-8 h-8'}`} style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
         <img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" alt="Punkito" className="w-full h-full object-contain" />
       </div>
     </div>
@@ -155,11 +155,7 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
     ? ELEMENT_COLORS[item.element] || borderColor
     : borderColor;
 
-  const statLine = type === 'spell' && item.mana != null
-    ? `🔵 ${item.mana} maná`
-    : type === 'spell' && item.power != null
-    ? `🔵 ${item.power} maná`
-    : item.cc != null
+  const statLine = item.cc != null
     ? `+${item.cc} CC`
     : item.power != null
     ? `Pot. ${item.power}`
