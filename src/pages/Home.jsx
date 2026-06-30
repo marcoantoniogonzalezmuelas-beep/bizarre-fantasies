@@ -130,9 +130,12 @@ const DRAGGABLE_GUIDE_PATCH = `
 </script>
 `;
 
+const IS_MOBILE = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+
 export default function Home() {
   const iframeRef = useRef(null);
   const [blobUrl, setBlobUrl] = useState('');
+  const [srcDoc, setSrcDoc] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dbCount, setDbCount] = useState(107);
@@ -172,8 +175,15 @@ export default function Home() {
         const patchedData = data.includes('</body>')
           ? data.replace('</body>', DRAGGABLE_GUIDE_PATCH + '</body>')
           : data + DRAGGABLE_GUIDE_PATCH;
-        createdUrl = URL.createObjectURL(new Blob([patchedData], { type: 'text/html' }));
-        setBlobUrl(createdUrl);
+        if (IS_MOBILE) {
+          // En móvil los iframes con blob: URL grandes a veces no renderizan.
+          // srcDoc carga el HTML de forma fiable en navegadores móviles.
+          setSrcDoc(patchedData);
+        } else {
+          // En escritorio el Blob URL evita el cuelgue del srcDoc gigante.
+          createdUrl = URL.createObjectURL(new Blob([patchedData], { type: 'text/html' }));
+          setBlobUrl(createdUrl);
+        }
         setLoading(false);
       } catch {
         if (cancelled) return;
@@ -219,11 +229,11 @@ export default function Home() {
         </div>
       </Link>
 
-      {blobUrl && (
+      {(blobUrl || srcDoc) && (
         <iframe
           ref={iframeRef}
           title="Bizarre Fantasies v5"
-          src={blobUrl}
+          {...(srcDoc ? { srcDoc } : { src: blobUrl })}
           onLoad={() => setLoading(false)}
           className="w-full h-full border-0"
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
