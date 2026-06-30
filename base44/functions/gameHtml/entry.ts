@@ -1,3 +1,4 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 // Update applied for auction UI logic
 const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
@@ -40,16 +41,37 @@ const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok"
 
 const EQUIP = { melee: { nums:[59,60,61,62,63,64] }, ranged: { nums:[65,66,67,68,69,70,71,72] }, armor: { nums:[73,74,75,76,77,78,79,80,81,82] }, spell: { nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] }, object: { nums:[83,84,85,86,87,88,89,90,91] } };
 function buildNumArtMap() { const m={}; const s=[ [EQUIP.melee, MELEE_ART], [EQUIP.ranged, RANGED_ART], [EQUIP.armor, ARMOR_ART], [EQUIP.spell, SPELL_ART], [EQUIP.object, OBJECT_ART] ]; for (const [c, a] of s) c.nums.forEach((n, i) => { if (a[i]) m[n] = a[i]; }); return m; }
-function buildArtScript() {
+function buildArtScript(dbCards) {
   const NUM_ART = buildNumArtMap();
+  const dbHeroes = dbCards.filter(c => c.category === 'hero' && c.in_auction !== false);
+  const localHeroArt = [...HERO_ART];
+  const localHeroEliteArt = [...HERO_ELITE_ART];
+  const localHeroIds = [...HERO_IDS];
+  const localHeroNames = [...HERO_NAMES];
+  
+  dbHeroes.forEach(c => {
+    localHeroArt.push(c.art_url || '');
+    localHeroEliteArt.push(c.elite_art_url || c.art_url || '');
+    localHeroIds.push(c.card_id);
+    localHeroNames.push(c.name);
+  });
+  
+  const DB_HERO_OBJS = dbHeroes.map(c => ({
+    id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, 
+    cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, 
+    eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, 
+    ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, 
+    clanColor: c.clan_color
+  }));
+
   return `
 <script>
 (function() {
   // ---- ART DATA ----
-  var HERO_ART = ${JSON.stringify(HERO_ART)};
-  var HERO_ELITE_ART = ${JSON.stringify(HERO_ELITE_ART)};
-  var HERO_IDS = ${JSON.stringify(HERO_IDS)};
-  var HERO_NAMES = ${JSON.stringify(HERO_NAMES)};
+  var HERO_ART = ${JSON.stringify(localHeroArt)};
+  var HERO_ELITE_ART = ${JSON.stringify(localHeroEliteArt)};
+  var HERO_IDS = ${JSON.stringify(localHeroIds)};
+  var HERO_NAMES = ${JSON.stringify(localHeroNames)};
   var NUM_ART = ${JSON.stringify(NUM_ART)};
   var MELEE_ART = ${JSON.stringify(MELEE_ART)};
   var RANGED_ART = ${JSON.stringify(RANGED_ART)};
@@ -481,6 +503,13 @@ function buildArtScript() {
     function typeLabel(t){if(t==='CC')return'CUERPO A CUERPO';if(t==='AD')return'A DISTANCIA';if(t==='HE')return'MAGIA';return clean(t||'HÉROE');}
     function typeIcon(t){if(ROLE_EMBLEM[t])return'<img class="bf-role-emblem" src="'+ROLE_EMBLEM[t]+'" alt="">';return'★';}
     function raceSigil(c){return RACE_SIGILS[c]||'◆';}
+    
+    var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
+    DB_HERO_OBJS.forEach(function(h) {
+      if (typeof HEROES !== 'undefined' && !HEROES.some(function(eh){ return eh.id === h.id; })) {
+        HEROES.push(h);
+      }
+    });
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
 
     var patched = function(h, variant) {
@@ -2446,8 +2475,8 @@ function buildArtScript() {
 // assemble once per deploy and serve every later request straight from memory.
 let CACHED_HTML = null;
 
-async function buildGameHtml() {
-  if (CACHED_HTML) return CACHED_HTML;
+async function buildGameHtml(req) {
+  // CACHE removed so cards reload on refresh
   const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
   const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION, { cache: 'no-store' });
   let html = await upstream.text();
@@ -2484,14 +2513,18 @@ async function buildGameHtml() {
   html = html.replace('<div class="hand-section"><div class="hand-lbl">Mano</div>${handChips(side)}</div>', '<div class="hand-section" id="hand_${side}">${handChips(side)}</div>');
 
   html = html.replace('"txt": "Revive a TODOS tus h\u00e9roes ca\u00eddos. La carta cumbre."', '"txt": "Cura a DOS h\u00e9roes y les restaura toda la vida. La carta cumbre."').replace("case 'reviveAll':{let any=false;G.team[allies].forEach(t=>{if(!t.alive){reviveHero(t,0.5);pushFx({k:'elite',side:tSide(t),id:t.id});any=true;}});pushLog('lx',`${o.name}: ${any?'\u00a1todos reviven!':'no hab\u00eda ca\u00eddos.'}`);consume();finishAct();return;}", "case 'reviveAll':{pendTarget('Primer h\u00e9roe a curar',allies,(t1)=>{t1.hp=t1.maxHp;pushFx({k:'elite',side:tSide(t1),id:t1.id});pushLog('lg',`${o.name}: ${t1.name} a vida completa.`);pendTarget('Segundo h\u00e9roe a curar',allies,(t2)=>{t2.hp=t2.maxHp;pushFx({k:'elite',side:tSide(t2),id:t2.id});pushLog('lg',`${o.name}: ${t2.name} a vida completa.`);consume();finishAct();});});return;}").replace("case 'reviveAll':{let any=false;G.team[allies].forEach(t=>{if(!t.alive){reviveHero(t,0.5);any=true;}});pushLog('lx',`${o.name}: ${any?'todos reviven':'sin ca\u00eddos'}.`);break;}", "case 'reviveAll':{const _t=living(allies).sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)).slice(0,2);_t.forEach(t=>{t.hp=t.maxHp;pushFx({k:'elite',side:tSide(t),id:t.id});});pushLog('lx',`${o.name}: ${_t.length?_t.map(t=>t.name).join(' y ')+' a vida completa':'sin objetivos'}.`);break;}");
-  const artScript = buildArtScript(); html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
+  
+  const base44 = createClientFromRequest(req);
+  const dbCards = await base44.asServiceRole.entities.Card.list('number', 1000);
+  const artScript = buildArtScript(dbCards || []);
+ html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
   CACHED_HTML = html;
   return html;
 }
 
 Deno.serve(async (req) => {
   try {
-    const html = await buildGameHtml();
+    const html = await buildGameHtml(req);
 
     return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-BF-Patch-Version': GAME_PATCH_VERSION, 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', 'Pragma': 'no-cache', 'Expires': '0' } });
   } catch (error) {
