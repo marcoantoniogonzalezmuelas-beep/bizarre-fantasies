@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-races-v127';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-races-v128';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -56,13 +56,9 @@ function buildArtScript(dbCards) {
     localHeroNames.push(c.name);
   });
   
-  const DB_HERO_OBJS = dbHeroes.map(c => ({
-    id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, 
-    cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, 
-    eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, 
-    ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, 
-    clanColor: c.clan_color
-  }));
+  const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color }));
+  // Token (Bizarro) heroes from the DB — same art/name/stats/elite as the Oráculo.
+  const DB_TOKENS = (dbCards || []).filter(c => String(c.card_id || '').startsWith('tk_')).map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan || 'Bizarros', clanColor: c.clan_color || '#caa14a', type: c.type, cost: c.cost || 0, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc != null ? c.elite_cc : c.cc, eAd: c.elite_ad != null ? c.elite_ad : c.ad, eHe: c.elite_he != null ? c.elite_he : c.he, eHp: c.elite_hp != null ? c.elite_hp : c.hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name || c.ability_name, eTxt: c.elite_ability_text || c.ability_text, art: c.art_url || '', eliteArt: c.elite_art_url || c.art_url || '' }));
 
   return `
 <script>
@@ -78,8 +74,10 @@ function buildArtScript(dbCards) {
   var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
   var SPELL_ART = ${JSON.stringify(SPELL_ART)};
   var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
-  var TOKENS = ${JSON.stringify(TOKENS)};
-  var TOKEN_ART = ${JSON.stringify(TOKEN_ART)};
+  var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
+  var TOKENS = (DB_TOKENS && DB_TOKENS.length) ? DB_TOKENS : ${JSON.stringify(TOKENS)};
+  var TOKEN_ART = TOKENS.map(function(t){ return t.art || ''; });
+  var TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || ''; });
   var TRANSFORMER_ART = "${TRANSFORMER_ART}";
   var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
@@ -122,7 +120,8 @@ function buildArtScript(dbCards) {
     ELITE_BY_NAME[nm] = HERO_ELITE_ART[i] || HERO_ART[i];
   });
   // Register token art (used when a hero is transformed into a token mid-battle).
-  TOKENS.forEach(function(t, i) { var u = TOKEN_ART[i]; if (!u) return; ART_BY_ID[t.id] = u; ELITE_BY_ID[t.id] = u; ART_BY_NAME[t.name] = u; ELITE_BY_NAME[t.name] = u; });
+  // Elite art uses the token's own elite illustration (same as the Oráculo).
+  TOKENS.forEach(function(t, i) { var u = TOKEN_ART[i], eu = TOKEN_ELITE_ART[i] || u; if (!u) return; ART_BY_ID[t.id] = u; ELITE_BY_ID[t.id] = eu; ART_BY_NAME[t.name] = u; ELITE_BY_NAME[t.name] = eu; });
 
   // ---- STYLES for injected art ----
   function injectCoverStyle() {
@@ -501,11 +500,7 @@ function buildArtScript(dbCards) {
     function raceSigil(c){return raceSigilSvg(c, '#fff7dc');}
     
     var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
-    DB_HERO_OBJS.forEach(function(h) {
-      if (typeof HEROES !== 'undefined' && !HEROES.some(function(eh){ return eh.id === h.id; })) {
-        HEROES.push(h);
-      }
-    });
+    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES !== 'undefined' && !HEROES.some(function(eh){ return eh.id === h.id; })) HEROES.push(h); });
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
 
     var patched = function(h, variant) {
@@ -520,27 +515,7 @@ function buildArtScript(dbCards) {
       var isEpic = h.clan === 'Épicas';
       var url = elite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
       var safeUrl = String(url || '').replace(/'/g, '%27');
-      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + (isEpic ? ' cf-epic' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' +
-        (isEpic ? '<div class="bf-foil"></div>' : '') +
-        '<div class="bf-hero-bg"></div>' +
-        '<div class="bf-hero-frame"></div>' +
-        '<div class="bf-coin">' + clean(h.cost) + '</div>' +
-        '<div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + raceSigilSvg(h.clan, col) + '</div>' +
-        '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' +
-        '<div class="bf-stats">' +
-          '<div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div>' +
-          '<div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div>' +
-          '<div class="bf-stat bf-stat-he"><span>HE</span><b>' + clean(he) + '</b></div>' +
-        '</div>' +
-        '<div class="bf-nameplate"><div class="bf-hero-name">' + clean(h.name) + '</div><div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div></div>' +
-        '<div class="bf-heart"><span class="cf-heart-ico">❤</span><span class="cf-hp">' + clean(hp) + '</span></div>' +
-        '<div class="bf-ability-panel">' +
-          '<div class="bf-ability-orb bf-ability-orb-img" style="background-image:url(\\'' + (ABILITY_ICON[h.type] || ABILITY_ICON.HE) + '\\')"></div>' +
-          '<div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div>' +
-        '</div>' +
-        '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' +
-        '<div class="bf-logo"><img src="' + LOGO_URL + '" alt="BF" style="width:100%;height:100%;object-fit:contain;display:block;"></div>' +
-      '</div>';
+      return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + (isEpic ? ' cf-epic' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' + (isEpic ? '<div class="bf-foil"></div>' : '') + '<div class="bf-hero-bg"></div><div class="bf-hero-frame"></div><div class="bf-coin">' + clean(h.cost) + '</div>' + '<div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + raceSigilSvg(h.clan, col) + '</div>' + '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' + '<div class="bf-stats"><div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div><div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div><div class="bf-stat bf-stat-he"><span>HE</span><b>' + clean(he) + '</b></div></div>' + '<div class="bf-nameplate"><div class="bf-hero-name">' + clean(h.name) + '</div><div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div></div>' + '<div class="bf-heart"><span class="cf-heart-ico">❤</span><span class="cf-hp">' + clean(hp) + '</span></div>' + '<div class="bf-ability-panel"><div class="bf-ability-orb bf-ability-orb-img" style="background-image:url(\\'' + (ABILITY_ICON[h.type] || ABILITY_ICON.HE) + '\\')"></div><div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div></div>' + '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' + '<div class="bf-logo"><img src="' + LOGO_URL + '" alt="BF" style="width:100%;height:100%;object-fit:contain;display:block;"></div></div>';
     };
     patched.__patched = true;
     window.cardFace = patched;
@@ -735,8 +710,7 @@ function buildArtScript(dbCards) {
     if (!card || card.dataset.bfAutoElite === '1') return;
     var id = heroIdFromCard(card), eliteUrl = ELITE_BY_ID[id], art = card.querySelector('.bf-battle-art');
     if (art && eliteUrl) art.style.backgroundImage = 'url("' + eliteUrl + '")';
-    card.dataset.bfAutoElite = '1'; card.classList.add('bf-auto-elite', 'elite-mode');
-    addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
+    card.dataset.bfAutoElite = '1'; card.classList.add('bf-auto-elite', 'elite-mode'); addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
   }
   function playTrueDeath(card) {
     if (!card || !card.isConnected) return; card.classList.add('bf-dead', 'bf-truedead');
@@ -939,10 +913,11 @@ function buildArtScript(dbCards) {
       };
       window.stepTurn.__bfTank = 1;
     }
-    // Multiplayer: handle the client's tank intent on the host.
+    // Multiplayer: handle the client's tank intent on the host. The real
+    // handleIntent takes a single message object: { t:'intent', op:'bfTank' }.
     if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfTank) {
       var originalHandleIntent = window.handleIntent;
-      window.handleIntent = function(kind, data) { if (kind === 'bfTank') return window.bfTankear(); return originalHandleIntent.apply(this, arguments); };
+      window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { var isOturn = (typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over); if (isOturn && !B.pending) return window.bfTankear(); return; } return originalHandleIntent.apply(this, arguments); };
       window.handleIntent.__bfTank = 1;
     }
   }
@@ -957,7 +932,9 @@ function buildArtScript(dbCards) {
     function bfMorph(t, by) {
       var tk = TOKENS[Math.floor(Math.random()*TOKENS.length)], old = t.name;
       ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','akind','num'].forEach(function(k){ t[k]=tk[k]; });
-      t._token=tk.id; t.eliteMode=false; t.eliteUsed=true; t.abilityUsed=false; t._mods=[]; t.shield=0; t.sleep=0; t.para=0; t.skip=0; t.silence=0; t.evade=0; t.maxHp=tk.hp; t.hp=tk.hp; t.mwep=null; t.rwep=null; t.armor=null;
+      // Reset elite state so the transformed token can ALSO renace Élite when it
+      // dies — from the moment it enters play it behaves like any other hero.
+      t._token=tk.id; t.eliteMode=false; t.eliteUsed=false; t.abilityUsed=false; t._mods=[]; t.shield=0; t.sleep=0; t.para=0; t.skip=0; t.silence=0; t.evade=0; t.maxHp=tk.hp; t.hp=tk.hp; t.mwep=null; t.rwep=null; t.armor=null;
       if (typeof pushFx==='function') pushFx({ k:'transform', side:tSide(t), id:t.id, tokenId:tk.id });
       if (typeof pushLog==='function') pushLog('lx', by + ': ¡' + old + ' se transforma en ' + tk.name + '!');
     }
@@ -1004,18 +981,7 @@ function buildArtScript(dbCards) {
     // Updated "how to play" rules, in plain language, including the new rules
     // (6 candidates per auction, Epic offers, epic cost +10).
     if (typeof window.rulesBody === 'function' && !window.rulesBody.__bf) {
-      window.rulesBody = function() {
-        return '<div class="rules-body">' +
-          '<p><b>🎯 Objetivo:</b> arma un equipo de <b>3 héroes</b> y derrota a los 3 del rival.</p>' +
-          '<p><b>1 · Subasta (3 fases).</b> Una para cuerpo a cuerpo, otra para distancia y otra para magia. En cada fase verás <b>6 héroes</b> y eliges uno con una <b>puja sellada</b> (a ciegas): quien ofrezca más se lo lleva. Cada ronda trae un <b>bonificador</b> distinto y <b>único</b> (no se repite en toda la partida): más monedas, o un castigo para el rival. Las monedas que no gastes pasan al Equipamiento.</p>' +
-          '<p><b>✦ Cartas Épicas.</b> Son las más poderosas y cuestan <b>+10 monedas</b>. Normalmente no aparecen en la subasta, pero ciertos bonificadores pueden hacer que <b>tú</b> (o tu <b>rival</b>) reciba una oferta Épica extra en esa puja.</p>' +
-          '<p><b>2 · Equipamiento.</b> Con las monedas sobrantes (+ una base) equipas a cada héroe con <b>1 arma</b> (cuerpo a cuerpo <i>o</i> distancia) y <b>1 armadura</b>. Los hechizos y objetos van a tu <b>mano</b> para usarlos en combate.</p>' +
-          '<p><b>3 · Combate por rondas.</b> Los turnos van en este orden: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, actúa antes quien tenga más velocidad).</p>' +
-          '<ul><li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li><li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li><li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li></ul>' +
-          '<p><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' +
-          '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma Fénix para revivir, o Ave Fénix para curar a dos héroes a vida completa).</p>' +
-          '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p></div>';
-      };
+      window.rulesBody = function() { return '<div class="rules-body">' + '<p><b>🎯 Objetivo:</b> arma un equipo de <b>3 héroes</b> y derrota a los 3 del rival.</p>' + '<p><b>1 · Subasta (3 fases).</b> Una para cuerpo a cuerpo, otra para distancia y otra para magia. En cada fase verás <b>6 héroes</b> y eliges uno con una <b>puja sellada</b> (a ciegas): quien ofrezca más se lo lleva. Cada ronda trae un <b>bonificador</b> distinto y <b>único</b> (no se repite en toda la partida): más monedas, o un castigo para el rival. Las monedas que no gastes pasan al Equipamiento.</p>' + '<p><b>✦ Cartas Épicas.</b> Son las más poderosas y cuestan <b>+10 monedas</b>. Normalmente no aparecen en la subasta, pero ciertos bonificadores pueden hacer que <b>tú</b> (o tu <b>rival</b>) reciba una oferta Épica extra en esa puja.</p>' + '<p><b>2 · Equipamiento.</b> Con las monedas sobrantes (+ una base) equipas a cada héroe con <b>1 arma</b> (cuerpo a cuerpo <i>o</i> distancia) y <b>1 armadura</b>. Los hechizos y objetos van a tu <b>mano</b> para usarlos en combate.</p>' + '<p><b>3 · Combate por rondas.</b> Los turnos van en este orden: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, actúa antes quien tenga más velocidad).</p>' + '<ul><li><b style="color:#ff8888">Cuerpo a cuerpo:</b> el daño es tu CC más el arma equipada.</li><li><b style="color:#88ff88">A distancia:</b> necesitas un arma; el daño depende de su potencia y de tu AD.</li><li><b style="color:#8899ff">Hechizos:</b> dependen de tu HE y gastan <b>maná</b>. Tienes una reserva fija para toda la batalla que <b>no se regenera</b>: recupérala con Cristal u Orbe de Maná.</li></ul>' + '<p><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' + '<p><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo que uses Pluma Fénix para revivir, o Ave Fénix para curar a dos héroes a vida completa).</p>' + '<p><b>Cada acción pasa el turno.</b> Consulta también las <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p></div>'; };
       window.rulesBody.__bf = 1;
     }
     if (typeof window.roleIcon === 'function' && !window.roleIcon.__bf) {
@@ -1757,7 +1723,8 @@ function buildArtScript(dbCards) {
       bfGuideReact('cheer','¡OPTIMIZADO!');
     }
     window.bfAutoEquip=bfAutoEquip;
-    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');if(!sc||!sc.classList.contains('active')||document.getElementById('bf-autoequip-btn'))return;var side=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:(G.eqSide||'p');var host=sc.querySelector('.eq-wrap, .equip-wrap, .panel, .screen-inner')||sc;var b=document.createElement('button');b.id='bf-autoequip-btn';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span>';b.onclick=function(e){e.stopPropagation();bfAutoEquip(side);};host.insertBefore(b,host.firstChild);};
+    // Auto-equip mutates G.equipCoins synchronously in a loop, which only works when this client owns the authoritative state (single-player or host). In online play the client's coins arrive via async snapshot, so a sync loop would overspend — disable it for the client.
+    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');if(!sc||!sc.classList.contains('active')||document.getElementById('bf-autoequip-btn'))return;if(typeof NET!=='undefined'&&NET.role==='client')return;var side=G.eqSide||'p';var host=sc.querySelector('.eq-wrap, .equip-wrap, .panel, .screen-inner')||sc;var b=document.createElement('button');b.id='bf-autoequip-btn';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span>';b.onclick=function(e){e.stopPropagation();bfAutoEquip(side);};host.insertBefore(b,host.firstChild);};
 
     if (typeof window.eqDone === 'function' && !window.eqDone.__bfWarn) {
       var originalEqDone = window.eqDone;
