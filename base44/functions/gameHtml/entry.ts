@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-06-30-races-v128';
+const GAME_PATCH_VERSION = 'bf-2026-06-30-races-v129';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -1672,8 +1672,12 @@ function buildArtScript(dbCards) {
     }
 
     // ---- AI auto-equip: optimize gear purchases for the whole team ----
+    var bfAEisClient=function(){return typeof NET!=='undefined'&&NET.role==='client';}; // Client owns no authoritative state: send each buy as an intent (same path manual buys use); host applies + snapshots back. Deduct locally so the planner respects the budget; host re-syncs real coins right after.
     function bfEqCoins(side){return Number((G.equipCoins&&G.equipCoins[side])||0);}
-    function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
+    function bfAEspend(side,cost){if(G.equipCoins&&G.equipCoins[side]!=null)G.equipCoins[side]=Math.max(0,G.equipCoins[side]-Number(cost||0));}
+    function bfBuyGear(side,hId,kind,it){G.assign={kind:kind,id:it.id,cost:it.cost,name:it.name};if(bfAEisClient()){bfAEspend(side,it.cost);if(typeof sendIntent==='function')sendIntent('doAssign',{heroId:hId,assign:G.assign});G.assign=null;return;}if(typeof originalDoAssign==='function')originalDoAssign(side,hId);}
+    function bfBuySpellAE(side,id,cost){if(bfAEisClient()){bfAEspend(side,cost);if(typeof sendIntent==='function')sendIntent('buySpell',{id:id});return;}if(typeof originalBuySpell==='function')originalBuySpell(side,id);}
+    function bfBuyObjectAE(side,id,cost){if(bfAEisClient()){bfAEspend(side,cost);if(typeof sendIntent==='function')sendIntent('buyObject',{id:id});return;}if(typeof originalBuyObject==='function')originalBuyObject(side,id);}
     function bfAutoEquip(side){
       var tm=((G.team&&G.team[side])||[]).filter(Boolean), ml=typeof MELEE!=='undefined'?MELEE:[], rg=typeof RANGED!=='undefined'?RANGED:[], am=typeof ARMORS!=='undefined'?ARMORS:[], sp=typeof SPELLS!=='undefined'?SPELLS:[], ob=typeof OBJECTS!=='undefined'?OBJECTS:[];
       var ownedSpells=(G.spellbook&&G.spellbook[side])||[], ownedItems=(G.items&&G.items[side])||[];
@@ -1697,10 +1701,8 @@ function buildArtScript(dbCards) {
       }
       var b=0;
       function bfMissingGear(){var n=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])n++;if(tm[i]&&!g.a[i])n++;}return n;}
-      // Best item of a gear kind for a hero under a price cap (cap lets us buy cheaper gear to free coins for spells/objects).
       function bfBestGear(h,kind,cap){var list=kind==='armor'?am:(kind==='ranged'?rg:ml),best=null,bs=-1;list.forEach(function(it){var c=Number(it.cost||0);if(c<=0||c>cap)return;var v=sc(it,h,kind),rs=v+(v/Math.max(1,c))*2;if(rs>bs){bs=rs;best=it;}});return best;}
-      // PHASE 1 — weapons + armor for all 3 heroes first; reserve 1 coin per other empty slot so the cheapest gear stays affordable.
-      for(var gi=0;gi<48;gi++){
+      for(var gi=0;gi<48;gi++){ // PHASE 1: weapons + armor for all heroes; reserve 1 coin per other empty slot.
         var bd=bfEqCoins(side);if(bd<=0)break;var missing=bfMissingGear();if(missing===0)break;
         var cap=Math.max(1,bd-(missing-1)),pick=null;
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;
@@ -1713,18 +1715,18 @@ function buildArtScript(dbCards) {
       // PHASE 2 — spells with the remaining budget.
       for(var si=0;si<12;si++){var bd2=bfEqCoins(side);if(bd2<=0)break;var bSp=null,bSpS=-1;
         sp.forEach(function(s){if(bfHasSpell(s.id))return;var c=Number(s.cost||0);if(c<=0||c>bd2)return;var v=sc(s,null,'spell'),rs=v+(v/Math.max(1,c))*2;if(rs>bSpS){bSpS=rs;bSp=s;}});
-        if(!bSp||typeof originalBuySpell!=='function')break;originalBuySpell(side,bSp.id);g.nSp++;b++;}
+        if(!bSp)break;bfBuySpellAE(side,bSp.id,bSp.cost);g.nSp++;b++;}
       // PHASE 3 — objects last, up to 3 copies each.
       for(var oi=0;oi<18;oi++){var bd3=bfEqCoins(side);if(bd3<=0)break;var bOb=null,bObS=-1;
         ob.forEach(function(o){if(bfItemCopies(o.id)>=3)return;var c=Number(o.cost||0);if(c<=0||c>bd3)return;var v=sc(o,null,'object'),rs=v+(v/Math.max(1,c))*2;if(rs>bObS){bObS=rs;bOb=o;}});
-        if(!bOb||typeof originalBuyObject!=='function')break;originalBuyObject(side,bOb.id);g.nObj++;b++;}
+        if(!bOb)break;bfBuyObjectAE(side,bOb.id,bOb.cost);g.nObj++;b++;}
       if(typeof window.renderEquip==='function')try{window.renderEquip(side);}catch(e){}
       if(window.notif)notif(b>0?'⚡ La IA equipó a tu equipo ('+b+' adquisiciones).':'No quedan monedas para equipar automáticamente.');
       bfGuideReact('cheer','¡OPTIMIZADO!');
     }
     window.bfAutoEquip=bfAutoEquip;
-    // Auto-equip mutates G.equipCoins synchronously in a loop, which only works when this client owns the authoritative state (single-player or host). In online play the client's coins arrive via async snapshot, so a sync loop would overspend — disable it for the client.
-    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');if(!sc||!sc.classList.contains('active')||document.getElementById('bf-autoequip-btn'))return;if(typeof NET!=='undefined'&&NET.role==='client')return;var side=G.eqSide||'p';var host=sc.querySelector('.eq-wrap, .equip-wrap, .panel, .screen-inner')||sc;var b=document.createElement('button');b.id='bf-autoequip-btn';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span>';b.onclick=function(e){e.stopPropagation();bfAutoEquip(side);};host.insertBefore(b,host.firstChild);};
+    // Auto-equip works for everyone now: a client plans against its own snapshot but commits each buy as an intent to the host (see bfBuyGear). The button always equips THIS player's own side.
+    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');if(!sc||!sc.classList.contains('active')||document.getElementById('bf-autoequip-btn'))return;var side=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:(G.eqSide||'p');var host=sc.querySelector('.eq-wrap, .equip-wrap, .panel, .screen-inner')||sc;var b=document.createElement('button');b.id='bf-autoequip-btn';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span>';b.onclick=function(e){e.stopPropagation();bfAutoEquip(side);};host.insertBefore(b,host.firstChild);};
 
     if (typeof window.eqDone === 'function' && !window.eqDone.__bfWarn) {
       var originalEqDone = window.eqDone;
