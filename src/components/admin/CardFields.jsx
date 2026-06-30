@@ -36,5 +36,22 @@ export default function CardFields({ form, onChange, onGenerate, generating, onU
       </div>
     </label>
   )}
+
+  <div className="grid gap-3 md:grid-cols-2">
+    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-[#ffd24a33] bg-black/45 hover:border-[#ffd24a]">
+      <input type="checkbox" checked={form.foil === true} onChange={(e) => onChange('foil', e.target.checked)} className="w-5 h-5 accent-[#ffd24a]" />
+      <div className="flex flex-col">
+        <span className="text-sm font-black text-[#ffe49a]">✦ Carta Foil (holográfica)</span>
+        <span className="text-[11px] text-[#cfc6dd]">Añade el brillo holográfico animado sobre la ilustración.</span>
+      </div>
+    </label>
+    <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-[#ffd24a33] bg-black/45 hover:border-[#ffd24a]">
+      <input type="checkbox" checked={form.gold_border === true} onChange={(e) => onChange('gold_border', e.target.checked)} className="w-5 h-5 accent-[#ffd24a]" />
+      <div className="flex flex-col">
+        <span className="text-sm font-black text-[#ffe49a]">▣ Borde dorado grueso</span>
+        <span className="text-[11px] text-[#cfc6dd]">Marco dorado premium alrededor de la carta (estilo TCG).</span>
+      </div>
+    </label>
+  </div>
   </div>;
 }

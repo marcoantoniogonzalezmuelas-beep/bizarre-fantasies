@@ -103,6 +103,14 @@
     "in_auction": {
       "type": "boolean",
       "description": "If true, the hero is available in auctions"
+    },
+    "foil": {
+      "type": "boolean",
+      "description": "If true, the card has a holographic foil effect"
+    },
+    "gold_border": {
+      "type": "boolean",
+      "description": "If true, the card has a thick golden border (premium style)"
     }
   },
   "required": [

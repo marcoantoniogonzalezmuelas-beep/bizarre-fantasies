@@ -27,11 +27,12 @@ function gameArt(item, type) {
 function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = true, fill = false, children }) {
   const [zoomOpen, setZoomOpen] = useState(false);
   const isFoil = item.foil === true || item.name === 'Transformer';
+  const isGoldBorder = item.gold_border === true;
   return (
     <>
       <div
         className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${fill ? 'w-full h-full' : 'h-[320px]'}`}
-        style={{ border: `2px solid ${isFoil ? '#ffe9a8aa' : borderColor + '88'}`, boxShadow: isFoil ? '0 10px 26px rgba(0,0,0,.55), 0 0 14px rgba(255,225,150,.32)' : undefined }}
+        style={{ border: isGoldBorder ? '6px solid #FFD24A' : `2px solid ${isFoil ? '#ffe9a8aa' : borderColor + '88'}`, boxShadow: isGoldBorder ? '0 10px 26px rgba(0,0,0,.55), 0 0 18px rgba(255,210,74,.5), inset 0 0 0 1px rgba(255,240,180,.6)' : (isFoil ? '0 10px 26px rgba(0,0,0,.55), 0 0 14px rgba(255,225,150,.32)' : undefined) }}
         onClick={() => onClick?.(item)}
       >
         {/* Lupa: ampliar la carta completa */}
