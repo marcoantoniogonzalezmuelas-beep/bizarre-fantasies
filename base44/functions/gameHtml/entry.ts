@@ -997,7 +997,7 @@ function buildArtScript(dbCards) {
 
     HEROES.forEach(function(h) {
       if (h.clan === 'Épicas' && h.__bfEpicRaised !== 1) {
-        h.cost = Number(h.cost || 0) + 20;
+        h.cost = Number(h.cost || 0) + 10;
         h.__bfEpicRaised = 1;
       }
       // Inject the official Base Set card number so cardFace can render "Nº XXX".
