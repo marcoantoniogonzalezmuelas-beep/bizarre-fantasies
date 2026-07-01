@@ -63,8 +63,11 @@ export const COACH_PUNKITO_PATCH = `
     });
     targets.forEach(function(el){
       if (el.classList.contains('bf-wheelie')) return;
-      // No pisar una reacción en curso del guía (bf-react-*/bf-battle-ride).
+      // No pisar una reacción en curso del guía (bf-react-*/bf-battle-ride), ni
+      // una pose de acción/transformación del narrador (que no tiene moto: se
+      // vería desaparecer el vehículo a medio truco).
       if (el.dataset && el.dataset.bfReacting === '1') return;
+      if (el.dataset && (el.dataset.bfActioning === '1' || el.dataset.bfTransforming === '1')) return;
       if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
       el.classList.add('bf-wheelie');
       setTimeout(function(){ el.classList.remove('bf-wheelie'); }, 5000);
