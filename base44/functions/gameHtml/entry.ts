@@ -1490,7 +1490,7 @@ function buildArtScript(dbCards) {
       var url = ART_BY_ID[h && h.id] || '';
       if (url && html.indexOf('bf-eq-hero-art') === -1) {
         var hEpic=(h&&h.clan==='Épicas'),hGold=hEpic||(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);var epicFoil = (hFoil ? '<div style="position:absolute;left:-10px;top:-10px;bottom:-10px;width:150px;z-index:2;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite"></div>' : '') + (hGold ? '<div style="position:absolute;left:0;top:0;bottom:0;width:150px;z-index:3;pointer-events:none;border-right:4px solid #FFD24A;animation:bfGoldGlowB 2.4s ease-in-out infinite"></div>' : '');
-        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"').replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>' + epicFoil);
+        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"').replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>' + epicFoil + '<div class="bf-battle-zoom" onclick="event.stopPropagation();bfZoomCard(&quot;' + h.id + '&quot;,&quot;normal&quot;,&quot;' + side + '&quot;)">🔍</div>');
       }
       // Equipped weapon thumbnail
       var weapon = h.mwep || h.rwep;
