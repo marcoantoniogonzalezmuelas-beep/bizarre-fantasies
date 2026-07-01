@@ -45,8 +45,8 @@ export default function HeroCardFace({ hero, elite }) {
       <div className="absolute top-2.5 right-2 z-10 w-11 h-12 rounded-full bg-black/70 border border-[#ffd24a88] text-[#ead49a] flex flex-col items-center justify-center text-xl shadow-lg">
         <span>{TYPE_ICON[hero.type] || '★'}</span><span className="text-[7px] font-black leading-none">{hero.type}</span>
       </div>
-      <div className="absolute left-2 bottom-3 z-20 w-8 h-8 rounded-full flex items-center justify-center shadow-lg" style={{ background: `${color}22`, border: `2px solid ${color}`, boxShadow: `0 0 10px ${color}66` }}>
-        <ClanSigil clan={hero.clan} size={14} />
+      <div className="absolute left-1 bottom-1 z-20 w-6 h-6 rounded-full flex items-center justify-center shadow-lg" style={{ background: `${color}22`, border: `1.5px solid ${color}`, boxShadow: `0 0 8px ${color}66` }}>
+        <ClanSigil clan={hero.clan} size={10} />
       </div>
 
       {/* Bottom info: stacked from the bottom up so nothing overlaps regardless of text length */}
