@@ -249,12 +249,16 @@ export default function Home() {
           ? baseData.replace('</body>', INJECT + '</body>')
           : baseData + INJECT;
         if (IS_MOBILE) {
-          // En móvil queremos la MISMA vista que en ordenador: fijamos un ancho
-          // de escritorio y permitimos zoom/scroll con los dedos, en vez de la
-          // versión responsive estrecha. Sustituimos el meta viewport del juego.
+          // En móvil queremos la MISMA vista que en ordenador (incluidas las dos
+          // cartas de héroe en la subasta), todo en miniatura para que quepa en
+          // pantalla, y permitir siempre hacer zoom táctil (pellizcar) para ver
+          // los detalles. Fijamos un ancho de escritorio (1200px) y calculamos
+          // el escalado inicial exacto según el ancho real del dispositivo, en
+          // vez de un valor fijo que no encaja igual en todas las pantallas.
+          const MOBILE_VIEWPORT_PATCH = '<script>(function(){function bfSetScale(){var vp=document.querySelector(\'meta[name="viewport"]\');if(!vp)return;var s=Math.max(0.05,(window.innerWidth/1200));vp.setAttribute(\'content\',\'width=1200, user-scalable=yes, initial-scale=\'+s.toFixed(4)+\', minimum-scale=0.1, maximum-scale=5\');}bfSetScale();window.addEventListener(\'resize\',bfSetScale);window.addEventListener(\'orientationchange\',function(){setTimeout(bfSetScale,300);});})();</script>';
           patchedData = patchedData.replace(
             /<meta\s+name=["']viewport["'][^>]*>/i,
-            '<meta name="viewport" content="width=1200, user-scalable=yes, initial-scale=0.3, minimum-scale=0.1, maximum-scale=3">'
+            '<meta name="viewport" content="width=1200, user-scalable=yes, initial-scale=0.3, minimum-scale=0.1, maximum-scale=5">' + MOBILE_VIEWPORT_PATCH
           );
         }
         if (IS_MOBILE) {
