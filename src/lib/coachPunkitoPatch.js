@@ -41,7 +41,11 @@ export const COACH_PUNKITO_PATCH = `
     '#coach .bf-coach-punkito{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden}',
     '#coach .bf-coach-punkito img{border-radius:50%}',
     '#bf-narrator .bf-nar-ch{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden}',
-    '#bf-narrator .bf-nar-ch img{border-radius:50%}'
+    '#bf-narrator .bf-nar-ch img{border-radius:50%}',
+    // El Punkito de la página inicial / guía arrastrable (#bf-guide .bf-guide-char)
+    // también con fondo circular y borde dorado (igual que el narrador).
+    '#bf-guide .bf-guide-char{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden;padding:4px}',
+    '#bf-guide .bf-guide-char img{border-radius:50%}'
   ].join('');
   document.head.appendChild(st);
 
