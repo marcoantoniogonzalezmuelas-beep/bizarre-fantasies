@@ -29,7 +29,7 @@ export default function HeroCardFace({ hero, elite }) {
 
   return (
     <div className={`absolute inset-0 rounded-[18px] overflow-hidden bg-[#09070d] ${isGoldBorder ? 'border-[6px]' : 'border-2'} ${elite ? 'shadow-[0_0_30px_rgba(192,91,255,0.36)]' : 'shadow-[0_10px_28px_rgba(0,0,0,0.65)]'}`} style={{ borderColor: isGoldBorder ? '#FFD24A' : (isFoil ? '#ffe9a8aa' : (elite ? '#ffb43a' : color)), boxShadow: isGoldBorder ? undefined : (isFoil ? '0 10px 28px rgba(0,0,0,.65), 0 0 14px rgba(255,225,150,.32)' : undefined), animation: isGoldBorder ? 'bfGoldGlow 2.4s ease-in-out infinite' : undefined }}>
-      {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" style={{ transform: 'scale(1.24)' }} />}
+      {artUrl && <img src={artUrl} alt={hero.name} className="absolute inset-0 w-full h-full object-cover saturate-110 contrast-105" style={{ transform: 'scale(1.08)' }} />}
       <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/75" />
 
       {/* Subtle foil / holographic effect (Pokémon-style) for Épicas heroes */}
