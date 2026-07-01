@@ -21,13 +21,13 @@ export const COACH_PUNKITO_PATCH = `
     '#coach .bf-coach-punkito::after{content:"";position:absolute;top:-4px;right:-2px;width:14px;height:14px;background:radial-gradient(circle,#fff6c8 0%,#ffd24a 45%,transparent 70%);border-radius:50%;animation:bfStudSpark 1.4s ease-in-out infinite}',
     // Símbolo de victoria ✌️ que aparece al lado del Punkito: entra con un
     // saltito girando y luego hace un gesto sutil de balanceo.
-    '#coach .bf-coach-victory{position:absolute;top:-10px;left:-14px;font-size:30px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));transform-origin:bottom right;animation:bfStudVictoryIn .9s cubic-bezier(.2,.8,.3,1.2) both, bfStudVictoryIdle 2.2s ease-in-out 1s infinite}',
+    '#coach .bf-coach-victory{position:absolute;top:-10px;left:-14px;font-size:30px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));transform-origin:bottom right;animation:bfStudVictoryShow 2s cubic-bezier(.2,.8,.3,1.2) forwards}',
     '@media(max-width:560px){#coach .bf-coach-punkito{width:56px;height:56px}#coach .bf-coach-victory{font-size:24px;top:-8px;left:-10px}}',
     '@keyframes bfStudHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}',
     '@keyframes bfStudWobble{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(4deg) scale(1.05)}}',
     '@keyframes bfStudSpark{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.25)}}',
-    '@keyframes bfStudVictoryIn{0%{opacity:0;transform:scale(.2) rotate(-40deg) translateY(14px)}60%{opacity:1;transform:scale(1.25) rotate(12deg) translateY(-4px)}100%{opacity:1;transform:scale(1) rotate(0) translateY(0)}}',
-    '@keyframes bfStudVictoryIdle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}'
+    // Entra (saltito girando), se mantiene, y a los 2s desaparece.
+    '@keyframes bfStudVictoryShow{0%{opacity:0;transform:scale(.2) rotate(-40deg) translateY(14px)}25%{opacity:1;transform:scale(1.25) rotate(12deg) translateY(-4px)}40%{opacity:1;transform:scale(1) rotate(0) translateY(0)}85%{opacity:1;transform:scale(1) rotate(0) translateY(0)}100%{opacity:0;transform:scale(.7) translateY(-6px)}}'
   ].join('');
   document.head.appendChild(st);
 
