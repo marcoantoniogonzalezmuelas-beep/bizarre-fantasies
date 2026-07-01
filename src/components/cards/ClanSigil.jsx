@@ -130,8 +130,8 @@ const DefaultSigil = ({ color }) => (
   </svg>
 );
 
-export default function ClanSigil({ clan, size = 40, className = '' }) {
-  const color = CLAN_COLORS[clan] || '#caa14a';
+export default function ClanSigil({ clan, size = 40, className = '', color: colorOverride }) {
+  const color = colorOverride || CLAN_COLORS[clan] || '#caa14a';
   const SigilComponent = SIGILS[clan] || DefaultSigil;
 
   return (
