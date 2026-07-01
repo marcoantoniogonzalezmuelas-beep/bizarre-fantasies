@@ -38,7 +38,12 @@ export const COACH_PUNKITO_PATCH = `
     '@keyframes bfWheelieDust{0%{opacity:0;transform:scale(.5)}20%{opacity:.9}60%{opacity:.6;transform:scale(1.4) translateX(-20px)}100%{opacity:0;transform:scale(1.8) translateX(-46px)}}',
     // Meneo del flequillo/cabeza mientras hace el caballito (leve balanceo rápido).
     '.bf-wheelie img{animation:bfPunkFringe .5s ease-in-out infinite !important;transform-origin:bottom center}',
-    '@keyframes bfPunkFringe{0%,100%{filter:none}50%{filter:drop-shadow(0 0 10px rgba(255,210,74,.7)) hue-rotate(-8deg)}}'
+    '@keyframes bfPunkFringe{0%,100%{filter:none}50%{filter:drop-shadow(0 0 10px rgba(255,210,74,.7)) hue-rotate(-8deg)}}',
+    // ---- Fondo redondeado (círculo) para los dos Punkitos, en vez del cuadrado ----
+    '#coach .bf-coach-punkito{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden}',
+    '#coach .bf-coach-punkito img{border-radius:50%}',
+    '#bf-narrator .bf-nar-ch{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden}',
+    '#bf-narrator .bf-nar-ch img{border-radius:50%}'
   ].join('');
   document.head.appendChild(st);
 
