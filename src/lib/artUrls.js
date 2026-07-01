@@ -41,7 +41,7 @@ export const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a291e62f4_generated_image.png', // 036 Mantenimiento
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e72cf42e_generated_image.png', // 037 Pacopiton
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/95e8228cd_generated_image.png', // 038 Hexara
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/84387f73d_generated_image.png', // 039 Reverendo Sapis
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c8b5e2201_generated_image.png', // 039 Reverendo Sapis
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c71c525b8_generated_image.png', // 040 Doc Radiante
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0ad0be833_generated_image.png', // 041 Zarmandis (épico)
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3aedc4e62_generated_image.png', // 042 Xerath
