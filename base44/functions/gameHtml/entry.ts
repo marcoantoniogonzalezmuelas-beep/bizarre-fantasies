@@ -543,8 +543,8 @@ function buildArtScript(dbCards) {
   window.bfZoomBonus = bfZoomBonus;
 
   // ---- DOM injection for hero cards (match by name) ----
-  var SQUARE_ART_NAMES = {'El Pijo':1,'La Comadreja':1};
-  function injectHeroArt(){document.querySelectorAll('.cardface').forEach(function(c){var a=c.querySelector('.cf-art');if(!a||a.classList.contains('has-art'))return;var n=c.querySelector('.cf-name');if(!n)return;var nt=n.textContent.replace(/★/g,'').trim();var u=c.classList.contains('cf-elite')?(ELITE_BY_NAME[nt]||ART_BY_NAME[nt]):ART_BY_NAME[nt];if(!u)return;a.style.setProperty('--bf-art',"url('"+u+"')");if(SQUARE_ART_NAMES[nt]){a.style.setProperty('--bf-art-size','contain');a.style.backgroundColor='#07050b';}a.classList.add('has-art');});}
+  var ART_SQUARE_CACHE = {}; function fitArtEl(el,url){if(!url)return;if(ART_SQUARE_CACHE[url]!==undefined){if(ART_SQUARE_CACHE[url]){el.style.setProperty('--bf-art-size','contain');el.style.backgroundColor='#07050b';}return;}var img=new Image();img.onload=function(){var sq=img.naturalWidth>0&&img.naturalHeight>0&&(img.naturalWidth/img.naturalHeight)>0.88&&(img.naturalWidth/img.naturalHeight)<1.14;ART_SQUARE_CACHE[url]=sq;if(sq){el.style.setProperty('--bf-art-size','contain');el.style.backgroundColor='#07050b';}};img.src=url;}
+  function injectHeroArt(){document.querySelectorAll('.cardface').forEach(function(c){var a=c.querySelector('.cf-art');if(!a||a.classList.contains('has-art'))return;var n=c.querySelector('.cf-name');if(!n)return;var nt=n.textContent.replace(/★/g,'').trim();var u=c.classList.contains('cf-elite')?(ELITE_BY_NAME[nt]||ART_BY_NAME[nt]):ART_BY_NAME[nt];if(!u)return;a.style.setProperty('--bf-art',"url('"+u+"')");fitArtEl(a,u);a.classList.add('has-art');});}
 
   // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
   function injectEquipArt() {
