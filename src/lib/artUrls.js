@@ -21,7 +21,7 @@ export const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/72ce7dd1a_generated_image.png', // 016 Patrón
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ec5dbfd9_generated_image.png', // 017 Sylvara
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5d35394d_generated_image.png', // 018 Aelion
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49c4de216_generated_image.png', // 019 Zarmandis (elfo)
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/66da8fd0e_generated_image.png', // 019 Zarmanda (elfa)
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a96095ce8_generated_image.png', // 020 Eredon
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dd9ae011d_generated_image.png', // 021 Alfredinho
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d9d830676_generated_image.png', // 022 Dixie Plasma
@@ -70,7 +70,7 @@ export const HERO_ELITE_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8019f9f21_generated_image.png', // 016e Patrón élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8979eecb4_generated_image.png', // 017e Sylvara élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/87c291158_generated_image.png', // 018e Aelion élite
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ace3347_generated_image.png', // 019e Zarmandis (elfo) élite
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/af6202ff0_generated_image.png', // 019e Zarmanda (elfa) élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8d6e97ce2_generated_image.png', // 020e Eredon élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/33eb953a8_generated_image.png', // 021e Alfredinho élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ffd892ff4_generated_image.png', // 022e Dixie Plasma élite
