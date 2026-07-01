@@ -284,7 +284,7 @@ function buildArtScript(dbCards) {
       .shop-card.has-art > .shop-coin { z-index: 7 !important; }
       .shop-card-art { display:none !important; }
       .shop-card-fill { position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
-      .shop-card-art-sharp { position:absolute; inset:-7%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
+      .shop-card-art-sharp { position:absolute; inset:-15%; z-index:1; background-size:cover; background-position:center center; background-repeat:no-repeat; }
       /* Hand cards (spells/objects) — the WHOLE oracle card shown, no cropping */
       .chip.bf-chip-card { position:relative !important; width:88px !important; height:120px !important; aspect-ratio:3 / 4.1 !important; padding:0 !important; border-radius:9px !important; overflow:hidden !important; border:1.5px solid rgba(255,210,74,.55) !important; background:#07050b !important; box-shadow:0 4px 12px rgba(0,0,0,.55) !important; font-size:0 !important; line-height:0 !important; display:inline-block !important; vertical-align:top !important; cursor:pointer; transition:transform .14s ease, box-shadow .14s ease; }
       .chip.bf-chip-card:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 10px 22px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.4) !important; z-index:5; }
@@ -323,7 +323,7 @@ function buildArtScript(dbCards) {
       /* Quick-shop card = the oracle card itself (cover + overscan + card ratio). */
       .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
       .bf-quick-fill { display:block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
-      .bf-quick-art { position:absolute; inset:-3%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
+      .bf-quick-art { position:absolute; inset:-15%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-fill):not(.bf-quick-cost):not(.bf-quick-name):not(.bf-quick-txt) { display:none !important; }
       .bf-quick-cost { position:absolute; top:8px; left:8px; z-index:4; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614); border:2px solid #6f4809; color:#4a2e03; font-weight:1000; box-shadow:0 3px 8px rgba(0,0,0,.55); }
       .bf-quick-name { position:absolute; left:5px; right:5px; bottom:42px; z-index:4; text-align:center; font-family:'Cinzel',serif; font-weight:1000; font-size:12.5px; line-height:1.05; color:#fff5dc; text-transform:uppercase; letter-spacing:.2px; text-shadow:0 2px 5px #000,0 0 10px #000; padding:2px 5px; border-radius:7px; background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.55),rgba(0,0,0,0)); }
