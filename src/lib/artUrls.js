@@ -18,7 +18,7 @@ export const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a53c0e073_generated_image.png', // 013 Krunder Mec.
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/362ea0a4b_generated_image.png', // 014 El Heavy
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/861dbe1ad_generated_image.png', // 015 El Pijo
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d0c547ccd_generated_image.png', // 016 Patrón
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/562066537_generated_image.png', // 016 Patrón
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ec5dbfd9_generated_image.png', // 017 Sylvara
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5d35394d_generated_image.png', // 018 Aelion
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ad6936408_generated_image.png', // 019 Zarmanda (elfa)
