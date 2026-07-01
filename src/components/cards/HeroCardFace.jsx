@@ -45,7 +45,7 @@ export default function HeroCardFace({ hero, elite }) {
       <div className="absolute top-2.5 right-2 z-10 w-11 h-12 rounded-full bg-black/70 border border-[#ffd24a88] text-[#ead49a] flex flex-col items-center justify-center text-xl shadow-lg">
         <span>{TYPE_ICON[hero.type] || '★'}</span><span className="text-[7px] font-black leading-none">{hero.type}</span>
       </div>
-      <div className="absolute left-4 bottom-5 z-20 w-5 h-5 rounded-full flex items-center justify-center shadow-lg" style={{ background: `radial-gradient(circle at 35% 30%, ${color}dd, ${color})`, border: `1.5px solid #fff7dc99`, boxShadow: `0 0 8px ${color}88` }}>
+      <div className="absolute left-4 bottom-5 z-20 w-5 h-5 rounded-full flex items-center justify-center shadow-lg" style={{ background: `radial-gradient(circle at 34% 28%, ${color}55, ${color}cc 45%, #1a1420)`, border: `1.5px solid ${color}99`, boxShadow: `0 0 8px ${color}55` }}>
         <ClanSigil clan={hero.clan} size={13} color="#fff7dc" />
       </div>
 
