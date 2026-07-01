@@ -1,11 +1,12 @@
 // Patch inyectado en el HTML del juego (iframe): hace que el propio Punkito
-// NARRADOR (arriba durante la batalla, siempre la MISMA imagen) se anime de
-// forma vistosa según el tipo de ataque, sin cambiar de personaje:
-//  - Ataque a distancia -> sacudida de metralleta + destello + chispas.
-//  - Hechizo             -> anillo mágico orbitando + chispas ascendentes.
-//  - Cuerpo a cuerpo     -> tajo de espada brillante + swing fuerte.
-// Cuando un héroe RENACE ÉLITE, Punkito estalla en dorado con rayos giratorios,
-// anillos de energía y partículas ascendentes.
+// NARRADOR (arriba durante la batalla) se ANIME DE VERDAD — cambia su propia
+// ilustración (sprite-swap) a una pose de acción dibujada específicamente para
+// cada tipo de ataque, en vez de solo aplicar CSS sobre la imagen fija:
+//  - Ataque a distancia -> Punkito disparando una metralleta.
+//  - Hechizo             -> Punkito lanzando un hechizo con la varita.
+//  - Cuerpo a cuerpo     -> Punkito dando un espadazo.
+//  - Renace ÉLITE de un héroe -> Punkito se transforma en un estallido dorado.
+// Se combina con efectos CSS extra (destellos, chispas) para reforzar la acción.
 // Todos los efectos se añaden al contenedor EXTERIOR (.bf-nar-ch), que ya no
 // tiene overflow:hidden (solo el círculo interior .bf-nar-circle lo tiene),
 // así que se ven completos en vez de recortarse por el marco redondo.
@@ -14,6 +15,12 @@ export const NARRATOR_ACTION_PATCH = `
 (function(){
   if (window.__bfNarratorActionPatch) return;
   window.__bfNarratorActionPatch = true;
+
+  var POSE_GUN = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fa82ca4c3_generated_image.png";
+  var POSE_SWORD = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/abb964970_generated_image.png";
+  var POSE_WAND = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4525d3e54_generated_image.png";
+  var POSE_TRANSFORM = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/78c844752_generated_image.png";
+  var POSE_BY_TYPE = { gun: POSE_GUN, sword: POSE_SWORD, wand: POSE_WAND };
 
   var st = document.createElement('style');
   st.textContent = [
@@ -77,10 +84,14 @@ export const NARRATOR_ACTION_PATCH = `
   function bfNarratorAction(type) {
     var ref = narratorChar();
     if (!ref) return;
-    var ch = ref.ch;
+    var ch = ref.ch, img = ref.img;
     if (ch.dataset.bfActioning === '1') return;
     ch.dataset.bfActioning = '1';
     ch.classList.add('bf-nar-action-' + type);
+    // Real sprite-swap: Punkito's OWN illustration changes to the action pose.
+    var prevSrc = img.getAttribute('src');
+    var pose = POSE_BY_TYPE[type];
+    if (pose) img.src = pose;
     var wrap = document.createElement('div');
     wrap.innerHTML = (EXTRA[type] || []).join('');
     var nodes = Array.prototype.slice.call(wrap.children);
@@ -93,18 +104,21 @@ export const NARRATOR_ACTION_PATCH = `
       ch.classList.remove('bf-nar-action-' + type);
       nodes.forEach(function(n) { if (n.parentNode) n.parentNode.removeChild(n); });
       if (fx.parentNode) fx.parentNode.removeChild(fx);
+      if (pose) img.src = prevSrc;
       ch.dataset.bfActioning = '';
-    }, 900);
+    }, 1000);
   }
   window.bfNarratorAction = bfNarratorAction;
 
   function bfNarratorTransform() {
     var ref = narratorChar();
     if (!ref) return;
-    var ch = ref.ch;
+    var ch = ref.ch, img = ref.img;
     if (ch.dataset.bfTransforming === '1') return;
     ch.dataset.bfTransforming = '1';
     ch.classList.add('bf-nar-ssj');
+    var prevSrc = img.getAttribute('src');
+    img.src = POSE_TRANSFORM;
     var extra = document.createElement('div');
     extra.innerHTML = '<div class="bf-nar-ssj-rays"></div><div class="bf-nar-ssj-aura"></div><div class="bf-nar-ssj-ring"></div><div class="bf-nar-ssj-mote m1"></div><div class="bf-nar-ssj-mote m2"></div><div class="bf-nar-ssj-mote m3"></div><div class="bf-nar-ssj-mote m4"></div>';
     var nodes = Array.prototype.slice.call(extra.children);
@@ -116,6 +130,7 @@ export const NARRATOR_ACTION_PATCH = `
     setTimeout(function() {
       ch.classList.remove('bf-nar-ssj');
       nodes.forEach(function(n) { if (n.parentNode) n.parentNode.removeChild(n); });
+      img.src = prevSrc;
       ch.dataset.bfTransforming = '';
     }, 2800);
   }
