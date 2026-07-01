@@ -41,7 +41,7 @@ export const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a291e62f4_generated_image.png', // 036 Mantenimiento
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e72cf42e_generated_image.png', // 037 Pacopiton
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/95e8228cd_generated_image.png', // 038 Hexara
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5be72327_generated_image.png', // 039 Reverendo Hex
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1380fa325_generated_image.png', // 039 Reverendo Sapis
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c71c525b8_generated_image.png', // 040 Doc Radiante
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0ad0be833_generated_image.png', // 041 Zarmandis (épico)
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3aedc4e62_generated_image.png', // 042 Xerath
@@ -90,7 +90,7 @@ export const HERO_ELITE_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ea100edfb_generated_image.png', // 036e Mantenimiento élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7764cb9ea_generated_image.png', // 037e Pacopiton élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/84c9693dc_generated_image.png', // 038e Hexara élite
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/907ef8e72_generated_image.png', // 039e Reverendo Hex élite
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c2b8a257b_generated_image.png', // 039e Reverendo Sapis élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b96972130_generated_image.png', // 040e Doc Radiante élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8959bebcc_generated_image.png', // 041e Zarmandis (épico) élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ce90f66_generated_image.png', // 042e Xerath élite
