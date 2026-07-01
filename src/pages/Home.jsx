@@ -5,7 +5,7 @@ import { MATCH_MODE_PATCH } from '@/lib/matchModePatch';
 import { COACH_PUNKITO_PATCH } from '@/lib/coachPunkitoPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-06-30-races-v136';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-01-2herofix-v137';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
