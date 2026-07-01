@@ -152,6 +152,12 @@ export default function AdminCards() {
           sx = 0;
           sy = (img.height - sh) / 2;
         }
+        // Extra overscan: zoom in a bit more so any leftover white margin from
+        // the AI generation is always cropped away, keeping every new card the
+        // same homogeneous full-bleed size regardless of the source image.
+        const ZOOM = 1.15;
+        const zsw = sw / ZOOM, zsh = sh / ZOOM;
+        sx += (sw - zsw) / 2; sy += (sh - zsh) / 2; sw = zsw; sh = zsh;
         const canvas = document.createElement('canvas');
         canvas.width = TARGET_W;
         canvas.height = TARGET_H;
