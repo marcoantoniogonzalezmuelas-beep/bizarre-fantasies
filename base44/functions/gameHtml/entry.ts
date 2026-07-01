@@ -868,7 +868,6 @@ function buildArtScript(dbCards) {
     window.flushFx.__bfEnhanced = true;
   }
 
-  // Pop the tank "soak" fx on a battle card by hero id (both sides searched).
   function bfTankBurstById(id) { ['p', 'o'].forEach(function(s) { var c = getBattleCard(s, id); if (c) addOverlayFx(c, '<div class="bf-fx-tank-burst"></div>', 850); }); }
 
   function patchTankRules() {
@@ -882,6 +881,7 @@ function buildArtScript(dbCards) {
       if (!h) return;
       var card = getBattleCard(BB.current.side, h.id);
       if (h._bfTank) { h._bfTank = false; if (typeof pushLog === 'function') pushLog('li', h.name + ' deja de tanquear.'); if (card) addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:#ffb43a">Tanque desactivado</div>', 900); if (typeof injectActionPanelBg === 'function') injectActionPanelBg(); return; }
+      var otherTank = (G.team && G.team[BB.current.side] || []).find(function(x) { return x && x.alive && x._bfTank && x !== h; }); if (otherTank) { if (typeof notif === 'function') notif(otherTank.name + ' ya está tanqueando. Solo un héroe puede tanquear a la vez.'); return; }
       h._bfTank = true;
       if (typeof pushLog === 'function') pushLog('li', h.name + ' se planta como un MURO DE HIERRO y absorberá los golpes de su equipo.');
       if (card) addOverlayFx(card, '<div class="bf-fx-tank-burst"></div><div class="bf-fx-iron-wall"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#ffb43a">🛡️ MURO DE HIERRO</div>', 1300);
@@ -915,8 +915,6 @@ function buildArtScript(dbCards) {
       };
       window.stepTurn.__bfTank = 1;
     }
-    // Multiplayer: handle the client's tank intent on the host. The real
-    // handleIntent takes a single message object: { t:'intent', op:'bfTank' }.
     if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfTank) {
       var originalHandleIntent = window.handleIntent;
       window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { var isOturn = (typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over); if (isOturn && !B.pending) return window.bfTankear(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfDebtBid') { if (G.phaseNeeds && !G.phaseNeeds.o) return; if (G.bidsIn && G.bidsIn.o) return; G.bids = G.bids || {}; G.bids.o = { heroId: msg.heroId, amount: Number(msg.amount || 0), debt: true }; if (G.bidsIn) G.bidsIn.o = true; if (typeof renderRecruit === 'function') renderRecruit('p'); if (typeof netSync === 'function') netSync('s-recruit'); if (G.bidsIn && G.bidsIn.p && typeof tryResolveRound === 'function') tryResolveRound(); return; } return originalHandleIntent.apply(this, arguments); };
@@ -1489,7 +1487,7 @@ function buildArtScript(dbCards) {
       var url = ART_BY_ID[h && h.id] || '';
       if (url && html.indexOf('bf-eq-hero-art') === -1) {
         var hEpic=(h&&h.clan==='Épicas'),hGold=hEpic||(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);var epicFoil = (hFoil ? '<div style="position:absolute;left:-10px;top:-10px;bottom:-10px;width:150px;z-index:2;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite"></div>' : '') + (hGold ? '<div style="position:absolute;left:0;top:0;bottom:0;width:150px;z-index:3;pointer-events:none;border-right:4px solid #FFD24A;animation:bfGoldGlowB 2.4s ease-in-out infinite"></div>' : '');
-        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"').replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>' + epicFoil + '<div class="bf-battle-zoom" onclick="event.stopPropagation();bfZoomCard(&quot;' + h.id + '&quot;,&quot;normal&quot;,&quot;' + side + '&quot;)">🔍</div>');
+        html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art$1"').replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;)"></div>' + epicFoil + '<div class="bf-battle-zoom" style="position:absolute;top:6px;left:6px;z-index:10" onclick="event.stopPropagation();bfZoomCard(&quot;' + h.id + '&quot;,&quot;normal&quot;,&quot;' + side + '&quot;)">🔍</div>');
       }
       // Equipped weapon thumbnail
       var weapon = h.mwep || h.rwep;
@@ -2137,12 +2135,12 @@ function buildArtScript(dbCards) {
     // Inject the "Tanquear" action button: compact cell next to "Defender" so the
     // panel reads as 3 buttons (CC/AD/HE) · ability (full width) · 3 buttons (item/defend/tank).
     if (m && h) {
-      var alreadyTank = !!h._bfTank;
+      var alreadyTank = !!h._bfTank, teamArr = (typeof G !== 'undefined' && G.team && G.team[a.side]) || [], otherTanking = teamArr.some(function(x) { return x && x.alive && x._bfTank && x !== h; });
       var tb = m.querySelector('.bf-tank-btn') || document.createElement('div');
       tb.className = 'jrpg-btn bf-tank-btn bf-jrpg-tank' + (alreadyTank ? ' bf-tank-on' : '');
-      tb.style.cssText = 'position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px;border-radius:14px;color:#fff5dc;cursor:pointer;text-shadow:0 2px 4px #000;text-align:center;line-height:1.15;transition:transform .15s ease,box-shadow .15s ease;';
-      tb.innerHTML = '<div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 12px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 auto"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5ca5c078_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:13px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Dejar de tanquear' : 'Tanquear') + '</div>';
-      tb.onclick = function(e) { e.stopPropagation(); if (typeof window.bfTankear === 'function') window.bfTankear(); };
+      tb.style.cssText = 'position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px;border-radius:14px;color:#fff5dc;cursor:pointer;text-shadow:0 2px 4px #000;text-align:center;line-height:1.15;transition:transform .15s ease,box-shadow .15s ease;' + (otherTanking && !alreadyTank ? 'opacity:.5;cursor:not-allowed;' : '');
+      tb.innerHTML = '<div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,180,70,.85);box-shadow:0 0 12px rgba(255,140,30,.6);background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin:0 auto"><img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b5ca5c078_generated_image.png" style="width:100%;height:100%;object-fit:cover;display:block;"></div><div style="font-family:&quot;Cinzel&quot;,serif;color:#ffb43a;font-size:13px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 12px rgba(255,150,40,.4)">' + (alreadyTank ? '🛡️ Dejar de tanquear' : (otherTanking ? 'Ya hay un tanque' : 'Tanquear')) + '</div>';
+      tb.onclick = function(e) { e.stopPropagation(); if (otherTanking && !alreadyTank) { if (typeof notif === 'function') notif('Ya hay un héroe tanqueando. Solo uno puede hacerlo a la vez.'); return; } if (typeof window.bfTankear === 'function') window.bfTankear(); };
       if (!tb.parentNode) m.appendChild(tb);
     }
     p.querySelectorAll('.jrpg-btn').forEach(function(btn) {
