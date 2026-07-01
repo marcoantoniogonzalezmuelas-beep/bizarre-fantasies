@@ -30,13 +30,16 @@ export const COACH_PUNKITO_PATCH = `
     // Se aplica a cualquier Punkito visible (guía arrastrable, botón, narrador de
     // batalla y coach estudiante). La imagen hace el "wheelie" (rota hacia atrás
     // apoyándose en la rueda trasera) y un fondo/flequillo vibrante lo acompaña.
-    '.bf-wheelie{animation:bfWheelie 5s cubic-bezier(.3,.7,.4,1) 1 !important;transform-origin:70% 90% !important;z-index:99998 !important}',
-    '.bf-wheelie::after{content:"";position:absolute;left:8%;bottom:6%;width:34%;height:20%;border-radius:50%;background:radial-gradient(circle,rgba(255,210,74,.6),rgba(255,160,40,.2) 55%,transparent 74%);opacity:0;animation:bfWheelieDust 5s ease-out 1;pointer-events:none;z-index:-1}',
-    '@keyframes bfWheelie{0%{transform:rotate(0) translateY(0)}10%{transform:rotate(-26deg) translateY(-4px)}18%{transform:rotate(-34deg) translateY(-8px)}30%{transform:rotate(-30deg) translateX(6px) translateY(-6px)}42%{transform:rotate(-33deg) translateX(-4px) translateY(-7px)}54%{transform:rotate(-30deg) translateX(5px) translateY(-6px)}66%{transform:rotate(-34deg) translateX(-3px) translateY(-8px)}78%{transform:rotate(-24deg) translateY(-3px)}90%{transform:rotate(-6deg) translateY(-1px)}100%{transform:rotate(0) translateY(0)}}',
-    '@keyframes bfWheelieDust{0%{opacity:0;transform:scale(.5)}20%{opacity:.9}60%{opacity:.6;transform:scale(1.4) translateX(-20px)}100%{opacity:0;transform:scale(1.8) translateX(-46px)}}',
-    // Meneo del flequillo/cabeza mientras hace el caballito (leve balanceo rápido).
-    '.bf-wheelie img{animation:bfPunkFringe .5s ease-in-out infinite !important;transform-origin:bottom center}',
-    '@keyframes bfPunkFringe{0%,100%{filter:none}50%{filter:drop-shadow(0 0 10px rgba(255,210,74,.7)) hue-rotate(-8deg)}}',
+    '.bf-wheelie{animation:bfWheelie 5s cubic-bezier(.25,.8,.3,1) 1 !important;transform-origin:72% 92% !important;z-index:99998 !important}',
+    '.bf-wheelie::after{content:"";position:absolute;left:8%;bottom:4%;width:38%;height:22%;border-radius:50%;background:radial-gradient(circle,rgba(255,210,74,.7),rgba(255,160,40,.25) 55%,transparent 74%);opacity:0;animation:bfWheelieDust 5s ease-out 1;pointer-events:none;z-index:-1}',
+    // Wheelie más marcado: la moto se alza mucho hacia arriba (hasta -52°) y se
+    // eleva bastante, se sostiene en alto vibrando, y baja al final.
+    '@keyframes bfWheelie{0%{transform:rotate(0) translateY(0)}12%{transform:rotate(-40deg) translateY(-14px)}22%{transform:rotate(-52deg) translateY(-26px)}34%{transform:rotate(-48deg) translateX(5px) translateY(-24px)}46%{transform:rotate(-53deg) translateX(-4px) translateY(-27px)}58%{transform:rotate(-49deg) translateX(5px) translateY(-24px)}70%{transform:rotate(-53deg) translateX(-3px) translateY(-27px)}82%{transform:rotate(-38deg) translateY(-12px)}92%{transform:rotate(-10deg) translateY(-3px)}100%{transform:rotate(0) translateY(0)}}',
+    '@keyframes bfWheelieDust{0%{opacity:0;transform:scale(.5)}20%{opacity:.9}60%{opacity:.6;transform:scale(1.5) translateX(-24px)}100%{opacity:0;transform:scale(2) translateX(-52px)}}',
+    // Headbanging heavy de la cabeza/flequillo de Punkito mientras hace el caballito:
+    // sacude fuerte arriba/abajo con leve giro + destello punk en el flequillo.
+    '.bf-wheelie img{animation:bfWheelieHeadbang .26s ease-in-out infinite !important;transform-origin:top center}',
+    '@keyframes bfWheelieHeadbang{0%,100%{transform:rotate(-3deg) translateY(-2px);filter:drop-shadow(0 0 6px rgba(255,210,74,.5))}50%{transform:rotate(3deg) translateY(6px);filter:drop-shadow(0 0 12px rgba(255,210,74,.85)) hue-rotate(-10deg)}}',
     // ---- Fondo redondeado (círculo) para los dos Punkitos, en vez del cuadrado ----
     '#coach .bf-coach-punkito{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden}',
     '#coach .bf-coach-punkito img{border-radius:50%}',
@@ -67,7 +70,7 @@ export const COACH_PUNKITO_PATCH = `
       setTimeout(function(){ el.classList.remove('bf-wheelie'); }, 5000);
     });
   }
-  setInterval(doWheelie, 120000);
+  setInterval(doWheelie, 60000);
 
   // ---- Headbanging heavy del Punkito estudiante: cada minuto, 2 segundos ----
   function doHeadbang(){
