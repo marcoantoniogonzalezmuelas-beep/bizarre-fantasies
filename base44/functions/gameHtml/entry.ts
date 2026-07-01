@@ -513,7 +513,7 @@ function buildArtScript(dbCards) {
       var abilityTxt = elite ? h.eTxt : h.abilityTxt;
       var col = h.clanColor || '#caa14a';
       var isEpic = h.clan === 'Épicas';
-      var url = elite ? (ELITE_BY_ID[h && h.id] || ART_BY_ID[h && h.id]) : ART_BY_ID[h && h.id];
+      var artId = (h && h._token) || (h && h.id); var url = elite ? (ELITE_BY_ID[artId] || ART_BY_ID[artId]) : ART_BY_ID[artId];
       var safeUrl = String(url || '').replace(/'/g, '%27');
       return '<div class="cardface bf-hero-card ' + (elite ? 'cf-elite' : '') + ((isEpic||h.gold_border===true) ? ' cf-epic' : '') + '" style="--clan:' + clean(col) + ';--bf-art:url(\\'' + safeUrl + '\\')">' + ((isEpic||h.foil===true) ? '<div class="bf-foil"></div>' : '') + '<div class="bf-hero-bg"></div><div class="bf-hero-frame"></div><div class="bf-coin">' + clean(h.cost) + '</div>' + '<div class="bf-race-sigil" title="' + clean(h.clan || '') + '">' + raceSigilSvg(h.clan, col) + '</div>' + '<div class="bf-type-medal">' + typeIcon(h.type) + '<span>' + clean(h.type || '') + '</span></div>' + '<div class="bf-stats"><div class="bf-stat bf-stat-cc"><span>CC</span><b>' + clean(cc) + '</b></div><div class="bf-stat bf-stat-ad"><span>AD</span><b>' + clean(ad) + '</b></div><div class="bf-stat bf-stat-he"><span>HE</span><b>' + clean(he) + '</b></div></div>' + '<div class="bf-nameplate"><div class="bf-hero-name">' + clean(h.name) + '</div><div class="bf-hero-title">' + clean(h.title) + (elite ? ' · ÉLITE' : '') + '</div></div>' + '<div class="bf-heart"><span class="cf-heart-ico">❤</span><span class="cf-hp">' + clean(hp) + '</span></div>' + '<div class="bf-ability-panel"><div class="bf-ability-orb bf-ability-orb-img" style="background-image:url(\\'' + (ABILITY_ICON[h.type] || ABILITY_ICON.HE) + '\\')"></div><div><div class="bf-ability-name">' + clean(ability) + '</div><div class="bf-ability-text">' + clean(abilityTxt) + '</div></div></div>' + '<div class="bf-card-num">Base Set · Nº ' + padNum(h.num, h) + '</div>' + '<div class="bf-logo"><img src="' + LOGO_URL + '" alt="BF" style="width:100%;height:100%;object-fit:contain;display:block;"></div></div>';
     };
@@ -523,9 +523,11 @@ function buildArtScript(dbCards) {
   }
 
   // ---- Full-screen card zoom (lupa) — shows the WHOLE card (art + stats + ability), enlarged ----
-  function bfZoomCard(heroId, variant) {
+  function bfZoomCard(heroId, variant, side) {
     if (typeof window.cardFace !== 'function') return;
-    var h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; }); if (!h) return;
+    var h = side ? (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(x) { return x && x.id === heroId; }) : null;
+    if (!h) h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; });
+    if (!h) return;
     var existing = document.getElementById('bf-zoom-overlay'); if (existing) existing.remove();
     var overlay = document.createElement('div'); overlay.id = 'bf-zoom-overlay'; overlay.className = 'bf-zoom-overlay';
     overlay.innerHTML = '<button class="bf-zoom-close" aria-label="Cerrar">✕</button><div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '</div>';
@@ -614,7 +616,7 @@ function buildArtScript(dbCards) {
       if(c.dataset.bfBattleArt===t){injectBattleGear(c);return;}
       if(e){if(u)e.style.backgroundImage='url("'+u+'")';c.dataset.bfBattleArt=t;injectBattleGear(c);return;}
       if(!u){injectBattleGear(c);return;}
-      var a=document.createElement('div');a.className='bf-battle-art';a.style.backgroundImage='url("'+u+'")';c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal');};c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
+      var a=document.createElement('div');a.className='bf-battle-art';a.style.backgroundImage='url("'+u+'")';c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal',s);};c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(l) {
       var n=l.querySelector('.ctb-hero-name');if(!n)return;var nx=n.textContent.replace(/★/g,'').trim(),u=ART_BY_NAME[nx];if(!u||l.dataset.bfCtbArt===nx)return;
@@ -700,6 +702,7 @@ function buildArtScript(dbCards) {
   }
 
   function heroIdFromCard(c){var p=String(c&&c.id||'').split('_');return p[p.length-1]||'';}
+  function bfArtId(card){var id=heroIdFromCard(card),side=(String(card&&card.id||'').split('_')[1])||'p',h=(typeof G!=='undefined'&&G.team&&G.team[side]||[]).find(function(x){return x&&x.id===id;});return (h&&h._token)?h._token:id;}
 
   function addOverlayFx(card, html, ms) {
     if (!card || !card.isConnected) return;
@@ -708,7 +711,7 @@ function buildArtScript(dbCards) {
   }
   function transformHeroToElite(card) {
     if (!card || card.dataset.bfAutoElite === '1') return;
-    var id = heroIdFromCard(card), eliteUrl = ELITE_BY_ID[id], art = card.querySelector('.bf-battle-art');
+    var id = bfArtId(card), eliteUrl = ELITE_BY_ID[id], art = card.querySelector('.bf-battle-art');
     if (art && eliteUrl) art.style.backgroundImage = 'url("' + eliteUrl + '")';
     card.dataset.bfAutoElite = '1'; card.classList.add('bf-auto-elite', 'elite-mode'); addOverlayFx(card, '<div class="bf-fx-elite-flip"></div><div class="bf-fx-elite-aura"></div><div class="bf-fx-float bf-fx-status-txt">★ ÉLITE</div>', 1200);
   }
@@ -1018,8 +1021,8 @@ function buildArtScript(dbCards) {
       var originalDrawRaceSlate = window.drawRaceSlate;
       window.drawRaceSlate = function(pool) {
         // Strip épicas and Bizarros from pool before handing it to the original function.
-        var safePool = (pool || []).filter(function(h) { return h && h.clan !== 'Épicas' && !String(h.id || '').startsWith('tk_'); });
-        var out = (originalDrawRaceSlate.apply(this, [safePool]) || []).filter(function(h) { return h && h.clan !== 'Épicas' && !String(h.id || '').startsWith('tk_'); });
+        var safePool = (pool || []).filter(function(h) { return h && h.clan !== 'Épicas' && h.clan !== 'Bizarros' && !String(h.id || '').startsWith('tk_'); });
+        var out = (originalDrawRaceSlate.apply(this, [safePool]) || []).filter(function(h) { return h && h.clan !== 'Épicas' && h.clan !== 'Bizarros' && !String(h.id || '').startsWith('tk_'); });
         if (out.length >= TARGET_CANDS) return out;
         var chosen = {};
         out.forEach(function(h) { if (h) chosen[h.id] = true; });
@@ -1905,15 +1908,12 @@ function buildArtScript(dbCards) {
     }
   }
 
-  var GUIDE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/292c04262_generated_image.png";
   // Punkito's other looks: élite (Harley, battle-only) + reaction faces.
-  var GUIDE_ELITE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d7e007cd6_generated_image.png";
+  var GUIDE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/292c04262_generated_image.png", GUIDE_ELITE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d7e007cd6_generated_image.png";
   var GUIDE_FACE = { wow: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5071f94c_generated_image.png", cheer: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/51ec29abd_generated_image.png", shock: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/63a162077_generated_image.png" };
 
-  // Battle screen active? Punkito rides his Harley (élite look) only in battle.
-  function bfInBattle() { var b = document.getElementById('s-battle'); return !!(b && b.classList.contains('active')); }
-  // Idle look Punkito returns to: élite (Harley) in battle, normal elsewhere.
-  function bfGuideBaseImg() { return bfInBattle() ? GUIDE_ELITE_IMG : GUIDE_IMG; }
+  function bfInBattle() { var b = document.getElementById('s-battle'); return !!(b && b.classList.contains('active')); } // Punkito rides his Harley (élite look) only in battle.
+  function bfGuideBaseImg() { return bfInBattle() ? GUIDE_ELITE_IMG : GUIDE_IMG; } // Idle look: élite (Harley) in battle, normal elsewhere.
 
   // Make Punkito react: swap to an expression face, animate + float a word,
   // then settle back. Reactions don't stack. type: 'cheer' | 'wow' | 'shock'.
@@ -2096,10 +2096,10 @@ function buildArtScript(dbCards) {
   function bfActiveHero() {
     var card = document.querySelector('.bhero.active-turn');
     if (!card) return null;
-    var id = heroIdFromCard(card);
-    var side = (String(card.id || '').split('_')[1]) || 'p';
+    var id = heroIdFromCard(card), side = (String(card.id || '').split('_')[1]) || 'p';
     var hero = (typeof G !== 'undefined' && G.team && G.team[side] || []).find(function(h) { return h && h.id === id; });
-    return hero ? { hero: hero, id: id, side: side, card: card } : { hero: null, id: id, side: side, card: card };
+    var artId = (hero && hero._token) ? hero._token : id;
+    return hero ? { hero: hero, id: id, artId: artId, side: side, card: card } : { hero: null, id: id, artId: artId, side: side, card: card };
   }
 
   function bfEsc(v){if(v==null)return '';return String(v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
@@ -2115,7 +2115,7 @@ function buildArtScript(dbCards) {
     if (!p.querySelector('.bf-action-embers')) { var em = document.createElement('div'); em.className = 'bf-action-embers'; p.insertBefore(em, bg.nextSibling); }
     var a = bfActiveHero(), h = a && a.hero, el = a && a.card && (a.card.classList.contains('elite-mode') || a.card.classList.contains('bf-auto-elite'));
     var url = ACTION_BG;
-    if (a && a.id) url = (el ? (ELITE_BY_ID[a.id] || ART_BY_ID[a.id]) : ART_BY_ID[a.id]) || ACTION_BG;
+    if (a && a.artId) url = (el ? (ELITE_BY_ID[a.artId] || ART_BY_ID[a.artId]) : ART_BY_ID[a.artId]) || ACTION_BG;
     if (p.dataset.bfActionArt !== url) { bg.style.setProperty('--bf-action-art', 'url("'+url+'")'); p.dataset.bfActionArt = url; }
     
     // Check and show status
@@ -2453,7 +2453,7 @@ async function buildGameHtml(req) {
   html = html.replace("function roleIcon(t){return t==='CC'?'\ud83d\udde1\ufe0f':t==='AD'?'\ud83c\udff9':'\ud83d\udd2e';}", "function roleIcon(t){var E={CC:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png',AD:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png',HE:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png'};return '<img class=\"bf-role-emblem\" src=\"'+(E[t]||E.HE)+'\">';}").replace("try{ lobbyTeardown(); }catch(e){} location.reload(); }", "try{ lobbyTeardown(); }catch(e){} try{ window.top.location.href = window.top.location.pathname + '?bf=' + Date.now(); }catch(e){ location.reload(); } }").replace('onclick="startDemo()">\ud83c\udf93 Aprender a jugar</button>', 'onclick="startDemo()"><span class="tc-img"><img src="' + BTN_LEARN + '" alt=""></span><span>Aprende<br>a jugar</span></button>').replace('onclick="rulesModalStatic()">\ud83d\udcd6 C\u00f3mo se juega</button>', 'onclick="rulesModalStatic()"><span class="tc-img"><img src="' + BTN_RULES + '" alt=""></span><span>Cómo<br>se juega</span></button>').replace('onclick="racesModal()">\ud83e\uddec Razas</button>', 'onclick="racesModal()"><span class="tc-img"><img src="' + BTN_RACES + '" alt=""></span><span>Razas</span></button>').replace('<div class="coach-txt">${G._coachMsg?esc(G._coachMsg):\'\'}</div>', '<div class="coach-txt">${G._coachMsg||\'\'}</div>');
 
   // Re-define bonuses array, styles, logic and resolution
-  html = html.replace('const BONUS=[{"id": "ban"', 'const BONUS=[{"id": "mina", "name": "Mina de Oro", "type": "PERM", "effect": 15, "txt": "+15 monedas a tu bolsa (permanente)."}, {"id": "roba", "name": "Ladrón de Guante", "type": "PERM", "effect": 15, "txt": "El rival pierde 15 monedas (permanente)."}, {"id": "ban"').replace(/"type": "BON"/g, '"type": "BID_ADD"').replace(/"type": "RES"/g, '"type": "BID_SUB"');
+  html = html.replace('const BONUS=[{"id": "ban"', 'const BONUS=[{"id": "mina", "name": "Mina de Oro", "type": "PERM", "effect": 15, "txt": "+15 monedas a tu bolsa (permanente)."}, {"id": "roba", "name": "Ladrón de Guante", "type": "PERM", "effect": 15, "txt": "El rival pierde 15 monedas (permanente)."}, {"id": "ban"').replace(/"type": "BON"/g, '"type": "BID_ADD"').replace(/"type": "RES"/g, '"type": "BID_SUB"').replace(/HEROES\.filter\(h=>h\.type===['"](CC|AD|HE)['"]\)/g, "HEROES.filter(h=>h.type==='$1'&&h.clan!=='Bizarros'&&!String(h.id||'').startsWith('tk_'))");
   html = html.replace(/monedas para esta subasta/g, 'al valor de tu puja').replace(/monedas esta subasta/g, 'al valor de tu puja').replace(/monedas esta ronda/g, 'a su puja');
   html = html.replace('function bonusChipClass(t){return t===\'BON\'?\'chip-bon\':t===\'EQP\'?\'chip-eqp\':\'chip-res\';}', 'function bonusChipClass(t){return (t===\'BID_ADD\'||t===\'PERM\')?\'chip-bon\':t===\'EQP\'?\'chip-eqp\':\'chip-res\';}');
   html = html.replace('function applyBonus(side,b){\n  if(G.pendDebt[side]){ G.coins[side]=Math.max(0,G.coins[side]-G.pendDebt[side]); G.pendDebt[side]=0; }\n  if(b.type===\'BON\'){ G.coins[side]+=b.effect; if(b.id===\'pre\')G.pendDebt[side]=8; }\n  else if(b.type===\'EQP\'){ G.equipReserve[side]+=b.effect; }\n  else if(b.type===\'RES\'){ G.coins[other(side)]=Math.max(0,G.coins[other(side)]-b.effect); }\n}', 'function applyBonus(side,b){if(G.pendDebt[side]){G.coins[side]=Math.max(0,G.coins[side]-G.pendDebt[side]);G.pendDebt[side]=0;}if(!b)return;if(b.type==="PERM"){if(b.id==="mina")G.coins[side]+=b.effect;else G.coins[other(side)]=Math.max(0,G.coins[other(side)]-b.effect);}else if(b.type==="BID_ADD"){if(b.id==="pre")G.pendDebt[side]=8;}else if(b.type==="EQP"){G.equipReserve[side]+=b.effect;}}');
