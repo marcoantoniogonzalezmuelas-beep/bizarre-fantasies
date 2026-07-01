@@ -30,11 +30,11 @@ export const COACH_PUNKITO_PATCH = `
     // Se aplica a cualquier Punkito visible (guía arrastrable, botón, narrador de
     // batalla y coach estudiante). La imagen hace el "wheelie" (rota hacia atrás
     // apoyándose en la rueda trasera) y un fondo/flequillo vibrante lo acompaña.
-    '.bf-wheelie{animation:bfWheelie 5s cubic-bezier(.25,.8,.3,1) 1 !important;transform-origin:72% 92% !important;z-index:99998 !important}',
+    '.bf-wheelie{animation:bfWheelie 5s cubic-bezier(.25,.8,.3,1) 1 !important;transform-origin:22% 92% !important;z-index:99998 !important}',
     '.bf-wheelie::after{content:"";position:absolute;left:8%;bottom:4%;width:38%;height:22%;border-radius:50%;background:radial-gradient(circle,rgba(255,210,74,.7),rgba(255,160,40,.25) 55%,transparent 74%);opacity:0;animation:bfWheelieDust 5s ease-out 1;pointer-events:none;z-index:-1}',
     // Wheelie más marcado: la moto se alza mucho hacia arriba (hasta -52°) y se
     // eleva bastante, se sostiene en alto vibrando, y baja al final.
-    '@keyframes bfWheelie{0%{transform:rotate(0) translateY(0)}12%{transform:rotate(-40deg) translateY(-34px)}22%{transform:rotate(-52deg) translateY(-58px)}34%{transform:rotate(-48deg) translateX(5px) translateY(-54px)}46%{transform:rotate(-53deg) translateX(-4px) translateY(-60px)}58%{transform:rotate(-49deg) translateX(5px) translateY(-54px)}70%{transform:rotate(-53deg) translateX(-3px) translateY(-60px)}82%{transform:rotate(-38deg) translateY(-30px)}92%{transform:rotate(-10deg) translateY(-8px)}100%{transform:rotate(0) translateY(0)}}',
+    '@keyframes bfWheelie{0%{transform:rotate(0) translateY(0)}12%{transform:rotate(28deg) translateY(-26px)}22%{transform:rotate(40deg) translateY(-46px)}34%{transform:rotate(36deg) translateX(-5px) translateY(-42px)}46%{transform:rotate(42deg) translateX(4px) translateY(-48px)}58%{transform:rotate(37deg) translateX(-5px) translateY(-42px)}70%{transform:rotate(42deg) translateX(3px) translateY(-48px)}82%{transform:rotate(26deg) translateY(-22px)}92%{transform:rotate(8deg) translateY(-6px)}100%{transform:rotate(0) translateY(0)}}',
     '@keyframes bfWheelieDust{0%{opacity:0;transform:scale(.5)}20%{opacity:.9}60%{opacity:.6;transform:scale(1.5) translateX(-24px)}100%{opacity:0;transform:scale(2) translateX(-52px)}}',
     // Headbanging heavy de la cabeza/flequillo de Punkito mientras hace el caballito:
     // sacude fuerte arriba/abajo con leve giro + destello punk en el flequillo.
