@@ -170,7 +170,7 @@ export default function AdminCards() {
   async function generateImage(target = 'art_url') {
     if (!form.image_prompt) return;
     setGenerating(true);
-    const prompt = `Ilustración FULL-BLEED de carta fantasy bizarra para un juego de cartas, ocupando todo el lienzo de borde a borde. Prohibido añadir marco, borde blanco, margen, passepartout, tarjeta dentro de la imagen, texto o logos. La ilustración debe llenar completamente el encuadre, con el personaje/objeto grande y centrado. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable. Indicaciones del admin: ${form.image_prompt}`;
+    const prompt = `Ilustración FULL-BLEED de carta fantasy bizarra para un juego de cartas, ocupando el 100% del lienzo de borde a borde, esquina a esquina, sin ningún hueco. Prohibido absolutamente: marco, borde blanco o de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro dentro de la imagen, texto o logos. La ilustración debe extenderse por todo el encuadre sin ningún espacio vacío ni siquiera en las esquinas, con el personaje/objeto grande, centrado y el fondo (paisaje, textura o ambiente) también lleno hasta los bordes. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable. Indicaciones del admin: ${form.image_prompt}`;
     const result = await base44.integrations.Core.GenerateImage({ prompt });
     const rawUrl = result?.url;
     if (rawUrl) {

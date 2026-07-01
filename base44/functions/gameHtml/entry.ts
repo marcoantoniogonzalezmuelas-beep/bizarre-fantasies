@@ -333,7 +333,7 @@ function buildArtScript(dbCards) {
       .bf-confirm-box { width:min(360px,92vw); border-radius:18px; overflow:hidden; border:2px solid rgba(255,210,74,.55); background:linear-gradient(180deg,#1b1430,#120d22); box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(255,210,74,.18), inset 0 0 0 1px rgba(255,210,74,.12); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-confirm-art { position:relative; width:100%; aspect-ratio:3 / 4.1; max-height:320px; overflow:hidden; background:#07050b; }
       .bf-confirm-art .bf-confirm-art-fill { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center; background-repeat:no-repeat; filter:blur(16px) saturate(1.3) brightness(.85); z-index:0; }
-      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:0; background-image:var(--bf-cart); background-size:contain; background-position:center center; background-repeat:no-repeat; z-index:1; }
+      .bf-confirm-art .bf-confirm-art-sharp { position:absolute; inset:0; background-image:var(--bf-cart); background-size:cover; background-position:center center; background-repeat:no-repeat; z-index:1; }
       .bf-confirm-mana { position:absolute; top:10px; right:10px; z-index:4; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:1000; font-size:17px; color:#eaf4ff; background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a); border:2px solid #8fc4ff; box-shadow:0 4px 10px rgba(0,0,0,.55), inset 0 1px 2px rgba(255,255,255,.5); text-shadow:0 1px 2px rgba(0,0,0,.5); }
       .bf-confirm-art::after { display:none; } .bf-confirm-art .bf-confirm-cost, .bf-confirm-art .bf-confirm-num { z-index:3; }
       /* "Ver carta" button on every shop card */
@@ -392,7 +392,7 @@ function buildArtScript(dbCards) {
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
       /* ---- Action panel of the active hero: AI battle background ---- */
-      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:120% auto; background-position:top center; filter:saturate(1.2) contrast(1.1); opacity:.5; animation:bfPan 16s alternate infinite ease-in-out; }
+      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:top center; filter:saturate(1.2) contrast(1.1); opacity:.5; animation:bfPan 16s alternate infinite ease-in-out; }
       .bf-action-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 10%, rgba(0,0,0,0) 0%, rgba(10,7,18,.85) 60%, rgba(10,7,18,1) 100%); }
       @keyframes bfPan { 0% { background-position: center 5%; transform: scale(1.05); } 100% { background-position: center 95%; transform: scale(1.15); } }
       .bf-action-embers { position:absolute; inset:0; z-index:1; pointer-events:none; background-image:radial-gradient(circle, #ffd24a 1.5px, transparent 1.5px); background-size: 32px 32px; opacity:0.12; animation:bfEmbers 12s linear infinite; }
