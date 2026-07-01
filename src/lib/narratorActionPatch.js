@@ -1,9 +1,13 @@
-// Patch inyectado en el HTML del juego (iframe): hace que el Punkito NARRADOR
-// (el que aparece arriba durante la batalla) saque un arma/objeto distinto según
-// el tipo de ataque que se acaba de producir, con una animación corta (~2s):
-//  - Ataque a distancia -> saca una metralleta y dispara.
-//  - Hechizo             -> gesto de varita mágica, estilo Harry Potter.
-//  - Cuerpo a cuerpo     -> alza una espada, estilo He-Man.
+// Patch inyectado en el HTML del juego (iframe): hace que el propio Punkito
+// NARRADOR (el que aparece arriba durante la batalla, siempre la MISMA imagen)
+// se anime según el tipo de ataque que se acaba de producir, sin cambiar de
+// personaje — solo un gesto/vibración distinto + un icono flotante (~2s):
+//  - Ataque a distancia -> vibra como si disparara una metralleta (💥).
+//  - Hechizo             -> gesto de varita mágica (✨).
+//  - Cuerpo a cuerpo     -> gesto de blandir una espada (⚔️).
+// Además, cuando un héroe en batalla RENACE ÉLITE, Punkito se transforma unos
+// segundos en un "Pollito Punki Super Guerrero" (estilo Super Saiyan) y luego
+// vuelve a la normalidad.
 // Se engancha a window.flushFx (que ya reparte los eventos de combate) sin
 // tocar la lógica del juego: solo lee los eventos ya emitidos.
 export const NARRATOR_ACTION_PATCH = `
@@ -12,17 +16,13 @@ export const NARRATOR_ACTION_PATCH = `
   if (window.__bfNarratorActionPatch) return;
   window.__bfNarratorActionPatch = true;
 
-  var ACTION_IMG = {
-    gun: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ceb007b23_generated_image.png",
-    wand: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ed7f9e9d2_generated_image.png",
-    sword: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/534f411fb_generated_image.png"
-  };
+  var SSJ_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/7a9ac62e3_generated_image.png";
 
   var st = document.createElement('style');
   st.textContent = [
-    '.bf-nar-action-gun{animation:bfNarGunKick .11s ease-in-out infinite !important}',
-    '.bf-nar-action-wand{animation:bfNarWandWave .5s ease-in-out infinite !important}',
-    '.bf-nar-action-sword{animation:bfNarSwordSwing .45s ease-in-out infinite !important}',
+    '.bf-nar-action-gun .bf-nar-ch-img{animation:bfNarGunKick .11s ease-in-out infinite !important}',
+    '.bf-nar-action-wand .bf-nar-ch-img{animation:bfNarWandWave .5s ease-in-out infinite !important}',
+    '.bf-nar-action-sword .bf-nar-ch-img{animation:bfNarSwordSwing .45s ease-in-out infinite !important}',
     '@keyframes bfNarGunKick{0%,100%{transform:translate(0,0) rotate(0)}30%{transform:translate(-3px,-2px) rotate(-4deg)}60%{transform:translate(2px,1px) rotate(3deg)}}',
     '@keyframes bfNarWandWave{0%,100%{transform:rotate(-6deg) scale(1)}50%{transform:rotate(8deg) scale(1.08)}}',
     '@keyframes bfNarSwordSwing{0%,100%{transform:rotate(-14deg) scale(1)}50%{transform:rotate(14deg) scale(1.1)}}',
@@ -32,7 +32,11 @@ export const NARRATOR_ACTION_PATCH = `
     '.bf-nar-fx-sword{top:-14px;left:50%;color:#dfe8ff;animation:bfNarFxSword .9s ease-out infinite}',
     '@keyframes bfNarFxGun{0%,100%{opacity:.2;transform:scale(.7) translateX(0)}40%{opacity:1;transform:scale(1.25) translateX(-10px)}}',
     '@keyframes bfNarFxWand{0%,100%{opacity:.3;transform:rotate(0) scale(.8)}50%{opacity:1;transform:rotate(180deg) scale(1.3)}}',
-    '@keyframes bfNarFxSword{0%,100%{opacity:.2;transform:translateX(-50%) scale(.7)}50%{opacity:1;transform:translateX(-50%) scale(1.3)}}'
+    '@keyframes bfNarFxSword{0%,100%{opacity:.2;transform:translateX(-50%) scale(.7)}50%{opacity:1;transform:translateX(-50%) scale(1.3)}}',
+    '.bf-nar-ssj .bf-nar-ch-img{animation:bfNarSsjPulse .4s ease-in-out infinite !important;filter:saturate(1.4) drop-shadow(0 0 18px #ffe14a) !important}',
+    '@keyframes bfNarSsjPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}',
+    '.bf-nar-ssj-aura{position:absolute;inset:-16px;z-index:-1;pointer-events:none;border-radius:50%;background:radial-gradient(circle,rgba(255,225,74,.85),rgba(255,170,20,.35) 45%,transparent 72%);animation:bfNarSsjAura .5s ease-in-out infinite}',
+    '@keyframes bfNarSsjAura{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}'
   ].join('');
   document.head.appendChild(st);
 
@@ -42,17 +46,16 @@ export const NARRATOR_ACTION_PATCH = `
     var ch = nw.querySelector('.bf-nar-ch');
     var img = ch && ch.querySelector('img');
     if (!ch || !img) return null;
+    if (!img.classList.contains('bf-nar-ch-img')) img.classList.add('bf-nar-ch-img');
     return { ch: ch, img: img };
   }
 
   function bfNarratorAction(type) {
     var ref = narratorChar();
-    if (!ref || !ACTION_IMG[type]) return;
-    var ch = ref.ch, img = ref.img;
+    if (!ref) return;
+    var ch = ref.ch;
     if (ch.dataset.bfActioning === '1') return;
     ch.dataset.bfActioning = '1';
-    var prevSrc = img.getAttribute('src');
-    img.src = ACTION_IMG[type];
     ch.classList.add('bf-nar-action-' + type);
     var fx = document.createElement('div');
     fx.className = 'bf-nar-fx bf-nar-fx-' + type;
@@ -60,18 +63,41 @@ export const NARRATOR_ACTION_PATCH = `
     ch.appendChild(fx);
     setTimeout(function() {
       ch.classList.remove('bf-nar-action-' + type);
-      img.src = prevSrc;
       if (fx.parentNode) fx.parentNode.removeChild(fx);
       ch.dataset.bfActioning = '';
     }, 2000);
   }
   window.bfNarratorAction = bfNarratorAction;
 
+  // Transformación especial: cuando un héroe renace ÉLITE en batalla, Punkito
+  // se transforma en su forma "Pollito Punki Super Guerrero" unos segundos.
+  function bfNarratorTransform() {
+    var ref = narratorChar();
+    if (!ref) return;
+    var ch = ref.ch, img = ref.img;
+    if (ch.dataset.bfTransforming === '1') return;
+    ch.dataset.bfTransforming = '1';
+    var prevSrc = img.getAttribute('src');
+    img.src = SSJ_IMG;
+    ch.classList.add('bf-nar-ssj');
+    var aura = document.createElement('div');
+    aura.className = 'bf-nar-ssj-aura';
+    ch.insertBefore(aura, ch.firstChild);
+    setTimeout(function() {
+      ch.classList.remove('bf-nar-ssj');
+      img.src = prevSrc;
+      if (aura.parentNode) aura.parentNode.removeChild(aura);
+      ch.dataset.bfTransforming = '';
+    }, 2600);
+  }
+  window.bfNarratorTransform = bfNarratorTransform;
+
   function handleEvent(ev) {
     if (!ev || !ev.k) return;
     if (ev.k === 'arrow') bfNarratorAction('gun');
     else if (ev.k === 'spell') bfNarratorAction('wand');
     else if (ev.k === 'slash') bfNarratorAction('sword');
+    else if (ev.k === 'elite') bfNarratorTransform();
   }
 
   function tryPatch() {
