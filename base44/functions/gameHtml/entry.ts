@@ -75,9 +75,9 @@ function buildArtScript(dbCards) {
   var SPELL_ART = ${JSON.stringify(SPELL_ART)};
   var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
   var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
-  var TOKENS = (DB_TOKENS && DB_TOKENS.length) ? DB_TOKENS : ${JSON.stringify(TOKENS)};
-  var TOKEN_ART = TOKENS.map(function(t){ return t.art || ''; });
-  var TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || ''; });
+  var LOCAL_TOKENS = ${JSON.stringify(TOKENS)}, LOCAL_TOKEN_ART = ${JSON.stringify(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
+  var TOKENS = (DB_TOKENS && DB_TOKENS.length) ? DB_TOKENS : LOCAL_TOKENS;
+  var TOKEN_ART = TOKENS.map(function(t){ return t.art || LT_ART[t.id] || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || LT_ART[t.id] || ''; });
   var TRANSFORMER_ART = "${TRANSFORMER_ART}";
   var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
   var BONUS_ART = ${JSON.stringify(BONUS_ART)};
@@ -1127,7 +1127,7 @@ function buildArtScript(dbCards) {
       
       if (G.pools) {
         ['CC','AD','HE'].forEach(function(t) {
-          G.pools[t] = (G.pools[t] || []).filter(function(h) { return h.clan !== 'Épicas'; });
+          G.pools[t] = (G.pools[t] || []).filter(function(h) { return h && h.clan !== 'Épicas' && h.clan !== 'Bizarros' && !String(h.id || '').startsWith('tk_'); });
         });
       }
       
