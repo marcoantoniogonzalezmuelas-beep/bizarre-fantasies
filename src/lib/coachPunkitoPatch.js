@@ -19,15 +19,13 @@ export const COACH_PUNKITO_PATCH = `
     '#coach .bf-coach-punkito img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) drop-shadow(0 0 12px rgba(255,210,74,.4));transform-origin:bottom center;animation:bfStudWobble 2.6s ease-in-out infinite}',
     // Gorrito de graduación ya va en la imagen; añadimos chispitas chulas.
     '#coach .bf-coach-punkito::after{content:"";position:absolute;top:-4px;right:-2px;width:14px;height:14px;background:radial-gradient(circle,#fff6c8 0%,#ffd24a 45%,transparent 70%);border-radius:50%;animation:bfStudSpark 1.4s ease-in-out infinite}',
-    // Símbolo de victoria ✌️ que aparece al lado del Punkito: entra con un
-    // saltito girando y luego hace un gesto sutil de balanceo.
-    '#coach .bf-coach-victory{position:absolute;top:-10px;left:-14px;font-size:30px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));transform-origin:bottom right;animation:bfStudVictoryShow 2s cubic-bezier(.2,.8,.3,1.2) forwards}',
-    '@media(max-width:560px){#coach .bf-coach-punkito{width:56px;height:56px}#coach .bf-coach-victory{font-size:24px;top:-8px;left:-10px}}',
+    '@media(max-width:560px){#coach .bf-coach-punkito{width:56px;height:56px}}',
     '@keyframes bfStudHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}',
     '@keyframes bfStudWobble{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(4deg) scale(1.05)}}',
     '@keyframes bfStudSpark{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.25)}}',
-    // Entra (saltito girando), se mantiene, y a los 2s desaparece.
-    '@keyframes bfStudVictoryShow{0%{opacity:0;transform:scale(.2) rotate(-40deg) translateY(14px)}25%{opacity:1;transform:scale(1.25) rotate(12deg) translateY(-4px)}40%{opacity:1;transform:scale(1) rotate(0) translateY(0)}85%{opacity:1;transform:scale(1) rotate(0) translateY(0)}100%{opacity:0;transform:scale(.7) translateY(-6px)}}',
+    // Headbanging heavy: menea la cabeza rápido arriba/abajo (2s, cada minuto).
+    '#coach .bf-coach-punkito.bf-headbang img{animation:bfHeadbang .28s ease-in-out infinite !important;transform-origin:top center}',
+    '@keyframes bfHeadbang{0%,100%{transform:rotate(0) translateY(0)}25%{transform:rotate(2deg) translateY(3px)}50%{transform:rotate(0) translateY(8px)}75%{transform:rotate(-2deg) translateY(3px)}}',
     // ---- Caballito con la moto + meneo de flequillo punk (cada 2 min, dura ~5s) ----
     // Se aplica a cualquier Punkito visible (guía arrastrable, botón, narrador de
     // batalla y coach estudiante). La imagen hace el "wheelie" (rota hacia atrás
@@ -67,6 +65,15 @@ export const COACH_PUNKITO_PATCH = `
   }
   setInterval(doWheelie, 120000);
 
+  // ---- Headbanging heavy del Punkito estudiante: cada minuto, 2 segundos ----
+  function doHeadbang(){
+    var stu = document.querySelector('#coach .bf-coach-punkito');
+    if (!stu || stu.offsetParent === null || stu.classList.contains('bf-headbang')) return;
+    stu.classList.add('bf-headbang');
+    setTimeout(function(){ stu.classList.remove('bf-headbang'); }, 2000);
+  }
+  setInterval(doHeadbang, 60000);
+
   // ---- En "Aprende a jugar": la batalla NO debe mostrar el narrador Punkito de
   // arriba; con el niño estudiante basta. Lo ocultamos mientras el demo esté activo.
   function hideBattleNarratorInDemo(){
@@ -84,7 +91,7 @@ export const COACH_PUNKITO_PATCH = `
     if (ico && !c.querySelector('.bf-coach-punkito')) {
       var box = document.createElement('div');
       box.className = 'bf-coach-punkito';
-      box.innerHTML = '<img src="' + STUDENT_IMG + '" alt="Punkito estudiante"><span class="bf-coach-victory">✌️</span>';
+      box.innerHTML = '<img src="' + STUDENT_IMG + '" alt="Punkito estudiante">';
       ico.parentNode.insertBefore(box, ico);
     }
   }
