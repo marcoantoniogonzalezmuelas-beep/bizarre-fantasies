@@ -9,14 +9,6 @@ export default function HeroCard({ hero, onClick }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="relative w-full h-[420px] cursor-pointer" style={{ perspective: '1300px' }} onClick={() => onClick?.(hero)}>
-        {/* Botón "Ampliar": mismo sistema de pill que en la subasta */}
-        <button
-          onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
-          className="absolute left-1/2 -translate-x-1/2 bottom-3 z-30 rounded-full border border-[#ffd24a] bg-black/80 px-3 py-1 text-xs font-black text-[#ffe49a] hover:bg-black/95 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
-        >
-          Ampliar
-        </button>
-
         <div
           className="absolute inset-0 transition-transform duration-[620ms]"
           style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transitionTimingFunction: 'cubic-bezier(.2,.72,.2,1)' }}
@@ -31,9 +23,14 @@ export default function HeroCard({ hero, onClick }) {
           </div>
         </div>
       </div>
-      <button onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} className="text-xs font-bold text-[#e8def6] bg-[#241a33] border border-[#3c3158] rounded-lg py-1.5 hover:border-[#b8902a] hover:text-[#ffcf57] transition-colors">
-        ⟳ {flipped ? 'Normal' : 'Élite'}
-      </button>
+      <div className="flex gap-2">
+        <button onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }} className="flex-1 text-xs font-black text-[#ffe49a] bg-black/80 border border-[#ffd24a] rounded-lg py-1.5 hover:bg-black/95 hover:text-[#fff5dc] transition-colors">
+          Ampliar
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }} className="flex-1 text-xs font-bold text-[#e8def6] bg-[#241a33] border border-[#3c3158] rounded-lg py-1.5 hover:border-[#b8902a] hover:text-[#ffcf57] transition-colors">
+          ⟳ {flipped ? 'Normal' : 'Élite'}
+        </button>
+      </div>
       {zoomOpen && <HeroCardZoomModal hero={hero} elite={flipped} onClose={() => setZoomOpen(false)} />}
     </div>
   );
