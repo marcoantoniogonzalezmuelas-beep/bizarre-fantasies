@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
 import HeroCardFace from '@/components/cards/HeroCardFace';
 import HeroCardZoomModal from '@/components/cards/HeroCardZoomModal';
 
@@ -10,13 +9,12 @@ export default function HeroCard({ hero, onClick }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="relative w-full h-[420px] cursor-pointer" style={{ perspective: '1300px' }} onClick={() => onClick?.(hero)}>
-        {/* Lupa: ampliar la carta completa (cara actualmente visible) */}
+        {/* Botón "Ampliar": mismo sistema de pill que en la subasta */}
         <button
           onClick={(e) => { e.stopPropagation(); setZoomOpen(true); }}
-          className="absolute right-[46px] bottom-3 z-30 w-8 h-8 rounded-full flex items-center justify-center bg-black/70 border border-[#ffd24a88] text-[#ffe49a] hover:bg-black/90 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
-          aria-label="Ampliar"
+          className="absolute left-1/2 -translate-x-1/2 bottom-3 z-30 rounded-full border border-[#ffd24a] bg-black/80 px-3 py-1 text-xs font-black text-[#ffe49a] hover:bg-black/95 hover:text-[#fff5dc] active:scale-95 transition-all shadow-lg"
         >
-          <Search size={14} />
+          Ampliar
         </button>
 
         <div
