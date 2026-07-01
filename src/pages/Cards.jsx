@@ -56,7 +56,7 @@ const normalizeItem = (card) => ({
   id: card.card_id,
   num: card.number,
   txt: card.description,
-  art: card.category === 'bonus' ? (card.art_url || gameArtFor(card.category, card.number)) : (gameArtFor(card.category, card.number) || card.art_url),
+  art: card.art_url || gameArtFor(card.category, card.number),
   element: card.category === 'spell' ? card.type : undefined,
   tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
 });
