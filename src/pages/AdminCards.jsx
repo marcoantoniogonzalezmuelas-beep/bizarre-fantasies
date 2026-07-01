@@ -158,7 +158,7 @@ export default function AdminCards() {
         // Extra overscan: zoom in a bit more so any leftover white margin from
         // the AI generation is always cropped away, keeping every new card the
         // same homogeneous full-bleed size regardless of the source image.
-        const ZOOM = 1.15;
+        const ZOOM = 1.22;
         const zsw = sw / ZOOM, zsh = sh / ZOOM;
         sx += (sw - zsw) / 2; sy += (sh - zsh) / 2; sw = zsw; sh = zsh;
         const canvas = document.createElement('canvas');
@@ -179,7 +179,7 @@ export default function AdminCards() {
   async function generateImage(target = 'art_url') {
     if (!form.image_prompt) return;
     setGenerating(true);
-    const prompt = `Ilustración FULL-BLEED de carta fantasy bizarra para un juego de cartas, ocupando el 100% del lienzo de borde a borde, esquina a esquina, sin ningún hueco. Prohibido absolutamente: marco, borde blanco o de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro dentro de la imagen, texto o logos. La ilustración debe extenderse por todo el encuadre sin ningún espacio vacío ni siquiera en las esquinas, con el personaje/objeto grande, centrado y el fondo (paisaje, textura o ambiente) también lleno hasta los bordes. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable. Indicaciones del admin: ${form.image_prompt}`;
+    const prompt = `Ilustración que RELLENA POR COMPLETO el lienzo entero de borde a borde y esquina a esquina, con cero relleno, cero márgenes y cero espacio de fondo visible en cualquier lado, ni siquiera una franja de 1 píxel. Prohibido absolutamente: marco, borde blanco/gris/de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro decorativo dentro de la imagen, texto o logos. El personaje/objeto grande y centrado, y el fondo (paisaje, textura o ambiente) pintado hasta el último borde y las cuatro esquinas, sin ninguna zona vacía. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable. Indicaciones del admin: ${form.image_prompt}`;
     const result = await base44.integrations.Core.GenerateImage({ prompt });
     const rawUrl = result?.url;
     if (rawUrl) {
