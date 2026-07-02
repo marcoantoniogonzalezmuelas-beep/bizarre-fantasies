@@ -32,14 +32,16 @@ export const HERO_ART_OVERRIDE_PATCH = `
     rol: { n: IMG+'1de790e63_generated_image.png', e: IMG+'e7779bf69_generated_image.png' },
     mor: { n: IMG+'44d09cf98_generated_image.png', e: IMG+'8da13d36f_generated_image.png' },
     ska: { n: IMG+'85fcc4f77_generated_image.png', e: IMG+'7ada7e4d4_generated_image.png' },
-    kre: { n: IMG+'d31d5f27b_generated_image.png', e: IMG+'8597b20d0_generated_image.png' }
+    kre: { n: IMG+'d31d5f27b_generated_image.png', e: IMG+'8597b20d0_generated_image.png' },
+    pij: { n: IMG+'5cc21af85_generated_image.png', e: IMG+'2077cf040_generated_image.png' },
+    pol: { n: IMG+'12a5ddb5c_generated_image.png', e: IMG+'2ec9c7478_generated_image.png' }
   };
   var NAME_TO_ID = {
     'Krunder':'kru','Narbon':'nar','Hildra':'hil','Torax':'tor','Bramblok':'bra',
     'Vragnar':'vra','El Heavy':'hev','Sylvara':'syl','Zarmanda':'zar','Eredon':'ere',
     'Sylvex':'syx','Retropoeta':'ret','Serafis':'ser','Vexal':'vex','Chivo':'chi',
     'Mantenimiento':'man','Pacopiton':'pac','Clint Tripud':'doc','El Ajedrecista':'aje',
-    'El Rolero':'rol','Morthex':'mor','Skarla':'ska','Krunder Mec.':'kre'
+    'El Rolero':'rol','Morthex':'mor','Skarla':'ska','Krunder Mec.':'kre','El Pijo':'pij','El Político':'pol'
   };
 
   function nameToId(txt){ if(!txt) return null; var t = txt.replace(/★/g,'').trim(); return NAME_TO_ID[t] || null; }

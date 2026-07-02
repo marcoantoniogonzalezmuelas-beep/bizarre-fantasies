@@ -17,7 +17,7 @@ export const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/dc308d368_generated_image.png', // 012 La Comadreja
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a53c0e073_generated_image.png', // 013 Krunder Mec.
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/362ea0a4b_generated_image.png', // 014 El Heavy
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/861dbe1ad_generated_image.png', // 015 El Pijo
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5cc21af85_generated_image.png', // 015 El Pijo
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/562066537_generated_image.png', // 016 Patrón
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3ec5dbfd9_generated_image.png', // 017 Sylvara
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5d35394d_generated_image.png', // 018 Aelion
@@ -66,7 +66,7 @@ export const HERO_ELITE_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/141eb7445_generated_image.png', // 012e La Comadreja élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ddf40d7ab_generated_image.png', // 013e Krunder Mec. élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/12f840fe3_generated_image.png', // 014e El Heavy élite
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4cf89ac43_generated_image.png', // 015e El Pijo élite
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2077cf040_generated_image.png', // 015e El Pijo élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b264548c2_generated_image.png', // 016e Patrón élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8979eecb4_generated_image.png', // 017e Sylvara élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/87c291158_generated_image.png', // 018e Aelion élite
@@ -96,7 +96,7 @@ export const HERO_ELITE_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e7ce90f66_generated_image.png', // 042e Xerath élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4328395b6_generated_image.png', // 043e El Ajedrecista élite
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/06c814afa_generated_image.png', // 044e El Rolero élite
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/12a5ddb5c_generated_image.png', // 045e El Político élite
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2ec9c7478_generated_image.png', // 045e El Político élite
 ];
 
 // Melee weapons (6)
