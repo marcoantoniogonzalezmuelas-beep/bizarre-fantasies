@@ -22,7 +22,10 @@ export const BATTLE_UI_PATCH = `
     '.bf-battle-art{left:6px!important;top:6px!important;bottom:6px!important;width:144px!important;border-radius:12px!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.45)!important;box-shadow:0 5px 12px rgba(0,0,0,.45)!important;opacity:1!important;transform:none!important}',
     '.bf-battle-art::before{content:"";position:absolute;inset:var(--bf-fit2,-12%);background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
     '.bf-battle-art::after{display:none!important}',
-    '.bhero.active-turn .bf-battle-art{width:144px!important;transform:none!important;filter:saturate(1.3) contrast(1.14) brightness(1.06)!important;border-color:rgba(255,210,74,.85)!important;box-shadow:0 5px 12px rgba(0,0,0,.45),0 0 16px rgba(255,210,74,.55)!important}'
+    '.bhero.active-turn .bf-battle-art{width:144px!important;transform:none!important;filter:saturate(1.3) contrast(1.14) brightness(1.06)!important;border-color:rgba(255,210,74,.85)!important;box-shadow:0 5px 12px rgba(0,0,0,.45),0 0 16px rgba(255,210,74,.55)!important}',
+    // Tu ejército en batalla: brillo dorado suave + banner realzado en el nombre.
+    '.army-panel.army-mine{border-color:rgba(255,210,74,.6)!important;box-shadow:0 0 0 1px rgba(255,210,74,.18),0 0 26px rgba(255,210,74,.16),inset 0 0 40px rgba(255,210,74,.04)!important;background:linear-gradient(180deg,rgba(42,34,18,.5),var(--panel))!important}',
+    '.army-panel.army-mine .army-name{background:linear-gradient(90deg,transparent,rgba(255,210,74,.18),transparent)!important;border-top:1px solid rgba(255,210,74,.32)!important;border-bottom:1px solid rgba(255,210,74,.32)!important;padding:5px 0!important;border-radius:0!important}'
   ].join('');
   document.head.appendChild(st);
 
