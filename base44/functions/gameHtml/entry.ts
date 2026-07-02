@@ -1374,6 +1374,9 @@ function buildArtScript(dbCards) {
       }
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
       if (!item) return;
+      // Multiplayer: on the host, side 'o' buys arrive as intents from the client
+      // (who already confirmed). Apply directly — no dialog on the host's screen.
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuySpell(side, id);
       var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
        var itemCopy = {};for(var p in item)itemCopy[p]=item[p];itemCopy.txt=itemCopy.txt||itemCopy.desc||'';
        var opts = { item: itemCopy, side: side, art: art };
@@ -1396,12 +1399,16 @@ function buildArtScript(dbCards) {
         if (window.notif) notif('Máximo 3 copias de ' + item.name + '.');
         return;
       }
+      // Multiplayer: client's buys (side 'o' on the host) apply directly, no host dialog.
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuyObject(side, id);
       var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
 
     var originalDoAssign = window.doAssign;
     window.doAssign = function(side, heroId) {
+      // Multiplayer: client's gear buys (side 'o' on the host) apply directly, no host dialog.
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalDoAssign(side, heroId);
       var hero = findHero(side, heroId);
       var a = G.assign || {};
       var kind = a.kind === 'armor' ? 'armor' : (a.kind === 'ranged' ? 'ranged' : 'melee');
@@ -1713,6 +1720,9 @@ function buildArtScript(dbCards) {
       var originalEqDone = window.eqDone;
       window.eqDone = function(side) {
         if (G.demoExample) return originalEqDone.apply(this, arguments);
+        // Multiplayer: the client's "Listo" arrives as an intent (side 'o' on the host)
+        // — the client already saw its own warnings; don't show them on the host.
+        if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalEqDone.apply(this, arguments);
         var mySide = (NET.role === 'client') ? NET.mySide : (side || G.eqSide);
         var warns = equipWarnings(mySide);
         if (warns.length && !G.__bfAdWarnAck) {
