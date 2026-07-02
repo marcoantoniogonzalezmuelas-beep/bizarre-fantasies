@@ -55,6 +55,16 @@ export const COACH_PUNKITO_PATCH = `
   ].join('');
   document.head.appendChild(st);
 
+  // offsetParent es null para elementos position:fixed (p.ej. los botones
+  // recogidos #bf-guide-show y #bf-nar-show) aunque estén visibles, así que
+  // no sirve para detectar visibilidad aquí; comprobamos display/tamaño real.
+  function isVisibleEl(el){
+    if (!el) return false;
+    var cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    return el.offsetWidth > 0 || el.offsetHeight > 0;
+  }
+
   // ---- Caballito periódico: cada 2 minutos, el Punkito visible hace el truco ~5s ----
   function doWheelie(){
     var demoStudent = document.querySelector('#coach .bf-coach-punkito');
@@ -62,9 +72,7 @@ export const COACH_PUNKITO_PATCH = `
     var guideShow = document.getElementById('bf-guide-show');
     var narrator = document.querySelector('#bf-narrator .bf-nar-ch');
     var narratorShow = document.getElementById('bf-nar-show');
-    var targets = [demoStudent, guide, guideShow, narrator, narratorShow].filter(function(el){
-      return el && el.offsetParent !== null; // solo los visibles
-    });
+    var targets = [demoStudent, guide, guideShow, narrator, narratorShow].filter(isVisibleEl);
     targets.forEach(function(el){
       if (el.classList.contains('bf-wheelie')) return;
       // No pisar una reacción en curso del guía (bf-react-*/bf-battle-ride), ni
@@ -85,7 +93,7 @@ export const COACH_PUNKITO_PATCH = `
     var guideShow = document.getElementById('bf-guide-show');
     var narShow = document.getElementById('bf-nar-show');
     [stu, guideShow, narShow].forEach(function(el){
-      if (!el || el.offsetParent === null || el.classList.contains('bf-headbang')) return;
+      if (!isVisibleEl(el) || el.classList.contains('bf-headbang')) return;
       el.classList.add('bf-headbang');
       setTimeout(function(){ el.classList.remove('bf-headbang'); }, 2000);
     });
