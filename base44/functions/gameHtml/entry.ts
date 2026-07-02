@@ -1374,9 +1374,6 @@ function buildArtScript(dbCards) {
       }
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
       if (!item) return;
-      // Multiplayer: on the host, side 'o' buys arrive as intents from the client
-      // (who already confirmed). Apply directly — no dialog on the host's screen.
-      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuySpell(side, id);
       var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
        var itemCopy = {};for(var p in item)itemCopy[p]=item[p];itemCopy.txt=itemCopy.txt||itemCopy.desc||'';
        var opts = { item: itemCopy, side: side, art: art };
@@ -1399,16 +1396,12 @@ function buildArtScript(dbCards) {
         if (window.notif) notif('Máximo 3 copias de ' + item.name + '.');
         return;
       }
-      // Multiplayer: client's buys (side 'o' on the host) apply directly, no host dialog.
-      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuyObject(side, id);
       var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
 
     var originalDoAssign = window.doAssign;
     window.doAssign = function(side, heroId) {
-      // Multiplayer: client's gear buys (side 'o' on the host) apply directly, no host dialog.
-      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalDoAssign(side, heroId);
       var hero = findHero(side, heroId);
       var a = G.assign || {};
       var kind = a.kind === 'armor' ? 'armor' : (a.kind === 'ranged' ? 'ranged' : 'melee');
@@ -1720,9 +1713,6 @@ function buildArtScript(dbCards) {
       var originalEqDone = window.eqDone;
       window.eqDone = function(side) {
         if (G.demoExample) return originalEqDone.apply(this, arguments);
-        // Multiplayer: the client's "Listo" arrives as an intent (side 'o' on the host)
-        // — the client already saw its own warnings; don't show them on the host.
-        if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalEqDone.apply(this, arguments);
         var mySide = (NET.role === 'client') ? NET.mySide : (side || G.eqSide);
         var warns = equipWarnings(mySide);
         if (warns.length && !G.__bfAdWarnAck) {
@@ -2382,13 +2372,6 @@ function buildArtScript(dbCards) {
     });
   }
 
-  // ---- Lobby resilience: reintento + error claro si el broker no responde.
-  function bfLobbyWatch(retryFn, failMsg){var tries=0;var iv=setInterval(function(){var lob=document.getElementById('s-lobby');if(!lob||!lob.classList.contains('active')){clearInterval(iv);return;}var p=(typeof NET!=='undefined')&&NET.peer;if(p&&p.open){clearInterval(iv);return;}tries++;if(tries===1){try{if(p)p.destroy();}catch(e){}if(typeof lobbyStatus==='function')lobbyStatus('Reintentando conexión…');try{retryFn();}catch(e){}}else{clearInterval(iv);var p2=(typeof NET!=='undefined')&&NET.peer;if(!(p2&&p2.open)&&typeof lobbyError==='function')lobbyError(failMsg);}},10000);}
-  function patchLobbyResilience(){if(window.__bfLobbyPatched||typeof window.hostCreate!=='function'||typeof window.clientJoin!=='function')return;window.__bfLobbyPatched=true;
-    var origHC=window.hostCreate;window.hostCreate=function(name,pass,roomName){var ret=origHC.apply(this,arguments);bfLobbyWatch(function(){origHC.call(null,name,pass,roomName);},'No se pudo crear la sala: el servicio de emparejamiento no responde. Espera unos segundos y vuelve a intentarlo, o usa el modo local.');return ret;};
-    var origCJ=window.clientJoin;window.clientJoin=function(code,pass,name){var ret=origCJ.apply(this,arguments);bfLobbyWatch(function(){origCJ.call(null,code,pass,name);},'No se pudo conectar a la sala: el servicio de emparejamiento no responde. Comprueba el código y vuelve a intentarlo en unos segundos.');return ret;};}
-  function patchPeerTurn(){if(window.__bfPeerTurn||!window.Peer)return;window.__bfPeerTurn=true;var P=window.Peer;var ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]};var W=function(id,opts){if(id&&typeof id==='object'){opts=id;id=undefined;}opts=opts||{};if(!opts.config)opts.config=ICE;return id===undefined?new P(opts):new P(id,opts);};W.prototype=P.prototype;window.Peer=W;}
-
   // ---- MAIN INIT ----
   function init() {
     injectCoverStyle();
@@ -2403,7 +2386,6 @@ function buildArtScript(dbCards) {
       applyCover();
       patchQuitToHome();
       patchGameRules();
-      patchLobbyResilience(); patchPeerTurn();
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
