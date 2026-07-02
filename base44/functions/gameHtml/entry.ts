@@ -448,7 +448,7 @@ function buildArtScript(dbCards) {
       .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
 
       /* ---- Guía Punkito: draggable, animado ---- */
-      .bf-guide { position:fixed; top:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; user-select:none; }
+      .bf-guide { position:fixed; bottom:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; user-select:none; }
       .bf-guide.bf-guide-hidden .bf-guide-bubble { display:none; }
       .bf-guide-char { position:relative; flex:0 0 auto; width:88px; height:88px; pointer-events:auto; animation:bfGuideFloat 3.2s ease-in-out infinite; filter:drop-shadow(0 6px 14px rgba(0,0,0,.7)); cursor:grab; transition:transform .2s ease,filter .2s ease; }
       .bf-guide-char:hover { filter:drop-shadow(0 8px 20px rgba(255,210,74,.6)); transform:scale(1.08); }
@@ -470,7 +470,7 @@ function buildArtScript(dbCards) {
       .bf-guide-text b { color:#ffe49a; }
       .bf-guide-x { position:absolute; top:3px; right:3px; width:24px; height:24px; border-radius:50%; border:none; background:rgba(255,255,255,.12); color:#cbb9ee; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:5; }
       .bf-guide-x:hover { background:rgba(255,255,255,.2); color:#fff; }
-      .bf-guide-show { position:fixed; top:10px; left:10px; z-index:90000; width:52px; height:52px; border-radius:50%; overflow:hidden; border:2.5px solid rgba(255,210,74,.7); background:#130d24; box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 18px rgba(255,210,74,.28); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
+      .bf-guide-show { position:fixed; bottom:10px; left:10px; z-index:90000; width:52px; height:52px; border-radius:50%; overflow:hidden; border:2.5px solid rgba(255,210,74,.7); background:#130d24; box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 18px rgba(255,210,74,.28); cursor:pointer; display:none; padding:0; animation:bfGuideFloat 3.2s ease-in-out infinite; }
       .bf-guide-show img { width:100%; height:100%; object-fit:contain; display:block; background:transparent!important; }
       .bf-guide-show.bf-guide-visible { display:block; }
       @keyframes bfGuideFloat { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-10px) rotate(2deg)} 75%{transform:translateY(5px) rotate(-2deg)} }
@@ -2050,7 +2050,7 @@ function buildArtScript(dbCards) {
     document.body.appendChild(show);
 
     function bfHideGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = true; wrap.style.display = 'none'; show.classList.add('bf-guide-visible'); }
-    function bfShowGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = false; wrap.style.display = ''; wrap.style.left = '8px'; wrap.style.top = '8px'; show.classList.remove('bf-guide-visible'); var titleEl = wrap.querySelector('.bf-guide-title'); var textEl = wrap.querySelector('.bf-guide-text'); if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle; if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText; }
+    function bfShowGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = false; wrap.style.display = ''; wrap.style.left = '8px'; wrap.style.top = 'auto'; wrap.style.bottom = '8px'; show.classList.remove('bf-guide-visible'); var titleEl = wrap.querySelector('.bf-guide-title'); var textEl = wrap.querySelector('.bf-guide-text'); if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle; if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText; }
     // Bind click AND touchend so the close button works on mobile, where the guide's drag touch handlers can swallow the synthetic click.
     var hideBtn = wrap.querySelector('.bf-guide-x');
     hideBtn.addEventListener('click', bfHideGuide); hideBtn.addEventListener('touchend', bfHideGuide, { passive: false });
@@ -2058,7 +2058,7 @@ function buildArtScript(dbCards) {
     // Drag to reposition
     var dragState = null;
     var charDrag = wrap.querySelector('.bf-guide-char');
-    function onDragMove(cx, cy) { if (!dragState) return; wrap.style.left = Math.max(0, Math.min(window.innerWidth - 120, cx - dragState.sx)) + 'px'; wrap.style.top = Math.max(0, Math.min(window.innerHeight - 60, cy - dragState.sy)) + 'px'; }
+    function onDragMove(cx, cy) { if (!dragState) return; wrap.style.left = Math.max(0, Math.min(window.innerWidth - 120, cx - dragState.sx)) + 'px'; wrap.style.top = Math.max(0, Math.min(window.innerHeight - 60, cy - dragState.sy)) + 'px'; wrap.style.bottom = 'auto'; }
     charDrag.addEventListener('mousedown', function(e) { if (e.button) return; dragState = { sx: e.clientX - wrap.offsetLeft, sy: e.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; e.preventDefault(); });
     charDrag.addEventListener('touchstart', function(e) { var t = e.touches[0]; dragState = { sx: t.clientX - wrap.offsetLeft, sy: t.clientY - wrap.offsetTop }; wrap.style.transition = 'none'; }, { passive: true });
     document.addEventListener('mousemove', function(e) { onDragMove(e.clientX, e.clientY); });
