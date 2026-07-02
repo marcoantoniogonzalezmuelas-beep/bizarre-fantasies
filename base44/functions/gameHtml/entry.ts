@@ -2382,6 +2382,14 @@ function buildArtScript(dbCards) {
     });
   }
 
+  // ---- Lobby resilience: si el broker de PeerJS no responde al crear/unirse a
+  // una sala, reintenta una vez con conexión nueva y, si sigue sin responder,
+  // muestra un error claro en vez de quedarse en "Creando sala…" para siempre.
+  function bfLobbyWatch(retryFn, failMsg){var tries=0;var iv=setInterval(function(){var lob=document.getElementById('s-lobby');if(!lob||!lob.classList.contains('active')){clearInterval(iv);return;}var p=(typeof NET!=='undefined')&&NET.peer;if(p&&p.open){clearInterval(iv);return;}tries++;if(tries===1){try{if(p)p.destroy();}catch(e){}if(typeof lobbyStatus==='function')lobbyStatus('Reintentando conexión…');try{retryFn();}catch(e){}}else{clearInterval(iv);var p2=(typeof NET!=='undefined')&&NET.peer;if(!(p2&&p2.open)&&typeof lobbyError==='function')lobbyError(failMsg);}},10000);}
+  function patchLobbyResilience(){if(window.__bfLobbyPatched||typeof window.hostCreate!=='function'||typeof window.clientJoin!=='function')return;window.__bfLobbyPatched=true;
+    var origHC=window.hostCreate;window.hostCreate=function(name,pass,roomName){var ret=origHC.apply(this,arguments);bfLobbyWatch(function(){origHC.call(null,name,pass,roomName);},'No se pudo crear la sala: el servicio de emparejamiento no responde. Espera unos segundos y vuelve a intentarlo, o usa el modo local.');return ret;};
+    var origCJ=window.clientJoin;window.clientJoin=function(code,pass,name){var ret=origCJ.apply(this,arguments);bfLobbyWatch(function(){origCJ.call(null,code,pass,name);},'No se pudo conectar a la sala: el servicio de emparejamiento no responde. Comprueba el código y vuelve a intentarlo en unos segundos.');return ret;};}
+
   // ---- MAIN INIT ----
   function init() {
     injectCoverStyle();
@@ -2396,6 +2404,7 @@ function buildArtScript(dbCards) {
       applyCover();
       patchQuitToHome();
       patchGameRules();
+      patchLobbyResilience();
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
