@@ -9,6 +9,8 @@ export const COACH_PUNKITO_PATCH = `
   if (window.__bfCoachPunkito) return;
   window.__bfCoachPunkito = true;
 
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
   var STUDENT_IMG = "https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/28702748f_punkito_student.png";
 
   var st = document.createElement('style');

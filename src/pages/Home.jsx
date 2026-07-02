@@ -203,6 +203,12 @@ const DRAGGABLE_GUIDE_PATCH = `
 const IS_MOBILE = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
 
 export default function Home() {
+  useEffect(() => {
+    const blockContextMenu = (e) => e.preventDefault();
+    document.addEventListener('contextmenu', blockContextMenu);
+    return () => document.removeEventListener('contextmenu', blockContextMenu);
+  }, []);
+
   const iframeRef = useRef(null);
   const [blobUrl, setBlobUrl] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
