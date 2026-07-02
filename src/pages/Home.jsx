@@ -5,6 +5,7 @@ import { MATCH_MODE_PATCH } from '@/lib/matchModePatch';
 import { COACH_PUNKITO_PATCH } from '@/lib/coachPunkitoPatch';
 import { NARRATOR_ACTION_PATCH } from '@/lib/narratorActionPatch';
 import { BATTLE_UI_PATCH } from '@/lib/battleUiPatch';
+import { BATTLE_PORTRAIT_PATCH } from '@/lib/battlePortraitPatch';
 import { SPELL_FX_PATCH } from '@/lib/spellFxPatch';
 import { ATTACK_FX_PATCH } from '@/lib/attackFxPatch';
 import { SHIELD_FX_PATCH } from '@/lib/shieldFxPatch';
@@ -290,7 +291,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set');
         let patchedData = baseData.includes('</body>')
