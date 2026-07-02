@@ -499,7 +499,7 @@ function buildArtScript(dbCards) {
     function raceSigil(c){return raceSigilSvg(c, '#fff7dc');}
     
     var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
-    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (eh) { eh.gold_border = h.gold_border; eh.foil = h.foil; } else HEROES.push(h); });
+    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (eh) { eh.gold_border = h.gold_border; eh.foil = h.foil; if (h.name) eh.name = h.name; if (h.title) eh.title = h.title; } else HEROES.push(h); });
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
 
     var patched = function(h, variant) {
