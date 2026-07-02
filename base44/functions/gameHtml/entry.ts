@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-02-actionzoom-v141';
+const GAME_PATCH_VERSION = 'bf-2026-07-02-equip-mp-v142';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -924,24 +924,10 @@ function buildArtScript(dbCards) {
       window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { if (msg.__bfTankDone) return; msg.__bfTankDone = 1; var isOturn = (typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over); if (isOturn && !B.pending) return window.bfTankear(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfDebtBid') { if (G.phaseNeeds && !G.phaseNeeds.o) return; if (G.bidsIn && G.bidsIn.o) return; G.bids = G.bids || {}; G.bids.o = { heroId: msg.heroId, amount: Number(msg.amount || 0), debt: true }; if (G.bidsIn) G.bidsIn.o = true; if (typeof renderRecruit === 'function') renderRecruit('p'); if (typeof netSync === 'function') netSync('s-recruit'); if (G.bidsIn && G.bidsIn.p && typeof tryResolveRound === 'function') tryResolveRound(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfXferEq') { if (typeof window.bfTransferToAuction === 'function') window.bfTransferToAuction('o', msg.amount); return; } if (msg && msg.t === 'intent' && msg.op === 'bfBizarroFill') { if (typeof bfNoCoinDialog === 'function') bfNoCoinDialog('o'); return; } return originalHandleIntent.apply(this, arguments); };
       window.handleIntent.__bfTank = 1;
     }
-    // Safety net for multiplayer: attach our OWN 'data' listener on the host's
-    // PeerJS connection (multiple listeners are allowed — the match scoreboard
-    // already uses this pattern). If the game's intent router misses the custom
-    // 'bfTank' intent for any reason, this listener still executes the tank.
-    // msg.__bfTankDone dedupes so it never runs twice for the same message.
-    var bfTankConn = null;
-    setInterval(function() {
-      if (typeof NET === 'undefined' || NET.role !== 'host' || !NET.conn || NET.conn === bfTankConn) return;
-      bfTankConn = NET.conn;
-      try {
-        NET.conn.on('data', function(msg) {
-          if (!msg || msg.t !== 'intent' || msg.op !== 'bfTank' || msg.__bfTankDone) return;
-          msg.__bfTankDone = 1;
-          var ok = typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over && !B.pending;
-          if (ok && typeof window.bfTankear === 'function') window.bfTankear();
-        });
-      } catch (e) {}
-    }, 300);
+    // Safety net: own 'data' listener on the host's PeerJS conn so a 'bfTank'
+    // intent still runs even if the game's intent router misses it. __bfTankDone
+    // dedupes vs the handleIntent wrapper.
+    var bfTankConn=null;setInterval(function(){if(typeof NET==='undefined'||NET.role!=='host'||!NET.conn||NET.conn===bfTankConn)return;bfTankConn=NET.conn;try{NET.conn.on('data',function(m){if(!m||m.t!=='intent'||m.op!=='bfTank'||m.__bfTankDone)return;m.__bfTankDone=1;var ok=typeof B!=='undefined'&&B&&B.current&&B.current.side==='o'&&!B.over&&!B.pending;if(ok&&typeof window.bfTankear==='function')window.bfTankear();});}catch(e){}},300);
   }
   window.__bfPatchTankRules = patchTankRules;
 
@@ -1385,6 +1371,8 @@ function buildArtScript(dbCards) {
 
     var originalBuySpell = window.buySpell;
     window.buySpell = function(side, id) {
+      // Remote (rival) purchase reaching the host via intent: apply directly, no confirm dialog.
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuySpell(side, id);
       // Spells are UNIQUE cards: only one copy allowed. They live in G.spellbook[side] (array of ids).
       if (typeof G !== 'undefined' && G.spellbook && G.spellbook[side] && G.spellbook[side].indexOf(id) !== -1) {
         if (window.notif) notif('Los hechizos son cartas únicas: ya tienes este hechizo.');
@@ -1407,6 +1395,8 @@ function buildArtScript(dbCards) {
     }
     var originalBuyObject = window.buyObject;
     window.buyObject = function(side, id) {
+      // Remote (rival) purchase reaching the host via intent: apply directly, no confirm dialog.
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuyObject(side, id);
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
       if (!item) return;
       // Objects: up to 3 copies of the same object.
@@ -1420,6 +1410,8 @@ function buildArtScript(dbCards) {
 
     var originalDoAssign = window.doAssign;
     window.doAssign = function(side, heroId) {
+      // Remote (rival) equip reaching the host via intent: apply directly, no confirm dialog.
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalDoAssign(side, heroId);
       var hero = findHero(side, heroId);
       var a = G.assign || {};
       var kind = a.kind === 'armor' ? 'armor' : (a.kind === 'ranged' ? 'ranged' : 'melee');
