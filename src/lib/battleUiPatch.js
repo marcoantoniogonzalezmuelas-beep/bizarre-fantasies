@@ -112,8 +112,10 @@ export const BATTLE_UI_PATCH = `
     el.dataset.bfRefit = url;
     detectMargin(url, function(margin){
       if (margin <= 0.015) return; // ilustración limpia: la deja el juego como está
-      var zoom = 1 / (1 - 2 * (margin + 0.06));
-      var pct = Math.max(20, Math.min(44, Math.round((zoom - 1) * 50) + 4));
+      // En la subasta el zoom es más suave (tope 30%) para que los héroes con
+      // marco muy ancho (p.ej. Pacopitón, Radiante) quepan enteros en la carta.
+      var zoom = 1 / (1 - 2 * (margin + 0.04));
+      var pct = Math.max(16, Math.min(30, Math.round((zoom - 1) * 42) + 2));
       el.style.setProperty('--bf-fit', '-' + pct + '%');
       el.dataset.bfFitUrl = url;
     });
