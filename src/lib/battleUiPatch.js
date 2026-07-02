@@ -90,8 +90,13 @@ export const BATTLE_UI_PATCH = `
     detectMargin(url, function(margin){
       if (margin > 0.015) {
         // Carta enmarcada: zoom para saltar borde blanco + marco dorado, cara centrada.
-        var zoom = 1 / (1 - 2 * (margin + 0.06));
-        var pct = Math.max(20, Math.min(44, Math.round((zoom - 1) * 50) + 4));
+        // En el retrato de batalla el zoom es más suave (como en la subasta)
+        // para que el héroe no se salga del cuadro.
+        var battle = el.classList.contains('bf-battle-art');
+        var zoom = 1 / (1 - 2 * (margin + (battle ? 0.04 : 0.06)));
+        var pct = battle
+          ? Math.max(16, Math.min(30, Math.round((zoom - 1) * 42) + 2))
+          : Math.max(20, Math.min(44, Math.round((zoom - 1) * 50) + 4));
         el.style.setProperty('--bf-fit2', '-' + pct + '%');
         el.style.backgroundPosition = 'center 26%';
         if (el.classList.contains('bf-acq-thumb')) { el.style.backgroundSize = (100 + pct * 2) + '% ' + (100 + pct * 2) + '%'; }
