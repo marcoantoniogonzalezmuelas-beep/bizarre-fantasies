@@ -613,14 +613,14 @@ function buildArtScript(dbCards) {
       var mid=c.id.match(/^b_([po])_(.+)$/); if(!mid)return; var s=mid[1], i=mid[2], h=(typeof G!=='undefined'&&G.team&&G.team[s]||[]).find(function(x){return x&&x.id===i;});
       var t=(h&&h._token)?h._token:i, u=ART_BY_ID[t]||ELITE_BY_ID[t], e=c.querySelector('.bf-battle-art');
       var hEpic=h&&h.clan==='Épicas',hGold=hEpic||(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);if(hGold)c.classList.add('bf-epic-gold');if(hFoil&&!c.querySelector('.bf-epic-foil')){var fo=document.createElement('div');fo.className='bf-epic-foil';fo.style.cssText='position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite';c.appendChild(fo);}
-      if(c.dataset.bfBattleArt===t){injectBattleGear(c);return;}
+      if(c.dataset.bfBattleArt===t&&e){injectBattleGear(c);return;}
       if(e){if(u){e.style.backgroundImage='url("'+u+'")';e.style.backgroundSize='cover';e.style.backgroundPosition='center 10%';}c.dataset.bfBattleArt=t;injectBattleGear(c);return;}
       if(!u){injectBattleGear(c);return;}
       var a=document.createElement('div');a.className='bf-battle-art';a.style.backgroundImage='url("'+u+'")';a.style.backgroundSize='cover';a.style.backgroundPosition='center 10%';c.insertBefore(a,c.firstChild);var z=document.createElement('div');z.className='bf-battle-zoom';z.innerHTML='🔍';z.onclick=function(x){x.stopPropagation();bfZoomCard(i,c.classList.contains('elite-mode')||c.classList.contains('bf-auto-elite')?'elite':'normal',s);};c.insertBefore(z,a.nextSibling);c.dataset.bfBattleArt=t;injectBattleGear(c);
     });
     document.querySelectorAll('.ctb-slot').forEach(function(l) {
-      var n=l.querySelector('.ctb-hero-name');if(!n)return;var nx=n.textContent.replace(/★/g,'').trim(),u=ART_BY_NAME[nx];if(!u||l.dataset.bfCtbArt===nx)return;
-      var e=l.querySelector('.bf-ctb-thumb');if(e){e.style.backgroundImage='url("'+u+'")';l.dataset.bfCtbArt=nx;}
+      var n=l.querySelector('.ctb-hero-name');if(!n)return;var nx=n.textContent.replace(/★/g,'').trim(),u=ART_BY_NAME[nx];var e=l.querySelector('.bf-ctb-thumb');if(!u||(l.dataset.bfCtbArt===nx&&e))return;
+      if(e){e.style.backgroundImage='url("'+u+'")';l.dataset.bfCtbArt=nx;}
       else{var t=document.createElement('div');t.className='bf-ctb-thumb';t.style.backgroundImage='url("'+u+'")';l.insertBefore(t,l.firstChild);l.dataset.bfCtbArt=nx;}
     });
   }
@@ -1859,7 +1859,7 @@ function buildArtScript(dbCards) {
   }
 
   function injectRecruitHeroArt() {
-    document.querySelectorAll('.hero-acquired').forEach(function(card){if(card.dataset.bfAcqArt==='1')return;var on=card.getAttribute('onclick')||'',hit=on.split("heroInfo('")[1],id=hit?hit.split("'")[0]:'',url=id?ART_BY_ID[id]:null;if(!url)return;var thumb=document.createElement('div');thumb.className='bf-acq-thumb';thumb.style.backgroundImage='url("'+url+'")';card.insertBefore(thumb,card.firstChild);card.dataset.bfAcqArt='1';});
+    document.querySelectorAll('.hero-acquired').forEach(function(card){if(card.dataset.bfAcqArt==='1'&&card.querySelector('.bf-acq-thumb'))return;var on=card.getAttribute('onclick')||'',hit=on.split("heroInfo('")[1],id=hit?hit.split("'")[0]:'',url=id?ART_BY_ID[id]:null;if(!url)return;var thumb=document.createElement('div');thumb.className='bf-acq-thumb';thumb.style.backgroundImage='url("'+url+'")';card.insertBefore(thumb,card.firstChild);card.dataset.bfAcqArt='1';});
     document.querySelectorAll('.pr-got').forEach(function(row){if(row.dataset.bfResultArt==='1')return;var b=row.querySelector('b');if(!b)return;var url=ART_BY_NAME[b.textContent.trim()];if(!url)return;var thumb=document.createElement('span');thumb.className='bf-result-thumb';var timg=document.createElement('img');timg.src=url;timg.alt='';thumb.appendChild(timg);row.insertBefore(thumb,row.firstChild);row.dataset.bfResultArt='1';});
   }
 
