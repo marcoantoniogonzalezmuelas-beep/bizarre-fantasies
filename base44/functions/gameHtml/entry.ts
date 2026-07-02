@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-02-battlethumbs-v139';
+const GAME_PATCH_VERSION = 'bf-2026-07-02-actionzoom-v141';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -391,9 +391,9 @@ function buildArtScript(dbCards) {
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
 
       /* ---- Action panel of the active hero: AI battle background ---- */
-      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:top center; filter:saturate(1.2) contrast(1.1); opacity:.5; animation:bfPan 16s alternate infinite ease-in-out; }
+      .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 18%; filter:saturate(1.25) contrast(1.12); opacity:.55; animation:bfActionZoom 7s ease-in-out infinite alternate; will-change:transform,background-position; }
       .bf-action-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 10%, rgba(0,0,0,0) 0%, rgba(10,7,18,.85) 60%, rgba(10,7,18,1) 100%); }
-      @keyframes bfPan { 0% { background-position: center 5%; transform: scale(1.05); } 100% { background-position: center 95%; transform: scale(1.15); } }
+      @keyframes bfActionZoom { 0% { transform:scale(1.02); background-position:center 8%; } 100% { transform:scale(1.42); background-position:center 42%; } }
       .bf-action-embers { position:absolute; inset:0; z-index:1; pointer-events:none; background-image:radial-gradient(circle, #ffd24a 1.5px, transparent 1.5px); background-size: 32px 32px; opacity:0.12; animation:bfEmbers 12s linear infinite; }
       @keyframes bfEmbers { 0% { background-position: 0 0; } 100% { background-position: -64px -128px; } }
       .bf-action-host { position:relative !important; overflow:hidden; border-radius:14px; }
