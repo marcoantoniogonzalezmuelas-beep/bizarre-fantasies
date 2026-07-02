@@ -230,6 +230,20 @@ export default function Home() {
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showOracle, setShowOracle] = useState(true);
+  // Móvil: el juego se renderiza a ancho de escritorio (1200px) dentro del
+  // iframe y se escala para caber en la pantalla. El zoom táctil (pellizcar)
+  // lo gestiona el navegador sobre la página, habilitado en el viewport.
+  const [mobScale, setMobScale] = useState(() =>
+    IS_MOBILE && typeof window !== 'undefined' ? Math.min(1, window.innerWidth / 1200) : 1
+  );
+
+  useEffect(() => {
+    if (!IS_MOBILE) return;
+    const update = () => setMobScale(Math.min(1, window.innerWidth / 1200));
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', () => setTimeout(update, 300));
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   useEffect(() => {
     const onMessage = (e) => {
@@ -278,19 +292,6 @@ export default function Home() {
         let patchedData = baseData.includes('</body>')
           ? baseData.replace('</body>', INJECT + '</body>')
           : baseData + INJECT;
-        if (IS_MOBILE) {
-          // En móvil queremos la MISMA vista que en ordenador (incluidas las dos
-          // cartas de héroe en la subasta), todo en miniatura para que quepa en
-          // pantalla, y permitir siempre hacer zoom táctil (pellizcar) para ver
-          // los detalles. Fijamos un ancho de escritorio (1200px) y calculamos
-          // el escalado inicial exacto según el ancho real del dispositivo, en
-          // vez de un valor fijo que no encaja igual en todas las pantallas.
-          const MOBILE_VIEWPORT_PATCH = '<script>(function(){function bfSetScale(){var vp=document.querySelector(\'meta[name="viewport"]\');if(!vp)return;var s=Math.max(0.05,(window.innerWidth/1200));vp.setAttribute(\'content\',\'width=1200, user-scalable=yes, initial-scale=\'+s.toFixed(4)+\', minimum-scale=0.1, maximum-scale=5\');}bfSetScale();window.addEventListener(\'resize\',bfSetScale);window.addEventListener(\'orientationchange\',function(){setTimeout(bfSetScale,300);});})();</script>';
-          patchedData = patchedData.replace(
-            /<meta\s+name=["']viewport["'][^>]*>/i,
-            '<meta name="viewport" content="width=1200, user-scalable=yes, initial-scale=0.3, minimum-scale=0.1, maximum-scale=5">' + MOBILE_VIEWPORT_PATCH
-          );
-        }
         if (IS_MOBILE) {
           // En móvil los iframes con blob: URL grandes a veces no renderizan.
           // srcDoc carga el HTML de forma fiable en navegadores móviles.
@@ -355,7 +356,13 @@ export default function Home() {
           title="Bizarre Fantasies v5"
           {...(srcDoc ? { srcDoc } : { src: blobUrl })}
           onLoad={() => setLoading(false)}
-          className="w-full h-full border-0"
+          className={IS_MOBILE ? 'border-0' : 'w-full h-full border-0'}
+          style={IS_MOBILE ? {
+            width: 1200,
+            height: Math.ceil(window.innerHeight / mobScale),
+            transform: `scale(${mobScale})`,
+            transformOrigin: 'top left',
+          } : undefined}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
