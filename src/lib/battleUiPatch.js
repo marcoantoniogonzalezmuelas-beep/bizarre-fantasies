@@ -13,14 +13,14 @@ export const BATTLE_UI_PATCH = `
 
   var st = document.createElement('style');
   st.textContent = [
-    // ---- 1) Miniaturas del orden de turno: circulares y sin solapar el nombre ----
-    '.ctb-slot{min-width:112px!important;padding-left:54px!important}',
-    '.bf-ctb-thumb{left:6px!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;width:38px!important;height:38px!important;border-radius:50%!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.55)!important;background-color:#0a0710!important;background-size:cover!important}',
-    '.bf-ctb-thumb::before{content:"";position:absolute;inset:-26%;background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
+    // ---- 1) Miniaturas del orden de turno: circulares, más grandes y sin solapar el nombre ----
+    '.ctb-slot{min-width:122px!important;padding-left:62px!important}',
+    '.bf-ctb-thumb{left:6px!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;width:46px!important;height:46px!important;border-radius:50%!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.55)!important;background-color:#0a0710!important;background-size:cover!important}',
+    '.bf-ctb-thumb::before{content:"";position:absolute;inset:var(--bf-fit2,-26%);background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
     // ---- 2) Retrato de héroe en batalla: mismo marco que en equipamiento ----
     '.bhero{padding-left:134px!important}',
     '.bf-battle-art{left:6px!important;top:6px!important;bottom:6px!important;width:116px!important;border-radius:12px!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.45)!important;box-shadow:0 5px 12px rgba(0,0,0,.45)!important;opacity:1!important;transform:none!important}',
-    '.bf-battle-art::before{content:"";position:absolute;inset:-26%;background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
+    '.bf-battle-art::before{content:"";position:absolute;inset:var(--bf-fit2,-26%);background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
     '.bf-battle-art::after{display:none!important}',
     '.bhero.active-turn .bf-battle-art{width:116px!important;transform:none!important;filter:saturate(1.3) contrast(1.14) brightness(1.06)!important;border-color:rgba(255,210,74,.85)!important;box-shadow:0 5px 12px rgba(0,0,0,.45),0 0 16px rgba(255,210,74,.55)!important}'
   ].join('');
@@ -50,6 +50,77 @@ export const BATTLE_UI_PATCH = `
       });
     }catch(e){}
   }
+
+  // ---- 4) Encuadre inteligente de retratos y miniaturas ----
+  // Algunas ilustraciones son la CARTA completa (marco dorado + borde blanco +
+  // nombre abajo). El recorte fijo no basta: detectamos el margen blanco de la
+  // imagen y, si es una carta enmarcada, aplicamos más zoom y centramos la cara
+  // (como se ve en el Oráculo). Si es una ilustración limpia, apenas recortamos.
+  var FIT_CACHE = {};
+  function detectMargin(url, cb){
+    if (FIT_CACHE.hasOwnProperty(url)) { cb(FIT_CACHE[url]); return; }
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function(){
+      try{
+        var w = 48, h = 48, cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        var ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        var d = ctx.getImageData(0, 0, w, h).data;
+        function isBg(x, y){ var i = (y*w+x)*4; return d[i+3] < 10 || (d[i] > 232 && d[i+1] > 232 && d[i+2] > 232); }
+        var mx = Math.floor(w/2), my = Math.floor(h/2);
+        function depth(dir){ var s = 0; if (dir==='t'){ while(s<h && isBg(mx,s)) s++; } else if (dir==='b'){ while(s<h && isBg(mx,h-1-s)) s++; } else if (dir==='l'){ while(s<w && isBg(s,my)) s++; } else { while(s<w && isBg(w-1-s,my)) s++; } return s; }
+        var m = Math.max(depth('t')/h, depth('b')/h, depth('l')/w, depth('r')/w);
+        FIT_CACHE[url] = m; cb(m);
+      }catch(e){ FIT_CACHE[url] = 0; cb(0); }
+    };
+    img.onerror = function(){ FIT_CACHE[url] = 0; cb(0); };
+    img.src = url;
+  }
+  function bgUrl(el){ var m = (el.style.backgroundImage || '').match(/url\\(["']?(.*?)["']?\\)/); return m ? m[1] : ''; }
+  function refitEl(el, url){
+    if (!url || el.dataset.bfRefit === url) return;
+    el.dataset.bfRefit = url;
+    el.dataset.bfFitUrl = url; // evita que el ajuste del juego pise el nuestro
+    detectMargin(url, function(margin){
+      if (margin > 0.015) {
+        // Carta enmarcada: zoom para saltar borde blanco + marco dorado, cara centrada.
+        var zoom = 1 / (1 - 2 * (margin + 0.06));
+        var pct = Math.max(20, Math.min(44, Math.round((zoom - 1) * 50) + 4));
+        el.style.setProperty('--bf-fit2', '-' + pct + '%');
+        el.style.backgroundPosition = 'center 26%';
+        if (el.classList.contains('bf-acq-thumb')) { el.style.backgroundSize = (100 + pct * 2) + '% ' + (100 + pct * 2) + '%'; }
+      } else {
+        // Ilustración limpia: mostrarla casi entera, como en el Oráculo.
+        el.style.setProperty('--bf-fit2', '-8%');
+        if (el.classList.contains('bf-acq-thumb')) { el.style.backgroundSize = 'cover'; }
+      }
+    });
+  }
+  // Cartas grandes de la subasta: si la ilustración es una carta enmarcada,
+  // aumentamos el zoom (--bf-fit) para recortar el marco dorado y el rótulo.
+  function refitCard(el){
+    var s = el.style.getPropertyValue('--bf-art');
+    var m = s && s.match(/url\\(["']?(.*?)["']?\\)/);
+    var url = m ? m[1] : '';
+    if (!url || el.dataset.bfRefit === url) return;
+    el.dataset.bfRefit = url;
+    detectMargin(url, function(margin){
+      if (margin <= 0.015) return; // ilustración limpia: la deja el juego como está
+      var zoom = 1 / (1 - 2 * (margin + 0.06));
+      var pct = Math.max(20, Math.min(44, Math.round((zoom - 1) * 50) + 4));
+      el.style.setProperty('--bf-fit', '-' + pct + '%');
+      el.dataset.bfFitUrl = url;
+    });
+  }
+  function refitAll(){
+    document.querySelectorAll('.bf-battle-art,.bf-ctb-thumb,.bf-acq-thumb').forEach(function(el){ refitEl(el, bgUrl(el)); });
+    document.querySelectorAll('.bf-hero-card,.cf-art.has-art').forEach(refitCard);
+  }
+  setInterval(refitAll, 600);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refitAll);
+  else refitAll();
 
   var tries = 0;
   var iv = setInterval(function(){
