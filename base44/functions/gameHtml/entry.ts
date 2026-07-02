@@ -2307,7 +2307,7 @@ function buildArtScript(dbCards) {
         badge.insertBefore(img, badge.firstChild);
         badge.dataset.bfIcon = '1';
       }
-    });
+    }); (document.getElementById('s-recruit') || document.body).querySelectorAll('button, div, span').forEach(function(el) { if (el.dataset.bfIcon === '1' || el.children.length) return; var m = { 'CUERPO A CUERPO': 'CC', 'A DISTANCIA': 'AD', 'MAGIA': 'HE' }[el.textContent.trim()]; if (m && window.__BF_ROLE_EMBLEM) { var img2 = document.createElement('img'); img2.className = 'bf-role-emblem'; img2.src = window.__BF_ROLE_EMBLEM[m]; el.insertBefore(img2, el.firstChild); el.dataset.bfIcon = '1'; } });
   }
 
   function injectArtIntoDOM() {
