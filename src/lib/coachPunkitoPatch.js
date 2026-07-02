@@ -15,6 +15,10 @@ export const COACH_PUNKITO_PATCH = `
 
   var st = document.createElement('style');
   st.textContent = [
+    // El diálogo del tutorial debe quedar SIEMPRE por encima de los controles
+    // de puja (que llevan z-index 90001 por otra regla global de botones).
+    '#coach{position:relative!important;z-index:95050!important;background:linear-gradient(180deg,#1c1533,#130d24)!important}',
+    '#coach *{z-index:auto!important}',
     // El coach del tutorial muestra a Punkito estudiante en vez del emoji 🧙.
     '#coach .coach-ico{display:none!important}',
     '#coach .bf-coach-punkito{flex:0 0 auto;width:74px;height:74px;display:flex;align-items:flex-end;justify-content:center;position:relative;animation:bfStudHop 1.8s ease-in-out infinite}',
