@@ -90,13 +90,12 @@ export const BATTLE_UI_PATCH = `
     detectMargin(url, function(margin){
       if (margin > 0.015) {
         // Carta enmarcada: zoom para saltar borde blanco + marco dorado, cara centrada.
-        // En el retrato de batalla el zoom es más suave (como en la subasta)
-        // para que el héroe no se salga del cuadro.
-        var battle = el.classList.contains('bf-battle-art');
-        var zoom = 1 / (1 - 2 * (margin + (battle ? 0.04 : 0.06)));
-        var pct = battle
-          ? Math.max(16, Math.min(30, Math.round((zoom - 1) * 42) + 2))
-          : Math.max(20, Math.min(44, Math.round((zoom - 1) * 50) + 4));
+        // Solo las cartas con marco MUY ancho (las que se salían del cuadro,
+        // p.ej. Pacopitón, Radiante) llevan un tope de zoom más suave; el resto
+        // mantiene su encuadre de siempre.
+        var zoom = 1 / (1 - 2 * (margin + 0.06));
+        var cap = (el.classList.contains('bf-battle-art') && margin > 0.09) ? 30 : 44;
+        var pct = Math.max(20, Math.min(cap, Math.round((zoom - 1) * 50) + 4));
         el.style.setProperty('--bf-fit2', '-' + pct + '%');
         el.style.backgroundPosition = 'center 26%';
         if (el.classList.contains('bf-acq-thumb')) { el.style.backgroundSize = (100 + pct * 2) + '% ' + (100 + pct * 2) + '%'; }
@@ -117,10 +116,11 @@ export const BATTLE_UI_PATCH = `
     el.dataset.bfRefit = url;
     detectMargin(url, function(margin){
       if (margin <= 0.015) return; // ilustración limpia: la deja el juego como está
-      // En la subasta el zoom es más suave (tope 30%) para que los héroes con
-      // marco muy ancho (p.ej. Pacopitón, Radiante) quepan enteros en la carta.
-      var zoom = 1 / (1 - 2 * (margin + 0.04));
-      var pct = Math.max(16, Math.min(30, Math.round((zoom - 1) * 42) + 2));
+      // Solo las cartas con marco MUY ancho (las que se salían, p.ej. Pacopitón,
+      // Radiante) llevan tope de zoom suave; el resto mantiene su encuadre.
+      var zoom = 1 / (1 - 2 * (margin + 0.06));
+      var cap = margin > 0.09 ? 30 : 44;
+      var pct = Math.max(20, Math.min(cap, Math.round((zoom - 1) * 50) + 4));
       el.style.setProperty('--bf-fit', '-' + pct + '%');
       el.dataset.bfFitUrl = url;
     });
