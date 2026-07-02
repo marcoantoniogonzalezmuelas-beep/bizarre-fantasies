@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-02-equip-mp-v142';
+const GAME_PATCH_VERSION = 'bf-2026-07-02-clientflip-v143';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -477,6 +477,12 @@ function buildArtScript(dbCards) {
       @media(max-width:420px){.chip.bf-chip-card{width:76px!important;height:104px!important}.bf-confirm-box{width:96vw!important}.bf-confirm-btn{font-size:13px!important;padding:10px 8px!important}.bf-quick-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important}}
       @media(max-height:480px) and (orientation:landscape){.bf-guide{top:4px!important}.bf-guide-char{width:50px!important;height:50px!important}.bf-guide-bubble{padding:6px 30px 7px 10px!important}}
       .bf-coin-fly{position:fixed;z-index:100050;pointer-events:none;font-size:26px;line-height:1;transform:translate(-50%,-50%) scale(.85);filter:drop-shadow(0 3px 6px rgba(0,0,0,.6)) drop-shadow(0 0 8px rgba(255,210,74,.85));opacity:1;transition:left .72s cubic-bezier(.3,.55,.25,1),top .72s cubic-bezier(.3,.55,.25,1),transform .72s ease,opacity .72s ease;will-change:left,top,transform,opacity} html.bf-locked,html.bf-locked body{font-size:17px!important}html.bf-locked .screen{max-width:1180px!important;margin-left:auto!important;margin-right:auto!important}html.bf-locked .chip.bf-chip-card{width:84px!important;height:116px!important}@media(max-width:420px){html.bf-locked .chip.bf-chip-card{width:76px!important;height:104px!important}}html.bf-locked .bf-role-emblem{width:18px;height:18px}html.bf-locked .bf-gear-icon{width:34px;height:34px}
+      html.bf-client-flip .r-layout>:nth-child(1){order:3}
+      html.bf-client-flip .r-layout>:nth-child(2){order:2}
+      html.bf-client-flip .r-layout>:nth-child(3){order:1}
+      html.bf-client-flip .b-grid>:nth-child(1){order:3}
+      html.bf-client-flip .b-grid>:nth-child(2){order:2}
+      html.bf-client-flip .b-grid>:nth-child(3){order:1}
     \`;
     document.head.appendChild(style);
     document.documentElement.classList.add('bf-locked');
@@ -900,23 +906,11 @@ function buildArtScript(dbCards) {
     }
     // Redirect any hit aimed at a protected ally onto the tank that's soaking.
     var originalDealDamage = window.dealDamage;
-    window.dealDamage = function(target, amount, opts) {
-      var prot = bfTankProtector(target);
-      if (prot) {
-        if (typeof pushLog === 'function') pushLog('li', '🛡️ ' + prot.name + ' intercepta el golpe dirigido a ' + target.name + '.');
-        bfTankBurstById(prot.id);
-        return originalDealDamage.call(this, prot, amount, opts);
-      }
-      return originalDealDamage.apply(this, arguments);
-    };
+    window.dealDamage = function(target, amount, opts) { var prot = bfTankProtector(target); if (prot) { if (typeof pushLog === 'function') pushLog('li', '🛡️ ' + prot.name + ' intercepta el golpe dirigido a ' + target.name + '.'); bfTankBurstById(prot.id); return originalDealDamage.call(this, prot, amount, opts); } return originalDealDamage.apply(this, arguments); };
     // Tank protection lasts until the tank's OWN next turn — clear it then.
     if (typeof window.stepTurn === 'function' && !window.stepTurn.__bfTank) {
       var originalStepTurn = window.stepTurn;
-      window.stepTurn = function() {
-        var BB = (typeof B !== 'undefined') ? B : null;
-        if (BB && BB.current) { var cur = getHero(BB.current.side, BB.current.id); if (cur && cur._bfTank) cur._bfTank = false; }
-        return originalStepTurn.apply(this, arguments);
-      };
+      window.stepTurn = function() { var BB = (typeof B !== 'undefined') ? B : null; if (BB && BB.current) { var cur = getHero(BB.current.side, BB.current.id); if (cur && cur._bfTank) cur._bfTank = false; } return originalStepTurn.apply(this, arguments); };
       window.stepTurn.__bfTank = 1;
     }
     if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfTank) {
@@ -2301,6 +2295,7 @@ function buildArtScript(dbCards) {
   }
 
   function injectArtIntoDOM() {
+    if (typeof NET !== 'undefined' && NET.role === 'client') document.documentElement.classList.add('bf-client-flip'); else document.documentElement.classList.remove('bf-client-flip');
     injectHeroArt();
     injectEquipArt();
     if (window.__bfInjectAutoEquipBtn) window.__bfInjectAutoEquipBtn();

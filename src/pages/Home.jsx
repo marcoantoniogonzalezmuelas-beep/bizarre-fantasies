@@ -8,7 +8,7 @@ import { BATTLE_UI_PATCH } from '@/lib/battleUiPatch';
 import { MOBILE_PINCH_PATCH } from '@/lib/mobilePinchZoomPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-02-equip-mp-v142';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-02-clientflip-v143';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
