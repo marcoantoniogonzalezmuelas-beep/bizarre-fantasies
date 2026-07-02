@@ -2382,13 +2382,12 @@ function buildArtScript(dbCards) {
     });
   }
 
-  // ---- Lobby resilience: si el broker de PeerJS no responde al crear/unirse a
-  // una sala, reintenta una vez con conexión nueva y, si sigue sin responder,
-  // muestra un error claro en vez de quedarse en "Creando sala…" para siempre.
+  // ---- Lobby resilience: reintento + error claro si el broker no responde.
   function bfLobbyWatch(retryFn, failMsg){var tries=0;var iv=setInterval(function(){var lob=document.getElementById('s-lobby');if(!lob||!lob.classList.contains('active')){clearInterval(iv);return;}var p=(typeof NET!=='undefined')&&NET.peer;if(p&&p.open){clearInterval(iv);return;}tries++;if(tries===1){try{if(p)p.destroy();}catch(e){}if(typeof lobbyStatus==='function')lobbyStatus('Reintentando conexión…');try{retryFn();}catch(e){}}else{clearInterval(iv);var p2=(typeof NET!=='undefined')&&NET.peer;if(!(p2&&p2.open)&&typeof lobbyError==='function')lobbyError(failMsg);}},10000);}
   function patchLobbyResilience(){if(window.__bfLobbyPatched||typeof window.hostCreate!=='function'||typeof window.clientJoin!=='function')return;window.__bfLobbyPatched=true;
     var origHC=window.hostCreate;window.hostCreate=function(name,pass,roomName){var ret=origHC.apply(this,arguments);bfLobbyWatch(function(){origHC.call(null,name,pass,roomName);},'No se pudo crear la sala: el servicio de emparejamiento no responde. Espera unos segundos y vuelve a intentarlo, o usa el modo local.');return ret;};
     var origCJ=window.clientJoin;window.clientJoin=function(code,pass,name){var ret=origCJ.apply(this,arguments);bfLobbyWatch(function(){origCJ.call(null,code,pass,name);},'No se pudo conectar a la sala: el servicio de emparejamiento no responde. Comprueba el código y vuelve a intentarlo en unos segundos.');return ret;};}
+  function patchPeerTurn(){if(window.__bfPeerTurn||!window.Peer)return;window.__bfPeerTurn=true;var P=window.Peer;var ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]};var W=function(id,opts){if(id&&typeof id==='object'){opts=id;id=undefined;}opts=opts||{};if(!opts.config)opts.config=ICE;return id===undefined?new P(opts):new P(id,opts);};W.prototype=P.prototype;window.Peer=W;}
 
   // ---- MAIN INIT ----
   function init() {
@@ -2404,7 +2403,7 @@ function buildArtScript(dbCards) {
       applyCover();
       patchQuitToHome();
       patchGameRules();
-      patchLobbyResilience();
+      patchLobbyResilience(); patchPeerTurn();
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
