@@ -880,11 +880,11 @@ function buildArtScript(dbCards) {
     // The active hero declares itself a tank: until its next turn (and while alive)
     // it absorbs every hit aimed at its allies. Uses the turn like any action.
     window.bfTankear = function() {
-      if (typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function') { sendIntent('bfTank', {}); return; }
+      if (typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function') { sendIntent('bfTank', {}); if (typeof notif === 'function') notif('🛡️ Tu héroe se planta como MURO DE HIERRO.'); return; }
       var BB = (typeof B !== 'undefined') ? B : null, h = (BB && BB.current) ? getHero(BB.current.side, BB.current.id) : null;
       if (!h) return;
       var card = getBattleCard(BB.current.side, h.id);
-      if (h._bfTank) { h._bfTank = false; if (typeof pushLog === 'function') pushLog('li', h.name + ' deja de tanquear.'); if (card) addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:#ffb43a">Tanque desactivado</div>', 900); if (typeof injectActionPanelBg === 'function') injectActionPanelBg(); return; }
+      if (h._bfTank) { h._bfTank = false; if (typeof pushLog === 'function') pushLog('li', h.name + ' deja de tanquear.'); if (card) addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:#ffb43a">Tanque desactivado</div>', 900); if (typeof injectActionPanelBg === 'function') injectActionPanelBg(); if (typeof renderBattle === 'function') renderBattle(); if (typeof netSync === 'function') netSync('s-battle'); return; }
       var otherTank = (G.team && G.team[BB.current.side] || []).find(function(x) { return x && x.alive && x._bfTank && x !== h; }); if (otherTank) { if (typeof notif === 'function') notif(otherTank.name + ' ya está tanqueando. Solo un héroe puede tanquear a la vez.'); return; }
       h._bfTank = true;
       if (typeof pushLog === 'function') pushLog('li', h.name + ' se planta como un MURO DE HIERRO y absorberá los golpes de su equipo.');
@@ -921,9 +921,27 @@ function buildArtScript(dbCards) {
     }
     if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfTank) {
       var originalHandleIntent = window.handleIntent;
-      window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { var isOturn = (typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over); if (isOturn && !B.pending) return window.bfTankear(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfDebtBid') { if (G.phaseNeeds && !G.phaseNeeds.o) return; if (G.bidsIn && G.bidsIn.o) return; G.bids = G.bids || {}; G.bids.o = { heroId: msg.heroId, amount: Number(msg.amount || 0), debt: true }; if (G.bidsIn) G.bidsIn.o = true; if (typeof renderRecruit === 'function') renderRecruit('p'); if (typeof netSync === 'function') netSync('s-recruit'); if (G.bidsIn && G.bidsIn.p && typeof tryResolveRound === 'function') tryResolveRound(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfXferEq') { if (typeof window.bfTransferToAuction === 'function') window.bfTransferToAuction('o', msg.amount); return; } if (msg && msg.t === 'intent' && msg.op === 'bfBizarroFill') { if (typeof bfNoCoinDialog === 'function') bfNoCoinDialog('o'); return; } return originalHandleIntent.apply(this, arguments); };
+      window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { if (msg.__bfTankDone) return; msg.__bfTankDone = 1; var isOturn = (typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over); if (isOturn && !B.pending) return window.bfTankear(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfDebtBid') { if (G.phaseNeeds && !G.phaseNeeds.o) return; if (G.bidsIn && G.bidsIn.o) return; G.bids = G.bids || {}; G.bids.o = { heroId: msg.heroId, amount: Number(msg.amount || 0), debt: true }; if (G.bidsIn) G.bidsIn.o = true; if (typeof renderRecruit === 'function') renderRecruit('p'); if (typeof netSync === 'function') netSync('s-recruit'); if (G.bidsIn && G.bidsIn.p && typeof tryResolveRound === 'function') tryResolveRound(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfXferEq') { if (typeof window.bfTransferToAuction === 'function') window.bfTransferToAuction('o', msg.amount); return; } if (msg && msg.t === 'intent' && msg.op === 'bfBizarroFill') { if (typeof bfNoCoinDialog === 'function') bfNoCoinDialog('o'); return; } return originalHandleIntent.apply(this, arguments); };
       window.handleIntent.__bfTank = 1;
     }
+    // Safety net for multiplayer: attach our OWN 'data' listener on the host's
+    // PeerJS connection (multiple listeners are allowed — the match scoreboard
+    // already uses this pattern). If the game's intent router misses the custom
+    // 'bfTank' intent for any reason, this listener still executes the tank.
+    // msg.__bfTankDone dedupes so it never runs twice for the same message.
+    var bfTankConn = null;
+    setInterval(function() {
+      if (typeof NET === 'undefined' || NET.role !== 'host' || !NET.conn || NET.conn === bfTankConn) return;
+      bfTankConn = NET.conn;
+      try {
+        NET.conn.on('data', function(msg) {
+          if (!msg || msg.t !== 'intent' || msg.op !== 'bfTank' || msg.__bfTankDone) return;
+          msg.__bfTankDone = 1;
+          var ok = typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over && !B.pending;
+          if (ok && typeof window.bfTankear === 'function') window.bfTankear();
+        });
+      } catch (e) {}
+    }, 300);
   }
   window.__bfPatchTankRules = patchTankRules;
 
