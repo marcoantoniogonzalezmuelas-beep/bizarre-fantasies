@@ -299,7 +299,9 @@ export default function Home() {
           createdUrl = URL.createObjectURL(new Blob([patchedData], { type: 'text/html' }));
           setBlobUrl(createdUrl);
         }
-        setLoading(false);
+        // No quitamos el loading aquí: el iframe todavía no ha renderizado su
+        // contenido. Se oculta en el onLoad del iframe para evitar el flash de
+        // iconos grandes/sin estilo mientras el juego termina de montarse.
       } catch {
         if (cancelled) return;
         if (attempt < MAX_LOAD_ATTEMPTS) {
