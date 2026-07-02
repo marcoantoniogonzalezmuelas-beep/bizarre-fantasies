@@ -17,12 +17,12 @@ export const BATTLE_UI_PATCH = `
     '.ctb-slot{min-width:122px!important;padding-left:62px!important}',
     '.bf-ctb-thumb{left:6px!important;top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;width:46px!important;height:46px!important;border-radius:50%!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.55)!important;background-color:#0a0710!important;background-size:cover!important}',
     '.bf-ctb-thumb::before{content:"";position:absolute;inset:var(--bf-fit2,-26%);background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
-    // ---- 2) Retrato de héroe en batalla: mismo marco que en equipamiento ----
-    '.bhero{padding-left:134px!important}',
-    '.bf-battle-art{left:6px!important;top:6px!important;bottom:6px!important;width:116px!important;border-radius:12px!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.45)!important;box-shadow:0 5px 12px rgba(0,0,0,.45)!important;opacity:1!important;transform:none!important}',
-    '.bf-battle-art::before{content:"";position:absolute;inset:var(--bf-fit2,-26%);background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
+    // ---- 2) Retrato de héroe en batalla: más grande y con menos recorte para que el héroe quepa entero ----
+    '.bhero{padding-left:162px!important}',
+    '.bf-battle-art{left:6px!important;top:6px!important;bottom:6px!important;width:144px!important;border-radius:12px!important;overflow:hidden!important;border:1.5px solid rgba(255,210,74,.45)!important;box-shadow:0 5px 12px rgba(0,0,0,.45)!important;opacity:1!important;transform:none!important}',
+    '.bf-battle-art::before{content:"";position:absolute;inset:var(--bf-fit2,-12%);background-image:inherit;background-size:cover;background-position:inherit;background-repeat:no-repeat}',
     '.bf-battle-art::after{display:none!important}',
-    '.bhero.active-turn .bf-battle-art{width:116px!important;transform:none!important;filter:saturate(1.3) contrast(1.14) brightness(1.06)!important;border-color:rgba(255,210,74,.85)!important;box-shadow:0 5px 12px rgba(0,0,0,.45),0 0 16px rgba(255,210,74,.55)!important}'
+    '.bhero.active-turn .bf-battle-art{width:144px!important;transform:none!important;filter:saturate(1.3) contrast(1.14) brightness(1.06)!important;border-color:rgba(255,210,74,.85)!important;box-shadow:0 5px 12px rgba(0,0,0,.45),0 0 16px rgba(255,210,74,.55)!important}'
   ].join('');
   document.head.appendChild(st);
 
