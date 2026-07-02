@@ -47,7 +47,7 @@ export const HERO_ART = [
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3aedc4e62_generated_image.png', // 042 Xerath
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0b3987343_generated_image.png', // 043 El Ajedrecista
   'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2cfe0922c_generated_image.png', // 044 El Rolero
-  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9c56aea64_generated_image.png', // 045 El Político
+  'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4ad6c76c5_generated_image.png', // 045 El Político
 ];
 
 // Heroes elite (same order)
