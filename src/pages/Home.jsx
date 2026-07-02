@@ -154,6 +154,18 @@ const DRAGGABLE_GUIDE_PATCH = `
   style.textContent = '.bf-guide{pointer-events:auto!important;touch-action:none!important;cursor:grab!important}.bf-guide-char,.bf-guide-bubble{pointer-events:auto!important}.bf-guide-x{cursor:pointer!important}.bf-guide-show{cursor:grab!important;touch-action:none!important}.bf-guide-show:active{cursor:grabbing!important}';
   document.head.appendChild(style);
 
+  // Avisa a la página padre de qué pantalla del juego está activa, para que
+  // pueda mostrar/ocultar el botón del Oráculo Bizarro (solo en la portada).
+  function notifyActiveScreen(){
+    var active = document.querySelector('.screen.active');
+    var id = active ? active.id : 's-title';
+    if (window.__bfLastScreenId === id) return;
+    window.__bfLastScreenId = id;
+    try { window.parent.postMessage({ bfScreen: id }, '*'); } catch (e) {}
+  }
+  setInterval(notifyActiveScreen, 300);
+  notifyActiveScreen();
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchAllGuideDrag);
   else patchAllGuideDrag();
   new MutationObserver(patchAllGuideDrag).observe(document.documentElement, { childList:true, subtree:true });
@@ -216,6 +228,17 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showOracle, setShowOracle] = useState(true);
+
+  useEffect(() => {
+    const onMessage = (e) => {
+      if (e.data && typeof e.data.bfScreen === 'string') {
+        setShowOracle(e.data.bfScreen === 's-title');
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
 
   useEffect(() => {
     base44.entities.Card.list('number', 200).then(cards => {
@@ -310,16 +333,18 @@ export default function Home() {
           <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
         </div>
       )}
-      {/* Oráculo Bizarro — acceso al catálogo */}
-      <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
-        <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
-          <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
-        </div>
-        <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
-          <div className="font-heading font-black text-[13px] text-[#e2b0ff] leading-none tracking-wide">Oráculo Bizarro</div>
-          <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} cartas · Base Set</div>
-        </div>
-      </Link>
+      {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
+      {showOracle && (
+        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
+          <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
+            <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
+          </div>
+          <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
+            <div className="font-heading font-black text-[13px] text-[#e2b0ff] leading-none tracking-wide">Oráculo Bizarro</div>
+            <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} cartas · Base Set</div>
+          </div>
+        </Link>
+      )}
 
       {(blobUrl || srcDoc) && (
         <iframe
