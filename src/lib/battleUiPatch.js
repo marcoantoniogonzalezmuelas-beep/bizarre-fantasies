@@ -27,6 +27,11 @@ export const BATTLE_UI_PATCH = `
   document.head.appendChild(st);
 
   // ---- 3) 3 vs 3 garantizado: completar con héroes Bizarros al cerrar la subasta ----
+  function bfTokenPool(){
+    var t = (typeof TOKENS !== 'undefined' && TOKENS && TOKENS.length) ? TOKENS : (window.TOKENS || []);
+    if (t && t.length) return t;
+    return (window.HEROES || []).filter(function(h){ return h && String(h.id || '').indexOf('tk_') === 0; });
+  }
   function bfFillBizarros(){
     try{
       if (typeof G === 'undefined' || !G || !G.team) return;
@@ -35,10 +40,9 @@ export const BATTLE_UI_PATCH = `
         while (((G.team[side] || []).length) < 3 && guard++ < 5) {
           var inTeam = {};
           (G.team[side] || []).forEach(function(h){ if (h) { inTeam[h.id] = true; if (h._token) inTeam[h._token] = true; } });
-          var pool = (window.HEROES || []).filter(function(h){
-            return h && String(h.id || '').indexOf('tk_') === 0 && !inTeam[h.id];
-          });
-          if (!pool.length) pool = (window.HEROES || []).filter(function(h){ return h && String(h.id || '').indexOf('tk_') === 0; });
+          var all = bfTokenPool();
+          var pool = all.filter(function(h){ return h && !inTeam[h.id]; });
+          if (!pool.length) pool = all;
           if (!pool.length) break;
           var tk = pool[Math.floor(Math.random() * pool.length)];
           var inst = (typeof makeInstance === 'function') ? makeInstance(tk) : JSON.parse(JSON.stringify(tk));
@@ -129,8 +133,43 @@ export const BATTLE_UI_PATCH = `
       var orig = window.finishAuction;
       window.finishAuction = function(){ if (typeof NET === 'undefined' || NET.role !== 'client') bfFillBizarros(); return orig.apply(this, arguments); };
       window.finishAuction.__bf3v3 = 1;
-      clearInterval(iv);
     }
+    // Red de seguridad definitiva: aunque la subasta acabe raro, ningún equipo
+    // entra a la batalla con menos de 3 héroes — se rellena con Bizarros.
+    if (typeof window.startBattle === 'function' && !window.startBattle.__bf3v3) {
+      var origSB = window.startBattle;
+      window.startBattle = function(){ if (typeof NET === 'undefined' || NET.role !== 'client') bfFillBizarros(); return origSB.apply(this, arguments); };
+      window.startBattle.__bf3v3 = 1;
+    }
+    // La IA aprende a usar monedas de equipamiento: si no le llega para el
+    // héroe más barato del pool, transfiere lo justo (máx. 70 en total, como
+    // el jugador) a la subasta antes de pujar.
+    if (typeof window.aiBid === 'function' && !window.aiBid.__bfXfer) {
+      var origAB = window.aiBid;
+      window.aiBid = function(s){
+        try{
+          if (typeof G !== 'undefined' && G && ((G.team && G.team[s] && G.team[s].length) || 0) < 3) {
+            var c = Number((G.coins && G.coins[s]) || 0);
+            var pool = (G.epicCands && G.epicCands[s]) || G.cands || [];
+            var mc = Infinity;
+            for (var i = 0; i < pool.length; i++) { var co = Number((pool[i] && pool[i].cost) || 0); if (co < mc) mc = co; }
+            if (mc < Infinity && c < mc) {
+              if (!G.bfEquipXfer) G.bfEquipXfer = { p: 0, o: 0 };
+              var xl = 70 - (G.bfEquipXfer[s] || 0);
+              var t = Math.max(0, Math.min(xl, (mc - c) + 5));
+              if (t > 0) {
+                G.coins[s] = c + t;
+                G.bfEquipXfer[s] = (G.bfEquipXfer[s] || 0) + t;
+                if (typeof pushLog === 'function') pushLog('lx', '🪙 ' + ((G.names && G.names[s]) || 'La IA') + ' transfiere ' + t + ' monedas de equipamiento a la subasta para poder reclutar.');
+              }
+            }
+          }
+        }catch(e){}
+        return origAB.apply(this, arguments);
+      };
+      window.aiBid.__bfXfer = 1;
+    }
+    if (window.finishAuction && window.finishAuction.__bf3v3 && window.startBattle && window.startBattle.__bf3v3 && window.aiBid && window.aiBid.__bfXfer) clearInterval(iv);
     if (tries > 120) clearInterval(iv);
   }, 150);
 })();
