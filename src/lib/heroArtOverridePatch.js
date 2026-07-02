@@ -27,7 +27,7 @@ export const HERO_ART_OVERRIDE_PATCH = `
     chi: { n: IMG+'786d9a5d9_generated_image.png', e: IMG+'f26659e0d_generated_image.png' },
     man: { n: IMG+'43b4d55e6_generated_image.png', e: IMG+'d0e15feb4_generated_image.png' },
     pac: { n: IMG+'d9a306f6c_generated_image.png', e: IMG+'17c4ad974_generated_image.png' },
-    doc: { n: IMG+'f8573b278_generated_image.png', e: IMG+'393cbc51d_generated_image.png' },
+    doc: { n: IMG+'c3b8b7e4c_generated_image.png', e: IMG+'04c4b228f_generated_image.png' },
     aje: { n: IMG+'0b8c4d069_generated_image.png', e: IMG+'5bbd13d6c_generated_image.png' },
     rol: { n: IMG+'1de790e63_generated_image.png', e: IMG+'e7779bf69_generated_image.png' },
     mor: { n: IMG+'44d09cf98_generated_image.png', e: IMG+'8da13d36f_generated_image.png' },
