@@ -443,8 +443,8 @@ function buildArtScript(dbCards) {
       .bf-zoom-cardwrap { position:relative; width:min(420px,90vw); height:min(640px,86vh); aspect-ratio:7/10; box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-zoom-cardwrap .bf-hero-card { position:absolute; inset:0; }
       .bf-zoom-bonuswrap { position:relative; width:min(420px,90vw); height:min(560px,84vh); box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
-      .bf-zoom-close { position:absolute; top:16px; right:16px; z-index:2; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; background:rgba(0,0,0,.6); border:1px solid rgba(255,210,74,.55); color:#ffe49a; }
-      .bf-zoom-close:hover { background:rgba(0,0,0,.85); }
+      .bf-zoom-close { position:absolute; top:-14px; right:-14px; z-index:20; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:900; line-height:1; cursor:pointer; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); border:3px solid #fff5dc; color:#3a2600; box-shadow:0 6px 18px rgba(0,0,0,.75),0 0 18px rgba(255,210,74,.65); padding:0; touch-action:manipulation; }
+      .bf-zoom-close:active { transform:scale(.92); }
 
       /* ---- Guía Punkito: draggable, animado ---- */
       .bf-guide { position:fixed; bottom:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; user-select:none; }
@@ -528,17 +528,18 @@ function buildArtScript(dbCards) {
     if (!h) return;
     var existing = document.getElementById('bf-zoom-overlay'); if (existing) existing.remove();
     var overlay = document.createElement('div'); overlay.id = 'bf-zoom-overlay'; overlay.className = 'bf-zoom-overlay';
-    overlay.innerHTML = '<button class="bf-zoom-close" aria-label="Cerrar">✕</button><div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '</div>';
+    overlay.innerHTML = '<div class="bf-zoom-cardwrap">' + window.cardFace(h, variant === 'elite' ? 'elite' : 'normal') + '<button class="bf-zoom-close" aria-label="Cerrar">✕</button></div>';
     document.body.appendChild(overlay);
     var innerBtn = overlay.querySelector('.bf-zoom-cardwrap .bf-zoom-btn'); if (innerBtn) innerBtn.remove();
     function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
-    overlay.addEventListener('click', function(e) { if (e.target === overlay || e.target.className === 'bf-zoom-close') close(); });
+    var xBtn = overlay.querySelector('.bf-zoom-close'); if (xBtn) xBtn.addEventListener('click', function(e) { e.stopPropagation(); close(); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
     var wrap = overlay.querySelector('.bf-zoom-cardwrap'); if (wrap) wrap.addEventListener('click', function(e) { e.stopPropagation(); });
   }
   window.bfZoomCard = bfZoomCard;
 
   // ---- Full-screen bonus/restador zoom (lupa) — shows the whole bonus card enlarged ----
-  function bfZoomBonus(name,url,found){if(!url)return;var ex=document.getElementById('bf-zoom-overlay');if(ex)ex.remove();var ov=document.createElement('div');ov.id='bf-zoom-overlay';ov.className='bf-zoom-overlay';var it=found?found.item:null;var ty=found?found.kind:'bonus';if(!it){var ob=typeof OBJECTS!=='undefined'?OBJECTS.find(function(o){return o&&o.name===name;}):null;var sp=typeof SPELLS!=='undefined'?SPELLS.find(function(s){return s&&s.name===name;}):null;var bo=typeof BONUS!=='undefined'?BONUS.find(function(b){return b&&b.name===name;}):null;if(ob){it=ob;ty='object';}else if(sp){it=sp;ty='spell';}else if(bo){it=bo;ty='bonus';}}var num=it?(it.num||it.number||0):0;var desc=it?(it.txt||it.description||''):'';var cost=it&&it.cost!=null&&it.cost!=='—'?it.cost:null;var TC={spell:'#8b6bff',melee:'#e0653f',ranged:'#3fb56a',armor:'#5a8fd6',object:'#d6b13f',bonus:'#d39b22'};var EC={fuego:'#d6552a',hielo:'#3aa0c8',rayo:'#caa12f',agua:'#2f7fd6',curacion:'#2f9d54',proteccion:'#caa12f',arcano:'#7a5fd0',estado:'#8a5fb0'};var bc=TC[ty]||'#d39b22';var tl=ty==='spell'?(it&&it.element?it.element.toUpperCase():(it?it.tag:'')):(it?it.tag:'');if(ty==='bonus')tl=it&&(it.type||it.tag)?(it.type||it.tag):'BON';var bg=ty==='spell'&&it&&it.element?(EC[it.element.toLowerCase()]||bc):bc;var sl=null;if(it){if(it.cc!=null)sl='+'+it.cc+' CC';else if(it.power!=null)sl='Pot. '+it.power;else if(it.hp!=null&&ty==='armor')sl='+'+it.hp+' HP';else if(it.mana!=null)sl='🔵 '+it.mana+' maná';}var isFoil=(it&&it.foil===true)||name==='Transformer';var ht='<div class="'+(isFoil?'bf-foil-card':'')+'" style="position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;background:#07050b;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid '+bc+'88;"><img src="'+url+'" style="position:absolute;inset:-22%;width:144%;height:144%;object-fit:cover;filter:saturate(1.14) contrast(1.12);z-index:1;" /><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.05) 0%,transparent 40%,rgba(0,0,0,0.9) 100%);z-index:2;"></div><div style="position:absolute;left:12px;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;z-index:3;">'+(cost!=null?'<div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:\\'Rubik\\',sans-serif;font-weight:900;font-size:18px;color:#5a3d06;background:radial-gradient(circle at 34% 30%,#ffeaa6,#FFD24A 46%,#a9771f);border:2px solid #7c5410;box-shadow:0 4px 10px rgba(0,0,0,0.5);">'+cost+'</div>':'')+(tl?'<span style="font-size:13px;font-weight:900;color:#fff;background:'+bg+';border-radius:999px;padding:4px 12px;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+tl+'</span>':'')+(sl?'<span style="font-size:13px;font-weight:900;color:#ffe49a;background:rgba(0,0,0,0.7);border-radius:999px;padding:4px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+sl+'</span>':'')+'</div><div style="position:absolute;left:12px;right:12px;bottom:12px;text-align:center;border-radius:12px;background:rgba(0,0,0,0.75);border:1px solid '+bc+'66;padding:16px;backdrop-filter:blur(4px);z-index:3;"><div style="font-family:\\'Cinzel\\',serif;font-weight:900;font-size:26px;line-height:1.1;color:#fff5d9;text-shadow:0 2px 6px #000, 0 0 12px #000;margin-bottom:8px;text-transform:uppercase;">'+name+'</div>'+(desc?'<div style="font-family:\\'Rubik\\',sans-serif;font-size:15px;font-weight:700;line-height:1.3;color:#efe9dc;margin-bottom:14px;">'+desc+'</div>':'')+'<div style="font-family:\\'Rubik\\',sans-serif;font-size:11px;font-weight:900;color:#bdae87;letter-spacing:1px;text-transform:uppercase;">Base Set · Nº '+String(num).padStart(3,'0')+'</div></div>'+(isFoil?'<div class="bf-foil-shine"></div>':'')+'</div>';ov.innerHTML='<button class="bf-zoom-close" aria-label="Cerrar">✕</button><div class="bf-zoom-cardwrap" style="width:100%;max-width:420px;aspect-ratio:7/10;">'+ht+'</div>';document.body.appendChild(ov);function cl(){if(ov.parentNode)ov.parentNode.removeChild(ov);}ov.addEventListener('click',function(e){if(e.target===ov||e.target.className==='bf-zoom-close')cl();});var w=ov.querySelector('.bf-zoom-bonuswrap');if(w)w.addEventListener('click',function(e){e.stopPropagation();});}
+  function bfZoomBonus(name,url,found){if(!url)return;var ex=document.getElementById('bf-zoom-overlay');if(ex)ex.remove();var ov=document.createElement('div');ov.id='bf-zoom-overlay';ov.className='bf-zoom-overlay';var it=found?found.item:null;var ty=found?found.kind:'bonus';if(!it){var ob=typeof OBJECTS!=='undefined'?OBJECTS.find(function(o){return o&&o.name===name;}):null;var sp=typeof SPELLS!=='undefined'?SPELLS.find(function(s){return s&&s.name===name;}):null;var bo=typeof BONUS!=='undefined'?BONUS.find(function(b){return b&&b.name===name;}):null;if(ob){it=ob;ty='object';}else if(sp){it=sp;ty='spell';}else if(bo){it=bo;ty='bonus';}}var num=it?(it.num||it.number||0):0;var desc=it?(it.txt||it.description||''):'';var cost=it&&it.cost!=null&&it.cost!=='—'?it.cost:null;var TC={spell:'#8b6bff',melee:'#e0653f',ranged:'#3fb56a',armor:'#5a8fd6',object:'#d6b13f',bonus:'#d39b22'};var EC={fuego:'#d6552a',hielo:'#3aa0c8',rayo:'#caa12f',agua:'#2f7fd6',curacion:'#2f9d54',proteccion:'#caa12f',arcano:'#7a5fd0',estado:'#8a5fb0'};var bc=TC[ty]||'#d39b22';var tl=ty==='spell'?(it&&it.element?it.element.toUpperCase():(it?it.tag:'')):(it?it.tag:'');if(ty==='bonus')tl=it&&(it.type||it.tag)?(it.type||it.tag):'BON';var bg=ty==='spell'&&it&&it.element?(EC[it.element.toLowerCase()]||bc):bc;var sl=null;if(it){if(it.cc!=null)sl='+'+it.cc+' CC';else if(it.power!=null)sl='Pot. '+it.power;else if(it.hp!=null&&ty==='armor')sl='+'+it.hp+' HP';else if(it.mana!=null)sl='🔵 '+it.mana+' maná';}var isFoil=(it&&it.foil===true)||name==='Transformer';var ht='<div class="'+(isFoil?'bf-foil-card':'')+'" style="position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;background:#07050b;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid '+bc+'88;"><img src="'+url+'" style="position:absolute;inset:-22%;width:144%;height:144%;object-fit:cover;filter:saturate(1.14) contrast(1.12);z-index:1;" /><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.05) 0%,transparent 40%,rgba(0,0,0,0.9) 100%);z-index:2;"></div><div style="position:absolute;left:12px;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;z-index:3;">'+(cost!=null?'<div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:\\'Rubik\\',sans-serif;font-weight:900;font-size:18px;color:#5a3d06;background:radial-gradient(circle at 34% 30%,#ffeaa6,#FFD24A 46%,#a9771f);border:2px solid #7c5410;box-shadow:0 4px 10px rgba(0,0,0,0.5);">'+cost+'</div>':'')+(tl?'<span style="font-size:13px;font-weight:900;color:#fff;background:'+bg+';border-radius:999px;padding:4px 12px;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+tl+'</span>':'')+(sl?'<span style="font-size:13px;font-weight:900;color:#ffe49a;background:rgba(0,0,0,0.7);border-radius:999px;padding:4px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+sl+'</span>':'')+'</div><div style="position:absolute;left:12px;right:12px;bottom:12px;text-align:center;border-radius:12px;background:rgba(0,0,0,0.75);border:1px solid '+bc+'66;padding:16px;backdrop-filter:blur(4px);z-index:3;"><div style="font-family:\\'Cinzel\\',serif;font-weight:900;font-size:26px;line-height:1.1;color:#fff5d9;text-shadow:0 2px 6px #000, 0 0 12px #000;margin-bottom:8px;text-transform:uppercase;">'+name+'</div>'+(desc?'<div style="font-family:\\'Rubik\\',sans-serif;font-size:15px;font-weight:700;line-height:1.3;color:#efe9dc;margin-bottom:14px;">'+desc+'</div>':'')+'<div style="font-family:\\'Rubik\\',sans-serif;font-size:11px;font-weight:900;color:#bdae87;letter-spacing:1px;text-transform:uppercase;">Base Set · Nº '+String(num).padStart(3,'0')+'</div></div>'+(isFoil?'<div class="bf-foil-shine"></div>':'')+'</div>';ov.innerHTML='<div class="bf-zoom-cardwrap" style="width:100%;max-width:420px;aspect-ratio:7/10;">'+ht+'<button class="bf-zoom-close" aria-label="Cerrar">✕</button></div>';document.body.appendChild(ov);function cl(){if(ov.parentNode)ov.parentNode.removeChild(ov);}var xb=ov.querySelector('.bf-zoom-close');if(xb)xb.addEventListener('click',function(e){e.stopPropagation();cl();});ov.addEventListener('click',function(e){if(e.target===ov)cl();});var w=ov.querySelector('.bf-zoom-bonuswrap');if(w)w.addEventListener('click',function(e){e.stopPropagation();});}
   window.bfZoomBonus = bfZoomBonus;
 
   // ---- DOM injection for hero cards (match by name) ----
@@ -1121,38 +1122,14 @@ function buildArtScript(dbCards) {
     var originalStartAuctionPhase = window.startAuctionPhase;
     window.startAuctionPhase = function() {
       // Intercept applyBonus so we can finalize G.bonus before its effects and UI rendering
-      var realApply = window.applyBonus;
-      window.applyBonus = function(side, b) { /* delayed */ };
-      
-      if (G.pools) {
-        ['CC','AD','HE'].forEach(function(t) {
-          G.pools[t] = (G.pools[t] || []).filter(function(h) { return h && h.clan !== 'Épicas' && h.clan !== 'Bizarros' && !String(h.id || '').startsWith('tk_'); });
-        });
-      }
-      
+      var realApply = window.applyBonus; window.applyBonus = function(side, b) { /* delayed */ };
+      if (G.pools) { ['CC','AD','HE'].forEach(function(t) { G.pools[t] = (G.pools[t] || []).filter(function(h) { return h && h.clan !== 'Épicas' && h.clan !== 'Bizarros' && !String(h.id || '').startsWith('tk_'); }); }); }
       var ret = originalStartAuctionPhase.apply(this, arguments);
-      
-      window.applyBonus = realApply;
-      
-      maybeForceEpicBonus();
-      enforceUniqueBonuses();
-      
-      ['p','o'].forEach(function(side) {
-        if (G.bonus && G.bonus[side] && typeof window.applyBonus === 'function') {
-          window.applyBonus(side, G.bonus[side]);
-        }
-      });
-      
-      // We must call prepareEpicOffers here so they are ready NOW (for the current round).
+      window.applyBonus = realApply; maybeForceEpicBonus(); enforceUniqueBonuses();
+      ['p','o'].forEach(function(side) { if (G.bonus && G.bonus[side] && typeof window.applyBonus === 'function') window.applyBonus(side, G.bonus[side]); });
       prepareEpicOffers();
-      
-      if (typeof window.renderRecruit === 'function') {
-         window.renderRecruit('p');
-      }
-      if (typeof window.netSync === 'function') {
-         window.netSync('s-recruit');
-      }
-      
+      if (typeof window.renderRecruit === 'function') window.renderRecruit('p');
+      if (typeof window.netSync === 'function') window.netSync('s-recruit');
       return ret;
     };
 
@@ -1164,20 +1141,10 @@ function buildArtScript(dbCards) {
     var originalBeginBidRound = window.beginBidRound;
     window.beginBidRound = function() {
       if (!G.forceEpic) G.forceEpic = {};
-      ['p','o'].forEach(function(side) {
-        if (G.bonus && G.bonus[side]) {
-          if (G.bonus[side].id === 'epic_self') G.forceEpic[side] = true;
-          if (G.bonus[side].id === 'epic_rival') G.forceEpic[side==='p'?'o':'p'] = true;
-        }
-      });
+      ['p','o'].forEach(function(side) { if (G.bonus && G.bonus[side]) { if (G.bonus[side].id === 'epic_self') G.forceEpic[side] = true; if (G.bonus[side].id === 'epic_rival') G.forceEpic[side==='p'?'o':'p'] = true; } });
       var ret = originalBeginBidRound.apply(this, arguments);
-      prepareEpicOffers();
-      // Re-render the human's recruit screen so their epic (if any) shows up,
-      // and the rival's epic does NOT appear on the human's board.
-      renderRecruit(humanSide());
-      if (typeof NET !== 'undefined' && NET.role !== 'client') {
-        netSync('s-recruit');
-      }
+      prepareEpicOffers(); renderRecruit(humanSide());
+      if (typeof NET !== 'undefined' && NET.role !== 'client') netSync('s-recruit');
       return ret;
     };
 
