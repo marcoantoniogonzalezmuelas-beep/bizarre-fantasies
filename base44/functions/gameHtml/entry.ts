@@ -445,6 +445,7 @@ function buildArtScript(dbCards) {
       .bf-zoom-bonuswrap { position:relative; width:min(420px,90vw); height:min(560px,84vh); box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-zoom-close { position:absolute; top:-14px; right:-14px; z-index:20; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:900; line-height:1; cursor:pointer; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); border:3px solid #fff5dc; color:#3a2600; box-shadow:0 6px 18px rgba(0,0,0,.75),0 0 18px rgba(255,210,74,.65); padding:0; touch-action:manipulation; }
       .bf-zoom-close:active { transform:scale(.92); }
+      .bf-mobile .bf-zoom-close { width:170px !important; height:170px !important; font-size:88px !important; top:-30px !important; right:-30px !important; border-width:8px !important; }
 
       /* ---- Guía Punkito: draggable, animado ---- */
       .bf-guide { position:fixed; bottom:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; user-select:none; }
@@ -481,6 +482,7 @@ function buildArtScript(dbCards) {
     \`;
     document.head.appendChild(style);
     document.documentElement.classList.add('bf-locked');
+    if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) document.documentElement.classList.add('bf-mobile');
   }
 
   // ---- PATCH cardFace (heroes) — premium full-art layout ----
