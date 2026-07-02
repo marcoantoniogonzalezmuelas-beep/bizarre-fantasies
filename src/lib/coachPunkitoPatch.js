@@ -48,7 +48,8 @@ export const COACH_PUNKITO_PATCH = `
     // El Punkito de la página inicial / guía arrastrable (#bf-guide .bf-guide-char)
     // también con fondo circular y borde dorado (igual que el narrador).
     '#bf-guide .bf-guide-char{border-radius:50% !important;background:radial-gradient(circle at 42% 32%,rgba(48,34,84,.9),rgba(14,9,28,.95)) !important;border:2.5px solid rgba(255,210,74,.7) !important;box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 16px rgba(255,210,74,.3) !important;overflow:hidden;padding:4px}',
-    '#bf-guide .bf-guide-char img{border-radius:50%}'
+    '#bf-guide .bf-guide-char img{border-radius:50%}',
+    '#bf-guide-show.bf-headbang img,#bf-nar-show.bf-headbang img{animation:bfHeadbang .28s ease-in-out infinite !important;transform-origin:top center}'
   ].join('');
   document.head.appendChild(st);
 
@@ -58,7 +59,8 @@ export const COACH_PUNKITO_PATCH = `
     var guide = document.querySelector('#bf-guide .bf-guide-char');
     var guideShow = document.getElementById('bf-guide-show');
     var narrator = document.querySelector('#bf-narrator .bf-nar-ch');
-    var targets = [demoStudent, guide, guideShow, narrator].filter(function(el){
+    var narratorShow = document.getElementById('bf-nar-show');
+    var targets = [demoStudent, guide, guideShow, narrator, narratorShow].filter(function(el){
       return el && el.offsetParent !== null; // solo los visibles
     });
     targets.forEach(function(el){
@@ -78,9 +80,13 @@ export const COACH_PUNKITO_PATCH = `
   // ---- Headbanging heavy del Punkito estudiante: cada minuto, 2 segundos ----
   function doHeadbang(){
     var stu = document.querySelector('#coach .bf-coach-punkito');
-    if (!stu || stu.offsetParent === null || stu.classList.contains('bf-headbang')) return;
-    stu.classList.add('bf-headbang');
-    setTimeout(function(){ stu.classList.remove('bf-headbang'); }, 2000);
+    var guideShow = document.getElementById('bf-guide-show');
+    var narShow = document.getElementById('bf-nar-show');
+    [stu, guideShow, narShow].forEach(function(el){
+      if (!el || el.offsetParent === null || el.classList.contains('bf-headbang')) return;
+      el.classList.add('bf-headbang');
+      setTimeout(function(){ el.classList.remove('bf-headbang'); }, 2000);
+    });
   }
   setInterval(doHeadbang, 60000);
 
