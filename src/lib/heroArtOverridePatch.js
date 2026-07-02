@@ -34,7 +34,7 @@ export const HERO_ART_OVERRIDE_PATCH = `
     ska: { n: IMG+'85fcc4f77_generated_image.png', e: IMG+'7ada7e4d4_generated_image.png' },
     kre: { n: IMG+'d31d5f27b_generated_image.png', e: IMG+'8597b20d0_generated_image.png' },
     pij: { n: IMG+'5cc21af85_generated_image.png', e: IMG+'2077cf040_generated_image.png' },
-    pol: { n: IMG+'12a5ddb5c_generated_image.png', e: IMG+'2ec9c7478_generated_image.png' }
+    pol: { n: IMG+'4ad6c76c5_generated_image.png', e: IMG+'2ec9c7478_generated_image.png' }
   };
   var NAME_TO_ID = {
     'Krunder':'kru','Narbon':'nar','Hildra':'hil','Torax':'tor','Bramblok':'bra',
