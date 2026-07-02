@@ -1986,7 +1986,7 @@ function buildArtScript(dbCards) {
           var ch=nw.querySelector('.bf-nar-ch');ch.style.animation='none';void ch.offsetWidth;ch.style.animation='bfGuideFloat 3.2s ease-in-out infinite';
         }
       }
-    } else { var lx=document.querySelector('.b-log')||document.getElementById('b-log')||document.querySelector('.log-box')||document.querySelector('.battle-log')||document.querySelector('.jrpg-log')||document.getElementById('jrpg-log')||document.querySelector('.coach-txt'); if(nw&&nw.classList.contains('hid')&&lx){ var esx=lx.children,lhx=''; if(esx.length)lhx=esx[0].innerHTML; else{var psx=lx.innerHTML.split(/<br\s*\/?>/i).filter(function(s){return s.trim().length>0;});if(psx.length)lhx=psx[0];} if(lhx&&nw.dataset.last!==lhx){nw.dataset.last=lhx;var nshowx=document.getElementById('bf-nar-show');if(nshowx)nshowx.classList.add('bf-nar-blink');} } }
+    } else { var lx=document.querySelector('.b-log')||document.getElementById('b-log')||document.querySelector('.log-box')||document.querySelector('.battle-log')||document.querySelector('.jrpg-log')||document.getElementById('jrpg-log')||document.querySelector('.coach-txt'); if(nw&&nw.classList.contains('hid')&&lx){ var esx=lx.children,lhx=''; if(esx.length)lhx=esx[0].innerHTML; else{var psx=lx.innerHTML.split(/<br\\s*\\/?>/i).filter(function(s){return s.trim().length>0;});if(psx.length)lhx=psx[0];} if(lhx&&nw.dataset.last!==lhx){nw.dataset.last=lhx;var nshowx=document.getElementById('bf-nar-show');if(nshowx)nshowx.classList.add('bf-nar-blink');} } }
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
       var hp = readHeroHp(card);
       if (hp === null) return;
