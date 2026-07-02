@@ -5,6 +5,7 @@ import { MATCH_MODE_PATCH } from '@/lib/matchModePatch';
 import { COACH_PUNKITO_PATCH } from '@/lib/coachPunkitoPatch';
 import { NARRATOR_ACTION_PATCH } from '@/lib/narratorActionPatch';
 import { BATTLE_UI_PATCH } from '@/lib/battleUiPatch';
+import { MOBILE_PINCH_PATCH } from '@/lib/mobilePinchZoomPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-07-02-actionzoom-v141';
@@ -286,7 +287,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH;
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set');
         let patchedData = baseData.includes('</body>')
