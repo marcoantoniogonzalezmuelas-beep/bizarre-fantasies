@@ -67,12 +67,25 @@ export const NARRATOR_ACTION_PATCH = `
 
   function narratorChar() {
     var nw = document.getElementById('bf-narrator');
-    if (!nw || nw.classList.contains('hid')) return null;
-    var ch = nw.querySelector('.bf-nar-ch');
-    var img = ch && ch.querySelector('img');
-    if (!ch || !img) return null;
-    if (!img.classList.contains('bf-nar-ch-img')) img.classList.add('bf-nar-ch-img');
-    return { ch: ch, img: img };
+    if (nw && !nw.classList.contains('hid')) {
+      var ch = nw.querySelector('.bf-nar-ch');
+      var img = ch && ch.querySelector('img');
+      if (ch && img) {
+        if (!img.classList.contains('bf-nar-ch-img')) img.classList.add('bf-nar-ch-img');
+        return { ch: ch, img: img };
+      }
+    }
+    // Narrador recogido: usa el botón circular como "personaje" para que la
+    // pose de acción (metralleta/espada/varita) también se vea recogido.
+    var show = document.getElementById('bf-nar-show');
+    if (show && getComputedStyle(show).display !== 'none') {
+      var simg = show.querySelector('img');
+      if (simg) {
+        if (!simg.classList.contains('bf-nar-ch-img')) simg.classList.add('bf-nar-ch-img');
+        return { ch: show, img: simg };
+      }
+    }
+    return null;
   }
 
   var EXTRA = {
