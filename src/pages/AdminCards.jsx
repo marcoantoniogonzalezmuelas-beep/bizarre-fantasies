@@ -158,7 +158,7 @@ export default function AdminCards() {
         // Extra overscan: zoom in a bit more so any leftover white margin from
         // the AI generation is always cropped away, keeping every new card the
         // same homogeneous full-bleed size regardless of the source image.
-        const ZOOM = 1.22;
+        const ZOOM = 1.05;
         const zsw = sw / ZOOM, zsh = sh / ZOOM;
         sx += (sw - zsw) / 2; sy += (sh - zsh) / 2; sw = zsw; sh = zsh;
         const canvas = document.createElement('canvas');
@@ -193,7 +193,9 @@ export default function AdminCards() {
     if (!file) return;
     setUploading(true);
     const result = await base44.integrations.Core.UploadFile({ file });
-    setForm(prev => ({ ...prev, [target]: result?.file_url || prev[target] }));
+    // Recorta la subida al formato 7:10 de la carta para que encaje en el marco
+    const fitted = result?.file_url ? await cropAndUpload(result.file_url) : null;
+    setForm(prev => ({ ...prev, [target]: fitted || result?.file_url || prev[target] }));
     setUploading(false);
   }
 
