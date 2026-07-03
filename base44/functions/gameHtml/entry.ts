@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-03-aeinline-v148';
+const GAME_PATCH_VERSION = 'bf-2026-07-03-epicfoil-v149';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -626,7 +626,7 @@ function buildArtScript(dbCards) {
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(c) {
       var mid=c.id.match(/^b_([po])_(.+)$/); if(!mid)return; var s=mid[1], i=mid[2], h=(typeof G!=='undefined'&&G.team&&G.team[s]||[]).find(function(x){return x&&x.id===i;});
       var t=(h&&h._token)?h._token:i, u=ART_BY_ID[t]||ELITE_BY_ID[t], e=c.querySelector('.bf-battle-art');
-      var hEpic=h&&h.clan==='Épicas',hGold=hEpic||(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);if(hGold)c.classList.add('bf-epic-gold');if(hFoil&&!c.querySelector('.bf-epic-foil')){var fo=document.createElement('div');fo.className='bf-epic-foil';fo.style.cssText='position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite';c.appendChild(fo);}
+      var hEpic=h&&h.clan==='Épicas',hGold=(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);if(hGold)c.classList.add('bf-epic-gold');if(hFoil&&!c.querySelector('.bf-epic-foil')){var fo=document.createElement('div');fo.className='bf-epic-foil';fo.style.cssText='position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite';c.appendChild(fo);}
       if(c.dataset.bfBattleArt===t&&e){injectBattleGear(c);return;}
       if(e){if(u){e.style.backgroundImage='url("'+u+'")';e.style.backgroundSize='cover';e.style.backgroundPosition=bfHeroBgPos(t);}c.dataset.bfBattleArt=t;injectBattleGear(c);return;}
       if(!u){injectBattleGear(c);return;}
@@ -1476,7 +1476,7 @@ function buildArtScript(dbCards) {
       var byName = itemArtByName();
       var url = ART_BY_ID[h && h.id] || '';
       if (url && html.indexOf('bf-eq-hero-art') === -1) {
-        var hEpic=(h&&h.clan==='Épicas'),hGold=hEpic||(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);var epicFoil = (hFoil ? '<div style="position:absolute;left:-32px;top:-32px;bottom:-32px;width:190px;z-index:2;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite"></div>' : '');
+        var hEpic=(h&&h.clan==='Épicas'),hGold=(h&&h.gold_border===true),hFoil=hEpic||(h&&h.foil===true);var epicFoil = (hFoil ? '<div style="position:absolute;left:-32px;top:-32px;bottom:-32px;width:190px;z-index:2;pointer-events:none;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite"></div>' : '');
         html = html.replace(/<div class="eq-hero([^"]*)"/, '<div class="eq-hero bf-eq-hero-with-art' + (hGold ? ' bf-epic-gold' : '') + '$1"').replace(/(<div class="eq-hero[^>]*>)/, '$1<div class="bf-eq-hero-art" style="background-image:url(&quot;' + url + '&quot;);background-position:' + bfHeroBgPos(h && h.id) + '"></div>' + epicFoil + '<div class="bf-battle-zoom" style="position:absolute;top:6px;left:6px;z-index:10" onclick="event.stopPropagation();bfZoomCard(&quot;' + h.id + '&quot;,&quot;normal&quot;,&quot;' + side + '&quot;)">🔍</div>');
       }
       // Equipped weapon thumbnail
