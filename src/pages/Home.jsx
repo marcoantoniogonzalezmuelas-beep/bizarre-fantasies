@@ -221,7 +221,7 @@ const DRAGGABLE_GUIDE_PATCH = `
 </script>
 `;
 
-const IS_MOBILE = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+const IS_MOBILE = typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || (navigator.maxTouchPoints > 1 && /Macintosh|Mac OS/i.test(navigator.userAgent || '')));
 
 export default function Home() {
   useEffect(() => {

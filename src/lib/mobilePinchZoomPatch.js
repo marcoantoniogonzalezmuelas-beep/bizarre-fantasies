@@ -33,6 +33,7 @@ export const MOBILE_PINCH_PATCH = `
     if (e.touches.length !== 2) return;
     e.preventDefault();
     e.stopPropagation();
+    document.body.style.transition = 'none';
     pinch = { d0: dist(e.touches), c0: mid(e.touches), z0: z, tx0: tx, ty0: ty };
   }
 
@@ -56,7 +57,10 @@ export const MOBILE_PINCH_PATCH = `
     if (!pinch) return;
     if (e.touches.length < 2) {
       pinch = null;
+      var b = document.body;
+      b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
       if (z < 1.05) { z = 1; tx = 0; ty = 0; apply(); }
+      setTimeout(function(){ b.style.transition = ''; }, 300);
     }
   }
 

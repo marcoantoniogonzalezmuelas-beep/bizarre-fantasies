@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-02-clientflip-v143';
+const GAME_PATCH_VERSION = 'bf-2026-07-03-equipfix-v144';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -278,7 +278,7 @@ function buildArtScript(dbCards) {
       .bf-foil-card::before { content:''; position:absolute; inset:0; z-index:6; pointer-events:none; border-radius:inherit; mix-blend-mode:soft-light; opacity:.4; background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a); background-size:300% 300%; animation:bfFoilShift 9s linear infinite; }
       .bf-foil-shine { position:absolute; inset:0; z-index:7; pointer-events:none; border-radius:inherit; opacity:.6; background:linear-gradient(110deg, transparent 42%, rgba(255,255,255,.35) 49%, rgba(255,255,255,.5) 50%, rgba(255,255,255,.35) 51%, transparent 58%); background-size:250% 250%; mix-blend-mode:screen; animation:bfFoilShine 5.5s ease-in-out infinite; }
       @keyframes bfFoilShine { 0%{background-position:120% 0%} 100%{background-position:-40% 0%} }
-      .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 4.1 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
+      .shop-card.has-art { background:#07050b !important; aspect-ratio:3 / 3.6 !important; min-height:0 !important; height:auto !important; padding:0 !important; border:1.5px solid rgba(255,210,74,.45) !important; border-radius:12px !important; }
       .shop-card.has-art > *:not(.shop-card-art-sharp):not(.shop-card-fill):not(.bf-view-btn):not(.bf-buy-btn):not(.bf-shop-name):not(.bf-shop-txt):not(.shop-coin):not(.bf-shop-mana) { display:none !important; }
       .shop-card.has-art > .shop-coin { z-index: 7 !important; }
       .shop-card-art { display:none !important; }
@@ -320,7 +320,7 @@ function buildArtScript(dbCards) {
       .bf-slot-buy:hover { background:rgba(255,210,74,.22); }
       .bf-quick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:12px; }
       /* Quick-shop card = the oracle card itself (cover + overscan + card ratio). */
-      .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 4.1; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
+      .bf-quick-card { position:relative; overflow:hidden; aspect-ratio:3 / 3.6; border-radius:13px; border:1.5px solid rgba(255,210,74,.42); background:#07050b; padding:0; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.38); }
       .bf-quick-fill { display:block; position:absolute; inset:0; z-index:0; background-size:cover; background-position:center; filter:blur(16px) saturate(1.3) brightness(.85); transform:scale(1.35); }
       .bf-quick-art { position:absolute; inset:-22%; z-index:1; background-size:cover; background-position:center; background-repeat:no-repeat; }
       .bf-quick-card > *:not(.bf-quick-art):not(.bf-quick-fill):not(.bf-quick-cost):not(.bf-quick-name):not(.bf-quick-txt) { display:none !important; }
