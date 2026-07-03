@@ -15,7 +15,7 @@ import { AUCTION_NODUP_PATCH } from '@/lib/auctionNoDupPatch';
 import { HERO_ART_OVERRIDE_PATCH } from '@/lib/heroArtOverridePatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-02-mpequip-v144';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-03-shopfit-v146';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
