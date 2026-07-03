@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-03-zoomfab-v147';
+const GAME_PATCH_VERSION = 'bf-2026-07-03-aeinline-v148';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
@@ -180,6 +180,9 @@ function buildArtScript(dbCards) {
       .bf-autoequip-btn .bf-ae-col { display:flex; flex-direction:column; align-items:flex-start; line-height:1.15; pointer-events:none; }
       .bf-autoequip-btn .bf-ae-txt { font-size:16px; letter-spacing:.5px; } .bf-autoequip-btn .bf-ae-sub { font-family:'Rubik',sans-serif; font-weight:700; font-size:10px; opacity:.92; text-transform:none; letter-spacing:0; }
       @keyframes bfAePulse { 0%,100%{box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 18px rgba(160,80,255,.6)} 50%{box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 40px rgba(200,120,255,.95)} }
+      /* Colocado junto al botón "Listo — a la batalla" (fixed solo como último recurso) */
+      .bf-autoequip-btn.bf-ae-inline { position:static; left:auto; bottom:auto; transform:none; display:inline-flex; margin:0 10px 8px 0; padding:10px 18px; vertical-align:middle; }
+      .bf-autoequip-btn.bf-ae-inline:hover { transform:translateY(-2px); } .bf-autoequip-btn.bf-ae-inline:active { transform:scale(.96); }
       @keyframes bfAeShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
       @keyframes bfAeSpin { 0%{transform:rotate(0) scale(1)} 50%{transform:rotate(180deg) scale(1.2)} 100%{transform:rotate(360deg) scale(1)} }
       .bhero.active-turn .bf-active-aura { opacity:1; }
@@ -1714,7 +1717,7 @@ function buildArtScript(dbCards) {
     window.bfAutoEquip=bfAutoEquip;
     // Auto-equip works for everyone now: a client plans against its own snapshot but commits each buy as an intent to the host (see bfBuyGear). The button always equips THIS player's own side.
     // FAB en <body>: el layout/overflow de la tienda nunca lo tapa ni lo desplaza. Se quita solo al salir de la fase de equipamiento. click+touchend para que siempre responda en móvil.
-    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');var ex=document.getElementById('bf-autoequip-btn');var act=!!(sc&&sc.classList.contains('active'));if(!act){if(ex)ex.remove();return;}if(ex)return;var b=document.createElement('button');b.id='bf-autoequip-btn';b.type='button';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-col"><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span></span>';var go=function(e){e.preventDefault();e.stopPropagation();var side=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:((typeof G!=='undefined'&&G&&G.eqSide)||'p');try{bfAutoEquip(side);}catch(err){if(window.notif)notif('No se pudo auto-equipar: '+(err&&err.message||err));}};b.addEventListener('click',go);b.addEventListener('touchend',go,{passive:false});document.body.appendChild(b);};
+    window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');var ex=document.getElementById('bf-autoequip-btn');var act=!!(sc&&sc.classList.contains('active'));if(!act){if(ex)ex.remove();return;}if(ex)return;var b=document.createElement('button');b.id='bf-autoequip-btn';b.type='button';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-col"><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span></span>';var go=function(e){e.preventDefault();e.stopPropagation();var side=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:((typeof G!=='undefined'&&G&&G.eqSide)||'p');try{bfAutoEquip(side);}catch(err){if(window.notif)notif('No se pudo auto-equipar: '+(err&&err.message||err));}};b.addEventListener('click',go);b.addEventListener('touchend',go,{passive:false});var done=sc.querySelector('button[onclick*="eqDone"]')||Array.prototype.find.call(sc.querySelectorAll('button'),function(x){return /listo/i.test(x.textContent||'');});if(done&&done.parentNode){b.classList.add('bf-ae-inline');done.parentNode.insertBefore(b,done);}else{document.body.appendChild(b);}};
 
     if (typeof window.eqDone === 'function' && !window.eqDone.__bfWarn) {
       var originalEqDone = window.eqDone;
