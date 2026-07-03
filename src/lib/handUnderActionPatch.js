@@ -10,7 +10,7 @@ export const HAND_UNDER_ACTION_PATCH = `
 
   var st = document.createElement('style');
   st.textContent = [
-    '.bf-hands-row{display:flex;gap:10px;max-width:820px;margin:10px auto 0;align-items:stretch;flex-wrap:wrap}',
+    '.bf-hands-row{display:flex;gap:10px;width:100%;margin:10px 0 16px;align-items:stretch;flex-wrap:wrap}',
     '.bf-hands-row .hand-under-action{flex:1 1 260px}',
     '.hand-under-action{margin:0!important;background:var(--panel);border:1px solid rgba(255,210,74,.35)!important;border-top:1px solid rgba(255,210,74,.35)!important;border-radius:12px;padding:8px 12px 10px!important}',
     '.hand-under-action.hand-rival{border-color:rgba(138,160,255,.4)!important;border-top-color:rgba(138,160,255,.4)!important}',
