@@ -10,7 +10,7 @@ export const HERO_ART_OVERRIDE_PATCH = `
 
   var IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
   var OVERRIDE = {
-    kru: { n: IMG+'58659daa6_generated_image.png', e: IMG+'fd06d7143_generated_image.png' },
+    kru: { n: IMG+'fe63611da_generated_image.png', e: IMG+'62a8b9064_generated_image.png' },
     nar: { n: IMG+'22d98cf6e_generated_image.png', e: IMG+'023da8a01_generated_image.png' },
     hil: { n: IMG+'28129e547_generated_image.png', e: IMG+'36f4b41dc_generated_image.png' },
     tor: { n: IMG+'06119cd60_generated_image.png', e: IMG+'e961e34a3_generated_image.png' },
