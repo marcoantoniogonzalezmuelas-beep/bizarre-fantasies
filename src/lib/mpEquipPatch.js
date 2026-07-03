@@ -83,6 +83,10 @@ export const MP_EQUIP_PATCH = `
         if (op === 'removeItem') { applyRemoveItem(me, args.i); window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
         if (op === 'eqdone') {
           origSendIntent('eqsync', { team: G.team[me], spellbook: G.spellbook[me], items: G.items[me], equipCoins: G.equipCoins[me] });
+          // El "listo" viaja por el canal ORIGINAL del juego (eqdone): el host lo
+          // procesa con su lógica nativa (marca listo y arranca la batalla cuando
+          // ambos lo están). El eqsync anterior solo lleva el equipamiento.
+          origSendIntent('eqdone', {});
           if (!G.eqReady) G.eqReady = { p: false, o: false };
           G.eqReady[me] = true;
           if (typeof renderEquip === 'function') renderEquip(me);
@@ -92,24 +96,34 @@ export const MP_EQUIP_PATCH = `
       return origSendIntent.apply(this, arguments);
     };
 
-    if (NET.role === 'host' && typeof window.handleIntent === 'function' && !window.handleIntent.__bfEqSync) {
-      var origHandle = window.handleIntent;
-      window.handleIntent = function(msg) {
-        if (msg && msg.t === 'intent' && msg.op === 'eqsync') {
-          var me = 'o';
-          if (msg.team && msg.team.length) G.team[me] = msg.team;
-          if (msg.spellbook) G.spellbook[me] = msg.spellbook;
-          if (msg.items) G.items[me] = msg.items;
-          if (msg.equipCoins != null) G.equipCoins[me] = msg.equipCoins;
-          if (!G.eqReady) G.eqReady = { p: false, o: false };
-          G.eqReady[me] = true;
-          if (G.eqReady.p && G.eqReady.o && typeof startBattle === 'function') { startBattle(); return; }
-          if (typeof netSync === 'function') netSync('s-equip');
-          return;
-        }
-        return origHandle.apply(this, arguments);
+    if (NET.role === 'host' && !window.__bfApplyEqSync) {
+      // Fusiona el equipamiento final del cliente. El "listo"/arranque de batalla
+      // NO se gestiona aquí: llega justo después como intent 'eqdone' nativo.
+      window.__bfApplyEqSync = function(msg) {
+        if (msg.__bfEqSyncDone) return; msg.__bfEqSyncDone = 1;
+        var me = 'o';
+        if (msg.team && msg.team.length) G.team[me] = msg.team;
+        if (msg.spellbook) G.spellbook[me] = msg.spellbook;
+        if (msg.items) G.items[me] = msg.items;
+        if (msg.equipCoins != null) G.equipCoins[me] = msg.equipCoins;
+        if (typeof netSync === 'function') netSync('s-equip');
       };
-      window.handleIntent.__bfEqSync = 1;
+      if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfEqSync) {
+        var origHandle = window.handleIntent;
+        window.handleIntent = function(msg) {
+          if (msg && msg.t === 'intent' && msg.op === 'eqsync') { window.__bfApplyEqSync(msg); return; }
+          return origHandle.apply(this, arguments);
+        };
+        window.handleIntent.__bfEqSync = 1;
+      }
+      // Red de seguridad: listener propio en la conexión PeerJS del host, por si
+      // el router de intents del juego no pasa por nuestro wrapper.
+      var bfEqConn = null;
+      setInterval(function() {
+        if (typeof NET === 'undefined' || NET.role !== 'host' || !NET.conn || NET.conn === bfEqConn) return;
+        bfEqConn = NET.conn;
+        try { NET.conn.on('data', function(m) { if (m && m.t === 'intent' && m.op === 'eqsync') window.__bfApplyEqSync(m); }); } catch (e) {}
+      }, 300);
     }
 
     if (NET.role === 'client' && typeof window.applySnapshot === 'function' && !window.applySnapshot.__bfEqGuard) {
@@ -149,8 +163,9 @@ export const MP_EQUIP_PATCH = `
     return true;
   }
 
-  var tries = 0;
-  var iv = setInterval(function(){ tries++; var a = install(); var b = wrapAutoEquip(); if ((a && b) || tries > 200) clearInterval(iv); }, 300);
+  // Sin límite de intentos: NET.role puede tardar minutos en existir (el jugador
+  // crea/entra a la sala cuando quiere). El chequeo es barato.
+  var iv = setInterval(function(){ var a = install(); var b = wrapAutoEquip(); if (a && b) clearInterval(iv); }, 300);
   install(); wrapAutoEquip();
 })();
 </script>

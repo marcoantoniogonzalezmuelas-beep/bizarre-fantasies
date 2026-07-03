@@ -1690,11 +1690,14 @@ function buildArtScript(dbCards) {
         }
       }
       var b=0;
+      // Coste mínimo de hechizo/objeto: se reserva para garantizar comprar al menos 1 de cada.
+      function bfMinCost(list){var m=Infinity;(list||[]).forEach(function(x){var c=Number(x&&x.cost||0);if(c>0&&c<m)m=c;});return m===Infinity?0:m;}
+      var minSp=bfMinCost(sp),minOb=bfMinCost(ob);
       function bfMissingGear(){var n=0;for(var i=0;i<tm.length;i++){if(tm[i]&&!g.w[i])n++;if(tm[i]&&!g.a[i])n++;}return n;}
       function bfBestGear(h,kind,cap){var list=kind==='armor'?am:(kind==='ranged'?rg:ml),best=null,bs=-1;list.forEach(function(it){var c=Number(it.cost||0);if(c<=0||c>cap)return;var v=sc(it,h,kind),rs=v+(v/Math.max(1,c))*2;if(rs>bs){bs=rs;best=it;}});return best;}
       for(var gi=0;gi<48;gi++){ // PHASE 1: weapons + armor for all heroes; reserve 1 coin per other empty slot.
         var bd=bfEqCoins(side);if(bd<=0)break;var missing=bfMissingGear();if(missing===0)break;
-        var cap=Math.max(1,bd-(missing-1)),pick=null;
+        var resv=(missing-1)+(g.nSp===0?minSp:0)+(g.nObj===0?minOb:0),cap=Math.max(1,bd-resv),pick=null;
         for(var i=0;i<tm.length;i++){var h=tm[i];if(!h)continue;
           if(!g.w[i]){var rk=h.type==='AD'?'ranged':'melee',w=bfBestGear(h,rk,cap)||bfBestGear(h,h.type==='AD'?'melee':'ranged',cap);if(w){var wk=ml.indexOf(w)!==-1?'melee':'ranged',v=sc(w,h,wk);if(!pick||v>pick.v)pick={k:wk,it:w,hi:i,h:h,v:v};}}
           if(!g.a[i]){var a=bfBestGear(h,'armor',cap);if(a){var av=sc(a,h,'armor');if(!pick||av>pick.v)pick={k:'armor',it:a,hi:i,h:h,v:av};}}
@@ -1703,7 +1706,7 @@ function buildArtScript(dbCards) {
         bfBuyGear(side,pick.h.id,pick.k,pick.it);if(pick.k==='armor')g.a[pick.hi]=true;else g.w[pick.hi]=true;b++;
       }
       // PHASE 2 — spells with the remaining budget.
-      for(var si=0;si<12;si++){var bd2=bfEqCoins(side);if(bd2<=0)break;var bSp=null,bSpS=-1;
+      for(var si=0;si<12;si++){var bd2=bfEqCoins(side)-(g.nObj===0?minOb:0);if(bd2<=0)break;var bSp=null,bSpS=-1;
         sp.forEach(function(s){if(bfHasSpell(s.id))return;var c=Number(s.cost||0);if(c<=0||c>bd2)return;var v=sc(s,null,'spell'),rs=v+(v/Math.max(1,c))*2;if(rs>bSpS){bSpS=rs;bSp=s;}});
         if(!bSp)break;bfBuySpellAE(side,bSp.id,bSp.cost);g.nSp++;b++;}
       // PHASE 3 — objects last, up to 3 copies each.
