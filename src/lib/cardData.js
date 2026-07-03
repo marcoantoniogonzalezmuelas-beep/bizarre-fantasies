@@ -24,7 +24,7 @@ export const CLAN_SYMBOLS = {
 };
 
 export const HEROES = [
-  { id:"kru", num:1, name:"Krunder", title:"El Indomable", clan:"Guerreros", type:"CC", cost:22, cc:22, ad:6, he:2, hp:44, eCc:28, eAd:9, eHe:4, eHp:58, ability:"Torbellino", abilityTxt:"Golpea a TODOS los rivales en cuerpo a cuerpo.", eAbility:"Torbellino Supremo", eTxt:"Golpea a todos +5 de daño, sin penalización." },
+  { id:"kru", num:1, name:"Xabierus", title:"El Indomable", clan:"Guerreros", type:"CC", cost:22, cc:22, ad:6, he:2, hp:44, eCc:28, eAd:9, eHe:4, eHp:58, ability:"Torbellino", abilityTxt:"Golpea a TODOS los rivales en cuerpo a cuerpo.", eAbility:"Torbellino Supremo", eTxt:"Golpea a todos +5 de daño, sin penalización." },
   { id:"bos", num:2, name:"Boss", title:"Señor de la Batalla", clan:"Guerreros", type:"CC", cost:24, cc:24, ad:5, he:1, hp:46, eCc:30, eAd:8, eHe:3, eHp:60, ability:"Intimidación", abilityTxt:"Todos los rivales -3 a sus stats durante 1 turno.", eAbility:"Terror Absoluto", eTxt:"Todos los rivales -5 a sus stats durante 2 turnos." },
   { id:"nar", num:3, name:"Narbon", title:"La Tormenta de Hierro", clan:"Guerreros", type:"CC", cost:19, cc:20, ad:8, he:3, hp:36, eCc:26, eAd:11, eHe:5, eHp:48, ability:"Golpe Brutal", abilityTxt:"Gran golpe que además destruye el arma/armadura del objetivo.", eAbility:"Destrucción Total", eTxt:"Golpe demoledor que destruye equipo y rompe escudos." },
   { id:"hil", num:4, name:"Hildra", title:"La Berserker", clan:"Guerreros", type:"CC", cost:16, cc:21, ad:4, he:2, hp:32, eCc:27, eAd:6, eHe:3, eHp:44, ability:"Furia Ciega", abilityTxt:"Entra en furia: +6 CC y +4 velocidad este combate.", eAbility:"Berserker Suprema", eTxt:"+9 CC, +6 velocidad y robo de vida en CC." },
