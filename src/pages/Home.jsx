@@ -15,6 +15,7 @@ import { AUCTION_NODUP_PATCH } from '@/lib/auctionNoDupPatch';
 import { HERO_ART_OVERRIDE_PATCH } from '@/lib/heroArtOverridePatch';
 import { HAND_UNDER_ACTION_PATCH } from '@/lib/handUnderActionPatch';
 import { LOBBY_GUARD_PATCH } from '@/lib/lobbyGuardPatch';
+import { EQUIP_DRAG_PATCH } from '@/lib/equipDragPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-07-03-battleorder-v152';
@@ -296,7 +297,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + HERO_ART_OVERRIDE_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + HERO_ART_OVERRIDE_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?! Mec)/g, 'Xabierus');
         let patchedData = baseData.includes('</body>')
