@@ -104,6 +104,9 @@ export const EQUIP_DRAG_PATCH = `
     var hero = ((typeof G !== 'undefined' && G.team && G.team[side]) || []).find(function(x){ return x && x.id === heroId; });
     var assign = { kind: found.kind, id: it.id, cost: it.cost, name: it.name };
     if (hero && typeof canAssign === 'function' && !canAssign(hero, assign)) { if (typeof notif === 'function') notif('No se puede equipar ' + it.name + ' a ' + hero.name + '.'); return; }
+    // Cerrar cualquier modal abierto (p.ej. el selector de armas) y abrir SOLO
+    // el modal de confirmación de compra para este héroe y esta arma/armadura.
+    if (typeof window.closeAnyModal === 'function') { try { window.closeAnyModal(); } catch (e) {} }
     G.assign = assign;
     if (typeof window.doAssign === 'function') window.doAssign(side, heroId);
   }
@@ -137,21 +140,40 @@ export const EQUIP_DRAG_PATCH = `
     if (st && st.dragging) { moveDrag(); if (e.cancelable) e.preventDefault(); }
   }
 
-  function onEnd(){ drop(); }
+  function onEnd(e){
+    // Si hubo arrastre real, anular el click sintético del navegador: sin esto,
+    // al soltar sobre el hueco "Arma/Armadura: vacía" del héroe se disparaba su
+    // onclick y se abría el selector de armas encima de la confirmación.
+    if (st && st.dragging && e && e.cancelable) e.preventDefault();
+    drop();
+  }
 
   document.addEventListener('mousedown', onStart, true);
   document.addEventListener('touchstart', onStart, { capture: true, passive: true });
   document.addEventListener('mousemove', onMove, true);
   document.addEventListener('touchmove', onMove, { capture: true, passive: false });
   document.addEventListener('mouseup', onEnd, true);
-  document.addEventListener('touchend', onEnd, true);
+  document.addEventListener('touchend', onEnd, { capture: true, passive: false });
   document.addEventListener('touchcancel', function(){ cleanup(); }, true);
 
   // Tras un arrastre real, tragar el click que dispara el navegador para no
-  // ejecutar además la selección/compra por clic de la carta.
+  // ejecutar además la selección/compra por clic de la carta o del hueco del héroe.
   document.addEventListener('click', function(e){
-    if (window.__bfDragEndAt && Date.now() - window.__bfDragEndAt < 350) { e.preventDefault(); e.stopPropagation(); window.__bfDragEndAt = 0; }
+    if (window.__bfDragEndAt && Date.now() - window.__bfDragEndAt < 600) { e.preventDefault(); e.stopPropagation(); }
   }, true);
+
+  // Red de seguridad: justo después de un arrastre, ignorar cualquier apertura
+  // del selector de armas (bfOpenQuickShop) provocada por el click residual.
+  setInterval(function(){
+    if (typeof window.bfOpenQuickShop === 'function' && !window.bfOpenQuickShop.__bfDragGuard) {
+      var orig = window.bfOpenQuickShop;
+      window.bfOpenQuickShop = function(){
+        if (window.__bfDragEndAt && Date.now() - window.__bfDragEndAt < 700) return;
+        return orig.apply(this, arguments);
+      };
+      window.bfOpenQuickShop.__bfDragGuard = 1;
+    }
+  }, 400);
 })();
 </script>
 `;
