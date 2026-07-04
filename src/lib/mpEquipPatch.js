@@ -66,8 +66,11 @@ export const MP_EQUIP_PATCH = `
 
   function install() {
     if (window.__bfMpEquipPatched) return true;
-    if (typeof NET === 'undefined' || !NET || !NET.role) return false;
-    if (typeof window.sendIntent !== 'function') return false;
+    // OJO: el juego arranca con NET.role='local' (truthy) — este install corre en
+    // cuanto el juego carga, ANTES de crear/unirse a una sala. Por eso todos los
+    // wrappers comprueban NET.role EN EL MOMENTO de cada mensaje, nunca aquí.
+    if (typeof NET === 'undefined' || !NET) return false;
+    if (typeof window.sendIntent !== 'function' || typeof window.handleIntent !== 'function' || typeof window.applySnapshot !== 'function') return false;
     window.__bfMpEquipPatched = true;
 
     var origSendIntent = window.sendIntent;
@@ -109,7 +112,7 @@ export const MP_EQUIP_PATCH = `
       return origSendIntent.apply(this, arguments);
     };
 
-    if (NET.role === 'host' && !window.__bfApplyEqSync) {
+    if (!window.__bfApplyEqSync) {
       // Fusiona el equipamiento final del cliente. El "listo"/arranque de batalla
       // NO se gestiona aquí: llega justo después como intent 'eqdone' nativo.
       window.__bfApplyEqSync = function(msg) {
@@ -139,10 +142,10 @@ export const MP_EQUIP_PATCH = `
       }, 300);
     }
 
-    if (NET.role === 'client' && typeof window.applySnapshot === 'function' && !window.applySnapshot.__bfEqGuard) {
+    if (!window.applySnapshot.__bfEqGuard) {
       var origApply = window.applySnapshot;
       window.applySnapshot = function(snap) {
-        if (snap && snap.screen === 's-equip' && snap.G && window.__bfEquipDirty) {
+        if (NET.role === 'client' && snap && snap.screen === 's-equip' && snap.G && window.__bfEquipDirty) {
           var me = NET.mySide;
           snap.G.team = snap.G.team || { p: [], o: [] };
           snap.G.spellbook = snap.G.spellbook || { p: [], o: [] };
