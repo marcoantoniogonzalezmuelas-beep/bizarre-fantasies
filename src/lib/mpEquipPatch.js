@@ -71,16 +71,13 @@ export const MP_EQUIP_PATCH = `
     window.__bfMpEquipPatched = true;
 
     var origSendIntent = window.sendIntent;
-    // Sincronización en vivo: tras cada compra local del cliente se envía (con
-    // un pequeño debounce) el estado completo de su lado al host, para que
-    // ambos jugadores vean lo mismo durante toda la fase de equipamiento.
-    var eqSyncTimer = null;
+    // Cada jugador equipa en LOCAL, de forma independiente. Solo al pulsar
+    // "Listo" se envía el equipamiento final al host (que ejecuta la batalla).
     function bfSendEqSync() {
       if (typeof NET === 'undefined' || NET.role !== 'client') return;
       var me = NET.mySide;
       origSendIntent('eqsync', { team: G.team[me], spellbook: G.spellbook[me], items: G.items[me], equipCoins: G.equipCoins[me] });
     }
-    function bfQueueEqSync() { clearTimeout(eqSyncTimer); eqSyncTimer = setTimeout(bfSendEqSync, 400); }
     window.sendIntent = function(op, args) {
       args = args || {};
       if (NET.role === 'client') {
@@ -95,11 +92,9 @@ export const MP_EQUIP_PATCH = `
         if (handled) {
           window.__bfEquipDirty = true;
           if (typeof renderEquip === 'function') renderEquip(me);
-          bfQueueEqSync();
           return;
         }
         if (op === 'eqdone') {
-          clearTimeout(eqSyncTimer);
           bfSendEqSync();
           // El "listo" viaja por el canal ORIGINAL del juego (eqdone): el host lo
           // procesa con su lógica nativa (marca listo y arranca la batalla cuando
