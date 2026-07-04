@@ -1726,14 +1726,13 @@ function buildArtScript(dbCards) {
       var originalEqDone = window.eqDone;
       window.eqDone = function(side) {
         if (G.demoExample) return originalEqDone.apply(this, arguments);
+        // Ready del RIVAL llegando como intent al host: sin aviso de equipamiento —
+        // el diálogo se tragaba el "listo" del rival y la batalla nunca empezaba.
+        if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalEqDone.apply(this, arguments);
         var mySide = (NET.role === 'client') ? NET.mySide : (side || G.eqSide);
         var warns = equipWarnings(mySide);
         if (warns.length && !G.__bfAdWarnAck) {
-          bfWarnConfirm(
-            '⚠️ Equipamiento incompleto',
-            'Hay héroes sin equipamiento completo:<br><br>' + warns.join('<br>') + '<br><br>¿Entrar en batalla de todos modos?',
-            function() { G.__bfAdWarnAck = true; window.eqDone(side); }
-          );
+          bfWarnConfirm('⚠️ Equipamiento incompleto', 'Hay héroes sin equipamiento completo:<br><br>' + warns.join('<br>') + '<br><br>¿Entrar en batalla de todos modos?', function() { G.__bfAdWarnAck = true; window.eqDone(side); });
           return;
         }
         G.__bfAdWarnAck = false;

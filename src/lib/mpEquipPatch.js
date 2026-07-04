@@ -71,18 +71,36 @@ export const MP_EQUIP_PATCH = `
     window.__bfMpEquipPatched = true;
 
     var origSendIntent = window.sendIntent;
+    // Sincronización en vivo: tras cada compra local del cliente se envía (con
+    // un pequeño debounce) el estado completo de su lado al host, para que
+    // ambos jugadores vean lo mismo durante toda la fase de equipamiento.
+    var eqSyncTimer = null;
+    function bfSendEqSync() {
+      if (typeof NET === 'undefined' || NET.role !== 'client') return;
+      var me = NET.mySide;
+      origSendIntent('eqsync', { team: G.team[me], spellbook: G.spellbook[me], items: G.items[me], equipCoins: G.equipCoins[me] });
+    }
+    function bfQueueEqSync() { clearTimeout(eqSyncTimer); eqSyncTimer = setTimeout(bfSendEqSync, 400); }
     window.sendIntent = function(op, args) {
       args = args || {};
       if (NET.role === 'client') {
         var me = NET.mySide;
-        if (op === 'doAssign') { applyAssign(me, args.heroId, args.assign || G.assign); G.assign = null; window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
-        if (op === 'buySpell') { applyBuySpell(me, args.id); window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
-        if (op === 'buyObject') { applyBuyObject(me, args.id); window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
-        if (op === 'unequip') { applyUnequip(me, args.heroId, args.slot); window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
-        if (op === 'removeSpell') { applyRemoveSpell(me, args.i); window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
-        if (op === 'removeItem') { applyRemoveItem(me, args.i); window.__bfEquipDirty = true; if (typeof renderEquip === 'function') renderEquip(me); return; }
+        var handled = false;
+        if (op === 'doAssign') { applyAssign(me, args.heroId, args.assign || G.assign); G.assign = null; handled = true; }
+        else if (op === 'buySpell') { applyBuySpell(me, args.id); handled = true; }
+        else if (op === 'buyObject') { applyBuyObject(me, args.id); handled = true; }
+        else if (op === 'unequip') { applyUnequip(me, args.heroId, args.slot); handled = true; }
+        else if (op === 'removeSpell') { applyRemoveSpell(me, args.i); handled = true; }
+        else if (op === 'removeItem') { applyRemoveItem(me, args.i); handled = true; }
+        if (handled) {
+          window.__bfEquipDirty = true;
+          if (typeof renderEquip === 'function') renderEquip(me);
+          bfQueueEqSync();
+          return;
+        }
         if (op === 'eqdone') {
-          origSendIntent('eqsync', { team: G.team[me], spellbook: G.spellbook[me], items: G.items[me], equipCoins: G.equipCoins[me] });
+          clearTimeout(eqSyncTimer);
+          bfSendEqSync();
           // El "listo" viaja por el canal ORIGINAL del juego (eqdone): el host lo
           // procesa con su lógica nativa (marca listo y arranca la batalla cuando
           // ambos lo están). El eqsync anterior solo lleva el equipamiento.
