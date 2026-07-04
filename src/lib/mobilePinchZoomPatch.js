@@ -64,6 +64,26 @@ export const MOBILE_PINCH_PATCH = `
     }
   }
 
+  // Al abrir un modal, reencuadrar a x1: con el body transformado, los
+  // elementos position:fixed (los modales .mo) se posicionan respecto al body
+  // escalado y quedan fuera de la pantalla. Reset = modal siempre centrado.
+  function resetZoom(){
+    if (z === 1 && !tx && !ty) return;
+    var b = document.body;
+    b.style.transition = 'transform .22s ease';
+    z = 1; tx = 0; ty = 0; apply();
+    setTimeout(function(){ b.style.transition = ''; }, 260);
+  }
+  new MutationObserver(function(muts){
+    for (var i = 0; i < muts.length; i++) {
+      var added = muts[i].addedNodes;
+      for (var j = 0; j < added.length; j++) {
+        var n = added[j];
+        if (n && n.nodeType === 1 && (n.classList.contains('mo') || (n.querySelector && n.querySelector('.mo')))) { resetZoom(); return; }
+      }
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true });
+
   // capture:true + passive:false para adelantarnos a los handlers del juego
   // y poder hacer preventDefault del gesto de 2 dedos.
   document.addEventListener('touchstart', onStart, { capture: true, passive: false });
