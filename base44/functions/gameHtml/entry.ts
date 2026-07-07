@@ -2288,6 +2288,7 @@ function buildArtScript(dbCards) {
   function injectPhaseBadgeIcon() {
     document.querySelectorAll('.phase-badge').forEach(function(badge) {
       if (badge.dataset.bfIcon === '1') return;
+      if (badge.querySelector('.bf-role-emblem')) { badge.dataset.bfIcon = '1'; return; }
       var t = '', btxt = (badge.textContent || '').toUpperCase();
       if (badge.classList.contains('bf-role-cc') || btxt.indexOf('CUERPO') !== -1) t = 'CC';
       else if (badge.classList.contains('bf-role-ad') || btxt.indexOf('DISTANCIA') !== -1) t = 'AD';
