@@ -2288,10 +2288,10 @@ function buildArtScript(dbCards) {
   function injectPhaseBadgeIcon() {
     document.querySelectorAll('.phase-badge').forEach(function(badge) {
       if (badge.dataset.bfIcon === '1') return;
-      var t = '';
-      if (badge.classList.contains('bf-role-cc') || badge.textContent.indexOf('CUERPO') !== -1) t = 'CC';
-      else if (badge.classList.contains('bf-role-ad') || badge.textContent.indexOf('DISTANCIA') !== -1) t = 'AD';
-      else if (badge.classList.contains('bf-role-he') || badge.textContent.indexOf('MAGIA') !== -1) t = 'HE';
+      var t = '', btxt = (badge.textContent || '').toUpperCase();
+      if (badge.classList.contains('bf-role-cc') || btxt.indexOf('CUERPO') !== -1) t = 'CC';
+      else if (badge.classList.contains('bf-role-ad') || btxt.indexOf('DISTANCIA') !== -1) t = 'AD';
+      else if (badge.classList.contains('bf-role-he') || btxt.indexOf('MAGIA') !== -1) t = 'HE';
       if (t && window.__BF_ROLE_EMBLEM) {
         var img = document.createElement('img');
         img.className = 'bf-role-emblem';
