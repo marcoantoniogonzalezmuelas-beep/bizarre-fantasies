@@ -145,6 +145,12 @@ export const MP_EQUIP_PATCH = `
     if (!window.applySnapshot.__bfEqGuard) {
       var origApply = window.applySnapshot;
       window.applySnapshot = function(snap) {
+        // Fuera de la pantalla de equipamiento (subasta, batalla, resultado...)
+        // se reinicia la marca de "equipamiento modificado". Sin esto, la marca
+        // quedaba encendida de una fase/partida anterior y el PRIMER snapshot
+        // de equipamiento pisaba las monedas correctas calculadas por el host
+        // con el valor local viejo del cliente (normalmente 0).
+        if (snap && snap.screen !== 's-equip') window.__bfEquipDirty = false;
         if (NET.role === 'client' && snap && snap.screen === 's-equip' && snap.G && window.__bfEquipDirty) {
           var me = NET.mySide;
           snap.G.team = snap.G.team || { p: [], o: [] };
