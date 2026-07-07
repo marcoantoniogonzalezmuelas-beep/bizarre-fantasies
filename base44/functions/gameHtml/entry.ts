@@ -544,7 +544,7 @@ function buildArtScript(dbCards) {
     window.bfZoomRender = function() {
       var hh = window.__bfZoomH, v = window.__bfZoomV, col = hh.clanColor || '#ffd24a';
       var sig = (typeof raceSigilSvg === 'function') ? raceSigilSvg(hh.clan, col) : '';
-      window.modal('<h3 style="display:flex;align-items:center;gap:8px">' + hh.name + (v === 'elite' ? ' · ÉLITE' : '') + '</h3><div style="display:flex;justify-content:center"><div class="bf-zoom-cardwrap" style="width:min(340px,74vw);height:auto;aspect-ratio:7/10;box-shadow:none">' + window.cardFace(hh, v) + '</div></div><div style="text-align:center;margin-top:12px"><button onclick="bfZoomToggle()" style="padding:10px 22px;border-radius:12px;border:2px solid #7c5410;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">⚙ Ver Normal / Élite</button></div>');
+      window.modal('<div style="display:flex;justify-content:center"><div class="bf-zoom-cardwrap" style="width:min(340px,74vw);height:auto;aspect-ratio:7/10;box-shadow:none">' + window.cardFace(hh, v) + '</div></div><div style="text-align:center;margin-top:12px"><button onclick="bfZoomToggle()" style="padding:10px 22px;border-radius:12px;border:2px solid #7c5410;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">⚙ Ver Normal / Élite</button></div>');
       var ib = document.querySelector('.bf-zoom-cardwrap .bf-zoom-btn'); if (ib) ib.remove();
       setTimeout(function() { if (typeof bfAutoFitHeroCards === 'function') bfAutoFitHeroCards(); }, 30);
     };
