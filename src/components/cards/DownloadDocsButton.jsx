@@ -2,6 +2,21 @@ import React, { useState } from 'react';
 import { FileDown, Loader2 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { GAME_RULES_DOC } from '@/lib/gameRulesDoc';
+import { HERO_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
+
+// Arte de cada carta: el guardado en la carta o, si falta, el del juego por número.
+const artFor = (c) => {
+  if (c.art_url) return c.art_url;
+  const n = Number(c.number || 0);
+  if (c.category === 'hero') return HERO_ART[n - 1];
+  if (c.category === 'spell') return SPELL_ART[n - 46];
+  if (c.category === 'melee_weapon') return MELEE_ART[n - 59];
+  if (c.category === 'ranged_weapon') return RANGED_ART[n - 65];
+  if (c.category === 'armor') return ARMOR_ART[n - 73];
+  if (c.category === 'object') return OBJECT_ART[n - 83];
+  if (c.category === 'bonus') return BONUS_ART[n - 92];
+  return null;
+};
 
 const CAT_LABELS = { hero: 'Héroes', spell: 'Hechizos', melee_weapon: 'Armas cuerpo a cuerpo', ranged_weapon: 'Armas a distancia', armor: 'Armaduras', object: 'Objetos', bonus: 'Bonificadores' };
 const CAT_ORDER = ['hero', 'spell', 'melee_weapon', 'ranged_weapon', 'armor', 'object', 'bonus'];
@@ -32,11 +47,11 @@ export default function DownloadDocsButton({ cards }) {
     setBusy(true);
     try {
       const heroes = (cards || []).filter(c => c.category === 'hero').sort((a, b) => (a.number || 0) - (b.number || 0));
-      // Miniaturas: retratos pequeños para el índice y 3 grandes para la portada.
-      const heroThumbs = {};
-      await Promise.all(heroes.map(async h => { heroThumbs[h.id] = await thumb(h.art_url, 150); }));
+      // Miniaturas: una por carta (héroes y equipamiento) y 3 grandes para la portada.
+      const thumbs = {};
+      await Promise.all((cards || []).map(async c => { thumbs[c.id] = await thumb(artFor(c), 150); }));
       const coverArts = (await Promise.all(
-        heroes.filter(h => h.art_url).slice(0, 12).sort(() => Math.random() - 0.5).slice(0, 3).map(h => thumb(h.art_url, 420))
+        heroes.filter(h => artFor(h)).slice(0, 12).sort(() => Math.random() - 0.5).slice(0, 3).map(h => thumb(artFor(h), 420))
       )).filter(Boolean);
 
       const doc = new jsPDF();
@@ -108,7 +123,7 @@ export default function DownloadDocsButton({ cards }) {
           const num = String(c.number || 0).padStart(3, '0');
           if (cat === 'hero') {
             pageBreak(26);
-            const art = heroThumbs[c.id];
+            const art = thumbs[c.id];
             const textX = art ? 40 : 20, textW = art ? 155 : 175;
             const yTop = y;
             if (art) {
@@ -121,9 +136,17 @@ export default function DownloadDocsButton({ cards }) {
             if (c.elite_ability_name) line(`Élite: ${c.elite_ability_name} — ${c.elite_ability_text || ''}`, 9, 'normal', INK, textX, textW);
             y = Math.max(y, yTop + 15) + 3;
           } else {
-            line(`Nº ${num} · ${c.name}${c.cost != null ? ' (coste ' + c.cost + ')' : ''}${c.mana != null ? ' · maná ' + c.mana : ''}`, 10, 'bold', INK, 20, 175);
-            if (c.description) line(c.description, 9, 'normal', SOFT, 24, 171);
-            y += 2;
+            pageBreak(20);
+            const art = thumbs[c.id];
+            const textX = art ? 38 : 20, textW = art ? 157 : 175;
+            const yTop = y;
+            if (art) {
+              doc.setFillColor(184, 122, 20); doc.rect(19.4, yTop - 4.1, 14.2, 14.2, 'F');
+              doc.addImage(art, 'JPEG', 20, yTop - 3.5, 13, 13);
+            }
+            line(`Nº ${num} · ${c.name}${c.cost != null ? ' (coste ' + c.cost + ')' : ''}${c.mana != null ? ' · maná ' + c.mana : ''}`, 10, 'bold', INK, textX, textW);
+            if (c.description) line(c.description, 9, 'normal', SOFT, textX, textW);
+            y = Math.max(y, yTop + 12) + 2.5;
           }
         });
         y += 3;
