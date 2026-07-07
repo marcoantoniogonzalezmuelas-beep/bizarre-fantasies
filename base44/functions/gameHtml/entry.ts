@@ -2003,7 +2003,7 @@ function buildArtScript(dbCards) {
       return { t: '¡Hola, aventurero!', m: 'Soy <b>Punkito</b>, tu guía. Pulsa <b>Comenzar</b> para empezar. Espero que disfrutes de la experiencia.' };
     }
     if (id === 's-equip') {
-      return { t: 'Fase de Equipamiento', m: 'Para equipar un arma o armadura: <b>1)</b> pulsa la carta de la tienda para <b>seleccionarla</b>, <b>2)</b> luego pulsa <b>«Comprar»</b> en el héroe al que se la quieras poner. Los hechizos y objetos van a tu <b>mano</b>. Recuerda: tus monedas de equipamiento <b>incluyen las que no gastaste en la subasta</b>. Cuando termines, pulsa <b>«Listo — a la batalla»</b>.' };
+      return { t: 'Fase de Equipamiento', m: 'Para equipar un arma o armadura: <b>1)</b> pulsa la carta de la tienda para <b>seleccionarla</b>, <b>2)</b> luego pulsa <b>«Comprar»</b> en el héroe al que se la quieras poner. Los hechizos y objetos van a tu <b>mano</b>. Recuerda: tus monedas de equipamiento <b>ya incluían las de la subasta</b>: lo gastado al pujar por héroes se ha restado de este presupuesto. Cuando termines, pulsa <b>«Listo — a la batalla»</b>.' };
     }
     if (id === 's-battle') {
       return { t: '¡A la batalla!', m: 'Elige una <b>acción</b> con el héroe activo (atacar, hechizo u objeto). Vence a los <b>3 héroes</b> rivales.' };
@@ -2015,7 +2015,7 @@ function buildArtScript(dbCards) {
         return { t: 'Preparar Partida', m: 'Elige el modo: <b>vs IA</b> o <b>Multijugador</b>, escribe tu nombre y pulsa <b>Comenzar</b>.' };
       }
       // Auction / recruit screens
-      return { t: 'Fase de Subasta', m: 'Mira los <b>6 héroes</b> y haz una <b>puja sellada</b> por el que quieras. Quien ofrezca más se lo lleva. Las monedas que no gastes <b>se sumarán a tus monedas de equipamiento</b>.' };
+      return { t: 'Fase de Subasta', m: 'Mira los <b>6 héroes</b> y haz una <b>puja sellada</b> por el que quieras. Quien ofrezca más se lo lleva. Ojo: tus monedas de equipamiento <b>ya incluyen las de la subasta</b>, así que se irán restando conforme pujes por héroes.' };
     }
     return null;
   }
