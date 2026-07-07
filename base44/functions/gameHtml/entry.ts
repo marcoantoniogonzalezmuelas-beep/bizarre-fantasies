@@ -918,15 +918,17 @@ function buildArtScript(dbCards) {
       window.stepTurn = function() { var BB = (typeof B !== 'undefined') ? B : null; if (BB && BB.current) { var cur = getHero(BB.current.side, BB.current.id); if (cur && cur._bfTank) cur._bfTank = false; } return originalStepTurn.apply(this, arguments); };
       window.stepTurn.__bfTank = 1;
     }
+    // Reintento del "Tanquear" remoto: si el intent llega mientras el host está ocupado (animación/acción pendiente), antes se descartaba en silencio y el invitado se quedaba "pillado". Ahora se reintenta hasta ~4s.
+    window.__bfTryTank = function(attempt) { var ok = (typeof B !== 'undefined') && B && B.current && B.current.side === 'o' && !B.over && !B.pending; if (ok) { if (typeof window.bfTankear === 'function') window.bfTankear(); return; } if ((attempt || 0) < 20 && typeof B !== 'undefined' && B && !B.over) setTimeout(function() { window.__bfTryTank((attempt || 0) + 1); }, 200); };
     if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfTank) {
       var originalHandleIntent = window.handleIntent;
-      window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { if (msg.__bfTankDone) return; msg.__bfTankDone = 1; var isOturn = (typeof B !== 'undefined' && B && B.current && B.current.side === 'o' && !B.over); if (isOturn && !B.pending) return window.bfTankear(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfDebtBid') { if (G.phaseNeeds && !G.phaseNeeds.o) return; if (G.bidsIn && G.bidsIn.o) return; G.bids = G.bids || {}; G.bids.o = { heroId: msg.heroId, amount: Number(msg.amount || 0), debt: true }; if (G.bidsIn) G.bidsIn.o = true; if (typeof renderRecruit === 'function') renderRecruit('p'); if (typeof netSync === 'function') netSync('s-recruit'); if (G.bidsIn && G.bidsIn.p && typeof tryResolveRound === 'function') tryResolveRound(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfXferEq') { if (typeof window.bfTransferToAuction === 'function') window.bfTransferToAuction('o', msg.amount); return; } if (msg && msg.t === 'intent' && msg.op === 'bfBizarroFill') { if (typeof bfNoCoinDialog === 'function') bfNoCoinDialog('o'); return; } return originalHandleIntent.apply(this, arguments); };
+      window.handleIntent = function(msg) { if (msg && msg.t === 'intent' && msg.op === 'bfTank') { if (msg.__bfTankDone) return; msg.__bfTankDone = 1; window.__bfTryTank(0); return; } if (msg && msg.t === 'intent' && msg.op === 'bfDebtBid') { if (G.phaseNeeds && !G.phaseNeeds.o) return; if (G.bidsIn && G.bidsIn.o) return; G.bids = G.bids || {}; G.bids.o = { heroId: msg.heroId, amount: Number(msg.amount || 0), debt: true }; if (G.bidsIn) G.bidsIn.o = true; if (typeof renderRecruit === 'function') renderRecruit('p'); if (typeof netSync === 'function') netSync('s-recruit'); if (G.bidsIn && G.bidsIn.p && typeof tryResolveRound === 'function') tryResolveRound(); return; } if (msg && msg.t === 'intent' && msg.op === 'bfXferEq') { if (typeof window.bfTransferToAuction === 'function') window.bfTransferToAuction('o', msg.amount); return; } if (msg && msg.t === 'intent' && msg.op === 'bfBizarroFill') { if (typeof bfNoCoinDialog === 'function') bfNoCoinDialog('o'); return; } return originalHandleIntent.apply(this, arguments); };
       window.handleIntent.__bfTank = 1;
     }
     // Safety net: own 'data' listener on the host's PeerJS conn so a 'bfTank'
     // intent still runs even if the game's intent router misses it. __bfTankDone
     // dedupes vs the handleIntent wrapper.
-    var bfTankConn=null;setInterval(function(){if(typeof NET==='undefined'||NET.role!=='host'||!NET.conn||NET.conn===bfTankConn)return;bfTankConn=NET.conn;try{NET.conn.on('data',function(m){if(!m||m.t!=='intent'||m.op!=='bfTank'||m.__bfTankDone)return;m.__bfTankDone=1;var ok=typeof B!=='undefined'&&B&&B.current&&B.current.side==='o'&&!B.over&&!B.pending;if(ok&&typeof window.bfTankear==='function')window.bfTankear();});}catch(e){}},300);
+    var bfTankConn=null;setInterval(function(){if(typeof NET==='undefined'||NET.role!=='host'||!NET.conn||NET.conn===bfTankConn)return;bfTankConn=NET.conn;try{NET.conn.on('data',function(m){if(!m||m.t!=='intent'||m.op!=='bfTank'||m.__bfTankDone)return;m.__bfTankDone=1;if(typeof window.__bfTryTank==='function')window.__bfTryTank(0);});}catch(e){}},300);
   }
   window.__bfPatchTankRules = patchTankRules;
 
@@ -1043,16 +1045,7 @@ function buildArtScript(dbCards) {
       window.drawRaceSlate.__bf6 = 1;
     }
 
-    function findHero(heroId) {
-      var lists = [G.cands || []];
-      if (G.epicCands) lists = lists.concat(Object.values(G.epicCands));
-      lists.push(HEROES || []);
-      for (var i = 0; i < lists.length; i++) {
-        var found = (lists[i] || []).find(function(h) { return h && h.id === heroId; });
-        if (found) return found;
-      }
-      return null;
-    }
+    function findHero(heroId) { var lists = [G.cands || []]; if (G.epicCands) lists = lists.concat(Object.values(G.epicCands)); lists.push(HEROES || []); for (var i = 0; i < lists.length; i++) { var found = (lists[i] || []).find(function(h) { return h && h.id === heroId; }); if (found) return found; } return null; }
 
     // Bonus modifiers on the FINAL bid value: add = own bonus, sub = rival restador.
     window.bidMods = function(side) {
@@ -1069,21 +1062,8 @@ function buildArtScript(dbCards) {
 
     function epicPoolForCurrentType(){var t=(G.cands&&G.cands[0]&&G.cands[0].type)||G.curType||G.phaseType||G.auctType;var u={};['p','o'].forEach(function(s){(G.team&&G.team[s]||[]).forEach(function(h){u[h.id]=1;});});(G.cands||[]).forEach(function(h){if(h)u[h.id]=1;});var p=HEROES.filter(function(h){return h.clan==='Épicas'&&(!t||h.type===t)&&!u[h.id];});if(!p.length)p=HEROES.filter(function(h){return h.clan==='Épicas'&&!u[h.id];});return p;}
 
-    function prepareEpicOffers() {
-      G.epicCands = {};
-      if (!G.forceEpic) return;
-      var baseCands = (G.cands || []).slice();
-      ['p','o'].forEach(function(side) {
-        if (!G.forceEpic[side]) return;
-        var pool = epicPoolForCurrentType();
-        if (!pool.length) return;
-        var h = pool[Math.floor(Math.random() * pool.length)];
-        // This side sees the normal candidates PLUS one epic hero. The other
-        // side keeps seeing only G.cands (without this epic).
-        G.epicCands[side] = baseCands.concat([h]);
-      });
-      G.forceEpic = {};
-    }
+    // Each flagged side sees the normal candidates PLUS one epic hero; the other side keeps seeing only G.cands.
+    function prepareEpicOffers() { G.epicCands = {}; if (!G.forceEpic) return; var baseCands = (G.cands || []).slice(); ['p','o'].forEach(function(side) { if (!G.forceEpic[side]) return; var pool = epicPoolForCurrentType(); if (!pool.length) return; var h = pool[Math.floor(Math.random() * pool.length)]; G.epicCands[side] = baseCands.concat([h]); }); G.forceEpic = {}; }
 
     var originalApplyBonus = window.applyBonus;
     window.applyBonus = function(side, b) {
