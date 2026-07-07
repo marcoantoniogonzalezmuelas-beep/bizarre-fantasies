@@ -39,9 +39,9 @@ const HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","b
 const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok","Gnarr","Vragnar","Morthex","Buck Ironclad","La Comadreja","Krunder Mec.","El Heavy","El Pijo","Patrón","Sylvara","Aelion","Zarmanda","Eredon","Alfredinho","Dixie Plasma","Skarla","Sylvex","Gorvak","El Futbolista","El Gamer","Retropoeta","Malachar","Serafis","Batu","Nixara","Vexal","Chivo","Solenne","Mantenimiento","Pacopiton","Hexara","Reverendo Sapis","Doc Radiante","Zarmandis","Xerath","El Ajedrecista","El Rolero","El Político"];
 
 const EQUIP = { melee: { nums:[59,60,61,62,63,64] }, ranged: { nums:[65,66,67,68,69,70,71,72] }, armor: { nums:[73,74,75,76,77,78,79,80,81,82] }, spell: { nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] }, object: { nums:[83,84,85,86,87,88,89,90,91] } };
-function buildNumArtMap() { const m={}; const s=[ [EQUIP.melee, MELEE_ART], [EQUIP.ranged, RANGED_ART], [EQUIP.armor, ARMOR_ART], [EQUIP.spell, SPELL_ART], [EQUIP.object, OBJECT_ART] ]; for (const [c, a] of s) c.nums.forEach((n, i) => { if (a[i]) m[n] = a[i]; }); return m; }
 function buildArtScript(dbCards) {
-  const NUM_ART = buildNumArtMap();
+  const artSets={melee:[...MELEE_ART],ranged:[...RANGED_ART],armor:[...ARMOR_ART],spell:[...SPELL_ART],object:[...OBJECT_ART]},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=[...BONUS_ART];let transformerArt=TRANSFORMER_ART;(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=c.art_url;artSets.spell[13]=c.art_url;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=c.art_url;return;}if(c.category==='bonus'){const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=c.art_url;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
+  const NUM_ART={};[[EQUIP.melee,artSets.melee],[EQUIP.ranged,artSets.ranged],[EQUIP.armor,artSets.armor],[EQUIP.spell,artSets.spell],[EQUIP.object,artSets.object]].forEach(([c,a])=>c.nums.forEach((n,i)=>{if(a[i])NUM_ART[n]=a[i];}));
   const dbHeroes = dbCards.filter(c => c.category === 'hero' && c.in_auction !== false);
   const localHeroArt = [...HERO_ART];
   const localHeroEliteArt = [...HERO_ELITE_ART];
@@ -68,18 +68,18 @@ function buildArtScript(dbCards) {
   var HERO_IDS = ${JSON.stringify(localHeroIds)};
   var HERO_NAMES = ${JSON.stringify(localHeroNames)};
   var NUM_ART = ${JSON.stringify(NUM_ART)};
-  var MELEE_ART = ${JSON.stringify(MELEE_ART)};
-  var RANGED_ART = ${JSON.stringify(RANGED_ART)};
-  var ARMOR_ART = ${JSON.stringify(ARMOR_ART)};
-  var SPELL_ART = ${JSON.stringify(SPELL_ART)};
-  var OBJECT_ART = ${JSON.stringify(OBJECT_ART)};
+  var MELEE_ART = ${JSON.stringify(artSets.melee)};
+  var RANGED_ART = ${JSON.stringify(artSets.ranged)};
+  var ARMOR_ART = ${JSON.stringify(artSets.armor)};
+  var SPELL_ART = ${JSON.stringify(artSets.spell)};
+  var OBJECT_ART = ${JSON.stringify(artSets.object)};
   var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
   var LOCAL_TOKENS = ${JSON.stringify(TOKENS)}, LOCAL_TOKEN_ART = ${JSON.stringify(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
   var TOKENS = (DB_TOKENS && DB_TOKENS.length) ? DB_TOKENS : LOCAL_TOKENS;
   var TOKEN_ART = TOKENS.map(function(t){ return t.art || LT_ART[t.id] || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || LT_ART[t.id] || ''; });
-  var TRANSFORMER_ART = "${TRANSFORMER_ART}";
+  var TRANSFORMER_ART = "${transformerArt}";
   var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
-  var BONUS_ART = ${JSON.stringify(BONUS_ART)};
+  var BONUS_ART = ${JSON.stringify(bonusArtArr)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
   var COVER_BG = "${COVER_BG}";
@@ -509,7 +509,7 @@ function buildArtScript(dbCards) {
     function raceSigil(c){return raceSigilSvg(c, '#fff7dc');}
     
     var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
-    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (eh) { eh.gold_border = h.gold_border; eh.foil = h.foil; if (h.name) eh.name = h.name; if (h.title) eh.title = h.title; } else HEROES.push(h); });
+    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (!eh) { HEROES.push(h); return; } ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','num'].forEach(function(k){ if (h[k] != null && h[k] !== '') eh[k] = h[k]; }); eh.gold_border = h.gold_border; eh.foil = h.foil; if (h.cost != null) eh.cost = Number(h.cost) + ((eh.__bfEpicRaised === 1 && (h.clan || eh.clan) === 'Épicas') ? 10 : 0); }); // BD (Oráculo) manda: sincroniza TODOS los campos del héroe (nombre, stats, habilidades, coste...) para que cualquier actualización de cartas llegue al juego sin tocar código.
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
 
     var patched = function(h, variant) {
