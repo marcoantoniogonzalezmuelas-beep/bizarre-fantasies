@@ -46,10 +46,12 @@ export default function DownloadDocsButton({ cards }) {
   const generate = async () => {
     setBusy(true);
     try {
-      const heroes = (cards || []).filter(c => c.category === 'hero').sort((a, b) => (a.number || 0) - (b.number || 0));
+      // Los Bizarros (fichas "tk_") no se mencionan en la documentación.
+      const docCards = (cards || []).filter(c => !String(c.card_id || '').startsWith('tk_'));
+      const heroes = docCards.filter(c => c.category === 'hero').sort((a, b) => (a.number || 0) - (b.number || 0));
       // Miniaturas: una por carta (héroes y equipamiento) y 3 grandes para la portada.
       const thumbs = {};
-      await Promise.all((cards || []).map(async c => { thumbs[c.id] = await thumb(artFor(c), 150); }));
+      await Promise.all(docCards.map(async c => { thumbs[c.id] = await thumb(artFor(c), 150); }));
       const coverArts = (await Promise.all(
         heroes.filter(h => artFor(h)).slice(0, 12).sort(() => Math.random() - 0.5).slice(0, 3).map(h => thumb(artFor(h), 420))
       )).filter(Boolean);
@@ -116,7 +118,7 @@ export default function DownloadDocsButton({ cards }) {
       doc.text('ÍNDICE DE CARTAS · Base Set', 15, 15);
       y = 34;
       CAT_ORDER.forEach(cat => {
-        const list = (cards || []).filter(c => c.category === cat).sort((a, b) => (a.number || 0) - (b.number || 0));
+        const list = docCards.filter(c => c.category === cat).sort((a, b) => (a.number || 0) - (b.number || 0));
         if (!list.length) return;
         catHeader(CAT_LABELS[cat]);
         list.forEach(c => {
