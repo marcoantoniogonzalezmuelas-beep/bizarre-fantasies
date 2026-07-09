@@ -148,7 +148,10 @@ export default function AdminCards() {
   }
 
   async function cropAndUpload(url) {
-    // Load image, draw cropped 7:10 version onto canvas, upload the result
+    // Encaja la imagen COMPLETA en el formato 7:10 de la carta sin recortar
+    // nada: la imagen entera se escala para caber (contain) y los huecos que
+    // queden se rellenan con un fondo difuminado de la propia imagen, para
+    // mantener el aspecto full-bleed sin perder ningún elemento del arte.
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -157,30 +160,22 @@ export default function AdminCards() {
         const TARGET_H = 1000;
         const srcRatio = img.width / img.height;
         const dstRatio = TARGET_W / TARGET_H;
-        let sx, sy, sw, sh;
-        if (srcRatio > dstRatio) {
-          // source wider than target → crop sides
-          sh = img.height;
-          sw = img.height * dstRatio;
-          sx = (img.width - sw) / 2;
-          sy = 0;
-        } else {
-          // source taller than target → crop top/bottom
-          sw = img.width;
-          sh = img.width / dstRatio;
-          sx = 0;
-          sy = (img.height - sh) / 2;
-        }
-        // Extra overscan: zoom in a bit more so any leftover white margin from
-        // the AI generation is always cropped away, keeping every new card the
-        // same homogeneous full-bleed size regardless of the source image.
-        const ZOOM = 1.05;
-        const zsw = sw / ZOOM, zsh = sh / ZOOM;
-        sx += (sw - zsw) / 2; sy += (sh - zsh) / 2; sw = zsw; sh = zsh;
         const canvas = document.createElement('canvas');
         canvas.width = TARGET_W;
         canvas.height = TARGET_H;
-        canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, TARGET_W, TARGET_H);
+        const ctx = canvas.getContext('2d');
+        // 1) Fondo: la imagen recortada en modo cover, muy difuminada
+        let sx, sy, sw, sh;
+        if (srcRatio > dstRatio) { sh = img.height; sw = img.height * dstRatio; sx = (img.width - sw) / 2; sy = 0; }
+        else { sw = img.width; sh = img.width / dstRatio; sx = 0; sy = (img.height - sh) / 2; }
+        ctx.filter = 'blur(30px)';
+        // Overscan del fondo para que el desenfoque no deje bordes claros
+        ctx.drawImage(img, sx, sy, sw, sh, -40, -40, TARGET_W + 80, TARGET_H + 80);
+        ctx.filter = 'none';
+        // 2) Imagen completa centrada en modo contain (sin recortar nada)
+        const scale = Math.min(TARGET_W / img.width, TARGET_H / img.height);
+        const dw = img.width * scale, dh = img.height * scale;
+        ctx.drawImage(img, 0, 0, img.width, img.height, (TARGET_W - dw) / 2, (TARGET_H - dh) / 2, dw, dh);
         canvas.toBlob(async (blob) => {
           const file = new File([blob], 'card_art.jpg', { type: 'image/jpeg' });
           const uploaded = await base44.integrations.Core.UploadFile({ file });
