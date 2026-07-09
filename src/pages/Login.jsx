@@ -11,7 +11,11 @@ import GoogleIcon from "@/components/GoogleIcon";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() =>
+    new URLSearchParams(window.location.search).get("denied")
+      ? "Acceso restringido: solo administradores."
+      : ""
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -20,10 +24,14 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
+      const user = await base44.auth.me();
+      if (user?.role !== "admin") {
+        await base44.auth.logout("/login?denied=1");
+        return;
+      }
       window.location.href = "/admin";
     } catch (err) {
-      setError(err.message || "Invalid email or password");
-    } finally {
+      setError(err.message || "Email o contraseña incorrectos");
       setLoading(false);
     }
   };
@@ -35,16 +43,9 @@ export default function Login() {
   return (
     <AuthLayout
       icon={LogIn}
-      title="Welcome back"
-      subtitle="Log in to your account"
-      footer={
-        <>
-          Don't have an account?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
-            Create one
-          </Link>
-        </>
-      }
+      title="Backoffice"
+      subtitle="Acceso solo para administradores"
+      footer={null}
     >
       <Button
         variant="outline"
@@ -52,7 +53,7 @@ export default function Login() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        Continuar con Google
       </Button>
 
       <div className="relative mb-6">
@@ -60,7 +61,7 @@ export default function Login() {
           <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
+          <span className="bg-card px-3 text-muted-foreground">o</span>
         </div>
       </div>
 
@@ -90,9 +91,9 @@ export default function Login() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
+              ¿Olvidaste la contraseña?
             </Link>
           </div>
           <div className="relative">
@@ -113,10 +114,10 @@ export default function Login() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
+              Entrando...
             </>
           ) : (
-            "Log in"
+            "Entrar"
           )}
         </Button>
       </form>
