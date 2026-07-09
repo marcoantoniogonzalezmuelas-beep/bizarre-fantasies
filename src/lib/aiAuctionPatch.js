@@ -11,7 +11,13 @@ export const AI_AUCTION_PATCH = `
   window.__bfAiAuctionPatch = true;
 
   function aiSide(){ return (typeof NET === 'undefined' || !NET || !NET.role) ? 'o' : null; }
-  function needsHero(s){ return !G.phaseNeeds || G.phaseNeeds[s] !== false; }
+  // ¿Le falta a este lado el héroe de la fase actual? Comprobación infalible:
+  // en la fase N (0,1,2) el equipo debe acabar con N+1 héroes. Solo puede
+  // "conservar y pasar" quien YA tiene el héroe de esta fase (repuja ganada).
+  function needsHero(s){
+    var teamLen = ((G.team && G.team[s]) || []).length;
+    return teamLen < (Number(G.aIndex || 0) + 1);
+  }
   function mods(s){ try { return window.bidMods ? window.bidMods(s) : { add: 0, sub: 0 }; } catch(e){ return { add: 0, sub: 0 }; } }
   function pool(s){ return (G.epicCands && G.epicCands[s]) || G.cands || []; }
   function cheapest(s){ var c = null; pool(s).forEach(function(h){ if (h && (!c || Number(h.cost||0) < Number(c.cost||0))) c = h; }); return c; }
@@ -74,6 +80,8 @@ export const AI_AUCTION_PATCH = `
       stripBizarros(s, preLen);
       var b = G.bids && G.bids[s];
       if ((!b || b.pass) && needsHero(s)) {
+        // El envoltorio interno pudo marcar phaseNeeds=false sin reclutar: deshacerlo.
+        if (G.phaseNeeds) G.phaseNeeds[s] = true;
         forceBid(s);
         if (typeof window.checkBids === 'function') window.checkBids();
       }
@@ -85,7 +93,7 @@ export const AI_AUCTION_PATCH = `
       var ai = aiSide();
       if (ai) {
         var b = G.bids && G.bids[ai];
-        if ((!b || b.pass) && needsHero(ai)) { forceBid(ai); b = G.bids[ai]; }
+        if ((!b || b.pass) && needsHero(ai)) { if (G.phaseNeeds) G.phaseNeeds[ai] = true; forceBid(ai); b = G.bids[ai]; }
         // Cubre la puja de la IA para que el ajuste interno no la convierta en "pasa".
         if (b && !b.pass) {
           var m = mods(ai), h = pool(ai).concat(typeof HEROES !== 'undefined' ? HEROES : []).find(function(x){ return x && x.id === b.heroId; });
