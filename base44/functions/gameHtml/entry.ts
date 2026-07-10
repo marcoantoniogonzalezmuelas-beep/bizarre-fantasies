@@ -3,22 +3,16 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-03-battleorder-v152';
+const GAME_PATCH_VERSION = 'bf-2026-07-10-killerducks-v153';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
-
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
 const HERO_ELITE_ART = ['b2219417f','a2abfb434','4952ab881','01e96302a','e908b3273','650b7ff27','4d934fdf4','f7954d1fc','8bc966bfa','452bb4fb7','653c2036d','141eb7445','ddf40d7ab','12f840fe3','4cf89ac43','b264548c2','8979eecb4','87c291158','e7ace3347','8d6e97ce2','33eb953a8','ffd892ff4','5a79e3638','b08f41b13','fb9937c69','04b64ecc7','d9ef92043','40e91e893','437bbb48b','35add4eeb','0827725df','2c7c03c8f','d0512bd56','ae296c827','8cde88cb7','ea100edfb','7764cb9ea','84c9693dc','6996705b7','b96972130','8959bebcc','e7ce90f66','4328395b6','06c814afa','12a5ddb5c'].map(toHArt);
-
 const IMG_BASE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
 const toArt = function(id){ return IMG_BASE + id + '_generated_image.png'; };
-
 const MELEE_ART = ['2ef6e8fd8','90d5f4f20','ca0217dac','79830b431','b5b6160a3','a8ea859a5'].map(toArt);
-
 const RANGED_ART = ['2146a215b','ab826c633','88e45b0a1','93554b1ee','c8cf4c6d1','06ce99379','08cb8f198','809f7051c'].map(toArt);
-
 const ARMOR_ART = ['b989796b2','37519e06c','4a38b42e1','6889c5c36','fefd71323','2de5cea6a','244338b2e','adc154eaf','46890f673','ed198ba53'].map(toArt);
-
 const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b','e0c8c5f87'].map(toArt);
 // Token heroes (Nº 109-113): la buffarra, lavadora, bañador con rositas, caja de zapatos, pez espada de tres ojos. Stats flojos (<5), vida <=25, habilidades absurdas.
 const TOKEN_ART = ['677d6bde3','5fde36306','707fa83e5','7b2be0479','1bc6fc19d'].map(toArt);
@@ -28,16 +22,12 @@ const OBJECT_ART = ['58d239c00','1688e1433','9b9d6986f','dd35e9e6b','026d2d45d',
 // Spell mana by name — the upstream SPELLS list has no `mana`, so we inject this and use it as fallback.
 const SPELL_MANA = {'Bola de Fuego':8,'Tormenta Ígnea':16,'Lanza de Hielo':9,'Rayo en Cadena':12,'Maremoto':15,'Curación':8,'Curación Divina':15,'Escudo de Maná':8,'Barrera Arcana':12,'Sueño':10,'Paralización':11,'Maldición':8,'Bendición':8,'Transformer':20};
 const BONUS_ART = ['88ffc8b21','a644bca96','a5d3ecf52','a58e01097','664754ee3','6c0160e33','fbe03869b','5369480ce','e5c4370fc','26219e884','1acefc0e0','77bc42e4f','0934ebffe','70f137c2b'].map(toArt);
-
 const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli","mina","roba"];
 const BONUS_NAMES = ["Gran Banquero","Corredor de Bolsa","Mercader Zeta","Nauta Financiero","La Prestamista","Patrón de Forja","Armero Real","El Pirata","La Corsaria","Hacker Nexus","Bandolero Seco","Glitch","Mina de Oro","Ladrón de Guante"];
-
 // Hero id order, matching the HERO_ART / HERO_ELITE_ART arrays index-for-index.
 const HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
-
 // Hero id -> display name (so we can match cards already rendered in the DOM by name).
 const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok","Gnarr","Vragnar","Morthex","Buck Ironclad","La Comadreja","Krunder Mec.","El Heavy","El Pijo","Patrón","Sylvara","Aelion","Zarmanda","Eredon","Alfredinho","Dixie Plasma","Skarla","Sylvex","Gorvak","El Futbolista","El Gamer","Retropoeta","Malachar","Serafis","Batu","Nixara","Vexal","Chivo","Solenne","Mantenimiento","Pacopiton","Hexara","Reverendo Sapis","Doc Radiante","Zarmandis","Xerath","El Ajedrecista","El Rolero","El Político"];
-
 const EQUIP = { melee: { nums:[59,60,61,62,63,64] }, ranged: { nums:[65,66,67,68,69,70,71,72] }, armor: { nums:[73,74,75,76,77,78,79,80,81,82] }, spell: { nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] }, object: { nums:[83,84,85,86,87,88,89,90,91] } };
 function buildArtScript(dbCards) {
   const artSets={melee:[...MELEE_ART],ranged:[...RANGED_ART],armor:[...ARMOR_ART],spell:[...SPELL_ART],object:[...OBJECT_ART]},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=[...BONUS_ART];let transformerArt=TRANSFORMER_ART;(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=c.art_url;artSets.spell[13]=c.art_url;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=c.art_url;return;}if(c.category==='bonus'){const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=c.art_url;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -55,10 +45,9 @@ function buildArtScript(dbCards) {
     localHeroNames.push(c.name);
   });
   
-  const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color, foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true }));
+  const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color, foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'killerducks' ? 'duck-summon' : undefined }));
   // Token (Bizarro) heroes from the DB — same art/name/stats/elite as the Oráculo.
-  const DB_TOKENS = (dbCards || []).filter(c => String(c.card_id || '').startsWith('tk_')).map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan || 'Bizarros', clanColor: c.clan_color || '#caa14a', type: c.type, cost: c.cost || 0, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc != null ? c.elite_cc : c.cc, eAd: c.elite_ad != null ? c.elite_ad : c.ad, eHe: c.elite_he != null ? c.elite_he : c.he, eHp: c.elite_hp != null ? c.elite_hp : c.hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name || c.ability_name, eTxt: c.elite_ability_text || c.ability_text, art: c.art_url || '', eliteArt: c.elite_art_url || c.art_url || '', foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true }));
-
+  const DB_TOKENS = (dbCards || []).filter(c => c.category === 'bizarro' || String(c.card_id || '').startsWith('tk_')).map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan || 'Bizarros', clanColor: c.clan_color || '#caa14a', type: c.type, cost: c.cost || 0, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc != null ? c.elite_cc : c.cc, eAd: c.elite_ad != null ? c.elite_ad : c.ad, eHe: c.elite_he != null ? c.elite_he : c.he, eHp: c.elite_hp != null ? c.elite_hp : c.hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name || c.ability_name, eTxt: c.elite_ability_text || c.ability_text, art: c.art_url || '', eliteArt: c.elite_art_url || c.art_url || '', foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'tk_patito_goma' ? 'big-ad' : 'tk_none' }));
   return `
 <script>
 (function() {
@@ -75,7 +64,7 @@ function buildArtScript(dbCards) {
   var OBJECT_ART = ${JSON.stringify(artSets.object)};
   var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
   var LOCAL_TOKENS = ${JSON.stringify(TOKENS)}, LOCAL_TOKEN_ART = ${JSON.stringify(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
-  var TOKENS = (DB_TOKENS && DB_TOKENS.length) ? DB_TOKENS : LOCAL_TOKENS;
+  var TOKENS = LOCAL_TOKENS.concat(DB_TOKENS || []);
   var TOKEN_ART = TOKENS.map(function(t){ return t.art || LT_ART[t.id] || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || LT_ART[t.id] || ''; });
   var TRANSFORMER_ART = "${transformerArt}";
   var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
@@ -89,11 +78,9 @@ function buildArtScript(dbCards) {
   var LOGO_URL = "${LOGO_URL}";
   var ACTION_BG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9e0b3119e_generated_image.png";
   window.__BF_PATCH_VERSION = "${GAME_PATCH_VERSION}";
-
   function bfKey(value) {
     return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   }
-
   // name -> bonus art lookup
   var BONUS_ART_BY_NAME = {};
   var BONUS_ART_BY_KEY = {};
@@ -106,9 +93,7 @@ function buildArtScript(dbCards) {
   BONUS_ART_BY_NAME['Destino Épico Rival'] = HERO_ELITE_ART[23];
   BONUS_ART_BY_KEY[bfKey('Convocatoria Épica')] = HERO_ELITE_ART[12];
   BONUS_ART_BY_KEY[bfKey('Destino Épico Rival')] = HERO_ELITE_ART[23];
-
   var RACE_SIGIL_SVG = {'Guerreros':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><line x1="8" y1="8" x2="32" y2="32" stroke="%C%" stroke-width="3.5" stroke-linecap="round"/><line x1="32" y1="8" x2="8" y2="32" stroke="%C%" stroke-width="3.5" stroke-linecap="round"/><line x1="5" y1="14" x2="14" y2="5" stroke="%C%" stroke-width="2" stroke-linecap="round"/><line x1="35" y1="14" x2="26" y2="5" stroke="%C%" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="33" r="2.5" fill="%C%"/><circle cx="33" cy="33" r="2.5" fill="%C%"/></svg>','Druidas':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M20 5 C20 5 28 10 28 20 C28 28 22 32 20 35 C18 32 12 28 12 20 C12 10 20 5 20 5Z" stroke="%C%" stroke-width="2" fill="none"/><path d="M20 35 C20 35 8 30 6 20 C4 11 10 6 14 6 C11 12 12 18 20 22 C20 22 28 18 26 12 C28 6 34 11 34 20 C32 30 20 35 20 35Z" stroke="%C%" stroke-width="1.5" fill="%C%" fill-opacity="0.18"/><circle cx="20" cy="20" r="3" fill="%C%"/></svg>','No-muertos':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M20 6 C12 6 8 12 8 18 C8 23 11 26 13 28 L13 33 L27 33 L27 28 C29 26 32 23 32 18 C32 12 28 6 20 6Z" stroke="%C%" stroke-width="2.2" fill="none"/><line x1="14" y1="33" x2="14" y2="36" stroke="%C%" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="33" x2="18" y2="36" stroke="%C%" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="33" x2="22" y2="36" stroke="%C%" stroke-width="2" stroke-linecap="round"/><line x1="26" y1="33" x2="26" y2="36" stroke="%C%" stroke-width="2" stroke-linecap="round"/><ellipse cx="15.5" cy="20" rx="3" ry="3.5" fill="%C%"/><ellipse cx="24.5" cy="20" rx="3" ry="3.5" fill="%C%"/><path d="M19 25 L21 25 L20 27 Z" fill="%C%" opacity="0.7"/></svg>','Vaqueros':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 23.5,14 34,14 25.5,20.5 28.5,31 20,25 11.5,31 14.5,20.5 6,14 16.5,14" stroke="%C%" stroke-width="1.8" fill="none" stroke-linejoin="round"/><circle cx="20" cy="20" r="4" fill="%C%" opacity="0.85"/></svg>','Elfos':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M12 5 C6 14 6 26 12 35" stroke="%C%" stroke-width="2.5" stroke-linecap="round" fill="none"/><line x1="12" y1="5" x2="12" y2="35" stroke="%C%" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 2"/><line x1="13" y1="20" x2="35" y2="20" stroke="%C%" stroke-width="2" stroke-linecap="round"/><polygon points="35,20 30,17 30,23" fill="%C%"/><path d="M14 20 L10 16 M14 20 L10 24" stroke="%C%" stroke-width="1.5" stroke-linecap="round"/></svg>','Magos':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,5 22,17 34,20 22,23 20,35 18,23 6,20 18,17" stroke="%C%" stroke-width="2" fill="%C%" fill-opacity="0.15" stroke-linejoin="round"/><polygon points="20,10 21,17.5 28.5,20 21,22.5 20,30 19,22.5 11.5,20 19,17.5" fill="%C%" fill-opacity="0.35"/><circle cx="20" cy="20" r="3.5" fill="%C%"/></svg>','Épicas':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 34,16 20,36 6,16" stroke="%C%" stroke-width="2.2" fill="%C%" fill-opacity="0.15" stroke-linejoin="round"/><line x1="6" y1="16" x2="34" y2="16" stroke="%C%" stroke-width="1.4"/><line x1="20" y1="4" x2="6" y2="16" stroke="%C%" stroke-width="1.4"/><line x1="20" y1="4" x2="34" y2="16" stroke="%C%" stroke-width="1.4"/><line x1="6" y1="16" x2="20" y2="36" stroke="%C%" stroke-width="1.4"/><line x1="34" y1="16" x2="20" y2="36" stroke="%C%" stroke-width="1.4"/><line x1="20" y1="4" x2="20" y2="36" stroke="%C%" stroke-width="1" opacity="0.4"/></svg>','Cotidianos':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="19" r="10" stroke="%C%" stroke-width="2" fill="%C%" fill-opacity="0.1"/><circle cx="25" cy="21" r="10" stroke="%C%" stroke-width="2" fill="%C%" fill-opacity="0.1"/><path d="M11 22 Q15 26 19 22" stroke="%C%" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M21 26 Q25 22 29 26" stroke="%C%" stroke-width="1.8" stroke-linecap="round" fill="none"/><circle cx="13" cy="17" r="1.5" fill="%C%"/><circle cx="17" cy="17" r="1.5" fill="%C%"/><circle cx="23" cy="19" r="1.5" fill="%C%"/><circle cx="27" cy="19" r="1.5" fill="%C%"/></svg>','Bizarros':'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="30" height="30" rx="6" stroke="%C%" stroke-width="2.2" fill="%C%" fill-opacity="0.12"/><circle cx="14" cy="13" r="2.5" fill="%C%"/><circle cx="26" cy="13" r="2.5" fill="%C%"/><circle cx="14" cy="20" r="2.5" fill="%C%"/><circle cx="26" cy="20" r="2.5" fill="%C%"/><circle cx="14" cy="27" r="2.5" fill="%C%"/><circle cx="26" cy="27" r="2.5" fill="%C%"/></svg>'}; function raceSigilSvg(clan,color){var col=color||(typeof CLAN_COLORS!=='undefined'&&CLAN_COLORS[clan])||'#caa14a';var svg=RACE_SIGIL_SVG[clan]||'<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 36,36 4,36" stroke="%C%" stroke-width="2" fill="%C%" fill-opacity="0.2"/></svg>';return svg.split('%C%').join(col);} window.bfRaceSigilSvg=raceSigilSvg;
-
   // id -> art, name -> art lookups for heroes
   var HERO_POS_OVERRIDE = { pac: 'center 20%', syx: 'center 18%', vra: 'center 22%', vex: 'center 16%', doc: 'center 18%', rol: 'center 16%' }; function bfHeroBgPos(id) { return HERO_POS_OVERRIDE[id] || 'center 10%'; } window.__bfHeroBgPos = bfHeroBgPos; var ART_BY_ID = {}, ELITE_BY_ID = {}, ART_BY_NAME = {}, ELITE_BY_NAME = {};
   HERO_IDS.forEach(function(id, i) {
@@ -121,8 +106,6 @@ function buildArtScript(dbCards) {
   // Register token art (used when a hero is transformed into a token mid-battle).
   // Elite art uses the token's own elite illustration (same as the Oráculo).
   TOKENS.forEach(function(t, i) { var u = TOKEN_ART[i], eu = TOKEN_ELITE_ART[i] || u; if (!u) return; ART_BY_ID[t.id] = u; ELITE_BY_ID[t.id] = eu; ART_BY_NAME[t.name] = u; ELITE_BY_NAME[t.name] = eu; });
-
-  // ---- STYLES for injected art ----
   function injectCoverStyle() {
     var style = document.createElement('style');
     style.textContent = \`
@@ -137,7 +120,6 @@ function buildArtScript(dbCards) {
       .flip3d{perspective:1300px!important}.flip3d-inner{transform-style:preserve-3d!important;transition:transform .62s cubic-bezier(.2,.72,.2,1)!important;will-change:transform!important}.flip3d.flipped .flip3d-inner{transform:rotateY(180deg)!important}.flip3d .face{backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important;transform-style:preserve-3d!important}.flip3d .face.front{transform:rotateY(0deg) translateZ(1px)!important}.flip3d .face.back{transform:rotateY(180deg) translateZ(1px)!important}.face.back .bf-hero-card.cf-elite .bf-hero-bg,.face.back .cf-elite .cf-art.has-art::before{transform:none!important}.bf-hero-card{position:relative!important;height:100%!important;overflow:hidden!important;border-radius:18px!important;border:2.5px solid var(--clan,#caa14a)!important;background:#09070d!important;box-shadow:0 10px 28px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,210,74,.24)!important}.bf-hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;background:none;background-position:center center;overflow:hidden}.bf-hero-bg::before{content:'';position:absolute;inset:-12%;background-image:var(--bf-art);background-size:cover;background-position:center;background-repeat:no-repeat;filter:blur(18px) saturate(1.25) brightness(.72)}.bf-hero-bg::after{content:'';position:absolute;inset:var(--bf-fit,0%);background-image:var(--bf-art);background-size:var(--bf-fitmode,contain);background-position:inherit;background-repeat:no-repeat;filter:saturate(1.12) contrast(1.08)}.bf-hero-card::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.54) 0%,rgba(0,0,0,.12) 20%,rgba(0,0,0,0) 42%,rgba(0,0,0,.12) 64%,rgba(0,0,0,.68) 100%),radial-gradient(circle at 50% 4%,rgba(255,210,74,.20),rgba(0,0,0,0) 28%)}.bf-hero-card.cf-elite::before{background:linear-gradient(180deg,rgba(16,0,34,.58) 0%,rgba(20,0,42,.10) 24%,rgba(0,0,0,0) 43%,rgba(18,0,35,.16) 66%,rgba(0,0,0,.70) 100%),radial-gradient(circle at 50% 4%,rgba(192,91,255,.28),rgba(0,0,0,0) 30%)}
       .bf-hero-card.cf-epic{border:6px solid #FFD24A!important;animation:bfGoldGlow 2.4s ease-in-out infinite!important}.bf-hero-card.cf-rainbow{border:6px solid transparent!important;background:linear-gradient(#09070d,#09070d) padding-box,linear-gradient(120deg,#ff3b5c,#ff9d2e,#ffe14a,#4ade80,#38bdf8,#a78bfa,#ff4bd8,#ff3b5c) border-box!important;background-size:100% 100%,400% 400%!important;animation:bfRainbowShift 6s linear infinite,bfRainbowGlow 3s ease-in-out infinite!important}@keyframes bfRainbowShift{0%{background-position:0 0,0% 50%}100%{background-position:0 0,400% 50%}}@keyframes bfRainbowGlow{0%,100%{box-shadow:0 10px 28px rgba(0,0,0,.65),0 0 16px rgba(255,120,220,.55)}50%{box-shadow:0 10px 28px rgba(0,0,0,.65),0 0 32px rgba(120,200,255,.85)}}.bhero.bf-rainbow{border:4px solid transparent!important;background:linear-gradient(#140d24,#140d24) padding-box,linear-gradient(120deg,#ff3b5c,#ff9d2e,#ffe14a,#4ade80,#38bdf8,#a78bfa,#ff4bd8,#ff3b5c) border-box!important;background-size:100% 100%,400% 400%!important;animation:bfHeroIdle 3.8s ease-in-out infinite,bfRainbowShift 6s linear infinite,bfRainbowGlow 3s ease-in-out infinite!important}.eq-hero.bf-eq-hero-with-art.bf-rainbow{border:3px solid transparent!important;background:linear-gradient(#15101f,#15101f) padding-box,linear-gradient(120deg,#ff3b5c,#ff9d2e,#ffe14a,#4ade80,#38bdf8,#a78bfa,#ff4bd8,#ff3b5c) border-box!important;background-size:100% 100%,400% 400%!important;animation:bfHeroIdle 3.8s ease-in-out infinite,bfRainbowShift 6s linear infinite!important}@keyframes bfGoldGlow{0%,100%{box-shadow:0 10px 28px rgba(0,0,0,.65),0 0 14px rgba(255,210,74,.45),inset 0 0 0 1px rgba(255,240,180,.6)}50%{box-shadow:0 10px 28px rgba(0,0,0,.65),0 0 30px rgba(255,210,74,.95),0 0 50px rgba(255,190,40,.55),inset 0 0 0 1px rgba(255,245,200,.85)}} .flip3d-inner:has(.bf-hero-card.cf-epic){border-radius:16px;animation:bfGoldGlow 2.4s ease-in-out infinite}.bf-hero-card .bf-foil{position:absolute;inset:0;z-index:6;border-radius:18px;pointer-events:none;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite;mix-blend-mode:soft-light;opacity:.4}.bf-hero-card.cf-foiled::after{content:'';position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:18px;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.35) 49%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.35) 51%,transparent 58%);background-size:250% 250%;opacity:.6;animation:bfFoilShine 5.5s ease-in-out infinite;mix-blend-mode:screen}@keyframes bfFoilShift{0%{background-position:0% 0%}100%{background-position:300% 300%}}.bf-hero-frame{position:absolute;inset:7px;z-index:2;border:1px solid rgba(255,210,74,.36);border-radius:14px;pointer-events:none;box-shadow:inset 0 0 18px rgba(0,0,0,.72)}.bf-hero-top,.bf-hero-band{display:none!important}.bf-race-sigil{position:absolute;bottom:20px;left:19px;z-index:9;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 34% 28%,color-mix(in srgb,var(--clan,#caa14a) 55%,transparent),color-mix(in srgb,var(--clan,#caa14a) 80%,transparent) 45%,#1a1420);border:1.5px solid color-mix(in srgb,var(--clan,#caa14a) 60%,transparent);box-shadow:0 3px 8px rgba(0,0,0,.5),0 0 8px color-mix(in srgb,var(--clan,#caa14a) 35%,transparent)}.bf-race-sigil svg{width:12px;height:12px;display:block}.bf-nameplate{position:absolute;left:15px;right:15px;bottom:108px;z-index:4;text-align:center;padding:4px 9px 5px;border-radius:10px;background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.62),rgba(0,0,0,.14));border:1px solid rgba(255,210,74,.18);backdrop-filter:blur(1.5px)}.bf-hero-name{display:block;margin:0 auto;font-family:'Cinzel',serif;font-weight:900;font-size:clamp(15px,5.4vw,21px);line-height:1;color:#fff5dc;text-transform:uppercase;letter-spacing:.15px;text-shadow:0 2px 4px #000,0 0 12px rgba(0,0,0,.95);overflow-wrap:anywhere;text-align:center}.bf-hero-card.cf-elite .bf-hero-name{color:#ffd66a;text-shadow:0 0 10px rgba(255,187,52,.78),0 2px 4px #000}.bf-hero-title{display:block;margin:3px auto 0;max-width:92%;padding:2px 7px;border-radius:999px;color:#fff0bd;background:rgba(8,5,12,.62);border:1px solid rgba(255,210,74,.22);font-family:'Cinzel',serif;font-size:10.8px;line-height:1.08;font-weight:800;font-style:italic;text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,74,.22);text-align:center;letter-spacing:.12px}
       .bf-coin{position:absolute;top:9px;left:9px;z-index:5;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614);border:2px solid #6f4809;color:#4a2e03;font-size:18px;font-weight:1000;box-shadow:0 4px 10px rgba(0,0,0,.65),inset 0 1px 2px rgba(255,255,255,.62)}.bf-type-medal{position:absolute;top:10px;right:9px;z-index:5;width:42px;height:50px;border-radius:50%;background:rgba(0,0,0,.66);border:1.5px solid rgba(255,210,74,.5);color:#ead49a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 10px rgba(0,0,0,.55)}.bf-type-medal span{font-size:7.5px;line-height:1;font-weight:800;letter-spacing:.2px;margin-top:1px}.bf-role-emblem{width:40px;height:40px;border-radius:50%;object-fit:cover;vertical-align:middle;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7));display:inline-block}.phase-badge .bf-role-emblem{width:44px;height:44px}.bf-hero-card .bf-role-emblem{width:40px;height:40px}.bf-heart{position:absolute;right:9px;bottom:164px;z-index:4;width:58px;height:52px;display:flex;align-items:center;justify-content:center}.bf-heart .cf-heart-ico{position:absolute;inset:0;font-size:54px;color:#e23d3a;line-height:52px;text-align:center;filter:drop-shadow(0 3px 5px rgba(0,0,0,.85))}.bf-heart .cf-hp{position:relative;z-index:2;font-weight:1000;color:#fff;font-size:18px;text-shadow:0 2px 3px #000}.bf-stats{position:absolute;left:16px;right:16px;bottom:158px;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:7px 50px 7px 8px;border-radius:10px;background:linear-gradient(180deg,rgba(9,7,13,.36),rgba(9,7,13,.58));border:1px solid rgba(255,210,74,.18);box-shadow:0 3px 12px rgba(0,0,0,.36);backdrop-filter:blur(2px)}.bf-stat{text-align:center;font-weight:900;line-height:1;text-shadow:0 1px 2px #000,0 0 8px #000}.bf-stat span{display:block;font-size:9px;letter-spacing:1px;margin-bottom:2px}.bf-stat b{display:block;font-size:20px}.bf-stat-cc span,.bf-stat-cc b{color:#ff4b45}.bf-stat-ad span,.bf-stat-ad b{color:#54e876}.bf-stat-he span,.bf-stat-he b{color:#b06cff}.bf-ability-panel{position:absolute;left:11px;right:11px;bottom:11px;z-index:3;min-height:99px;display:grid;grid-template-columns:44px 1fr;gap:9px;align-items:center;padding:9px 10px 20px 9px;border-radius:11px;background:linear-gradient(180deg,rgba(19,12,7,.30),rgba(4,3,5,.62));border:1px solid rgba(255,210,74,.34);box-shadow:0 -2px 18px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.05);backdrop-filter:blur(2px)}.bf-ability-orb{position:relative;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#fff2a7,#ff7a22 32%,#8c1108 62%,#170101);border:2px solid rgba(255,224,121,.82);box-shadow:0 0 16px rgba(255,95,25,.72),inset 0 0 10px rgba(255,255,255,.18)}.bf-ability-orb::before{content:'✦';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff7d7;font-size:23px;font-weight:900;text-shadow:0 0 8px #fff,0 2px 4px #000}.bf-ability-orb.bf-ability-orb-img{background-size:cover;background-position:center;overflow:hidden}.bf-ability-orb.bf-ability-orb-img::before{content:none}.bf-ability-orb::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(255,210,74,.34);box-shadow:0 0 14px rgba(255,210,74,.32)}.bf-hero-card.cf-elite .bf-ability-orb{background:radial-gradient(circle at 38% 28%,#f4dbff,#c16aff 36%,#4c0b86 66%,#090012);box-shadow:0 0 17px rgba(190,91,255,.82),inset 0 0 10px rgba(255,255,255,.16)}.bf-ability-name{color:#ffe07b;font-family:'Cinzel',serif;font-size:12.6px;font-weight:1000;letter-spacing:.25px;text-transform:uppercase;text-shadow:0 2px 4px #000,0 0 10px rgba(255,210,74,.32)}.bf-hero-card.cf-elite .bf-ability-name{color:#d9a2ff}.bf-ability-text{margin-top:3px;color:#fff7ea;font-size:12px;font-weight:700;line-height:1.25;text-shadow:0 2px 3px #000,0 0 8px #000}.bf-logo{display:none!important}.bf-card-num{position:absolute;left:62px;bottom:13px;z-index:8;color:#ffe7a8;font-size:8.5px;font-weight:900;letter-spacing:.25px;padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.62);border:1px solid rgba(255,210,74,.32);text-shadow:0 1px 2px #000}
-
       /* Fallback for any old-format hero cards already on screen */
       .cf-art.has-art::before { content:''; position:absolute; inset:var(--bf-fit,0%); z-index:0; pointer-events:none; background-image:var(--bf-art); background-size:var(--bf-art-size,contain); background-position:var(--bf-art-pos,center center); background-repeat:no-repeat; }
       .face.back .cf-elite .cf-art.has-art::before { transform: none !important; }
@@ -156,10 +138,8 @@ function buildArtScript(dbCards) {
       .bf-bonus-card .bf-bonus-art { position: absolute; inset: -18%; background-size: cover; background-position: center center; background-repeat: no-repeat; z-index: 1; }
       .bf-bonus-card .bf-bonus-shade { display: none; }
       .bf-bonus-card .bf-bonus-name { position:absolute; left:0; right:0; bottom:0; z-index:3; padding:5px 6px 8px; font-size:12px; font-weight:900; font-family:'Cinzel',serif; color:#fff5dc; text-align:center; text-transform:uppercase; text-shadow:0 2px 4px #000,0 0 8px #000; background:linear-gradient(0deg,rgba(8,5,14,.95),rgba(8,5,14,.6) 60%,transparent); }
-
       /* Mobile card fit: keep art and text inside the phone frame */
       @media (max-width: 640px) { .cardface, .bf-hero-card { max-width: 100% !important; } .bf-race-sigil { bottom: 17px !important; left: 11px !important; width: 15px !important; height: 15px !important; } .bf-race-sigil svg { width: 10px !important; height: 10px !important; } .bf-nameplate { left: 9px !important; right: 9px !important; bottom: 107px !important; padding: 4px 7px !important; } .bf-hero-name { font-size: clamp(13px, 4.9vw, 18px) !important; line-height: 1 !important; } .bf-hero-title { font-size: 9.5px !important; padding: 2px 6px !important; } .bf-coin { width: 38px !important; height: 38px !important; font-size: 16px !important; } .bf-type-medal { width: 37px !important; height: 44px !important; font-size: 18px !important; } .bf-stats { left: 10px !important; right: 10px !important; bottom: 150px !important; padding: 6px 45px 6px 7px !important; } .bf-stat b { font-size: 17px !important; } .bf-heart { right: 8px !important; bottom: 154px !important; width: 50px !important; height: 46px !important; } .bf-heart .cf-heart-ico { font-size: 48px !important; line-height: 46px !important; } .bf-heart .cf-hp { font-size: 16px !important; } .bf-ability-panel { left: 8px !important; right: 8px !important; bottom: 8px !important; min-height: 90px !important; max-height: 138px !important; overflow: hidden !important; grid-template-columns: 34px 1fr !important; gap: 7px !important; padding: 8px 8px 18px 8px !important; align-items: start !important; } .bf-ability-orb { width: 32px !important; height: 32px !important; margin-top: 1px !important; } .bf-ability-orb::before { font-size: 18px !important; } .bf-ability-name { font-size: 10.2px !important; line-height: 1.1 !important; } .bf-ability-text { font-size: 9.8px !important; line-height: 1.16 !important; } .bf-zoom-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; right: 6px !important; } .bf-card-num { left: 52px !important; bottom: 9px !important; font-size: 7.6px !important; } .bf-logo { right: 7px !important; bottom: 8px !important; font-size: 13px !important; } .bf-bonus-card { aspect-ratio: 3 / 4.1 !important; height: auto !important; max-width: 200px !important; margin: 4px auto 7px !important; background:#07050b !important; } .bf-bonus-card .bf-bonus-art { inset: -18% !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important; } }
-
       /* Battle/recruit hero thumbnails */
       .bhero { overflow:hidden !important; min-height:176px; padding-left:134px !important; animation:bfHeroIdle 3.8s ease-in-out infinite; } .bhero.bf-epic-gold { border:4px solid #FFD24A !important; animation:bfHeroIdle 3.8s ease-in-out infinite, bfGoldGlowB 2.4s ease-in-out infinite !important; } @keyframes bfGoldGlowB { 0%,100%{box-shadow:0 0 12px rgba(255,210,74,.45), inset 0 0 0 1px rgba(255,240,180,.5)} 50%{box-shadow:0 0 28px rgba(255,210,74,.95), 0 0 44px rgba(255,190,40,.5), inset 0 0 0 1px rgba(255,245,200,.8)} }
       .bhero .bhero-top, .bhero .bhero-hpnum, .bhero .hp-bar, .bhero .mp-bar, .bhero .mp-num, .bhero .bhero-status { position:relative; z-index:2; }
@@ -168,7 +148,6 @@ function buildArtScript(dbCards) {
       .bf-battle-zoom:hover { background:rgba(255,210,74,.3); transform:scale(1.15); }
       .picking-target .bhero { cursor: crosshair !important; box-shadow: 0 0 0 3px rgba(255,210,74,0.6), 0 0 20px rgba(255,210,74,0.4) !important; transition: all 0.2s; }
       .picking-target .bhero:hover { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.6) !important; }
-
       /* ---- ACTIVE HERO: dramatic gradient glow built from their own portrait ---- */
       .bhero.active-turn { animation:bfHeroActive 2.1s ease-in-out infinite !important; z-index:5 !important; }
       .bhero.active-turn .bf-battle-art { filter:saturate(1.3) contrast(1.14) brightness(1.06) !important; border-color:rgba(255,210,74,.85) !important; box-shadow:0 5px 12px rgba(0,0,0,.45), 0 0 16px rgba(255,210,74,.55) !important; }
@@ -191,9 +170,7 @@ function buildArtScript(dbCards) {
       .bf-active-tag { position:absolute; top:-11px; left:50%; transform:translateX(-50%); z-index:6; pointer-events:none; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.6px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); padding:2px 12px; border-radius:999px; box-shadow:0 4px 12px rgba(255,210,74,.5); opacity:0; }
       .bhero.active-turn .bf-active-tag { opacity:1; animation:bfTagBob 2.1s ease-in-out infinite; }
       @keyframes bfAuraBreath { 0%,100%{opacity:.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} } @keyframes bfRingPulse { 0%,100%{box-shadow:0 0 0 1px rgba(255,210,74,.4),0 0 22px rgba(255,210,74,.4),inset 0 0 20px rgba(255,210,74,.18)} 50%{box-shadow:0 0 0 2px rgba(255,210,74,.6),0 0 40px rgba(255,210,74,.65),inset 0 0 28px rgba(255,210,74,.3)} } @keyframes bfTagBob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-3px)} }
-
       .bhero.fx-shake { animation:bfDamageShake .5s ease-in-out 1 !important; }
-
       /* ---- STATUS EFFECTS: strong, unmistakable visuals ---- */
       .bhero.s-paralyzed .bf-battle-art { filter:saturate(1.45) contrast(1.2) drop-shadow(0 0 12px #ffe14a); animation:bfZap .5s steps(2,end) infinite; }
       .bhero.s-paralyzed { box-shadow:0 0 0 2px rgba(255,225,74,.7), 0 0 24px rgba(255,225,74,.45) !important; }
@@ -203,7 +180,6 @@ function buildArtScript(dbCards) {
       .bhero.s-cursed { box-shadow:0 0 0 2px rgba(176,108,255,.65), 0 0 22px rgba(176,108,255,.45) !important; }
       .bhero.s-blessed .bf-battle-art { filter:saturate(1.2) contrast(1.05) brightness(1.12) drop-shadow(0 0 12px #ffe9a0) !important; } .bhero.s-blessed { box-shadow:0 0 0 2px rgba(255,230,150,.8), 0 0 26px rgba(255,210,90,.55) !important; }
       .bhero.elite-mode .bf-battle-art { filter:saturate(1.25) contrast(1.12) drop-shadow(0 0 10px #ffd24a); }
-
       /* Floating status emblem, always visible while the status is active */
       .bf-status-badge { position:absolute; top:6px; right:6px; z-index:7; display:flex; align-items:center; gap:4px; padding:3px 9px 3px 6px; border-radius:999px; font-family:'Cinzel',serif; font-weight:1000; font-size:10px; letter-spacing:.3px; color:#fff; background:rgba(8,5,14,.82); border:1.5px solid currentColor; box-shadow:0 0 12px currentColor; animation:bfBadgeFloat 1.8s ease-in-out infinite; }
       .bf-status-badge .bf-status-ico { font-size:14px; line-height:1; } .bf-status-paralyzed { color:#ffe14a; } .bf-status-sleeping { color:#8aaaff; } .bf-status-cursed { color:#c79bff; } .bf-status-blessed { color:#ffe49a; }
@@ -225,7 +201,6 @@ function buildArtScript(dbCards) {
       .bf-tank-shield::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 60%,rgba(255,190,80,.22),transparent 62%),linear-gradient(180deg,transparent 40%,rgba(255,150,40,.16) 100%); } .bf-tank-shield::after { content:''; position:absolute; inset:0; background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 2px,transparent 2px 14px),repeating-linear-gradient(-45deg,rgba(0,0,0,.2) 0 2px,transparent 2px 14px); mix-blend-mode:overlay; opacity:.6; } .bf-tank-ring { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:7; pointer-events:none; width:46px; height:46px; display:flex; align-items:center; justify-content:center; font-size:24px; border-radius:50%; background:radial-gradient(circle at 35% 25%,#f0f0f0,#8a8f99 42%,#2b2f36 82%); border:2.5px solid #ffb43a; box-shadow:0 0 16px rgba(255,180,60,.85), inset 0 2px 3px rgba(255,255,255,.5), inset 0 -3px 4px rgba(0,0,0,.4); filter:drop-shadow(0 0 8px #ffae3c); animation:bfTankPulse 1.9s ease-in-out infinite; } .bf-fx-tank-burst { position:absolute; inset:-6px; z-index:5; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(255,235,180,.92),rgba(255,170,60,.5) 26%,rgba(255,130,30,.2) 50%,transparent 74%); animation:bfBigBlast 1s ease-out forwards; } .bf-fx-iron-wall { position:absolute; inset:-12px; z-index:5; pointer-events:none; border-radius:inherit; background:repeating-linear-gradient(90deg,rgba(190,195,206,.55) 0 8px,rgba(60,64,74,.55) 8px 16px); mix-blend-mode:overlay; animation:bfIronSlam .65s cubic-bezier(.2,.9,.3,1) forwards; }
       @keyframes bfTankPulse { 0%,100%{transform:translateX(-50%) scale(1);opacity:.85} 50%{transform:translateX(-50%) scale(1.18);opacity:1} } @keyframes bfFrostIn { 0%{opacity:0;transform:scale(1.08)} 100%{opacity:1;transform:none} } @keyframes bfFlakeFall { 0%{opacity:0;transform:translateY(0) rotate(0)} 12%{opacity:1} 100%{opacity:.2;transform:translateY(150px) rotate(220deg)} } @keyframes bfIronSlam { 0%{opacity:0;transform:scale(1.35) translateY(-14px)} 35%{opacity:.95;transform:scale(1.02) translateY(0)} 100%{opacity:0;transform:scale(1)} }
       .bf-jrpg-tank { border:2px solid rgba(255,170,60,.78) !important; background:linear-gradient(135deg,rgba(60,32,8,.96),rgba(20,10,4,.98)) !important; box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,170,60,.18),0 0 18px rgba(255,140,30,.28) !important; } .bf-jrpg-tank:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 10px 26px rgba(255,140,30,.5),inset 0 0 0 1px rgba(255,170,60,.3),0 0 22px rgba(255,140,30,.45) !important; } .bf-jrpg-tank.bf-tank-on { animation:bfBadgePulse 1.6s ease-in-out infinite; }
-
       @keyframes bfHeroIdle { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} } @keyframes bfHeroActive { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} } @keyframes bfDamageShake { 0%,100%{transform:translateX(0)} 15%{transform:translateX(-9px)} 30%{transform:translateX(8px)} 45%{transform:translateX(-6px)} 60%{transform:translateX(5px)} 80%{transform:translateX(-3px)} } @keyframes bfZap { 0%,100%{opacity:1} 50%{opacity:.62} }
       .ctb-slot { position:relative !important; min-width:112px !important; padding-left:54px !important; overflow:hidden; }
       .bf-ctb-thumb { position:absolute; left:6px; top:50%; transform:translateY(-50%); width:38px; height:38px; border-radius:50% !important; overflow:hidden; background-size:cover !important; background-repeat:no-repeat; background-color:#0a0710; border:1.5px solid rgba(255,210,74,.55) !important; outline:0 !important; box-shadow:0 4px 10px rgba(0,0,0,.34); } .bf-ctb-thumb::before { content:''; position:absolute; inset:-26%; background-image:inherit; background-size:cover; background-position:inherit; background-repeat:no-repeat; }
@@ -381,20 +356,17 @@ function buildArtScript(dbCards) {
       .bf-confirm-no:hover { background:rgba(255,255,255,.12); }
       @keyframes bfFadeIn { from{opacity:0} to{opacity:1} } @keyframes bfPopIn { from{opacity:0;transform:translateY(14px) scale(.94)} to{opacity:1;transform:none} } @keyframes bfDeathSmoke { 0%{opacity:0;transform:translateY(22px) scale(.8)} 35%{opacity:1} 100%{opacity:0;transform:translateY(-18px) scale(1.22)} } @keyframes bfSkullRise { 0%{opacity:0;transform:translate(-50%,-18%) scale(.7)} 25%{opacity:1;transform:translate(-50%,-50%) scale(1.1)} 100%{opacity:0;transform:translate(-50%,-112%) scale(.9)} }
       @keyframes bfPhoenix { 0%{opacity:0;transform:translate(-50%,10%) scale(.45) rotate(-12deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.95) rotate(0)} } @keyframes bfEliteAura { 0%{opacity:0;transform:scale(.75) rotate(0)} 35%{opacity:1} 100%{opacity:0;transform:scale(1.25) rotate(18deg)} } @keyframes bfSpellWave { 0%{opacity:0;transform:translate(-50%,-50%) scale(.2)} 25%{opacity:1} 100%{opacity:0;transform:translate(-50%,-50%) scale(3.6)} } @keyframes bfBigBlast { 0%{opacity:0;transform:scale(.5)} 35%{opacity:1;transform:scale(1.08)} 100%{opacity:0;transform:scale(1.3)} } @keyframes bfBolt { 0%{opacity:0;transform:translateY(-10px) scale(.6)} 20%{opacity:1;transform:translateY(0) scale(1.14)} 100%{opacity:0;transform:translateY(12px) scale(.95)} }
-
       /* ---- ÉLITE in battle: flip the portrait + golden glow ---- */
       .bhero.bf-auto-elite .bf-battle-art { transform: scaleX(-1); filter: saturate(1.3) contrast(1.14) drop-shadow(0 0 14px #ffd24a) !important; transition: transform .55s cubic-bezier(.2,.8,.3,1), filter .4s ease; }
       .bhero.bf-auto-elite { box-shadow: 0 0 0 2px rgba(255,176,0,.6), 0 0 22px rgba(255,176,0,.4) !important; }
       .bf-fx-elite-flip { position:absolute; inset:0; z-index:5; pointer-events:none; background:radial-gradient(circle at 50% 45%,rgba(255,210,74,.55),rgba(255,176,0,.15) 45%,transparent 72%); animation:bfEliteFlash .6s ease-out forwards; }
       @keyframes bfEliteFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
       .bhero.bf-transforming { animation:bfTransformShake .9s ease-in-out; } .bhero.bf-transforming .bf-battle-art { animation:bfTransformBlur .9s ease-in-out; } .bf-fx-transform-ring { position:absolute; inset:-6px; z-index:5; pointer-events:none; border-radius:inherit; background:radial-gradient(circle at 50% 50%,rgba(199,155,255,.65),rgba(138,61,240,.28) 42%,transparent 72%); animation:bfTransformRing 1.3s ease-out forwards; } .bf-fx-transform-q { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); z-index:6; font-family:'Cinzel',serif; font-weight:1000; font-size:66px; color:#f0e2ff; text-shadow:0 0 18px #c79bff,0 3px 8px #000; animation:bfTransformQ 1.3s cubic-bezier(.2,.8,.3,1) forwards; } @keyframes bfTransformRing { 0%{opacity:0;transform:scale(.4) rotate(0)} 25%{opacity:1} 100%{opacity:0;transform:scale(1.7) rotate(180deg)} } @keyframes bfTransformQ { 0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-20deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(12deg)} 65%{transform:translate(-50%,-50%) scale(1) rotate(-6deg)} 100%{opacity:0;transform:translate(-50%,-110%) scale(.9)} } @keyframes bfTransformShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px) rotate(-3deg)} 40%{transform:translateX(7px) rotate(3deg)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} } @keyframes bfTransformBlur { 0%{filter:none} 45%{filter:blur(6px) saturate(2) hue-rotate(60deg)} 100%{filter:none} }
-
       /* ---- Equipped weapons/armor thumbnails on battle heroes ---- */
       .bhero .bf-battle-gear { position:absolute; left:6px; bottom:6px; z-index:6; display:flex; flex-direction:row; gap:5px; padding:3px; border-radius:10px; background:rgba(8,5,14,.55); backdrop-filter:blur(2px); box-shadow:0 2px 8px rgba(0,0,0,.5); }
       .bhero .bf-gear-icon { position:relative; width:32px; height:32px; border-radius:8px; background-size:158%; background-position:center 20%; border:1.5px solid rgba(255,210,74,.6); box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 1px 2px rgba(255,255,255,.2); background-color:#0a0710; cursor:pointer; transition:transform .12s ease, border-color .12s ease; }
       .bhero .bf-gear-icon:hover { border-color:#ffd24a; transform:scale(1.15); z-index:10; }
       .bhero .bf-gear-zoom { position:absolute; bottom:-4px; right:-4px; font-size:8.5px; background:rgba(0,0,0,.8); border-radius:50%; width:14px; height:14px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,74,.6); color:#ffe49a; box-shadow:0 1px 3px rgba(0,0,0,.8); pointer-events:none; }
-
       /* ---- Action panel of the active hero: AI battle background ---- */
       .bf-action-bg { position:absolute; inset:-20px; z-index:0; pointer-events:none; background-image:var(--bf-action-art); background-size:cover; background-position:center 18%; filter:saturate(1.25) contrast(1.12); opacity:.55; animation:bfActionZoom 7s ease-in-out infinite alternate; will-change:transform,background-position; }
       .bf-action-bg::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 10%, rgba(0,0,0,0) 0%, rgba(10,7,18,.85) 60%, rgba(10,7,18,1) 100%); }
@@ -416,31 +388,26 @@ function buildArtScript(dbCards) {
       /* Beefed-up action buttons in the active panel */
       .bf-action-host button { transition:transform .12s ease, box-shadow .12s ease, filter .12s ease; }
       .bf-action-host button:hover { transform:translateY(-2px); filter:brightness(1.08); }
-
       /* ---- Hand card "play it?" confirm + cast animation ---- */
       .bf-cast-flash { position:fixed; inset:0; z-index:99998; pointer-events:none; background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.5),rgba(176,108,255,.25) 30%,transparent 65%); animation:bfCastFlash .8s ease-out forwards; }
       @keyframes bfCastFlash { 0%{opacity:0} 25%{opacity:1} 100%{opacity:0} }
       .bf-cast-runes { position:fixed; left:50%; top:50%; z-index:99999; pointer-events:none; transform:translate(-50%,-50%); font-size:84px; filter:drop-shadow(0 0 24px currentColor); animation:bfCastRune 1s ease-out forwards; }
       @keyframes bfCastRune { 0%{opacity:0;transform:translate(-50%,-30%) scale(.4) rotate(-20deg)} 35%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(8deg)} 100%{opacity:0;transform:translate(-50%,-72%) scale(1) rotate(0)} }
-
       /* ---- True death: gravestone / RIP ---- */
       .bf-fx-grave { position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); z-index:5; font-size:52px; filter:drop-shadow(0 4px 8px #000); animation:bfGraveRise 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
       .bf-fx-grave-shade { position:absolute; inset:0; z-index:4; background:radial-gradient(circle at 50% 55%,rgba(0,0,0,.55),rgba(40,20,60,.3) 45%,transparent 75%); animation:bfDeathSmoke 1.3s ease-out forwards; }
       @keyframes bfGraveRise { 0%{opacity:0;transform:translate(-50%,10%) scale(.5) rotate(-8deg)} 40%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(4deg)} 70%{transform:translate(-50%,-50%) scale(1) rotate(0)} 100%{opacity:1;transform:translate(-50%,-50%) scale(1)} }
       .bhero.bf-truedead { filter:grayscale(.85) brightness(.5) !important; }
       .bhero.bf-truedead .bf-battle-art { filter:grayscale(1) brightness(.45) !important; }
-
       /* ---- Hero info modal: dramatic art background ---- */
       .bf-info-art { position:absolute; inset:0; z-index:0; border-radius:inherit; overflow:hidden; pointer-events:none; }
       .bf-info-art .bf-info-fill { position:absolute; inset:-30px; background-image:var(--bf-info-art); background-size:cover; background-position:center 14%; filter:blur(26px) saturate(1.3) contrast(1.1); transform:scale(1.4); opacity:.9; }
       .bf-info-art .bf-info-sharp { position:absolute; right:-8px; top:-8px; bottom:-8px; width:46%; background-image:var(--bf-info-art); background-size:cover; background-position:center 12%; filter:saturate(1.12) contrast(1.08); opacity:.42; -webkit-mask-image:linear-gradient(90deg,transparent,#000 60%); mask-image:linear-gradient(90deg,transparent,#000 60%); }
       .bf-info-art .bf-info-shade { position:absolute; inset:0; background:linear-gradient(120deg,rgba(18,13,34,.96) 0%,rgba(18,13,34,.86) 42%,rgba(18,13,34,.55) 100%); }
       .modal-box.bf-info-themed > *:not(.bf-info-art) { position:relative; z-index:1; }
-
       /* ---- Élite badge in hero info modal ---- */
       .bf-elite-badge { display:flex; align-items:center; gap:8px; margin:8px 0 4px; padding:8px 12px; border-radius:11px; font-family:'Cinzel',serif; font-weight:1000; font-size:14px; color:#3a2600; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3); text-shadow:0 1px 1px rgba(255,255,255,.4); animation:bfBadgePulse 1.8s ease-in-out infinite; }
       @keyframes bfBadgePulse { 0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,255,255,.3)} 50%{box-shadow:0 4px 22px rgba(255,210,74,.7), inset 0 0 0 1px rgba(255,255,255,.45)} }
-
       /* ---- Lupa (zoom) en cartas de héroe ---- */
       .bf-zoom-btn { position:absolute; top:50%; right:8px; transform:translateY(-50%); z-index:9; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; background:rgba(0,0,0,.62); border:1px solid rgba(255,210,74,.55); color:#ffe49a; box-shadow:0 3px 8px rgba(0,0,0,.5); transition:background .12s ease; padding:0; }
       .bf-zoom-btn:hover { background:rgba(255,210,74,.22); }
@@ -449,7 +416,6 @@ function buildArtScript(dbCards) {
       .bf-zoom-cardwrap .bf-hero-card { position:absolute; inset:0; }
       .bf-zoom-bonuswrap { position:relative; width:min(420px,90vw); height:min(560px,84vh); box-shadow:0 0 50px rgba(0,0,0,.85); animation:bfPopIn .26s cubic-bezier(.2,.8,.3,1); }
       .bf-zoom-cardwrap h3 svg, .modal h3 svg { width:22px; height:22px; }
-
       /* ---- Guía Punkito: draggable, animado ---- */
       .bf-guide { position:fixed; bottom:8px; left:8px; z-index:90000; display:flex; align-items:flex-end; gap:10px; max-width:min(440px,72vw); pointer-events:none; animation:bfFadeIn .35s ease; user-select:none; }
       .bf-guide.bf-guide-hidden .bf-guide-bubble { display:none; }
@@ -493,11 +459,9 @@ function buildArtScript(dbCards) {
     document.documentElement.classList.add('bf-locked');
     if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) document.documentElement.classList.add('bf-mobile');
   }
-
   // ---- PATCH cardFace (heroes) — premium full-art layout ----
   function patchCardFace() {
     if (typeof window.cardFace !== 'function' || window.cardFace.__patched) return !!(window.cardFace && window.cardFace.__patched);
-
     var RB='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/',ROLE_EMBLEM={CC:RB+'ab147bafb_generated_image.png',AD:RB+'fd388871c_generated_image.png',HE:RB+'cfd5e317c_generated_image.png'};
     window.__BF_ROLE_EMBLEM = ROLE_EMBLEM;
     // AI-generated ability emblems by hero type (CC melee, AD ranged, HE magic).
@@ -511,7 +475,6 @@ function buildArtScript(dbCards) {
     var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
     DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (!eh) { HEROES.push(h); return; } ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','num'].forEach(function(k){ if (h[k] != null && h[k] !== '') eh[k] = h[k]; }); eh.gold_border = h.gold_border; eh.foil = h.foil; eh.rainbow_border = h.rainbow_border; if (h.cost != null) eh.cost = Number(h.cost) + ((eh.__bfEpicRaised === 1 && (h.clan || eh.clan) === 'Épicas') ? 10 : 0); }); // BD (Oráculo) manda: sincroniza TODOS los campos del héroe (nombre, stats, habilidades, coste...) para que cualquier actualización de cartas llegue al juego sin tocar código.
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
-
     var patched = function(h, variant) {
       var elite = variant === 'elite';
       var cc = elite ? h.eCc : h.cc;
@@ -530,7 +493,6 @@ function buildArtScript(dbCards) {
     window.cardFace = patched;
     return true;
   }
-
   // ---- Full-screen card zoom (lupa) — shows the WHOLE card (art + stats + ability), enlarged ----
   // All card zooms now open in the game's own modal (same look as the auction
   // hero zoom, which scales perfectly on mobile), with a Normal/Élite toggle.
@@ -557,16 +519,11 @@ function buildArtScript(dbCards) {
     window.bfZoomRender();
   }
   window.bfZoomCard = bfZoomCard;
-
   // ---- Full-screen bonus/restador zoom (lupa) — shows the whole bonus card enlarged ----
   function bfZoomBonus(name,url,found){if(!url||typeof window.modal!=='function')return;var it=found?found.item:null;var ty=found?found.kind:'bonus';if(!it){var ob=typeof OBJECTS!=='undefined'?OBJECTS.find(function(o){return o&&o.name===name;}):null;var sp=typeof SPELLS!=='undefined'?SPELLS.find(function(s){return s&&s.name===name;}):null;var bo=typeof BONUS!=='undefined'?BONUS.find(function(b){return b&&b.name===name;}):null;if(ob){it=ob;ty='object';}else if(sp){it=sp;ty='spell';}else if(bo){it=bo;ty='bonus';}}var num=it?(it.num||it.number||0):0;var desc=it?(it.txt||it.description||''):'';var cost=it&&it.cost!=null&&it.cost!=='—'?it.cost:null;var TC={spell:'#8b6bff',melee:'#e0653f',ranged:'#3fb56a',armor:'#5a8fd6',object:'#d6b13f',bonus:'#d39b22'};var EC={fuego:'#d6552a',hielo:'#3aa0c8',rayo:'#caa12f',agua:'#2f7fd6',curacion:'#2f9d54',proteccion:'#caa12f',arcano:'#7a5fd0',estado:'#8a5fb0'};var bc=TC[ty]||'#d39b22';var tl=ty==='spell'?(it&&it.element?it.element.toUpperCase():(it?it.tag:'')):(it?it.tag:'');if(ty==='bonus')tl=it&&(it.type||it.tag)?(it.type||it.tag):'BON';var bg=ty==='spell'&&it&&it.element?(EC[it.element.toLowerCase()]||bc):bc;var sl=null;if(it){if(it.cc!=null)sl='+'+it.cc+' CC';else if(it.power!=null)sl='Pot. '+it.power;else if(it.hp!=null&&ty==='armor')sl='+'+it.hp+' HP';else if(it.mana!=null)sl='🔵 '+it.mana+' maná';}var isFoil=(it&&it.foil===true)||name==='Transformer';var ht='<div class="'+(isFoil?'bf-foil-card':'')+'" style="position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;background:#07050b;box-shadow:0 10px 40px rgba(0,0,0,0.8);border:2px solid '+bc+'88;"><div style="position:absolute;inset:0;z-index:0;background-image:url(\\''+url+'\\');background-size:cover;background-position:center;filter:blur(18px) saturate(1.3) brightness(.7);transform:scale(1.3);"></div><img src="'+url+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:saturate(1.1) contrast(1.08);z-index:1;" /><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.05) 0%,transparent 40%,rgba(0,0,0,0.9) 100%);z-index:2;"></div><div style="position:absolute;left:12px;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;z-index:3;">'+(cost!=null?'<div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:\\'Rubik\\',sans-serif;font-weight:900;font-size:18px;color:#5a3d06;background:radial-gradient(circle at 34% 30%,#ffeaa6,#FFD24A 46%,#a9771f);border:2px solid #7c5410;box-shadow:0 4px 10px rgba(0,0,0,0.5);">'+cost+'</div>':'')+(tl?'<span style="font-size:13px;font-weight:900;color:#fff;background:'+bg+';border-radius:999px;padding:4px 12px;text-transform:uppercase;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+tl+'</span>':'')+(sl?'<span style="font-size:13px;font-weight:900;color:#ffe49a;background:rgba(0,0,0,0.7);border-radius:999px;padding:4px 12px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">'+sl+'</span>':'')+'</div><div style="position:absolute;left:12px;right:12px;bottom:12px;text-align:center;border-radius:12px;background:rgba(0,0,0,0.75);border:1px solid '+bc+'66;padding:16px;backdrop-filter:blur(4px);z-index:3;"><div style="font-family:\\'Cinzel\\',serif;font-weight:900;font-size:26px;line-height:1.1;color:#fff5d9;text-shadow:0 2px 6px #000, 0 0 12px #000;margin-bottom:8px;text-transform:uppercase;">'+name+'</div>'+(desc?'<div style="font-family:\\'Rubik\\',sans-serif;font-size:15px;font-weight:700;line-height:1.3;color:#efe9dc;margin-bottom:14px;">'+desc+'</div>':'')+'<div style="font-family:\\'Rubik\\',sans-serif;font-size:11px;font-weight:900;color:#bdae87;letter-spacing:1px;text-transform:uppercase;">Base Set · Nº '+String(num).padStart(3,'0')+'</div></div>'+(isFoil?'<div class="bf-foil-shine"></div>':'')+'</div>';window.modal('<h3>'+name+'</h3><div style="display:flex;justify-content:center"><div class="bf-zoom-cardwrap" style="width:min(340px,74vw);height:auto;aspect-ratio:7/10;box-shadow:none">'+ht+'</div></div>');}
   window.bfZoomBonus = bfZoomBonus;
-
-  // ---- DOM injection for hero cards (match by name) ----
   var ART_SQUARE_CACHE = {}; function fitArtEl(el,url){if(!url)return;if(ART_SQUARE_CACHE[url]!==undefined){if(ART_SQUARE_CACHE[url]){el.style.setProperty('--bf-art-size','contain');el.style.backgroundColor='#07050b';}return;}var img=new Image();img.onload=function(){var sq=img.naturalWidth>0&&img.naturalHeight>0&&(img.naturalWidth/img.naturalHeight)>0.88&&(img.naturalWidth/img.naturalHeight)<1.14;ART_SQUARE_CACHE[url]=sq;if(sq){el.style.setProperty('--bf-art-size','contain');el.style.backgroundColor='#07050b';}};img.src=url;} var BF_FIT_CACHE={};function bfDetectMarginPct(url,cb){if(BF_FIT_CACHE.hasOwnProperty(url)){cb(BF_FIT_CACHE[url]);return;}var img2=new Image();img2.crossOrigin='anonymous';img2.onload=function(){try{var w=48,h=48,c=document.createElement('canvas');c.width=w;c.height=h;var ctx=c.getContext('2d');ctx.drawImage(img2,0,0,w,h);var data=ctx.getImageData(0,0,w,h).data;function isBg(x,y){var i=(y*w+x)*4,r=data[i],g=data[i+1],b=data[i+2],a=data[i+3];return a<10||(r>232&&g>232&&b>232);}var midY=Math.floor(h/2),midX=Math.floor(w/2);function depth(dir){var s=0;if(dir==='t'){while(s<h&&isBg(midX,s))s++;}else if(dir==='b'){while(s<h&&isBg(midX,h-1-s))s++;}else if(dir==='l'){while(s<w&&isBg(s,midY))s++;}else{while(s<w&&isBg(w-1-s,midY))s++;}return s;}var margin=Math.max(depth('t')/h,depth('b')/h,depth('l')/w,depth('r')/w);BF_FIT_CACHE[url]=margin;cb(margin);}catch(e){BF_FIT_CACHE[url]=0;cb(0);}};img2.onerror=function(){BF_FIT_CACHE[url]=0;cb(0);};img2.src=url;} function bfReadArtUrl(el){var s=el.style.getPropertyValue('--bf-art'),m=s&&s.match(/^url\\((['"]?)(.*)\\1\\)$/);return m?m[2]:'';} function bfApplyFit(el,url){if(!url||!el||el.dataset.bfFitUrl===url)return;el.dataset.bfFitUrl=url;bfDetectMarginPct(url,function(margin){if(margin<=0.015){el.style.setProperty('--bf-fit','0%');el.style.setProperty('--bf-fitmode','contain');el.style.setProperty('--bf-art-size','contain');return;}var zoom=1/(1-2*margin),pct=Math.max(8,Math.min(38,Math.round((zoom-1)*50)+4));el.style.setProperty('--bf-fit','-'+pct+'%');el.style.setProperty('--bf-fitmode','cover');el.style.setProperty('--bf-art-size','cover');});} function bfAutoFitHeroCards(){document.querySelectorAll('.bf-hero-card').forEach(function(el){var url=bfReadArtUrl(el);if(url)bfApplyFit(el,url);});document.querySelectorAll('.cf-art.has-art').forEach(function(el){var url=bfReadArtUrl(el);if(url)bfApplyFit(el,url);});} function bfApplyFitBg(el,url){if(!url||!el||el.dataset.bfFitUrl===url)return;el.dataset.bfFitUrl=url;bfDetectMarginPct(url,function(margin){var pct;if(margin<=0.015)pct=110;else{var zoom=1/(1-2*margin);pct=Math.round(zoom*100)+6;}pct=Math.max(108,Math.min(180,pct));el.style.backgroundSize=pct+'%';});} function bfApplyFitInset(el,url){if(!url||!el||el.dataset.bfInsetUrl===url)return;el.dataset.bfInsetUrl=url;bfDetectMarginPct(url,function(margin){var p=margin<=0.015?2:Math.round(100*margin/(1-2*margin))+4;p=Math.max(2,Math.min(40,p));el.style.inset='-'+p+'%';});} function bfAutoFitSharpLayers(){document.querySelectorAll('.shop-card-art-sharp,.bf-confirm-art-sharp,.bf-quick-art').forEach(function(el){var bg=el.style.backgroundImage||getComputedStyle(el).backgroundImage,m=bg&&bg.match(/url\\(['"]?(.*?)['"]?\\)/);var url=m?m[1]:'';if(url)bfApplyFitInset(el,url);});} function bfAutoFitThumbs(){document.querySelectorAll('.bf-acq-thumb,.bf-slot-thumb,.bsum-thumb-img,.bf-chip-art-layer,.bf-chip-fill').forEach(function(el){var bg=el.style.backgroundImage,m=bg&&bg.match(/url\\(['"]?(.*?)['"]?\\)/);var url=m?m[1]:'';if(url)bfApplyFitBg(el,url);});bfAutoFitSharpLayers();}
   function injectHeroArt(){document.querySelectorAll('.cardface').forEach(function(c){var a=c.querySelector('.cf-art');if(!a||a.classList.contains('has-art'))return;var n=c.querySelector('.cf-name');if(!n)return;var nt=n.textContent.replace(/★/g,'').trim();var u=c.classList.contains('cf-elite')?(ELITE_BY_NAME[nt]||ART_BY_NAME[nt]):ART_BY_NAME[nt];if(!u)return;a.style.setProperty('--bf-art',"url('"+u+"')");fitArtEl(a,u);a.classList.add('has-art');});}
-
-  // ---- DOM injection for equipment shop cards — full-bleed like bonus cards ----
   function injectEquipArt() {
     document.querySelectorAll('.shop-card').forEach(function(card) {
       if (card.dataset.bfShopArt === '1') return;
@@ -581,8 +538,6 @@ function buildArtScript(dbCards) {
       if (nameTxt && !card.querySelector('.bf-shop-name')) { var nm = document.createElement('div'); nm.className = 'bf-shop-name'; nm.textContent = nameTxt; card.appendChild(nm); } if (nameTxt === 'Transformer') { card.style.borderColor = 'rgba(255,233,168,.67)'; if (!card.querySelector('.bf-foil-layer')) { var fl = document.createElement('div'); fl.className = 'bf-foil-layer'; fl.style.cssText = 'position:absolute;inset:0;z-index:6;pointer-events:none;border-radius:inherit;mix-blend-mode:soft-light;opacity:.4;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;animation:bfFoilShift 9s linear infinite'; card.appendChild(fl); } if (!card.querySelector('.bf-foil-shine')) { var ef = document.createElement('div'); ef.className = 'bf-foil-shine'; card.appendChild(ef); } }
     });
   }
-
-  // ---- DOM injection for the round bonus/restador (turn its chip into a card) ----
   function injectBonusArt() {
     document.querySelectorAll('.hand-lbl').forEach(function(lbl) {
       if (!/Bonificador de esta ronda/i.test(lbl.textContent)) return;
@@ -612,7 +567,6 @@ function buildArtScript(dbCards) {
       chip.parentNode.insertBefore(card, chip.nextSibling);
     });
   }
-
   // Build a name -> art map for every weapon/armor, used to show equipped
   // gear thumbnails on battle heroes. Resolved by array index in the game lists.
   function buildGearArtByName() {
@@ -626,7 +580,6 @@ function buildArtScript(dbCards) {
     add(typeof ARMORS !== 'undefined' ? ARMORS : [], ARMOR_ART);
     window.__bfGearArtByName = map;
   }
-
   function injectBattleHeroArt() {
     buildGearArtByName();
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(c) {
@@ -644,11 +597,9 @@ function buildArtScript(dbCards) {
       else{var t=document.createElement('div');t.className='bf-ctb-thumb';t.style.backgroundImage='url("'+u+'")';t.style.backgroundPosition=bfHeroBgPos(pid);l.insertBefore(t,l.firstChild);l.dataset.bfCtbArt=nx;}
     });
   }
-
   function readHeroHp(c){var h=c.querySelector('.bhero-hpnum'),t=h?h.textContent:'',m=String(t).match(/-?\d+/);return m?parseInt(m[0],10):null;}
   function statusText(c){var s=c.querySelector('.bhero-status');return s?s.textContent:'';}
   function isHeroParalyzed(c){return c.classList.contains('s-paralyzed')||/par[aá]li/i.test(statusText(c));}
-
   // Resolve the current status of a battle hero: 'paralyzed' | 'sleeping' | 'cursed' | ''.
   function heroIsFrozen(card) {
     if (/congel/i.test(statusText(card))) return true;
@@ -665,7 +616,6 @@ function buildArtScript(dbCards) {
     if (card.classList.contains('s-blessed') || /bendi|bendec|bless/i.test(t)) return 'blessed';
     return '';
   }
-
   // Rich animated overlay markup per status (sleeping zzz+sheep, paralyzed arcs, cursed runes, blessed halo).
   var STATUS_FX_HTML = {
     sleeping: '<div class="bf-fx-overlay bf-sleep-fx"><span class="bf-sleep-z z1">Z</span><span class="bf-sleep-z z2">z</span><span class="bf-sleep-z z3">z</span><span class="bf-sleep-sheep">🐑</span><span class="bf-sleep-count">+1</span></div>',
@@ -676,7 +626,6 @@ function buildArtScript(dbCards) {
   var STATUS_INFO = {
     paralyzed: { ico: '⚡', label: 'PARALIZADO', cls: 'bf-status-paralyzed' }, sleeping: { ico: '💤', label: 'DORMIDO', cls: 'bf-status-sleeping' }, frozen: { ico: '❄', label: 'CONGELADO', cls: 'bf-status-frozen' }, cursed: { ico: '☠', label: 'MALDITO', cls: 'bf-status-cursed' }, blessed: { ico: '😇', label: 'BENDITO', cls: 'bf-status-blessed' }, tank: { ico: '🛡️', label: 'TANQUEANDO', cls: 'bf-status-tank' },
   };
-
   // Ensure the active hero has its dramatic aura/ring/tag layers, and that every hero shows a floating status badge matching its current condition.
   // Is this battle card a hero currently in TANK mode (absorbing every hit)?
   function heroIsTank(card) {
@@ -719,10 +668,8 @@ function buildArtScript(dbCards) {
       card.dataset.bfStatus = st;
     }
   }
-
   function heroIdFromCard(c){var m=String(c&&c.id||'').match(/^b_[po]_(.+)$/);return m?m[1]:'';}
   function bfArtId(card){var id=heroIdFromCard(card),side=(String(card&&card.id||'').split('_')[1])||'p',h=(typeof G!=='undefined'&&G.team&&G.team[side]||[]).find(function(x){return x&&x.id===id;});return (h&&h._token)?h._token:id;}
-
   function addOverlayFx(card, html, ms) {
     if (!card || !card.isConnected) return;
     var fx = document.createElement('div'); fx.className = 'bf-combat-fx'; fx.innerHTML = html; card.appendChild(fx);
@@ -738,7 +685,6 @@ function buildArtScript(dbCards) {
     if (!card || !card.isConnected) return; card.classList.add('bf-dead', 'bf-truedead');
     addOverlayFx(card, '<div class="bf-fx-grave-shade"></div><div class="bf-fx-grave">🪦</div><div class="bf-fx-float bf-fx-status-txt">R.I.P.</div>', 1400);
   }
-
   // Inject thumbnails of the hero's equipped weapon + armor onto a battle card.
   function injectBattleGear(card) {
     if (!card || card.dataset.bfGear === '1') return;
@@ -760,7 +706,6 @@ function buildArtScript(dbCards) {
     });
     if (row.children.length) card.appendChild(row);
   }
-
   function playHeroFx(card, type, value) {
     if (!card || !card.isConnected) return;
     var cls = type === 'heal' || type === 'revive' ? 'bf-fx-heal' : (type === 'paralyze' ? 'bf-fx-paralyze' : 'bf-fx-damage');
@@ -772,7 +717,6 @@ function buildArtScript(dbCards) {
     else if (type === 'death') { if (card.classList.contains('bf-auto-elite') || card.classList.contains('elite-mode')) { playTrueDeath(card); } else { card.classList.add('bf-dead'); addOverlayFx(card, '<div class="bf-fx-death-smoke"></div><div class="bf-fx-skull">💀</div>', 1150); } }
     else { addOverlayFx(card, '<div class="bf-fx-bolt">⚡</div><div class="bf-fx-float bf-fx-status-txt">PARALIZADO</div>', 950); }
   }
-
   function syncBattleFx() {
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card) {
       // Watch for the game flagging this hero as elite (class .elite-mode or a ★
@@ -782,10 +726,8 @@ function buildArtScript(dbCards) {
       if (isEliteNow && card.dataset.bfAutoElite !== '1') {
         transformHeroToElite(card);
       }
-
       // Keep the active-hero aura/ring/tag and status badge always in sync.
       decorateBattleHeroState(card);
-
       var hp = readHeroHp(card);
       if (hp !== null) {
         if (card.dataset.bfPrevHp !== undefined) {
@@ -805,7 +747,6 @@ function buildArtScript(dbCards) {
       card.dataset.bfPrevStatusFx = st;
     });
   }
-
   function playStatusFx(card, st) {
     var info = STATUS_INFO[st];
     if (!info) return;
@@ -815,26 +756,21 @@ function buildArtScript(dbCards) {
     var color = st === 'sleeping' ? '#8aaaff' : st === 'blessed' ? '#ffe49a' : st === 'paralyzed' ? '#ffe14a' : '#c79bff';
     addOverlayFx(card, '<div class="bf-fx-float bf-fx-status-txt" style="color:' + color + '">' + info.ico + ' ' + info.label + '</div>', 1300);
   }
-
   function getBattleCard(side, id) {
     return document.getElementById('b_' + side + '_' + id);
   }
-
   function cardCenter(card) {
     if (!card) return null;
     var r = card.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2, card: card };
   }
-
   function targetCenter(side, id) {
     return cardCenter(getBattleCard(side, id));
   }
-
   function elementColor(el) {
     var map = { fuego:'#ff5a2a', hielo:'#5ad0ff', rayo:'#ffe14a', agua:'#3aa0ff', curacion:'#5fffa0', proteccion:'#ffd23a', arcano:'#c79bff', estado:'#c79bff' };
     return map[el] || '#ffffff';
   }
-
   function launchProjectile(from, to, kind, color) {
     if (!from || !to) return;
     var p = document.createElement('div');
@@ -846,7 +782,6 @@ function buildArtScript(dbCards) {
     requestAnimationFrame(function() { p.style.left = to.x + 'px'; p.style.top = to.y + 'px'; });
     setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 430);
   }
-
   function launchMagic(from, to, el) {
     if (!from || !to) return;
     var orb = document.createElement('div'); orb.className = 'bf-fx-magic-orb';
@@ -855,7 +790,6 @@ function buildArtScript(dbCards) {
     requestAnimationFrame(function() { orb.style.left = to.x + 'px'; orb.style.top = to.y + 'px'; orb.style.transform = 'scale(1.35)'; });
     setTimeout(function() { if (orb.parentNode) orb.parentNode.removeChild(orb); }, 560);
   }
-
   function enhanceCombatEvent(ev) {
     if (!ev || !ev.k) return;
     if (ev.k === 'arrow') { launchProjectile(targetCenter(ev.fromSide, ev.fromId), targetCenter(ev.toSide, ev.toId), 'arrow', '#c6ff8a'); return; }
@@ -878,7 +812,6 @@ function buildArtScript(dbCards) {
     if (ev.k === 'heal') { var healed = getBattleCard(ev.side, ev.id); if (healed && healed.classList.contains('bf-dead')) playHeroFx(healed, 'revive', ev.amt); return; }
     if (ev.k === 'manaup' || ev.k === 'shieldup' || ev.k === 'wardup') { var buff = getBattleCard(ev.side || ev.toSide, ev.id || ev.toId); if (buff) addOverlayFx(buff, '<div class="bf-fx-elite-aura"></div>', 900); }
   }
-
   function patchCombatFx() {
     if (typeof window.flushFx !== 'function' || window.flushFx.__bfEnhanced) return;
     var original = window.flushFx;
@@ -888,9 +821,7 @@ function buildArtScript(dbCards) {
     };
     window.flushFx.__bfEnhanced = true;
   }
-
   function bfTankBurstById(id) { ['p', 'o'].forEach(function(s) { var c = getBattleCard(s, id); if (c) addOverlayFx(c, '<div class="bf-fx-tank-burst"></div>', 850); }); }
-
   function patchTankRules() {
     if (window.__bfTankPatched || typeof window.dealDamage !== 'function' || typeof G === 'undefined') return;
     window.__bfTankPatched = true;
@@ -937,7 +868,6 @@ function buildArtScript(dbCards) {
     var bfTankConn=null;setInterval(function(){if(typeof NET==='undefined'||NET.role!=='host'||!NET.conn||NET.conn===bfTankConn)return;bfTankConn=NET.conn;try{NET.conn.on('data',function(m){if(!m||m.t!=='intent'||m.op!=='bfTank'||m.__bfTankDone)return;m.__bfTankDone=1;if(typeof window.__bfTryTank==='function')window.__bfTryTank(0);});}catch(e){}},300);
   }
   window.__bfPatchTankRules = patchTankRules;
-
   // ---- TRANSFORMER spell + token heroes ----
   function patchTransformer() {
     if (window.__bfTransformerPatched || typeof SPELLS === 'undefined' || typeof HEROES === 'undefined' || typeof G === 'undefined' || typeof window.castSpell !== 'function') return;
@@ -988,12 +918,40 @@ function buildArtScript(dbCards) {
     }
   }
   window.__bfPatchTransformer = patchTransformer;
-
+  function patchDuckAbility() {
+    if (window.__bfDuckPatched || typeof window.useAbility !== 'function' || typeof window.dealDamage !== 'function') return;
+    window.__bfDuckPatched = true;
+    var originalUseAbility = window.useAbility, originalDealDamage = window.dealDamage;
+    window.useAbility = function(side, hero, done) {
+      if (!hero || hero.akind !== 'duck-summon') return originalUseAbility.apply(this, arguments);
+      var duck = (TOKENS || []).find(function(t) { return t && t.id === 'tk_patito_goma'; });
+      if (!duck) return originalUseAbility.apply(this, arguments);
+      var amount = hero.eliteMode ? 4 : 2;
+      for (var i = 0; i < amount; i++) {
+        var instance = typeof makeInstance === 'function' ? makeInstance(duck) : Object.assign({}, duck);
+        instance.id = 'duck_' + Date.now() + '_' + i; instance._token = duck.id; instance._bfDuck = true;
+        instance.eliteUsed = true; instance.eliteMode = false; instance.abilityUsed = false;
+        instance.maxHp = hero.eliteMode ? 2 : 1; instance.hp = instance.maxHp; instance.alive = true;
+        (G.team[side] || (G.team[side] = [])).push(instance);
+      }
+      hero.abilityUsed = true;
+      if (typeof pushLog === 'function') pushLog('lg', hero.name + ' invoca ' + amount + ' Patito' + (amount > 1 ? 's' : '') + ' de Goma bloqueador' + (amount > 1 ? 'es' : '') + '.');
+      if (typeof pushFx === 'function') pushFx({ k: 'status', side: side, id: hero.id, txt: '🦆' });
+      done();
+    };
+    window.dealDamage = function(target, amount, opts) {
+      if (target && !target._bfDuck) {
+        var side = typeof tSide === 'function' ? tSide(target) : null;
+        var duck = side && (G.team[side] || []).find(function(h) { return h && h.alive && h._bfDuck; });
+        if (duck) { var dealt = originalDealDamage.call(this, duck, amount, opts); if (!duck.alive && typeof pushLog === 'function') pushLog('li', '🦆 ' + duck.name + ' bloquea el golpe dirigido a ' + target.name + '.'); return dealt; }
+      }
+      return originalDealDamage.apply(this, arguments);
+    };
+  }
   function patchGameRules() {
     if (window.__bfRulesPatched || typeof HEROES === 'undefined' || typeof BONUS === 'undefined' || typeof G === 'undefined') return;
     window.__bfRulesPatched = true;
     if (typeof window.modal === 'function' && !window.modal.__bfHooked) { var origModal = window.modal; window.modal = function(html) { if (bfInBattle() && html && typeof html === 'string') { var temp = document.createElement('div'); temp.innerHTML = html; var modified = false, active = bfActiveHero(); if (active && active.hero) { temp.querySelectorAll('button').forEach(function(el) { var found = bfFindItemByName(el.textContent || ''); if (found && found.item) { var eff = bfCalcEffective(found.kind, found.item, active.card, true); if (eff && !el.dataset.bfEff) { el.dataset.bfEff = '1'; var ed = document.createElement('div'); ed.innerHTML = eff; ed.style.cssText = 'font-size:11.5px;margin-top:3px;font-weight:700;text-transform:none;letter-spacing:0;color:'+(found.kind==='spell'?'#ff9eb5':'#8effb2'); el.appendChild(ed); modified = true; } } }); } if (modified) html = temp.innerHTML; } return origModal.apply(this, arguments); }; window.modal.__bfHooked = true; }
-
     // Updated "how to play" rules, in plain language, including the new rules (6 candidates per auction, Epic offers, epic cost +10).
     if (typeof window.rulesBody === 'function' && !window.rulesBody.__bf) {
       window.rulesBody = function() { var RI='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/'; var _ic={cc:RI+'fefda0ace_generated_image.png',ad:RI+'210f89d43_generated_image.png',he:RI+'7c59e1ff7_generated_image.png',item:RI+'90ff926d5_generated_image.png',def:RI+'1d9e5fb8f_generated_image.png',tank:RI+'b5ca5c078_generated_image.png',roleCC:RI+'ab147bafb_generated_image.png',roleAD:RI+'fd388871c_generated_image.png',roleHE:RI+'cfd5e317c_generated_image.png'}; var _S='<style>.rb-step{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,rgba(28,16,46,.7),rgba(12,7,20,.85));border:1px solid rgba(255,210,74,.28);border-radius:14px;padding:12px 14px;margin:10px 0;box-shadow:0 6px 16px rgba(0,0,0,.4)}.rb-step-n{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Cinzel",serif;font-weight:1000;font-size:16px;color:#3a2600;background:radial-gradient(circle at 35% 30%,#ffeaa6,#FFD24A 50%,#a9771f);border:2px solid #7c5410;box-shadow:0 2px 8px rgba(0,0,0,.5)}.rb-step-b{flex:1}.rb-step-t{font-family:"Cinzel",serif;font-weight:900;color:#ffd24a;font-size:14.5px;letter-spacing:.3px;margin-bottom:3px;text-shadow:0 1px 3px #000}.rb-step-x{color:#efe9dc;font-size:12.5px;line-height:1.4}.rb-emb{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:1.5px solid rgba(255,210,74,.6);box-shadow:0 0 8px rgba(255,210,74,.4);overflow:hidden;background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500);vertical-align:middle;flex:0 0 30px}.rb-emb img{width:100%;height:100%;object-fit:cover;display:block}.rb-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 4px}.rb-act{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;background:linear-gradient(180deg,rgba(20,10,35,.85),rgba(10,5,15,.95));border:1px solid rgba(255,210,74,.4);border-radius:12px;padding:9px 6px}.rb-act-im{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,210,74,.6);box-shadow:0 0 10px rgba(255,210,74,.5);overflow:hidden;background:radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)}.rb-act-im img{width:100%;height:100%;object-fit:cover;display:block}.rb-act-t{font-family:"Cinzel",serif;font-weight:900;color:#ffd24a;font-size:11.5px;letter-spacing:.2px}.rb-act-x{color:#d8d0e4;font-size:10px;line-height:1.25}.rb-act-ab{grid-column:1/-1;flex-direction:row;text-align:left;gap:11px;border:2px solid rgba(255,210,74,.7);background:linear-gradient(135deg,rgba(28,16,46,.96),rgba(12,7,20,.98))}.rb-act-ab .rb-act-im{width:46px;height:46px;flex:0 0 46px}.rb-act-ab .rb-act-b{flex:1}.rb-cap{font-size:10.5px;color:#b8aacb;text-align:center;margin:2px 0 8px;font-style:italic}</style>'; return '<div class="rules-body">' + _S + '<p><b>🎯 Objetivo:</b> arma un equipo de <b>3 héroes</b> y derrota a los 3 del rival.</p>' + '<div class="rb-step"><div class="rb-step-n">1</div><div class="rb-step-b"><div class="rb-step-t">Subasta · 3 fases</div><div class="rb-step-x">Una fase para cada tipo de héroe: <span class="rb-emb"><img src="'+_ic.roleCC+'"></span> <b>cuerpo a cuerpo</b>, <span class="rb-emb"><img src="'+_ic.roleAD+'"></span> <b>distancia</b> y <span class="rb-emb"><img src="'+_ic.roleHE+'"></span> <b>magia</b>. En cada fase ves <b>6 héroes</b> y eliges uno con una <b>puja sellada</b> (a ciegas): quien ofrezca más se lo lleva. Cada ronda trae un <b>bonificador único</b> (no se repite): más monedas o un castigo al rival. Tus monedas de equipamiento <b>ya incluyen las de la subasta</b>: cada puja que pagues se resta de ese presupuesto.</div></div></div>' + '<p style="margin:8px 0"><b>✦ Cartas Épicas.</b> Las más poderosas, cuestan <b>+20 monedas</b>. No salen normalmente, pero ciertos bonificadores hacen que <b>tú</b> (o tu <b>rival</b>) recibáis una oferta Épica extra.</p>' + '<p style="margin:8px 0"><b>🏦 ¿Sin monedas en la última fase?</b> No te quedas sin tu tercer héroe: reclutas <b>con deuda</b> y lo que falte se resta de tu presupuesto de equipamiento. El resumen de la ronda te lo indica.</p>' + '<div class="rb-step"><div class="rb-step-n">2</div><div class="rb-step-b"><div class="rb-step-t">Equipamiento</div><div class="rb-step-x">Tu presupuesto de equipamiento es una base de <b>100 monedas</b> más las que no gastaste en la subasta (las pujas pagadas ya están restadas). Con él equipas a cada héroe con <b>1 arma</b> (cuerpo a cuerpo <i>o</i> distancia) y <b>1 armadura</b>. Los hechizos y objetos van a tu <b>mano</b> para la batalla.</div></div></div>' + '<div class="rb-step"><div class="rb-step-n">3</div><div class="rb-step-b"><div class="rb-step-t">Combate por rondas</div><div class="rb-step-x">Orden de turnos: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, va antes quien tenga más velocidad). En el turno de cada héroe verás este <b>panel de acciones</b>:</div></div></div>' + '<div class="rb-actions"><div class="rb-act"><div class="rb-act-im"><img src="'+_ic.cc+'"></div><div class="rb-act-t">Cuerpo a cuerpo</div><div class="rb-act-x">Golpe melé: daño = tu <b>CC</b> + arma.</div></div><div class="rb-act"><div class="rb-act-im"><img src="'+_ic.ad+'"></div><div class="rb-act-t">Disparo</div><div class="rb-act-x">Necesita arma a distancia; daño por potencia × tu <b>AD</b>.</div></div><div class="rb-act"><div class="rb-act-im"><img src="'+_ic.he+'"></div><div class="rb-act-t">Hechizo</div><div class="rb-act-x">Usa <b>HE</b> y gasta <b>maná</b>.</div></div><div class="rb-act rb-act-ab"><div class="rb-act-im"><img src="'+_ic.roleHE+'"></div><div class="rb-act-b"><div class="rb-act-t">Habilidad del héroe</div><div class="rb-act-x">El poder especial propio de ese héroe (cada uno el suyo). Se lee en la franja dorada del panel.</div></div></div><div class="rb-act"><div class="rb-act-im"><img src="'+_ic.item+'"></div><div class="rb-act-t">Objeto</div><div class="rb-act-x">Juega un objeto de tu mano (poción, maná…).</div></div><div class="rb-act"><div class="rb-act-im"><img src="'+_ic.def+'"></div><div class="rb-act-t">Defender</div><div class="rb-act-x">Te cubres: recibes menos daño este turno.</div></div><div class="rb-act"><div class="rb-act-im"><img src="'+_ic.tank+'"></div><div class="rb-act-t">Tanquear</div><div class="rb-act-x">Atraes los ataques rivales para proteger al equipo.</div></div></div>' + '<div class="rb-cap">Así se ve el panel del héroe activo en batalla.</div>' + '<p style="margin:8px 0"><b>⚡ Importante:</b> <b>cada acción gasta el turno</b> de ese héroe. El maná es una reserva fija para toda la batalla que <b>no se regenera</b>: recupéralo con Cristal u Orbe de Maná.</p>' + '<p style="margin:8px 0"><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>' + '<p style="margin:8px 0"><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace</b> con parte de su vida y stats mejorados, según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad (salvo Pluma Fénix para revivir, o Ave Fénix para curar a dos héroes a vida completa).</p>' + '<p style="margin:8px 0 2px"><b>Consulta también las</b> <span class="rules-link" onclick="racesModal()">🧬 razas</span>.</p></div>'; };
@@ -1008,7 +966,6 @@ function buildArtScript(dbCards) {
       window.renderSetup = function() { var r = bfOrigRenderSetup.apply(this, arguments); var box = document.getElementById('s-setup'); if (box) { var ic = box.querySelectorAll('.mode-icon'); var urls = ['https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6a8371b6d_generated_image.png','https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/392a70151_generated_image.png']; ic.forEach(function(el,i){if(!urls[i])return;el.textContent='';el.style.cssText='background:none!important;padding:0!important;overflow:hidden!important;';var img=document.createElement('img');img.src=urls[i];img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;';el.appendChild(img);}); } return r; };
       window.renderSetup.__bf = 1;
     }
-
     HEROES.forEach(function(h) {
       if (h.clan === 'Épicas' && h.__bfEpicRaised !== 1) {
         h.cost = Number(h.cost || 0) + 10;
@@ -1018,14 +975,12 @@ function buildArtScript(dbCards) {
       var idx = HERO_IDS.indexOf(h.id);
       if (idx >= 0) h.num = idx + 1;
     });
-
     if (!BONUS.some(function(b) { return b.id === 'epic_self'; })) {
       BONUS.push({ id: 'epic_self', name: 'Convocatoria Épica', type: 'BON', effect: 0, txt: 'En esta subasta sólo tú verás una criatura Épica para pujar.' });
     }
     if (!BONUS.some(function(b) { return b.id === 'epic_rival'; })) {
       BONUS.push({ id: 'epic_rival', name: 'Destino Épico Rival', type: 'RES', effect: 0, txt: 'En esta subasta tu rival verá una criatura Épica para pujar.' });
     }
-
     // Force at least 6 candidates per auction round (épicas never in normal slate).
     var TARGET_CANDS = 6;
     if (typeof window.drawRaceSlate === 'function' && !window.drawRaceSlate.__bf6) {
@@ -1050,27 +1005,21 @@ function buildArtScript(dbCards) {
       };
       window.drawRaceSlate.__bf6 = 1;
     }
-
     function findHero(heroId) { var lists = [G.cands || []]; if (G.epicCands) lists = lists.concat(Object.values(G.epicCands)); lists.push(HEROES || []); for (var i = 0; i < lists.length; i++) { var found = (lists[i] || []).find(function(h) { return h && h.id === heroId; }); if (found) return found; } return null; }
-
     // Bonus modifiers on the FINAL bid value: add = own bonus, sub = rival restador.
     window.bidMods = function(side) {
       var mb = G.bonus && G.bonus[side], ob = G.bonus && G.bonus[other(side)];
       return { add: (mb && mb.type === 'BID_ADD') ? Number(mb.effect || 0) : 0, sub: (ob && ob.type === 'BID_SUB') ? Number(ob.effect || 0) : 0 };
     };
-
     window.minRawBid=function(s,h){return!h?0:Math.max(0,Number(h.cost||0));};
     window.bfBidDelta=function(s){var mb=G.bonus&&G.bonus[s],rb=G.bonus&&G.bonus[other(s)],d=0,l='';if(mb&&mb.type==='BID_ADD'){d+=Number(mb.effect||0);l='+'+Number(mb.effect||0)+' '+mb.name;}if(rb&&rb.type==='BID_SUB'){d-=Number(rb.effect||0);l=(l?l+' · ':'')+'-'+Number(rb.effect||0)+' '+rb.name;}return{delta:d,label:l};};
     window.bfDefaultBid=function(s,h){if(!h)return 0;return Math.max(0,Number(h.cost||0));};
     window.bfUpdateBidPreview=function(id){var bx=document.getElementById('bidcalc_'+id);if(!bx)return;var s=humanSide(),h=((G.epicCands&&G.epicCands[s])||G.cands||[]).find(function(x){return x&&x.id===id;});if(!h)return;var inp=document.getElementById('bid_'+id),bid=inp?(parseInt(inp.value||'0',10)||0):window.bfDefaultBid(s,h),mb=G.bonus&&G.bonus[s],rb=G.bonus&&G.bonus[other(s)],a=(mb&&mb.type==='BID_ADD')?Number(mb.effect||0):0,u=(rb&&rb.type==='BID_SUB')?Number(rb.effect||0):0,pd=Math.max(0,bid-a+u),html='<div style="color:#ffe49a">Tu puja: <b>'+bid+'</b> 🪙</div>';if(a>0)html+='<div style="color:#54e876">Tu bonificador: <b>−'+a+' 🪙 al pagar</b> <span style="font-weight:700;opacity:.85">('+mb.name+')</span></div>';if(u>0)html+='<div style="color:#ff6b6b">El rival te resta: <b>+'+u+' 🪙 al pagar</b> <span style="font-weight:700;opacity:.85">('+rb.name+')</span></div>';if(a>0||u>0)html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás: <b>'+pd+' 🪙</b></div>';else html+='<div style="color:#FFD24A;margin-top:2px;border-top:1px solid rgba(255,210,74,.22);padding-top:3px">Si ganas pagarás <b>'+bid+' 🪙</b></div>';bx.innerHTML=html;};
     function adjustBid(s,id,amt){var h=findHero(id);if(!h)return amt;var c=Number((G.coins&&G.coins[s])||0),mr=window.minRawBid(s,h),m=window.bidMods(s),mx=c+m.add-m.sub;if(mx<mr)return null;var b=Number(amt||0);return b<mr?mr:(b>mx?mx:b);}
     function patchBidInputs(){var all=(G.cands||[]).slice();if(G.epicCands)Object.values(G.epicCands).forEach(function(l){all=all.concat(l||[]);});all.forEach(function(h){var inp=document.getElementById('bid_'+h.id);if(!inp)return;var s=humanSide(),mr=window.minRawBid(s,h),m=window.bidMods(s),c=Number((G.coins&&G.coins[s])||0);inp.min=String(mr);inp.max=String(Math.max(0,c+m.add-m.sub));if(!inp.dataset.bfTouched)inp.value=String(window.bfDefaultBid(s,h));if(!inp.dataset.bfTouchBound){inp.dataset.bfTouchBound='1';inp.addEventListener('input',function(){this.dataset.bfTouched='1';});}window.bfUpdateBidPreview(h.id);});} function bfPlayCoinFlight(fromEl,toEl){if(!fromEl||!toEl)return;var fr=fromEl.getBoundingClientRect(),tr=toEl.getBoundingClientRect();var fx=fr.left+fr.width/2,fy=fr.top+fr.height/2,tx=tr.left+tr.width/2,ty=tr.top+tr.height/2;for(var i=0;i<8;i++){(function(i){setTimeout(function(){var c=document.createElement('div');c.className='bf-coin-fly';c.textContent='🪙';c.style.left=fx+'px';c.style.top=fy+'px';c.style.transform='translate(-50%,-50%) rotate(0deg) scale(1.15)';c.style.opacity='1';document.body.appendChild(c);void c.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){c.style.left=tx+'px';c.style.top=ty+'px';c.style.transform='translate(-50%,-50%) rotate('+(Math.random()*640-320)+'deg) scale(1.15)';c.style.opacity='.1';});});setTimeout(function(){if(c.parentNode)c.parentNode.removeChild(c);},800);},i*60);})(i);}} window.bfTransferToAuction=function(side,amt,btnEl){if(typeof NET!=='undefined'&&NET.role==='client'){if(typeof sendIntent==='function')sendIntent('bfXferEq',{amount:amt});return;}if(typeof G==='undefined')return;if(!G.bfEquipXfer)G.bfEquipXfer={p:0,o:0};var left=100-(G.bfEquipXfer[side]||0);var t=Math.max(0,Math.min(Number(amt||0),left));if(t<=0){if(window.notif)notif('Ya has transferido el máximo de 100 monedas de equipamiento a la subasta.');return;}var panel=btnEl&&btnEl.closest?btnEl.closest('.side-panel'):null;var rows=panel?panel.querySelectorAll('.coins-row .coins-num'):null;if(rows&&rows[0]&&rows[1])bfPlayCoinFlight(rows[1],rows[0]);G.coins[side]=(G.coins[side]||0)+t;G.bfEquipXfer[side]=(G.bfEquipXfer[side]||0)+t;if(window.notif)notif('🪙 Transferidas '+t+' monedas de equipamiento a la subasta.');if(typeof renderRecruit==='function')renderRecruit('p');if(typeof patchBidInputs==='function')patchBidInputs();if(typeof netSync==='function')netSync('s-recruit');}; window.bfEqXferBtn=function(side){var human=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:'p';if(side!==human)return '';var left=100-((typeof G!=='undefined'&&G.bfEquipXfer&&G.bfEquipXfer[side])||0);return '<button type="button" onclick="event.stopPropagation();window.bfTransferToAuction(&quot;'+side+'&quot;,10,this)" style="width:100%;margin:2px 0 10px;padding:6px 8px;border-radius:10px;border:1px solid rgba(255,210,74,.55);background:rgba(255,210,74,.12);color:#ffe49a;font-weight:900;font-size:10.5px;cursor:pointer">↷ Transferir 10 monedas a la subasta (quedan '+Math.max(0,left)+')</button>';};
-
     function epicPoolForCurrentType(){var t=(G.cands&&G.cands[0]&&G.cands[0].type)||G.curType||G.phaseType||G.auctType;var u={};['p','o'].forEach(function(s){(G.team&&G.team[s]||[]).forEach(function(h){u[h.id]=1;});});(G.cands||[]).forEach(function(h){if(h)u[h.id]=1;});var p=HEROES.filter(function(h){return h.clan==='Épicas'&&(!t||h.type===t)&&!u[h.id];});if(!p.length)p=HEROES.filter(function(h){return h.clan==='Épicas'&&!u[h.id];});return p;}
-
     // Each flagged side sees the normal candidates PLUS one epic hero; the other side keeps seeing only G.cands.
     function prepareEpicOffers() { G.epicCands = {}; if (!G.forceEpic) return; var baseCands = (G.cands || []).slice(); ['p','o'].forEach(function(side) { if (!G.forceEpic[side]) return; var pool = epicPoolForCurrentType(); if (!pool.length) return; var h = pool[Math.floor(Math.random() * pool.length)]; G.epicCands[side] = baseCands.concat([h]); }); G.forceEpic = {}; }
-
     var originalApplyBonus = window.applyBonus;
     window.applyBonus = function(side, b) {
       if (!G.forceEpic) G.forceEpic = {};
@@ -1079,7 +1028,6 @@ function buildArtScript(dbCards) {
       return originalApplyBonus.apply(this, arguments);
     };
     function epicBonusById(id) { return (BONUS || []).find(function(b) { return b && b.id === id; }) || null; }
-
     // Sometimes swap the round bonus for an epic bonus card so they show up.
     function maybeForceEpicBonus() {
       var self = epicBonusById('epic_self');
@@ -1094,7 +1042,6 @@ function buildArtScript(dbCards) {
         else if (roll < 0.34) G.bonus[side] = rival;
       });
     }
-
     // Bonus/restador cards are UNIQUE per game (epics exempt): once used as a
     // round bonus for either side, a card never reappears in any later phase.
     function enforceUniqueBonuses() {
@@ -1110,7 +1057,6 @@ function buildArtScript(dbCards) {
         if (G.bonus[side] && G.bonus[side].id) used[G.bonus[side].id] = true;
       });
     }
-
     var originalStartAuctionPhase = window.startAuctionPhase;
     window.startAuctionPhase = function() {
       // Intercept applyBonus so we can finalize G.bonus before its effects and UI rendering
@@ -1124,12 +1070,10 @@ function buildArtScript(dbCards) {
       if (typeof window.netSync === 'function') window.netSync('s-recruit');
       return ret;
     };
-
     function humanSide() {
       if (typeof NET !== 'undefined' && NET.role === 'client' && NET.mySide) return NET.mySide;
       return 'p';
     }
-
     var originalBeginBidRound = window.beginBidRound;
     window.beginBidRound = function() {
       if (!G.forceEpic) G.forceEpic = {};
@@ -1139,7 +1083,6 @@ function buildArtScript(dbCards) {
       if (typeof NET !== 'undefined' && NET.role !== 'client') netSync('s-recruit');
       return ret;
     };
-
     var originalRenderRecruit = window.renderRecruit;
     window.renderRecruit = function(forSide) {
       var saved = G.cands;
@@ -1149,7 +1092,6 @@ function buildArtScript(dbCards) {
       patchBidInputs();
       return ret;
     };
-
     function isLastAuct(){var tl=(G.team&&G.team['p']&&G.team['p'].length)||0;if(tl>=2)return true;var c=(G.epicCands&&G.epicCands['p'])||G.cands||[];return c.length>0&&c[0]&&c[0].type==='HE';}
     function bfAssignBizarro(side){var pool=(typeof TOKENS!=='undefined')?TOKENS:[];if(!pool.length)return null;var tk=pool[Math.floor(Math.random()*pool.length)];var inst=(typeof makeInstance==='function')?makeInstance(tk):Object.assign({},tk);inst.boughtFor=0;inst._token=tk.id;if(!G.team[side])G.team[side]=[];G.team[side].push(inst);if(G.phaseNeeds)G.phaseNeeds[side]=false;if(typeof pushLog==='function')pushLog('lx','⚠️ Sin monedas suficientes: el equipo de '+((G.names&&G.names[side])||side)+' se completa con el héroe Bizarro «'+tk.name+'».');return tk;} function bfBizarroEligible(side){var xl=100-((G.bfEquipXfer&&G.bfEquipXfer[side])||0);return Number((G.coins&&G.coins[side])||0)<=0&&xl<=0;} function bfNoCoinDialog(side){if(typeof NET!=='undefined'&&NET.role==='client'){if(typeof sendIntent==='function')sendIntent('bfBizarroFill',{});return;}var tk=bfAssignBizarro(side);if(!tk)return;if(G.bidsIn)G.bidsIn[side]=true;if(window.notif)notif('Sin monedas suficientes: se añade automáticamente el héroe Bizarro «'+tk.name+'» a tu equipo.');bfGuideReact('shock','¡BIZARRO!');var oth=side==='p'?'o':'p';var isOnline=typeof NET!=='undefined'&&NET.role==='host';if(isOnline){if(!G.bids[side])G.bids[side]={pass:true};if(typeof renderRecruit==='function')renderRecruit('p');if(typeof netSync==='function')netSync('s-recruit');if(typeof tryResolveRound==='function')tryResolveRound();return;}if(!G.bidsIn||G.bidsIn[oth]!==true){if(typeof window.aiBid==='function'){try{window.aiBid(oth);}catch(e){}}if(!G.bids[oth])G.bids[oth]={pass:true};if(G.bidsIn)G.bidsIn[oth]=true;}if(!G.bids[side])G.bids[side]={pass:true};if(typeof window.resolveBidRound==='function')window.resolveBidRound();else{if(typeof renderRecruit==='function')renderRecruit('p');if(typeof netSync==='function')netSync('s-recruit');}};
     var originalSubmitBid = window.submitBid;
@@ -1169,7 +1111,6 @@ function buildArtScript(dbCards) {
       if (amt === null) return netPass();
       return originalNetBid.call(this, heroId, amt);
     };
-
     function minPoolCost(side){var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];var m=Infinity;for(var i=0;i<pool.length;i++){var c=Number(pool[i]&&pool[i].cost||0);if(c<m)m=c;}return m===Infinity?5:m;}
     function roundsLeft(side){return Math.max(1,3-((G.team&&G.team[side]&&G.team[side].length)||0));}
     // AI can't afford a hero: take equip-debt for the cheapest hero or skip — either way
@@ -1191,7 +1132,6 @@ function buildArtScript(dbCards) {
       }
       G.cands=sv;if(typeof window.checkBids==='function')window.checkBids();
     };
-
     var originalResolveBidRound = window.resolveBidRound;
     window.resolveBidRound = function() {
       ['p','o'].forEach(function(side) {
@@ -1216,7 +1156,6 @@ function buildArtScript(dbCards) {
       }
       return ret;
     };
-
     // 3 vs 3 garantizado: al terminar la subasta, cualquier equipo con menos de
     // 3 héroes se completa automáticamente con héroes Bizarros.
     var originalFinishAuction = window.finishAuction;
@@ -1227,7 +1166,6 @@ function buildArtScript(dbCards) {
       });
       return originalFinishAuction.apply(this, arguments);
     };
-
     // Slow down the combat pacing a touch so the (now bigger) animations are
     // easier to follow. We add a short pause before each turn transition.
     if (typeof window.endTurn === 'function' && !window.endTurn.__bfSlow) {
@@ -1240,7 +1178,6 @@ function buildArtScript(dbCards) {
       window.finishAct = function() { var args = arguments, self = this; setTimeout(function() { originalFinishAct.apply(self, args); }, 360); };
       window.finishAct.__bfSlow = 1;
     }
-
     // Show a clear "EN MODO ÉLITE" badge in the hero info modal when the hero
     // is currently in elite form during battle.
     if (typeof window.heroInfo === 'function' && !window.heroInfo.__bfElite) {
@@ -1294,7 +1231,6 @@ function buildArtScript(dbCards) {
       window.heroInfo.__bfElite = 1;
     }
   }
-
   function patchRaceModal() {
     if (window.__bfRaceModalPatched || typeof CLAN_PROFILE === 'undefined' || typeof modal !== 'function') return;
     window.__bfRaceModalPatched = true;
@@ -1321,12 +1257,10 @@ function buildArtScript(dbCards) {
       modal('<h3>🧬 Razas y símbolos</h3><div class="modal-note">Cada héroe lleva ahora su sigilo de raza directamente sobre la ilustración.</div><div class="bf-race-list">' + rows + '<div class="bf-race-card" style="--race:#caa14a"><div class="bf-race-sigil-big">' + raceSigilSvg('Bizarros', '#caa14a') + '</div><div class="bf-race-title">Bizarros</div><div class="bf-race-trait">Héroes sorpresa · No salen en subasta</div><div class="bf-race-desc">Criaturas imposibles que jamás aparecen en la subasta. Solo emergen en plena batalla, de forma sorpresiva e impredecible.</div><div class="bf-race-stats">⚠ No comprables · Aparición aleatoria durante el juego</div></div></div>');
     };
   }
-
   function patchEquipmentUI() {
     if (window.__bfEquipPatched) return;
     if (typeof window.eqHeroCard !== 'function' || typeof window.doAssign !== 'function') return;
     window.__bfEquipPatched = true;
-
     function clean(value) {
       return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
         return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[ch];
@@ -1334,7 +1268,6 @@ function buildArtScript(dbCards) {
     }
     function findHero(s,i){return((G.team&&G.team[s])||[]).find(function(h){return h&&h.id===i;});}
     function closeAnyModal(){var c=document.querySelector('.modal-close, .modal-x, [onclick="closeModal()"]');if(c)c.click();else if(typeof window.closeModal==='function')closeModal();}
-
     // Game-styled confirmation dialog. Calls onYes() if the player confirms.
     // artUrl is optional (used for the preview banner).
     function bfConfirm(opts, onYes) {
@@ -1351,9 +1284,7 @@ function buildArtScript(dbCards) {
       overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
       overlay.querySelector('#bf-confirm-yes').onclick = function() { close(); onYes(); };
     }
-
     function indexInList(l,i){for(var x=0;x<(l||[]).length;x++)if(l[x]&&l[x].id===i)return x;return -1;}
-
     var originalBuySpell = window.buySpell;
     window.buySpell = function(side, id) {
       // Remote (rival) purchase reaching the host via intent: apply directly, no confirm dialog.
@@ -1370,7 +1301,6 @@ function buildArtScript(dbCards) {
        var opts = { item: itemCopy, side: side, art: art };
        bfConfirm(opts, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
      };
-
     // How many copies of an object id the side already holds (G.items[side] = array of copies).
     function bfObjectCount(side, id) {
       var list = (typeof G !== 'undefined' && G.items && G.items[side]) || [];
@@ -1392,7 +1322,6 @@ function buildArtScript(dbCards) {
       var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
-
     var originalDoAssign = window.doAssign;
     window.doAssign = function(side, heroId) {
       // Remote (rival) equip reaching the host via intent: apply directly, no confirm dialog.
@@ -1407,7 +1336,6 @@ function buildArtScript(dbCards) {
       var art = artFor(kind, indexInList(srcList, a.id));
       bfConfirm({ item: item, side: side, hero: hero, art: art }, function() { originalDoAssign(side, heroId); bfGuideApprovePurchase(item); });
     };
-
     // Resolve an item's art + number by its INDEX inside the game's own list
     // (MELEE/RANGED/ARMORS), which is index-for-index with the art arrays.
     function artFor(kind, idx) {
@@ -1417,7 +1345,6 @@ function buildArtScript(dbCards) {
     function numFor(item) {
       return (typeof cardNo === 'function' ? cardNo(item.id) : item.num) || item.num || 0;
     }
-
     // Build a name -> {num, art} map for every equipment item, so we can show
     // a thumbnail and number on equipped slots. Art resolved by array index.
     function itemArtByName() {
@@ -1433,7 +1360,6 @@ function buildArtScript(dbCards) {
       if (typeof ARMORS !== 'undefined') add(ARMORS, 'armor');
       return map;
     }
-
     // Inject a thumbnail into a filled equipment slot, matching it to the slot
     // whose text contains the item's name (so weapon vs armor never get mixed up).
     function decorateSlotByName(html, name, art, item, kind) {
@@ -1455,7 +1381,6 @@ function buildArtScript(dbCards) {
       }
       return box.innerHTML;
     }
-
     var originalEqHeroCard = window.eqHeroCard;
     window.eqHeroCard = function(h, side) {
       var html = originalEqHeroCard.apply(this, arguments);
@@ -1479,7 +1404,6 @@ function buildArtScript(dbCards) {
       }
       return html;
     };
-
     // Resolve art + number for any shop item by its id (robust, order-independent).
     function metaById(id) {
       var sets = [[MELEE, 'melee'], [RANGED, 'ranged'], [ARMORS, 'armor'], [SPELLS, 'spell'], [OBJECTS, 'object']];
@@ -1498,7 +1422,6 @@ function buildArtScript(dbCards) {
         kind === 'melee' ? MELEE_ART : kind === 'spell' ? SPELL_ART : OBJECT_ART;
       return (arr && arr[idx]) || '';
     }
-
     // Buy an item straight from a shop card.
     // - Spells/objects go to the player's hand right away (with confirm).
     // - Weapons/armor need a target hero: select the item (as clicking the card
@@ -1514,7 +1437,6 @@ function buildArtScript(dbCards) {
       document.querySelectorAll('.shop-card.selected').forEach(function(c) { c.classList.remove('selected'); });
       if (window.notif) notif('Has seleccionado ' + item.name + '. Ahora pulsa «Comprar» en el héroe que quieras equiparlo.');
     };
-
     // Rebuild the shop grid so every card shows full-bleed art + a "Ver carta" button.
     if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfArt) {
       var originalEqShopGrid = window.eqShopGrid;
@@ -1584,7 +1506,6 @@ function buildArtScript(dbCards) {
         try { window.renderEquip(G.eqSide); } catch (e) {}
       }
     }
-
     window.bfOpenQuickShop = function(side, heroId, slot) {
       var hero = findHero(side, heroId);
       if (!hero || typeof modal !== 'function') return;
@@ -1609,7 +1530,6 @@ function buildArtScript(dbCards) {
       }).join('');
       modal('<h3>Comprar para ' + clean(hero.name) + '</h3><div class="modal-note">Elige ' + (slot === 'armor' ? 'una armadura' : 'un arma') + '. Antes de pagar se pedirá confirmación.</div><div class="bf-quick-grid">' + cards + '</div>');
     };
-
     window.bfQuickBuy = function(side, heroId, kind, id) {
       var src = kind === 'armor' ? ARMORS : (kind === 'melee' ? MELEE : RANGED);
       var item = typeof byId === 'function' ? byId(src, id) : null;
@@ -1619,7 +1539,6 @@ function buildArtScript(dbCards) {
       // doAssign now shows the in-game styled confirm itself.
       return window.doAssign(side, heroId);
     };
-
     // Collect equipment warnings before entering battle:
     // - AD heroes with no ranged weapon (can't shoot)
     // - any hero with no weapon at all
@@ -1635,7 +1554,6 @@ function buildArtScript(dbCards) {
       });
       return warns;
     }
-
     function bfWarnConfirm(title, message, onYes) {
       var existing = document.getElementById('bf-confirm-overlay'); if (existing) existing.remove();
       var overlay = document.createElement('div'); overlay.id = 'bf-confirm-overlay'; overlay.className = 'bf-confirm-overlay';
@@ -1646,7 +1564,6 @@ function buildArtScript(dbCards) {
       overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
       overlay.querySelector('#bf-confirm-yes').onclick = function() { close(); onYes(); };
     }
-
     // ---- AI auto-equip: optimize gear purchases for the whole team ----
     var bfAEisClient=function(){return typeof NET!=='undefined'&&NET.role==='client';}; // Client owns no authoritative state: send each buy as an intent (same path manual buys use); host applies + snapshots back. Deduct locally so the planner respects the budget; host re-syncs real coins right after.
     function bfEqCoins(side){return Number((G.equipCoins&&G.equipCoins[side])||0);}
@@ -1707,7 +1624,6 @@ function buildArtScript(dbCards) {
     // Auto-equip works for everyone now: a client plans against its own snapshot but commits each buy as an intent to the host (see bfBuyGear). The button always equips THIS player's own side.
     // FAB en <body>: el layout/overflow de la tienda nunca lo tapa ni lo desplaza. Se quita solo al salir de la fase de equipamiento. click+touchend para que siempre responda en móvil.
     window.__bfInjectAutoEquipBtn=function(){var sc=document.getElementById('s-equip');var ex=document.getElementById('bf-autoequip-btn');var act=!!(sc&&sc.classList.contains('active'));if(!act){if(ex)ex.remove();return;}if(ex)return;var b=document.createElement('button');b.id='bf-autoequip-btn';b.type='button';b.className='bf-autoequip-btn';b.innerHTML='<span class="bf-ae-spark">✦</span><span class="bf-ae-col"><span class="bf-ae-txt">Equipar con IA</span><span class="bf-ae-sub">optimiza y compra por ti</span></span>';var go=function(e){e.preventDefault();e.stopPropagation();var side=(typeof NET!=='undefined'&&NET.role==='client')?NET.mySide:((typeof G!=='undefined'&&G&&G.eqSide)||'p');try{bfAutoEquip(side);}catch(err){if(window.notif)notif('No se pudo auto-equipar: '+(err&&err.message||err));}};b.addEventListener('click',go);b.addEventListener('touchend',go,{passive:false});var done=sc.querySelector('button[onclick*="eqDone"]')||Array.prototype.find.call(sc.querySelectorAll('button'),function(x){return /listo/i.test(x.textContent||'');});if(done&&done.parentNode){b.classList.add('bf-ae-inline');done.parentNode.insertBefore(b,done);}else{document.body.appendChild(b);}};
-
     if (typeof window.eqDone === 'function' && !window.eqDone.__bfWarn) {
       var originalEqDone = window.eqDone;
       window.eqDone = function(side) {
@@ -1727,7 +1643,6 @@ function buildArtScript(dbCards) {
       window.eqDone.__bfWarn = 1;
     }
   }
-
   // ---- Hand chips (spells/objects) → add a small art thumbnail ----
   var __bfHandArtByName = null;
   function handArtByName() {
@@ -1739,7 +1654,6 @@ function buildArtScript(dbCards) {
     __bfHandArtByName = map;
     return map;
   }
-
   // Build a name -> item lookup for spells/objects, so we can read each card's
   // effect (damage / heal / mana / etc.) and show it on the hand card.
   var __bfHandItemByName = null;
@@ -1752,14 +1666,12 @@ function buildArtScript(dbCards) {
     __bfHandItemByName = map;
     return map;
   }
-
   function handCardSummary(found) {
     if (!found || !found.item) return '';
     var it = found.item;
     var txt = it.txt || it.desc || it.description || '';
     return txt.length > 50 ? txt.slice(0, 48) + '…' : txt;
   }
-
   function bfAddChipButtons(chip, found, origOnclickProp, origOnclickAttr, url, name) {
     var mySide = (typeof NET !== 'undefined' && NET.role === 'client' && NET.mySide) ? NET.mySide : 'p';
     var isMyHand = !!chip.closest('#hand_' + mySide);
@@ -1794,7 +1706,6 @@ function buildArtScript(dbCards) {
       chip.appendChild(playBtn);
       if (document.getElementById('s-battle') && document.getElementById('s-battle').classList.contains('active')) playBtn.classList.add('bf-show');
     }
-
     if (url) {
       var safeName = String(name || '').replace(/'/g, "\\'");
       var zoomBtn = document.createElement('button');
@@ -1808,7 +1719,6 @@ function buildArtScript(dbCards) {
       chip.appendChild(zoomBtn);
     }
   }
-
   function injectHandArt() {
     var map = handArtByName();
     if (!map) return;
@@ -1835,12 +1745,10 @@ function buildArtScript(dbCards) {
     
     // Battle hand natively separates spells and objects now.
   }
-
   function injectRecruitHeroArt() {
     document.querySelectorAll('.hero-acquired').forEach(function(card){if(card.dataset.bfAcqArt==='1'&&card.querySelector('.bf-acq-thumb'))return;var on=card.getAttribute('onclick')||'',hit=on.split("heroInfo('")[1],id=hit?hit.split("'")[0]:'',url=id?ART_BY_ID[id]:null;if(!url)return;var thumb=document.createElement('div');thumb.className='bf-acq-thumb';thumb.style.backgroundImage='url("'+url+'")';card.insertBefore(thumb,card.firstChild);card.dataset.bfAcqArt='1';});
     document.querySelectorAll('.pr-got').forEach(function(row){if(row.dataset.bfResultArt==='1')return;var b=row.querySelector('b');if(!b)return;var url=ART_BY_NAME[b.textContent.trim()];if(!url)return;var thumb=document.createElement('span');thumb.className='bf-result-thumb';var timg=document.createElement('img');timg.src=url;timg.alt='';thumb.appendChild(timg);row.insertBefore(thumb,row.firstChild);row.dataset.bfResultArt='1';});
   }
-
   // Round summary table on the auction result panel: each player's applied bonuses + final card cost.
   function injectAuctionSummary() {
     var box=document.querySelector('.pr-box');
@@ -1866,8 +1774,6 @@ function buildArtScript(dbCards) {
     box.appendChild(wrap);
     if(verdict){verdict.style.display='';box.appendChild(verdict);}
   }
-
-  // ---- Logo above title ----
   function injectTitleIcons() {
     var row = document.querySelector('.title-emoji');
     if (!row || row.dataset.bfIconsDone === '1') return;
@@ -1882,14 +1788,11 @@ function buildArtScript(dbCards) {
       if (gtitle) gtitle.parentNode.insertBefore(lw, gtitle); else titleScreen.insertBefore(lw, titleScreen.firstChild);
     }
   }
-
   // Punkito's other looks: élite (Harley, battle-only) + reaction faces.
   var GUIDE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/292c04262_generated_image.png", GUIDE_ELITE_IMG = "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d7e007cd6_generated_image.png";
   var GUIDE_FACE = { wow: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e5071f94c_generated_image.png", cheer: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/51ec29abd_generated_image.png", shock: "https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/63a162077_generated_image.png" };
-
   function bfInBattle() { var b = document.getElementById('s-battle'); return !!(b && b.classList.contains('active')); } // Punkito rides his Harley (élite look) only in battle.
   function bfGuideBaseImg() { return bfInBattle() ? GUIDE_ELITE_IMG : GUIDE_IMG; } // Idle look: élite (Harley) in battle, normal elsewhere.
-
   // Make Punkito react: swap to an expression face, animate + float a word,
   // then settle back. Reactions don't stack. type: 'cheer' | 'wow' | 'shock'.
   function bfGuideReact(type, word) {
@@ -1917,7 +1820,6 @@ function buildArtScript(dbCards) {
     setTimeout(function() { charEl.classList.remove('bf-react-cheer', 'bf-react-wow', 'bf-react-shock'); img.src = bfGuideBaseImg(); charEl.dataset.bfReacting = ''; }, 2300);
   }
   window.bfGuideReact = bfGuideReact;
-
   // Keep Punkito's idle look synced with the screen (Harley in battle).
   function bfSyncGuideLook() {
     var charEl = document.querySelector('#bf-guide .bf-guide-char');
@@ -1928,15 +1830,12 @@ function buildArtScript(dbCards) {
     var showImg = document.querySelector('#bf-guide-show img');
     if (showImg && showImg.getAttribute('src') !== base) showImg.src = base;
   }
-
   // Detect strong battle/equip events and trigger a Punkito reaction. Watches: hero deaths (shock), revive/phoenix (wow), epic bonus appearing (wow).
   function bfMakeNarratorDraggable(w){var ch=w.querySelector('.bf-nar-ch');if(!ch||w.dataset.bfDrag==='1')return;w.dataset.bfDrag='1';ch.style.cursor='grab';ch.style.touchAction='none';var drag=null;function pt(e){return e.touches&&e.touches[0]?e.touches[0]:e;}function start(e){var p=pt(e),r=w.getBoundingClientRect();w.style.animation='none';w.style.left=r.left+'px';w.style.top=r.top+'px';w.style.transform='none';drag={sx:p.clientX-r.left,sy:p.clientY-r.top};e.preventDefault();e.stopPropagation();}function move(e){if(!drag)return;var p=pt(e),maxX=Math.max(0,window.innerWidth-w.offsetWidth-4),maxY=Math.max(0,window.innerHeight-w.offsetHeight-4);w.style.left=Math.max(0,Math.min(maxX,p.clientX-drag.sx))+'px';w.style.top=Math.max(0,Math.min(maxY,p.clientY-drag.sy))+'px';e.preventDefault();}function end(){drag=null;}ch.addEventListener('mousedown',start);ch.addEventListener('touchstart',start,{passive:false});document.addEventListener('mousemove',move);document.addEventListener('touchmove',move,{passive:false});document.addEventListener('mouseup',end);document.addEventListener('touchend',end);}
   // ---- Cinemática de remate: cuando un héroe cae a 0 HP, el asesino entra a pantalla completa con un tajo de luz ----
   function bfKillCinematic(victimCard){ if(window.__bfKillAnim||document.getElementById('bf-kill-ov'))return; var vid=heroIdFromCard(victimCard),vSide=(String(victimCard.id||'').split('_')[1])||'p'; var ak=document.querySelector('.bhero.active-turn'),kid=null,kElite=false; if(ak&&ak!==victimCard){var aSide=(String(ak.id||'').split('_')[1])||'p'; if(aSide!==vSide){kid=heroIdFromCard(ak);kElite=ak.classList.contains('elite-mode')||ak.classList.contains('bf-auto-elite');}} var vh=(typeof G!=='undefined'&&G.team&&G.team[vSide]||[]).find(function(h){return h&&h.id===vid;}); var vArtId=(vh&&vh._token)?vh._token:vid; var kh=null; if(kid){var kSide=vSide==='p'?'o':'p';kh=(G.team&&G.team[kSide]||[]).find(function(h){return h&&h.id===kid;});} var kArtId=(kh&&kh._token)?kh._token:kid; var vArt=ART_BY_ID[vArtId]||'',kArt=kid?((kElite?ELITE_BY_ID[kArtId]:0)||ART_BY_ID[kArtId]||''):''; if(!vArt&&!kArt)return; window.__bfKillAnim=1; var ov=document.createElement('div');ov.id='bf-kill-ov'; ov.innerHTML='<style>#bf-kill-ov{position:fixed;inset:0;z-index:100000;pointer-events:none;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(60,0,0,.5),rgba(0,0,0,.9));animation:bfKovIn .25s ease-out}.bf-kill-killer{position:absolute;left:4%;bottom:-2%;height:92%;max-width:48vw;object-fit:contain;filter:drop-shadow(0 0 44px rgba(255,60,40,.85)) saturate(1.3);animation:bfKillerIn .55s cubic-bezier(.2,.9,.3,1.15)}.bf-kill-victim{position:absolute;right:6%;bottom:4%;height:70%;max-width:40vw;object-fit:contain;filter:grayscale(1) brightness(.75);animation:bfVictimOut 1.5s ease-in .55s forwards}.bf-kill-slash{position:absolute;inset:-25%;background:linear-gradient(115deg,transparent 46%,rgba(255,255,255,.95) 49.4%,#ffdca0 50%,rgba(255,255,255,.95) 50.6%,transparent 54%);opacity:0;animation:bfSlash .5s ease-out .4s}.bf-kill-txt{position:absolute;top:10%;left:50%;transform:translateX(-50%);font-family:"Cinzel",serif;font-weight:1000;font-size:clamp(30px,7vw,64px);color:#ff4b45;letter-spacing:3px;white-space:nowrap;text-shadow:0 0 26px rgba(255,60,40,.95),0 4px 12px #000;opacity:0;animation:bfKillTxt 2s ease-out .5s forwards}.bf-kill-name{position:absolute;top:24%;left:50%;transform:translateX(-50%);font-family:"Cinzel",serif;font-weight:900;font-size:clamp(13px,2.4vw,20px);color:#ffe49a;text-shadow:0 2px 8px #000;background:rgba(8,5,14,.72);border:1px solid rgba(255,210,74,.5);border-radius:999px;padding:6px 18px;opacity:0;animation:bfKillTxt 2s ease-out .7s forwards;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}@keyframes bfKovIn{from{opacity:0}to{opacity:1}}@keyframes bfKillerIn{from{transform:translateX(-70%) scale(.8);opacity:0}to{transform:none;opacity:1}}@keyframes bfVictimOut{0%{opacity:1}20%{transform:translateX(16px) rotate(3deg)}100%{opacity:0;transform:translateY(28%) rotate(15deg);filter:grayscale(1) brightness(.15)}}@keyframes bfSlash{0%{opacity:0;transform:translateX(-40%)}30%{opacity:1}100%{opacity:0;transform:translateX(40%)}}@keyframes bfKillTxt{0%{opacity:0;transform:translateX(-50%) scale(2.2)}16%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0}}@keyframes bfKillShake{0%,100%{transform:none}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,3px)}80%{transform:translate(4px,-2px)}}</style>'+(kArt?'<img class="bf-kill-killer" src="'+kArt+'">':'')+(vArt?'<img class="bf-kill-victim" src="'+vArt+'">':'')+'<div class="bf-kill-slash"></div><div class="bf-kill-txt">¡GOLPE MORTAL!</div>'+((kh&&vh)?'<div class="bf-kill-name">'+(kh.name||'')+' acaba con '+(vh.name||'su rival')+'</div>':''); document.body.appendChild(ov); var bs=document.getElementById('s-battle'); if(bs){bs.style.animation='bfKillShake .5s ease-in-out .35s';setTimeout(function(){bs.style.animation='';},1100);} setTimeout(function(){ov.style.transition='opacity .35s';ov.style.opacity='0';},2150); setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);window.__bfKillAnim=0;},2550); }
-
   // ---- Cinemática épica de FINAL DE BATALLA: vídeo a pantalla completa al llegar a la pantalla de resultado ----
   function bfEndCinematic(){ var sc=document.getElementById('s-result'); if(!sc||!sc.classList.contains('active')){window.__bfEndCine=0;return;} if(window.__bfEndCine)return; window.__bfEndCine=1; var ov=document.createElement('div'); ov.id='bf-end-cine'; ov.innerHTML='<style>#bf-end-cine{position:fixed;inset:0;z-index:100002;background:#000;display:flex;align-items:center;justify-content:center;animation:bfCineIn .35s ease-out}#bf-end-cine video{width:100%;height:100%;object-fit:cover}#bf-end-cine .bf-cine-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);z-index:2;font-family:"Cinzel",serif;font-weight:1000;font-size:clamp(26px,6vw,56px);letter-spacing:4px;color:#ffd24a;text-shadow:0 0 28px rgba(255,210,74,.8),0 4px 12px #000;white-space:nowrap;opacity:0;animation:bfCineTtl 2.2s ease-out .4s forwards}#bf-end-cine .bf-cine-skip{position:absolute;bottom:20px;right:20px;z-index:2;padding:9px 20px;border-radius:999px;border:1.5px solid rgba(255,210,74,.7);background:rgba(8,5,14,.8);color:#ffe49a;font-family:"Cinzel",serif;font-weight:900;font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.6)}#bf-end-cine .bf-cine-skip:hover{background:#ffd24a;color:#3a2600}@keyframes bfCineIn{from{opacity:0}to{opacity:1}}@keyframes bfCineTtl{0%{opacity:0;transform:translateX(-50%) scale(1.8)}18%{opacity:1;transform:translateX(-50%) scale(1)}85%{opacity:1}100%{opacity:0}}</style><video src="https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/97d056bb2_Final_de_batalla.mp4" autoplay muted playsinline></video><div class="bf-cine-ttl">FIN DE LA BATALLA</div><button class="bf-cine-skip">Saltar ▸</button>'; var closed=false; function done(){if(closed)return;closed=true;ov.style.transition='opacity .4s';ov.style.opacity='0';setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},420);} ov.querySelector('.bf-cine-skip').onclick=done; var vd=ov.querySelector('video'); vd.onended=done; vd.onerror=done; document.body.appendChild(ov); setTimeout(done,12000); }
-
   function bfWatchGuideEvents() {
     // In battle there's a single Punkito: the narrator, fixed at the very top
     // center. Hide the draggable guide so only one Punkito shows.
@@ -1988,7 +1887,6 @@ function buildArtScript(dbCards) {
     if (/f[eé]nix|phoenix|plasma|thunder|trueno|ca[ñn][oó]n|cannon|aegis|exo|arcan|revive|revivir|pluma/i.test(name)) bfGuideReact('cheer', '¡BUENA ELECCIÓN!');
   }
   window.bfGuideApprovePurchase = bfGuideApprovePurchase;
-
   // What the guide says on each screen. Resolved from the active screen id.
   function guideMessageFor(id, active) {
     if (id === 's-title') {
@@ -2011,7 +1909,6 @@ function buildArtScript(dbCards) {
     }
     return null;
   }
-
   function ensureGuide() {
     if (document.getElementById('bf-guide')) return;
     var wrap = document.createElement('div');
@@ -2025,14 +1922,12 @@ function buildArtScript(dbCards) {
         '<div class="bf-guide-text"></div>' +
       '</div>';
     document.body.appendChild(wrap);
-
     var show = document.createElement('button');
     show.id = 'bf-guide-show';
     show.className = 'bf-guide-show';
     show.setAttribute('aria-label', 'Mostrar guía');
     show.innerHTML = '<img src="' + GUIDE_IMG + '" alt="Guía">';
     document.body.appendChild(show);
-
     function bfHideGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = true; wrap.style.display = 'none'; show.classList.add('bf-guide-visible'); }
     function bfShowGuide(e) { if (e) { e.preventDefault(); e.stopPropagation(); } window.__bfGuideHidden = false; wrap.style.display = ''; wrap.style.left = '8px'; wrap.style.top = 'auto'; wrap.style.bottom = '8px'; show.classList.remove('bf-guide-visible'); show.classList.remove('bf-guide-blink'); var titleEl = wrap.querySelector('.bf-guide-title'); var textEl = wrap.querySelector('.bf-guide-text'); if (titleEl && wrap.dataset.bfLastTitle) titleEl.innerHTML = wrap.dataset.bfLastTitle; if (textEl && wrap.dataset.bfLastText) textEl.innerHTML = wrap.dataset.bfLastText; }
     // Bind click AND touchend so the close button works on mobile, where the guide's drag touch handlers can swallow the synthetic click.
@@ -2050,7 +1945,6 @@ function buildArtScript(dbCards) {
     document.addEventListener('mouseup', function() { dragState = null; wrap.style.transition = ''; });
     document.addEventListener('touchend', function() { dragState = null; wrap.style.transition = ''; }); bfHideGuide();
   }
-
   function updateGuide() {
     ensureGuide();
     var wrap = document.getElementById('bf-guide');
@@ -2072,7 +1966,6 @@ function buildArtScript(dbCards) {
       if (textEl) textEl.innerHTML = msg.m;
       if (window.__bfGuideHidden) { var showBtn = document.getElementById('bf-guide-show'); if (showBtn) showBtn.classList.add('bf-guide-blink'); } }
   }
-
   // ---- (A) Active hero's action panel: their own AI battle art as background,
   // plus a banner showing their name + ability right in the panel ----
   function bfActiveHero() {
@@ -2083,9 +1976,7 @@ function buildArtScript(dbCards) {
     var artId = (hero && hero._token) ? hero._token : id;
     return hero ? { hero: hero, id: id, artId: artId, side: side, card: card } : { hero: null, id: id, artId: artId, side: side, card: card };
   }
-
   function bfEsc(v){if(v==null)return '';return String(v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
-
   function injectActionPanelBg() {
     var b = document.getElementById('s-battle');
     if (!b || !b.classList.contains('active')) return;
@@ -2171,10 +2062,8 @@ function buildArtScript(dbCards) {
       }
     });
   }
-
   // ---- (B) Play a hand card (spell/object) with a confirm + cast animation ----
   function bfHandClean(v){return clean(v);}
-
   function bfActiveMana() {
     var active = document.querySelector('.bhero.active-turn');
     if (!active) return null;
@@ -2182,7 +2071,6 @@ function buildArtScript(dbCards) {
     var m = mp ? String(mp.textContent).match(/-?\\d+/) : null;
     return m ? parseInt(m[0], 10) : null;
   }
-
   function bfFindItemByName(name) {
     var key = (name || '').trim();
     var sp = (typeof SPELLS !== 'undefined' ? SPELLS : []).find(function(s) { return s && s.name === key; });
@@ -2191,7 +2079,6 @@ function buildArtScript(dbCards) {
     if (ob) return { item: ob, kind: 'object' };
     return null;
   }
-
   function bfPlayCastAnim(kind, el) {
     var color = kind === 'object' ? '#5fffa0' : elementColor(el || 'arcano');
     var flash = document.createElement('div');
@@ -2205,7 +2092,6 @@ function buildArtScript(dbCards) {
     document.body.appendChild(rune);
     setTimeout(function() { if (flash.parentNode) flash.remove(); if (rune.parentNode) rune.remove(); }, 1000);
   }
-
   function bfCalcEffective(kind, item, heroCard, forInline) {
      if (!item || !heroCard) return '';
      var id = heroIdFromCard(heroCard);
@@ -2222,7 +2108,6 @@ function buildArtScript(dbCards) {
      }
      return '';
   }
-
   function bfConfirmPlayCard(opts, onYes) {
     var existing = document.getElementById('bf-confirm-overlay'); if (existing) existing.remove();
     var overlay = document.createElement('div'); overlay.id = 'bf-confirm-overlay'; overlay.className = 'bf-confirm-overlay';
@@ -2240,7 +2125,6 @@ function buildArtScript(dbCards) {
     overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
     var yes = overlay.querySelector('#bf-confirm-yes'); if (yes) yes.onclick = function() { close(); onYes(); };
   }
-
   // Intercept clicks on hand cards: confirm + animate, then run the game's own
   // play action (which deducts mana, ends the turn, applies effects, etc.).
   function bfBindHandPlay() {
@@ -2271,12 +2155,10 @@ function buildArtScript(dbCards) {
       }, true);
     });
   }
-
   // Unify CC/AD/HE icons: swap loose role emojis for the same image emblems used on hero cards.
   var BF_ROLE_EMOJI = { '\u2694\ufe0f':'CC','\u2694':'CC','\ud83c\udff9':'AD','\ud83d\udd2e':'HE' };
   function bfRoleEmblemImg(t){var u=(window.__BF_ROLE_EMBLEM||{})[t];return u?'<img class="bf-role-emblem" src="'+u+'" alt="'+t+'" style="width:18px;height:18px;vertical-align:middle;display:inline-block">':'';}
   function unifyRoleIcons(){var scope=document.getElementById('s-equip');if(!scope)return;var ems=Object.keys(BF_ROLE_EMOJI),w=document.createTreeWalker(scope,NodeFilter.SHOW_TEXT,null),hits=[],n;while((n=w.nextNode())){var t=n.nodeValue;if(t)for(var i=0;i<ems.length;i++)if(t.indexOf(ems[i])!==-1){hits.push(n);break;}}hits.forEach(function(tn){var p=tn.parentNode;if(!p)return;var h=tn.nodeValue;ems.forEach(function(e){if(h.indexOf(e)!==-1)h=h.split(e).join(bfRoleEmblemImg(BF_ROLE_EMOJI[e]));});var s=document.createElement('span');s.innerHTML=h;p.replaceChild(s,tn);});}
-
   function injectPhaseBadgeIcon() {
     document.querySelectorAll('.phase-badge').forEach(function(badge) {
       if (badge.dataset.bfIcon === '1') return;
@@ -2294,7 +2176,6 @@ function buildArtScript(dbCards) {
       }
     }); (document.getElementById('s-recruit') || document.body).querySelectorAll('button, div, span').forEach(function(el) { if (el.dataset.bfIcon === '1' || el.children.length) return; var m = { 'CUERPO A CUERPO': 'CC', 'A DISTANCIA': 'AD', 'MAGIA': 'HE' }[el.textContent.trim()]; if (m && window.__BF_ROLE_EMBLEM) { var img2 = document.createElement('img'); img2.className = 'bf-role-emblem'; img2.src = window.__BF_ROLE_EMBLEM[m]; el.insertBefore(img2, el.firstChild); el.dataset.bfIcon = '1'; } });
   }
-
   function injectArtIntoDOM() {
     if (typeof NET !== 'undefined' && NET.role === 'client') document.documentElement.classList.add('bf-client-flip'); else document.documentElement.classList.remove('bf-client-flip');
     injectHeroArt();
@@ -2314,7 +2195,6 @@ function buildArtScript(dbCards) {
     bfSyncGuideLook();
     bfWatchGuideEvents();
   }
-
   function startObserver() {
     var scheduled = false;
     var observer = new MutationObserver(function() {
@@ -2324,7 +2204,6 @@ function buildArtScript(dbCards) {
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }
-
   // ---- Screen background on a dedicated full-screen layer ----
   function ensureCoverLayer() {
     var layer = document.getElementById('bf-cover-layer');
@@ -2340,7 +2219,6 @@ function buildArtScript(dbCards) {
     }
     return layer;
   }
-
   function applyCover() {
     var layer = ensureCoverLayer();
     var active = document.querySelector('.screen.active');
@@ -2358,7 +2236,6 @@ function buildArtScript(dbCards) {
     document.body.style.background = 'transparent';
     updateGuide();
   }
-
   // ---- "Salir" button → force a clean reload back to the title screen ----
   function patchQuitToHome() {
     var btn = document.getElementById('homeBtn');
@@ -2377,13 +2254,10 @@ function buildArtScript(dbCards) {
       ov.querySelector('#bf-quit-yes').onclick = function() { bfQuitClose(); if (typeof window.doQuitHome === 'function') window.doQuitHome(); else window.parent.location.href = window.parent.location.pathname + '?bf=' + Date.now(); };
     });
   }
-
-  // ---- MAIN INIT ----
   function init() {
     injectCoverStyle();
     applyCover();
     patchQuitToHome();
-
     // Startup loop: patch the game's functions once defined, then stop.
     var attempts = 0;
     var patchedFace = false;
@@ -2395,14 +2269,12 @@ function buildArtScript(dbCards) {
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
-      patchCombatFx(); patchTransformer();
+      patchCombatFx(); patchTransformer(); patchDuckAbility();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
       if ((patchedFace && attempts > 8) || attempts > 60) clearInterval(interval);
     }, 150);
-
     startObserver();
-
     // Re-sync the cover background on screen transitions, throttled.
     var lastScreenId = '';
     setInterval(function() {
@@ -2411,7 +2283,6 @@ function buildArtScript(dbCards) {
       if (id !== lastScreenId) { lastScreenId = id; applyCover(); } bfEndCinematic(); injectArtIntoDOM();
     }, 400);
   }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -2421,17 +2292,14 @@ function buildArtScript(dbCards) {
 </script>
 `;
 }
-
 // In-memory cache of the fully assembled HTML, keyed by patch version. The
 // upstream file only changes when we bump GAME_PATCH_VERSION, so we fetch +
 // assemble once per deploy and serve every later request straight from memory.
-
 async function buildGameHtml(req) {
   // CACHE removed so cards reload on refresh
   const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
   const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION, { cache: 'no-store' });
   let html = await upstream.text();
-
   const RB = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
   var BTN_LEARN = RB+'843af3814_generated_image.png', BTN_RULES = RB+'0848f4ffb_generated_image.png', BTN_RACES = RB+'5e41f1add_generated_image.png';
   html = html.replace('const AD_REF=18,HE_REF=18,EQUIP_BASE=45,START_COINS=100;', 'const AD_REF=18,HE_REF=18,EQUIP_BASE=100,START_COINS=100;');
@@ -2442,7 +2310,6 @@ async function buildGameHtml(req) {
     "<div class=\"b-grid\">${army('p')}<div class=\"vs-mid\"><span class=\"vs-txt\">VS</span></div>${army('o')}</div>\n    ${actionArea}${ctbBar()}"
   );
   html = html.replace("function roleIcon(t){return t==='CC'?'\ud83d\udde1\ufe0f':t==='AD'?'\ud83c\udff9':'\ud83d\udd2e';}", "function roleIcon(t){var E={CC:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png',AD:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd388871c_generated_image.png',HE:'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cfd5e317c_generated_image.png'};return '<img class=\"bf-role-emblem\" src=\"'+(E[t]||E.HE)+'\">';}").replace("try{ lobbyTeardown(); }catch(e){} location.reload(); }", "try{ lobbyTeardown(); }catch(e){} try{ window.top.location.href = window.top.location.pathname + '?bf=' + Date.now(); }catch(e){ location.reload(); } }").replace('onclick="startDemo()">\ud83c\udf93 Aprender a jugar</button>', 'onclick="startDemo()"><span class="tc-img"><img src="' + BTN_LEARN + '" alt=""></span><span>Aprende<br>a jugar</span></button>').replace('onclick="rulesModalStatic()">\ud83d\udcd6 C\u00f3mo se juega</button>', 'onclick="rulesModalStatic()"><span class="tc-img"><img src="' + BTN_RULES + '" alt=""></span><span>Cómo<br>se juega</span></button>').replace('onclick="racesModal()">\ud83e\uddec Razas</button>', 'onclick="racesModal()"><span class="tc-img"><img src="' + BTN_RACES + '" alt=""></span><span>Razas</span></button>').replace('<div class="coach-txt">${G._coachMsg?esc(G._coachMsg):\'\'}</div>', '<div class="coach-txt">${G._coachMsg||\'\'}</div>');
-
   // Re-define bonuses array, styles, logic and resolution
   html = html.replace('const BONUS=[{"id": "ban"', 'const BONUS=[{"id": "mina", "name": "Mina de Oro", "type": "PERM", "effect": 15, "txt": "+15 monedas a tu bolsa (permanente)."}, {"id": "roba", "name": "Ladrón de Guante", "type": "PERM", "effect": 15, "txt": "El rival pierde 15 monedas (permanente)."}, {"id": "ban"').replace(/"type": "BON"/g, '"type": "BID_ADD"').replace(/"type": "RES"/g, '"type": "BID_SUB"').replace(/HEROES\.filter\(h=>h\.type===['"](CC|AD|HE)['"]\)/g, "HEROES.filter(h=>h.type==='$1'&&h.clan!=='Bizarros'&&!String(h.id||'').startsWith('tk_'))");
   html = html.replace(/monedas para esta subasta/g, 'al valor de tu puja').replace(/monedas esta subasta/g, 'al valor de tu puja').replace(/monedas esta ronda/g, 'a su puja').replace('Esto es solo un ejemplo: pulsa abajo para continuar.', 'Tus monedas de equipamiento ya incluyen las de la subasta: cada puja pagada se resta de ese presupuesto. Esto es solo un ejemplo: pulsa abajo para continuar.').replace('PASO 2 · EQUIPAMIENTO. A cada héroe', 'PASO 2 · EQUIPAMIENTO. Tu presupuesto son 100 monedas base más lo no gastado en la subasta. A cada héroe');
@@ -2453,24 +2320,20 @@ async function buildGameHtml(req) {
   // decided by that bid directly and that exact amount is paid — the bonus is NOT re-applied here.
   const resolveRoundPatched = 'function resolveBidRound(){const bp=G.bids.p,bo=G.bids.o;const pBid=bp&&!bp.pass,oBid=bo&&!bo.pass;let contested=false,winner=null,contestId=null;if(pBid&&oBid&&bp.heroId===bo.heroId){contested=true;contestId=bp.heroId;winner=(bp.amount>=bo.amount)?"p":"o";award(winner,contestId,winner==="p"?bp.amount:bo.amount);G.phaseNeeds[winner]=false;G.phaseNeeds[other(winner)]=true;}else{if(pBid){award("p",bp.heroId,bp.amount);G.phaseNeeds.p=false;}if(oBid){award("o",bo.heroId,bo.amount);G.phaseNeeds.o=false;}}if(!pBid)G.phaseNeeds.p=false;if(!oBid)G.phaseNeeds.o=false;var fh=function(i){var c=[];if(G.epicCands){if(G.epicCands.p)c=c.concat(G.epicCands.p);if(G.epicCands.o)c=c.concat(G.epicCands.o);}if(G.cands)c=c.concat(G.cands);if(typeof HEROES!=="undefined")c=c.concat(HEROES);for(var k=0;k<c.length;k++){if(c[k]&&c[k].id===i)return c[k];}return {};};G.phaseResult={phase:G.aIndex,sub:G.subRound,contested,winner,contestName:contested?(fh(contestId).name||"—"):"",pPass:!pBid,oPass:!oBid,bpName:pBid?(fh(bp.heroId).name||"—"):"",boName:oBid?(fh(bo.heroId).name||"—"):"",bpAmt:pBid?bp.amount:0,boAmt:oBid?bo.amount:0,gotP:G.phaseNeeds.p?null:nameOf(phaseHeroOf("p")),gotO:G.phaseNeeds.o?null:nameOf(phaseHeroOf("o")),needMore:(G.phaseNeeds.p||G.phaseNeeds.o)};show("s-recruit");renderRecruit("p");netSync("s-recruit");}';
   html = html.replace(resolveRoundOriginal, resolveRoundPatched); html = html.replace('{"id": "zar", "name": "Zarmandis", "title": "Sombra del Claro", "clan": "Elfos", "clanColor": "#33aa66", "type": "AD", "cost": 16, "cc": 6, "ad": 17, "he": 5, "hp": 22, "eCc": 8, "eAd": 23, "eHe": 7, "eHp": 32, "ability": "Disparo Silencioso", "abilityTxt": "Dispara de inmediato, no puede ser bloqueado.", "eAbility": "Fantasma del Claro", "eTxt": "Dispara dos veces en silencio.", "akind": "double-ad", "weapon": "Daga Élfica"}', '{"id": "zar", "name": "Zarmanda", "title": "Sombra del Claro", "clan": "Elfos", "clanColor": "#33aa66", "type": "AD", "cost": 16, "cc": 6, "ad": 17, "he": 5, "hp": 22, "eCc": 8, "eAd": 23, "eHe": 7, "eHp": 32, "ability": "Disparo Silencioso", "abilityTxt": "Dispara de inmediato, no puede ser bloqueado.", "eAbility": "Modo Guerrera Definitiva", "eTxt": "Su pelo se eriza y brilla con un aura dorada: dispara dos veces con una fuerza descomunal digna de leyenda (aunque solo le dura el combate).", "akind": "double-ad", "weapon": "Daga Élfica"}');
-
   // Payment adjustment: the bid decides the winner, but bonuses DON'T count toward coins.
   // When a side wins, the coins actually deducted = bid − own adder + rival's subtractor.
   // (Own adder makes the hero cheaper to pay; rival's subtractor makes it costlier.)
   const awardOriginal = 'function award(side,heroId,amount){\n  const tmpl=byId(G.cands,heroId)||byId(HEROES,heroId);\n  G.coins[side]=Math.max(0,G.coins[side]-amount);\n  const inst=makeInstance(tmpl); inst.boughtFor=amount; G.team[side].push(inst);';
   const awardPatched = 'function award(side,heroId,amount){\n  const tmpl=byId(G.cands,heroId)||byId(HEROES,heroId);\n  var _mb=G.bonus&&G.bonus[side],_rb=G.bonus&&G.bonus[other(side)];\n  var _add=(_mb&&_mb.type==="BID_ADD")?Number(_mb.effect||0):0;\n  var _sub=(_rb&&_rb.type==="BID_SUB")?Number(_rb.effect||0):0;\n  var _paid=Math.max(0,Number(amount||0)-_add+_sub);\n  G.coins[side]=G.coins[side]-_paid;\n  const inst=makeInstance(tmpl); inst.boughtFor=_paid; G.team[side].push(inst);';
   html = html.replace(awardOriginal, awardPatched).replace('aIndex:G.aIndex, cands:G.cands, phaseResult', 'aIndex:G.aIndex, cands:G.cands, epicCands:G.epicCands, bfEquipXfer:G.bfEquipXfer, phaseResult').replace('G.cands=g.cands; G.bidsIn=g.bidsIn;', 'G.cands=g.cands; G.epicCands=g.epicCands; G.bfEquipXfer=g.bfEquipXfer||G.bfEquipXfer; G.bidsIn=g.bidsIn;');
-
   const recruitOriginal = '<div class="hcard-bid-zone"><input class="bid-mini-input" id="bid_${h.id}" type="number" min="0" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div>';
   const recruitPatched = '<div class="hcard-bid-zone" style="flex-direction:column;align-items:stretch"><div style="display:flex;gap:6px"><input style="flex:1" class="bid-mini-input" id="bid_${h.id}" type="number" min="${h.cost}" max="${G.coins[side]}" value="${Math.min(h.cost,G.coins[side])}" oninput="if(window.bfUpdateBidPreview)bfUpdateBidPreview(\'${h.id}\')"><button class="btn-bid-card" onclick="submitBid(\'${side}\',\'${h.id}\')">Pujar</button></div><div id="bidcalc_${h.id}" style="font-size:10.5px;text-align:center;line-height:1.25;margin-top:5px;font-weight:900;text-shadow:0 1px 3px #000;background:rgba(8,5,14,.6);border:1px solid rgba(255,210,74,.25);border-radius:8px;padding:4px 6px;"></div></div>';
   html = html.replace("const eqPool=BONUS.filter(b=>b.type==='EQP');\n  for(const s of ['p','o']){ const eb=pick(eqPool); G.equipReserve[s]+=eb.effect; G.bonus[s]=eb; G.equipCoins[s]=G.coins[s]+EQUIP_BASE+G.equipReserve[s]; }", "for(const s of ['p','o']){ G.equipCoins[s]=G.coins[s]+EQUIP_BASE+G.equipReserve[s]; }");
   html = html.replace(recruitOriginal, recruitPatched).replace("G.equipCoins[s]=G.coins[s]+EQUIP_BASE+G.equipReserve[s]; }", "G.equipCoins[s]=Math.max(0,G.coins[s]+EQUIP_BASE+G.equipReserve[s]-2*((G.bfEquipXfer&&G.bfEquipXfer[s])||0)); }").replace("G.equipReserve={p:0,o:0}; G.equipCoins={p:0,o:0};", "G.equipReserve={p:0,o:0}; G.equipCoins={p:0,o:0}; G.bfEquipXfer={p:0,o:0};").replace("equipReserve:{p:0,o:0}, equipCoins:{p:0,o:0},", "equipReserve:{p:0,o:0}, equipCoins:{p:0,o:0}, bfEquipXfer:{p:0,o:0},").replace('<div class="hand-lbl">Héroes</div>${acq}</div>', '<div class="coins-row" style="opacity:.85;margin-bottom:4px;width:100%"><div class="coins-num">${Math.max(0,G.coins[side]+EQUIP_BASE+G.equipReserve[side]-2*((G.bfEquipXfer&&G.bfEquipXfer[side])||0))}</div><div class="coins-lbl">monedas<br>equipamiento</div></div>${window.bfEqXferBtn(side)}<div class="hand-lbl">Héroes</div>${acq}</div>');
-
   // Separate Spells and Objects in battle hand and add ID to hand section so bfAddChipButtons can attach zoom, mana and cast buttons
   const hcRe = new RegExp('function handChips\\\\(side\\\\)\\\\{[\\\\s\\\\S]*?<\\\\/div>\\\\`;\\\\n\\\\}');
   html = html.replace(hcRe, 'function handChips(side){const sp=(G.spellbook[side]||[]).map(id=>{const s=byId(SPELLS,id);return "<span class=\\"chip chip-spell\\" title=\\""+esc(s.txt)+"\\">"+esc(s.name)+"</span>";}).join("")||"<span style=\\"color:#666;font-size:11px\\">—</span>";const it=(G.items[side]||[]).map(o=>"<span class=\\"chip chip-object\\" title=\\""+esc(o.txt)+"\\">"+esc(o.name)+"</span>").join("")||"<span style=\\"color:#666;font-size:11px\\">—</span>";return "<div class=\\"hand-lbl\\">Mano · Hechizos</div><div class=\\"hand-chips\\" style=\\"margin-bottom:8px\\">"+sp+"</div><div class=\\"hand-lbl\\">Mano · Objetos</div><div class=\\"hand-chips\\">"+it+"</div>";}');
   html = html.replace('<div class="hand-section"><div class="hand-lbl">Mano</div>${handChips(side)}</div>', '<div class="hand-section" id="hand_${side}">${handChips(side)}</div>');
-
   html = html.replace('"txt": "Revive a TODOS tus h\u00e9roes ca\u00eddos. La carta cumbre."', '"txt": "Cura a DOS h\u00e9roes y les restaura toda la vida. La carta cumbre."').replace("case 'reviveAll':{let any=false;G.team[allies].forEach(t=>{if(!t.alive){reviveHero(t,0.5);pushFx({k:'elite',side:tSide(t),id:t.id});any=true;}});pushLog('lx',`${o.name}: ${any?'\u00a1todos reviven!':'no hab\u00eda ca\u00eddos.'}`);consume();finishAct();return;}", "case 'reviveAll':{pendTarget('Primer h\u00e9roe a curar',allies,(t1)=>{t1.hp=t1.maxHp;pushFx({k:'elite',side:tSide(t1),id:t1.id});pushLog('lg',`${o.name}: ${t1.name} a vida completa.`);pendTarget('Segundo h\u00e9roe a curar',allies,(t2)=>{t2.hp=t2.maxHp;pushFx({k:'elite',side:tSide(t2),id:t2.id});pushLog('lg',`${o.name}: ${t2.name} a vida completa.`);consume();finishAct();});});return;}").replace("case 'reviveAll':{let any=false;G.team[allies].forEach(t=>{if(!t.alive){reviveHero(t,0.5);any=true;}});pushLog('lx',`${o.name}: ${any?'todos reviven':'sin ca\u00eddos'}.`);break;}", "case 'reviveAll':{const _t=living(allies).sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)).slice(0,2);_t.forEach(t=>{t.hp=t.maxHp;pushFx({k:'elite',side:tSide(t),id:t.id});});pushLog('lx',`${o.name}: ${_t.length?_t.map(t=>t.name).join(' y ')+' a vida completa':'sin objetivos'}.`);break;}");
   
   const base44 = createClientFromRequest(req);
@@ -2480,11 +2343,9 @@ async function buildGameHtml(req) {
   // caching disabled: always regenerate fresh HTML
   return html;
 }
-
 Deno.serve(async (req) => {
   try {
     const html = await buildGameHtml(req);
-
     return new Response(html, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-BF-Patch-Version': GAME_PATCH_VERSION, 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0', 'Pragma': 'no-cache', 'Expires': '0' } });
   } catch (error) {
     return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;color:#fff;background:#0e0a16;padding:24px">Error: ' + (error?.message || error) + '</body>', { status: 500, headers: { 'Content-Type': 'text/html; charset=utf-8' } });

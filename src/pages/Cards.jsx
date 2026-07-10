@@ -85,7 +85,7 @@ export default function Cards() {
   const isToken = (c) => String(c.card_id || '').startsWith('tk_');
   const hasDbCards = dbCards.length > 0;
   const heroes = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero' && !isToken(c)).map(normalizeHero) : HEROES, [dbCards, hasDbCards]);
-  const tokens = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero' && isToken(c)).map(normalizeHero) : [], [dbCards, hasDbCards]);
+  const tokens = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'bizarro' || isToken(c)).map(normalizeHero) : [], [dbCards, hasDbCards]);
   const spells = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'spell').map(normalizeItem) : SPELLS, [dbCards, hasDbCards]);
   const ranged = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'ranged_weapon').map(normalizeItem) : RANGED_WEAPONS, [dbCards, hasDbCards]);
   const melee = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'melee_weapon').map(normalizeItem) : MELEE_WEAPONS, [dbCards, hasDbCards]);

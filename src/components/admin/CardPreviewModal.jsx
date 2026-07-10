@@ -28,7 +28,7 @@ function formToEquipItem(form) {
 // Shows the card exactly as it will look inside the game frame, before saving.
 export default function CardPreviewModal({ form, onClose }) {
   const [elite, setElite] = useState(false);
-  const isHero = form.category === 'hero';
+  const isHero = ['hero', 'bizarro'].includes(form.category);
   const equipType = EQUIP_TYPE_BY_CATEGORY[form.category];
 
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 
 const categoryLabel = {
   hero: 'Héroe', spell: 'Hechizo', ranged_weapon: 'Distancia', melee_weapon: 'Cuerpo a cuerpo',
-  armor: 'Armadura', object: 'Objeto', bonus: 'Bonus', race: 'Raza'
+  armor: 'Armadura', object: 'Objeto', bonus: 'Bonus', bizarro: 'Bizarro / Token', race: 'Raza'
 };
 
 export default function CardList({ cards, onEdit }) {
