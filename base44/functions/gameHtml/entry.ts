@@ -540,12 +540,18 @@ function buildArtScript(dbCards) {
     if (!h) h = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(x) { return x && x.id === heroId; });
     if (!h) return;
     window.__bfZoomH = h; window.__bfZoomV = variant === 'elite' ? 'elite' : 'normal';
-    window.bfZoomToggle = function() { window.__bfZoomV = window.__bfZoomV === 'elite' ? 'normal' : 'elite'; window.bfZoomRender(); };
+    // Flip 3D entre Normal y Élite: ambas caras se renderizan a la vez y el
+    // botón solo gira la carta (sin recargar la imagen).
+    window.bfZoomToggle = function() {
+      var w = document.getElementById('bf-zoom-flip');
+      if (!w) return;
+      w.classList.toggle('flipped');
+      window.__bfZoomV = w.classList.contains('flipped') ? 'elite' : 'normal';
+    };
     window.bfZoomRender = function() {
-      var hh = window.__bfZoomH, v = window.__bfZoomV, col = hh.clanColor || '#ffd24a';
-      var sig = (typeof raceSigilSvg === 'function') ? raceSigilSvg(hh.clan, col) : '';
-      window.modal('<div style="display:flex;justify-content:center"><div class="bf-zoom-cardwrap" style="width:min(340px,74vw);height:auto;aspect-ratio:7/10;box-shadow:none">' + window.cardFace(hh, v) + '</div></div><div style="text-align:center;margin-top:12px"><button onclick="bfZoomToggle()" style="padding:10px 22px;border-radius:12px;border:2px solid #7c5410;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">⚙ Ver Normal / Élite</button></div>');
-      var ib = document.querySelector('.bf-zoom-cardwrap .bf-zoom-btn'); if (ib) ib.remove();
+      var hh = window.__bfZoomH, v = window.__bfZoomV;
+      window.modal('<div style="display:flex;justify-content:center"><div id="bf-zoom-flip" class="flip3d' + (v === 'elite' ? ' flipped' : '') + '" style="width:min(340px,74vw);aspect-ratio:7/10;position:relative"><div class="flip3d-inner" style="position:relative;width:100%;height:100%"><div class="face front" style="position:absolute;inset:0">' + window.cardFace(hh, 'normal') + '</div><div class="face back" style="position:absolute;inset:0">' + window.cardFace(hh, 'elite') + '</div></div></div></div><div style="text-align:center;margin-top:12px"><button onclick="bfZoomToggle()" style="padding:10px 22px;border-radius:12px;border:2px solid #7c5410;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">⚙ Ver Normal / Élite</button></div>');
+      document.querySelectorAll('#bf-zoom-flip .bf-zoom-btn').forEach(function(ib) { ib.remove(); });
       setTimeout(function() { if (typeof bfAutoFitHeroCards === 'function') bfAutoFitHeroCards(); }, 30);
     };
     window.bfZoomRender();
