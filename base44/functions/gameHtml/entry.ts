@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-10-killerducks-v153';
+const GAME_PATCH_VERSION = 'bf-2026-07-10-new-card-abilities-v154';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -45,7 +45,7 @@ function buildArtScript(dbCards) {
     localHeroNames.push(c.name);
   });
   
-  const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color, foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'killerducks' ? 'duck-summon' : undefined }));
+  const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color, foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'killerducks' ? 'duck-summon' : c.card_id === 'jessi' ? 'reflect-damage' : undefined }));
   // Token (Bizarro) heroes from the DB — same art/name/stats/elite as the Oráculo.
   const DB_TOKENS = (dbCards || []).filter(c => c.category === 'bizarro' || String(c.card_id || '').startsWith('tk_')).map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan || 'Bizarros', clanColor: c.clan_color || '#caa14a', type: c.type, cost: c.cost || 0, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc != null ? c.elite_cc : c.cc, eAd: c.elite_ad != null ? c.elite_ad : c.ad, eHe: c.elite_he != null ? c.elite_he : c.he, eHp: c.elite_hp != null ? c.elite_hp : c.hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name || c.ability_name, eTxt: c.elite_ability_text || c.ability_text, art: c.art_url || '', eliteArt: c.elite_art_url || c.art_url || '', foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'tk_patito_goma' ? 'big-ad' : 'tk_none' }));
   return `
@@ -923,7 +923,8 @@ function buildArtScript(dbCards) {
     window.__bfDuckPatched = true;
     var originalUseAbility = window.useAbility, originalDealDamage = window.dealDamage;
     window.useAbility = function(side, hero, done) {
-      if (!hero || hero.akind !== 'duck-summon') return originalUseAbility.apply(this, arguments);
+      if (!hero || (hero.akind !== 'duck-summon' && hero.akind !== 'reflect-damage')) return originalUseAbility.apply(this, arguments);
+      if (hero.akind === 'reflect-damage') { hero.abilityUsed = true; if (typeof notif === 'function') notif('✦ ' + hero.name + ': Refracción Arcana se activa automáticamente al recibir daño.'); done(); return; }
       var duck = (TOKENS || []).find(function(t) { return t && t.id === 'tk_patito_goma'; });
       if (!duck) return originalUseAbility.apply(this, arguments);
       var amount = hero.eliteMode ? 4 : 2;
@@ -931,6 +932,7 @@ function buildArtScript(dbCards) {
         var instance = typeof makeInstance === 'function' ? makeInstance(duck) : Object.assign({}, duck);
         instance.id = 'duck_' + Date.now() + '_' + i; instance._token = duck.id; instance._bfDuck = true;
         instance.eliteUsed = true; instance.eliteMode = false; instance.abilityUsed = false;
+        instance._bfDuckRetaliate = hero.eliteMode ? 3 : 0;
         instance.maxHp = hero.eliteMode ? 2 : 1; instance.hp = instance.maxHp; instance.alive = true;
         (G.team[side] || (G.team[side] = [])).push(instance);
       }
@@ -943,9 +945,18 @@ function buildArtScript(dbCards) {
       if (target && !target._bfDuck) {
         var side = typeof tSide === 'function' ? tSide(target) : null;
         var duck = side && (G.team[side] || []).find(function(h) { return h && h.alive && h._bfDuck; });
-        if (duck) { var dealt = originalDealDamage.call(this, duck, amount, opts); if (!duck.alive && typeof pushLog === 'function') pushLog('li', '🦆 ' + duck.name + ' bloquea el golpe dirigido a ' + target.name + '.'); return dealt; }
+        if (duck) { var dealt = originalDealDamage.call(this, duck, amount, opts); if (duck._bfDuckRetaliate && dealt > 0 && typeof B !== 'undefined' && B.current && B.current.side !== side) { var attacker = typeof getHero === 'function' ? getHero(B.current.side, B.current.id) : null; if (attacker && attacker.alive) originalDealDamage.call(this, attacker, duck._bfDuckRetaliate, { type: 'true', bfReflect: true }); } if (!duck.alive && typeof pushLog === 'function') pushLog('li', '🦆 ' + duck.name + ' bloquea el golpe dirigido a ' + target.name + '.'); return dealt; }
       }
-      return originalDealDamage.apply(this, arguments);
+      var dealt = originalDealDamage.apply(this, arguments);
+      if (target && target.akind === 'reflect-damage' && dealt > 0 && !(opts && opts.bfReflect)) {
+        var foes = typeof enemySide === 'function' ? enemySide(typeof tSide === 'function' ? tSide(target) : '') : '';
+        var enemies = typeof living === 'function' ? living(foes) : [];
+        var reflected = target.eliteMode ? dealt : Math.ceil(dealt / 2);
+        var victims = target.eliteMode ? enemies : (enemies.length ? [enemies[Math.floor(Math.random() * enemies.length)]] : []);
+        victims.forEach(function(enemy) { originalDealDamage.call(this, enemy, reflected, { type: 'spell', element: 'arcano', bfReflect: true }); if (typeof pushFx === 'function') pushFx({ k: 'spell', toSide: foes, toId: enemy.id, el: 'arcano' }); });
+        if (victims.length && typeof pushLog === 'function') pushLog('li', '✦ ' + target.name + ' devuelve ' + reflected + ' de daño mágico con Refracción Arcana.');
+      }
+      return dealt;
     };
   }
   function patchGameRules() {
