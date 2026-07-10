@@ -104,8 +104,8 @@
 .bf-rainbow-border {
   border: 6px solid transparent !important;
   background: linear-gradient(#09070d, #09070d) padding-box,
-    linear-gradient(120deg, #ff3b5c, #ff9d2e, #ffe14a, #4ade80, #38bdf8, #a78bfa, #ff4bd8, #ff3b5c) border-box !important;
-  background-size: 100% 100%, 400% 400% !important;
+    linear-gradient(120deg, #ff1744, #ff5722, #ff9800, #ffeb3b, #b6ff00, #00e676, #00ffc8, #00e5ff, #2979ff, #651fff, #b000ff, #f500d4, #ff4081, #ff1744) border-box !important;
+  background-size: 100% 100%, 600% 600% !important;
   animation: bfRainbowShift 6s linear infinite, bfRainbowGlow 3s ease-in-out infinite;
 }
 @keyframes bfRainbowShift { 0% { background-position: 0 0, 0% 50%; } 100% { background-position: 0 0, 400% 50%; } }
