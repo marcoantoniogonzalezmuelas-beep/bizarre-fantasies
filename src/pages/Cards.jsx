@@ -25,6 +25,12 @@ const TABS = [
 const HERO_CLANS = ['Todos', 'Guerreros', 'Druidas', 'No-muertos', 'Vaqueros', 'Elfos', 'Magos', 'Épicas', 'Cotidianos'];
 const HERO_TYPES = ['Todos', 'CC', 'AD', 'HE'];
 
+const freshArt = (card, url) => {
+  if (!url) return undefined;
+  const stamp = encodeURIComponent(card.updated_date || card.created_date || 'current');
+  return `${url}${url.includes('?') ? '&' : '?'}bfart=${stamp}`;
+};
+
 const gameArtFor = (category, number) => {
   const n = Number(number || 0);
   if (category === 'spell') return SPELL_ART[n - 46];
@@ -48,8 +54,8 @@ const normalizeHero = (card) => ({
   abilityTxt: card.ability_text,
   eAbility: card.elite_ability_name,
   eTxt: card.elite_ability_text,
-  art: card.art_url || HERO_ART[Number(card.number || 0) - 1],
-  eliteArt: card.elite_art_url || card.art_url || HERO_ELITE_ART[Number(card.number || 0) - 1],
+  art: freshArt(card, card.art_url) || HERO_ART[Number(card.number || 0) - 1],
+  eliteArt: freshArt(card, card.elite_art_url || card.art_url) || HERO_ELITE_ART[Number(card.number || 0) - 1],
 });
 
 const normalizeItem = (card) => ({
@@ -57,7 +63,7 @@ const normalizeItem = (card) => ({
   id: card.card_id,
   num: card.number,
   txt: card.description,
-  art: card.art_url || gameArtFor(card.category, card.number),
+  art: freshArt(card, card.art_url) || gameArtFor(card.category, card.number),
   element: card.category === 'spell' ? card.type : undefined,
   tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
 });
@@ -76,10 +82,22 @@ export default function Cards() {
 
   useEffect(() => {
     let active = true;
-    base44.entities.Card.list('number', 200).then((cards) => {
+    base44.entities.Card.list('number', 300).then((cards) => {
       if (active) setDbCards(cards || []);
     });
-    return () => { active = false; };
+    const unsubscribe = base44.entities.Card.subscribe((event) => {
+      if (!active) return;
+      setDbCards((current) => {
+        if (event.type === 'delete') return current.filter((card) => card.id !== event.id);
+        if (!event.data) return current;
+        const exists = current.some((card) => card.id === event.data.id);
+        const next = exists
+          ? current.map((card) => card.id === event.data.id ? event.data : card)
+          : [...current, event.data];
+        return next.sort((a, b) => Number(a.number || 0) - Number(b.number || 0));
+      });
+    });
+    return () => { active = false; unsubscribe(); };
   }, []);
 
   const isToken = (c) => String(c.card_id || '').startsWith('tk_');
