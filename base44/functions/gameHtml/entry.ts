@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-10-new-card-abilities-v154';
+const GAME_PATCH_VERSION = 'bf-2026-07-10-ability-fx-v155';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -675,6 +675,14 @@ function buildArtScript(dbCards) {
     var fx = document.createElement('div'); fx.className = 'bf-combat-fx'; fx.innerHTML = html; card.appendChild(fx);
     setTimeout(function() { if (fx.parentNode) fx.parentNode.removeChild(fx); }, ms || 1000);
   }
+  function playUniqueAbilityFx(side, hero) {
+    var card = getBattleCard(side, hero && hero.id);
+    if (!card || !hero) return;
+    var isDuck = hero.akind === 'duck-summon', isReflect = hero.akind === 'reflect-damage';
+    var label = isDuck ? '🦆 INVOCACIÓN' : isReflect ? '↺ REFRACCIÓN ARCANA' : '✦ ' + (hero.eliteMode ? (hero.eAbility || 'HABILIDAD ÉLITE') : (hero.ability || 'HABILIDAD'));
+    var color = isDuck ? '#ffe14a' : isReflect ? '#c79bff' : '#7ad6ff';
+    addOverlayFx(card, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-spell-wave" style="color:' + color + '"></div><div class="bf-fx-float bf-fx-status-txt" style="color:' + color + '">' + label + '</div>', 1150);
+  }
   function transformHeroToElite(card) {
     if (!card || card.dataset.bfAutoElite === '1') return;
     var id = bfArtId(card), eliteUrl = ELITE_BY_ID[id], art = card.querySelector('.bf-battle-art');
@@ -924,14 +932,16 @@ function buildArtScript(dbCards) {
     var originalUseAbility = window.useAbility, originalDealDamage = window.dealDamage;
     window.useAbility = function(side, hero, done) {
       if (!hero || (hero.akind !== 'duck-summon' && hero.akind !== 'reflect-damage')) return originalUseAbility.apply(this, arguments);
-      if (hero.akind === 'reflect-damage') { hero.abilityUsed = true; if (typeof notif === 'function') notif('✦ ' + hero.name + ': Refracción Arcana se activa automáticamente al recibir daño.'); done(); return; }
+      var complete = typeof done === 'function' ? done : function() { if (typeof finishAct === 'function') finishAct(); };
+      if (hero.akind === 'reflect-damage') { hero.abilityUsed = true; if (typeof notif === 'function') notif('✦ ' + hero.name + ': Refracción Arcana se activa automáticamente al recibir daño.'); complete(); return; }
       var duck = (TOKENS || []).find(function(t) { return t && t.id === 'tk_patito_goma'; });
-      if (!duck) return originalUseAbility.apply(this, arguments);
+      if (!duck || typeof G === 'undefined' || !G.team) return originalUseAbility.apply(this, arguments);
       var amount = hero.eliteMode ? 4 : 2;
       for (var i = 0; i < amount; i++) {
         var instance = typeof makeInstance === 'function' ? makeInstance(duck) : Object.assign({}, duck);
         instance.id = 'duck_' + Date.now() + '_' + i; instance._token = duck.id; instance._bfDuck = true;
         instance.eliteUsed = true; instance.eliteMode = false; instance.abilityUsed = false;
+        instance._mods = []; instance.shield = 0; instance.wardTurns = 0; instance.evade = 0; instance.defending = false;
         instance._bfDuckRetaliate = hero.eliteMode ? 3 : 0;
         instance.maxHp = hero.eliteMode ? 2 : 1; instance.hp = instance.maxHp; instance.alive = true;
         (G.team[side] || (G.team[side] = [])).push(instance);
@@ -939,7 +949,8 @@ function buildArtScript(dbCards) {
       hero.abilityUsed = true;
       if (typeof pushLog === 'function') pushLog('lg', hero.name + ' invoca ' + amount + ' Patito' + (amount > 1 ? 's' : '') + ' de Goma bloqueador' + (amount > 1 ? 'es' : '') + '.');
       if (typeof pushFx === 'function') pushFx({ k: 'status', side: side, id: hero.id, txt: '🦆' });
-      done();
+      if (typeof renderBattle === 'function') renderBattle();
+      setTimeout(complete, 420);
     };
     window.dealDamage = function(target, amount, opts) {
       if (target && !target._bfDuck) {
@@ -953,10 +964,21 @@ function buildArtScript(dbCards) {
         var enemies = typeof living === 'function' ? living(foes) : [];
         var reflected = target.eliteMode ? dealt : Math.ceil(dealt / 2);
         var victims = target.eliteMode ? enemies : (enemies.length ? [enemies[Math.floor(Math.random() * enemies.length)]] : []);
-        victims.forEach(function(enemy) { originalDealDamage.call(this, enemy, reflected, { type: 'spell', element: 'arcano', bfReflect: true }); if (typeof pushFx === 'function') pushFx({ k: 'spell', toSide: foes, toId: enemy.id, el: 'arcano' }); });
+        var sourceCard = getBattleCard(typeof tSide === 'function' ? tSide(target) : '', target.id);
+        if (sourceCard) addOverlayFx(sourceCard, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-spell-wave" style="color:#c79bff"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#c79bff">↺ REFRACCIÓN</div>', 1050);
+        victims.forEach(function(enemy) { var enemyCard = getBattleCard(foes, enemy.id); launchMagic(cardCenter(sourceCard), cardCenter(enemyCard), 'arcano'); originalDealDamage.call(this, enemy, reflected, { type: 'spell', element: 'arcano', bfReflect: true }); if (typeof pushFx === 'function') pushFx({ k: 'spell', toSide: foes, toId: enemy.id, el: 'arcano' }); });
         if (victims.length && typeof pushLog === 'function') pushLog('li', '✦ ' + target.name + ' devuelve ' + reflected + ' de daño mágico con Refracción Arcana.');
       }
       return dealt;
+    };
+  }
+  function patchAbilityVisuals() {
+    if (window.__bfAbilityVisuals || typeof window.useAbility !== 'function') return;
+    window.__bfAbilityVisuals = true;
+    var originalUseAbility = window.useAbility;
+    window.useAbility = function(side, hero, done) {
+      if (hero) playUniqueAbilityFx(side, hero);
+      return originalUseAbility.apply(this, arguments);
     };
   }
   function patchGameRules() {
@@ -2280,7 +2302,7 @@ function buildArtScript(dbCards) {
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
       patchEquipmentUI();
-      patchCombatFx(); patchTransformer(); patchDuckAbility();
+      patchCombatFx(); patchTransformer(); patchDuckAbility(); patchAbilityVisuals();
       if (!patchedFace) patchedFace = patchCardFace();
       injectArtIntoDOM();
       if ((patchedFace && attempts > 8) || attempts > 60) clearInterval(interval);
