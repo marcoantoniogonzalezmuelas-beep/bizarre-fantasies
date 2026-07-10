@@ -1506,7 +1506,7 @@ function buildArtScript(dbCards) {
             var btn = document.createElement('button');
             btn.className = 'bf-buy-btn';
             btn.textContent = '🛒 Comprar';
-            btn.setAttribute('onclick', 'event.stopPropagation();bfShopBuy(&quot;' + side + '&quot;,&quot;' + meta.kind + '&quot;,&quot;' + id + '&quot;)'); btn.style.cssText = 'position:absolute;z-index:8;top:auto;bottom:7px;left:50%;transform:translateX(-50%);';
+            btn.setAttribute('onclick', 'event.stopPropagation();bfShopBuy(&quot;' + side + '&quot;,&quot;' + meta.kind + '&quot;,&quot;' + id + '&quot;)'); btn.style.cssText = 'position:absolute;z-index:8;top:auto!important;bottom:7px!important;left:50%;transform:translateX(-50%);';
             card.appendChild(btn);
           }
         });
