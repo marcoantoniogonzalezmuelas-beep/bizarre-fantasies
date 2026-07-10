@@ -3,7 +3,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-07-10-ability-fx-v155';
+const GAME_PATCH_VERSION = 'bf-2026-07-10-buy-btn-bottom-v156';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -318,8 +318,8 @@ function buildArtScript(dbCards) {
       /* "Ver carta" button on every shop card */
       .bf-view-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid rgba(255,210,74,.6); background:rgba(8,5,14,.78); color:#ffe49a; border-radius:999px; padding:4px 12px; font-size:10.5px; font-weight:900; cursor:pointer; white-space:nowrap; backdrop-filter:blur(2px); transition:background .12s ease; }
       .bf-view-btn:hover { background:rgba(255,210,74,.22); color:#fff5dc; }
-      /* "Comprar" button on every shop card */
-      .bf-buy-btn { position:absolute; bottom:7px; left:50%; transform:translateX(-50%); z-index:6; border:1px solid #ffd24a; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); color:#3a2600; border-radius:999px; padding:5px 14px; font-size:11px; font-weight:900; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,210,74,.4); transition:filter .12s ease; }
+      /* "Comprar" button on every shop card — SIEMPRE anclado al pie de la carta */
+      .bf-buy-btn, .shop-card .bf-buy-btn, .shop-card.has-art > .bf-buy-btn { position:absolute !important; top:auto !important; bottom:7px !important; left:50% !important; right:auto !important; transform:translateX(-50%) !important; margin:0 !important; z-index:8 !important; border:1px solid #ffd24a; background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f); color:#3a2600; border-radius:999px; padding:5px 14px; font-size:11px; font-weight:900; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,210,74,.4); transition:filter .12s ease; display:inline-block !important; }
       .bf-buy-btn:hover { filter:brightness(1.08); }
       /* Card name (stylized) over a shop card image */
       .bf-shop-name { position:absolute; left:6px; right:6px; bottom:92px; z-index:6; text-align:center; font-family:'Cinzel',serif; font-weight:1000; font-size:13px; line-height:1.05; color:#fff5dc; text-transform:uppercase; letter-spacing:.3px; text-shadow:0 2px 5px #000,0 0 12px #000; padding:3px 6px; border-radius:8px; background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.55),rgba(0,0,0,0)); }
@@ -1528,7 +1528,7 @@ function buildArtScript(dbCards) {
             var btn = document.createElement('button');
             btn.className = 'bf-buy-btn';
             btn.textContent = '🛒 Comprar';
-            btn.setAttribute('onclick', 'event.stopPropagation();bfShopBuy(&quot;' + side + '&quot;,&quot;' + meta.kind + '&quot;,&quot;' + id + '&quot;)'); btn.style.cssText = 'position:absolute;z-index:8;top:auto!important;bottom:7px!important;left:50%;transform:translateX(-50%);';
+            btn.setAttribute('onclick', "event.stopPropagation();bfShopBuy('" + side + "','" + meta.kind + "','" + id + "')"); btn.style.cssText = 'position:absolute;z-index:8;top:auto;bottom:7px;left:50%;transform:translateX(-50%);';
             card.appendChild(btn);
           }
         });
