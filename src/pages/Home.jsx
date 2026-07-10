@@ -21,7 +21,7 @@ import { CARD_MAGNIFIER_PATCH } from '@/lib/cardMagnifierPatch';
 import { NET_RESILIENT_PATCH } from '@/lib/netResilientPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-10-live-backoffice-art-v158';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-10-win-lose-cinematics-v159';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
