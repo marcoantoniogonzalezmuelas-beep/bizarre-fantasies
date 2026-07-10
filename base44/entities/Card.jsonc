@@ -111,6 +111,10 @@
     "gold_border": {
       "type": "boolean",
       "description": "If true, the card has a thick golden border (premium style)"
+    },
+    "rainbow_border": {
+      "type": "boolean",
+      "description": "If true, the card has a thick animated multicolor (rainbow) border"
     }
   },
   "required": [

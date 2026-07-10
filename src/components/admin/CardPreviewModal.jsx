@@ -13,7 +13,7 @@ function formToHero(form) {
     cc: Number(form.cc) || 0, ad: Number(form.ad) || 0, he: Number(form.he) || 0, hp: Number(form.hp) || 0,
     eCc: Number(form.elite_cc) || 0, eAd: Number(form.elite_ad) || 0, eHe: Number(form.elite_he) || 0, eHp: Number(form.elite_hp) || 0,
     ability: form.ability_name, abilityTxt: form.ability_text, eAbility: form.elite_ability_name, eTxt: form.elite_ability_text,
-    art: form.art_url, eliteArt: form.elite_art_url, num: form.number, foil: form.foil, gold_border: form.gold_border,
+    art: form.art_url, eliteArt: form.elite_art_url, num: form.number, foil: form.foil, gold_border: form.gold_border, rainbow_border: form.rainbow_border,
   };
 }
 
@@ -21,7 +21,7 @@ function formToEquipItem(form) {
   return {
     name: form.name, txt: form.description, cost: Number(form.cost) || undefined, tag: form.tag, element: form.type,
     mana: Number(form.mana) || undefined, cc: Number(form.cc) || undefined, power: Number(form.power) || undefined,
-    hp: Number(form.hp) || undefined, num: form.number, art_url: form.art_url, foil: form.foil, gold_border: form.gold_border,
+    hp: Number(form.hp) || undefined, num: form.number, art_url: form.art_url, foil: form.foil, gold_border: form.gold_border, rainbow_border: form.rainbow_border,
   };
 }
 

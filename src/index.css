@@ -99,3 +99,14 @@
 @keyframes bfFoilShift { 0% { background-position: 0% 0%; } 100% { background-position: 300% 300%; } }
 @keyframes bfFoilShine { 0% { background-position: 120% 0%; } 100% { background-position: -40% 0%; } }
 @keyframes bfGoldGlow { 0%,100% { box-shadow: 0 10px 28px rgba(0,0,0,.65), 0 0 14px rgba(255,210,74,.45), inset 0 0 0 1px rgba(255,240,180,.6); } 50% { box-shadow: 0 10px 28px rgba(0,0,0,.65), 0 0 30px rgba(255,210,74,.95), 0 0 50px rgba(255,190,40,.55), inset 0 0 0 1px rgba(255,245,200,.85); } }
+
+/* Borde multicolor animado (arcoíris) para cartas premium */
+.bf-rainbow-border {
+  border: 6px solid transparent !important;
+  background: linear-gradient(#09070d, #09070d) padding-box,
+    linear-gradient(120deg, #ff3b5c, #ff9d2e, #ffe14a, #4ade80, #38bdf8, #a78bfa, #ff4bd8, #ff3b5c) border-box !important;
+  background-size: 100% 100%, 400% 400% !important;
+  animation: bfRainbowShift 6s linear infinite, bfRainbowGlow 3s ease-in-out infinite;
+}
+@keyframes bfRainbowShift { 0% { background-position: 0 0, 0% 50%; } 100% { background-position: 0 0, 400% 50%; } }
+@keyframes bfRainbowGlow { 0%,100% { box-shadow: 0 10px 28px rgba(0,0,0,.65), 0 0 16px rgba(255,120,220,.55); } 50% { box-shadow: 0 10px 28px rgba(0,0,0,.65), 0 0 32px rgba(120,200,255,.85); } }
