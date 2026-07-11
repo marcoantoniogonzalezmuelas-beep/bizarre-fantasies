@@ -3,10 +3,10 @@ import React from 'react';
 export const CARD_CATEGORIES = [
   ['hero', 'Héroe'], ['spell', 'Hechizo'], ['ranged_weapon', 'Arma a distancia'],
   ['melee_weapon', 'Arma cuerpo a cuerpo'], ['armor', 'Armadura'], ['object', 'Objeto'],
-  ['bonus', 'Bonus'], ['bizarro', 'Bizarro / Token'], ['race', 'Raza']
+  ['bonus', 'Bonus'], ['bizarro', 'Héroe bizarro'], ['race', 'Raza']
 ];
 
-export const CARD_RACES = ['Guerreros', 'Druidas', 'No-muertos', 'Vaqueros', 'Elfos', 'Magos', 'Épicas', 'Cotidianos'];
+export const CARD_RACES = ['Guerreros', 'Druidas', 'No-muertos', 'Vaqueros', 'Elfos', 'Magos', 'Épicas', 'Cotidianos', 'Bizarros'];
 
 const numberFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp'];
 

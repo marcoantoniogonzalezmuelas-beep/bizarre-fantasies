@@ -110,15 +110,11 @@ const SIGILS = {
 
   Bizarros: ({ color }) => (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* 6-sided die face */}
-      <rect x="5" y="5" width="30" height="30" rx="6" stroke={color} strokeWidth="2.2" fill={color} fillOpacity="0.12"/>
-      {/* dots for face showing 6 — unpredictable */}
-      <circle cx="14" cy="13" r="2.5" fill={color}/>
-      <circle cx="26" cy="13" r="2.5" fill={color}/>
-      <circle cx="14" cy="20" r="2.5" fill={color}/>
-      <circle cx="26" cy="20" r="2.5" fill={color}/>
-      <circle cx="14" cy="27" r="2.5" fill={color}/>
-      <circle cx="26" cy="27" r="2.5" fill={color}/>
+      {/* Emblema exclusivo: ojo del caos con pupila espiral y rayos asimétricos */}
+      <path d="M4 20 C10 9 29 7 36 20 C29 33 10 31 4 20Z" stroke={color} strokeWidth="2.2" fill={color} fillOpacity="0.12"/>
+      <path d="M20 12 C28 12 29 22 23 26 C17 30 11 24 14 18 C16 14 22 14 24 18 C26 22 21 25 18 23 C15 21 17 18 20 18" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+      <path d="M8 9 L12 13 M30 7 L28 12 M35 29 L30 26 M11 33 L14 28" stroke={color} strokeWidth="2.4" strokeLinecap="round"/>
+      <circle cx="20" cy="20" r="2.2" fill={color}/>
     </svg>
   ),
 };
