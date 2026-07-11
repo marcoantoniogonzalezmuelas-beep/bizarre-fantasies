@@ -11,22 +11,25 @@ export const AI_AUCTION_PATCH = `
   window.__bfAiAuctionPatch = true;
 
   function aiSide(){ return (typeof NET === 'undefined' || !NET || !NET.role) ? 'o' : null; }
-  // ¿Le falta a este lado el héroe de la fase actual? Comprobación infalible:
-  // en la fase N (0,1,2) el equipo debe acabar con N+1 héroes. Solo puede
-  // "conservar y pasar" quien YA tiene el héroe de esta fase (repuja ganada).
+  // Debe tener un héroe del rol que se subasta ahora (CC, AD o HE). Una compra
+  // de una fase anterior nunca cuenta como la compra de la ronda actual.
   function needsHero(s){
-    var teamLen = ((G.team && G.team[s]) || []).length;
-    return teamLen < (Number(G.aIndex || 0) + 1);
+    var team = (G.team && G.team[s]) || [];
+    var currentRole = G.curType || ['CC','AD','HE'][Number(G.aIndex || 0)];
+    if (!team.some(function(h){ return h && h.type === currentRole; })) return true;
+    if (G.phaseNeeds && typeof G.phaseNeeds[s] === 'boolean') return G.phaseNeeds[s];
+    return team.length < (Number(G.aIndex || 0) + 1);
   }
   function mods(s){ try { return window.bidMods ? window.bidMods(s) : { add: 0, sub: 0 }; } catch(e){ return { add: 0, sub: 0 }; } }
   function pool(s){ return (G.epicCands && G.epicCands[s]) || G.cands || []; }
   function cheapest(s){ var c = null; pool(s).forEach(function(h){ if (h && (!c || Number(h.cost||0) < Number(c.cost||0))) c = h; }); return c; }
 
-  // Transferencia equipamiento → subasta, igual que el humano (máx. 100 por partida).
+  // Transferencia equipamiento → subasta en bloques de 10 (máx. 100 por partida).
   function xfer(s, amt){
     if (!G.bfEquipXfer) G.bfEquipXfer = { p: 0, o: 0 };
     var left = 100 - (G.bfEquipXfer[s] || 0);
-    var t = Math.max(0, Math.min(Math.ceil(Number(amt || 0)), left));
+    var requested = Math.ceil(Math.max(0, Number(amt || 0)) / 10) * 10;
+    var t = Math.max(0, Math.min(requested, left));
     if (t <= 0) return 0;
     G.coins[s] = (G.coins[s] || 0) + t;
     G.bfEquipXfer[s] = (G.bfEquipXfer[s] || 0) + t;
