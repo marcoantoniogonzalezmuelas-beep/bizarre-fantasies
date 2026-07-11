@@ -179,6 +179,7 @@ export const MATCH_MODE_PATCH = `
         '<div style="margin-top:22px">'+btns+'</div>'+
       '</div>';
     }
+    setTimeout(function(){ if(typeof window.bfEndCinematic==='function') window.bfEndCinematic(myWin); }, 80);
     if(champSide){
       var champName = champSide==='p'?nameP:nameO;
       setTimeout(function(){ championAnimation(champName); }, 1100);
@@ -203,7 +204,7 @@ export const MATCH_MODE_PATCH = `
       if(meta.target>0){ if((n.score.p||0)>=meta.target) champSide='p'; else if((n.score.o||0)>=meta.target) champSide='o'; }
       var names = (typeof G!=='undefined'?G.names:{p:n.names_self,o:n.names_opp});
       // El host gana si winnerSide==='p' (host siempre es 'p').
-      try{ netSend({ t:'bfsync', matchMode:n.matchMode||'free', score:{p:n.score.p||0,o:n.score.o||0}, names:names, champSide:champSide, myWin:false }); }catch(e){}
+      try{ netSend({ t:'bfsync', matchMode:n.matchMode||'free', score:{p:n.score.p||0,o:n.score.o||0}, names:names, champSide:champSide, myWin:(winnerSide==='o') }); }catch(e){}
       renderResultScreen({ myWin: (winnerSide===n.mySide), score:{p:n.score.p||0,o:n.score.o||0}, matchMode:n.matchMode, names:names, champSide:champSide });
     }
     // El cliente no hace nada aquí: su pantalla la pinta el bfsync del host.
