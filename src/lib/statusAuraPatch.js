@@ -37,7 +37,8 @@ export const STATUS_AURA_PATCH = `
   function decorate(){document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){var st=stateOf(card),old=card.dataset.bfAuraState||'';stateClasses.forEach(function(c){card.classList.remove(c);});if(st)card.classList.add('bf-state-'+st);if(st===old)return;card.dataset.bfAuraState=st;var oldEl=card.querySelector('.bf-state-wrap');if(oldEl)oldEl.remove();if(!st)return;var info=INFO[st],wrap=document.createElement('div');wrap.className='bf-state-wrap';wrap.innerHTML='<div class="bf-state-aura"></div><div class="bf-state-banner"><span class="bf-state-icon">'+info.icon+'</span><span>'+info.label+'</span></div><div class="bf-state-particles"><span>'+info.particles[0]+'</span><span>'+info.particles[1]+'</span><span>'+info.particles[2]+'</span></div>';card.appendChild(wrap);});}
 
   function installAbilities(){
-    if(typeof window.useAbility!=='function'||window.useAbility.__bfOddStates)return false;
+    if(typeof window.useAbility!=='function')return false;
+    if(window.useAbility.__bfOddStates)return true;
     var original=window.useAbility;
     window.useAbility=function(side,hero,done){
       if(!hero||(hero.akind!=='tk_confuse'&&hero.akind!=='tk_drunk'))return original.apply(this,arguments);
@@ -63,7 +64,8 @@ export const STATUS_AURA_PATCH = `
     window.useAbility.__bfOddStates=1;return true;
   }
   function installTurns(){
-    if(typeof window.stepTurn!=='function'||window.stepTurn.__bfOddStates)return false;
+    if(typeof window.stepTurn!=='function')return false;
+    if(window.stepTurn.__bfOddStates)return true;
     var original=window.stepTurn;
     window.stepTurn=function(){
       if(typeof B!=='undefined'&&B&&!B.over&&B.queue&&B.qi<B.queue.length){var slot=B.queue[B.qi],h=typeof getHero==='function'?getHero(slot.side,slot.id):null;if(h&&h.alive){if(h._bfConfused>0){h._bfConfused--;if(Math.random()<.5){h.skip=Math.max(h.skip||0,1);if(typeof pushLog==='function')pushLog('li','★ '+h.name+' está CONFUSO y pierde el turno.');}}if(h._bfDrunk>0){h._bfDrunk--;if(Math.random()<.35){h.skip=Math.max(h.skip||0,1);if(typeof pushLog==='function')pushLog('li','◉ '+h.name+' está BORRACHO y falla su acción.');}}}}
