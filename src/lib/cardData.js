@@ -20,7 +20,7 @@ export const CLAN_SYMBOLS = {
   "Magos": "🔮",
   "Épicas": "💎",
   "Cotidianos": "🎭",
-  "Bizarros": "🎲"
+  "Bizarros": "◉"
 };
 
 export const HEROES = [

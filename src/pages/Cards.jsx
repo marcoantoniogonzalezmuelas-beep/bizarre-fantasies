@@ -17,7 +17,7 @@ const TABS = [
   { key: 'melee', label: 'Armas C/C' },
   { key: 'armors', label: 'Armaduras' },
   { key: 'objects', label: 'Objetos' },
-  { key: 'tokens', label: 'Bizarros' },
+  { key: 'tokens', label: 'Héroes bizarros' },
   { key: 'bonuses', label: 'Bonificadores' },
   { key: 'races', label: 'Razas' },
 ];
