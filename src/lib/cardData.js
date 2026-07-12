@@ -126,7 +126,7 @@ export const OBJECTS = [
   { id:"ob_mana", num:85, name:"Cristal de Maná", tag:"MANÁ", cost:8, txt:"Restaura 20 de maná a un aliado." },
   { id:"ob_manabig", num:86, name:"Orbe de Maná", tag:"MANÁ", cost:13, txt:"Restaura 40 de maná a un aliado." },
   { id:"ob_shield", num:87, name:"Escudo de Energía", tag:"PROTECCIÓN", cost:7, txt:"Escudo de 12 que absorbe daño en un aliado." },
-  { id:"ob_cleanse", num:88, name:"Despertar", tag:"PROTECCIÓN", cost:5, txt:"Quita sueño/parálisis/maldición a un aliado." },
+  { id:"ob_cleanse", num:88, name:"Despertar", tag:"PROTECCIÓN", cost:5, txt:"Elimina cualquier estado negativo del héroe." },
   { id:"ob_bomb", num:89, name:"Bomba de Plasma", tag:"DAÑO", cost:8, txt:"14 de daño directo a un rival (no escala)." },
   { id:"ob_revive", num:90, name:"Pluma Fénix", tag:"REVIVIR", cost:16, txt:"Revive a UN héroe caído con el 50% de su vida." },
   { id:"ob_phoenix", num:91, name:"Ave Fénix", tag:"SUPREMO", cost:26, txt:"Revive a TODOS tus héroes caídos. La carta cumbre." },
