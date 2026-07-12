@@ -18,7 +18,7 @@ import { LOBBY_GUARD_PATCH } from '@/lib/lobbyGuardPatch';
 import { EQUIP_DRAG_PATCH } from '@/lib/equipDragPatch';
 import { RIVAL_HAND_BACK_PATCH } from '@/lib/rivalHandBackPatch';
 import { CARD_MAGNIFIER_PATCH } from '@/lib/cardMagnifierPatch';
-import { NET_RESILIENT_PATCH } from '@/lib/netResilientPatch';
+import { buildNetResilientPatch } from '@/lib/netResilientPatch';
 import { FINAL_CINEMATIC_PATCH } from '@/lib/finalCinematicPatch';
 import { STATUS_AURA_PATCH } from '@/lib/statusAuraPatch';
 
@@ -288,21 +288,25 @@ export default function Home() {
         setError(false);
         setLoading(true);
 
-        const res = await base44.functions.invoke('gameHtml', {
-          version: EXPECTED_PATCH_VERSION,
-          t: Date.now(),
-          r: Math.random().toString(36).slice(2),
-          attempt,
-        });
+        const [res, turnRes] = await Promise.all([
+          base44.functions.invoke('gameHtml', {
+            version: EXPECTED_PATCH_VERSION,
+            t: Date.now(),
+            r: Math.random().toString(36).slice(2),
+            attempt,
+          }),
+          base44.functions.invoke('getTurnCredentials', {}),
+        ]);
 
         if (cancelled) return;
         const data = typeof res.data === 'string' ? res.data : String(res.data);
+        const turnIceServers = Array.isArray(turnRes.data?.iceServers) ? turnRes.data.iceServers : [];
         if (!data || data.length < 1000) throw new Error('empty');
 
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + NET_RESILIENT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus');
         let patchedData = baseData.includes('</body>')

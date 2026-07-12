@@ -3,11 +3,14 @@
 //    frecuente, más servidores STUN y reconexión automática al servidor.
 // 2) Heartbeat cada 4s sobre la conexión de datos entre jugadores: mantiene
 //    vivo el mapeo NAT y evita desconexiones por inactividad.
-export const NET_RESILIENT_PATCH = `
+export const buildNetResilientPatch = (meteredIceServers = []) => {
+  const safeIceServers = JSON.stringify(Array.isArray(meteredIceServers) ? meteredIceServers : []);
+  return `
 <script>
 (function(){
   if (window.__bfNetResilient) return;
   window.__bfNetResilient = true;
+  var METERED_ICE_SERVERS = ${safeIceServers};
 
   // ---- (1) Peer más resistente ----
   function wrapPeer(){
@@ -19,7 +22,7 @@ export const NET_RESILIENT_PATCH = `
       // Ping frecuente al servidor de señalización para que no cierre el socket.
       if (!opts.pingInterval || opts.pingInterval > 3000) opts.pingInterval = 3000;
       opts.config = opts.config || {};
-      var ice = (opts.config.iceServers || []).slice();
+      var ice = METERED_ICE_SERVERS.concat((opts.config.iceServers || []).slice());
       ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:global.stun.twilio.com:3478'].forEach(function(u){
         var has = ice.some(function(s){ return s && (s.urls === u || (Array.isArray(s.urls) && s.urls.indexOf(u) !== -1)); });
         if (!has) ice.push({ urls: u });
@@ -68,3 +71,4 @@ export const NET_RESILIENT_PATCH = `
 })();
 </script>
 `;
+};
