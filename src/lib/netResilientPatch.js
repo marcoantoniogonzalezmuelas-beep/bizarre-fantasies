@@ -82,6 +82,55 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
   wrapPeer();
   var pw = setInterval(function(){ if (window.Peer && window.Peer.__bfWrapped) clearInterval(pw); else wrapPeer(); }, 200);
 
+  // El creador original muestra el primer error transitorio como definitivo.
+  // Reintentamos solo cuando PeerJS confirma un fallo de señalización y nunca
+  // mediante temporizadores paralelos, evitando salas duplicadas.
+  function installReliableHostCreate(){
+    if (typeof window.hostCreate !== 'function' || window.hostCreate.__bfReliableHost) return;
+    window.hostCreate = function(name, pass, roomName){
+      if (!window.Peer) { if (typeof lobbyError === 'function') lobbyError('No se pudo cargar el módulo online. Revisa tu conexión o usa el modo local.'); return; }
+      NET.role = 'host'; NET.mySide = 'p'; NET.pass = pass || ''; NET.names_self = name || 'Jugador 1';
+      NET.roomName = (roomName && roomName.trim()) || randomRoomName();
+      NET.code = makeCode();
+      var attempt = 0;
+
+      function startAttempt(){
+        if (typeof dirUnregister === 'function' && typeof LOBBY !== 'undefined' && LOBBY._reg) dirUnregister();
+        if (NET.peer) { try { NET.peer.destroy(); } catch (e) {} }
+        if (attempt > 0) NET.code = makeCode();
+        renderLobby('hostwait');
+        lobbyStatus(attempt ? 'Recuperando conexión de la sala…' : 'Creando sala…');
+        var peer = new Peer('bizfan-' + NET.code, { debug: 1 });
+        NET.peer = peer;
+        peer.on('open', function(){
+          if (NET.peer !== peer) return;
+          lobbyStatus('Esperando a que se una el otro jugador…');
+          dirRegister(NET.code, NET.roomName, !!NET.pass);
+        });
+        peer.on('connection', function(conn){ if (NET.peer === peer) onHostConn(conn); });
+        peer.on('error', function(error){
+          if (NET.peer !== peer || (NET.conn && NET.conn.open)) return;
+          var type = String((error && error.type) || error || 'network');
+          var recoverable = /network|socket|server|disconnected|unavailable-id/i.test(type);
+          if (recoverable && attempt < 4) {
+            attempt += 1;
+            lobbyStatus('Reconectando la sala (' + attempt + '/4)…');
+            setTimeout(function(){ if (NET.peer === peer && !(NET.conn && NET.conn.open)) startAttempt(); }, 650 * attempt);
+            return;
+          }
+          lobbyError('Error de red: ' + type + '. Prueba de nuevo o usa el modo local.');
+        });
+      }
+      startAttempt();
+    };
+    window.hostCreate.__bfReliableHost = 1;
+  }
+  installReliableHostCreate();
+  var reliableHostTimer = setInterval(function(){
+    installReliableHostCreate();
+    if (window.hostCreate && window.hostCreate.__bfReliableHost) clearInterval(reliableHostTimer);
+  }, 200);
+
   // Cada intento de crear o unirse solicita credenciales Metered nuevas. Si la
   // renovación falla, se continúa con las últimas credenciales válidas.
   function installFreshRoomCredentials(){
@@ -92,6 +141,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         requestFreshIceServers().catch(function(){}).then(function(){ originalHostCreate.apply(self, args); });
       };
       window.hostCreate.__bfFreshTurn = 1;
+      window.hostCreate.__bfReliableHost = originalHostCreate.__bfReliableHost || 0;
     }
     if (typeof window.clientJoin === 'function' && !window.clientJoin.__bfFreshTurn) {
       var originalClientJoin = window.clientJoin;
