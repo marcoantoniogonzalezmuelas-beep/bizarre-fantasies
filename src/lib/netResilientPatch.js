@@ -160,10 +160,17 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
 
           peer.on('open', function(){
             if (NET.peer !== peer) return;
-            finished = true;
             clearTimeout(watchdog);
-            lobbyStatus('Esperando a que se una el otro jugador…');
-            dirRegister(NET.code, NET.roomName, !!NET.pass);
+            lobbyStatus('Registrando la sala en el servidor…');
+            Promise.resolve(dirRegister(NET.code, NET.roomName, !!NET.pass)).then(function(){
+              if (NET.peer !== peer) return;
+              finished = true;
+              lobbyStatus('Sala creada correctamente. Esperando al otro jugador…');
+            }).catch(function(){
+              if (NET.peer !== peer) return;
+              lobbyStatus('No se pudo registrar la sala. Reintentando…');
+              retry(peer);
+            });
           });
           peer.on('connection', function(conn){ if (NET.peer === peer) onHostConn(conn); });
           peer.on('error', function(){ retry(peer); });

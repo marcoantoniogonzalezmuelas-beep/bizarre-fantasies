@@ -30,8 +30,27 @@ export const CENTRAL_LOBBY_PATCH = `
     window.lobbyConnect=function(){LOBBY.role='central';centralList();};
     window.refreshList=centralList;
     window.dirRegister=function(code,name,hasPass){
-      LOBBY._reg={code:code,name:name,hasPass:hasPass};
-      request('register',{code:code,name:name,hasPass:!!hasPass}).catch(function(){if(typeof lobbyStatus==='function')lobbyStatus('Sala creada. Comparte el código '+code+'.');});
+      LOBBY._reg={code:code,name:name,hasPass:hasPass,confirmed:false};
+      var attempts=0;
+      return new Promise(function(resolve,reject){
+        function register(){
+          attempts+=1;
+          request('register',{code:code,name:name,hasPass:!!hasPass}).then(function(data){
+            if(!data||data.ok!==true)throw new Error('register rejected');
+            return request('list');
+          }).then(function(data){
+            var visible=(data.rooms||[]).some(function(room){return room.id===code;});
+            if(!visible)throw new Error('room not visible');
+            if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
+            resolve({ok:true});
+          }).catch(function(error){
+            if(attempts<3){setTimeout(register,800*attempts);return;}
+            if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg=null;
+            reject(error);
+          });
+        }
+        register();
+      });
     };
     window.dirUnregister=function(){
       var r=LOBBY._reg;if(!r)return;request('unregister',{code:r.code}).catch(function(){});LOBBY._reg=null;
