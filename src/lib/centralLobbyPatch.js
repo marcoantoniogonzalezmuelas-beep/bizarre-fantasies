@@ -19,10 +19,29 @@ export const CENTRAL_LOBBY_PATCH = `
     if(result.error)task.reject(new Error(result.error));else task.resolve(result.data||{});
   });
 
+  function canShowList(){
+    if(typeof NET==='undefined')return false;
+    return !NET.role||(NET.role==='host'&&LOBBY._reg&&LOBBY._reg.confirmed);
+  }
+  function decorateHostedRoom(){
+    if(typeof NET==='undefined'||NET.role!=='host'||!NET.code)return;
+    var cards=document.querySelectorAll('.room-card'),own=null;
+    cards.forEach(function(card){var code=card.querySelector('.room-sub b');if(code&&code.textContent.trim()===NET.code)own=card;});
+    if(own){
+      own.style.border='2px solid #FFD24A';own.style.boxShadow='0 0 20px rgba(255,210,74,.35)';
+      var icon=own.querySelector('.room-ico');if(icon)icon.textContent='🏠';
+      var join=own.querySelector('button');if(join){join.textContent='Cancelar sala';join.className='btn sm';join.onclick=window.bfCancelHostedRoom;}
+      var sub=own.querySelector('.room-sub');if(sub&&!sub.querySelector('.bf-own-room'))sub.insertAdjacentHTML('beforeend',' · <b class="bf-own-room" style="color:#FFD24A">TU SALA</b>');
+    }
+    Array.from(document.querySelectorAll('#s-lobby button')).forEach(function(button){if(/Crear sala/i.test(button.textContent)){button.disabled=true;button.textContent='🏠 Tu sala está activa';}});
+  }
+  function renderCentralList(){
+    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();}
+  }
   function centralList(){
     if(typeof LOBBY==='undefined')return;
     LOBBY.role='central';
-    request('list').then(function(data){LOBBY.rooms=data.rooms||[];if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&typeof NET!=='undefined'&&!NET.role)renderRoomList();}).catch(function(){if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&typeof NET!=='undefined'&&!NET.role)renderRoomList();});
+    request('list').then(function(data){LOBBY.rooms=data.rooms||[];renderCentralList();}).catch(renderCentralList);
   }
 
   function install(){
@@ -39,7 +58,8 @@ export const CENTRAL_LOBBY_PATCH = `
             if(!data||data.ok!==true)throw new Error('register rejected');
             return request('list');
           }).then(function(data){
-            var visible=(data.rooms||[]).some(function(room){return room.id===code;});
+            LOBBY.rooms=data.rooms||[];
+            var visible=LOBBY.rooms.some(function(room){return room.id===code;});
             if(!visible)throw new Error('room not visible');
             if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
             resolve({ok:true});
@@ -53,7 +73,16 @@ export const CENTRAL_LOBBY_PATCH = `
       });
     };
     window.dirUnregister=function(){
-      var r=LOBBY._reg;if(!r)return;request('unregister',{code:r.code}).catch(function(){});LOBBY._reg=null;
+      var r=LOBBY._reg;if(!r)return Promise.resolve();
+      LOBBY._reg=null;return request('unregister',{code:r.code}).catch(function(){});
+    };
+    window.bfCancelHostedRoom=function(){
+      var code=NET.code;
+      Promise.resolve(window.dirUnregister()).then(function(){
+        if(NET.conn){try{NET.conn.close();}catch(e){}}if(NET.peer){try{NET.peer.destroy();}catch(e){}}
+        NET.conn=null;NET.peer=null;NET.role=null;NET.code='';
+        centralList();
+      });
     };
 
     centralList();
@@ -63,7 +92,7 @@ export const CENTRAL_LOBBY_PATCH = `
   var tries=0,timer=setInterval(function(){if(install()||tries++>50)clearInterval(timer);},100);
   setInterval(function(){
     if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&NET.peer&&NET.peer.open&&!NET.conn?.open)request('touch',{code:NET.code}).catch(function(){});
-    if(typeof isLobby==='function'&&isLobby()&&typeof NET!=='undefined'&&!NET.role)centralList();
+    if(typeof isLobby==='function'&&isLobby()&&canShowList())centralList();
   },30000);
 })();
 </script>

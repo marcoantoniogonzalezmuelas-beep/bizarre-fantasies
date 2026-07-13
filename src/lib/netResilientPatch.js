@@ -165,7 +165,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
             Promise.resolve(dirRegister(NET.code, NET.roomName, !!NET.pass)).then(function(){
               if (NET.peer !== peer) return;
               finished = true;
-              lobbyStatus('Sala creada correctamente. Esperando al otro jugador…');
+              renderLobby('browse');
             }).catch(function(){
               if (NET.peer !== peer) return;
               lobbyStatus('No se pudo registrar la sala. Reintentando…');
