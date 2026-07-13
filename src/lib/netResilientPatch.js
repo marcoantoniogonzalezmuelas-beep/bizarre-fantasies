@@ -11,6 +11,38 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
   if (window.__bfNetResilient) return;
   window.__bfNetResilient = true;
   var METERED_ICE_SERVERS = ${safeIceServers};
+  var turnRequestSeq = 0;
+  var turnPending = {};
+
+  window.__bfSetMeteredIceServers = function(servers){
+    if (Array.isArray(servers) && servers.length) METERED_ICE_SERVERS = servers;
+  };
+
+  function requestFreshIceServers(){
+    return new Promise(function(resolve, reject){
+      var requestId = 'turn-' + (++turnRequestSeq);
+      turnPending[requestId] = { resolve: resolve, reject: reject };
+      window.parent.postMessage({ bfTurnRequest: { requestId: requestId } }, '*');
+      setTimeout(function(){
+        if (!turnPending[requestId]) return;
+        delete turnPending[requestId];
+        reject(new Error('TURN timeout'));
+      }, 6000);
+    });
+  }
+
+  window.addEventListener('message', function(event){
+    var result = event.data && event.data.bfTurnResult;
+    if (!result || !turnPending[result.requestId]) return;
+    var task = turnPending[result.requestId];
+    delete turnPending[result.requestId];
+    if (result.error) task.reject(new Error(result.error));
+    else {
+      window.__bfSetMeteredIceServers(result.iceServers);
+      window.__bfTurnRefreshCount = (window.__bfTurnRefreshCount || 0) + 1;
+      task.resolve(result.iceServers || []);
+    }
+  });
 
   // ---- (1) Peer más resistente ----
   function wrapPeer(){
@@ -49,6 +81,32 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
   }
   wrapPeer();
   var pw = setInterval(function(){ if (window.Peer && window.Peer.__bfWrapped) clearInterval(pw); else wrapPeer(); }, 200);
+
+  // Cada intento de crear o unirse solicita credenciales Metered nuevas. Si la
+  // renovación falla, se continúa con las últimas credenciales válidas.
+  function installFreshRoomCredentials(){
+    if (typeof window.hostCreate === 'function' && !window.hostCreate.__bfFreshTurn) {
+      var originalHostCreate = window.hostCreate;
+      window.hostCreate = function(){
+        var self = this, args = arguments;
+        requestFreshIceServers().catch(function(){}).then(function(){ originalHostCreate.apply(self, args); });
+      };
+      window.hostCreate.__bfFreshTurn = 1;
+    }
+    if (typeof window.clientJoin === 'function' && !window.clientJoin.__bfFreshTurn) {
+      var originalClientJoin = window.clientJoin;
+      window.clientJoin = function(){
+        var self = this, args = arguments;
+        requestFreshIceServers().catch(function(){}).then(function(){ originalClientJoin.apply(self, args); });
+      };
+      window.clientJoin.__bfFreshTurn = 1;
+    }
+  }
+  installFreshRoomCredentials();
+  var roomCredentialsTimer = setInterval(function(){
+    installFreshRoomCredentials();
+    if (window.hostCreate && window.hostCreate.__bfFreshTurn && window.clientJoin && window.clientJoin.__bfFreshTurn) clearInterval(roomCredentialsTimer);
+  }, 200);
 
   // ---- (2) Heartbeat sobre la conexión de datos jugador↔jugador ----
   function bindHeartbeat(c){

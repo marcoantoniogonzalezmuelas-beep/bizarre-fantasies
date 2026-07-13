@@ -38,17 +38,27 @@ export const CENTRAL_LOBBY_PATCH = `
     };
 
     var originalHostCreate=window.hostCreate;
+    function watchHostAttempt(name,pass,roomName){
+      var waited=0,peer=null;
+      var findPeer=setInterval(function(){
+        waited+=250;
+        if(typeof NET!=='undefined'&&NET.peer){peer=NET.peer;clearInterval(findPeer);peer.on('open',function(){retryCount=0;});
+          setTimeout(function(){
+            if(typeof NET==='undefined'||NET.peer!==peer||peer.open||peer.destroyed)return;
+            try{peer.destroy();}catch(e){}
+            if(retryCount++<3){if(typeof lobbyStatus==='function')lobbyStatus('Renovando conexión y reintentando…');window.hostCreate(name,pass,roomName);}
+            else if(typeof lobbyError==='function')lobbyError('No se pudo abrir la sala. Comprueba tu conexión e inténtalo de nuevo.');
+          },8000);
+        } else if(waited>=8000){
+          clearInterval(findPeer);
+          if(retryCount++<3)window.hostCreate(name,pass,roomName);
+          else if(typeof lobbyError==='function')lobbyError('No se pudo preparar la conexión de la sala.');
+        }
+      },250);
+    }
     window.hostCreate=function(name,pass,roomName){
       originalHostCreate.apply(this,arguments);
-      var peer=typeof NET!=='undefined'?NET.peer:null;
-      if(!peer)return;
-      peer.on('open',function(){retryCount=0;});
-      setTimeout(function(){
-        if(typeof NET==='undefined'||NET.peer!==peer||peer.open||peer.destroyed)return;
-        try{peer.destroy();}catch(e){}
-        if(retryCount++<3){if(typeof lobbyStatus==='function')lobbyStatus('Reintentando conexión automática…');window.hostCreate(name,pass,roomName);}
-        else if(typeof lobbyError==='function')lobbyError('No se pudo abrir la sala. Comprueba tu conexión e inténtalo de nuevo.');
-      },8000);
+      watchHostAttempt(name,pass,roomName);
     };
     window.hostCreate.__bfCentral=1;
     centralList();
