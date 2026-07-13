@@ -60,7 +60,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         if (!has) ice.push({ urls: u });
       });
       opts.config.iceServers = ice;
-      var p = (id === undefined) ? new P(opts) : new P(id, opts);
+      // PeerJS interpreta un objeto en el primer argumento como un ID inválido.
+      // Para clientes sin ID hay que reservar explícitamente ese argumento.
+      var p = (id === undefined) ? new P(undefined, opts) : new P(id, opts);
       // Si se pierde la conexión con el servidor de señalización, reconectar
       // automáticamente (las conexiones de datos entre jugadores no se tocan).
       p.on('disconnected', function(){
