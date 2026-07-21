@@ -47,8 +47,20 @@ export const CENTRAL_LOBBY_PATCH = `
     }
     Array.from(document.querySelectorAll('#s-lobby button')).forEach(function(button){if(/Crear sala/i.test(button.textContent)){button.disabled=true;button.textContent='🏠 Tu sala está activa';}});
   }
+  function injectResumeCard(){
+    // Si hay una partida en curso guardada en este dispositivo, mostrar una
+    // tarjeta destacada para volver a entrar y retomarla.
+    var info=window.__bfGetResume&&window.__bfGetResume();
+    if(!info||document.getElementById('bf-resume-card'))return;
+    if(typeof NET!=='undefined'&&NET.role)return;
+    var box=document.querySelector('#s-lobby .setup-box');if(!box)return;
+    var html='<div id="bf-resume-card" class="room-card" style="border:2px solid #7ddf7d;box-shadow:0 0 18px rgba(90,220,120,.35)"><div class="room-ico">🔌</div><div class="room-info"><div class="room-name">Tienes una partida en curso</div><div class="room-sub">código <b>'+info.code+'</b> · puedes volver a entrar y continuar</div></div><button class="btn primary sm" onclick="bfResumeMatch()">Reconectar</button></div>';
+    var first=box.querySelector('.room-card');
+    if(first)first.insertAdjacentHTML('beforebegin',html);
+    else box.insertAdjacentHTML('beforeend',html);
+  }
   function renderCentralList(){
-    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();}
+    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();injectResumeCard();}
   }
   function centralList(){
     if(typeof LOBBY==='undefined')return;

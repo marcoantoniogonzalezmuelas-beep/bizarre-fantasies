@@ -26,7 +26,7 @@ import { FINAL_CINEMATIC_PATCH } from '@/lib/finalCinematicPatch';
 import { STATUS_AURA_PATCH } from '@/lib/statusAuraPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-21-lobby-form-guard-v170';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-21-resume-match-v171';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `

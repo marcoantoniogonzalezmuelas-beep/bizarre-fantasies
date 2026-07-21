@@ -12,6 +12,25 @@ export const NET_RECONNECT_PATCH = `
   var RETRY_MS=3000,MAX_WAIT=120000;
   var rec={active:false,until:0,timer:null};
 
+  // Datos de la partida en curso guardados en el dispositivo: si el jugador
+  // se desconecta (timeout, recarga…), podrá volver desde el lobby con el
+  // botón "Reconectar" y retomar la partida donde estaba.
+  var RESUME_KEY='bfResumeMatch';
+  function saveResume(){
+    try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:(NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'',name:NET.names_self||'',side:NET.mySide||'g',ts:Date.now()}));}catch(e){}
+  }
+  function clearResume(){try{localStorage.removeItem(RESUME_KEY);}catch(e){}}
+  window.__bfGetResume=function(){
+    try{
+      var i=JSON.parse(localStorage.getItem(RESUME_KEY)||'null');
+      if(i&&i.code&&Date.now()-(i.ts||0)<180000)return i;
+    }catch(e){}
+    return null;
+  };
+  setInterval(function(){
+    if(typeof NET!=='undefined'&&typeof G!=='undefined'&&G.online&&!G._gameOver&&NET.role==='client'&&NET.code)saveResume();
+  },4000);
+
   var style=document.createElement('style');
   style.textContent='#bf-reconnect{position:fixed;inset:0;z-index:100500;display:none;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.82),rgba(8,5,14,.94));backdrop-filter:blur(4px)}#bf-reconnect .bf-rec-box{text-align:center;max-width:340px;padding:26px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.55);box-shadow:0 18px 50px rgba(0,0,0,.7)}#bf-reconnect .bf-rec-spin{width:44px;height:44px;margin:0 auto 14px;border-radius:50%;border:4px solid #3c3158;border-top-color:#FFD24A;animation:bfRecSpin 1s linear infinite}@keyframes bfRecSpin{to{transform:rotate(360deg)}}#bf-reconnect .bf-rec-msg{font-family:Cinzel,serif;font-weight:900;font-size:17px;color:#ffe49a}#bf-reconnect .bf-rec-sub{margin-top:8px;font-size:13px;line-height:1.4;color:#cfc6dd}#bf-reconnect .bf-rec-exit{margin-top:18px;padding:10px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}';
   document.head.appendChild(style);
@@ -37,7 +56,7 @@ export const NET_RECONNECT_PATCH = `
     if(was&&typeof notif==='function')notif('✔ Conexión restablecida. ¡La partida continúa!');
   }
   function giveUp(msg){
-    rec.active=false;clearTimeout(rec.timer);hideOverlay();
+    rec.active=false;clearTimeout(rec.timer);hideOverlay();clearResume();
     if(typeof modal==='function')modal('<h3>Conexión perdida</h3><div class="modal-note" style="font-size:15px">'+(msg||'No se pudo recuperar la conexión con el otro jugador.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
 
@@ -47,7 +66,7 @@ export const NET_RECONNECT_PATCH = `
       if(!msg)return;
       if(msg.t==='reject'){giveUp(msg.reason||'Conexión rechazada.');return;}
       if(msg.t==='snap'){resumed();applySnapshot(msg);return;}
-      if(msg.t==='end'){G._gameOver=true;hideOverlay();showResult(msg.pWin===(NET.mySide==='p'));return;}
+      if(msg.t==='end'){G._gameOver=true;hideOverlay();clearResume();showResult(msg.pWin===(NET.mySide==='p'));return;}
       if(msg.t==='welcome'){resumed();return;}
     });
     conn.on('close',function(){if(NET.conn===conn&&!G._gameOver)connLost();});
@@ -89,6 +108,20 @@ export const NET_RECONNECT_PATCH = `
     else{overlay('El otro jugador se ha desconectado','Esperando a que vuelva… La partida se reanudará sola.');hostWait();}
   }
   window.__bfConnLost=connLost;
+
+  // Reconexión manual desde el lobby: reutiliza los datos guardados de la
+  // partida en curso, se conecta a la sala del host y pide el snapshot.
+  window.bfResumeMatch=function(){
+    var info=window.__bfGetResume();
+    if(!info)return;
+    NET.role='client';NET.mySide=info.side||'g';NET.code=info.code;
+    NET.names_self=info.name||'Jugador 2';NET.pass=info.pass||'';
+    NET._bfJoin={code:info.code,pass:info.pass||'',name:info.name||''};
+    G.online=true;
+    rec.active=true;rec.until=Date.now()+MAX_WAIT;
+    overlay('Reconectando con la partida','Recuperando el estado de la partida…');
+    clientRetry();
+  };
 
   // El host acepta reconexiones a mitad de partida: valida la contraseña,
   // adopta la nueva conexión y reenvía el estado completo de la pantalla actual.
