@@ -8,7 +8,10 @@ export const MATCH_RESULT_PATCH = `
   window.__bfMatchResult=true;
 
   function heroList(arr){
-    return (arr||[]).map(function(h){return {name:h.name||'',died:!h.alive,elite:!!h.eliteUsed};});
+    // Los tokens invocados (patitos de goma, etc.) no son héroes: no cuentan
+    // para victorias, caídas ni renaceres Élite en el ranking.
+    return (arr||[]).filter(function(h){return h&&!h._token&&!h._bfDuck;})
+      .map(function(h){return {name:h.name||'',died:!h.alive,elite:!!h.eliteUsed};});
   }
   function report(youWin){
     try{

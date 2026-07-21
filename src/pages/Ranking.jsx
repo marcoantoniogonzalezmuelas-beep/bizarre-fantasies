@@ -20,18 +20,20 @@ export default function Ranking() {
     base44.entities.MatchResult.list('-created_date', 500).then(setResults);
   }, []);
 
+  // Tokens invocados en batalla (no son héroes): fuera de las listas de héroes.
+  const SUMMON_TOKENS = ['Patito de Goma'];
   const wins = {}, losses = {}, heroWins = {}, heroLosses = {}, heroDeaths = {}, heroElites = {};
   (results || []).forEach(r => {
     if (!r.winner_is_ai) wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
     if (!r.loser_is_ai) losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
     (r.winner_heroes || []).forEach(h => {
-      if (!h.name) return;
+      if (!h.name || SUMMON_TOKENS.includes(h.name)) return;
       heroWins[h.name] = (heroWins[h.name] || 0) + 1;
       if (h.died) heroDeaths[h.name] = (heroDeaths[h.name] || 0) + 1;
       if (h.elite) heroElites[h.name] = (heroElites[h.name] || 0) + 1;
     });
     (r.loser_heroes || []).forEach(h => {
-      if (!h.name) return;
+      if (!h.name || SUMMON_TOKENS.includes(h.name)) return;
       heroLosses[h.name] = (heroLosses[h.name] || 0) + 1;
       if (h.died) heroDeaths[h.name] = (heroDeaths[h.name] || 0) + 1;
       if (h.elite) heroElites[h.name] = (heroElites[h.name] || 0) + 1;

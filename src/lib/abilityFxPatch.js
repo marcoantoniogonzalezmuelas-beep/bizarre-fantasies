@@ -26,7 +26,11 @@ export const ABILITY_FX_PATCH = `
   '.bf-abx-shake{animation:bfAbxShake .45s ease}'+
   '@keyframes bfAbxShake{0%,100%{translate:0 0}15%{translate:-4px 2px}30%{translate:4px -3px}45%{translate:-3px -2px}60%{translate:3px 2px}75%{translate:-2px 1px}}'+
   '.bf-abx-glow{animation:bfAbxGlow .95s ease}'+
-  '@keyframes bfAbxGlow{0%{filter:none}30%{filter:brightness(1.55) saturate(1.5)}100%{filter:none}}';
+  '@keyframes bfAbxGlow{0%{filter:none}30%{filter:brightness(1.55) saturate(1.5)}100%{filter:none}}'+
+  '.bf-sfx-pop{animation:bfSfxPop .85s cubic-bezier(.2,1.5,.4,1) both}'+
+  '@keyframes bfSfxPop{0%{transform:scale(0) rotate(-14deg);opacity:0}55%{transform:scale(1.14) rotate(4deg);opacity:1}75%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}'+
+  '.bf-sfx-ring{position:absolute;left:50%;top:50%;width:96%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:2.5px solid currentColor;box-shadow:0 0 22px currentColor,inset 0 0 22px currentColor;opacity:0;animation:bfSfxRing 1.1s ease-out forwards}'+
+  '@keyframes bfSfxRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.55)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   // Familias visuales según el tipo de habilidad (akind) del héroe.
@@ -79,6 +83,47 @@ export const ABILITY_FX_PATCH = `
       card.querySelectorAll('.bf-fx-spell-wave,.bf-fx-status-txt').forEach(function(e){if(e.parentNode)e.parentNode.removeChild(e);});
     },90);
   }
+
+  // Aparición de invocaciones: cuando un token nuevo (patito de goma u otras
+  // invocaciones futuras) entra en el tablero, su carta llega con un "pop",
+  // anillos de portal, destellos y el rótulo ¡INVOCADO!
+  function playSummon(card,hero){
+    if(getComputedStyle(card).position==='static')card.style.position='relative';
+    var color=(hero&&hero.clanColor)||'#ffe14a';
+    var glyphs=(hero&&(hero._bfDuck||String(hero.id).indexOf('duck')===0))?['🦆','🪶','✦','✨']:['✦','✨','◆','❋'];
+    var layer=document.createElement('div');
+    layer.className='bf-abx';
+    layer.style.color=color;
+    var html='<div class="bf-abx-flash"></div><div class="bf-sfx-ring"></div><div class="bf-sfx-ring" style="animation-delay:.18s"></div>';
+    for(var i=0;i<10;i++){
+      html+='<span class="bf-abx-p bf-abx-rise" style="left:'+(6+Math.random()*82)+'%;top:'+(45+Math.random()*42)+'%;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s;font-size:'+(12+Math.random()*11)+'px">'+glyphs[i%glyphs.length]+'</span>';
+    }
+    html+='<div class="bf-abx-banner">✨ ¡INVOCADO!</div>';
+    layer.innerHTML=html;
+    card.appendChild(layer);
+    card.classList.add('bf-sfx-pop');
+    setTimeout(function(){card.classList.remove('bf-sfx-pop');},950);
+    setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);
+  }
+
+  // Vigila el tablero: los héroes ya presentes se registran sin animar; solo
+  // los tokens invocados que aparecen de nuevas reciben la animación.
+  var seenUnit={};
+  function scanSummons(){
+    if(typeof G==='undefined'||!G.team)return;
+    ['p','o'].forEach(function(side){
+      (G.team[side]||[]).forEach(function(h){
+        if(!h||!h.id)return;
+        var key=side+'_'+h.id;
+        if(seenUnit[key])return;
+        var card=document.getElementById('b_'+side+'_'+h.id);
+        if(!card)return;
+        seenUnit[key]=1;
+        if((h._token||h._bfDuck)&&h.alive)try{playSummon(card,h);}catch(e){}
+      });
+    });
+  }
+  new MutationObserver(scanSummons).observe(document.documentElement,{childList:true,subtree:true});
 
   function install(){
     if(typeof window.useAbility!=='function'||window.__bfAbxHooked)return false;
