@@ -1,0 +1,66 @@
+{
+  "name": "MatchResult",
+  "type": "object",
+  "properties": {
+    "winner_nick": {
+      "type": "string"
+    },
+    "loser_nick": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "online",
+        "local",
+        "ia"
+      ]
+    },
+    "winner_is_ai": {
+      "type": "boolean",
+      "default": false
+    },
+    "loser_is_ai": {
+      "type": "boolean",
+      "default": false
+    },
+    "winner_heroes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "died": {
+            "type": "boolean"
+          },
+          "elite": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "loser_heroes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "died": {
+            "type": "boolean"
+          },
+          "elite": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "winner_nick",
+    "loser_nick"
+  ]
+}

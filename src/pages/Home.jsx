@@ -24,9 +24,11 @@ import { NET_RECONNECT_PATCH } from '@/lib/netReconnectPatch';
 import { bindGameLobbyBridge } from '@/lib/gameLobbyBridge';
 import { FINAL_CINEMATIC_PATCH } from '@/lib/finalCinematicPatch';
 import { STATUS_AURA_PATCH } from '@/lib/statusAuraPatch';
+import { MATCH_RESULT_PATCH } from '@/lib/matchResultPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-21-online-hardening-v172';
+const RANKING_ICON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5f6dbe23d_generated_image.png';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-21-top-ranking-v173';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
@@ -277,6 +279,17 @@ export default function Home() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
+  // Guarda el resultado de cada partida que el juego reporta desde el iframe.
+  useEffect(() => {
+    const onResult = (e) => {
+      if (e.data && e.data.bfMatchResult) {
+        base44.entities.MatchResult.create(e.data.bfMatchResult).catch(() => {});
+      }
+    };
+    window.addEventListener('message', onResult);
+    return () => window.removeEventListener('message', onResult);
+  }, []);
+
   useEffect(() => {
     base44.entities.Card.list('number', 200).then(cards => {
       if (cards?.length) setDbCount(cards.length);
@@ -312,7 +325,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + MATCH_RESULT_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus');
         let patchedData = baseData.includes('</body>')
@@ -362,6 +375,18 @@ export default function Home() {
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0e0a16] pointer-events-none">
           <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
         </div>
+      )}
+      {/* Top Ranking — salón de la fama, solo en la portada inicial */}
+      {showOracle && (
+        <Link to="/ranking" className="absolute bottom-24 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(255,210,74,0.5))' }}>
+          <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#FFD24A] shadow-[0_0_22px_rgba(255,210,74,0.55)] transition-transform group-hover:scale-110">
+            <img src={RANKING_ICON} alt="Top Ranking" className="w-full h-full object-cover" />
+          </div>
+          <div className="bg-[#1a1208] border border-[#FFD24A]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
+            <div className="font-heading font-black text-[13px] text-[#ffe49a] leading-none tracking-wide">Top Ranking</div>
+            <div className="text-[9px] text-[#d8a93c] mt-0.5 font-bold tracking-wider">Salón de la fama</div>
+          </div>
+        </Link>
       )}
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (

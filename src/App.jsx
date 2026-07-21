@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Cards from './pages/Cards';
 import RacesPage from './pages/RacesPage';
+import Ranking from './pages/Ranking';
 import AdminCards from './pages/AdminCards';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin" element={<AdminCards />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/races" element={<RacesPage />} />
+      <Route path="/ranking" element={<Ranking />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
