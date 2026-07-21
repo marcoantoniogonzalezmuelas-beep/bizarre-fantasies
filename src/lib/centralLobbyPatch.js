@@ -19,7 +19,15 @@ export const CENTRAL_LOBBY_PATCH = `
     if(result.error)task.reject(new Error(result.error));else task.resolve(result.data||{});
   });
 
+  function inBrowseView(){
+    // Solo se puede redibujar la lista si el lobby muestra la lista de salas.
+    // Si hay un formulario abierto (crear sala, local, unirse), un re-render
+    // lo borraría mientras el jugador escribe.
+    var h=document.querySelector('#s-lobby h2');
+    return !h||/Salas online/i.test(h.textContent);
+  }
   function canShowList(){
+    if(!inBrowseView())return false;
     if(typeof NET==='undefined')return false;
     if(!NET.role)return true;
     if(NET.role==='host')return !!(LOBBY._reg&&LOBBY._reg.confirmed);
