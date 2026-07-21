@@ -1278,7 +1278,9 @@ function buildArtScript(dbCards) {
     }
     function fmt(value) { return (value > 0 ? '+' : '') + value; }
     window.racesModal = function() {
-      var names = Object.keys(CLAN_PROFILE);
+      // 'Bizarros' se muestra con su tarjeta especial al final: se excluye
+      // aquí para que no salga dos veces.
+      var names = Object.keys(CLAN_PROFILE).filter(function(n) { return n !== 'Bizarros'; });
       var rows = names.map(function(name) {
         var p = CLAN_PROFILE[name];
         var col = (typeof CLAN_COLORS !== 'undefined' && CLAN_COLORS[name]) || '#ffd24a';
