@@ -21,7 +21,11 @@ export const CENTRAL_LOBBY_PATCH = `
 
   function canShowList(){
     if(typeof NET==='undefined')return false;
-    return !NET.role||(NET.role==='host'&&LOBBY._reg&&LOBBY._reg.confirmed);
+    if(!NET.role)return true;
+    if(NET.role==='host')return !!(LOBBY._reg&&LOBBY._reg.confirmed);
+    // Cliente sin conexión activa (p. ej. intento de unión fallido): la lista
+    // debe seguir viéndose; antes quedaba en blanco para siempre.
+    return !(NET.conn&&NET.conn.open);
   }
   function decorateHostedRoom(){
     if(typeof NET==='undefined'||NET.role!=='host'||!NET.code)return;
@@ -90,10 +94,14 @@ export const CENTRAL_LOBBY_PATCH = `
   }
 
   var tries=0,timer=setInterval(function(){if(install()||tries++>50)clearInterval(timer);},100);
+  // Refresco frecuente (8s) para que las salas nuevas aparezcan enseguida;
+  // el "toque" del host mantiene su sala visible en el servidor cada ~24s.
+  var tick=0;
   setInterval(function(){
-    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&NET.peer&&NET.peer.open&&!NET.conn?.open)request('touch',{code:NET.code}).catch(function(){});
+    tick++;
+    if(tick%3===0&&typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&NET.peer&&NET.peer.open&&!(NET.conn&&NET.conn.open))request('touch',{code:NET.code}).catch(function(){});
     if(typeof isLobby==='function'&&isLobby()&&canShowList())centralList();
-  },30000);
+  },8000);
 })();
 </script>
 `;

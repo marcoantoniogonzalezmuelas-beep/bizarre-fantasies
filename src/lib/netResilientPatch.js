@@ -198,6 +198,11 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       var originalClientJoin = window.clientJoin;
       window.clientJoin = function(){
         var self = this, args = arguments;
+        // Guarda los datos de la sala para poder reconectar automáticamente.
+        try{
+          var jc=String(args[0]||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+          if(typeof NET!=='undefined'&&jc){NET._bfJoin={code:jc,pass:args[1]||'',name:args[2]||''};NET.code=jc;}
+        }catch(e){}
         requestFreshIceServers().catch(function(){}).then(function(){
           ensurePeerJs().then(function(){ originalClientJoin.apply(self, args); }).catch(function(){
             if (typeof lobbyError === 'function') lobbyError('No se pudo cargar la conexión online. Inténtalo de nuevo.');
