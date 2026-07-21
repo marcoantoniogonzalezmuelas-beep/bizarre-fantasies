@@ -9,8 +9,8 @@ export const NET_RECONNECT_PATCH = `
 (function(){
   if(window.__bfNetReconnect)return;
   window.__bfNetReconnect=true;
-  var RETRY_MS=3000,MAX_WAIT=120000;
-  var rec={active:false,until:0,timer:null};
+  var RETRY_MS=3000,MAX_WAIT=180000;
+  var rec={active:false,until:0,timer:null,pendConn:null};
 
   // Datos de la partida en curso guardados en el dispositivo: si el jugador
   // se desconecta (timeout, recarga…), podrá volver desde el lobby con el
@@ -52,7 +52,7 @@ export const NET_RECONNECT_PATCH = `
 
   function resumed(){
     var was=rec.active;
-    rec.active=false;clearTimeout(rec.timer);hideOverlay();
+    rec.active=false;rec.pendConn=null;clearTimeout(rec.timer);hideOverlay();
     if(was&&typeof notif==='function')notif('✔ Conexión restablecida. ¡La partida continúa!');
   }
   function giveUp(msg){
@@ -79,10 +79,19 @@ export const NET_RECONNECT_PATCH = `
     var info=NET._bfJoin||{},code=info.code||NET.code||'';
     if(!code){giveUp();return;}
     try{
-      if(!NET.peer||NET.peer.destroyed){NET.peer=new Peer({debug:1});NET.peer.on('error',function(){});}
+      if(!NET.peer||NET.peer.destroyed){
+        // Renovar credenciales TURN antes de crear el peer nuevo: las viejas
+        // pueden haber caducado y bloquear la reconexión en redes móviles.
+        var mk=function(){if(rec.active&&(!NET.peer||NET.peer.destroyed)){NET.peer=new Peer({debug:1});NET.peer.on('error',function(){});}};
+        if(window.__bfFreshIce)window.__bfFreshIce().catch(function(){}).then(mk);
+        else mk();
+      }
       else if(NET.peer.disconnected){try{NET.peer.reconnect();}catch(e){}}
-      if(NET.peer.open&&!(NET.conn&&NET.conn.open)){
+      if(NET.peer&&NET.peer.open&&!(NET.conn&&NET.conn.open)){
+        // Cerrar intentos anteriores que se quedaron colgados sin abrir.
+        if(rec.pendConn&&rec.pendConn!==NET.conn){try{rec.pendConn.close();}catch(e){}}
         var conn=NET.peer.connect('bizfan-'+code,{reliable:true});
+        rec.pendConn=conn;
         conn.on('open',function(){
           if(!rec.active){try{conn.close();}catch(e){}return;}
           bindClientConn(conn);
@@ -97,7 +106,22 @@ export const NET_RECONNECT_PATCH = `
   function hostWait(){
     if(!rec.active)return;
     if(Date.now()>rec.until){giveUp();return;}
-    if(NET.peer&&NET.peer.disconnected&&!NET.peer.destroyed){try{NET.peer.reconnect();}catch(e){}}
+    try{
+      if(!NET.peer||NET.peer.destroyed){
+        // El peer del host murió del todo: recrearlo con el MISMO código de
+        // sala para que el rival pueda volver a conectarse y retomar.
+        var mk=function(){
+          if(!rec.active||(NET.peer&&!NET.peer.destroyed))return;
+          var peer=new Peer('bizfan-'+NET.code,{debug:1,host:'0.peerjs.com',port:443,path:'/',secure:true});
+          NET.peer=peer;
+          peer.on('connection',function(conn){if(typeof onHostConn==='function')onHostConn(conn);});
+          peer.on('error',function(){});
+        };
+        if(window.__bfFreshIce)window.__bfFreshIce().catch(function(){}).then(mk);
+        else mk();
+      }
+      else if(NET.peer.disconnected){try{NET.peer.reconnect();}catch(e){}}
+    }catch(e){}
     rec.timer=setTimeout(hostWait,RETRY_MS);
   }
 

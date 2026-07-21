@@ -31,6 +31,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     });
   }
 
+  // Expuesto para otros parches (reconexión): renueva credenciales TURN.
+  window.__bfFreshIce = requestFreshIceServers;
+
   window.addEventListener('message', function(event){
     var result = event.data && event.data.bfTurnResult;
     if (!result || !turnPending[result.requestId]) return;
