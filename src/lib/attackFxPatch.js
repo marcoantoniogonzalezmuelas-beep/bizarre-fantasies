@@ -50,6 +50,7 @@ export const ATTACK_FX_PATCH = `
     '.bf-shock-ring{width:30px;height:30px;border-radius:50%;border:5px solid rgba(255,225,74,.9);transform:translate(-50%,-50%);animation:bfShock .6s ease-out forwards}',
     '@keyframes bfShock{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0;border-width:1px}}',
     // ---- estilo anime ----
+    '.bf-wspr{width:96px;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.65)) drop-shadow(0 0 8px rgba(255,255,255,.22))}',
     '.bf-wpn{width:66px;height:66px;border-radius:14px;border:2.5px solid #ffd24a;background:#0b0714 center/cover no-repeat;box-shadow:0 0 20px rgba(255,210,74,.85),0 8px 22px rgba(0,0,0,.7);transform:translate(-50%,-50%)}',
     '.bf-wpn-emoji{display:flex;align-items:center;justify-content:center;font-size:36px}',
     '.bf-lines{width:170px;height:170px;transform:translate(-50%,-50%);border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,.95) 0 1.6deg,transparent 1.6deg 13deg);-webkit-mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);animation:bfLines .45s ease-out forwards}',
@@ -94,6 +95,65 @@ export const ATTACK_FX_PATCH = `
   window.addEventListener('message',function(e){ if(e.data&&e.data.bfArtMap){ for(var k in e.data.bfArtMap)__bfWpnArt[k]=e.data.bfArtMap[k]; } });
   try{ window.parent.postMessage({bfArtMapRequest:1},'*'); }catch(e){}
   var WPN_EMOJI={sling:'🪨',bolt:'🎯',bullet:'🔫',cannon:'💣',plasma:'🔫',arrow:'🏹',photon:'🔫',sword:'⚔️',dagger:'🗡️',axe:'🪓',mace:'🔨',psword:'⚔️',thunder:'🔨'};
+  // Sprites de arma dibujados en estilo anime: el arma en sí se anima haciendo
+  // el ataque (apuntar + retroceso a distancia, tajo en cuerpo a cuerpo).
+  var SPR='https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/';
+  var WPN_SPRITE={
+    rw_sling:SPR+'ca9cb3879_rw_sling_sprite.png',
+    rw_cross:SPR+'aba935dda_rw_cross_sprite.png',
+    rw_pistol:SPR+'d5af8d097_rw_pistol_sprite.png',
+    rw_smg:SPR+'c5c045283_rw_smg_sprite.png',
+    rw_cannon:SPR+'70d47891a_rw_cannon_sprite.png',
+    rw_plasma:SPR+'9a92a0b5f_rw_plasma_sprite.png',
+    rw_elfbow:SPR+'403b6de62_rw_elfbow_sprite.png',
+    rw_photon:SPR+'de8abfb0c_rw_photon_sprite.png',
+    mw_sword:SPR+'e4a5f3efc_mw_sword_sprite.png',
+    mw_dagger:SPR+'49c60a8f6_mw_dagger_sprite.png',
+    mw_axe:SPR+'5d29f4ee6_mw_axe_sprite.png',
+    mw_mace:SPR+'b83ce20a5_mw_mace_sprite.png',
+    mw_plasma:SPR+'01bae4d1b_mw_plasma_sprite.png',
+    mw_thunder:SPR+'a9d8d0e3e_mw_thunder_sprite.png'
+  };
+  // Precarga para que el arma aparezca sin retraso en el primer ataque.
+  for(var sk in WPN_SPRITE){ var pi=new Image(); pi.src=WPN_SPRITE[sk]; }
+  // Arma a distancia: aparece junto al atacante apuntando al objetivo y da un
+  // culatazo (retroceso) en el momento del disparo.
+  function showRangedWeapon(a,b,wid){
+    var url=WPN_SPRITE[wid]; if(!url)return false;
+    var ang=angle(a,b);
+    var flip=(b.x<a.x)?' scaleY(-1)':'';
+    var rad=ang*Math.PI/180, rx=-Math.cos(rad)*14, ry=-Math.sin(rad)*14;
+    var img=document.createElement('img'); img.src=url; img.className='bf-afx bf-wspr';
+    img.style.left=a.x+'px'; img.style.top=a.y+'px';
+    var base='rotate('+ang+'deg)'+flip;
+    img.animate([
+      {opacity:0,transform:'translate(-50%,-50%) '+base+' scale(.35)'},
+      {opacity:1,transform:'translate(-50%,-50%) '+base+' scale(1)',offset:.16},
+      {opacity:1,transform:'translate(calc(-50% + '+rx+'px),calc(-50% + '+ry+'px)) rotate('+(ang-6)+'deg)'+flip+' scale(1.04)',offset:.3},
+      {opacity:1,transform:'translate(-50%,-50%) '+base,offset:.55},
+      {opacity:0,transform:'translate(-50%,-50%) '+base+' scale(.85)'}
+    ],{duration:950,easing:'ease-out',fill:'forwards'});
+    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },980);
+    return true;
+  }
+  // Arma cuerpo a cuerpo: viaja del atacante al objetivo describiendo un tajo
+  // (giro de -80° a +55°) y se desvanece en el impacto.
+  function showMeleeWeapon(a,b,wid){
+    var url=WPN_SPRITE[wid]; if(!url)return false;
+    var t=(b.x>=a.x)?1:-1;
+    var flip=(t<0)?' scaleX(-1)':'';
+    var mx=a.x+(b.x-a.x)*.82, my=a.y+(b.y-a.y)*.82;
+    var img=document.createElement('img'); img.src=url; img.className='bf-afx bf-wspr';
+    img.style.transformOrigin='50% 85%';
+    img.animate([
+      {left:a.x+'px',top:a.y+'px',opacity:0,transform:'translate(-50%,-80%) rotate('+(-85*t)+'deg)'+flip},
+      {left:(a.x+(mx-a.x)*.35)+'px',top:(a.y+(my-a.y)*.35)+'px',opacity:1,transform:'translate(-50%,-80%) rotate('+(-45*t)+'deg)'+flip,offset:.35},
+      {left:mx+'px',top:my+'px',opacity:1,transform:'translate(-50%,-80%) rotate('+(55*t)+'deg)'+flip,offset:.72},
+      {left:mx+'px',top:my+'px',opacity:0,transform:'translate(-50%,-80%) rotate('+(62*t)+'deg)'+flip}
+    ],{duration:430,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
+    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },460);
+    return true;
+  }
   function weaponShow(a,b,wname,kind){
     var w=document.createElement('div'); w.className='bf-afx bf-wpn';
     var url=wname&&__bfWpnArt[wname];
@@ -132,8 +192,9 @@ export const ATTACK_FX_PATCH = `
     var h=getAttacker(ev.fromSide,ev.fromId); var w=h&&h.rwep; var wid=(w&&w.id)||'';
     var kind=RANGED_KIND[wid]||'arrow';
     var hits=ev.hits||1;
-    // Compás anime: primero aparece el arma con líneas de velocidad, luego el disparo.
-    weaponShow(a,b,w&&w.name,kind);
+    // Compás anime: primero aparece el arma apuntando (sprite animado con
+    // retroceso; si no hay sprite, la carta), luego el disparo.
+    if(!showRangedWeapon(a,b,wid))weaponShow(a,b,w&&w.name,kind);
     speedLines(a);
     function impact(extra){ hitStar(b); shake(ev.toSide,ev.toId); if(extra)extra(); }
     var L=200;
@@ -153,7 +214,7 @@ export const ATTACK_FX_PATCH = `
     var a=ev.fromSide?centerOf(ev.fromSide,ev.fromId):null;
     // Compás anime: el arma aparece junto al atacante, que embiste hacia el
     // objetivo; el golpe (tajos + estrella de impacto + sacudida) llega después.
-    if(a){ weaponShow(a,b,w&&w.name,kind); lunge(ev.fromSide,ev.fromId,b); }
+    if(a){ if(!showMeleeWeapon(a,b,wid))weaponShow(a,b,w&&w.name,kind); lunge(ev.fromSide,ev.fromId,b); }
     var D=a?240:0;
     setTimeout(function(){
       hitStar(b); shake(ev.toSide,ev.toId);
