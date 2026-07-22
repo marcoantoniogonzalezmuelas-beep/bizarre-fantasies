@@ -55,12 +55,23 @@ export const CARD_MAGNIFIER_PATCH = `
     var t = mag.querySelector('.bf-mag-txt');
     if (info && info.textContent) { t.textContent = info.textContent; t.style.display = ''; }
     else t.style.display = 'none';
-    // Coste de maná (hechizos): mismo orbe azul que en la carta pequeña.
+    // Coste de maná (hechizos): mismo orbe azul que en la carta pequeña. Si la
+    // carta pequeña no lleva el orbe (p. ej. la mano en batalla), se busca el
+    // hechizo por nombre en la lista del juego.
     var manaBadge = chip.querySelector('.bf-chip-cost.bf-mana-cost');
+    var manaTxt = manaBadge && manaBadge.textContent ? manaBadge.textContent : '';
+    if (!manaTxt) {
+      var nm = nameEl ? nameEl.textContent.trim() : '';
+      var sp = (typeof SPELLS !== 'undefined' && nm) ? SPELLS.find(function(s){ return s && s.name === nm; }) : null;
+      if (sp) {
+        var mv = (typeof window.bfManaFor === 'function') ? window.bfManaFor(sp) : (sp.mana != null ? sp.mana : null);
+        if (mv != null) manaTxt = String(mv);
+      }
+    }
     var mm = mag.querySelector('.bf-mag-mana');
-    if (manaBadge && manaBadge.textContent) {
-      mm.childNodes[0] && mm.removeChild(mm.childNodes[0]);
-      mm.insertBefore(document.createTextNode(manaBadge.textContent), mm.firstChild);
+    if (manaTxt) {
+      mm.childNodes[0] && mm.childNodes[0].nodeType === 3 && mm.removeChild(mm.childNodes[0]);
+      mm.insertBefore(document.createTextNode(manaTxt), mm.firstChild);
       mm.style.display = 'flex';
     } else mm.style.display = 'none';
     place(chip);

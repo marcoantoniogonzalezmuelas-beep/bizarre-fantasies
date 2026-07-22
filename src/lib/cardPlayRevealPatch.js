@@ -16,13 +16,16 @@ export const CARD_PLAY_REVEAL_PATCH = `
   '@keyframes bfRevPop{0%{transform:scale(.2) rotate(-10deg)}6%{transform:scale(1.06) rotate(2deg)}10%{transform:scale(1) rotate(0)}91%{transform:scale(1)}100%{transform:scale(.92)}}'+
   '.bf-reveal-name{position:absolute;left:0;right:0;bottom:0;padding:8px 6px;text-align:center;font-family:Cinzel,serif;font-weight:900;font-size:16px;color:#fff7ea;background:linear-gradient(0deg,rgba(8,5,14,.95),rgba(8,5,14,.55) 70%,transparent);text-shadow:0 2px 6px #000}'+
   '.bf-reveal-who{position:absolute;left:50%;top:-16px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:1000;letter-spacing:.6px;color:#3a2600;background:linear-gradient(180deg,#ffe27a,#e0a92e);border:1px solid rgba(255,240,180,.85);border-radius:10px;padding:3px 12px;box-shadow:0 3px 10px rgba(0,0,0,.55)}'+
-  '.bf-reveal-kind{position:absolute;top:10px;right:10px;font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}';
+  '.bf-reveal-kind{position:absolute;top:10px;right:10px;font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}'+
+  '.bf-reveal-txt{position:absolute;left:8px;right:8px;bottom:42px;padding:5px 8px;border-radius:8px;background:rgba(8,5,14,.86);border:1px solid rgba(255,210,74,.32);color:#fff7ea;font-size:11px;font-weight:700;line-height:1.25;text-align:center}'+
+  '.bf-reveal-mana{position:absolute;top:8px;left:8px;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:16px;color:#eaf4ff;background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a);border:2px solid #8fc4ff;box-shadow:0 3px 8px rgba(0,0,0,.55),inset 0 1px 2px rgba(255,255,255,.5);text-shadow:0 1px 2px rgba(0,0,0,.5)}';
   document.head.appendChild(st);
 
   // El arte de las cartas se pide a la página (base de datos de cartas).
-  var __artMap={};
+  var __artMap={},__infoMap={};
   window.addEventListener('message',function(e){
     if(e.data&&e.data.bfArtMap)__artMap=e.data.bfArtMap||{};
+    if(e.data&&e.data.bfCardInfo)__infoMap=e.data.bfCardInfo||{};
   });
   try{window.parent.postMessage({bfArtMapRequest:1},'*');}catch(e){}
   function artFor(name){
@@ -53,8 +56,12 @@ export const CARD_PLAY_REVEAL_PATCH = `
     if(url)card.style.backgroundImage='url("'+url+'")';
     card.style.borderColor=ev.kind==='spell'?'#c79bff':'#ffd24a';
     card.style.boxShadow='0 0 40px '+(ev.kind==='spell'?'rgba(199,155,255,.75)':'rgba(255,210,74,.75)')+',0 18px 50px rgba(0,0,0,.8)';
+    // Texto del Oráculo y coste de maná (hechizos), si la base de datos los tiene.
+    var info=__infoMap[ev.name]||{};
     card.innerHTML=(who?'<div class="bf-reveal-who">'+String(who).toUpperCase()+' JUEGA</div>':'')+
       '<div class="bf-reveal-kind">'+(ev.kind==='spell'?'🔮':'🎒')+'</div>'+
+      (ev.kind==='spell'&&info.mana!=null?'<div class="bf-reveal-mana">'+info.mana+'</div>':'')+
+      (info.text?'<div class="bf-reveal-txt">'+String(info.text)+'</div>':'')+
       '<div class="bf-reveal-name">'+String(ev.name)+'</div>';
     wrap.appendChild(card);
     document.body.appendChild(wrap);

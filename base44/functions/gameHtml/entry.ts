@@ -71,7 +71,7 @@ function buildArtScript(dbCards) {
   if (typeof CLAN_PROFILE !== 'undefined') CLAN_PROFILE.Bizarros = { eliteHpPct:0, mMelee:0, mRanged:0, mSpell:0, mVel:0, manaBonus:0, regenBonus:0, resPhys:0, resMagic:0, trait:'Héroes sorpresa · No salen en subasta', desc:'Criaturas imposibles que aparecen de forma inesperada durante la batalla.' };
   var TOKEN_ART = TOKENS.map(function(t){ return t.art || LT_ART[t.id] || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || LT_ART[t.id] || ''; });
   var TRANSFORMER_ART = "${transformerArt}";
-  var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; }
+  var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; } window.bfManaFor=bfManaFor;
   var BONUS_ART = ${JSON.stringify(bonusArtArr)};
   var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
   var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};

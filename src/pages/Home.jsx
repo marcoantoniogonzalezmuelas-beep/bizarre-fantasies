@@ -34,7 +34,7 @@ import { HAND_PICK_HIGHLIGHT_PATCH } from '@/lib/handPickHighlightPatch';
 import { CARD_PLAY_REVEAL_PATCH } from '@/lib/cardPlayRevealPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-22-fx-sprites-v188';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-22-card-info-v189';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
@@ -300,8 +300,15 @@ export default function Home() {
       if (e.data && e.data.bfArtMapRequest) {
         base44.entities.Card.filter({ category: { $in: ['spell', 'object', 'ranged_weapon', 'melee_weapon'] } }, 'number', 200).then(cards => {
           const map = {};
-          (cards || []).forEach(c => { if (c.name && c.art_url) map[c.name] = c.art_url; });
-          iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map }, '*');
+          const info = {};
+          (cards || []).forEach(c => {
+            if (!c.name) return;
+            if (c.art_url) map[c.name] = c.art_url;
+            // Texto del Oráculo + coste de maná, para la carta revelada al jugarse.
+            const text = c.description || c.ability_text || '';
+            if (text || c.mana != null) info[c.name] = { text, mana: c.mana != null ? c.mana : null, category: c.category };
+          });
+          iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map, bfCardInfo: info }, '*');
         }).catch(() => {});
       }
     };
@@ -347,6 +354,9 @@ export default function Home() {
         const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + MATCH_RESULT_PATCH + RANKING_BUTTON_PATCH + ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus');
+        // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
+        // muestra el maná que le queda al héroe para lanzar hechizos.
+        baseData = baseData.split("hasSpell?('×'+(stat(h,'he')/HE_REF).toFixed(1)):'—'").join("h.maxMana>0?('🔵 '+h.mana):'—'");
         let patchedData = baseData.includes('</body>')
           ? baseData.replace('</body>', INJECT + '</body>')
           : baseData + INJECT;
