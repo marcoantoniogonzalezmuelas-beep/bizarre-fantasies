@@ -75,6 +75,15 @@ export const ABILITY_FX_PATCH = `
     html+='<div class="bf-abx-banner" style="border-color:'+clan+';box-shadow:0 0 16px '+clan+'">'+theme.icon+' '+String(name).toUpperCase()+'</div>';
     layer.innerHTML=html;
     card.appendChild(layer);
+    // Remate anime: líneas de velocidad sobre el héroe y estrella de impacto
+    // en las habilidades ofensivas.
+    var A=window.__bfAnime;
+    if(A){
+      var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
+      A.speedLines(cc);
+      var fam=FAM[hero.akind]||'magic';
+      if(fam==='melee'||fam==='ranged'||fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
+    }
     card.classList.add(theme.shake?'bf-abx-shake':'bf-abx-glow');
     setTimeout(function(){card.classList.remove('bf-abx-shake','bf-abx-glow');},1000);
     setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1600);
@@ -101,6 +110,13 @@ export const ABILITY_FX_PATCH = `
     html+='<div class="bf-abx-banner">✨ ¡INVOCADO!</div>';
     layer.innerHTML=html;
     card.appendChild(layer);
+    // Remate anime de la invocación: líneas de velocidad + estrella al aparecer.
+    var A2=window.__bfAnime;
+    if(A2){
+      var rs=card.getBoundingClientRect(),cs={x:rs.left+rs.width/2,y:rs.top+rs.height/2};
+      A2.speedLines(cs);
+      setTimeout(function(){A2.hitStar(cs);},220);
+    }
     card.classList.add('bf-sfx-pop');
     setTimeout(function(){card.classList.remove('bf-sfx-pop');},950);
     setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);

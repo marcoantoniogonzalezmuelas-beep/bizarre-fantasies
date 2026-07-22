@@ -94,6 +94,9 @@ export const SPELL_FX_PATCH = `
             else if (el === 'fuego') fxFire(ev.toSide, ev.toId);
             else if (el === 'hielo') fxIce(ev.toSide, ev.toId);
             else if (el === 'rayo') fxLightning(ev.toSide, ev.toId);
+            // Remate anime: estrella de impacto + sacudida y destello del objetivo.
+            var A=window.__bfAnime;
+            if(A){ var c=centerOf(ev.toSide, ev.toId); if(c&&el!=='agua')setTimeout(function(){A.hitStar(c);},260); A.shake(ev.toSide, ev.toId); }
           });
         }
       } catch(e) {}

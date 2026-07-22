@@ -51,6 +51,14 @@ export const OBJECT_FX_PATCH = `
     html+='<div class="bf-abx-banner">'+theme.icon+' '+String(name).toUpperCase()+'</div>';
     layer.innerHTML=html;
     card.appendChild(layer);
+    // Remate anime: líneas de velocidad en el objetivo; estrella y sacudida
+    // solo en objetos de impacto (bomba).
+    var A=window.__bfAnime;
+    if(A){
+      var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
+      A.speedLines(cc);
+      if(theme===THEMES.bomb){ setTimeout(function(){A.hitStar(cc);},160); }
+    }
     card.classList.add('bf-abx-glow');
     setTimeout(function(){card.classList.remove('bf-abx-glow');},1000);
     setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);

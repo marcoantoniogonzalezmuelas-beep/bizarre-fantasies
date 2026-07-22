@@ -124,6 +124,8 @@ export const ATTACK_FX_PATCH = `
     var d=Math.hypot(dx,dy)||1; var f=Math.min(54,d*.3)/d;
     el.animate([{transform:'translate(0,0)'},{transform:'translate('+(dx*f)+'px,'+(dy*f)+'px) rotate('+(dx>=0?4:-4)+'deg)',offset:.45},{transform:'translate(0,0)'}],{duration:400,easing:'cubic-bezier(.3,1.3,.4,1)'});
   }
+  // Ayudantes compartidos con los demás parches (hechizos, habilidades, objetos).
+  window.__bfAnime={hitStar:hitStar,speedLines:speedLines,streak:streak,shake:shake,lunge:lunge};
 
   function rangedFx(ev){
     var a=centerOf(ev.fromSide,ev.fromId), b=centerOf(ev.toSide,ev.toId); if(!a||!b)return;
