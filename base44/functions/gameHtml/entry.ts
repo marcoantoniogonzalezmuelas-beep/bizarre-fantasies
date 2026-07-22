@@ -1687,9 +1687,12 @@ function buildArtScript(dbCards) {
   // ---- Hand chips (spells/objects) → add a small art thumbnail ----
   var __bfHandArtByName = null;
   function handArtByName() {
-    if (__bfHandArtByName) return __bfHandArtByName;
     if (typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined') return null;
-    var map = {};
+    // La caché se invalida si cambian las listas (p. ej. Transformer se añade
+    // a SPELLS después del primer render y sin esto se quedaba sin imagen).
+    var sig = SPELLS.length + '/' + OBJECTS.length;
+    if (__bfHandArtByName && __bfHandArtByName.__sig === sig) return __bfHandArtByName;
+    var map = { __sig: sig };
     (SPELLS || []).forEach(function(s, i) { if (s && s.name && SPELL_ART[i]) map[s.name] = SPELL_ART[i]; });
     (OBJECTS || []).forEach(function(o, i) { if (o && o.name && OBJECT_ART[i]) map[o.name] = OBJECT_ART[i]; });
     __bfHandArtByName = map;
@@ -1699,9 +1702,10 @@ function buildArtScript(dbCards) {
   // effect (damage / heal / mana / etc.) and show it on the hand card.
   var __bfHandItemByName = null;
   function handItemByName() {
-    if (__bfHandItemByName) return __bfHandItemByName;
     if (typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined') return null;
-    var map = {};
+    var sigI = SPELLS.length + '/' + OBJECTS.length;
+    if (__bfHandItemByName && __bfHandItemByName.__sig === sigI) return __bfHandItemByName;
+    var map = { __sig: sigI };
     (SPELLS || []).forEach(function(s) { if (s && s.name) { var copy = {}; for (var k in s) copy[k] = s[k]; map[s.name] = { item: copy, kind: 'spell' }; } });
     (OBJECTS || []).forEach(function(o) { if (o && o.name) { var copy = {}; for (var k in o) copy[k] = o[k]; map[o.name] = { item: copy, kind: 'object' }; } });
     __bfHandItemByName = map;
@@ -1779,8 +1783,7 @@ function buildArtScript(dbCards) {
       var fill = document.createElement('div'); fill.className = 'bf-chip-fill'; fill.style.backgroundImage = 'url("' + url + '")';
       chip.insertBefore(art, chip.firstChild); chip.insertBefore(fill, chip.firstChild);
        var nm = document.createElement('div'); nm.className = 'bf-chip-name'; nm.textContent = name; chip.appendChild(nm);
-       var items = handItemByName(); var found = items ? items[name] : null; var summary = handCardSummary(found);
-       if (summary) { var info = document.createElement('div'); info.className = 'bf-chip-info'; info.textContent = summary; chip.appendChild(info); chip.classList.add('bf-chip-has-info'); }
+       var items = handItemByName(); var found = items ? items[name] : null;
        bfAddChipButtons(chip, found, chip.onclick, chip.getAttribute('onclick'), url, name);
     });
     
