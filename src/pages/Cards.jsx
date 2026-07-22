@@ -9,6 +9,7 @@ import { HEROES, SPELLS, MELEE_WEAPONS, RANGED_WEAPONS, ARMORS, OBJECTS, BONUSES
 import ClanSigil from '@/components/cards/ClanSigil';
 import DownloadDocsButton from '@/components/cards/DownloadDocsButton';
 import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
+import { getLang, t } from '@/lib/i18n';
 
 const TABS = [
   { key: 'heroes', label: 'Héroes' },
@@ -132,16 +133,16 @@ export default function Cards() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link to="/" className="-ml-2 p-2.5 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-[#ffffff10] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={24} /></Link>
           <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">ORÁCULO BIZARRO</h1>
-          <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} cartas · Base Set</span>
+          <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} {t('cartas · Base Set')}</span>
           <div className="ml-auto"><DownloadDocsButton cards={dbCards} /></div>
         </div>
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 pb-2 flex gap-1.5 overflow-x-auto no-scrollbar">
-          {TABS.map(t => (
-            <button key={t.key} onClick={() => { setTab(t.key); setSearch(''); setClanFilter('Todos'); setTypeFilter('Todos'); }}
-              className={`flex-shrink-0 text-sm font-semibold px-3 py-2 rounded-lg transition-all ${tab === t.key ? 'bg-gradient-to-b from-[#ffe49a] via-[#FFD24A] to-[#d8a431] text-[#2a1d05] border-[#ffe9a8]' : 'bg-[#221a36] text-[#efe9dc] border-[#3c3158] hover:border-[#b8902a]'} border`}>
-              {t.label}
+          {TABS.map(tb => (
+            <button key={tb.key} onClick={() => { setTab(tb.key); setSearch(''); setClanFilter('Todos'); setTypeFilter('Todos'); }}
+              className={`flex-shrink-0 text-sm font-semibold px-3 py-2 rounded-lg transition-all ${tab === tb.key ? 'bg-gradient-to-b from-[#ffe49a] via-[#FFD24A] to-[#d8a431] text-[#2a1d05] border-[#ffe9a8]' : 'bg-[#221a36] text-[#efe9dc] border-[#3c3158] hover:border-[#b8902a]'} border`}>
+              {t(tb.label)}
             </button>
           ))}
         </div>
@@ -153,7 +154,7 @@ export default function Cards() {
           <div className="flex flex-wrap gap-2 mb-6">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8099]" size={16} />
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar héroe..." className="w-full pl-9 pr-3 py-2.5 text-sm bg-[#15101f] border border-[#3c3158] rounded-lg text-[#efe9dc] focus:outline-none focus:border-[#b8902a]" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('Buscar héroe...')} className="w-full pl-9 pr-3 py-2.5 text-sm bg-[#15101f] border border-[#3c3158] rounded-lg text-[#efe9dc] focus:outline-none focus:border-[#b8902a]" />
             </div>
             <div className="flex gap-1 flex-wrap">
               {HERO_CLANS.map(c => {
@@ -166,15 +167,15 @@ export default function Cards() {
                         <ClanSigil clan={c} size={13} />
                       </span>
                     )}
-                    {c}
+                    {t(c)}
                   </button>
                 );
               })}
             </div>
             <div className="flex gap-1">
-              {HERO_TYPES.map(t => (
-                <button key={t} onClick={() => setTypeFilter(t)} className={`text-xs font-bold px-3 py-2 rounded-lg border transition-all ${typeFilter === t ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
-                  {t === 'Todos' ? 'Todos' : t === 'CC' ? '⚔️ CC' : t === 'AD' ? '🏹 AD' : '🔮 HE'}
+              {HERO_TYPES.map(ty => (
+                <button key={ty} onClick={() => setTypeFilter(ty)} className={`text-xs font-bold px-3 py-2 rounded-lg border transition-all ${typeFilter === ty ? 'border-[#FFD24A] text-[#FFD24A] bg-[#FFD24A11]' : 'border-[#3c3158] text-[#a89fbb] hover:border-[#b8902a]'}`}>
+                  {ty === 'Todos' ? t('Todos') : ty === 'CC' ? '⚔️ CC' : ty === 'AD' ? '🏹 AD' : '🔮 HE'}
                 </button>
               ))}
             </div>
@@ -218,10 +219,12 @@ export default function Cards() {
           <>
             <div className="mb-6 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2" style={{ background: '#caa14a18', border: '1px solid #caa14a55', color: '#ffe49a' }}>
               <span className="text-lg">🎲</span>
-              <span>Los <strong>Bizarros</strong> no salen en subasta. Solo aparecen en plena batalla de forma sorpresiva e impredecible.</span>
+              {getLang() === 'en'
+                ? <span>The <strong>Bizarros</strong> never appear at auction. They only emerge mid-battle, sudden and unpredictable.</span>
+                : <span>Los <strong>Bizarros</strong> no salen en subasta. Solo aparecen en plena batalla de forma sorpresiva e impredecible.</span>}
             </div>
             {tokens.length === 0 ? (
-              <div className="text-center py-16 text-[#a89fbb]">Aún no hay Bizarros en el catálogo.</div>
+              <div className="text-center py-16 text-[#a89fbb]">{t('Aún no hay Bizarros en el catálogo.')}</div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {tokens.map(token => <HeroCard key={token.id} hero={token} onClick={h => setSelectedHero(h)} />)}
@@ -241,7 +244,7 @@ export default function Cards() {
         )}
 
         {tab === 'heroes' && filteredHeroes.length === 0 && (
-          <div className="text-center py-16 text-[#a89fbb]">No se encontraron héroes con esos filtros.</div>
+          <div className="text-center py-16 text-[#a89fbb]">{t('No se encontraron héroes con esos filtros.')}</div>
         )}
       </div>
     </div>

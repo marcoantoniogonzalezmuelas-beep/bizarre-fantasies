@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
+import { t } from '@/lib/i18n';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5f6dbe23d_generated_image.png';
@@ -41,7 +42,7 @@ export default function Ranking() {
   });
   const playerExtra = (nick) => {
     const w = wins[nick] || 0, l = losses[nick] || 0;
-    return `${w + l} partidas · ${Math.round((w / Math.max(1, w + l)) * 100)}% victorias`;
+    return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
   };
 
   return (
@@ -51,13 +52,13 @@ export default function Ranking() {
 
       <div className="relative max-w-5xl mx-auto px-4 py-8 pb-16">
         <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="text-sm font-bold text-[#cfc6dd] border border-[#3c3158] rounded-xl px-4 py-2 bg-[#161028]/80 hover:bg-[#221a3d] transition-colors">← Volver al juego</Link>
+          <Link to="/" className="text-sm font-bold text-[#cfc6dd] border border-[#3c3158] rounded-xl px-4 py-2 bg-[#161028]/80 hover:bg-[#221a3d] transition-colors">{t('← Volver al juego')}</Link>
         </div>
 
         <div className="text-center mb-10">
           <img src={ICON_IMG} alt="Top Ranking" className="w-24 h-24 mx-auto rounded-full border-2 border-[#FFD24A] shadow-[0_0_30px_rgba(255,210,74,.5)] object-cover mb-4" />
           <h1 className="font-heading font-black text-4xl md:text-5xl text-[#FFD24A] drop-shadow-[0_2px_12px_rgba(255,210,74,.35)] tracking-wide">Top Ranking</h1>
-          <p className="text-[#cfc6dd] mt-2 text-sm">El salón de la fama de Bizarre Fantasies · {results ? results.length : '…'} partidas registradas</p>
+          <p className="text-[#cfc6dd] mt-2 text-sm">{t('El salón de la fama de Bizarre Fantasies')} · {results ? results.length : '…'} {t('partidas registradas')}</p>
         </div>
 
         {!results ? (
@@ -67,12 +68,12 @@ export default function Ranking() {
         ) : (
           <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <RankList title="Mejores jugadores" icon="👑" rows={top(wins, 10, playerExtra)} valueLabel="victorias" accent="#FFD24A" empty="Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!" />
+              <RankList title={t('Mejores jugadores')} icon="👑" rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} />
             </div>
-            <RankList title="Héroes más victoriosos" icon="⚔️" rows={top(heroWins, 8)} valueLabel="batallas ganadas" accent="#7ddf7d" />
-            <RankList title="Héroes más derrotados" icon="💀" rows={top(heroLosses, 8)} valueLabel="batallas perdidas" accent="#ff7d7d" />
-            <RankList title="Héroes más veces caídos" icon="⚰️" rows={top(heroDeaths, 8)} valueLabel="caídas" accent="#c06bff" />
-            <RankList title="Renaceres Élite" icon="🔥" rows={top(heroElites, 8)} valueLabel="renaceres" accent="#ffa94a" empty="Ningún héroe ha renacido en su forma Élite aún." />
+            <RankList title={t('Héroes más victoriosos')} icon="⚔️" rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" />
+            <RankList title={t('Héroes más derrotados')} icon="💀" rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" />
+            <RankList title={t('Héroes más veces caídos')} icon="⚰️" rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" />
+            <RankList title={t('Renaceres Élite')} icon="🔥" rows={top(heroElites, 8)} valueLabel={t('renaceres')} accent="#ffa94a" empty={t('Ningún héroe ha renacido en su forma Élite aún.')} />
           </div>
         )}
       </div>
