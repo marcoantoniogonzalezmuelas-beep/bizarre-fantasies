@@ -10,10 +10,10 @@ export const CARD_PLAY_REVEAL_PATCH = `
 
   var st=document.createElement('style');
   st.textContent=''+
-  '.bf-reveal{position:fixed;inset:0;z-index:2147480000;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.45),rgba(0,0,0,0) 70%);animation:bfRevFade 2.6s ease forwards}'+
-  '@keyframes bfRevFade{0%{opacity:0}8%{opacity:1}82%{opacity:1}100%{opacity:0}}'+
-  '.bf-reveal-card{position:relative;width:210px;height:294px;border-radius:16px;overflow:hidden;border:4px solid #ffd24a;box-shadow:0 0 40px rgba(255,210,74,.75),0 18px 50px rgba(0,0,0,.8);background:#120a1e center/cover no-repeat;animation:bfRevPop 2.6s cubic-bezier(.2,1.4,.4,1) forwards}'+
-  '@keyframes bfRevPop{0%{transform:scale(.2) rotate(-10deg)}12%{transform:scale(1.06) rotate(2deg)}20%{transform:scale(1) rotate(0)}82%{transform:scale(1)}100%{transform:scale(.92)}}'+
+  '.bf-reveal{position:fixed;inset:0;z-index:2147480000;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(0,0,0,.45),rgba(0,0,0,0) 70%);animation:bfRevFade 5s ease forwards}'+
+  '@keyframes bfRevFade{0%{opacity:0}4%{opacity:1}91%{opacity:1}100%{opacity:0}}'+
+  '.bf-reveal-card{position:relative;width:210px;height:294px;border-radius:16px;overflow:hidden;border:4px solid #ffd24a;box-shadow:0 0 40px rgba(255,210,74,.75),0 18px 50px rgba(0,0,0,.8);background:#120a1e center/cover no-repeat;animation:bfRevPop 5s cubic-bezier(.2,1.4,.4,1) forwards}'+
+  '@keyframes bfRevPop{0%{transform:scale(.2) rotate(-10deg)}6%{transform:scale(1.06) rotate(2deg)}10%{transform:scale(1) rotate(0)}91%{transform:scale(1)}100%{transform:scale(.92)}}'+
   '.bf-reveal-name{position:absolute;left:0;right:0;bottom:0;padding:8px 6px;text-align:center;font-family:Cinzel,serif;font-weight:900;font-size:16px;color:#fff7ea;background:linear-gradient(0deg,rgba(8,5,14,.95),rgba(8,5,14,.55) 70%,transparent);text-shadow:0 2px 6px #000}'+
   '.bf-reveal-who{position:absolute;left:50%;top:-16px;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:1000;letter-spacing:.6px;color:#3a2600;background:linear-gradient(180deg,#ffe27a,#e0a92e);border:1px solid rgba(255,240,180,.85);border-radius:10px;padding:3px 12px;box-shadow:0 3px 10px rgba(0,0,0,.55)}'+
   '.bf-reveal-kind{position:absolute;top:10px;right:10px;font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}';
@@ -58,7 +58,7 @@ export const CARD_PLAY_REVEAL_PATCH = `
       '<div class="bf-reveal-name">'+String(ev.name)+'</div>';
     wrap.appendChild(card);
     document.body.appendChild(wrap);
-    setTimeout(function(){if(wrap.parentNode)wrap.parentNode.removeChild(wrap);},2650);
+    setTimeout(function(){if(wrap.parentNode)wrap.parentNode.removeChild(wrap);},5050);
   }
   window.__bfShowCardReveal=showReveal;
 
