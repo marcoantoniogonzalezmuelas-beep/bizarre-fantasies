@@ -48,7 +48,16 @@ export const ATTACK_FX_PATCH = `
     '.bf-thunder-bolt{position:fixed;width:6px;background:linear-gradient(180deg,#fff,#ffe14a 40%,#bfe0ff);box-shadow:0 0 10px #ffe14a,0 0 22px rgba(120,200,255,.8);transform:translateX(-50%);animation:bfTbolt .5s ease-out forwards;clip-path:polygon(60% 0,80% 25%,40% 50%,70% 80%,30% 100%,20% 80%,55% 50%,25% 25%)}',
     '@keyframes bfTbolt{0%{opacity:0}15%{opacity:1}100%{opacity:0}}',
     '.bf-shock-ring{width:30px;height:30px;border-radius:50%;border:5px solid rgba(255,225,74,.9);transform:translate(-50%,-50%);animation:bfShock .6s ease-out forwards}',
-    '@keyframes bfShock{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0;border-width:1px}}'
+    '@keyframes bfShock{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0;border-width:1px}}',
+    // ---- estilo anime ----
+    '.bf-wpn{width:66px;height:66px;border-radius:14px;border:2.5px solid #ffd24a;background:#0b0714 center/cover no-repeat;box-shadow:0 0 20px rgba(255,210,74,.85),0 8px 22px rgba(0,0,0,.7);transform:translate(-50%,-50%)}',
+    '.bf-wpn-emoji{display:flex;align-items:center;justify-content:center;font-size:36px}',
+    '.bf-lines{width:170px;height:170px;transform:translate(-50%,-50%);border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,.95) 0 1.6deg,transparent 1.6deg 13deg);-webkit-mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);animation:bfLines .45s ease-out forwards}',
+    '@keyframes bfLines{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.65)}}',
+    '.bf-hitstar{width:112px;height:112px;transform:translate(-50%,-50%);background:#fff;clip-path:polygon(50% 0,60% 38%,100% 32%,66% 55%,85% 100%,50% 68%,15% 100%,34% 55%,0 32%,40% 38%);filter:drop-shadow(0 0 18px #ffe14a);animation:bfHitStar .42s ease-out forwards}',
+    '@keyframes bfHitStar{0%{transform:translate(-50%,-50%) scale(.2) rotate(-25deg);opacity:0}20%{opacity:1}60%{transform:translate(-50%,-50%) scale(1.08) rotate(6deg)}100%{transform:translate(-50%,-50%) scale(1.28) rotate(12deg);opacity:0}}',
+    '.bf-streak{height:15px;color:#fff;background:linear-gradient(90deg,transparent,currentColor 25%,#fff 50%,currentColor 75%,transparent);border-radius:8px;filter:drop-shadow(0 0 14px currentColor);animation:bfStreak .34s ease-out forwards}',
+    '@keyframes bfStreak{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scaleX(.2)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scaleX(1.55)}}'
   ].join('');
   document.head.appendChild(st);
 
@@ -79,32 +88,80 @@ export const ATTACK_FX_PATCH = `
   function dustAt(b){ var d=document.createElement('div'); d.className='bf-afx bf-dust'; d.style.left=b.x+'px'; d.style.top=b.y+'px'; spawn(d,520); }
   function boomAt(b,cls,ringCol){ var bo=document.createElement('div'); bo.className='bf-afx '+cls; bo.style.left=b.x+'px'; bo.style.top=b.y+'px'; spawn(bo,720); var r=document.createElement('div'); r.className='bf-afx bf-boom-ring'; if(ringCol)r.style.borderColor=ringCol; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,720); }
 
+  // ---- helpers estilo anime ----
+  // Arte real de las armas: se pide a la página (base de datos de cartas).
+  var __bfWpnArt={};
+  window.addEventListener('message',function(e){ if(e.data&&e.data.bfArtMap){ for(var k in e.data.bfArtMap)__bfWpnArt[k]=e.data.bfArtMap[k]; } });
+  try{ window.parent.postMessage({bfArtMapRequest:1},'*'); }catch(e){}
+  var WPN_EMOJI={sling:'🪨',bolt:'🎯',bullet:'🔫',cannon:'💣',plasma:'🔫',arrow:'🏹',photon:'🔫',sword:'⚔️',dagger:'🗡️',axe:'🪓',mace:'🔨',psword:'⚔️',thunder:'🔨'};
+  function weaponShow(a,b,wname,kind){
+    var w=document.createElement('div'); w.className='bf-afx bf-wpn';
+    var url=wname&&__bfWpnArt[wname];
+    if(url) w.style.backgroundImage='url("'+url+'")';
+    else { w.classList.add('bf-wpn-emoji'); w.textContent=WPN_EMOJI[kind]||'⚔️'; }
+    var dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1;
+    w.style.left=(a.x+dx/d*46)+'px'; w.style.top=(a.y+dy/d*46-26)+'px';
+    var t=dx>=0?1:-1;
+    w.animate([
+      {opacity:0,transform:'translate(-50%,-50%) scale(.25) rotate('+(-32*t)+'deg)'},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1.14) rotate('+(10*t)+'deg)',offset:.22},
+      {opacity:1,transform:'translate(-50%,-50%) scale(1) rotate('+(-6*t)+'deg)',offset:.62},
+      {opacity:0,transform:'translate(-50%,-50%) scale(.8) rotate(0deg)'}
+    ],{duration:760,easing:'ease-out',fill:'forwards'});
+    document.body.appendChild(w); setTimeout(function(){ if(w.parentNode)w.parentNode.removeChild(w); },790);
+  }
+  function speedLines(a){ var l=document.createElement('div'); l.className='bf-afx bf-lines'; l.style.left=a.x+'px'; l.style.top=a.y+'px'; spawn(l,470); }
+  function hitStar(b){ var s=document.createElement('div'); s.className='bf-afx bf-hitstar'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,440); }
+  function streak(b,col,rotv,len){ var s=document.createElement('div'); s.className='bf-afx bf-streak'; s.style.color=col||'#fff'; s.style.width=(len||150)+'px'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; s.style.setProperty('--rot',rotv+'deg'); spawn(s,360); }
+  function shake(side,id){
+    var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
+    el.animate([{transform:'translate(0,0)'},{transform:'translate(-7px,3px)'},{transform:'translate(6px,-4px)'},{transform:'translate(-4px,2px)'},{transform:'translate(3px,-1px)'},{transform:'translate(0,0)'}],{duration:340,easing:'ease-out'});
+    el.animate([{filter:'brightness(1)'},{filter:'brightness(2.1) saturate(1.4)'},{filter:'brightness(1)'}],{duration:260});
+  }
+  function lunge(side,id,to){
+    var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
+    var r=el.getBoundingClientRect(); var dx=to.x-(r.left+r.width/2), dy=to.y-(r.top+r.height/2);
+    var d=Math.hypot(dx,dy)||1; var f=Math.min(54,d*.3)/d;
+    el.animate([{transform:'translate(0,0)'},{transform:'translate('+(dx*f)+'px,'+(dy*f)+'px) rotate('+(dx>=0?4:-4)+'deg)',offset:.45},{transform:'translate(0,0)'}],{duration:400,easing:'cubic-bezier(.3,1.3,.4,1)'});
+  }
+
   function rangedFx(ev){
     var a=centerOf(ev.fromSide,ev.fromId), b=centerOf(ev.toSide,ev.toId); if(!a||!b)return;
-    var h=getAttacker(ev.fromSide,ev.fromId); var wid=(h&&h.rwep&&h.rwep.id)||'';
+    var h=getAttacker(ev.fromSide,ev.fromId); var w=h&&h.rwep; var wid=(w&&w.id)||'';
     var kind=RANGED_KIND[wid]||'arrow';
     var hits=ev.hits||1;
-    if(kind==='sling'){ shoot('bf-stone',a,b,520,true); setTimeout(function(){ dustAt(b); },520); }
-    else if(kind==='bolt'){ shoot('bf-bolt2',a,b,430,false); setTimeout(function(){ impactSparks(b,5,'#c8a060'); dustAt(b); },430); }
-    else if(kind==='bullet'){ muzzle(a); for(var i=0;i<hits;i++){ (function(i){ setTimeout(function(){ shoot('bf-tracer',a,b,180,false); setTimeout(function(){ impactSparks(b,7,'#ffe14a'); },180); }, i*120); })(i); } }
-    else if(kind==='cannon'){ shoot('bf-ball',a,b,640,false); trail('bf-smoke-trail',a,b,640,6); setTimeout(function(){ boomAt(b,'bf-boom',null); impactSparks(b,10,'#ff8a2a'); },640); }
-    else if(kind==='plasma'){ shoot('bf-plasma-orb',a,b,560,false); trail('bf-plasma-trail',a,b,560,6); setTimeout(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); },560); }
-    else if(kind==='photon'){ var d=dist(a,b),ang=angle(a,b); var be=document.createElement('div'); be.className='bf-afx bf-beam'; be.style.left=a.x+'px'; be.style.top=a.y+'px'; be.style.width=d+'px'; be.style.transform='rotate('+ang+'deg)'; be.style.transformOrigin='0 50%'; be.animate([{opacity:0},{opacity:1,offset:.2},{opacity:0}],{duration:380,fill:'forwards'}); document.body.appendChild(be); spawn(be,400); setTimeout(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); impactSparks(b,8,'#7ad6ff'); },120); }
-    else { shoot('bf-arrow2',a,b,460,false); setTimeout(function(){ impactSparks(b,6,'#6fd98a'); },460); }
+    // Compás anime: primero aparece el arma con líneas de velocidad, luego el disparo.
+    weaponShow(a,b,w&&w.name,kind);
+    speedLines(a);
+    function impact(extra){ hitStar(b); shake(ev.toSide,ev.toId); if(extra)extra(); }
+    var L=200;
+    if(kind==='sling'){ setTimeout(function(){ shoot('bf-stone',a,b,520,true); setTimeout(function(){ impact(function(){ dustAt(b); }); },520); },L); }
+    else if(kind==='bolt'){ setTimeout(function(){ shoot('bf-bolt2',a,b,430,false); setTimeout(function(){ impact(function(){ impactSparks(b,5,'#c8a060'); dustAt(b); }); },430); },L); }
+    else if(kind==='bullet'){ setTimeout(function(){ muzzle(a); for(var i=0;i<hits;i++){ (function(i){ setTimeout(function(){ shoot('bf-tracer',a,b,180,false); setTimeout(function(){ impact(function(){ impactSparks(b,7,'#ffe14a'); }); },180); }, i*120); })(i); } },L); }
+    else if(kind==='cannon'){ setTimeout(function(){ shoot('bf-ball',a,b,640,false); trail('bf-smoke-trail',a,b,640,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-boom',null); impactSparks(b,10,'#ff8a2a'); }); },640); },L); }
+    else if(kind==='plasma'){ setTimeout(function(){ shoot('bf-plasma-orb',a,b,560,false); trail('bf-plasma-trail',a,b,560,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); }); },560); },L); }
+    else if(kind==='photon'){ setTimeout(function(){ var d=dist(a,b),ang=angle(a,b); var be=document.createElement('div'); be.className='bf-afx bf-beam'; be.style.left=a.x+'px'; be.style.top=a.y+'px'; be.style.width=d+'px'; be.style.transform='rotate('+ang+'deg)'; be.style.transformOrigin='0 50%'; be.animate([{opacity:0},{opacity:1,offset:.2},{opacity:0}],{duration:380,fill:'forwards'}); document.body.appendChild(be); spawn(be,400); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); impactSparks(b,8,'#7ad6ff'); }); },120); },L); }
+    else { setTimeout(function(){ shoot('bf-arrow2',a,b,460,false); setTimeout(function(){ impact(function(){ impactSparks(b,6,'#6fd98a'); }); },460); },L); }
   }
 
   function meleeFx(ev){
     var b=centerOf(ev.toSide,ev.toId); if(!b)return;
-    var h=ev.fromSide?getAttacker(ev.fromSide,ev.fromId):null; var wid=(h&&h.mwep&&h.mwep.id)||'';
+    var h=ev.fromSide?getAttacker(ev.fromSide,ev.fromId):null; var w=h&&h.mwep; var wid=(w&&w.id)||'';
     var kind=MELEE_KIND[wid]||'sword';
-    var rot=Math.random()*80-40;
-    function arc(cls,rotv,sz){ var s=document.createElement('div'); s.className='bf-afx bf-slash-arc '+cls; s.style.left=b.x+'px'; s.style.top=b.y+'px'; s.style.setProperty('--rot',rotv+'deg'); if(sz){s.style.width=sz+'px';s.style.height=sz+'px';} spawn(s,450); }
-    if(kind==='dagger'){ for(var i=0;i<2;i++){ (function(i){ setTimeout(function(){ arc('',rot+i*45,72); }, i*120); })(i); } }
-    else if(kind==='axe'){ arc('bf-slash-axe',rot,null); }
-    else if(kind==='mace'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,520); dustAt(b); }
-    else if(kind==='psword'){ arc('bf-slash-psword',rot,null); impactSparks(b,6,'#7ad6ff'); }
-    else if(kind==='thunder'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,520); var r=document.createElement('div'); r.className='bf-afx bf-shock-ring'; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,620); for(var i=0;i<5;i++){ (function(i){ var bl=document.createElement('div'); bl.className='bf-afx bf-thunder-bolt'; var len=78; bl.style.left=b.x+'px'; bl.style.top=(b.y-len/2)+'px'; bl.style.height=len+'px'; bl.style.transform='translateX(-50%) rotate('+(i*72)+'deg)'; bl.style.transformOrigin='50% 100%'; spawn(bl,520); })(i); } }
-    else { arc('',rot,null); }
+    var a=ev.fromSide?centerOf(ev.fromSide,ev.fromId):null;
+    // Compás anime: el arma aparece junto al atacante, que embiste hacia el
+    // objetivo; el golpe (tajos + estrella de impacto + sacudida) llega después.
+    if(a){ weaponShow(a,b,w&&w.name,kind); lunge(ev.fromSide,ev.fromId,b); }
+    var D=a?240:0;
+    setTimeout(function(){
+      hitStar(b); shake(ev.toSide,ev.toId);
+      if(kind==='dagger'){ streak(b,'#dff3ff',-25,120); setTimeout(function(){ streak(b,'#dff3ff',35,120); },90); setTimeout(function(){ streak(b,'#fff',5,140); },180); }
+      else if(kind==='axe'){ streak(b,'#c8d0d8',78,175); dustAt(b); impactSparks(b,6,'#c8d0d8'); }
+      else if(kind==='mace'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,520); dustAt(b); var r0=document.createElement('div'); r0.className='bf-afx bf-shock-ring'; r0.style.borderColor='rgba(200,180,150,.85)'; r0.style.left=b.x+'px'; r0.style.top=b.y+'px'; spawn(r0,620); }
+      else if(kind==='psword'){ streak(b,'#7ad6ff',-30,175); setTimeout(function(){ streak(b,'#a5e4ff',40,175); },110); impactSparks(b,8,'#7ad6ff'); }
+      else if(kind==='thunder'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,520); var r=document.createElement('div'); r.className='bf-afx bf-shock-ring'; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,620); for(var i=0;i<5;i++){ (function(i){ var bl=document.createElement('div'); bl.className='bf-afx bf-thunder-bolt'; var len=78; bl.style.left=b.x+'px'; bl.style.top=(b.y-len/2)+'px'; bl.style.height=len+'px'; bl.style.transform='translateX(-50%) rotate('+(i*72)+'deg)'; bl.style.transformOrigin='50% 100%'; spawn(bl,520); })(i); } }
+      else { streak(b,'#fff',-35,175); setTimeout(function(){ streak(b,'#ffe9c0',35,175); },110); impactSparks(b,5,'#fff'); }
+    },D);
   }
 
   // 1) Enriquecer 'slash' con el atacante (B.current) al encolar.

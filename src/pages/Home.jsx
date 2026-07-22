@@ -34,7 +34,7 @@ import { HAND_PICK_HIGHLIGHT_PATCH } from '@/lib/handPickHighlightPatch';
 import { CARD_PLAY_REVEAL_PATCH } from '@/lib/cardPlayRevealPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-22-card-reveal-v183';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-22-anime-attack-v184';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
@@ -298,7 +298,7 @@ export default function Home() {
       // El juego pide el arte de hechizos/objetos para la carta revelada al
       // jugarse: se responde con un mapa nombre → imagen desde la base de datos.
       if (e.data && e.data.bfArtMapRequest) {
-        base44.entities.Card.filter({ category: { $in: ['spell', 'object'] } }, 'number', 200).then(cards => {
+        base44.entities.Card.filter({ category: { $in: ['spell', 'object', 'ranged_weapon', 'melee_weapon'] } }, 'number', 200).then(cards => {
           const map = {};
           (cards || []).forEach(c => { if (c.name && c.art_url) map[c.name] = c.art_url; });
           iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map }, '*');
