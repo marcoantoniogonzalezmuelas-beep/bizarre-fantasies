@@ -31,7 +31,10 @@ export const OBJECT_FX_PATCH = `
     reviveAll:{color:'#ffe27a',icon:'🌟',glyphs:['✚','🌟','✦'],ring:1,flash:1,rise:1}
   };
 
-  function play(card,theme,name){
+  // Sprite anime por tipo de objeto (poción, escudo, bomba, cristal…).
+  var OSPR={heal:'ob_heal',healBig:'ob_heal',shield:'ob_shield',cleanse:'ob_cleanse',bomb:'ob_bomb',mana:'ob_mana',manaBig:'ob_mana',revive:'ob_revive',reviveAll:'ob_revive'};
+
+  function play(card,theme,name,kind){
     if(getComputedStyle(card).position==='static')card.style.position='relative';
     var layer=document.createElement('div');
     layer.className='bf-abx';
@@ -57,6 +60,7 @@ export const OBJECT_FX_PATCH = `
     if(A){
       var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
       A.speedLines(cc);
+      if(A.spriteBurst&&OSPR[kind])A.spriteBurst(OSPR[kind],cc,115,1050);
       if(theme===THEMES.bomb){ setTimeout(function(){A.hitStar(cc);},160); }
     }
     card.classList.add('bf-abx-glow');
@@ -106,7 +110,7 @@ export const OBJECT_FX_PATCH = `
             var card=document.getElementById('b_'+t.side+'_'+t.h.id);
             if(card){
               if(window.__bfFocusCard)try{window.__bfFocusCard(t.side,t.h.id,false);}catch(e){}
-              play(card,theme,p.name);
+              play(card,theme,p.name,p.kind);
             }
           }
         }

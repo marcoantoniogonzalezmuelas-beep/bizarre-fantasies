@@ -82,6 +82,8 @@ export const ABILITY_FX_PATCH = `
       var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
       A.speedLines(cc);
       var fam=FAM[hero.akind]||'magic';
+      // Sprite anime grande de la habilidad: el efecto más espectacular.
+      if(A.spriteBurst)A.spriteBurst('ab_'+fam,cc,150,1150);
       if(fam==='melee'||fam==='ranged'||fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
     }
     card.classList.add(theme.shake?'bf-abx-shake':'bf-abx-glow');
@@ -114,6 +116,8 @@ export const ABILITY_FX_PATCH = `
     var A2=window.__bfAnime;
     if(A2){
       var rs=card.getBoundingClientRect(),cs={x:rs.left+rs.width/2,y:rs.top+rs.height/2};
+      // Portal de invocación anime girando bajo el token que aparece.
+      if(A2.spriteBurst)A2.spriteBurst('summon_portal',cs,150,1250);
       A2.speedLines(cs);
       setTimeout(function(){A2.hitStar(cs);},220);
     }

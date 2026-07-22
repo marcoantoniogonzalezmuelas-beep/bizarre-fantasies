@@ -184,8 +184,65 @@ export const ATTACK_FX_PATCH = `
     var d=Math.hypot(dx,dy)||1; var f=Math.min(54,d*.3)/d;
     el.animate([{transform:'translate(0,0)'},{transform:'translate('+(dx*f)+'px,'+(dy*f)+'px) rotate('+(dx>=0?4:-4)+'deg)',offset:.45},{transform:'translate(0,0)'}],{duration:400,easing:'cubic-bezier(.3,1.3,.4,1)'});
   }
+  // Sprites anime para habilidades, hechizos, objetos e invocaciones.
+  var FX_SPRITE={
+    ab_melee:SPR+'c220f1fe2_ab_melee_sprite.png',
+    ab_ranged:SPR+'71f9a35f3_ab_ranged_sprite.png',
+    ab_magic:SPR+'15c3c44bc_ab_magic_sprite.png',
+    ab_holy:SPR+'63f03f4e5_ab_holy_sprite.png',
+    ab_buff:SPR+'b5f91e757_ab_buff_sprite.png',
+    ab_debuff:SPR+'4be89ef48_ab_debuff_sprite.png',
+    ab_duck:SPR+'f3f3dfbfe_ab_duck_sprite.png',
+    ab_reflect:SPR+'adb66bc46_ab_reflect_sprite.png',
+    sp_agua:SPR+'141dd9214_sp_agua_sprite.png',
+    sp_fuego:SPR+'c7b4ea7b8_sp_fuego_sprite.png',
+    sp_hielo:SPR+'35def6d77_sp_hielo_sprite.png',
+    sp_rayo:SPR+'fc333ef9e_sp_rayo_sprite.png',
+    ob_heal:SPR+'1924fbec9_ob_heal_sprite.png',
+    ob_shield:SPR+'1752ced6a_ob_shield_sprite.png',
+    ob_cleanse:SPR+'fc4eeefca_ob_cleanse_sprite.png',
+    ob_bomb:SPR+'8e99fab3f_ob_bomb_sprite.png',
+    ob_mana:SPR+'e8251749e_ob_mana_sprite.png',
+    ob_revive:SPR+'702aec3af_ob_revive_sprite.png',
+    summon_portal:SPR+'88de6b78e_summon_portal_sprite.png'
+  };
+  for(var fk in FX_SPRITE){ var fi=new Image(); fi.src=FX_SPRITE[fk]; }
+  // Aparición dramática de un sprite sobre un punto (habilidades, objetos,
+  // invocaciones): entra con pop + giro, se asienta y se desvanece elevándose.
+  function spriteBurst(key,c,size,ms){
+    var url=FX_SPRITE[key]; if(!url)return false;
+    size=size||120; ms=ms||1050;
+    var img=document.createElement('img'); img.src=url; img.className='bf-afx';
+    img.style.width=size+'px'; img.style.left=c.x+'px'; img.style.top=c.y+'px';
+    img.style.filter='drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(255,255,255,.3))';
+    img.animate([
+      {opacity:0,transform:'translate(-50%,-58%) scale(.15) rotate(-18deg)'},
+      {opacity:1,transform:'translate(-50%,-58%) scale(1.22) rotate(5deg)',offset:.2},
+      {opacity:1,transform:'translate(-50%,-58%) scale(.98) rotate(-2deg)',offset:.38},
+      {opacity:1,transform:'translate(-50%,-58%) scale(1.05) rotate(0deg)',offset:.72},
+      {opacity:0,transform:'translate(-50%,-70%) scale(1.25)'}
+    ],{duration:ms,easing:'ease-out',fill:'forwards'});
+    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },ms+40);
+    return true;
+  }
+  // Sprite que vuela girando hasta el objetivo (hechizos ofensivos).
+  function spriteFly(key,a,b,ms,size){
+    var url=FX_SPRITE[key]; if(!url)return false;
+    ms=ms||620; size=size||110;
+    var img=document.createElement('img'); img.src=url; img.className='bf-afx';
+    img.style.width=size+'px';
+    img.style.filter='drop-shadow(0 0 16px rgba(255,255,255,.4))';
+    img.animate([
+      {left:a.x+'px',top:a.y+'px',opacity:0,transform:'translate(-50%,-50%) scale(.3) rotate(-30deg)'},
+      {left:(a.x+(b.x-a.x)*.25)+'px',top:(a.y+(b.y-a.y)*.25)+'px',opacity:1,transform:'translate(-50%,-50%) scale(.9) rotate(-8deg)',offset:.25},
+      {left:b.x+'px',top:b.y+'px',opacity:1,transform:'translate(-50%,-50%) scale(1.2) rotate(10deg)',offset:.88},
+      {left:b.x+'px',top:b.y+'px',opacity:0,transform:'translate(-50%,-50%) scale(1.5) rotate(14deg)'}
+    ],{duration:ms,easing:'ease-in',fill:'forwards'});
+    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },ms+40);
+    return true;
+  }
   // Ayudantes compartidos con los demás parches (hechizos, habilidades, objetos).
-  window.__bfAnime={hitStar:hitStar,speedLines:speedLines,streak:streak,shake:shake,lunge:lunge};
+  window.__bfAnime={hitStar:hitStar,speedLines:speedLines,streak:streak,shake:shake,lunge:lunge,spriteBurst:spriteBurst,spriteFly:spriteFly};
 
   function rangedFx(ev){
     var a=centerOf(ev.fromSide,ev.fromId), b=centerOf(ev.toSide,ev.toId); if(!a||!b)return;

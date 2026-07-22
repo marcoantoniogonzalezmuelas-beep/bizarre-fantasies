@@ -94,9 +94,20 @@ export const SPELL_FX_PATCH = `
             else if (el === 'fuego') fxFire(ev.toSide, ev.toId);
             else if (el === 'hielo') fxIce(ev.toSide, ev.toId);
             else if (el === 'rayo') fxLightning(ev.toSide, ev.toId);
-            // Remate anime: estrella de impacto + sacudida y destello del objetivo.
+            // Remate anime: sprite del hechizo (ola, bola de fuego, cristal,
+            // rayo) + estrella de impacto + sacudida del objetivo.
             var A=window.__bfAnime;
-            if(A){ var c=centerOf(ev.toSide, ev.toId); if(c&&el!=='agua')setTimeout(function(){A.hitStar(c);},260); A.shake(ev.toSide, ev.toId); }
+            if(A){
+              var c=centerOf(ev.toSide, ev.toId);
+              if(c&&A.spriteBurst){
+                if(el==='fuego')A.spriteFly('sp_fuego',{x:c.x-320,y:c.y-260},c,600,125);
+                else if(el==='rayo')A.spriteFly('sp_rayo',{x:c.x,y:Math.max(-80,c.y-340)},c,430,110);
+                else if(el==='hielo')A.spriteBurst('sp_hielo',c,125);
+                else if(el==='agua'){ var ks='ws:'+ev.toSide; if(!seen[ks]){ seen[ks]=1; A.spriteBurst('sp_agua',c,175,1200); } }
+              }
+              if(c&&el!=='agua')setTimeout(function(){A.hitStar(c);},260);
+              A.shake(ev.toSide, ev.toId);
+            }
           });
         }
       } catch(e) {}
