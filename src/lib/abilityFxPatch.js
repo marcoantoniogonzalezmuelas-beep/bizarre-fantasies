@@ -10,18 +10,18 @@ export const ABILITY_FX_PATCH = `
 
   var css=''+
   '.bf-abx{position:absolute;inset:0;pointer-events:none;z-index:80;overflow:visible;color:#7ad6ff}'+
-  '.bf-abx-banner{position:absolute;left:50%;top:6%;transform:translateX(-50%);white-space:nowrap;font-family:Cinzel,serif;font-weight:900;font-size:16px;letter-spacing:.4px;padding:5px 15px;border-radius:10px;background:rgba(8,5,14,.92);border:1.5px solid currentColor;box-shadow:0 0 16px currentColor;animation:bfAbxBanner 1.5s ease forwards}'+
+  '.bf-abx-banner{position:absolute;left:50%;top:6%;transform:translateX(-50%);white-space:nowrap;font-family:Cinzel,serif;font-weight:900;font-size:16px;letter-spacing:.4px;padding:5px 15px;border-radius:10px;background:rgba(8,5,14,.92);border:1.5px solid currentColor;box-shadow:0 0 16px currentColor;animation:bfAbxBanner 2.5s ease forwards}'+
   '@keyframes bfAbxBanner{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.5)}15%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.12)}28%{transform:translateX(-50%) scale(1)}78%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-16px)}}'+
-  '.bf-abx-ring{position:absolute;left:50%;top:50%;width:82%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:3.5px dashed currentColor;box-shadow:0 0 18px currentColor,inset 0 0 18px currentColor;animation:bfAbxSpin 1.3s ease-out forwards}'+
+  '.bf-abx-ring{position:absolute;left:50%;top:50%;width:82%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:3.5px dashed currentColor;box-shadow:0 0 18px currentColor,inset 0 0 18px currentColor;animation:bfAbxSpin 2.3s ease-out forwards}'+
   '@keyframes bfAbxSpin{0%{transform:translate(-50%,-50%) rotate(0deg) scale(.35);opacity:0}25%{opacity:.95}100%{transform:translate(-50%,-50%) rotate(260deg) scale(1.25);opacity:0}}'+
-  '.bf-abx-flash{position:absolute;inset:-4%;border-radius:14px;background:radial-gradient(circle at 50% 55%,currentColor,transparent 72%);opacity:0;animation:bfAbxFlash .8s ease-out forwards;mix-blend-mode:screen}'+
+  '.bf-abx-flash{position:absolute;inset:-4%;border-radius:14px;background:radial-gradient(circle at 50% 55%,currentColor,transparent 72%);opacity:0;animation:bfAbxFlash 1.8s ease-out forwards;mix-blend-mode:screen}'+
   '@keyframes bfAbxFlash{0%{opacity:0}22%{opacity:.75}100%{opacity:0}}'+
-  '.bf-abx-slash{position:absolute;left:50%;top:50%;width:135%;height:6px;background:linear-gradient(90deg,transparent,#fff,currentColor,transparent);box-shadow:0 0 14px currentColor;opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,45deg)) scaleX(0);animation:bfAbxSlash .55s ease-out forwards}'+
+  '.bf-abx-slash{position:absolute;left:50%;top:50%;width:135%;height:6px;background:linear-gradient(90deg,transparent,#fff,currentColor,transparent);box-shadow:0 0 14px currentColor;opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,45deg)) scaleX(0);animation:bfAbxSlash 1.55s ease-out forwards}'+
   '@keyframes bfAbxSlash{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,45deg)) scaleX(0)}30%{opacity:1;transform:translate(-50%,-50%) rotate(var(--rot,45deg)) scaleX(1.05)}70%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,45deg)) scaleX(1.15)}}'+
   '.bf-abx-p{position:absolute;font-size:24px;opacity:0;text-shadow:0 0 10px currentColor}'+
-  '.bf-abx-rise{animation:bfAbxRise 1.15s ease-out forwards}'+
+  '.bf-abx-rise{animation:bfAbxRise 2.15s ease-out forwards}'+
   '@keyframes bfAbxRise{0%{opacity:0;transform:translateY(14px) scale(.5) rotate(-8deg)}22%{opacity:1}100%{opacity:0;transform:translateY(-52px) scale(1.25) rotate(10deg)}}'+
-  '.bf-abx-fall{animation:bfAbxFall 1.15s ease-in forwards}'+
+  '.bf-abx-fall{animation:bfAbxFall 2.15s ease-in forwards}'+
   '@keyframes bfAbxFall{0%{opacity:0;transform:translateY(-18px) scale(.6)}22%{opacity:1}100%{opacity:0;transform:translateY(46px) scale(1.15) rotate(-14deg)}}'+
   '.bf-abx-shake{animation:bfAbxShake .45s ease}'+
   '@keyframes bfAbxShake{0%,100%{translate:0 0}15%{translate:-4px 2px}30%{translate:4px -3px}45%{translate:-3px -2px}60%{translate:3px 2px}75%{translate:-2px 1px}}'+
@@ -29,7 +29,7 @@ export const ABILITY_FX_PATCH = `
   '@keyframes bfAbxGlow{0%{filter:none}30%{filter:brightness(1.55) saturate(1.5)}100%{filter:none}}'+
   '.bf-sfx-pop{animation:bfSfxPop .85s cubic-bezier(.2,1.5,.4,1) both}'+
   '@keyframes bfSfxPop{0%{transform:scale(0) rotate(-14deg);opacity:0}55%{transform:scale(1.14) rotate(4deg);opacity:1}75%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}'+
-  '.bf-sfx-ring{position:absolute;left:50%;top:50%;width:96%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:4px solid currentColor;box-shadow:0 0 22px currentColor,inset 0 0 22px currentColor;opacity:0;animation:bfSfxRing 1.1s ease-out forwards}'+
+  '.bf-sfx-ring{position:absolute;left:50%;top:50%;width:96%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:4px solid currentColor;box-shadow:0 0 22px currentColor,inset 0 0 22px currentColor;opacity:0;animation:bfSfxRing 2.1s ease-out forwards}'+
   '@keyframes bfSfxRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.55)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
@@ -83,12 +83,12 @@ export const ABILITY_FX_PATCH = `
       A.speedLines(cc);
       var fam=FAM[hero.akind]||'magic';
       // Sprite anime grande de la habilidad: el efecto más espectacular.
-      if(A.spriteBurst)A.spriteBurst('ab_'+fam,cc,260,1150);
+      if(A.spriteBurst)A.spriteBurst('ab_'+fam,cc,260,2150);
       if(fam==='melee'||fam==='ranged'||fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
     }
     card.classList.add(theme.shake?'bf-abx-shake':'bf-abx-glow');
     setTimeout(function(){card.classList.remove('bf-abx-shake','bf-abx-glow');},1000);
-    setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1600);
+    setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},2600);
     // Retira el aviso genérico anterior para que no se solape con éste.
     setTimeout(function(){
       card.querySelectorAll('.bf-fx-spell-wave,.bf-fx-status-txt').forEach(function(e){if(e.parentNode)e.parentNode.removeChild(e);});
@@ -117,13 +117,13 @@ export const ABILITY_FX_PATCH = `
     if(A2){
       var rs=card.getBoundingClientRect(),cs={x:rs.left+rs.width/2,y:rs.top+rs.height/2};
       // Portal de invocación anime girando bajo el token que aparece.
-      if(A2.spriteBurst)A2.spriteBurst('summon_portal',cs,260,1250);
+      if(A2.spriteBurst)A2.spriteBurst('summon_portal',cs,260,2250);
       A2.speedLines(cs);
       setTimeout(function(){A2.hitStar(cs);},220);
     }
     card.classList.add('bf-sfx-pop');
     setTimeout(function(){card.classList.remove('bf-sfx-pop');},950);
-    setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);
+    setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},2700);
   }
 
   // Vigila el tablero: los héroes ya presentes se registran sin animar; solo

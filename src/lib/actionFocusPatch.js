@@ -10,16 +10,22 @@ export const ACTION_FOCUS_PATCH = `
 
   function cardEl(side,id){ return document.getElementById('b_'+side+'_'+id); }
 
-  // Centra la carta si no está razonablemente visible. smooth=false hace un
-  // salto instantáneo (necesario antes de dibujar proyectiles, que calculan
-  // sus coordenadas en ese mismo instante).
+  // Al ejecutarse una acción, la vista salta arriba del todo para que el campo
+  // de batalla (los dos ejércitos) quede siempre visible y las animaciones se
+  // vean claramente. Instantáneo: los proyectiles calculan sus coordenadas en
+  // ese mismo instante. Si la carta implicada aún quedara fuera, se centra.
   function focusCard(side,id,smooth){
+    try{ window.scrollTo({top:0,left:0,behavior:'auto'}); }catch(e){ window.scrollTo(0,0); }
     var el=cardEl(side,id); if(!el)return;
+    // Sube también cualquier contenedor con scroll propio que envuelva el tablero.
+    var p=el.parentElement;
+    while(p&&p!==document.body){ if(p.scrollTop>0)p.scrollTop=0; p=p.parentElement; }
     var r=el.getBoundingClientRect();
     var vh=window.innerHeight||document.documentElement.clientHeight;
-    if(r.top>=70&&r.bottom<=vh-30)return; // ya se ve entera: no mover
-    try{ el.scrollIntoView({block:'center',behavior:smooth?'smooth':'auto'}); }catch(e){ el.scrollIntoView(); }
+    if(r.top>=0&&r.bottom<=vh)return; // ya se ve entera: no mover
+    try{ el.scrollIntoView({block:'center',behavior:'auto'}); }catch(e){ el.scrollIntoView(); }
   }
+  window.__bfFocusCard=focusCard;
 
   // 1) Habilidades: centrar al héroe que la usa justo antes de la animación.
   function hookAbility(){
@@ -37,8 +43,13 @@ export const ACTION_FOCUS_PATCH = `
   // que este envoltorio debe quedar POR FUERA: se instala solo cuando los
   // parches de efectos ya han envuelto flushFx).
   function hookFlush(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfFocus)return;
-    if(!window.flushFx.__bfAfx||!window.flushFx.__bfSpellFx)return;
+    if(window.__bfFocusFlushInstalled)return;
+    if(typeof window.flushFx!=='function')return;
+    // Espera a que los parches de efectos Y el de carta revelada (el último en
+    // envolver flushFx) estén instalados, para quedar como capa más externa.
+    if(!(window.__bfAttackFxPatch&&window.__bfSpellFxPatch))return;
+    if(!(window.__bfRevHooks&&window.__bfRevHooks.flush))return;
+    window.__bfFocusFlushInstalled=1;
     var orig=window.flushFx;
     window.flushFx=function(list){
       try{
@@ -56,13 +67,14 @@ export const ACTION_FOCUS_PATCH = `
     // Conservar las marcas de los otros parches para que no vuelvan a envolver.
     window.flushFx.__bfAfx=1;
     window.flushFx.__bfSpellFx=1;
+    window.flushFx.__bfShield=1;
     window.flushFx.__bfFocus=1;
   }
 
   function hook(){ hookAbility(); hookFlush(); }
   var iv=setInterval(function(){
     hook();
-    if(window.useAbility&&window.useAbility.__bfFocus&&window.flushFx&&window.flushFx.__bfFocus)clearInterval(iv);
+    if(window.useAbility&&window.useAbility.__bfFocus&&window.__bfFocusFlushInstalled)clearInterval(iv);
   },200);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook); else hook();
 })();

@@ -30,34 +30,34 @@ export const ATTACK_FX_PATCH = `
     '.bf-smoke-trail{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,rgba(180,180,180,.7),transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-plasma-trail{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(120,200,255,.85),transparent 70%);transform:translate(-50%,-50%)}',
     // ---- impactos ----
-    '.bf-dust{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,rgba(200,180,150,.85),transparent 70%);transform:translate(-50%,-50%);animation:bfPuff .5s ease-out forwards}',
+    '.bf-dust{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,rgba(200,180,150,.85),transparent 70%);transform:translate(-50%,-50%);animation:bfPuff 1.5s ease-out forwards}',
     '@keyframes bfPuff{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}',
     '.bf-spark{width:9px;height:9px;border-radius:50%;background:#ffe14a;box-shadow:0 0 6px #ffe14a;transform:translate(-50%,-50%)}',
-    '.bf-boom{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffe27a 25%,#ff6a14 55%,transparent 72%);transform:translate(-50%,-50%);animation:bfBoom .7s ease-out forwards;filter:drop-shadow(0 0 16px rgba(255,120,30,.9))}',
+    '.bf-boom{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#ffe27a 25%,#ff6a14 55%,transparent 72%);transform:translate(-50%,-50%);animation:bfBoom 1.7s ease-out forwards;filter:drop-shadow(0 0 16px rgba(255,120,30,.9))}',
     '@keyframes bfBoom{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}20%{opacity:1}100%{transform:translate(-50%,-50%) scale(6);opacity:0}}',
-    '.bf-boom-ring{width:34px;height:34px;border-radius:50%;border:4px solid rgba(255,140,40,.9);transform:translate(-50%,-50%);animation:bfBoomRing .7s ease-out forwards}',
+    '.bf-boom-ring{width:34px;height:34px;border-radius:50%;border:4px solid rgba(255,140,40,.9);transform:translate(-50%,-50%);animation:bfBoomRing 1.7s ease-out forwards}',
     '@keyframes bfBoomRing{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(5);opacity:0;border-width:1px}}',
-    '.bf-plasma-boom{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#fff,#7ad6ff 40%,transparent 72%);transform:translate(-50%,-50%);animation:bfBoom .7s ease-out forwards;filter:drop-shadow(0 0 18px rgba(90,200,255,.95))}',
+    '.bf-plasma-boom{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#fff,#7ad6ff 40%,transparent 72%);transform:translate(-50%,-50%);animation:bfBoom 1.7s ease-out forwards;filter:drop-shadow(0 0 18px rgba(90,200,255,.95))}',
     // ---- golpes cuerpo a cuerpo ----
-    '.bf-slash-arc{width:200px;height:200px;border-radius:50%;transform:translate(-50%,-50%) rotate(var(--rot,30deg));border:10px solid transparent;border-top-color:rgba(255,255,255,.95);border-right-color:rgba(255,255,255,.7);box-shadow:0 0 18px rgba(255,255,255,.6);animation:bfSlash .42s ease-out forwards}',
+    '.bf-slash-arc{width:200px;height:200px;border-radius:50%;transform:translate(-50%,-50%) rotate(var(--rot,30deg));border:10px solid transparent;border-top-color:rgba(255,255,255,.95);border-right-color:rgba(255,255,255,.7);box-shadow:0 0 18px rgba(255,255,255,.6);animation:bfSlash 1.4s ease-out forwards}',
     '@keyframes bfSlash{0%{transform:translate(-50%,-50%) rotate(var(--rot,30deg)) scale(.4);opacity:0}30%{opacity:1}100%{transform:translate(-50%,-50%) rotate(calc(var(--rot,30deg) + 65deg)) scale(1.35);opacity:0}}',
     '.bf-slash-axe{border-top-color:#c8d0d8!important;border-right-color:#8a929c!important;box-shadow:0 0 18px rgba(180,190,200,.6)!important;border-width:14px!important}',
     '.bf-slash-psword{border-top-color:#7ad6ff!important;border-right-color:#3a8fe0!important;box-shadow:0 0 22px rgba(90,200,255,.9)!important}',
-    '.bf-crack{width:150px;height:150px;transform:translate(-50%,-50%);background:conic-gradient(from 0deg,transparent 0 10deg,rgba(255,255,255,.85) 11deg 13deg,transparent 14deg 60deg,rgba(255,255,255,.85) 61deg 63deg,transparent 64deg 120deg,rgba(255,255,255,.7) 121deg 123deg,transparent 124deg);animation:bfCrack .5s ease-out forwards}',
+    '.bf-crack{width:150px;height:150px;transform:translate(-50%,-50%);background:conic-gradient(from 0deg,transparent 0 10deg,rgba(255,255,255,.85) 11deg 13deg,transparent 14deg 60deg,rgba(255,255,255,.85) 61deg 63deg,transparent 64deg 120deg,rgba(255,255,255,.7) 121deg 123deg,transparent 124deg);animation:bfCrack 1.5s ease-out forwards}',
     '@keyframes bfCrack{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:1}100%{transform:translate(-50%,-50%) scale(1.5) rotate(20deg);opacity:0}}',
-    '.bf-thunder-bolt{position:fixed;width:11px;background:linear-gradient(180deg,#fff,#ffe14a 40%,#bfe0ff);box-shadow:0 0 10px #ffe14a,0 0 22px rgba(120,200,255,.8);transform:translateX(-50%);animation:bfTbolt .5s ease-out forwards;clip-path:polygon(60% 0,80% 25%,40% 50%,70% 80%,30% 100%,20% 80%,55% 50%,25% 25%)}',
+    '.bf-thunder-bolt{position:fixed;width:11px;background:linear-gradient(180deg,#fff,#ffe14a 40%,#bfe0ff);box-shadow:0 0 10px #ffe14a,0 0 22px rgba(120,200,255,.8);transform:translateX(-50%);animation:bfTbolt 1.5s ease-out forwards;clip-path:polygon(60% 0,80% 25%,40% 50%,70% 80%,30% 100%,20% 80%,55% 50%,25% 25%)}',
     '@keyframes bfTbolt{0%{opacity:0}15%{opacity:1}100%{opacity:0}}',
-    '.bf-shock-ring{width:52px;height:52px;border-radius:50%;border:8px solid rgba(255,225,74,.9);transform:translate(-50%,-50%);animation:bfShock .6s ease-out forwards}',
+    '.bf-shock-ring{width:52px;height:52px;border-radius:50%;border:8px solid rgba(255,225,74,.9);transform:translate(-50%,-50%);animation:bfShock 1.6s ease-out forwards}',
     '@keyframes bfShock{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0;border-width:1px}}',
     // ---- estilo anime ----
     '.bf-wspr{width:185px;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.65)) drop-shadow(0 0 8px rgba(255,255,255,.22))}',
     '.bf-wpn{width:120px;height:120px;border-radius:18px;border:2.5px solid #ffd24a;background:#0b0714 center/cover no-repeat;box-shadow:0 0 20px rgba(255,210,74,.85),0 8px 22px rgba(0,0,0,.7);transform:translate(-50%,-50%)}',
     '.bf-wpn-emoji{display:flex;align-items:center;justify-content:center;font-size:66px}',
-    '.bf-lines{width:290px;height:290px;transform:translate(-50%,-50%);border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,.95) 0 1.6deg,transparent 1.6deg 13deg);-webkit-mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);animation:bfLines .45s ease-out forwards}',
+    '.bf-lines{width:290px;height:290px;transform:translate(-50%,-50%);border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,.95) 0 1.6deg,transparent 1.6deg 13deg);-webkit-mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);mask:radial-gradient(circle,transparent 32%,#000 46%,transparent 74%);animation:bfLines 1.45s ease-out forwards}',
     '@keyframes bfLines{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.65)}}',
-    '.bf-hitstar{width:190px;height:190px;transform:translate(-50%,-50%);background:#fff;clip-path:polygon(50% 0,60% 38%,100% 32%,66% 55%,85% 100%,50% 68%,15% 100%,34% 55%,0 32%,40% 38%);filter:drop-shadow(0 0 18px #ffe14a);animation:bfHitStar .42s ease-out forwards}',
+    '.bf-hitstar{width:190px;height:190px;transform:translate(-50%,-50%);background:#fff;clip-path:polygon(50% 0,60% 38%,100% 32%,66% 55%,85% 100%,50% 68%,15% 100%,34% 55%,0 32%,40% 38%);filter:drop-shadow(0 0 18px #ffe14a);animation:bfHitStar 1.4s ease-out forwards}',
     '@keyframes bfHitStar{0%{transform:translate(-50%,-50%) scale(.2) rotate(-25deg);opacity:0}20%{opacity:1}60%{transform:translate(-50%,-50%) scale(1.08) rotate(6deg)}100%{transform:translate(-50%,-50%) scale(1.28) rotate(12deg);opacity:0}}',
-    '.bf-streak{height:25px;color:#fff;background:linear-gradient(90deg,transparent,currentColor 25%,#fff 50%,currentColor 75%,transparent);border-radius:8px;filter:drop-shadow(0 0 14px currentColor);animation:bfStreak .34s ease-out forwards}',
+    '.bf-streak{height:25px;color:#fff;background:linear-gradient(90deg,transparent,currentColor 25%,#fff 50%,currentColor 75%,transparent);border-radius:8px;filter:drop-shadow(0 0 14px currentColor);animation:bfStreak 1.3s ease-out forwards}',
     '@keyframes bfStreak{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scaleX(.2)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scaleX(1.55)}}'
   ].join('');
   document.head.appendChild(st);
@@ -85,9 +85,9 @@ export const ATTACK_FX_PATCH = `
     for(var i=0;i<count;i++){ (function(i){ setTimeout(function(){ var t=document.createElement('div'); t.className='bf-afx '+cls; var f=(i+1)/count; t.style.left=(a.x+(b.x-a.x)*f)+'px'; t.style.top=(a.y+(b.y-a.y)*f)+'px'; t.animate([{opacity:.8},{opacity:0}],{duration:320,fill:'forwards'}); document.body.appendChild(t); setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },340); }, ms*(i/count)); })(i); }
   }
   function muzzle(a){ var m=document.createElement('div'); m.className='bf-afx bf-muzzle'; m.style.left=a.x+'px'; m.style.top=a.y+'px'; spawn(m,260); }
-  function impactSparks(b,n,col){ for(var i=0;i<n;i++){ var s=document.createElement('div'); s.className='bf-afx bf-spark'; if(col){s.style.background=col;s.style.boxShadow='0 0 6px '+col;} s.style.left=b.x+'px'; s.style.top=b.y+'px'; var ang=Math.random()*Math.PI*2, d=50+Math.random()*85; s.animate([{transform:'translate(-50%,-50%)',opacity:1},{transform:'translate(calc(-50% + '+(Math.cos(ang)*d)+'px),calc(-50% + '+(Math.sin(ang)*d)+'px))',opacity:0}],{duration:620,easing:'ease-out',fill:'forwards'}); spawn(s,640); } }
-  function dustAt(b){ var d=document.createElement('div'); d.className='bf-afx bf-dust'; d.style.left=b.x+'px'; d.style.top=b.y+'px'; spawn(d,520); }
-  function boomAt(b,cls,ringCol){ var bo=document.createElement('div'); bo.className='bf-afx '+cls; bo.style.left=b.x+'px'; bo.style.top=b.y+'px'; spawn(bo,720); var r=document.createElement('div'); r.className='bf-afx bf-boom-ring'; if(ringCol)r.style.borderColor=ringCol; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,720); }
+  function impactSparks(b,n,col){ for(var i=0;i<n;i++){ var s=document.createElement('div'); s.className='bf-afx bf-spark'; if(col){s.style.background=col;s.style.boxShadow='0 0 6px '+col;} s.style.left=b.x+'px'; s.style.top=b.y+'px'; var ang=Math.random()*Math.PI*2, d=50+Math.random()*85; s.animate([{transform:'translate(-50%,-50%)',opacity:1},{transform:'translate(calc(-50% + '+(Math.cos(ang)*d)+'px),calc(-50% + '+(Math.sin(ang)*d)+'px))',opacity:0}],{duration:1620,easing:'ease-out',fill:'forwards'}); spawn(s,1640); } }
+  function dustAt(b){ var d=document.createElement('div'); d.className='bf-afx bf-dust'; d.style.left=b.x+'px'; d.style.top=b.y+'px'; spawn(d,1520); }
+  function boomAt(b,cls,ringCol){ var bo=document.createElement('div'); bo.className='bf-afx '+cls; bo.style.left=b.x+'px'; bo.style.top=b.y+'px'; spawn(bo,1720); var r=document.createElement('div'); r.className='bf-afx bf-boom-ring'; if(ringCol)r.style.borderColor=ringCol; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,1720); }
 
   // ---- helpers estilo anime ----
   // Arte real de las armas: se pide a la página (base de datos de cartas).
@@ -132,8 +132,8 @@ export const ATTACK_FX_PATCH = `
       {opacity:1,transform:'translate(calc(-50% + '+rx+'px),calc(-50% + '+ry+'px)) rotate('+(ang-6)+'deg)'+flip+' scale(1.04)',offset:.3},
       {opacity:1,transform:'translate(-50%,-50%) '+base,offset:.55},
       {opacity:0,transform:'translate(-50%,-50%) '+base+' scale(.85)'}
-    ],{duration:950,easing:'ease-out',fill:'forwards'});
-    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },980);
+    ],{duration:1950,easing:'ease-out',fill:'forwards'});
+    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },1980);
     return true;
   }
   // Arma cuerpo a cuerpo: viaja del atacante al objetivo describiendo un tajo
@@ -150,8 +150,8 @@ export const ATTACK_FX_PATCH = `
       {left:(a.x+(mx-a.x)*.35)+'px',top:(a.y+(my-a.y)*.35)+'px',opacity:1,transform:'translate(-50%,-80%) rotate('+(-45*t)+'deg)'+flip,offset:.35},
       {left:mx+'px',top:my+'px',opacity:1,transform:'translate(-50%,-80%) rotate('+(55*t)+'deg)'+flip,offset:.72},
       {left:mx+'px',top:my+'px',opacity:0,transform:'translate(-50%,-80%) rotate('+(62*t)+'deg)'+flip}
-    ],{duration:430,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
-    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },460);
+    ],{duration:1430,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
+    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },1460);
     return true;
   }
   function weaponShow(a,b,wname,kind){
@@ -167,12 +167,12 @@ export const ATTACK_FX_PATCH = `
       {opacity:1,transform:'translate(-50%,-50%) scale(1.14) rotate('+(10*t)+'deg)',offset:.22},
       {opacity:1,transform:'translate(-50%,-50%) scale(1) rotate('+(-6*t)+'deg)',offset:.62},
       {opacity:0,transform:'translate(-50%,-50%) scale(.8) rotate(0deg)'}
-    ],{duration:760,easing:'ease-out',fill:'forwards'});
-    document.body.appendChild(w); setTimeout(function(){ if(w.parentNode)w.parentNode.removeChild(w); },790);
+    ],{duration:1760,easing:'ease-out',fill:'forwards'});
+    document.body.appendChild(w); setTimeout(function(){ if(w.parentNode)w.parentNode.removeChild(w); },1790);
   }
-  function speedLines(a){ var l=document.createElement('div'); l.className='bf-afx bf-lines'; l.style.left=a.x+'px'; l.style.top=a.y+'px'; spawn(l,470); }
-  function hitStar(b){ var s=document.createElement('div'); s.className='bf-afx bf-hitstar'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,440); }
-  function streak(b,col,rotv,len){ var s=document.createElement('div'); s.className='bf-afx bf-streak'; s.style.color=col||'#fff'; s.style.width=(len||240)+'px'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; s.style.setProperty('--rot',rotv+'deg'); spawn(s,360); }
+  function speedLines(a){ var l=document.createElement('div'); l.className='bf-afx bf-lines'; l.style.left=a.x+'px'; l.style.top=a.y+'px'; spawn(l,1470); }
+  function hitStar(b){ var s=document.createElement('div'); s.className='bf-afx bf-hitstar'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1440); }
+  function streak(b,col,rotv,len){ var s=document.createElement('div'); s.className='bf-afx bf-streak'; s.style.color=col||'#fff'; s.style.width=(len||240)+'px'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; s.style.setProperty('--rot',rotv+'deg'); spawn(s,1360); }
   function shake(side,id){
     var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
     el.animate([{transform:'translate(0,0)'},{transform:'translate(-7px,3px)'},{transform:'translate(6px,-4px)'},{transform:'translate(-4px,2px)'},{transform:'translate(3px,-1px)'},{transform:'translate(0,0)'}],{duration:340,easing:'ease-out'});
@@ -211,7 +211,7 @@ export const ATTACK_FX_PATCH = `
   // invocaciones): entra con pop + giro, se asienta y se desvanece elevándose.
   function spriteBurst(key,c,size,ms){
     var url=FX_SPRITE[key]; if(!url)return false;
-    size=size||210; ms=ms||1050;
+    size=size||210; ms=ms||2050;
     var img=document.createElement('img'); img.src=url; img.className='bf-afx';
     img.style.width=size+'px'; img.style.left=c.x+'px'; img.style.top=c.y+'px';
     img.style.filter='drop-shadow(0 6px 14px rgba(0,0,0,.7)) drop-shadow(0 0 12px rgba(255,255,255,.3))';
@@ -228,7 +228,7 @@ export const ATTACK_FX_PATCH = `
   // Sprite que vuela girando hasta el objetivo (hechizos ofensivos).
   function spriteFly(key,a,b,ms,size){
     var url=FX_SPRITE[key]; if(!url)return false;
-    ms=ms||620; size=size||190;
+    ms=ms||1620; size=size||190;
     var img=document.createElement('img'); img.src=url; img.className='bf-afx';
     img.style.width=size+'px';
     img.style.filter='drop-shadow(0 0 16px rgba(255,255,255,.4))';
@@ -255,13 +255,13 @@ export const ATTACK_FX_PATCH = `
     speedLines(a);
     function impact(extra){ hitStar(b); shake(ev.toSide,ev.toId); if(extra)extra(); }
     var L=200;
-    if(kind==='sling'){ setTimeout(function(){ shoot('bf-stone',a,b,520,true); setTimeout(function(){ impact(function(){ dustAt(b); }); },520); },L); }
-    else if(kind==='bolt'){ setTimeout(function(){ shoot('bf-bolt2',a,b,430,false); setTimeout(function(){ impact(function(){ impactSparks(b,5,'#c8a060'); dustAt(b); }); },430); },L); }
-    else if(kind==='bullet'){ setTimeout(function(){ muzzle(a); for(var i=0;i<hits;i++){ (function(i){ setTimeout(function(){ shoot('bf-tracer',a,b,180,false); setTimeout(function(){ impact(function(){ impactSparks(b,7,'#ffe14a'); }); },180); }, i*120); })(i); } },L); }
-    else if(kind==='cannon'){ setTimeout(function(){ shoot('bf-ball',a,b,640,false); trail('bf-smoke-trail',a,b,640,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-boom',null); impactSparks(b,10,'#ff8a2a'); }); },640); },L); }
-    else if(kind==='plasma'){ setTimeout(function(){ shoot('bf-plasma-orb',a,b,560,false); trail('bf-plasma-trail',a,b,560,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); }); },560); },L); }
-    else if(kind==='photon'){ setTimeout(function(){ var d=dist(a,b),ang=angle(a,b); var be=document.createElement('div'); be.className='bf-afx bf-beam'; be.style.left=a.x+'px'; be.style.top=a.y+'px'; be.style.width=d+'px'; be.style.transform='rotate('+ang+'deg)'; be.style.transformOrigin='0 50%'; be.animate([{opacity:0},{opacity:1,offset:.2},{opacity:0}],{duration:380,fill:'forwards'}); document.body.appendChild(be); spawn(be,400); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); impactSparks(b,8,'#7ad6ff'); }); },120); },L); }
-    else { setTimeout(function(){ shoot('bf-arrow2',a,b,460,false); setTimeout(function(){ impact(function(){ impactSparks(b,6,'#6fd98a'); }); },460); },L); }
+    if(kind==='sling'){ setTimeout(function(){ shoot('bf-stone',a,b,1520,true); setTimeout(function(){ impact(function(){ dustAt(b); }); },1520); },L); }
+    else if(kind==='bolt'){ setTimeout(function(){ shoot('bf-bolt2',a,b,1430,false); setTimeout(function(){ impact(function(){ impactSparks(b,5,'#c8a060'); dustAt(b); }); },1430); },L); }
+    else if(kind==='bullet'){ setTimeout(function(){ muzzle(a); for(var i=0;i<hits;i++){ (function(i){ setTimeout(function(){ shoot('bf-tracer',a,b,480,false); setTimeout(function(){ impact(function(){ impactSparks(b,7,'#ffe14a'); }); },480); }, i*300); })(i); } },L); }
+    else if(kind==='cannon'){ setTimeout(function(){ shoot('bf-ball',a,b,1640,false); trail('bf-smoke-trail',a,b,1640,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-boom',null); impactSparks(b,10,'#ff8a2a'); }); },1640); },L); }
+    else if(kind==='plasma'){ setTimeout(function(){ shoot('bf-plasma-orb',a,b,1560,false); trail('bf-plasma-trail',a,b,1560,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); }); },1560); },L); }
+    else if(kind==='photon'){ setTimeout(function(){ var d=dist(a,b),ang=angle(a,b); var be=document.createElement('div'); be.className='bf-afx bf-beam'; be.style.left=a.x+'px'; be.style.top=a.y+'px'; be.style.width=d+'px'; be.style.transform='rotate('+ang+'deg)'; be.style.transformOrigin='0 50%'; be.animate([{opacity:0},{opacity:1,offset:.2},{opacity:0}],{duration:1380,fill:'forwards'}); document.body.appendChild(be); spawn(be,1400); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); impactSparks(b,8,'#7ad6ff'); }); },400); },L); }
+    else { setTimeout(function(){ shoot('bf-arrow2',a,b,1460,false); setTimeout(function(){ impact(function(){ impactSparks(b,6,'#6fd98a'); }); },1460); },L); }
   }
 
   function meleeFx(ev){
@@ -272,14 +272,14 @@ export const ATTACK_FX_PATCH = `
     // Compás anime: el arma aparece junto al atacante, que embiste hacia el
     // objetivo; el golpe (tajos + estrella de impacto + sacudida) llega después.
     if(a){ if(!showMeleeWeapon(a,b,wid))weaponShow(a,b,w&&w.name,kind); lunge(ev.fromSide,ev.fromId,b); }
-    var D=a?240:0;
+    var D=a?1040:0;
     setTimeout(function(){
       hitStar(b); shake(ev.toSide,ev.toId);
       if(kind==='dagger'){ streak(b,'#dff3ff',-25,190); setTimeout(function(){ streak(b,'#dff3ff',35,190); },90); setTimeout(function(){ streak(b,'#fff',5,225); },180); }
       else if(kind==='axe'){ streak(b,'#c8d0d8',78,280); dustAt(b); impactSparks(b,6,'#c8d0d8'); }
-      else if(kind==='mace'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,520); dustAt(b); var r0=document.createElement('div'); r0.className='bf-afx bf-shock-ring'; r0.style.borderColor='rgba(200,180,150,.85)'; r0.style.left=b.x+'px'; r0.style.top=b.y+'px'; spawn(r0,620); }
+      else if(kind==='mace'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,1520); dustAt(b); var r0=document.createElement('div'); r0.className='bf-afx bf-shock-ring'; r0.style.borderColor='rgba(200,180,150,.85)'; r0.style.left=b.x+'px'; r0.style.top=b.y+'px'; spawn(r0,1620); }
       else if(kind==='psword'){ streak(b,'#7ad6ff',-30,280); setTimeout(function(){ streak(b,'#a5e4ff',40,280); },110); impactSparks(b,8,'#7ad6ff'); }
-      else if(kind==='thunder'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,520); var r=document.createElement('div'); r.className='bf-afx bf-shock-ring'; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,620); for(var i=0;i<5;i++){ (function(i){ var bl=document.createElement('div'); bl.className='bf-afx bf-thunder-bolt'; var len=130; bl.style.left=b.x+'px'; bl.style.top=(b.y-len/2)+'px'; bl.style.height=len+'px'; bl.style.transform='translateX(-50%) rotate('+(i*72)+'deg)'; bl.style.transformOrigin='50% 100%'; spawn(bl,520); })(i); } }
+      else if(kind==='thunder'){ var c=document.createElement('div'); c.className='bf-afx bf-crack'; c.style.left=b.x+'px'; c.style.top=b.y+'px'; spawn(c,1520); var r=document.createElement('div'); r.className='bf-afx bf-shock-ring'; r.style.left=b.x+'px'; r.style.top=b.y+'px'; spawn(r,1620); for(var i=0;i<5;i++){ (function(i){ var bl=document.createElement('div'); bl.className='bf-afx bf-thunder-bolt'; var len=130; bl.style.left=b.x+'px'; bl.style.top=(b.y-len/2)+'px'; bl.style.height=len+'px'; bl.style.transform='translateX(-50%) rotate('+(i*72)+'deg)'; bl.style.transformOrigin='50% 100%'; spawn(bl,1520); })(i); } }
       else { streak(b,'#fff',-35,280); setTimeout(function(){ streak(b,'#ffe9c0',35,280); },110); impactSparks(b,5,'#fff'); }
     },D);
   }
