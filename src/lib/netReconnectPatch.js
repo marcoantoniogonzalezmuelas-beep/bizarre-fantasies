@@ -19,11 +19,11 @@ export const NET_RECONNECT_PATCH = `
   function saveResume(){
     try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:(NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'',name:NET.names_self||'',side:NET.mySide||'g',ts:Date.now()}));}catch(e){}
   }
-  function clearResume(){try{localStorage.removeItem(RESUME_KEY);}catch(e){}}
+  function clearResume(){try{localStorage.removeItem(RESUME_KEY);localStorage.removeItem('bfSavedMatch');}catch(e){}}
   window.__bfGetResume=function(){
     try{
       var i=JSON.parse(localStorage.getItem(RESUME_KEY)||'null');
-      if(i&&i.code&&Date.now()-(i.ts||0)<180000)return i;
+      if(i&&i.code&&Date.now()-(i.ts||0)<600000)return i;
     }catch(e){}
     return null;
   };
@@ -145,6 +145,15 @@ export const NET_RECONNECT_PATCH = `
     rec.active=true;rec.until=Date.now()+MAX_WAIT;
     overlay('Reconectando con la partida','Recuperando el estado de la partida…');
     clientRetry();
+  };
+
+  // Reanudación del anfitrión tras recargar: reabre la sala con el mismo
+  // código (hostWait recrea el peer) y espera a que el rival se reconecte.
+  window.bfAwaitRival=function(){
+    if(rec.active)return;
+    rec.active=true;rec.until=Date.now()+MAX_WAIT;
+    overlay('Esperando al otro jugador','La sala se ha reabierto. La partida se reanudará cuando vuelva a conectarse…');
+    hostWait();
   };
 
   // El host acepta reconexiones a mitad de partida: valida la contraseña,
