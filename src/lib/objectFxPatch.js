@@ -10,9 +10,9 @@ export const OBJECT_FX_PATCH = `
   window.__bfObjectFx=true;
 
   var css=''+
-  '.bf-ofx-drop{position:absolute;width:9px;height:13px;border-radius:50% 50% 55% 55%/40% 40% 60% 60%;opacity:0;box-shadow:0 0 8px currentColor;background:currentColor;animation:bfOfxDrop 1.1s ease-in forwards}'+
+  '.bf-ofx-drop{position:absolute;width:15px;height:22px;border-radius:50% 50% 55% 55%/40% 40% 60% 60%;opacity:0;box-shadow:0 0 8px currentColor;background:currentColor;animation:bfOfxDrop 1.1s ease-in forwards}'+
   '@keyframes bfOfxDrop{0%{opacity:0;transform:translateY(-26px) scale(.5)}20%{opacity:.95}100%{opacity:0;transform:translateY(40px) scale(1)}}'+
-  '.bf-ofx-swirl{position:absolute;left:50%;top:50%;width:70%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:2.5px dotted currentColor;box-shadow:0 0 16px currentColor;animation:bfOfxSwirl 1.2s ease-out forwards}'+
+  '.bf-ofx-swirl{position:absolute;left:50%;top:50%;width:70%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:4px dotted currentColor;box-shadow:0 0 16px currentColor;animation:bfOfxSwirl 1.2s ease-out forwards}'+
   '@keyframes bfOfxSwirl{0%{transform:translate(-50%,-50%) rotate(0) scale(.3);opacity:0}25%{opacity:.95}100%{transform:translate(-50%,-50%) rotate(-320deg) scale(1.3);opacity:0}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
@@ -48,7 +48,7 @@ export const OBJECT_FX_PATCH = `
         html+='<span class="bf-ofx-drop" style="left:'+(12+Math.random()*72)+'%;top:'+(10+Math.random()*30)+'%;animation-delay:'+(Math.random()*0.45).toFixed(2)+'s"></span>';
       }else{
         var g=theme.glyphs[i%theme.glyphs.length];
-        html+='<span class="bf-abx-p bf-abx-rise" style="left:'+(8+Math.random()*78)+'%;top:'+(52+Math.random()*35)+'%;animation-delay:'+(Math.random()*0.45).toFixed(2)+'s;font-size:'+(11+Math.random()*10)+'px">'+g+'</span>';
+        html+='<span class="bf-abx-p bf-abx-rise" style="left:'+(8+Math.random()*78)+'%;top:'+(52+Math.random()*35)+'%;animation-delay:'+(Math.random()*0.45).toFixed(2)+'s;font-size:'+(18+Math.random()*15)+'px">'+g+'</span>';
       }
     }
     html+='<div class="bf-abx-banner">'+theme.icon+' '+String(name).toUpperCase()+'</div>';
@@ -60,7 +60,7 @@ export const OBJECT_FX_PATCH = `
     if(A){
       var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
       A.speedLines(cc);
-      if(A.spriteBurst&&OSPR[kind])A.spriteBurst(OSPR[kind],cc,115,1050);
+      if(A.spriteBurst&&OSPR[kind])A.spriteBurst(OSPR[kind],cc,205,1050);
       if(theme===THEMES.bomb){ setTimeout(function(){A.hitStar(cc);},160); }
     }
     card.classList.add('bf-abx-glow');
