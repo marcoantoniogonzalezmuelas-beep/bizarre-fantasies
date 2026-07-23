@@ -418,7 +418,7 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      <LanguageSelector />
+      {showOracle && <LanguageSelector />}
       {loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0e0a16] pointer-events-none">
           <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
