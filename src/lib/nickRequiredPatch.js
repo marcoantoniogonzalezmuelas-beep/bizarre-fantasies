@@ -1,0 +1,92 @@
+// Parche inyectado en el iframe: obliga a escribir un nick propio antes de
+// poder jugar (IA, local u online). Sin nick válido no arranca la partida ni
+// se crea/une sala, así el ranking siempre refleja nombres reales.
+export const NICK_REQUIRED_PATCH = `
+<script>
+(function(){
+  if(window.__bfNickRequired)return;
+  window.__bfNickRequired=true;
+
+  var st=document.createElement('style');
+  st.textContent='.bf-nick-bad{border-color:#ff5a5a!important;box-shadow:0 0 0 2px rgba(255,90,90,.45)!important;animation:bfNickShake .3s}@keyframes bfNickShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}';
+  document.head.appendChild(st);
+
+  // Un nick es válido si no está vacío y no es el genérico "Jugador 1/2".
+  function badNick(v){
+    var s=String(v==null?'':v).trim();
+    return !s||/^jugador(\\s*\\d+)?$/i.test(s);
+  }
+  function warn(msg,input){
+    try{if(typeof notif==='function')notif(msg);else alert(msg);}catch(e){}
+    if(input){
+      input.classList.add('bf-nick-bad');
+      try{input.focus();}catch(e){}
+      setTimeout(function(){input.classList.remove('bf-nick-bad');},1600);
+    }
+  }
+  function el(id){return document.getElementById(id);}
+
+  // Partida contra la IA y partida local: valida los campos de nombre.
+  function wrap(name,check){
+    if(typeof window[name]!=='function'||window[name].__bfNick)return false;
+    var orig=window[name];
+    window[name]=function(){
+      var block=check(arguments);
+      if(block)return;
+      return orig.apply(this,arguments);
+    };
+    window[name].__bfNick=1;
+    return true;
+  }
+
+  function hookAll(){
+    wrap('startVsAI',function(){
+      var i=el('p1name');
+      if(!i||badNick(i.value)){warn('Escribe tu nick para poder jugar',i);return true;}
+      return false;
+    });
+    wrap('localStart',function(){
+      var i1=el('p1name'),i2=el('p2name');
+      if(!i1||badNick(i1.value)){warn('Escribe el nick del Jugador 1',i1);return true;}
+      if(!i2||badNick(i2.value)){warn('Escribe el nick del Jugador 2',i2);return true;}
+      return false;
+    });
+    // Online: hostCreate(name,pass,roomName) y clientJoin(code,pass,name).
+    wrap('hostCreate',function(args){
+      if(badNick(args[0])){
+        var i=el('hname')||document.querySelector('#s-lobby input[id*="name" i]');
+        warn('Escribe tu nick para crear la sala',i);
+        return true;
+      }
+      return false;
+    });
+    wrap('clientJoin',function(args){
+      if(badNick(args[2])){
+        var i=el('jname')||document.querySelector('#s-lobby input[id*="name" i]');
+        warn('Escribe tu nick para unirte a la sala',i);
+        return true;
+      }
+      return false;
+    });
+  }
+
+  // Los campos vienen prellenados con "Jugador 1/2": se vacían para que el
+  // jugador escriba su propio nick (el genérico ya no vale para jugar).
+  function clearGeneric(){
+    ['p1name','p2name','hname','jname'].forEach(function(id){
+      var i=el(id);
+      if(!i||i.dataset.bfNickClean==='1')return;
+      i.dataset.bfNickClean='1';
+      if(/^jugador\\s*\\d*$/i.test(String(i.value).trim()))i.value='';
+      i.placeholder='Escribe tu nick';
+    });
+  }
+  clearGeneric();
+  new MutationObserver(clearGeneric).observe(document.documentElement,{childList:true,subtree:true});
+
+  hookAll();
+  // Reintenta por si otras envolturas (reconexión, lobby) redefinen funciones.
+  var tries=0,iv=setInterval(function(){hookAll();if(tries++>100)clearInterval(iv);},200);
+})();
+</script>
+`;
