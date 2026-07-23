@@ -2,7 +2,7 @@ import React from 'react';
 import { getLang, setLang } from '@/lib/i18n';
 
 // Selector de idioma fijo (arriba a la derecha): 🇪🇸 ES / 🇬🇧 EN.
-export default function LanguageSelector() {
+export default function LanguageSelector({ inline = false }) {
   const lang = getLang();
   const btn = (l, label) => (
     <button
@@ -18,7 +18,7 @@ export default function LanguageSelector() {
     </button>
   );
   return (
-    <div className="fixed top-3 right-3 z-[60] flex rounded-full overflow-hidden border-2 border-[#ffd24a]/70 shadow-[0_4px_16px_rgba(0,0,0,.65),0_0_14px_rgba(255,210,74,.35)] backdrop-blur-sm">
+    <div className={`${inline ? '' : 'fixed top-3 right-3 z-[60] '}flex rounded-full overflow-hidden border-2 border-[#ffd24a]/70 shadow-[0_4px_16px_rgba(0,0,0,.65),0_0_14px_rgba(255,210,74,.35)] backdrop-blur-sm`}>
       {btn('es', '🇪🇸 ES')}
       {btn('en', '🇬🇧 EN')}
     </div>

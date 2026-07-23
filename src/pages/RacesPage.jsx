@@ -4,10 +4,12 @@ import { ArrowLeft } from 'lucide-react';
 import RaceCard from '@/components/cards/RaceCard';
 import { RACES } from '@/lib/cardData';
 import { t } from '@/lib/i18n';
+import LanguageSelector from '@/components/LanguageSelector';
 
 export default function RacesPage() {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0d0a14, #0a0810)' }}>
+      <LanguageSelector />
       <div className="max-w-4xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-8">
           <Link to="/" className="text-[#a89fbb] hover:text-[#FFD24A] transition-colors"><ArrowLeft size={20} /></Link>

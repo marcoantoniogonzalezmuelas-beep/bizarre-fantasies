@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
 import { t } from '@/lib/i18n';
+import LanguageSelector from '@/components/LanguageSelector';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5f6dbe23d_generated_image.png';
@@ -47,6 +48,7 @@ export default function Ranking() {
 
   return (
     <div className="min-h-screen relative text-[#efe9dc]" style={{ background: '#0e0a16' }}>
+      <LanguageSelector />
       <div className="fixed inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BG_IMG})` }} />
       <div className="fixed inset-0 bg-gradient-to-b from-[#0e0a16]/80 via-[#0e0a16]/70 to-[#0e0a16]/95" />
 
