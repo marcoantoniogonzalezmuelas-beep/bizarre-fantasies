@@ -120,7 +120,9 @@ export const CARD_PLAY_REVEAL_PATCH = `
     var orig=window.flushFx;
     window.flushFx=function(list){
       try{
-        (list||[]).forEach(function(ev){if(ev&&ev.k==='bfcard')showReveal(ev);});
+        // Llama a la referencia global (no a la copia local) para que otros
+        // parches, como las cinemáticas especiales, puedan envolverla.
+        (list||[]).forEach(function(ev){if(ev&&ev.k==='bfcard')(window.__bfShowCardReveal||showReveal)(ev);});
       }catch(e){}
       return orig.apply(this,arguments);
     };
