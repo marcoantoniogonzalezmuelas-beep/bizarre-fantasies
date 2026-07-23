@@ -44,31 +44,44 @@ const gameArtFor = (category, number) => {
   return undefined;
 };
 
-const normalizeHero = (card) => ({
-  ...card,
-  id: card.card_id,
-  num: card.number,
-  eCc: card.elite_cc,
-  eAd: card.elite_ad,
-  eHe: card.elite_he,
-  eHp: card.elite_hp,
-  ability: card.ability_name,
-  abilityTxt: card.ability_text,
-  eAbility: card.elite_ability_name,
-  eTxt: card.elite_ability_text,
-  art: freshArt(card, card.art_url) || HERO_ART[Number(card.number || 0) - 1],
-  eliteArt: freshArt(card, card.elite_art_url || card.art_url) || HERO_ELITE_ART[Number(card.number || 0) - 1],
-});
+// Con el idioma en inglés, los textos traducidos (guardados en la carta bajo
+// "en") sustituyen a los originales; los nombres propios no se traducen.
+const enOf = (card) => (getLang() === 'en' ? (card.en || {}) : {});
 
-const normalizeItem = (card) => ({
-  ...card,
-  id: card.card_id,
-  num: card.number,
-  txt: card.description,
-  art: freshArt(card, card.art_url) || gameArtFor(card.category, card.number),
-  element: card.category === 'spell' ? card.type : undefined,
-  tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
-});
+const normalizeHero = (card) => {
+  const en = enOf(card);
+  return {
+    ...card,
+    id: card.card_id,
+    num: card.number,
+    title: en.title || card.title,
+    eCc: card.elite_cc,
+    eAd: card.elite_ad,
+    eHe: card.elite_he,
+    eHp: card.elite_hp,
+    ability: en.ability_name || card.ability_name,
+    abilityTxt: en.ability_text || card.ability_text,
+    eAbility: en.elite_ability_name || card.elite_ability_name,
+    eTxt: en.elite_ability_text || card.elite_ability_text,
+    description: en.description || card.description,
+    art: freshArt(card, card.art_url) || HERO_ART[Number(card.number || 0) - 1],
+    eliteArt: freshArt(card, card.elite_art_url || card.art_url) || HERO_ELITE_ART[Number(card.number || 0) - 1],
+  };
+};
+
+const normalizeItem = (card) => {
+  const en = enOf(card);
+  return {
+    ...card,
+    id: card.card_id,
+    num: card.number,
+    txt: en.description || card.description,
+    tag_en: en.tag,
+    art: freshArt(card, card.art_url) || gameArtFor(card.category, card.number),
+    element: card.category === 'spell' ? card.type : undefined,
+    tag: card.category === 'spell' ? card.tag : (card.tag || card.type),
+  };
+};
 
 export default function Cards() {
   const loc = useLocation();

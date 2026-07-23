@@ -53,6 +53,20 @@ export function buildLangEnPatch(lang) {
       document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(transAttrs);
     } catch(e) {}
   }
+  // Diccionario dinámico de textos de cartas (habilidades, títulos,
+  // descripciones) que envía la página con las traducciones de la base de
+  // datos. Al llegar, se reinicia la caché de nodos y se re-escanea.
+  window.addEventListener('message', function(e){
+    if (!e.data || !e.data.bfCardDict) return;
+    var added = 0;
+    for (var k in e.data.bfCardDict) { EXACT[k] = e.data.bfCardDict[k]; added++; }
+    window.__bfCardDictCount = added;
+    try {
+      var w2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      var n2; while ((n2 = w2.nextNode())) n2.__bfT = null;
+    } catch(err) {}
+    scan();
+  });
   var pend = null;
   function queue(){ if (pend) return; pend = setTimeout(function(){ pend = null; scan(); }, 180); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();

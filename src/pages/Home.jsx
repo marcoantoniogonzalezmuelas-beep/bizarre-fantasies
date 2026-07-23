@@ -303,18 +303,30 @@ export default function Home() {
       if (e.data && typeof e.data.bfNavigate === 'string') navigate(e.data.bfNavigate);
       // El juego pide el arte de hechizos/objetos para la carta revelada al
       // jugarse: se responde con un mapa nombre → imagen desde la base de datos.
+      // Con el idioma en inglés se añade además un diccionario texto ES → EN de
+      // todas las cartas para que el parche de traducción lo aplique en vivo.
       if (e.data && e.data.bfArtMapRequest) {
-        base44.entities.Card.filter({ category: { $in: ['spell', 'object', 'ranged_weapon', 'melee_weapon'] } }, 'number', 200).then(cards => {
+        base44.entities.Card.list('number', 300).then(cards => {
+          const isEn = getLang() === 'en';
+          const ITEM_CATS = ['spell', 'object', 'ranged_weapon', 'melee_weapon'];
           const map = {};
           const info = {};
+          const dict = {};
           (cards || []).forEach(c => {
             if (!c.name) return;
-            if (c.art_url) map[c.name] = c.art_url;
+            const en = isEn ? (c.en || {}) : {};
+            const isItem = ITEM_CATS.includes(c.category);
+            if (isItem && c.art_url) map[c.name] = c.art_url;
             // Texto del Oráculo + coste de maná, para la carta revelada al jugarse.
-            const text = c.description || c.ability_text || '';
-            if (text || c.mana != null) info[c.name] = { text, mana: c.mana != null ? c.mana : null, category: c.category };
+            const text = en.description || en.ability_text || c.description || c.ability_text || '';
+            if (isItem && (text || c.mana != null)) info[c.name] = { text, mana: c.mana != null ? c.mana : null, category: c.category };
+            if (isEn && c.en) {
+              ['title', 'ability_name', 'ability_text', 'elite_ability_name', 'elite_ability_text', 'description'].forEach(f => {
+                if (c[f] && c.en[f] && c[f] !== c.en[f]) dict[c[f]] = c.en[f];
+              });
+            }
           });
-          iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map, bfCardInfo: info }, '*');
+          iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map, bfCardInfo: info, bfCardDict: dict }, '*');
         }).catch(() => {});
       }
     };

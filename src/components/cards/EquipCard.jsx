@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
+import { getLang } from '@/lib/i18n';
 
 const TYPE_COLORS = {
   spell: '#8b6bff', melee: '#e0653f', ranged: '#3fb56a', armor: '#5a8fd6', object: '#d6b13f', bonus: '#d39b22',
@@ -164,16 +165,17 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
   }
 
   // Spell / melee / ranged / armor / object — same full-bleed layout
-  const tagLabel = type === 'spell'
+  const tagLabel = item.tag_en || (type === 'spell'
     ? (item.element?.toUpperCase() || item.tag)
-    : item.tag;
+    : item.tag);
 
   const tagBg = type === 'spell' && item.element
     ? ELEMENT_COLORS[item.element] || borderColor
     : borderColor;
 
+  const manaWord = getLang() === 'en' ? 'mana' : 'maná';
   const statLine = type === 'spell' && item.mana != null
-    ? `🔵 ${item.mana} maná`
+    ? `🔵 ${item.mana} ${manaWord}`
     : item.cc != null
     ? `+${item.cc} CC`
     : item.power != null
@@ -181,7 +183,7 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
     : item.hp != null && type === 'armor'
     ? `+${item.hp} HP`
     : item.mana != null
-    ? `🔵 ${item.mana} maná`
+    ? `🔵 ${item.mana} ${manaWord}`
     : null;
 
   return (
