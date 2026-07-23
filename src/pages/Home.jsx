@@ -36,8 +36,8 @@ import { GUIDE_HELP_BADGE_PATCH } from '@/lib/guideHelpBadgePatch';
 import { SPECIAL_CARD_CINEMATIC_PATCH } from '@/lib/specialCardCinematicPatch';
 import { MATCH_RECOVERY_PATCH } from '@/lib/matchRecoveryPatch';
 import { buildLangEnPatch } from '@/lib/langEnPatch';
-import { getLang, t } from '@/lib/i18n';
-import LanguageSelector from '@/components/LanguageSelector';
+import { getLang, setLang, t } from '@/lib/i18n';
+import { buildLangSelectorPatch } from '@/lib/langSelectorPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-07-23-match-recovery-v192';
@@ -301,6 +301,7 @@ export default function Home() {
         base44.entities.MatchResult.create(e.data.bfMatchResult).catch(() => {});
       }
       if (e.data && typeof e.data.bfNavigate === 'string') navigate(e.data.bfNavigate);
+      if (e.data && typeof e.data.bfSetLang === 'string') setLang(e.data.bfSetLang);
       // El juego pide el arte de hechizos/objetos para la carta revelada al
       // jugarse: se responde con un mapa nombre → imagen desde la base de datos.
       // Con el idioma en inglés se añade además un diccionario texto ES → EN de
@@ -369,7 +370,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + MATCH_RESULT_PATCH + RANKING_BUTTON_PATCH + ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + buildLangEnPatch(getLang()) + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + MATCH_RESULT_PATCH + RANKING_BUTTON_PATCH + ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + buildLangEnPatch(getLang()) + buildLangSelectorPatch(getLang()) + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
@@ -418,7 +419,6 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      {showOracle && <LanguageSelector />}
       {loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0e0a16] pointer-events-none">
           <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
