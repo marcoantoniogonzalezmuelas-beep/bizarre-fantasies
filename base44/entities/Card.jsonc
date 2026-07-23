@@ -93,6 +93,33 @@
     "description": {
       "type": "string"
     },
+    "en": {
+      "type": "object",
+      "description": "English translations of the card texts",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "ability_name": {
+          "type": "string"
+        },
+        "ability_text": {
+          "type": "string"
+        },
+        "elite_ability_name": {
+          "type": "string"
+        },
+        "elite_ability_text": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        }
+      }
+    },
     "art_url": {
       "type": "string",
       "description": "URL of the generated art"
