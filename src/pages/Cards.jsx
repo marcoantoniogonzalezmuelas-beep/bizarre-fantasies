@@ -10,7 +10,6 @@ import ClanSigil from '@/components/cards/ClanSigil';
 import DownloadDocsButton from '@/components/cards/DownloadDocsButton';
 import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 import { getLang, t } from '@/lib/i18n';
-import LanguageSelector from '@/components/LanguageSelector';
 
 const TABS = [
   { key: 'heroes', label: 'Héroes' },
@@ -148,7 +147,7 @@ export default function Cards() {
           <Link to="/" className="-ml-2 p-2.5 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-[#ffffff10] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={24} /></Link>
           <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">ORÁCULO BIZARRO</h1>
           <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} {t('cartas · Base Set')}</span>
-          <div className="ml-auto flex items-center gap-2"><LanguageSelector inline /><DownloadDocsButton cards={dbCards} /></div>
+          <div className="ml-auto flex items-center gap-2"><DownloadDocsButton cards={dbCards} /></div>
         </div>
 
         {/* Tabs */}
