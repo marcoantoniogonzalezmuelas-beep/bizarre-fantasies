@@ -19,7 +19,7 @@ export const QUIT_CONTACT_PATCH = `
     '.bf-contact-pill:active{transform:scale(.96);}',
     '.bf-contact-pill img{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,210,74,.7);object-fit:cover;}',
     '.bf-contact-pill span{font-family:Cinzel,serif;font-weight:900;font-size:13px;color:#ffd24a;letter-spacing:1px;text-shadow:0 0 10px rgba(255,210,74,.5);white-space:nowrap;}',
-    '.bf-contact-body{display:none;max-width:min(560px,90vw);margin:8px auto 0;background:linear-gradient(135deg,#1a0f2ef2,#2a1040f2);border:2px solid #c06bff;border-radius:14px;padding:10px 14px;font-size:12px;color:#e6ddf5;line-height:1.45;backdrop-filter:blur(4px);box-shadow:0 8px 24px rgba(0,0,0,.6);}',
+    '.bf-contact-body{display:none;max-width:min(560px,90vw);margin:8px auto 0;background:linear-gradient(135deg,#1a0f2ef2,#2a1040f2);border:2px solid #c06bff;border-radius:14px;padding:14px 18px;font-size:16px;color:#e6ddf5;line-height:1.55;backdrop-filter:blur(4px);box-shadow:0 8px 24px rgba(0,0,0,.6);}',
     '.bf-contact.open .bf-contact-body{display:block;}',
     '.bf-contact a{color:#ff7ad9;font-weight:900;text-decoration:none;text-shadow:0 0 8px rgba(255,122,217,.6);}',
     '.bf-contact a:hover{color:#ffd24a;}',
