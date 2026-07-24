@@ -3,7 +3,7 @@
 // diccionario ES→EN y vigila el DOM con un MutationObserver. Los nodos que la
 // lógica del juego lee por texto (nombres de carta, estados, etiquetas de arte)
 // NO se tocan para no romper la detección interna.
-import { DICT_EXACT, DICT_WORDS } from '@/lib/translationsEn';
+import { DICT_EXACT, DICT_WORDS, DICT_PATTERNS } from '@/lib/translationsEn';
 
 export function buildLangEnPatch(lang) {
   if (lang !== 'en') return '';
@@ -14,6 +14,7 @@ export function buildLangEnPatch(lang) {
   window.__bfLangEn = true;
   var EXACT = ${JSON.stringify(DICT_EXACT)};
   var WORDS = ${JSON.stringify(DICT_WORDS)};
+  var PATS = ${JSON.stringify(DICT_PATTERNS)}.map(function(p){ return { re: new RegExp(p[0], 'g'), to: p[1] }; });
   // Elementos cuyo texto usa la lógica del juego (detección por nombre/estado).
   var SKIP = '.bhero-status,.hand-lbl,.ctb-hero-name,.cf-name,.bhero-name,.bf-hero-name,.bf-chip-name,.shop-name,.bf-shop-name,.bsum-hero,input,textarea';
   function esc(s){ return s.replace(/[.*+?^$\\{\\}()|[\\]\\\\]/g, '\\\\$&'); }
@@ -25,6 +26,7 @@ export function buildLangEnPatch(lang) {
     var k = t.trim();
     if (EXACT[k] != null) return t.replace(k, EXACT[k]);
     var out = t;
+    for (var j = 0; j < PATS.length; j++) out = out.replace(PATS[j].re, PATS[j].to);
     for (var i = 0; i < WORD_RES.length; i++) out = out.replace(WORD_RES[i].re, function(m, p1){ return p1 + WORD_RES[i].to; });
     return out;
   }
