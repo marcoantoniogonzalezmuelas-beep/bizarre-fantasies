@@ -106,6 +106,7 @@ export const DICT_EXACT = {
   '¡Comienza la batalla!': 'The battle begins!',
   'un': 'a',
   '🧙‍♂️ ¡EL ORÁCULO ESCUCHA TUS BIZARRADAS! 🦆': '🧙‍♂️ THE ORACLE HEARS YOUR BIZARRENESS! 🦆',
+  '¡Contacta Con Los Bizarros!': 'Contact The Bizarros!',
   'Escríbenos a': 'Write to us at',
   'y cuéntanos tus ideas: cartas que quieras crear, mejorar, empeorar, subir de nivel… lo que sea.': 'and share your ideas: cards you\u2019d like to create, improve, weaken, level up… anything goes.',
   'Además lo iremos haciendo por los rankings.': 'We\u2019ll roll them out through the rankings too.',
