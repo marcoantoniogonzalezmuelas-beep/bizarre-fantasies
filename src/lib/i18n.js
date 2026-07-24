@@ -33,6 +33,8 @@ const UI_EN = {
   'Cotidianos': 'Everyday Folk',
   'Buscar héroe...': 'Search hero...',
   'cartas · Base Set': 'cards · Base Set',
+  'Oráculo Bizarro': 'Bizarre Oracle',
+  'ORÁCULO BIZARRO': 'BIZARRE ORACLE',
   'Volver': 'Back',
   'No se encontraron héroes con esos filtros.': 'No heroes match those filters.',
   'Aún no hay Bizarros en el catálogo.': 'No Bizarros in the catalog yet.',

@@ -145,7 +145,7 @@ export default function Cards() {
       <div className="sticky top-0 z-20 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link to="/" className="-ml-2 p-2.5 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-[#ffffff10] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={24} /></Link>
-          <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">ORÁCULO BIZARRO</h1>
+          <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">{t('ORÁCULO BIZARRO')}</h1>
           <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} {t('cartas · Base Set')}</span>
           <div className="ml-auto flex items-center gap-2"><DownloadDocsButton cards={dbCards} /></div>
         </div>
