@@ -1,0 +1,41 @@
+{
+  "name": "Auto-translate Cards",
+  "description": "Cuando se crea una carta o se editan sus textos en espa\u00f1ol, genera autom\u00e1ticamente su traducci\u00f3n al ingl\u00e9s (campo en).",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Card",
+      "events": [
+        "create",
+        "update"
+      ]
+    },
+    "condition": "${ .trigger.event_type == \"create\" or ((.trigger.changed_fields // []) | map(select(. == \"title\" or . == \"ability_name\" or . == \"ability_text\" or . == \"elite_ability_name\" or . == \"elite_ability_text\" or . == \"description\" or . == \"tag\")) | length > 0) }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_translate_cards",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "translate_card": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "translateCard",
+            "args": {
+              "card_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Traducir carta al ingl\u00e9s",
+            "description": "Rellena el campo en con IA"
+          }
+        }
+      }
+    ]
+  }
+}

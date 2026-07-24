@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Cards from './pages/Cards';
 import RacesPage from './pages/RacesPage';
 import Ranking from './pages/Ranking';
+import EnglishEntry from './pages/EnglishEntry';
 import AdminCards from './pages/AdminCards';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
       <Route path="/cards" element={<Cards />} />
       <Route path="/races" element={<RacesPage />} />
       <Route path="/ranking" element={<Ranking />} />
+      <Route path="/en" element={<EnglishEntry />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
