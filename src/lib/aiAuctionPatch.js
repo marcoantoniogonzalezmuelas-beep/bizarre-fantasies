@@ -21,7 +21,19 @@ export const AI_AUCTION_PATCH = `
     return team.length < (Number(G.aIndex || 0) + 1);
   }
   function mods(s){ try { return window.bidMods ? window.bidMods(s) : { add: 0, sub: 0 }; } catch(e){ return { add: 0, sub: 0 }; } }
-  function pool(s){ return (G.epicCands && G.epicCands[s]) || G.cands || []; }
+  // Héroes ya adjudicados a cualquier equipo: nunca son candidatos de puja.
+  function takenIds(){
+    var t = {};
+    if (G.team) {
+      (G.team.p || []).forEach(function(h){ if (h && h.id) t[h.id] = true; });
+      (G.team.o || []).forEach(function(h){ if (h && h.id) t[h.id] = true; });
+    }
+    return t;
+  }
+  function pool(s){
+    var taken = takenIds();
+    return (((G.epicCands && G.epicCands[s]) || G.cands || [])).filter(function(h){ return h && h.id && !taken[h.id]; });
+  }
   function cheapest(s){ var c = null; pool(s).forEach(function(h){ if (h && (!c || Number(h.cost||0) < Number(c.cost||0))) c = h; }); return c; }
 
   // Transferencia equipamiento → subasta en bloques de 10 (máx. 100 por partida).
