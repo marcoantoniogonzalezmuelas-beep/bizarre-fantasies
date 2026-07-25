@@ -16,9 +16,20 @@ function top(map, n = 10, extraMap) {
 
 export default function Ranking() {
   const [results, setResults] = useState(null);
+  const [artMap, setArtMap] = useState({});
 
   useEffect(() => {
     base44.entities.MatchResult.list('-created_date', 500).then(setResults);
+    // Arte de cada héroe (por nombre) para el podio ilustrado de los tops.
+    base44.entities.Card.list('number', 300).then(cards => {
+      const m = {};
+      (cards || []).forEach(c => {
+        if ((c.category === 'hero' || c.category === 'bizarro') && c.name && c.art_url) {
+          m[c.name] = { art: c.art_url, color: c.clan_color || '#caa14a' };
+        }
+      });
+      setArtMap(m);
+    });
   }, []);
 
   // Tokens invocados en batalla (no son héroes): fuera de las listas de héroes.
@@ -70,10 +81,10 @@ export default function Ranking() {
             <div className="md:col-span-2">
               <RankList title={t('Mejores jugadores')} icon="👑" rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} />
             </div>
-            <RankList title={t('Héroes más victoriosos')} icon="⚔️" rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" />
-            <RankList title={t('Héroes más derrotados')} icon="💀" rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" />
-            <RankList title={t('Héroes más veces caídos')} icon="⚰️" rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" />
-            <RankList title={t('Renaceres Élite')} icon="🔥" rows={top(heroElites, 8)} valueLabel={t('renaceres')} accent="#ffa94a" empty={t('Ningún héroe ha renacido en su forma Élite aún.')} />
+            <RankList title={t('Héroes más victoriosos')} icon="⚔️" rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
+            <RankList title={t('Héroes más derrotados')} icon="💀" rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
+            <RankList title={t('Héroes más veces caídos')} icon="⚰️" rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" artMap={artMap} />
+            <RankList title={t('Renaceres Élite')} icon="🔥" rows={top(heroElites, 8)} valueLabel={t('renaceres')} accent="#ffa94a" empty={t('Ningún héroe ha renacido en su forma Élite aún.')} artMap={artMap} />
           </div>
         )}
       </div>
