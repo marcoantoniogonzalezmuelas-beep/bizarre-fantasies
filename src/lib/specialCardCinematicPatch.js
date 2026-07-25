@@ -10,17 +10,41 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   if(window.__bfSpecCine)return;
   window.__bfSpecCine=true;
 
-  var PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fbf0ca083_generated_image.png';
-  var ROBOT_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b4b50e620_generated_image.png';
-  [PHOENIX_IMG,ROBOT_IMG].forEach(function(u){var i=new Image();i.src=u;});
+  var PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6e80fa42f_generated_image.png';
+  var ROBOT_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
+  // Recorte del fondo: las imágenes vienen sobre negro puro; se convierte el
+  // negro en transparente con un canvas para que solo quede la criatura.
+  var CUT={};
+  function cutout(url){
+    if(CUT[url])return;
+    var img=new Image();img.crossOrigin='anonymous';
+    img.onload=function(){
+      try{
+        var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+        var x=c.getContext('2d');x.drawImage(img,0,0);
+        var d=x.getImageData(0,0,c.width,c.height),p=d.data;
+        for(var i=0;i<p.length;i+=4){
+          var m=Math.max(p[i],p[i+1],p[i+2]);
+          if(m<32)p[i+3]=0;
+          else if(m<90)p[i+3]=Math.round(p[i+3]*(m-32)/58);
+        }
+        x.putImageData(d,0,0);
+        CUT[url]=c.toDataURL('image/png');
+      }catch(e){CUT[url]=url;}
+    };
+    img.onerror=function(){CUT[url]=url;};
+    img.src=url;
+  }
+  [PHOENIX_IMG,ROBOT_IMG].forEach(cutout);
 
   var css=''+
-  '#bf-spec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center;perspective:900px;animation:bfScIn .3s ease-out}'+
+  '#bf-spec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfScIn .3s ease-out}'+
   '#bf-spec-cine.bf-sc-out{transition:opacity .4s;opacity:0}'+
-  '#bf-spec-cine .bf-sc-bg{position:absolute;inset:0}'+
-  '#bf-spec-cine.bf-sc-phoenix .bf-sc-bg{background:radial-gradient(circle at 50% 55%,rgba(120,30,0,.55),rgba(6,2,10,.9))}'+
-  '#bf-spec-cine.bf-sc-robot .bf-sc-bg{background:radial-gradient(circle at 50% 55%,rgba(10,40,90,.55),rgba(4,4,12,.9))}'+
-  '#bf-spec-cine .bf-sc-img{position:relative;width:min(78vmin,640px);height:min(78vmin,640px);object-fit:contain;mix-blend-mode:screen;transform-style:preserve-3d}'+
+  '#bf-spec-cine .bf-sc-bg{display:none}'+
+  // Criatura a la derecha de la pantalla, sin fondo, para no tapar la carta
+  // revelada (que aparece centrada).
+  '#bf-spec-cine .bf-sc-img{position:absolute;top:50%;left:75%;transform-origin:center;width:min(56vmin,480px);height:min(56vmin,480px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(56vmin,480px)/-2) 0 0 calc(min(56vmin,480px)/-2)}'+
+  '@media(max-width:900px){#bf-spec-cine .bf-sc-img{left:78%;width:min(46vmin,340px);height:min(46vmin,340px);margin:calc(min(46vmin,340px)/-2) 0 0 calc(min(46vmin,340px)/-2)}}'+
   '#bf-spec-cine.bf-sc-phoenix .bf-sc-img{filter:drop-shadow(0 0 60px rgba(255,120,20,.8)) saturate(1.25);animation:bfScPhoenix 3s cubic-bezier(.2,.85,.3,1) forwards}'+
   '@keyframes bfScPhoenix{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.12);opacity:1}}'+
   '#bf-spec-cine.bf-sc-robot .bf-sc-img{filter:drop-shadow(0 0 50px rgba(60,160,255,.85)) saturate(1.2);animation:bfScRobot 3s cubic-bezier(.2,.9,.3,1) forwards}'+
@@ -49,7 +73,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     }else{
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
-    html+='<img class="bf-sc-img" src="'+(kind==='phoenix'?PHOENIX_IMG:ROBOT_IMG)+'" alt="">';
+    var src=kind==='phoenix'?PHOENIX_IMG:ROBOT_IMG;
+    html+='<img class="bf-sc-img" src="'+(CUT[src]||src)+'" alt="">';
     html+='<div class="bf-sc-ttl">'+(kind==='phoenix'?'¡RENACE EL FÉNIX!':'¡TRANSFORMACIÓN!')+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
@@ -73,7 +98,20 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     window.__bfShowCardReveal.__bfSpec=1;
     return true;
   }
-  var tries=0,iv=setInterval(function(){if(hook()||tries++>120)clearInterval(iv);},200);
+  // El Transformer no siempre pasa por la revelación de carta (su castSpell es
+  // especial), pero SIEMPRE emite el efecto {k:'transform'} por flushFx, que
+  // además viaja a ambos jugadores online: la cinemática se engancha ahí.
+  function hookFlush(){
+    if(typeof window.flushFx!=='function'||window.flushFx.__bfSpecCineFx)return false;
+    var orig=window.flushFx;
+    window.flushFx=function(list){
+      try{(list||[]).forEach(function(ev){if(ev&&ev.k==='transform')playCine('robot');});}catch(e){}
+      return orig.apply(this,arguments);
+    };
+    window.flushFx.__bfSpecCineFx=1;
+    return true;
+  }
+  var tries=0,iv=setInterval(function(){var a=hook(),b=hookFlush();if((a||window.__bfShowCardReveal&&window.__bfShowCardReveal.__bfSpec)&&(b||window.flushFx&&window.flushFx.__bfSpecCineFx)||tries++>120)clearInterval(iv);},200);
 })();
 </script>
 `;
