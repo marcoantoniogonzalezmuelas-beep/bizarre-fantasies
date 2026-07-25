@@ -15,7 +15,16 @@ export const ACTION_FOCUS_PATCH = `
   // vean claramente. Instantáneo: los proyectiles calculan sus coordenadas en
   // ese mismo instante. Si la carta implicada aún quedara fuera, se centra.
   function focusCard(side,id,smooth){
+    // Móvil: si hay zoom de pellizco activo, se reencuadra a pantalla completa
+    // para que la batalla se vea entera, igual que en escritorio.
+    try{ if(window.__bfPinchReset)window.__bfPinchReset(); }catch(e){}
     try{ window.scrollTo({top:0,left:0,behavior:'auto'}); }catch(e){ window.scrollTo(0,0); }
+    // En móvil el scroll táctil puede vivir en el body/documento y no en window.
+    try{
+      var se=document.scrollingElement||document.documentElement;
+      se.scrollTop=0; se.scrollLeft=0;
+      document.body.scrollTop=0; document.body.scrollLeft=0;
+    }catch(e){}
     var el=cardEl(side,id); if(!el)return;
     // Sube también cualquier contenedor con scroll propio que envuelva el tablero.
     var p=el.parentElement;

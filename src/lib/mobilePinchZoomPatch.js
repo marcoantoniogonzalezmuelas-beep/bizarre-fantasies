@@ -74,6 +74,9 @@ export const MOBILE_PINCH_PATCH = `
     z = 1; tx = 0; ty = 0; apply();
     setTimeout(function(){ b.style.transition = ''; }, 260);
   }
+  // Otros parches (enfoque de la acción en batalla) pueden pedir el reencuadre.
+  window.__bfPinchReset = resetZoom;
+
   new MutationObserver(function(muts){
     for (var i = 0; i < muts.length; i++) {
       var added = muts[i].addedNodes;
