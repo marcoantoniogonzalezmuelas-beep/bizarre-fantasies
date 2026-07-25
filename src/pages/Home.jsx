@@ -248,7 +248,11 @@ const DRAGGABLE_GUIDE_PATCH = `
 </script>
 `;
 
-const IS_MOBILE = typeof navigator !== 'undefined' && (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || (navigator.maxTouchPoints > 1 && /Macintosh|Mac OS/i.test(navigator.userAgent || '')));
+const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
+// Tablets (iPad, Android sin "Mobile", Mac con pantalla táctil) usan el modo
+// escritorio completo, con sus zooms. Solo los teléfonos usan el modo escalado.
+const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
+const IS_MOBILE = !IS_TABLET && /Android|iPhone|iPod|Mobile/i.test(UA);
 
 export default function Home() {
   useEffect(() => {
