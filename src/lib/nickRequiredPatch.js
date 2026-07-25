@@ -11,10 +11,27 @@ export const NICK_REQUIRED_PATCH = `
   st.textContent='.bf-nick-bad{border-color:#ff5a5a!important;box-shadow:0 0 0 2px rgba(255,90,90,.45)!important;animation:bfNickShake .3s}@keyframes bfNickShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}';
   document.head.appendChild(st);
 
-  // Un nick es válido si no está vacío y no es el genérico "Jugador 1/2".
+  // Palabras obscenas/soeces prohibidas en los nicks (ES + EN). Se comparan
+  // sobre el texto normalizado (sin acentos, ñ→n, números tipo leet → letras)
+  // y por palabra completa para no bloquear nicks legítimos (ej. "Computadora").
+  var BAD_WORDS=['cono','polla','picha','joder','jodido','jodida','puta','puto','putas','putos','mierda','cabron','cabrona','cabrones','gilipollas','follar','follada','follador','zorra','zorron','maricon','marica','mariconazo','verga','chocho','cipote','pene','culo','culos','tetas','cojones','cojon','pichabrava','subnormal','mongolo','mongola','retrasado','retrasada','pendejo','pendeja','concha','conchatumadre','hijoputa','hijaputa','hijodeputa','malfollada','malfollado','nazi','hitler','fuck','fucker','fucking','shit','bitch','cunt','dick','pussy','asshole','whore','slut','nigger','nigga','faggot'];
+  function normNick(v){
+    var s=String(v==null?'':v).toLowerCase();
+    try{s=s.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'');}catch(e){}
+    return s.replace(/ñ/g,'n').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/@/g,'a').replace(/\\$/g,'s');
+  }
+  function obsceneNick(v){
+    var words=normNick(v).split(/[^a-z]+/);
+    for(var i=0;i<words.length;i++){
+      if(words[i]&&BAD_WORDS.indexOf(words[i])!==-1)return true;
+    }
+    return false;
+  }
+  // Un nick es válido si no está vacío, no es el genérico "Jugador 1/2" y no
+  // contiene palabras malsonantes.
   function badNick(v){
     var s=String(v==null?'':v).trim();
-    return !s||/^jugador(\\s*\\d+)?$/i.test(s);
+    return !s||/^jugador(\\s*\\d+)?$/i.test(s)||obsceneNick(s);
   }
   function warn(msg,input){
     try{if(typeof notif==='function')notif(msg);else alert(msg);}catch(e){}
