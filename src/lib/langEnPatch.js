@@ -16,7 +16,7 @@ export function buildLangEnPatch(lang) {
   var WORDS = ${JSON.stringify(DICT_WORDS)};
   var PATS = ${JSON.stringify(DICT_PATTERNS)}.map(function(p){ return { re: new RegExp(p[0], 'g'), to: p[1] }; });
   // Elementos cuyo texto usa la lógica del juego (detección por nombre/estado).
-  var SKIP = '.bhero-status,.hand-lbl,.ctb-hero-name,.cf-name,.bhero-name,.bf-hero-name,.bf-chip-name,.shop-name,.bf-shop-name,.bsum-hero,input,textarea';
+  var SKIP = '.bf-tip,.bhero-status,.hand-lbl,.ctb-hero-name,.cf-name,.bhero-name,.bf-hero-name,.bf-chip-name,.shop-name,.bf-shop-name,.bsum-hero,input,textarea';
   function esc(s){ return s.replace(/[.*+?^$\\{\\}()|[\\]\\\\]/g, '\\\\$&'); }
   var LETTER = 'A-Za-z\\u00c0-\\u00ff';
   var WORD_RES = Object.keys(WORDS).sort(function(a,b){ return b.length-a.length; }).map(function(k){

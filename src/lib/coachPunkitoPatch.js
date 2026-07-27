@@ -17,7 +17,9 @@ export const COACH_PUNKITO_PATCH = `
   st.textContent = [
     // El diálogo del tutorial debe quedar SIEMPRE por encima de los controles
     // de puja (que llevan z-index 90001 por otra regla global de botones).
-    '#coach{position:relative!important;z-index:95050!important;background:linear-gradient(180deg,#1c1533,#130d24)!important}',
+    // El coach del tutorial va FIJO abajo, centrado y siempre visible: nada de
+    // tener que hacer scroll para leer las explicaciones.
+    '#coach{position:fixed!important;left:50%!important;bottom:12px!important;top:auto!important;right:auto!important;transform:translateX(-50%);width:min(760px,94vw)!important;max-height:34vh;overflow-y:auto;z-index:99997!important;background:linear-gradient(180deg,#1c1533,#130d24)!important;border:2px solid rgba(255,210,74,.55)!important;border-radius:16px!important;box-shadow:0 10px 30px rgba(0,0,0,.7),0 0 22px rgba(255,210,74,.3)!important}',
     '#coach *{z-index:auto!important}',
     // El coach del tutorial muestra a Punkito estudiante en vez del emoji 🧙.
     '#coach .coach-ico{display:none!important}',

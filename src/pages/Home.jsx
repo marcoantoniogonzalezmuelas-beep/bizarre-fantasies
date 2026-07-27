@@ -45,7 +45,7 @@ import { HOW_TO_PLAY_PATCH } from '@/lib/howToPlayPatch';
 import { DEMO_TIPS_PATCH } from '@/lib/demoTipsPatch';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-07-27-howto-tips-v193';
+const EXPECTED_PATCH_VERSION = 'bf-2026-07-27-demo-coach-v194';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `

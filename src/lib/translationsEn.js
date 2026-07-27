@@ -110,6 +110,32 @@ export const DICT_EXACT = {
   'Escríbenos a': 'Write to us at',
   'y cuéntanos tus ideas: cartas que quieras crear, mejorar, empeorar, subir de nivel… lo que sea.': 'and share your ideas: cards you\u2019d like to create, improve, weaken, level up… anything goes.',
   'Además lo iremos haciendo por los rankings.': 'We\u2019ll roll them out through the rankings too.',
+  // --- Tutorial "Aprender a jugar" (demo) ---
+  '🎓 Aprender a jugar': '🎓 Learn to Play',
+  'Vas a ver una': 'You\u2019re about to watch a',
+  'partida de ejemplo entre dos IAs': 'sample match between two AIs',
+  '. Un': '. A',
+  'entrenador': 'coach',
+  '🧙 te explicará lo importante mientras juegan.': '🧙 will explain the key points while they play.',
+  'El juego en 3 pasos:': 'The game in 3 steps:',
+  '1 · Subasta:': '1 · Auction:',
+  'consigues 3 héroes (🗡️ cuerpo a cuerpo, 🏹 distancia y 🔮 magia) con pujas secretas.': 'you win 3 heroes (🗡️ melee, 🏹 ranged and 🔮 magic) through secret bids.',
+  '2 · Equipamiento:': '2 · Gear:',
+  'les pones armas, armaduras, hechizos y objetos.': 'you outfit them with weapons, armor, spells and items.',
+  '3 · Combate:': '3 · Battle:',
+  'por turnos, hasta derrotar a los 3 héroes del rival.': 'turn-based, until the rival\u2019s 3 heroes fall.',
+  'Esta demo salta directa al': 'This demo jumps straight to the',
+  'combate': 'battle',
+  ', que es lo más visual.': ', the most spectacular part.',
+  'Empezar demo ▶': 'Start demo ▶',
+  'Ver el equipamiento ▶': 'See the gear ▶',
+  'Empezar el combate ▶': 'Start the battle ▶',
+  'PASO 1 · SUBASTA. Salen héroes, uno por raza (cada raza con su color y símbolo arriba). Los dos pujáis en SECRETO y el de mayor puja se lleva el héroe. Si pujáis por el mismo, se abre una nueva tanda. Tus monedas de equipamiento ya incluyen las de la subasta: cada puja pagada se resta de ese presupuesto. Esto es solo un ejemplo: pulsa abajo para continuar.': 'STEP 1 · AUCTION. Heroes appear, one per race (each race with its color and symbol above). Both players bid in SECRET and the highest bid wins the hero. If you both bid on the same one, a new bidding round opens. Your equipment coins already include the auction ones: every paid bid is deducted from that budget. This is just an example: press below to continue.',
+  'PASO 2 · EQUIPAMIENTO. Tu presupuesto son 100 monedas base más lo no gastado en la subasta. A cada héroe le pones arma, armadura, hechizos (cuestan maná) y objetos. Al equipar verás cómo cambian sus stats. Las cartas de equipo van por colores según el tipo. Pulsa para empezar el combate.': 'STEP 2 · GEAR. Your budget is 100 base coins plus whatever you didn\u2019t spend at the auction. Each hero gets a weapon, armor, spells (they cost mana) and items. As you equip, you\u2019ll see their stats change. Gear cards are color-coded by type. Press to start the battle.',
+  'Orden de turno: primero 🏹 Ataque a Distancia, luego 🔮 Magia, luego 🗡️ Cuerpo a Cuerpo (a igualdad, manda la velocidad).': 'Turn order: first 🏹 Ranged, then 🔮 Magic, then 🗡️ Melee (on a tie, speed decides).',
+  '⭐ Al caer, un héroe RENACE en forma ÉLITE: más poder y aura dorada. La segunda vez cae de verdad.': '⭐ When a hero falls, it is REBORN in ELITE form: more power and a golden aura. The second fall is for real.',
+  '🏹 Los de Ataque a Distancia disparan: el daño sube con su nivel de AD y con el arma equipada.': '🏹 Ranged heroes shoot: damage scales with their AD level and their equipped weapon.',
+  'Siguiente turno ▶': 'Next turn ▶',
 };
 
 // Patrones regex ES → EN para frases del registro de batalla / narrador con
@@ -125,6 +151,10 @@ export const DICT_PATTERNS = [
 ];
 
 export const DICT_WORDS = {
+  'Pulsa para ver su acción.': 'Press to watch its move.',
+  'piensa su jugada': 'is planning its move',
+  'Ataque a Distancia': 'Ranged Attack',
+  'Turno de': 'Turn of',
   'Bonificador de esta ronda': 'This round\u2019s booster',
   'Maná insuficiente': 'Not enough mana',
   'Monedas insuficientes': 'Not enough coins',
