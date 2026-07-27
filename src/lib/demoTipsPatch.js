@@ -38,7 +38,8 @@ export const DEMO_TIPS_PATCH = `
     's-equip':[
       {id:'slot',sel:['.bf-slot-buy'],txt:T('⚔️ Equipa aquí: 1 arma y 1 armadura por héroe','⚔️ Equip here: 1 weapon and 1 armor per hero')},
       {id:'buy',sel:['.bf-buy-btn'],txt:T('🛒 Compra hechizos y objetos: van a tu mano','🛒 Buy spells and items: they go to your hand')},
-      {id:'budget',sel:['.shop-coin'],place:'side',txt:T('🪙 Tu presupuesto de equipamiento','🪙 Your equipment budget')}
+      {id:'budget',sel:['#s-equip .coins-row'],place:'side',txt:T('🪙 Tu presupuesto de equipamiento','🪙 Your equipment budget')},
+      {id:'eqhand',sel:['.eq-hand-box'],txt:T('🃏 Estas cartas estarán en tu mano durante la batalla','🃏 These cards will be in your hand during battle')}
     ],
     's-battle':[
       {id:'hand',sel:['#hand_p'],txt:T('🃏 Tu mano: los hechizos y objetos que compraste','🃏 Your hand: the spells and items you bought')},
