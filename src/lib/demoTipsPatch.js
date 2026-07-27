@@ -77,6 +77,24 @@ export const DEMO_TIPS_PATCH = `
     return cs.display!=='none'&&cs.visibility!=='hidden';
   }
 
+  // Rectángulos de tips ya colocados en esta pasada: si uno nuevo se solapa
+  // con alguno, se desplaza en vertical hasta quedar libre (nunca se solapan).
+  function resolveOverlap(x,y,w,h,placed){
+    var maxY=window.innerHeight-h-6,guard=0;
+    while(guard++<10){
+      var hit=null;
+      for(var i=0;i<placed.length;i++){
+        var p=placed[i];
+        if(!(x+w<p.x||x>p.x+p.w||y+h<p.y||y>p.y+p.h)){hit=p;break;}
+      }
+      if(!hit)return y;
+      var below=hit.y+hit.h+6,above=hit.y-h-6;
+      y=(below<=maxY)?below:above;
+      if(y<6)return Math.max(6,Math.min(maxY,y));
+    }
+    return y;
+  }
+
   function tick(){
     var demo=false;
     try{demo=typeof G!=='undefined'&&G&&(G.demo||G.demoExample);}catch(e){}
@@ -84,6 +102,7 @@ export const DEMO_TIPS_PATCH = `
     var list=demo&&active?TIPS[active.id]:null;
     if(!list){hideAll();return;}
     ensureNodes(list.length);
+    var placed=[];
     list.forEach(function(t,i){
       var n=nodes[i];
       if(dismissed[t.id]){n.tip.style.display='none';n.halo.style.display='none';return;}
@@ -133,8 +152,12 @@ export const DEMO_TIPS_PATCH = `
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','-7px');
         x=r.left+r.width/2-w/2;y=r.bottom+8;
       }
-      n.tip.style.left=Math.max(6,Math.min(window.innerWidth-w-6,x))+'px';
-      n.tip.style.top=Math.max(6,y)+'px';
+      x=Math.max(6,Math.min(window.innerWidth-w-6,x));
+      y=Math.max(6,y);
+      y=resolveOverlap(x,y,w,h,placed);
+      placed.push({x:x,y:y,w:w,h:h});
+      n.tip.style.left=x+'px';
+      n.tip.style.top=y+'px';
     });
     // Oculta los nodos sobrantes de la pantalla anterior (evita tips huérfanos).
     for(var k=list.length;k<nodes.length;k++){nodes[k].tip.style.display='none';nodes[k].halo.style.display='none';}
