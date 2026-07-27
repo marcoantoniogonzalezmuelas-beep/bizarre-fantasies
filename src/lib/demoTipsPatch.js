@@ -32,9 +32,15 @@ export const DEMO_TIPS_PATCH = `
   var TIPS={
     's-recruit':[
       {id:'bid',sel:['.hcard-bid-zone'],txt:T('💰 Así se puja: ajusta con − / + y pulsa <b>Pujar</b>. ¡Es secreta!','💰 Bidding: adjust with − / + and press <b>Bid</b>. It\\'s secret!')},
-      {id:'bonus',sel:['.bf-bonus-card'],place:'over',txt:T('🎁 Bonificador: único, y hay uno distinto en cada ronda de subasta','🎁 Booster: unique, and each auction round brings a different one')},
+      {id:'bonus',sel:['.bf-bonus-card'],place:'side',dyn:function(el){
+        var x=(el.textContent||'').replace(/\\s+/g,' ').trim();
+        x=x.replace(/^.*?(bonificador de esta ronda|this round.s booster)[:\\s·-]*/i,'');
+        if(x.length>120)x=x.slice(0,120)+'…';
+        var head=T('🎁 <b>Bonificador de esta ronda</b> (único, cambia en cada ronda).','🎁 <b>This round\\'s booster</b> (unique, changes every round).');
+        return x?head+'<br>✨ '+T('Efecto:','Effect:')+' '+x:head;
+      }},
       {id:'coins',sel:['.coins-row'],has:'subasta|auction',place:'side',txt:T('🪙 Tus monedas de subasta','🪙 Your auction coins')},
-      {id:'eqcoins',sel:['#s-recruit .coins-row'],has:'equipamiento|equipment',txt:T('🪙 Monedas de equipamiento: puedes pasarlas a la subasta de 10 en 10','🪙 Equipment coins: you can move them to the auction 10 at a time')}
+      {id:'eqcoins',sel:['#s-recruit .coins-row'],has:'equipamiento|equipment',place:'below',txt:T('🪙 Monedas de equipamiento: puedes pasarlas a la subasta de 10 en 10','🪙 Equipment coins: you can move them to the auction 10 at a time')}
     ],
     's-equip':[
       {id:'slot',sel:['.bf-slot-buy'],txt:T('⚔️ Equipa aquí: 1 arma y 1 armadura por héroe','⚔️ Equip here: 1 weapon and 1 armor per hero')},
@@ -90,7 +96,7 @@ export const DEMO_TIPS_PATCH = `
         if(!(x+w<p.x||x>p.x+p.w||y+h<p.y||y>p.y+p.h)){hit=p;break;}
       }
       if(!hit)return y;
-      var below=hit.y+hit.h+6,above=hit.y-h-6;
+      var below=hit.y+hit.h+12,above=hit.y-h-12;
       y=(below<=maxY)?below:above;
       if(y<6)return Math.max(6,Math.min(maxY,y));
     }
@@ -123,9 +129,10 @@ export const DEMO_TIPS_PATCH = `
       n.halo.style.left=(r.left-5)+'px';n.halo.style.top=(r.top-5)+'px';
       n.halo.style.width=(r.width+10)+'px';n.halo.style.height=(r.height+10)+'px';
       // El texto solo se escribe si cambió (evita parpadeos con el traductor).
-      if(n.tip.__bfId!==t.id){
-        n.tip.__bfId=t.id;
-        n.tip.querySelector('.bf-tip-txt').innerHTML=t.txt;
+      var txt=t.dyn?t.dyn(el):t.txt;
+      if(n.tip.__bfId!==t.id||n.tip.__bfTxt!==txt){
+        n.tip.__bfId=t.id;n.tip.__bfTxt=txt;
+        n.tip.querySelector('.bf-tip-txt').innerHTML=txt;
         n.tip.querySelector('.bf-tip-finger').style.display='';
       }
       n.tip.style.display='flex';
@@ -145,6 +152,12 @@ export const DEMO_TIPS_PATCH = `
         finger.style.setProperty('--px',right?'-6px':'6px');finger.style.setProperty('--py','0px');
         x=right?r.right+10:r.left-w-10;
         y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
+      }else if(t.place==='below'){
+        // SIEMPRE debajo del elemento: no tapa lo que hay encima (p. ej. el
+        // bonificador de la ronda).
+        n.tip.classList.add('bf-tip-colr');finger.textContent='👆';
+        finger.style.setProperty('--px','0px');finger.style.setProperty('--py','-7px');
+        x=r.left+r.width/2-w/2;y=r.bottom+8;
       }else if(r.top-h-10>4){
         n.tip.classList.add('bf-tip-col');finger.textContent='👇';
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','7px');
