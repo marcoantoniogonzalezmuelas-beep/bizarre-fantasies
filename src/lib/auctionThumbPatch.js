@@ -10,8 +10,8 @@ export const AUCTION_THUMB_PATCH = `
   if(window.__bfAcqThumbFit)return;
   window.__bfAcqThumbFit=true;
   var s=document.createElement('style');
-  s.textContent='.bf-acq-thumb{background-size:contain!important;background-position:center center!important}'+
-    '.bf-acq-thumb::before{filter:blur(7px) brightness(.5);}'+
+  s.textContent='.bf-acq-thumb::before{filter:blur(7px) brightness(.5)!important;}'+
+    '.bf-acq-thumb::after{content:"";position:absolute;inset:0;background-image:inherit;background-size:contain!important;background-position:center center!important;background-repeat:no-repeat;}'+
     '.shop-card .bf-shop-num,.shop-card .bf-logo,.shop-card .shop-bf{display:none!important}';
   document.head.appendChild(s);
 })();
