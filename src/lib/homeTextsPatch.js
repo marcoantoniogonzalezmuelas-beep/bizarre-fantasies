@@ -7,8 +7,8 @@ export const HOME_TEXTS_PATCH = `
   window.__bfHomeTexts=true;
   var EN=!!window.__bfLangEn;
   var GUIDE=EN
-    ? 'I\\'m <b>Punkito</b>. Press <b>Learn to Play</b> for a guided match between two AIs with tips, and <b>Rules</b> to learn more about how the game works. I hope you enjoy the experience.'
-    : 'Soy <b>Punkito</b>. Pulsa <b>Aprende a jugar</b> para una partida guiada con tips de dos IAs y <b>Reglas</b> para conocer más el funcionamiento del juego. Espero disfrutes de la experiencia.';
+    ? 'I\\'m <b>Punkito</b>. Press <b>Learn to Play</b> for a guided match between two AIs with tips, and <b>Rules</b> to learn more about how the game works. If you already know how to play, hit <b>Begin</b>! I hope you enjoy the experience.'
+    : 'Soy <b>Punkito</b>. Pulsa <b>Aprende a jugar</b> para una partida guiada con tips de dos IAs y <b>Reglas</b> para conocer más el funcionamiento del juego. Si ya sabes jugar, ¡dale a <b>Comenzar</b>! Espero disfrutes de la experiencia.';
   var LBL=EN?'Rules':'Reglas';
 
   function apply(){
