@@ -44,7 +44,9 @@ export const DEMO_TIPS_PATCH = `
     ],
     's-battle':[
       {id:'hand',sel:['#hand_p'],txt:T('🃏 Tu mano: los hechizos y objetos que compraste','🃏 Your hand: the spells and items you bought')},
-      {id:'bars',sel:['[id^=b_p_]'],txt:T('❤️ Barra verde = vida · 🔵 azul = maná','❤️ Green bar = health · 🔵 blue = mana')}
+      {id:'bars',sel:['[id^=b_p_]'],txt:T('❤️ Barra verde = vida · 🔵 azul = maná','❤️ Green bar = health · 🔵 blue = mana')},
+      {id:'ctb',sel:['.ctb-bar'],txt:T('⏳ Barra de turnos: el orden en que actuarán los héroes','⏳ Turn bar: the order in which the heroes will act')},
+      {id:'log',sel:['.b-log-wrap'],txt:T('📜 Registro de combate: aquí se narra todo lo que ocurre en la batalla','📜 Combat log: everything that happens in battle is narrated here')}
     ]
   };
 
