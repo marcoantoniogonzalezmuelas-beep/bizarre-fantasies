@@ -18,8 +18,11 @@ export const HOME_TEXTS_PATCH = `
       var t=(el.innerHTML||'').replace(/<br\\s*\\/?>/gi,' ').replace(/\\s+/g,' ').trim();
       if(/^(C[óo]mo se juega|How to play)$/i.test(t)){ el.dataset.bfRules='1'; el.textContent=LBL; }
     });
+    // La burbuja de Punkito la reescriben otros parches: se vuelve a aplicar
+    // siempre que su texto no sea el nuestro.
+    var onTitle=!!document.querySelector('#s-title.active');
     var g=document.querySelector('#bf-guide .bf-guide-text');
-    if(g&&g.dataset.bfHome!=='1'){ g.dataset.bfHome='1'; g.innerHTML=GUIDE; }
+    if(onTitle&&g&&g.innerHTML!==GUIDE){ g.innerHTML=GUIDE; }
   }
   apply();
   new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});

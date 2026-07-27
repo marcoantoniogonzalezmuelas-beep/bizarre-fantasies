@@ -19,6 +19,9 @@ export const HOW_TO_PLAY_PATCH = `
   window.__bfHowToPlay=true;
 
   var CSS='<style>'+
+  '.rules-body{font-size:15px;line-height:1.55;color:#f1ead9}'+
+  '.rules-body p{font-size:14.5px;line-height:1.6;margin:10px 0}'+
+  '.rules-body b{color:#ffe9a8}'+
   '.rb-step{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,rgba(28,16,46,.7),rgba(12,7,20,.85));border:1px solid rgba(255,210,74,.28);border-radius:14px;padding:12px 14px;margin:10px 0;box-shadow:0 6px 16px rgba(0,0,0,.4)}'+
   '.rb-step-n{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-weight:1000;font-size:16px;color:#3a2600;background:radial-gradient(circle at 35% 30%,#ffeaa6,#FFD24A 50%,#a9771f);border:2px solid #7c5410;box-shadow:0 2px 8px rgba(0,0,0,.5)}'+
   '.rb-step-b{flex:1}'+
@@ -46,6 +49,22 @@ export const HOW_TO_PLAY_PATCH = `
   '.rb-st-b{flex:1}'+
   '.rb-st-t{font-weight:900;font-size:11.5px;color:var(--stc,#ffd24a);letter-spacing:.3px}'+
   '.rb-st-x{color:#d8d0e4;font-size:10.5px;line-height:1.3}'+
+  // Tipografías más grandes y legibles en todo el modal de Reglas.
+  '.rules-body .rb-step-t{font-size:18px;letter-spacing:.5px}'+
+  '.rules-body .rb-step-x{font-size:14.5px;line-height:1.6}'+
+  '.rules-body .rb-step-n{flex:0 0 40px;width:40px;height:40px;font-size:19px}'+
+  '.rules-body .rb-coin-c{min-width:190px;padding:12px 14px}'+
+  '.rules-body .rb-coin-t{font-size:15px;margin-bottom:4px}'+
+  '.rules-body .rb-coin-x{font-size:13.5px;line-height:1.55;color:#e6dff2}'+
+  '.rules-body .rb-act-t{font-size:13.5px}'+
+  '.rules-body .rb-act-x{font-size:12.5px;line-height:1.4;color:#e6dff2}'+
+  '.rules-body .rb-act-im{width:52px;height:52px}'+
+  '.rules-body .rb-cap{font-size:12.5px}'+
+  '.rules-body .rb-states{grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:9px}'+
+  '.rules-body .rb-st-t{font-size:14px}'+
+  '.rules-body .rb-st-x{font-size:12.5px;line-height:1.45;color:#e6dff2}'+
+  '.rules-body .rb-st-i{flex:0 0 32px;width:32px;height:32px;font-size:17px}'+
+  '.rules-body .rb-emb{width:34px;height:34px;flex:0 0 34px}'+
   '</style>';
 
   function st(color,icon,name,text){
@@ -115,6 +134,19 @@ export const HOW_TO_PLAY_PATCH = `
   }
   var tries=0,iv=setInterval(function(){if(install()||tries++>100)clearInterval(iv);},200);
   install();
+
+  // Título del modal: "Cómo se juega" → "Reglas".
+  var TITLE=window.__bfLangEn?'Rules':'Reglas';
+  function renameTitle(){
+    document.querySelectorAll('.modal-title,.modal h3,.modal-head,.mdl-title,h3,h2').forEach(function(el){
+      var t=(el.textContent||'').replace(/\\s+/g,' ').trim();
+      if(/^[^A-Za-zÀ-ÿ]*(c[óo]mo se juega|how to play)[^A-Za-zÀ-ÿ]*$/i.test(t)){
+        el.innerHTML=el.innerHTML.replace(/C[óo]mo se juega|How to play/i,TITLE);
+      }
+    });
+  }
+  setInterval(renameTitle,300);
+  new MutationObserver(renameTitle).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 `;
