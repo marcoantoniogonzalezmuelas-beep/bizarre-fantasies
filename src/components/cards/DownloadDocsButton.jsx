@@ -18,8 +18,8 @@ const artFor = (c) => {
   return null;
 };
 
-const CAT_LABELS = { hero: 'Héroes', spell: 'Hechizos', melee_weapon: 'Armas cuerpo a cuerpo', ranged_weapon: 'Armas a distancia', armor: 'Armaduras', object: 'Objetos', bonus: 'Bonificadores' };
-const CAT_ORDER = ['hero', 'spell', 'melee_weapon', 'ranged_weapon', 'armor', 'object', 'bonus'];
+const CAT_LABELS = { hero: 'Héroes', race: 'Razas', spell: 'Hechizos', melee_weapon: 'Armas cuerpo a cuerpo', ranged_weapon: 'Armas a distancia', armor: 'Armaduras', object: 'Objetos', bonus: 'Bonificadores' };
+const CAT_ORDER = ['hero', 'race', 'spell', 'melee_weapon', 'ranged_weapon', 'armor', 'object', 'bonus'];
 
 // Carga una imagen y devuelve una miniatura JPEG cuadrada (recorte centrado)
 // como dataURL, para que el PDF no pese decenas de MB con el arte original.
