@@ -13,6 +13,10 @@ export const QUIT_CONTACT_PATCH = `
   var style = document.createElement('style');
   style.textContent = [
     '#homeBtn{font-size:19px!important;font-weight:900!important;padding:12px 22px!important;border-radius:14px!important;letter-spacing:.5px;}',
+    // Reserva la esquina superior derecha para el botón Salir: la cabecera de
+    // la subasta (insignia de fase) y la de batalla no se meten debajo de él.
+    '.r-header{padding-right:130px!important;box-sizing:border-box;}',
+    '.b-header{padding-right:130px!important;padding-left:130px!important;box-sizing:border-box;}',
     '@keyframes bfContactGlow{0%,100%{box-shadow:0 0 14px rgba(192,91,255,.45),0 6px 20px rgba(0,0,0,.55);}50%{box-shadow:0 0 26px rgba(255,210,74,.65),0 6px 20px rgba(0,0,0,.55);}}',
     '.bf-contact{position:relative;z-index:500;text-align:center;margin-top:16px;}',
     '.bf-contact-pill{display:inline-flex;align-items:center;gap:9px;cursor:pointer;background:linear-gradient(135deg,#1a0f2eee,#2a1040ee);border:2px solid #c06bff;border-radius:999px;padding:5px 16px 5px 6px;animation:bfContactGlow 3s ease-in-out infinite;backdrop-filter:blur(4px);user-select:none;}',
@@ -26,6 +30,10 @@ export const QUIT_CONTACT_PATCH = `
     '.bf-contact .bf-c-rank{color:#9be26b;font-weight:700;}',
     '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}'
   ].join('');
+  // En pantallas táctiles (móvil y tablet) el botón Salir va más compacto para
+  // no solaparse con los marcadores de la subasta ni de la batalla.
+  var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
+  if (isTouch) style.textContent += '#homeBtn{font-size:15px!important;padding:8px 14px!important;}';
   document.head.appendChild(style);
 
   function inject(){

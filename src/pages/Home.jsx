@@ -250,10 +250,10 @@ const DRAGGABLE_GUIDE_PATCH = `
 `;
 
 const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
-// Tablets (iPad, Android sin "Mobile", Mac con pantalla táctil) usan el modo
-// escritorio completo, con sus zooms. Solo los teléfonos usan el modo escalado.
+// Tablets (iPad, Android sin "Mobile", Mac con pantalla táctil) usan el mismo
+// modo que el móvil: vista de escritorio (1200px) escalada + zoom de pellizco.
 const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
-const IS_MOBILE = !IS_TABLET && /Android|iPhone|iPod|Mobile/i.test(UA);
+const IS_MOBILE = IS_TABLET || /Android|iPhone|iPod|Mobile/i.test(UA);
 
 export default function Home() {
   useEffect(() => {

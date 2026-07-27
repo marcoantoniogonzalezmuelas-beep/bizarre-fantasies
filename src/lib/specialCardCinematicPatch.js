@@ -12,6 +12,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
 
   var PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6e80fa42f_generated_image.png';
   var ROBOT_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
+  var DUCK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';
   // Recorte del fondo: las imágenes vienen sobre negro puro; se convierte el
   // negro en transparente con un canvas para que solo quede la criatura.
   var CUT={};
@@ -35,7 +36,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     img.onerror=function(){CUT[url]=url;};
     img.src=url;
   }
-  [PHOENIX_IMG,ROBOT_IMG].forEach(cutout);
+  [PHOENIX_IMG,ROBOT_IMG,DUCK_IMG].forEach(cutout);
 
   var css=''+
   '#bf-spec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfScIn .3s ease-out}'+
@@ -49,6 +50,13 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '@keyframes bfScPhoenix{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.12);opacity:1}}'+
   '#bf-spec-cine.bf-sc-robot .bf-sc-img{filter:drop-shadow(0 0 50px rgba(60,160,255,.85)) saturate(1.2);animation:bfScRobot 3s cubic-bezier(.2,.9,.3,1) forwards}'+
   '@keyframes bfScRobot{0%{transform:rotateY(90deg) translateZ(-500px) scale(.3);opacity:0}16%{opacity:1}34%{transform:rotateY(-18deg) translateZ(0) scale(1.1)}44%{transform:rotateY(-14deg) translateX(-8px) scale(1.08)}50%{transform:rotateY(-16deg) translateX(8px) scale(1.1)}56%{transform:rotateY(-15deg) translateX(-5px) scale(1.09)}72%{transform:rotateY(10deg) scale(1)}100%{transform:rotateY(0) scale(1.06);opacity:1}}'+
+  '#bf-spec-cine.bf-sc-duck .bf-sc-img{filter:drop-shadow(0 0 55px rgba(255,220,60,.9)) saturate(1.3);animation:bfScDuck 3s cubic-bezier(.2,.9,.3,1) forwards}'+
+  '@keyframes bfScDuck{0%{transform:rotateY(-80deg) translateY(40vh) scale(.25);opacity:0}14%{opacity:1}30%{transform:rotateY(14deg) translateY(-2vh) scale(1.1)}40%{transform:rotateY(10deg) translateX(-7px) scale(1.08)}46%{transform:rotateY(12deg) translateX(7px) scale(1.1)}52%{transform:rotateY(11deg) translateX(-5px) scale(1.09)}58%{transform:rotateY(12deg) translateX(5px) scale(1.1)}74%{transform:rotateY(-6deg) scale(1)}100%{transform:rotateY(0) scale(1.08);opacity:1}}'+
+  '#bf-spec-cine.bf-sc-duck .bf-sc-ttl{color:#ffe14a;text-shadow:0 0 28px rgba(255,220,60,.95),0 4px 12px #000}'+
+  '.bf-sc-shell{position:absolute;width:7px;height:12px;border-radius:3px;background:linear-gradient(180deg,#ffe27a,#c8901f);box-shadow:0 0 8px rgba(255,200,60,.8);animation:bfScShell 1.1s ease-in infinite}'+
+  '@keyframes bfScShell{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,-60px),55vh) rotate(520deg)}}'+
+  '.bf-sc-boom{position:absolute;font-size:34px;opacity:0;animation:bfScBoom .8s ease-out infinite;filter:drop-shadow(0 0 10px rgba(255,180,40,.9))}'+
+  '@keyframes bfScBoom{0%,100%{opacity:0;transform:scale(.4)}35%{opacity:1;transform:scale(1.15)}}'+
   '#bf-spec-cine .bf-sc-ttl{position:absolute;top:9%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(26px,6vw,58px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfScTtl 2.9s ease-out .3s forwards}'+
   '#bf-spec-cine.bf-sc-phoenix .bf-sc-ttl{color:#ffb347;text-shadow:0 0 28px rgba(255,120,20,.95),0 4px 12px #000}'+
   '#bf-spec-cine.bf-sc-robot .bf-sc-ttl{color:#6ec6ff;text-shadow:0 0 28px rgba(60,160,255,.95),0 4px 12px #000}'+
@@ -62,20 +70,29 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '@keyframes bfScArc{0%,100%{opacity:0}45%{opacity:1}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
+  var lastCine=0;
   function playCine(kind){
-    if(document.getElementById('bf-spec-cine'))return;
+    // Anti-duplicado: si la cinemática llega dos veces (revelación de carta +
+    // efecto sincronizado del rival), solo se reproduce una en ~3s.
+    var now=Date.now();
+    if(document.getElementById('bf-spec-cine')||now-lastCine<3200)return;
+    lastCine=now;
     var ov=document.createElement('div');
     ov.id='bf-spec-cine';
-    ov.className=kind==='phoenix'?'bf-sc-phoenix':'bf-sc-robot';
+    ov.className=kind==='phoenix'?'bf-sc-phoenix':(kind==='duck'?'bf-sc-duck':'bf-sc-robot');
     var html='<div class="bf-sc-bg"></div><div class="bf-sc-flash"></div>';
     if(kind==='phoenix'){
       for(var i=0;i<16;i++)html+='<span class="bf-sc-ember" style="left:'+(6+Math.random()*88)+'%;--dx:'+((Math.random()*120-60).toFixed(0))+'px;animation-delay:'+(Math.random()*1.4).toFixed(2)+'s;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px"></span>';
+    }else if(kind==='duck'){
+      // Casquillos de bala cayendo y fogonazos alrededor del patito.
+      for(var d=0;d<14;d++)html+='<span class="bf-sc-shell" style="left:'+(55+Math.random()*38)+'%;top:'+(30+Math.random()*30)+'%;--dx:'+((-40-Math.random()*120).toFixed(0))+'px;animation-delay:'+(Math.random()*1).toFixed(2)+'s"></span>';
+      for(var k2=0;k2<5;k2++)html+='<span class="bf-sc-boom" style="left:'+(10+Math.random()*45)+'%;top:'+(20+Math.random()*55)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">💥</span>';
     }else{
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
-    var src=kind==='phoenix'?PHOENIX_IMG:ROBOT_IMG;
+    var src=kind==='phoenix'?PHOENIX_IMG:(kind==='duck'?DUCK_IMG:ROBOT_IMG);
     html+='<img class="bf-sc-img" src="'+(CUT[src]||src)+'" alt="">';
-    html+='<div class="bf-sc-ttl">'+(kind==='phoenix'?'¡RENACE EL FÉNIX!':'¡TRANSFORMACIÓN!')+'</div>';
+    html+='<div class="bf-sc-ttl">'+(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':'¡TRANSFORMACIÓN!'))+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
     setTimeout(function(){ov.classList.add('bf-sc-out');},2700);
@@ -105,12 +122,47 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     if(typeof window.flushFx!=='function'||window.flushFx.__bfSpecCineFx)return false;
     var orig=window.flushFx;
     window.flushFx=function(list){
-      try{(list||[]).forEach(function(ev){if(ev&&ev.k==='transform')playCine('robot');});}catch(e){}
+      // Los fx viajan en el snapshot online: esto corre en AMBOS jugadores,
+      // así que la cinemática se ve igual en tu pantalla y en la del rival.
+      try{(list||[]).forEach(function(ev){
+        if(!ev)return;
+        if(ev.k==='transform')playCine('robot');
+        else if(ev.k==='bfcard'&&ev.name){
+          var n=String(ev.name);
+          if(/f[eé]nix/i.test(n))playCine('phoenix');
+          else if(/transformer/i.test(n))playCine('robot');
+        }
+      });}catch(e){}
       return orig.apply(this,arguments);
     };
     window.flushFx.__bfSpecCineFx=1;
     return true;
   }
+
+  // Invocaciones de los Killerducks: cuando aparece un patito nuevo en el
+  // tablero (G.team viaja en el snapshot online, así que ambos jugadores lo
+  // ven a la vez), irrumpe el patito de goma con metralleta.
+  var seenDuck={},duckScanned=false;
+  function scanDucks(){
+    if(typeof G==='undefined'||!G||!G.team)return;
+    ['p','o'].forEach(function(side){
+      (G.team[side]||[]).forEach(function(h){
+        if(!h||!h.id)return;
+        var key=side+'_'+h.id;
+        if(seenDuck[key])return;
+        var card=document.getElementById('b_'+side+'_'+h.id);
+        if(!card)return;
+        seenDuck[key]=1;
+        // La primera pasada solo registra lo que ya está en el tablero.
+        if(!duckScanned)return;
+        var isDuck=h._bfDuck||/duck|patito/i.test(String(h.id)+' '+String(h.name||''));
+        if(isDuck&&(h._token||h._bfDuck)&&h.alive)try{playCine('duck');}catch(e){}
+      });
+    });
+    duckScanned=true;
+  }
+  new MutationObserver(scanDucks).observe(document.documentElement,{childList:true,subtree:true});
+
   var tries=0,iv=setInterval(function(){var a=hook(),b=hookFlush();if((a||window.__bfShowCardReveal&&window.__bfShowCardReveal.__bfSpec)&&(b||window.flushFx&&window.flushFx.__bfSpecCineFx)||tries++>120)clearInterval(iv);},200);
 })();
 </script>
