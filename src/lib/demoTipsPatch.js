@@ -32,8 +32,9 @@ export const DEMO_TIPS_PATCH = `
   var TIPS={
     's-recruit':[
       {id:'bid',sel:['.hcard-bid-zone'],txt:T('💰 Así se puja: ajusta con − / + y pulsa <b>Pujar</b>. ¡Es secreta!','💰 Bidding: adjust with − / + and press <b>Bid</b>. It\\'s secret!')},
-      {id:'bonus',sel:['.bf-bonus-card'],place:'over',txt:T('🎁 Bonificador de la ronda: único por partida','🎁 Round booster: unique per match')},
-      {id:'coins',sel:['.coins-row'],place:'side',txt:T('🪙 Tus monedas de subasta','🪙 Your auction coins')}
+      {id:'bonus',sel:['.bf-bonus-card'],place:'over',txt:T('🎁 Bonificador: único, y hay uno distinto en cada ronda de subasta','🎁 Booster: unique, and each auction round brings a different one')},
+      {id:'coins',sel:['.coins-row'],has:'subasta|auction',place:'side',txt:T('🪙 Tus monedas de subasta','🪙 Your auction coins')},
+      {id:'eqcoins',sel:['#s-recruit .coins-row'],has:'equipamiento|equipment',txt:T('🪙 Monedas de equipamiento: puedes pasarlas a la subasta de 10 en 10','🪙 Equipment coins: you can move them to the auction 10 at a time')}
     ],
     's-equip':[
       {id:'slot',sel:['.bf-slot-buy'],txt:T('⚔️ Equipa aquí: 1 arma y 1 armadura por héroe','⚔️ Equip here: 1 weapon and 1 armor per hero')},
@@ -89,7 +90,11 @@ export const DEMO_TIPS_PATCH = `
       var el=null;
       for(var s=0;s<t.sel.length&&!el;s++){
         var cands=document.querySelectorAll(t.sel[s]);
-        for(var c=0;c<cands.length;c++){if(visible(cands[c])){el=cands[c];break;}}
+        for(var c=0;c<cands.length;c++){
+          if(!visible(cands[c]))continue;
+          if(t.has&&!new RegExp(t.has,'i').test(cands[c].textContent))continue;
+          el=cands[c];break;
+        }
       }
       if(!el){n.tip.style.display='none';n.halo.style.display='none';return;}
       var r=el.getBoundingClientRect();
