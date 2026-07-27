@@ -62,7 +62,7 @@ export const HOW_TO_PLAY_PATCH = `
     'Cada ronda trae un <b>bonificador único</b> (no se repite en la partida): más monedas, ventajas… o un castigo al rival.</div></div></div>'+
 
     '<div class="rb-coin">'+
-    '<div class="rb-coin-c"><div class="rb-coin-t">🪙 Monedas</div><div class="rb-coin-x">Empiezas con <b>100 de subasta</b>. Tu presupuesto de <b>equipamiento</b> es 100 base + lo que no gastes pujando: cada puja pagada se resta de él. Si te quedas corto, puedes <b>transferir</b> monedas del equipamiento a la subasta (cada moneda transferida descuenta 2).</div></div>'+
+    '<div class="rb-coin-c"><div class="rb-coin-t">🪙 Monedas</div><div class="rb-coin-x">Empiezas con <b>100 de subasta</b> y <b>100 de equipamiento</b>. Si te quedas corto pujando, puedes <b>transferir</b> monedas del equipamiento a la subasta <b>de 10 en 10</b>. Al acabar toda la subasta, las monedas de subasta que te sobren se <b>suman</b> a tu presupuesto de equipamiento, junto con los <b>bonificadores positivos de equipamiento</b> que te hayan salido durante la subasta.</div></div>'+
     '<div class="rb-coin-c"><div class="rb-coin-t">✦ Cartas Épicas</div><div class="rb-coin-x">Las más poderosas: cuestan <b>+20 monedas</b>. No salen normalmente; ciertos bonificadores hacen que tú (o tu rival) recibáis una oferta Épica extra.</div></div>'+
     '<div class="rb-coin-c"><div class="rb-coin-t">🏦 ¿Sin monedas al final?</div><div class="rb-coin-x">Nunca te quedas sin tu tercer héroe: reclutas <b>con deuda</b> y lo que falte se resta de tu presupuesto de equipamiento.</div></div>'+
     '</div>'+
