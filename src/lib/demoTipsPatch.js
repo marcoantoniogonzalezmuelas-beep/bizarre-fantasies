@@ -14,14 +14,14 @@ export const DEMO_TIPS_PATCH = `
   '.bf-tip{position:fixed;z-index:99995;display:none;align-items:center;pointer-events:none;max-width:230px;font-family:Rubik,system-ui,sans-serif}'+
   '.bf-tip.bf-tip-col{flex-direction:column}.bf-tip.bf-tip-colr{flex-direction:column-reverse}'+
   '.bf-tip.bf-tip-row{flex-direction:row}.bf-tip.bf-tip-rowr{flex-direction:row-reverse}'+
-  '.bf-tip-pill{position:relative;background:linear-gradient(180deg,#33205c,#150d2a);border:2px solid #ffd24a;border-radius:12px;padding:6px 22px 6px 12px;color:#ffe9a8;font-weight:800;font-size:12.5px;line-height:1.3;text-align:center;animation:bfTipPulse 1.6s ease-in-out infinite}'+
-  '@keyframes bfTipPulse{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 10px rgba(255,210,74,.35)}50%{box-shadow:0 6px 16px rgba(0,0,0,.55),0 0 24px rgba(255,210,74,.85)}}'+
+  '.bf-tip-pill{position:relative;background:linear-gradient(180deg,rgba(40,28,64,.96),rgba(20,12,38,.97));border:1.5px solid rgba(255,210,74,.5);border-radius:14px;padding:7px 22px 7px 13px;color:#fff0c8;font-weight:700;font-size:13px;line-height:1.35;text-align:center;letter-spacing:.2px;animation:bfTipPulse 2.8s ease-in-out infinite}'+
+  '@keyframes bfTipPulse{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 6px rgba(255,210,74,.18)}50%{box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 14px rgba(255,210,74,.42)}}'+
   '.bf-tip-x{position:absolute;top:-1px;right:2px;pointer-events:auto;cursor:pointer;color:#ffd24a;font-size:14px;font-weight:900;line-height:1;padding:3px 4px;opacity:.85}'+
   '.bf-tip-x:hover{opacity:1;color:#fff}'+
   '.bf-tip-finger{font-size:26px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));animation:bfTipPoke .8s ease-in-out infinite}'+
   '@keyframes bfTipPoke{0%,100%{transform:translate(0,0)}50%{transform:translate(var(--px,0px),var(--py,7px))}}'+
-  '.bf-tip-halo{position:fixed;z-index:99994;border-radius:14px;border:3px solid rgba(255,210,74,.85);pointer-events:none;display:none;animation:bfTipHalo 1.4s ease-out infinite}'+
-  '@keyframes bfTipHalo{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(1.12)}}';
+  '.bf-tip-halo{position:fixed;z-index:99994;border-radius:16px;border:2px solid rgba(255,210,74,.55);pointer-events:none;display:none;animation:bfTipHalo 2s ease-out infinite}'+
+  '@keyframes bfTipHalo{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   var EN=!!window.__bfLangEn;
