@@ -176,22 +176,28 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     });
     duckScanned=true;
   }
-  // Detección del estado "Tanquear": cuando un héroe pasa a estar tanking
-  // (la clase s-tank / bf-state-tank la pinta decorate() en AMBOS clientes a
-  // partir de G.team, que viaja en el snapshot online), irrumpe el tanque
-  // estilo Metal Slug. Se detecta el flanco de subida (no estaba → ahora sí)
-  // para disparar la cinemática solo al activar la habilidad, no en cada repintado.
-  var tankDomState={},tankDomReady=false;
+  // Detección del estado "Tanquear": la cinemática SOLO se lanza el turno en
+  // que la habilidad se activa (o se reactiva tras haberla soltado), nunca en
+  // cada turno que el héroe sigue tanqueando. Para ello se vigila el FLAG
+  // h._bfTank en G.team (no la clase DOM, que decorate() quita y repone en
+  // cada repintado y haría saltar el flanco de subida constantemente).
+  // G.team viaja en el snapshot online, así que esto corre en AMBOS jugadores.
+  var seenTank={},tankReady=false;
   function scanTanks(){
-    document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
-      var id=card.id;
-      var isTank=card.classList.contains('s-tank')||card.classList.contains('bf-state-tank');
-      var was=!!tankDomState[id];
-      tankDomState[id]=isTank;
-      if(!tankDomReady)return;
-      if(isTank&&!was)try{playCine('tank');}catch(e){}
+    if(typeof G==='undefined'||!G||!G.team)return;
+    ['p','o'].forEach(function(side){
+      (G.team[side]||[]).forEach(function(h){
+        if(!h||!h.id)return;
+        var key=side+'_'+h.id;
+        var now=!!(h._bfTank&&h.alive);
+        var was=!!seenTank[key];
+        seenTank[key]=now;
+        // La primera pasada solo registra lo que ya está en el tablero.
+        if(!tankReady)return;
+        if(now&&!was)try{playCine('tank');}catch(e){}
+      });
     });
-    tankDomReady=true;
+    tankReady=true;
   }
   new MutationObserver(function(){scanDucks();scanTanks();}).observe(document.documentElement,{childList:true,subtree:true});
 
