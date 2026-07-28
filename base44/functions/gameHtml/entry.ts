@@ -49,6 +49,11 @@ function buildArtScript(dbCards) {
   const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color, foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'killerducks' ? 'duck-summon' : c.card_id === 'jessi' ? 'reflect-damage' : undefined }));
   // Token (Bizarro) heroes from the DB — same art/name/stats/elite as the Oráculo.
   const DB_TOKENS = (dbCards || []).filter(c => c.category === 'bizarro' || String(c.card_id || '').startsWith('tk_')).map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan || 'Bizarros', clanColor: c.clan_color || '#caa14a', type: c.type, cost: c.cost || 0, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc != null ? c.elite_cc : c.cc, eAd: c.elite_ad != null ? c.elite_ad : c.ad, eHe: c.elite_he != null ? c.elite_he : c.he, eHp: c.elite_hp != null ? c.elite_hp : c.hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name || c.ability_name, eTxt: c.elite_ability_text || c.ability_text, art: freshArt(c, c.art_url), eliteArt: freshArt(c, c.elite_art_url || c.art_url), foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'tk_patito_goma' ? 'big-ad' : c.card_id === 'tk_ban' ? 'tk_confuse' : c.card_id === 'tk_pez' ? 'tk_drunk' : c.card_id === 'tk_buf' ? 'tk_dizzy' : 'tk_none' }));
+  // BD (Oráculo) = fuente de verdad también para el EQUIPAMIENTO: stats, texto,
+  // coste y maná de hechizos/armas/armaduras/objetos se sincronizan desde la BD
+  // al juego (igual que ya ocurría con héroes y arte). Sin esto, editar una
+  // carta de equipo en el admin se veía en el Oráculo pero no en la partida.
+  const DB_EQUIP = (dbCards || []).filter(c => c && ['melee_weapon','ranged_weapon','armor','spell','object'].includes(c.category)).map(c => ({ num: Number(c.number), cat: c.category, name: c.name, cost: c.cost, txt: c.ability_text || c.description || '', cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, power: c.power, mana: c.mana, element: c.type || '' }));
   return `
 <script>
 (function() {
@@ -64,6 +69,8 @@ function buildArtScript(dbCards) {
   var SPELL_ART = ${JSON.stringify(artSets.spell)};
   var OBJECT_ART = ${JSON.stringify(artSets.object)};
   var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
+  var DB_EQUIP = ${JSON.stringify(DB_EQUIP)};
+  var DB_EQUIP_NUMS = ${JSON.stringify({ melee_weapon: EQUIP.melee.nums, ranged_weapon: EQUIP.ranged.nums, armor: EQUIP.armor.nums, spell: EQUIP.spell.nums, object: EQUIP.object.nums })};
   var LOCAL_TOKENS = ${JSON.stringify(TOKENS)}, LOCAL_TOKEN_ART = ${JSON.stringify(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
   var TOKENS = LOCAL_TOKENS.map(function(local){ return (DB_TOKENS || []).find(function(db){ return db.id === local.id; }) || local; }).concat((DB_TOKENS || []).filter(function(db){ return !LOCAL_TOKENS.some(function(local){ return local.id === db.id; }); }));
   if (typeof CLAN_COLORS !== 'undefined') CLAN_COLORS.Bizarros = '#caa14a';
@@ -2300,6 +2307,34 @@ function buildArtScript(dbCards) {
       ov.querySelector('#bf-quit-yes').onclick = function() { bfQuitClose(); if (typeof window.doQuitHome === 'function') window.doQuitHome(); else window.parent.location.href = window.parent.location.pathname + '?bf=' + Date.now(); };
     });
   }
+  // BD (Oráculo) = fuente de verdad del EQUIPAMIENTO: sobreescribe stats, texto,
+  // coste y maná de hechizos/armas/armaduras/objetos en los arrays del juego
+  // (MELEE/RANGED/ARMORS/SPELLS/OBJECTS) emparejando por número de carta. Así
+  // cualquier edición en el admin se propaga a la partida (local y online).
+  // No toca id/kind/element (lógica del juego) salvo element si ya existía.
+  function syncDbEquipment() {
+    if (window.__bfEquipSynced) return;
+    if (typeof MELEE === 'undefined' || typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined' || typeof ARMORS === 'undefined' || typeof RANGED === 'undefined') return;
+    if (!DB_EQUIP || !DB_EQUIP_NUMS) { window.__bfEquipSynced = true; return; }
+    window.__bfEquipSynced = true;
+    var CAT = { melee_weapon:'MELEE', ranged_weapon:'RANGED', armor:'ARMORS', spell:'SPELLS', object:'OBJECTS' };
+    DB_EQUIP.forEach(function(db){
+      var arrName = CAT[db.cat]; if (!arrName) return;
+      var nums = DB_EQUIP_NUMS[db.cat]; if (!nums) return;
+      var idx = nums.indexOf(db.num); if (idx < 0) return;
+      var list = window[arrName]; if (!list || !list[idx]) return;
+      var it = list[idx];
+      if (db.name) it.name = db.name;
+      if (db.cost != null) it.cost = Number(db.cost);
+      if (db.txt) { it.txt = db.txt; it.desc = db.txt; }
+      if (db.cc != null && it.cc != null) it.cc = Number(db.cc);
+      if (db.power != null && it.power != null) it.power = Number(db.power);
+      if (db.hp != null && it.hp != null) it.hp = Number(db.hp);
+      if (db.mana != null && it.mana != null) it.mana = Number(db.mana);
+      if (db.heal != null && it.heal != null) it.heal = Number(db.heal);
+      if (db.element && it.element) it.element = db.element;
+    });
+  }
   function init() {
     injectCoverStyle();
     applyCover();
@@ -2311,6 +2346,7 @@ function buildArtScript(dbCards) {
       attempts++;
       applyCover();
       patchQuitToHome();
+      syncDbEquipment();
       patchGameRules();
       if (window.__bfPatchTankRules) window.__bfPatchTankRules();
       patchRaceModal();
