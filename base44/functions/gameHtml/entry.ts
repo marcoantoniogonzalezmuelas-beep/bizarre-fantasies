@@ -39,11 +39,24 @@ function buildArtScript(dbCards) {
   const localHeroIds = [...HERO_IDS];
   const localHeroNames = [...HERO_NAMES];
   
+  // BD (Oráculo) = fuente de verdad del ARTE de los héroes: actualiza el arte
+  // del héroe existente en su posición por NÚMERO (el número de carta no cambia
+  // al editar en el backoffice, aunque cambie el id). Los héroes nuevos (número
+  // fuera del base set) se añaden al final como antes.
+  const BASE_HERO_COUNT = HERO_ART.length;
   dbHeroes.forEach(c => {
-    localHeroArt.push(freshArt(c, c.art_url));
-    localHeroEliteArt.push(freshArt(c, c.elite_art_url || c.art_url));
-    localHeroIds.push(c.card_id);
-    localHeroNames.push(c.name);
+    const num = Number(c.number);
+    if (num >= 1 && num <= BASE_HERO_COUNT) {
+      localHeroArt[num-1] = freshArt(c, c.art_url);
+      localHeroEliteArt[num-1] = freshArt(c, c.elite_art_url || c.art_url);
+      localHeroIds[num-1] = c.card_id;
+      localHeroNames[num-1] = c.name;
+    } else {
+      localHeroArt.push(freshArt(c, c.art_url));
+      localHeroEliteArt.push(freshArt(c, c.elite_art_url || c.art_url));
+      localHeroIds.push(c.card_id);
+      localHeroNames.push(c.name);
+    }
   });
   
   const DB_HERO_OBJS = dbHeroes.map(c => ({ id: c.card_id, num: c.number, name: c.name, title: c.title, clan: c.clan, type: c.type, cost: c.cost, cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, eCc: c.elite_cc, eAd: c.elite_ad, eHe: c.elite_he, eHp: c.elite_hp, ability: c.ability_name, abilityTxt: c.ability_text, eAbility: c.elite_ability_name, eTxt: c.elite_ability_text, clanColor: c.clan_color, foil: c.foil === true, gold_border: c.gold_border === true, rainbow_border: c.rainbow_border === true, akind: c.card_id === 'killerducks' ? 'duck-summon' : c.card_id === 'jessi' ? 'reflect-damage' : undefined }));
@@ -484,7 +497,8 @@ function buildArtScript(dbCards) {
     function raceSigil(c){return raceSigilSvg(c, '#fff7dc');}
     
     var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
-    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (!eh) { HEROES.push(h); return; } ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','num'].forEach(function(k){ if (h[k] != null && h[k] !== '') eh[k] = h[k]; }); eh.gold_border = h.gold_border; eh.foil = h.foil; eh.rainbow_border = h.rainbow_border; if (h.cost != null) eh.cost = Number(h.cost) + ((eh.__bfEpicRaised === 1 && (h.clan || eh.clan) === 'Épicas') ? 10 : 0); }); // BD (Oráculo) manda: sincroniza TODOS los campos del héroe (nombre, stats, habilidades, coste...) para que cualquier actualización de cartas llegue al juego sin tocar código.
+    var baseHeroCount = (typeof HEROES !== 'undefined') ? HEROES.length : 0;
+    DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (!eh) { var num = Number(h.num); if (num >= 1 && num <= baseHeroCount) eh = HEROES[num - 1]; } if (!eh) { HEROES.push(h); return; } eh.id = h.id; ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','num'].forEach(function(k){ if (h[k] != null && h[k] !== '') eh[k] = h[k]; }); eh.gold_border = h.gold_border; eh.foil = h.foil; eh.rainbow_border = h.rainbow_border; if (h.cost != null) eh.cost = Number(h.cost) + ((eh.__bfEpicRaised === 1 && (h.clan || eh.clan) === 'Épicas') ? 10 : 0); }); // BD (Oráculo) manda: sincroniza TODOS los campos del héroe (nombre, stats, habilidades, coste...) para que cualquier actualización de cartas llegue al juego sin tocar código. Si el id cambió en el backoffice, empareja por NÚMERO y actualiza también el id, para que no quede un héroe "fantasma" con el id antiguo.
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
     var patched = function(h, variant) {
       var elite = variant === 'elite';
