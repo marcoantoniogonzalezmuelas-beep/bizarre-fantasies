@@ -151,8 +151,16 @@ export const MP_EQUIP_PATCH = `
         // de equipamiento pisaba las monedas correctas calculadas por el host
         // con el valor local viejo del cliente (normalmente 0).
         if (snap && snap.screen !== 's-equip') window.__bfEquipDirty = false;
-        if (NET.role === 'client' && snap && snap.screen === 's-equip' && snap.G && window.__bfEquipDirty) {
-          var me = NET.mySide;
+        // El guard solo preserva el estado local si este es "real": un equipo
+        // local con héroes. Si el equipo local esta vacío (state stale de una
+        // fase anterior, antes de adoptar el snapshot inicial), NO pisamos el
+        // estado correcto del host — lo adoptamos. Sin esto, una marca
+        // __bfEquipDirty residual hacía que el primer snapshot de equipamiento
+        // sobreescribiera las ~170 monedas del invitado con 0 (y vaciaba su
+        // grimorio/objetos), aunque no hubiera equipado nada.
+        var me = NET.mySide;
+        var localTeamOk = G.team[me] && G.team[me].length;
+        if (NET.role === 'client' && snap && snap.screen === 's-equip' && snap.G && window.__bfEquipDirty && localTeamOk) {
           snap.G.team = snap.G.team || { p: [], o: [] };
           snap.G.spellbook = snap.G.spellbook || { p: [], o: [] };
           snap.G.items = snap.G.items || { p: [], o: [] };
