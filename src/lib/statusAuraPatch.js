@@ -122,11 +122,13 @@ export const STATUS_AURA_PATCH = `
     if(agonizing&&!abadge){abadge=document.createElement('div');abadge.className='bf-agonize-badge';abadge.innerHTML='🩸 AGONIZANDO';card.appendChild(abadge);}
     else if(!agonizing&&abadge)abadge.remove();
 
-    // El panel/aura/banner solo cambian cuando el estado cambia de verdad.
-    if(st===old)return;
+    // El panel/aura/banner se recrean si FALTAN (el juego re-renderiza la carta
+    // y los borra) o si el estado cambia. Antes el early-return impedía volver
+    // a crearlos tras un repintado, y desaparecían (maldito/agonizando no se veían).
+    var existingWrap=card.querySelector('.bf-state-wrap');
+    if(st===old && existingWrap)return;
     card.dataset.bfAuraState=st;
-    var oldWrap=card.querySelector('.bf-state-wrap');
-    if(oldWrap)oldWrap.remove();
+    if(existingWrap)existingWrap.remove();
     if(!st)return;
     var info=INFO[st],wrap=document.createElement('div');
     wrap.className='bf-state-wrap';
@@ -200,7 +202,11 @@ export const STATUS_AURA_PATCH = `
   }
   var tries=0,timer=setInterval(function(){tries++;var a=installAbilities(),t=installTurns();decorate();if((a&&t)||tries>80)clearInterval(timer);},150);
   installAbilities();installTurns();decorate();
-  new MutationObserver(decorate).observe(document.documentElement,{childList:true,subtree:true});
+  // Vigilamos también cambios de CLASE (el juego añade s-cursed/s-frozen/etc.
+  // como atributos, no como childList) y mantenemos un intervalo lento para
+  // volver a aplicar el panel si el juego repinta la carta y lo borra.
+  new MutationObserver(decorate).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  setInterval(decorate,700);
 })();
 </script>
 `;

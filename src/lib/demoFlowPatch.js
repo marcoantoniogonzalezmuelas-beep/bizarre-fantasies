@@ -93,10 +93,38 @@ export const DEMO_FLOW_PATCH = `
     G.pools={CC:shuffle(poolOf('CC')),AD:shuffle(poolOf('AD')),HE:shuffle(poolOf('HE'))};
     G.coins={p:START_COINS,o:START_COINS};
     G.aIndex=0; G.subRound=0; G.phaseResult=null;
-    try{ startAuctionPhase(); }catch(e){}  // fase 0 (CC): slate, phaseNeeds, bonus, renderRecruit
+    try{ startAuctionPhase(); }catch(e){}
+    // Mostrar la pantalla de subasta con la TERNA de 6 héroes ANTES del mensaje
+    // del entrenador. Sin esto el "Empezar demo" dejaba la pantalla anterior
+    // (el modal) y el espectador veía el mensaje sin contexto, y al pulsar
+    // "Seguir" saltaba directamente al resultado de la puja.
+    try{ if(typeof window.closeModal==='function') window.closeModal(); }catch(e){}
+    try{ if(typeof window.show==='function') window.show('s-recruit'); }catch(e){}
+    try{ if(typeof window.renderRecruit==='function') window.renderRecruit('p'); }catch(e){}
     coach('PASO 1 · SUBASTA — Fase 1/3 ⚔️ Cuerpo a Cuerpo. Salen 6 héroes, uno por raza (cada raza con su color y símbolo). Las dos IAs pujan en SECRETO: gana quien más ofrece. Si pujan por el mismo, se repite. Pulsa "Seguir" para ver la puja.');
     coachBtn('Seguir ▶', window.__bfDemoBidStep);
   };
+
+  // Actualizar el texto del modal "Aprender a jugar": el nativo dice "salta
+  // directa al combate", pero ahora la demo juega la subasta completa.
+  function patchDemoModalText(){
+    var root=document.getElementById('modalRoot')||document.body;
+    root.querySelectorAll('*').forEach(function(el){
+      if(el.children.length) return;
+      var t=el.textContent||'';
+      if(/salta directa al combate/i.test(t)){
+        el.textContent='Esta demo juega la SUBASTA COMPLETA (3 fases, IA vs IA) y luego el combate, para que veas una partida real de principio a fin.';
+      }
+    });
+  }
+  if(!window.__bfDemoModalTextPatched){
+    window.__bfDemoModalTextPatched=true;
+    var origStartDemo=window.startDemo;
+    if(typeof origStartDemo==='function'){
+      window.startDemo=function(){ var r=origStartDemo.apply(this,arguments); setTimeout(patchDemoModalText,50); setTimeout(patchDemoModalText,250); return r; };
+    }
+    new MutationObserver(patchDemoModalText).observe(document.documentElement,{childList:true,subtree:true});
+  }
 
   // Mantén el nombre demoEquip apuntando al flujo nuevo (por si se invoca).
   window.demoEquip=function(){ window.__bfDemoEquipShow(); };
