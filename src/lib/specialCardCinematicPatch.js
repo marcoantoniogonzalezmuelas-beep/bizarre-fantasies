@@ -13,6 +13,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   var PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6e80fa42f_generated_image.png';
   var ROBOT_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
   var DUCK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';
+  var TANK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/76149d71f_generated_image.png';
   // Recorte del fondo: las imágenes vienen sobre negro puro; se convierte el
   // negro en transparente con un canvas para que solo quede la criatura.
   var CUT={};
@@ -36,7 +37,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     img.onerror=function(){CUT[url]=url;};
     img.src=url;
   }
-  [PHOENIX_IMG,ROBOT_IMG,DUCK_IMG].forEach(cutout);
+  [PHOENIX_IMG,ROBOT_IMG,DUCK_IMG,TANK_IMG].forEach(cutout);
 
   var css=''+
   '#bf-spec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfScIn .3s ease-out}'+
@@ -53,6 +54,15 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '#bf-spec-cine.bf-sc-duck .bf-sc-img{filter:drop-shadow(0 0 55px rgba(255,220,60,.9)) saturate(1.3);animation:bfScDuck 3s cubic-bezier(.2,.9,.3,1) forwards}'+
   '@keyframes bfScDuck{0%{transform:rotateY(-80deg) translateY(40vh) scale(.25);opacity:0}14%{opacity:1}30%{transform:rotateY(14deg) translateY(-2vh) scale(1.1)}40%{transform:rotateY(10deg) translateX(-7px) scale(1.08)}46%{transform:rotateY(12deg) translateX(7px) scale(1.1)}52%{transform:rotateY(11deg) translateX(-5px) scale(1.09)}58%{transform:rotateY(12deg) translateX(5px) scale(1.1)}74%{transform:rotateY(-6deg) scale(1)}100%{transform:rotateY(0) scale(1.08);opacity:1}}'+
   '#bf-spec-cine.bf-sc-duck .bf-sc-ttl{color:#ffe14a;text-shadow:0 0 28px rgba(255,220,60,.95),0 4px 12px #000}'+
+  '#bf-spec-cine.bf-sc-tank .bf-sc-img{filter:drop-shadow(0 0 50px rgba(120,180,80,.85)) saturate(1.2);animation:bfScTank 3s cubic-bezier(.2,.9,.3,1) forwards}'+
+  '@keyframes bfScTank{0%{transform:translateX(-70vw) rotate(-2deg) scale(.65);opacity:0}10%{opacity:1}28%{transform:translateX(0) rotate(0) scale(1.08)}34%{transform:translateX(-7px) rotate(-1.2deg) scale(1.08)}40%{transform:translateX(5px) rotate(1deg) scale(1.09)}46%{transform:translateX(-5px) rotate(-.6deg) scale(1.08)}52%{transform:translateX(3px) scale(1.07)}68%{transform:translateX(0) scale(1.05)}84%{transform:translateX(0) scale(1.03)}100%{transform:translateX(0) scale(1.07);opacity:1}}'+
+  '#bf-spec-cine.bf-sc-tank .bf-sc-ttl{color:#c7e86a;text-shadow:0 0 28px rgba(120,180,80,.95),0 4px 12px #000}'+
+  '.bf-sc-smoke{position:absolute;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#b0b0b0,transparent 70%);opacity:0;animation:bfScSmoke 1.3s ease-out infinite}'+
+  '@keyframes bfScSmoke{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:.7}100%{opacity:0;transform:translate(var(--dx,40px),-30vh) scale(2.2)}}'+
+  '.bf-sc-cannon{position:absolute;font-size:42px;opacity:0;animation:bfScCannon .5s ease-out infinite;filter:drop-shadow(0 0 14px rgba(255,200,60,.95))}'+
+  '@keyframes bfScCannon{0%,100%{opacity:0;transform:scale(.3)}40%{opacity:1;transform:scale(1.3)}}'+
+  '.bf-sc-tread{position:absolute;bottom:16%;width:12px;height:7px;border-radius:2px;background:#4a4022;opacity:0;animation:bfScTread .8s linear infinite}'+
+  '@keyframes bfScTread{0%{opacity:.8;transform:translateX(0)}100%{opacity:0;transform:translateX(-50px)}}'+
   '.bf-sc-shell{position:absolute;width:7px;height:12px;border-radius:3px;background:linear-gradient(180deg,#ffe27a,#c8901f);box-shadow:0 0 8px rgba(255,200,60,.8);animation:bfScShell 1.1s ease-in infinite}'+
   '@keyframes bfScShell{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,-60px),55vh) rotate(520deg)}}'+
   '.bf-sc-boom{position:absolute;font-size:34px;opacity:0;animation:bfScBoom .8s ease-out infinite;filter:drop-shadow(0 0 10px rgba(255,180,40,.9))}'+
@@ -79,7 +89,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     lastCine=now;
     var ov=document.createElement('div');
     ov.id='bf-spec-cine';
-    ov.className=kind==='phoenix'?'bf-sc-phoenix':(kind==='duck'?'bf-sc-duck':'bf-sc-robot');
+    ov.className=kind==='phoenix'?'bf-sc-phoenix':(kind==='duck'?'bf-sc-duck':(kind==='tank'?'bf-sc-tank':'bf-sc-robot'));
     var html='<div class="bf-sc-bg"></div><div class="bf-sc-flash"></div>';
     if(kind==='phoenix'){
       for(var i=0;i<16;i++)html+='<span class="bf-sc-ember" style="left:'+(6+Math.random()*88)+'%;--dx:'+((Math.random()*120-60).toFixed(0))+'px;animation-delay:'+(Math.random()*1.4).toFixed(2)+'s;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px"></span>';
@@ -87,12 +97,17 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       // Casquillos de bala cayendo y fogonazos alrededor del patito.
       for(var d=0;d<14;d++)html+='<span class="bf-sc-shell" style="left:'+(55+Math.random()*38)+'%;top:'+(30+Math.random()*30)+'%;--dx:'+((-40-Math.random()*120).toFixed(0))+'px;animation-delay:'+(Math.random()*1).toFixed(2)+'s"></span>';
       for(var k2=0;k2<5;k2++)html+='<span class="bf-sc-boom" style="left:'+(10+Math.random()*45)+'%;top:'+(20+Math.random()*55)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">💥</span>';
+    }else if(kind==='tank'){
+      // Humo del escape, fogonazos del cañón y esquirlas de oruga.
+      for(var t=0;t<10;t++)html+='<span class="bf-sc-smoke" style="left:'+(58+Math.random()*30)+'%;top:'+(52+Math.random()*26)+'%;--dx:'+((Math.random()*80-20).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s;width:'+(16+Math.random()*18)+'px;height:'+(16+Math.random()*18)+'px"></span>';
+      for(var c=0;c<5;c++)html+='<span class="bf-sc-cannon" style="left:'+(68+Math.random()*14)+'%;top:'+(38+Math.random()*22)+'%;animation-delay:'+(0.3+Math.random()*0.8).toFixed(2)+'s">💥</span>';
+      for(var tr=0;tr<8;tr++)html+='<span class="bf-sc-tread" style="left:'+(56+Math.random()*22)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s"></span>';
     }else{
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
-    var src=kind==='phoenix'?PHOENIX_IMG:(kind==='duck'?DUCK_IMG:ROBOT_IMG);
+    var src=kind==='phoenix'?PHOENIX_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG));
     html+='<img class="bf-sc-img" src="'+(CUT[src]||src)+'" alt="">';
-    html+='<div class="bf-sc-ttl">'+(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':'¡TRANSFORMACIÓN!'))+'</div>';
+    html+='<div class="bf-sc-ttl">'+(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!')))+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
     setTimeout(function(){ov.classList.add('bf-sc-out');},2700);
@@ -161,7 +176,24 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     });
     duckScanned=true;
   }
-  new MutationObserver(scanDucks).observe(document.documentElement,{childList:true,subtree:true});
+  // Detección del estado "Tanquear": cuando un héroe pasa a estar tanking
+  // (la clase s-tank / bf-state-tank la pinta decorate() en AMBOS clientes a
+  // partir de G.team, que viaja en el snapshot online), irrumpe el tanque
+  // estilo Metal Slug. Se detecta el flanco de subida (no estaba → ahora sí)
+  // para disparar la cinemática solo al activar la habilidad, no en cada repintado.
+  var tankDomState={},tankDomReady=false;
+  function scanTanks(){
+    document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
+      var id=card.id;
+      var isTank=card.classList.contains('s-tank')||card.classList.contains('bf-state-tank');
+      var was=!!tankDomState[id];
+      tankDomState[id]=isTank;
+      if(!tankDomReady)return;
+      if(isTank&&!was)try{playCine('tank');}catch(e){}
+    });
+    tankDomReady=true;
+  }
+  new MutationObserver(function(){scanDucks();scanTanks();}).observe(document.documentElement,{childList:true,subtree:true});
 
   var tries=0,iv=setInterval(function(){var a=hook(),b=hookFlush();if((a||window.__bfShowCardReveal&&window.__bfShowCardReveal.__bfSpec)&&(b||window.flushFx&&window.flushFx.__bfSpecCineFx)||tries++>120)clearInterval(iv);},200);
 })();
