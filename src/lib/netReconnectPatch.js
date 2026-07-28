@@ -65,6 +65,7 @@ export const NET_RECONNECT_PATCH = `
     conn.on('data',function(msg){
       if(!msg)return;
       if(msg.t==='reject'){giveUp(msg.reason||'Conexión rechazada.');return;}
+      if(msg.t==='bye'){connLost();return;}
       if(msg.t==='snap'){resumed();applySnapshot(msg);return;}
       if(msg.t==='end'){G._gameOver=true;hideOverlay();clearResume();showResult(msg.pWin===(NET.mySide==='p'));return;}
       if(msg.t==='welcome'){resumed();return;}
@@ -99,6 +100,11 @@ export const NET_RECONNECT_PATCH = `
         });
         conn.on('error',function(){});
       }
+      // Red de seguridad: si ya hay una conexión abierta pero seguimos en
+      // modo reconexión (el host no respondió a nuestro hello), reenviar el
+      // hello cada ciclo para que la partida reanude aunque se perdiera el
+      // primer mensaje.
+      if(NET.conn&&NET.conn.open&&rec.active){try{NET.conn.send({t:'hello',resume:true,name:NET.names_self,pass:info.pass||''});}catch(e){}}
     }catch(e){}
     rec.timer=setTimeout(clientRetry,RETRY_MS);
   }
@@ -165,6 +171,7 @@ export const NET_RECONNECT_PATCH = `
       var inGame=typeof G!=='undefined'&&G.online&&!G._gameOver;
       if(!inGame)return orig.apply(this,arguments);
       conn.on('data',function(msg){
+        if(msg&&msg.t==='bye'){connLost();return;}
         if(msg&&msg.t==='hello'){
           if(NET.pass&&msg.pass!==NET.pass){try{conn.send({t:'reject',reason:'Contraseña incorrecta.'});}catch(e){}return;}
           try{if(NET.conn&&NET.conn!==conn)NET.conn.close();}catch(e){}
@@ -215,7 +222,7 @@ export const NET_RECONNECT_PATCH = `
     if(typeof NET==='undefined'||typeof G==='undefined'||!G.online||G._gameOver||rec.active)return;
     var c=NET.conn;
     if(!c){connLost();return;}
-    if(c.open&&c.__bfLastSeen&&Date.now()-c.__bfLastSeen>90000){try{c.close();}catch(e){}return;}
+    if(c.open&&c.__bfLastSeen&&Date.now()-c.__bfLastSeen>15000){try{c.close();}catch(e){}return;}
     if(!c.open)connLost();
   },6000);
 })();
