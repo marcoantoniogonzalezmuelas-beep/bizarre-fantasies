@@ -31,11 +31,14 @@ const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok"
 const EQUIP = { melee: { nums:[59,60,61,62,63,64] }, ranged: { nums:[65,66,67,68,69,70,71,72] }, armor: { nums:[73,74,75,76,77,78,79,80,81,82] }, spell: { nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] }, object: { nums:[83,84,85,86,87,88,89,90,91] } };
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
-  const artSets={melee:[...MELEE_ART],ranged:[...RANGED_ART],armor:[...ARMOR_ART],spell:[...SPELL_ART],object:[...OBJECT_ART]},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=[...BONUS_ART];let transformerArt=TRANSFORMER_ART;const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
+  const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
   const NUM_ART={};[[EQUIP.melee,artSets.melee],[EQUIP.ranged,artSets.ranged],[EQUIP.armor,artSets.armor],[EQUIP.spell,artSets.spell],[EQUIP.object,artSets.object]].forEach(([c,a])=>c.nums.forEach((n,i)=>{if(a[i])NUM_ART[n]=a[i];}));
   const dbHeroes = dbCards.filter(c => c.category === 'hero' && c.in_auction !== false);
-  const localHeroArt = [...HERO_ART];
-  const localHeroEliteArt = [...HERO_ELITE_ART];
+  // BD = única fuente de arte: las bases se inicializan vacías (mismo length
+  // sólo como andamiaje de índices). Si una carta no está en la BD, no se
+  // muestra imagen (nunca un arte hardcoded equivocado).
+  const localHeroArt = HERO_ART.map(function(){ return ''; });
+  const localHeroEliteArt = HERO_ELITE_ART.map(function(){ return ''; });
   const localHeroIds = [...HERO_IDS];
   const localHeroNames = [...HERO_NAMES];
   
@@ -89,7 +92,7 @@ function buildArtScript(dbCards) {
   if (typeof CLAN_COLORS !== 'undefined') CLAN_COLORS.Bizarros = '#caa14a';
   if (typeof CLAN_SYMBOL !== 'undefined') CLAN_SYMBOL.Bizarros = '◉';
   if (typeof CLAN_PROFILE !== 'undefined') CLAN_PROFILE.Bizarros = { eliteHpPct:0, mMelee:0, mRanged:0, mSpell:0, mVel:0, manaBonus:0, regenBonus:0, resPhys:0, resMagic:0, trait:'Héroes sorpresa · No salen en subasta', desc:'Criaturas imposibles que aparecen de forma inesperada durante la batalla.' };
-  var TOKEN_ART = TOKENS.map(function(t){ return t.art || LT_ART[t.id] || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || LT_ART[t.id] || ''; });
+  var TOKEN_ART = TOKENS.map(function(t){ return t.art || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || ''; });
   var TRANSFORMER_ART = "${transformerArt}";
   var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; } window.bfManaFor=bfManaFor;
   var BONUS_ART = ${JSON.stringify(bonusArtArr)};
