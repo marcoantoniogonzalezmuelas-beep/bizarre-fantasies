@@ -205,12 +205,18 @@ export const STATUS_AURA_PATCH = `
     };
     window.stepTurn.__bfOddStates=1;return true;
   }
-  var tries=0,timer=setInterval(function(){tries++;var a=installAbilities(),t=installTurns();decorate();if((a&&t)||tries>80)clearInterval(timer);},150);
+  // Debounce: si llega un burst de mutaciones, reagendamos una sola pasada.
+  var _bfDecoTimer=null;
+  function scheduleDecorate(){ if(_bfDecoTimer)return; _bfDecoTimer=setTimeout(function(){_bfDecoTimer=null;decorate();},60); }
+  var tries=0,timer=setInterval(function(){tries++;var a=installAbilities(),t=installTurns();scheduleDecorate();if((a&&t)||tries>80)clearInterval(timer);},150);
   installAbilities();installTurns();decorate();
-  // Vigilamos también cambios de CLASE (el juego añade s-cursed/s-frozen/etc.
-  // como atributos, no como childList) y mantenemos un intervalo lento para
-  // volver a aplicar el panel si el juego repinta la carta y lo borra.
-  new MutationObserver(decorate).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  // OJO: NO observamos cambios de atributo 'class'. El propio decorate añade
+  // clases (bf-state-*, bf-agonizing) para pintar auras; si el observer
+  // vigilara 'class', esas mutaciones re-dispararían decorate → bucle
+  // infinito de microtareas → cuelgue al entrar en batalla. Observamos solo
+  // childList (nuevas cartas de héroe tras un repintado del juego); los
+  // estados (s-cursed, active-turn...) los detecta el sondeo de abajo.
+  new MutationObserver(scheduleDecorate).observe(document.documentElement,{childList:true,subtree:true});
   setInterval(decorate,700);
 })();
 </script>
