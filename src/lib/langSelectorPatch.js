@@ -17,8 +17,8 @@ export const buildLangSelectorPatch = (lang) => `
     wrap.id = 'bf-lang-sel';
     wrap.style.cssText = 'position:absolute;top:10px;right:10px;z-index:80;display:flex;border:1.5px solid rgba(255,210,74,.7);border-radius:999px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.65),0 0 14px rgba(255,210,74,.35);';
 
-    var FLAG_ES = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect width="60" height="13.3" fill="%23c40037"/><rect y="13.3" width="60" height="13.4" fill="%23ffffff"/><rect y="26.7" width="60" height="13.3" fill="%23c40037"/></svg>';
-    var FLAG_EN = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40"><rect width="60" height="40" fill="%23012a44"/><path d="M0 0L12 0L60 28L60 40L48 40L0 12Z" fill="%23ffffff"/><path d="M48 0L60 0L60 12L12 40L0 40L0 28Z" fill="%23ffffff"/><path d="M0 0L8 0L60 32L60 40L52 40L0 8Z" fill="%23c41e30"/><path d="M52 0L60 0L60 8L8 40L0 40L0 32Z" fill="%23c41e30"/><rect x="24" width="12" height="40" fill="%23ffffff"/><rect y="14" width="60" height="12" fill="%23ffffff"/><rect x="26" width="8" height="40" fill="%23c41e30"/><rect y="16" width="60" height="8" fill="%23c41e30"/></svg>';
+    var FLAG_ES = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f1ea-1f1f8.svg';
+    var FLAG_EN = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/1f1ec-1f1e7.svg';
 
     function btn(l, label, flagUrl){
       var b = document.createElement('button');
