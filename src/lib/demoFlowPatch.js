@@ -77,29 +77,38 @@ export const DEMO_FLOW_PATCH = `
     }catch(e){}
     G.eqReady={p:true,o:true};
     show('s-equip'); renderEquip('p');
+    // Arranque del combate robusto: envolvemos startBattle para que cualquier
+    // error se muestre claro (notif + consola) en vez de fallar en silencio o
+    // colgar el navegador. Así, si algo impide arrancar la batalla, se ve el
+    // motivo en lugar de un "error raro".
+    var startDemoBattle=function(){
+      try{
+        if(typeof window.demoBattle==='function') window.demoBattle();
+        else if(typeof startBattle==='function') startBattle();
+      }catch(e){ if(window.console)console.error('bfDemoBattle',e); if(typeof notif==='function')notif('No se pudo iniciar el combate: '+(e&&e.message||e)); }
+    };
     // En la demo el botón nativo "Listo — a la batalla" (eqDone) está desactivado
     // por G.demoExample (tanto el wrapper como el original hacen return). Lo
-    // rebindamos para que TAMBIÉN arranque el combate, igual que el botón
-    // "Seguir" del entrenador, así se puede avanzar pulsando cualquiera.
+    // rebindamos con un interval ligero (sólo actúa mientras s-equip está
+    // activa) para que TAMBIÉN arranque el combate, igual que el "Seguir".
     if(!window.__bfDemoListoBound){
       window.__bfDemoListoBound=true;
-      var bindListo=function(){
-        var sc=document.getElementById('s-equip'); if(!sc)return;
+      setInterval(function(){
+        var sc=document.getElementById('s-equip');
+        if(!sc||!sc.classList.contains('active'))return;
         sc.querySelectorAll('button[onclick*="eqDone"]').forEach(function(b){
           if(b.dataset.bfDemoListo==='1')return;
           b.dataset.bfDemoListo='1';
           b.removeAttribute('onclick');
-          b.onclick=function(e){e.preventDefault();e.stopPropagation();if(typeof window.demoBattle==='function')window.demoBattle();};
+          b.onclick=function(e){e.preventDefault();e.stopPropagation();startDemoBattle();};
         });
-      };
-      bindListo();
-      new MutationObserver(bindListo).observe(document.body,{childList:true,subtree:true});
+      },500);
     }
     coach('PASO 2 · EQUIPAMIENTO. Cada IA gastó su presupuesto en armas, armaduras, hechizos y objetos (van a la mano).'+
           '  🔵 IA Azul: '+explainEquip('p')+
           '  🔴 IA Roja: '+explainEquip('o')+
           '  ➜  Pulsa "Seguir" para empezar el combate.');
-    coachBtn('Seguir ▶', window.demoBattle);
+    coachBtn('Seguir ▶', startDemoBattle);
   }
 
   // ---- Reescribe demoAuction: arranca la subasta de verdad ----
