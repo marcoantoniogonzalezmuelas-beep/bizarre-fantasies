@@ -71,12 +71,14 @@ export const STATUS_AURA_PATCH = `
   var css='.bhero{position:relative!important}';
   STATES.forEach(function(s){
     css+=
-      '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+';box-shadow:0 0 0 2px '+s.c+',0 0 22px '+s.c+'66!important}'+
+      '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+';box-shadow:0 0 0 3px '+s.c+',0 0 28px '+s.c+'99,0 0 52px '+s.c+'55!important;animation:bfStateEdge 1.6s ease-in-out infinite}'+
       '.bhero.'+s.cls+' .bf-battle-art{filter:'+s.filt+'!important}'+
-      '.bhero.'+s.cls+'::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;background:'+s.grad+';mix-blend-mode:overlay;opacity:.7;animation:bfAuraPulse 2.2s ease-in-out infinite}'+
-      '.bhero.'+s.cls+' .bf-pat{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:'+s.pat+';opacity:.85;animation:bfAuraPulse 2.2s ease-in-out infinite}'+
-      '.bhero.'+s.cls+'::after{content:"'+s.ic+' '+s.lb+'";position:absolute;top:6px;right:8px;left:auto;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:2px 11px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid '+s.c+';color:'+s.c+';font-family:Cinzel,serif;font-size:11px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px '+s.c+',0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 16px '+s.c+',inset 0 0 12px '+s.d+';animation:bfStateBanner 1.5s ease-in-out infinite;white-space:nowrap}';
+      '.bhero.'+s.cls+'::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;background:'+s.grad+';mix-blend-mode:normal;opacity:.82;animation:bfAuraPulse 2.2s ease-in-out infinite}'+
+      '.bhero.'+s.cls+' .bf-pat{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:'+s.pat+';opacity:.9;animation:bfScanMove 3s linear infinite}'+
+      '.bhero.'+s.cls+'::after{content:"'+s.ic+' '+s.lb+'";position:absolute;top:6px;right:8px;left:auto;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid '+s.c+';color:'+s.c+';font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px '+s.c+',0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 16px '+s.c+',inset 0 0 12px '+s.d+';animation:bfStateBanner 1.5s ease-in-out infinite;white-space:nowrap}';
   });
+  // Animación de borde de estado + scanlines deslizantes
+  css+='@keyframes bfStateEdge{0%,100%{box-shadow:0 0 0 3px var(--bf-state),0 0 20px var(--bf-state)77,0 0 40px var(--bf-state)44!important}50%{box-shadow:0 0 0 3px var(--bf-state),0 0 36px var(--bf-state)cc,0 0 64px var(--bf-state)66!important}}@keyframes bfScanMove{0%{background-position:0 0,0 0,0 0,0 0,0 0,0 0}100%{background-position:0 40px,0 40px,0 40px,0 40px,0 40px,0 40px}}';
   // Ocultar badge nativo duplicado.
   css+='.bhero.s-cursed>.bf-status-badge,.bhero.s-paralyzed>.bf-status-badge,.bhero.s-sleeping>.bf-status-badge,.bhero.s-blessed>.bf-status-badge,.bhero.s-frozen>.bf-status-badge,.bhero.s-tank>.bf-status-badge,.bhero.bf-state-confused>.bf-status-badge,.bhero.bf-state-drunk>.bf-status-badge,.bhero.bf-state-dizzy>.bf-status-badge{display:none!important}';
 
@@ -109,7 +111,7 @@ export const STATUS_AURA_PATCH = `
     '@keyframes bfShieldPulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}'+
     '@keyframes bfSpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}'+
     '@keyframes bfRise{0%{transform:translate(-50%,-50%) translateY(0);opacity:.5}50%{opacity:1}100%{transform:translate(-50%,-50%) translateY(-20px);opacity:0}}'+
-    '@keyframes bfAuraPulse{0%,100%{opacity:.55}50%{opacity:.85}}@keyframes bfStateBanner{0%,100%{box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 12px var(--bf-state),inset 0 0 12px var(--bf-state-dark);filter:brightness(1)}50%{box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 28px var(--bf-state),0 0 44px var(--bf-state),inset 0 0 16px var(--bf-state-dark);filter:brightness(1.25)}}';
+    '@keyframes bfAuraPulse{0%,100%{opacity:.6}50%{opacity:1}}@keyframes bfStateBanner{0%,100%{box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 12px var(--bf-state),inset 0 0 12px var(--bf-state-dark);filter:brightness(1)}50%{box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 28px var(--bf-state),0 0 44px var(--bf-state),inset 0 0 16px var(--bf-state-dark);filter:brightness(1.25)}}';
   // Agonía
   css+=
     '.bhero.bf-agonizing .bf-battle-art{animation:bfAgonPulse 1.1s ease-in-out infinite}'+

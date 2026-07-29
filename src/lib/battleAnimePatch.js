@@ -29,6 +29,9 @@ export const BATTLE_ANIME_PATCH = `
   '.bhero.s-blessed .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,229,138,.48),rgba(40,30,5,.42)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,229,138,.18),transparent 24deg)}'+
   '.bhero.s-frozen .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(117,232,255,.5),rgba(7,58,83,.55)),repeating-linear-gradient(58deg,transparent 0 7px,rgba(160,230,255,.26) 7px 8px)}'+
   '.bhero.s-tank .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,180,58,.48),rgba(80,40,5,.5)),repeating-linear-gradient(45deg,transparent 0 8px,rgba(255,180,58,.2) 8px 9px)}'+
+  '.bhero.bf-state-confused .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,230,90,.42),rgba(54,44,5,.5)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,230,90,.16),transparent 30deg)}'+
+  '.bhero.bf-state-drunk .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(184,236,114,.42),rgba(29,47,11,.5)),repeating-linear-gradient(65deg,transparent 0 9px,rgba(184,236,114,.18) 9px 10px)}'+
+  '.bhero.bf-state-dizzy .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(114,240,181,.42),rgba(11,73,52,.5)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(114,240,181,.14),transparent 20deg)}'+
   // Agonizando: velo de sangre anime sobre el retrato + pulso rojo del rectángulo.
   '.bhero.bf-agonizing{box-shadow:0 0 0 2px rgba(255,30,30,.85),0 0 26px rgba(255,0,0,.6)!important;animation:bfAgonShake 1.1s ease-in-out infinite!important}'+
   '.bhero.bf-agonizing .bf-battle-art{filter:saturate(1.1) brightness(.7) drop-shadow(0 0 10px rgba(255,0,0,.7))!important}'+

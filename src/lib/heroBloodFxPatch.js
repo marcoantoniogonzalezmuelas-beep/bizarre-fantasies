@@ -33,12 +33,8 @@ export const HERO_BLOOD_FX_PATCH = `
   // ---- Animación de borde de agonía más viva ----
   '.bhero.bf-agonizing{box-shadow:0 0 0 3px rgba(255,20,20,.9),0 0 30px rgba(255,0,0,.7),inset 0 0 20px rgba(120,0,0,.4)!important;animation:bfAgonShake .8s ease-in-out infinite!important}' +
   '@keyframes bfAgonShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-2px)}60%{transform:translateX(2px)}}' +
-  // ---- Mejora de animaciones de estado en los recuadros ----
-  // Pulso de borde más vivo para estados activos
-  '.bhero.s-cursed,.bhero.s-paralyzed,.bhero.s-sleeping,.bhero.s-blessed,.bhero.s-frozen,.bhero.s-tank{animation:bfStateGlow 1.8s ease-in-out infinite}' +
-  '@keyframes bfStateGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}' +
-  // Scanlines animados sobre el recuadro del héroe con estado
-  '.bhero.s-cursed .bf-bhero-bgart::before,.bhero.s-paralyzed .bf-bhero-bgart::before,.bhero.s-sleeping .bf-bhero-bgart::before,.bhero.s-frozen .bf-bhero-bgart::before,.bhero.s-tank .bf-bhero-bgart::before{animation:bfScanShift 3s linear infinite}' +
+  // Scanlines animados sobre el fondo del héroe con estado
+  '.bhero.s-cursed .bf-bhero-bgart::before,.bhero.s-paralyzed .bf-bhero-bgart::before,.bhero.s-sleeping .bf-bhero-bgart::before,.bhero.s-frozen .bf-bhero-bgart::before,.bhero.s-tank .bf-bhero-bgart::before,.bhero.bf-state-confused .bf-bhero-bgart::before,.bhero.bf-state-drunk .bf-bhero-bgart::before,.bhero.bf-state-dizzy .bf-bhero-bgart::before{animation:bfScanShift 3s linear infinite}' +
   '@keyframes bfScanShift{0%{transform:translateY(0)}100%{transform:translateY(8px)}}';
 
   var st = document.createElement('style');
