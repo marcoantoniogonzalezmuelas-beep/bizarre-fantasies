@@ -105,12 +105,18 @@ export const DEMO_TIPS_PATCH = `
     return y;
   }
 
+  // Los tips son SOLO de la partida demo. Usamos un flag dedicado
+  // (window.__bfDemoOn) en vez de G.demo/G.demoExample, porque esos se quedaban
+  // a true tras la demo y hacían que los tips aparecieran en partidas reales.
+  // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
+  // volver a la portada (s-title) — fin de la demo.
   function tick(){
-    var demo=false;
-    try{demo=typeof G!=='undefined'&&G&&(G.demo||G.demoExample);}catch(e){}
     var active=document.querySelector('.screen.active');
+    if(active&&active.id==='s-title') window.__bfDemoOn=false;
+    var demo=false;
+    try{demo=!!window.__bfDemoOn;}catch(e){}
     var list=null;
-    if(active&&TIPS[active.id]) list=TIPS[active.id].filter(function(t){return demo||t.always;});
+    if(active&&TIPS[active.id]&&demo) list=TIPS[active.id];
     if(!list||!list.length){hideAll();return;}
     ensureNodes(list.length);
     var placed=[];
@@ -185,6 +191,10 @@ export const DEMO_TIPS_PATCH = `
     // Oculta los nodos sobrantes de la pantalla anterior (evita tips huérfanos).
     for(var k=list.length;k<nodes.length;k++){nodes[k].tip.style.display='none';nodes[k].halo.style.display='none';}
   }
+  // Resetea los tips cerrados y oculta todo: lo llama el flujo de demo al
+  // arrancar una partida demo nueva, así los tips vuelven a aparecer y no
+  // se quedan descartados de una demo anterior.
+  window.__bfResetDemoTips=function(){ dismissed={}; hideAll(); };
   setInterval(tick,350);
 })();
 </script>

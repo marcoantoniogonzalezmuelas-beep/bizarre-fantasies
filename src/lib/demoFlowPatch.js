@@ -114,6 +114,10 @@ export const DEMO_FLOW_PATCH = `
   // ---- Reescribe demoAuction: arranca la subasta de verdad ----
   window.demoAuction=function(){
     G.demo=true; G.demoExample=true; G.oppHuman=false; G.online=false; NET.role='local';
+    // Tips SOLO en la demo: activamos el flag dedicado y reseteamos los tips
+    // cerrados en la demo anterior para que vuelvan a aparecer.
+    window.__bfDemoOn=true;
+    if(typeof window.__bfResetDemoTips==='function') window.__bfResetDemoTips();
     G.team={p:[],o:[]}; G.spellbook={p:[],o:[]}; G.items={p:[],o:[]};
     G.equipReserve={p:0,o:0};
     var poolOf=function(t){ return HEROES.filter(function(h){return h.type===t&&h.clan!=='Bizarros'&&!String(h.id||'').startsWith('tk_');}); };
