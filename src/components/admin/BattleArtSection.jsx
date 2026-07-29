@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Sección de escenas de batalla (base + élite) en el editor del backoffice.
 // Muestra las imágenes generadas y permite regenerarlas con IA.
+// Incluye un campo de texto orientativo para guiar la generación.
 // Solo se muestra para héroes y héroes bizarros.
 export default function BattleArtSection({ form, onGenerate, generating }) {
+  const [basePrompt, setBasePrompt] = useState('');
+  const [elitePrompt, setElitePrompt] = useState('');
+
   if (!['hero', 'bizarro'].includes(form.category)) return null;
 
   const isGeneratingBase = generating === 'battle_art_url';
@@ -26,9 +30,16 @@ export default function BattleArtSection({ form, onGenerate, generating }) {
               <div className="flex h-full items-center justify-center text-xs text-[#9d7fc4]">Sin escena generada</div>
             )}
           </div>
+          <textarea
+            value={basePrompt}
+            onChange={(e) => setBasePrompt(e.target.value)}
+            placeholder="Texto orientativo para la IA: pose, expresión, fondo, efectos, ambiente…"
+            rows={2}
+            className="w-full resize-none rounded-lg border border-[#ffd24a22] bg-black/45 px-2 py-1.5 text-[10px] text-[#cfc6dd] outline-none placeholder:text-[#6b5a8a] focus:border-[#ffd24a55]"
+          />
           <button
             type="button"
-            onClick={() => onGenerate('battle_art_url')}
+            onClick={() => onGenerate('battle_art_url', basePrompt)}
             disabled={generating || !form.name}
             className="rounded-xl bg-gradient-to-b from-[#ffd24a] to-[#c8901f] px-4 py-2 text-xs font-black text-[#3a2600] disabled:opacity-50"
           >
@@ -53,9 +64,16 @@ export default function BattleArtSection({ form, onGenerate, generating }) {
               <div className="flex h-full items-center justify-center text-xs text-[#9d7fc4]">Sin escena generada</div>
             )}
           </div>
+          <textarea
+            value={elitePrompt}
+            onChange={(e) => setElitePrompt(e.target.value)}
+            placeholder="Texto orientativo para la IA: aura dorada, pose frenética, poder máximo…"
+            rows={2}
+            className="w-full resize-none rounded-lg border border-[#c05bff22] bg-black/45 px-2 py-1.5 text-[10px] text-[#cfc6dd] outline-none placeholder:text-[#6b5a8a] focus:border-[#c05bff55]"
+          />
           <button
             type="button"
-            onClick={() => onGenerate('elite_battle_art_url')}
+            onClick={() => onGenerate('elite_battle_art_url', elitePrompt)}
             disabled={generating || !form.name}
             className="rounded-xl bg-gradient-to-b from-[#c05bff] to-[#7d2fd4] px-4 py-2 text-xs font-black text-white disabled:opacity-50"
           >

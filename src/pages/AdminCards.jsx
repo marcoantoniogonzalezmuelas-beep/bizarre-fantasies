@@ -208,15 +208,16 @@ export default function AdminCards() {
     setGenerating(false);
   }
 
-  async function generateBattleArt(target = 'battle_art_url') {
+  async function generateBattleArt(target = 'battle_art_url', customPrompt = '') {
     if (!form.name) return;
     setGenerating(target);
     try {
       const isElite = target === 'elite_battle_art_url';
       const refUrl = isElite ? (form.elite_art_url || form.art_url) : form.art_url;
+      const hint = customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '';
       const prompt = isElite
-        ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.`
-        : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.`;
+        ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
+        : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
       const result = await base44.integrations.Core.GenerateImage(refUrl ? { prompt, existing_image_urls: [refUrl] } : { prompt });
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
@@ -261,7 +262,7 @@ export default function AdminCards() {
     } else if (target === '__set_elite_battle_art_url') {
       setForm(prev => ({ ...prev, elite_battle_art_url: value }));
     } else {
-      generateBattleArt(target);
+      generateBattleArt(target, value);
     }
   }
 
