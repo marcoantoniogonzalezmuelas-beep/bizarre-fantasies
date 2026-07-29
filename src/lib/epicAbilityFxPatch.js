@@ -61,7 +61,13 @@ export const EPIC_ABILITY_FX_PATCH = `
   '.bf-za-halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,.55) 0%,rgba(255,180,0,.25) 40%,transparent 70%);opacity:0;animation:bfZaHalo 2s ease-out forwards}'+
   '@keyframes bfZaHalo{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}'+
   '.bf-za-god{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:40px;opacity:0;animation:bfZaGod 2s ease-out forwards;filter:drop-shadow(0 0 16px #ffd700)}'+
-  '@keyframes bfZaGod{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-15deg)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(5deg)}70%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(0)}}';
+  '@keyframes bfZaGod{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-15deg)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(5deg)}70%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(0)}}'+
+  // Donuts que flotan cayendo
+  '.bf-za-donut{position:absolute;font-size:22px;opacity:0;animation:bfZaDonut 2.2s ease-in forwards;filter:drop-shadow(0 0 8px rgba(255,200,100,.7))}'+
+  '@keyframes bfZaDonut{0%{opacity:0;transform:translateY(-30px) scale(.4) rotate(0deg)}15%{opacity:1;transform:translateY(0) scale(1.2) rotate(20deg)}100%{opacity:0;transform:translateY(80px) scale(.8) rotate(360deg)}}'+
+  // Lechugas (frascos de leche) que emergen
+  '.bf-za-milk{position:absolute;font-size:20px;opacity:0;animation:bfZaMilk 2s ease-out forwards;filter:drop-shadow(0 0 8px rgba(200,240,255,.7))}'+
+  '@keyframes bfZaMilk{0%{opacity:0;transform:scale(.3) rotate(0deg)}20%{opacity:1;transform:scale(1.1) rotate(-15deg)}100%{opacity:0;transform:scale(1.5) rotate(30deg) translateY(-40px)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function makeBanner(name,color){
@@ -164,12 +170,16 @@ export const EPIC_ABILITY_FX_PATCH = `
         var rot=(i/8)*360;
         html+='<div class="bf-za-ray" style="--rot:'+rot.toFixed(0)+'deg;color:'+color+';animation-delay:'+(i*0.08).toFixed(2)+'s"></div>';
       }
+      for(var i=0;i<6;i++)html+='<span class="bf-za-donut" style="left:'+(8+Math.random()*84)+'%;top:'+(10+Math.random()*60)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">🍩</span>';
+      for(var i=0;i<5;i++)html+='<span class="bf-za-milk" style="left:'+(10+Math.random()*80)+'%;top:'+(15+Math.random()*55)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">🥛</span>';
     }else{
       html+='<span class="bf-za-god" style="font-size:36px">✝️</span>';
       for(var i=0;i<6;i++){
         var rot=(i/6)*360;
         html+='<div class="bf-za-ray" style="--rot:'+rot.toFixed(0)+'deg;color:'+color+';animation-delay:'+(i*0.1).toFixed(2)+'s"></div>';
       }
+      for(var i=0;i<4;i++)html+='<span class="bf-za-donut" style="left:'+(10+Math.random()*80)+'%;top:'+(15+Math.random()*55)+'%;animation-delay:'+(Math.random()*0.7).toFixed(2)+'s">🍩</span>';
+      for(var i=0;i<3;i++)html+='<span class="bf-za-milk" style="left:'+(15+Math.random()*70)+'%;top:'+(20+Math.random()*50)+'%;animation-delay:'+(Math.random()*0.7).toFixed(2)+'s">🥛</span>';
     }
     var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
   }
