@@ -203,10 +203,22 @@ const DRAGGABLE_GUIDE_PATCH = `
   // pueda mostrar/ocultar el botón del Oráculo Bizarro (solo en la portada).
   function notifyActiveScreen(){
     var active = document.querySelector('.screen.active');
-    var id = active ? active.id : 's-title';
+    // No avisamos hasta que el juego tenga SU pantalla activa real: antes de
+    // eso el CSS/layout del juego no se ha aplicado y avisar antes provocaría
+    // el flash de iconos enormes (HTML sin estilizar).
+    if (!active) return;
+    var id = active.id || 's-title';
     if (window.__bfLastScreenId === id) return;
     window.__bfLastScreenId = id;
-    try { window.parent.postMessage({ bfScreen: id }, '*'); } catch (e) {}
+    // Doble requestAnimationFrame: garantiza que el navegador ya PINTÓ la
+    // pantalla del juego con su CSS aplicado antes de avisar al padre para
+    // que quite el overlay. Sin esto, el padre oculta el overlay cuando el
+    // DOM del juego ya existe pero el CSS aún no se ha pintado (flash).
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        try { window.parent.postMessage({ bfScreen: id }, '*'); } catch (e) {}
+      });
+    });
   }
   setInterval(notifyActiveScreen, 300);
   notifyActiveScreen();
@@ -313,7 +325,7 @@ export default function Home() {
         // Pequeño retardo antes de ocultar el overlay: da tiempo al juego a
         // aplicar su CSS/layout para que no se vea el flash de iconos enormes.
         if (loadTimerRef.current) { clearTimeout(loadTimerRef.current); loadTimerRef.current = null; }
-        loadTimerRef.current = setTimeout(() => setLoading(false), 250);
+        loadTimerRef.current = setTimeout(() => setLoading(false), 400);
         // Envía el mapa de escenas de batalla al iframe (lo reenvía en cada
         // cambio de pantalla para asegurar que arrive aunque el iframe recargue).
         if (battleArtRef.current) {
@@ -474,8 +486,8 @@ export default function Home() {
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
       <div
-        className="absolute inset-0 z-30 flex items-center justify-center bg-[#0e0a16] pointer-events-none"
-        style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out' }}
+        className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
+        style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out', background: '#0e0a16' }}
       >
         <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
       </div>
