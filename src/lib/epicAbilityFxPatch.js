@@ -29,6 +29,12 @@ export const EPIC_ABILITY_FX_PATCH = `
   '@keyframes bfEhRipple{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:220%;height:220%;opacity:0;border-width:1px}}'+
   '.bf-eh-note{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;opacity:0;animation:bfEhNote 1s ease-out forwards}'+
   '@keyframes bfEhNote{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}40%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}'+
+  // Guitarra tocándose
+  '.bf-eh-guitar{position:absolute;left:50%;top:30%;transform:translateX(-50%);font-size:48px;opacity:0;animation:bfEhGuitar 2.5s ease-out forwards;filter:drop-shadow(0 0 16px currentColor)}'+
+  '@keyframes bfEhGuitar{0%{opacity:0;transform:translateX(-50%) scale(.3) rotate(-20deg)}15%{opacity:1;transform:translateX(-50%) scale(1.2) rotate(8deg)}35%{transform:translateX(-50%) scale(1) rotate(-5deg)}55%{transform:translateX(-50%) scale(1.1) rotate(6deg)}100%{opacity:0;transform:translateX(-50%) scale(1) rotate(0)}}'+
+  // Notas musicales cayendo
+  '.bf-eh-mnote{position:absolute;font-size:18px;opacity:0;animation:bfEhMnote 1.8s ease-in forwards}'+
+  '@keyframes bfEhMnote{0%{opacity:0;transform:translateY(-20px) scale(.4) rotate(-15deg)}20%{opacity:1;transform:translateY(0) scale(1.1) rotate(10deg)}100%{opacity:0;transform:translateY(70px) scale(.7) rotate(360deg)}}'+
   '.bf-eh-wall{position:absolute;left:50%;top:50%;transform:translateX(-50%);font-size:38px;opacity:0;animation:bfEhWall 2s ease-out forwards}'+
   '@keyframes bfEhWall{0%{opacity:0;transform:translateX(-50%) translateY(30px) scale(.4)}20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.2)}80%{opacity:.8}100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(1.4)}}'+
   '.bf-eh-bloodbar{position:absolute;left:50%;top:60%;transform:translateX(-50%);width:80%;height:4px;border-radius:2px;background:linear-gradient(90deg,#ff0000,#8b0000);opacity:0;animation:bfEhBlood 1.5s ease-out forwards}'+
@@ -118,8 +124,9 @@ export const EPIC_ABILITY_FX_PATCH = `
       html+='<div class="bf-eh-bloodbar"></div>';
       for(var i=0;i<5;i++)html+='<span class="bf-kk-flame" style="left:'+(15+Math.random()*70)+'%;top:'+(35+Math.random()*40)+'%;animation-delay:'+(Math.random()*0.6).toFixed(2)+'s">💀</span>';
     }else{
-      html+='<span class="bf-eh-note" style="color:'+color+'">📢</span>';
-      for(var i=0;i<4;i++)html+='<div class="bf-eh-ripple" style="color:'+color+';animation-delay:'+(i*0.25).toFixed(2)+'s"></div>';
+      html+='<span class="bf-eh-guitar" style="color:'+color+'">🎸</span>';
+      for(var i=0;i<6;i++)html+='<span class="bf-eh-mnote" style="left:'+(15+Math.random()*70)+'%;top:'+(15+Math.random()*50)+'%;animation-delay:'+(Math.random()*0.9).toFixed(2)+'s;color:'+color+'">'+(['🎵','🎶','♪','♫'][i%4])+'</span>';
+      for(var i=0;i<3;i++)html+='<div class="bf-eh-ripple" style="color:'+color+';animation-delay:'+(i*0.3).toFixed(2)+'s"></div>';
     }
     var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
   }
