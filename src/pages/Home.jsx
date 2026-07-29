@@ -310,8 +310,10 @@ export default function Home() {
         setShowOracle(e.data.bfScreen === 's-title');
         // El juego ya inicializó su CSS/layout: se puede quitar el spinner
         // (evita el flash de iconos enormes tras recargar el iframe).
-        setLoading(false);
+        // Pequeño retardo antes de ocultar el overlay: da tiempo al juego a
+        // aplicar su CSS/layout para que no se vea el flash de iconos enormes.
         if (loadTimerRef.current) { clearTimeout(loadTimerRef.current); loadTimerRef.current = null; }
+        loadTimerRef.current = setTimeout(() => setLoading(false), 250);
         // Envía el mapa de escenas de batalla al iframe (lo reenvía en cada
         // cambio de pantalla para asegurar que arrive aunque el iframe recargue).
         if (battleArtRef.current) {
@@ -471,11 +473,12 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0e0a16] pointer-events-none">
-          <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
-        </div>
-      )}
+      <div
+        className="absolute inset-0 z-30 flex items-center justify-center bg-[#0e0a16] pointer-events-none"
+        style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out' }}
+      >
+        <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
+      </div>
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
         <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
