@@ -1173,7 +1173,35 @@ function buildArtScript(dbCards) {
     function roundsLeft(side){return Math.max(1,3-((G.team&&G.team[side]&&G.team[side].length)||0));}
     // AI can't afford a hero: take equip-debt for the cheapest hero or skip — either way
     // clear phaseNeeds so the auction advances to equip instead of looping on bad bids.
-    function bfAiNoCoin(side){var team=(G.team&&G.team[side]&&G.team[side].length)||0;var xl=100-((G.bfEquipXfer&&G.bfEquipXfer[side])||0);if(xl>0){if(!G.bfEquipXfer)G.bfEquipXfer={p:0,o:0};G.coins[side]=(G.coins[side]||0)+xl;G.bfEquipXfer[side]=(G.bfEquipXfer[side]||0)+xl;}if(team<3&&bfBizarroEligible(side)&&typeof bfAssignBizarro==='function')bfAssignBizarro(side);G.bids[side]={pass:true};if(G.phaseNeeds)G.phaseNeeds[side]=false;}
+    function bfAiNoCoin(side){
+      var team=(G.team&&G.team[side]&&G.team[side].length)||0;
+      if(!G.bfEquipXfer)G.bfEquipXfer={p:0,o:0};
+      var pool=(G.epicCands&&G.epicCands[side])||G.cands||[];
+      var m=window.bidMods(side);
+      function cheapestHero(){var best=null,bc=Infinity;for(var i=0;i<pool.length;i++){var h=pool[i];if(!h)continue;var c=Number(h.cost||0);if(c<bc){bc=c;best=h;}}return best;}
+      function canAfford(){var h=cheapestHero();if(!h)return false;var need=Math.max(0,Number(h.cost||0)-m.add+m.sub);return Number((G.coins&&G.coins[side])||0)>=need;}
+      // Transferir monedas de equipamiento de 10 en 10 (como el humano) hasta
+      // poder pujar por el héroe más barato de la tanda.
+      while(team<3&&!canAfford()){
+        var left=100-(G.bfEquipXfer[side]||0);
+        if(left<=0)break;
+        var t=Math.min(10,left);
+        G.coins[side]=(G.coins[side]||0)+t;
+        G.bfEquipXfer[side]=(G.bfEquipXfer[side]||0)+t;
+      }
+      // Si ya le llega, puja por el héroe más barato en vez de pasar.
+      if(team<3&&canAfford()){
+        var h=cheapestHero();
+        if(h){
+          var amt=adjustBid(side,h.id,window.minRawBid(side,h));
+          if(amt!=null){G.bids[side]={heroId:h.id,amount:amt};if(G.phaseNeeds)G.phaseNeeds[side]=false;return;}
+        }
+      }
+      // Si tras transferir todo sigue sin llegarle: héroe Bizarro como último recurso.
+      if(team<3&&bfBizarroEligible(side)&&typeof bfAssignBizarro==='function')bfAssignBizarro(side);
+      G.bids[side]={pass:true};
+      if(G.phaseNeeds)G.phaseNeeds[side]=false;
+    }
     var originalAiBid=window.aiBid;
     window.aiBid=function(s){
       var sv=G.cands;if(G.epicCands&&G.epicCands[s])G.cands=G.epicCands[s];
@@ -1187,6 +1215,11 @@ function buildArtScript(dbCards) {
           var c=Number((G.coins&&G.coins[s])||0),mc=minPoolCost(s),m=window.bidMods(s),mx=Math.max(mc,c-mc*Math.max(0,roundsLeft(s)-1)),h=findHero(b.heroId),mr=window.minRawBid(s,h);
           G.bids[s].amount=Math.max(mr,Math.min(amt,mx+m.add-m.sub));
         }
+      } else {
+        // La IA pasó (seguramente por falta de monedas): si aún necesita un
+        // héroe, transferir monedas de equipamiento y volver a intentarlo.
+        var tl=(G.team&&G.team[s]&&G.team[s].length)||0;
+        if(tl<3)bfAiNoCoin(s);
       }
       G.cands=sv;if(typeof window.checkBids==='function')window.checkBids();
     };
