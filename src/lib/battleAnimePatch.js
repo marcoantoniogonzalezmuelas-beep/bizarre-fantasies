@@ -32,7 +32,7 @@ export const BATTLE_ANIME_PATCH = `
   // Agonizando: velo de sangre anime sobre el retrato + pulso rojo del rectángulo.
   '.bhero.bf-agonizing{box-shadow:0 0 0 2px rgba(255,30,30,.85),0 0 26px rgba(255,0,0,.6)!important;animation:bfAgonShake 1.1s ease-in-out infinite!important}'+
   '.bhero.bf-agonizing .bf-battle-art{filter:saturate(1.1) brightness(.7) drop-shadow(0 0 10px rgba(255,0,0,.7))!important}'+
-  '.bhero.bf-agonizing .bf-battle-art::after{content:"";position:absolute;inset:0;z-index:3;background:radial-gradient(circle at 50% 40%,rgba(255,40,40,.6),rgba(120,0,0,.88));mix-blend-mode:multiply;animation:bfBloodPulse 1.1s ease-in-out infinite;pointer-events:none}'+
+  // (El velo de sangre real lo gestiona heroBloodFxPatch con un elemento dedicado)
   '@keyframes bfAgonShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}'+
   '.bhero.bf-agonizing .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,30,30,.5),rgba(60,0,0,.6)),repeating-linear-gradient(90deg,transparent 0 12px,rgba(255,0,0,.16) 12px 13px)}'+
   '@keyframes bfBloodPulse{0%,100%{opacity:.5}50%{opacity:.85}}';
