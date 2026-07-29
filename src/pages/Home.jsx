@@ -256,6 +256,12 @@ const DRAGGABLE_GUIDE_PATCH = `
 </script>
 `;
 
+// Avisa a la página padre justo antes de que el iframe se recargue (botón
+// "Salir" / "Volver al inicio" → el juego recarga el iframe). Así el padre
+// puede tapar el iframe y evitar el flash de "iconos enormes" (el HTML del
+// juego recién cargado, antes de que inyecte su CSS de layout).
+const RELOAD_COVER_PATCH = `<script>window.addEventListener('pagehide',function(){try{parent.postMessage({bfReloading:true},'*')}catch(e){}});</script>`;
+
 const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
 // Tablets (iPad, Android sin "Mobile", Mac con pantalla táctil) usan el mismo
 // modo que el móvil: vista de escritorio (1200px) escalada + zoom de pellizco.
@@ -270,6 +276,7 @@ export default function Home() {
   }, []);
 
   const iframeRef = useRef(null);
+  const loadTimerRef = useRef(null);
   const [blobUrl, setBlobUrl] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
   const [error, setError] = useState(false);
@@ -299,6 +306,15 @@ export default function Home() {
     const onMessage = (e) => {
       if (e.data && typeof e.data.bfScreen === 'string') {
         setShowOracle(e.data.bfScreen === 's-title');
+        // El juego ya inicializó su CSS/layout: se puede quitar el spinner
+        // (evita el flash de iconos enormes tras recargar el iframe).
+        setLoading(false);
+        if (loadTimerRef.current) { clearTimeout(loadTimerRef.current); loadTimerRef.current = null; }
+      }
+      if (e.data && e.data.bfReloading) {
+        // El iframe se va a recargar (Salir / Volver al inicio): tapamos para
+        // evitar el flash de iconos enormes antes de que el CSS del juego aplique.
+        setLoading(true);
       }
     };
     window.addEventListener('message', onMessage);
@@ -384,7 +400,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = DRAGGABLE_GUIDE_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + MATCH_RESULT_PATCH + RANKING_BUTTON_PATCH + ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + QUIT_CONTACT_PATCH + HOW_TO_PLAY_PATCH + DEMO_TIPS_PATCH + HOME_TEXTS_PATCH + AUCTION_THUMB_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + buildLangSelectorPatch(getLang()) + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + CARD_MAGNIFIER_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + MATCH_RESULT_PATCH + RANKING_BUTTON_PATCH + ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + QUIT_CONTACT_PATCH + HOW_TO_PLAY_PATCH + DEMO_TIPS_PATCH + HOME_TEXTS_PATCH + AUCTION_THUMB_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + buildLangSelectorPatch(getLang()) + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
@@ -456,7 +472,14 @@ export default function Home() {
           ref={iframeRef}
           title="Bizarre Fantasies v5"
           {...(srcDoc ? { srcDoc } : { src: blobUrl })}
-          onLoad={() => setLoading(false)}
+          onLoad={() => {
+            // No ocultamos el spinner en el onLoad: el iframe acaba de cargar su
+            // HTML pero el juego aún no inyecta el CSS/layout (flash de iconos
+            // enormes). Se oculta al recibir la primera pantalla lista (bfScreen)
+            // o, si no llega, tras un seguro de 3.5s.
+            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+            loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
+          }}
           className={IS_MOBILE ? 'border-0' : 'w-full h-full border-0'}
           style={IS_MOBILE ? {
             width: 1200,

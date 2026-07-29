@@ -16,9 +16,11 @@ export const BATTLE_ANIME_PATCH = `
   window.__bfBattleAnimePatch=true;
 
   var css =
-  // Arte del héroe en el panel derecho del .bhero (anime: vívido, menos oscuro).
-  '.bf-bhero-bgart{position:absolute;left:122px;right:0;top:0;bottom:0;z-index:1;pointer-events:none;background-size:cover;background-position:center 18%;background-repeat:no-repeat;filter:blur(5px) saturate(1.35) brightness(.62);opacity:.72}'+
-  '.bf-bhero-bgart::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,9,22,.92) 0%,rgba(14,9,22,.3) 24%,rgba(14,9,22,.3) 76%,rgba(14,9,22,.88) 100%),linear-gradient(180deg,rgba(14,9,22,.18),rgba(14,9,22,.58))}'+
+  // Arte del héroe en el panel derecho del .bhero (anime: vívido). !important
+  // porque el CSS del juego fuerza position:relative en los hijos de .bhero y
+  // sin eso top/bottom no dan altura (quedaba en 0 → invisible).
+  '.bf-bhero-bgart{position:absolute!important;left:122px!important;right:0!important;top:0!important;bottom:0!important;z-index:1;pointer-events:none;background-size:cover!important;background-position:center 18%!important;background-repeat:no-repeat!important;filter:blur(3px) saturate(1.3) brightness(.82);opacity:.9}'+
+  '.bf-bhero-bgart::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,9,22,.82) 0%,rgba(14,9,22,.12) 26%,rgba(14,9,22,.12) 74%,rgba(14,9,22,.8) 100%),linear-gradient(180deg,rgba(14,9,22,.1),rgba(14,9,22,.45))}'+
   // Tinte de estado anime (::before del bgart) — siempre pinta.
   '.bf-bhero-bgart::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s ease;mix-blend-mode:screen}'+
   '.bhero.s-cursed .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(176,108,255,.5),rgba(78,6,59,.55)),repeating-linear-gradient(48deg,transparent 0 8px,rgba(255,69,200,.22) 8px 9px)}'+
@@ -27,8 +29,11 @@ export const BATTLE_ANIME_PATCH = `
   '.bhero.s-blessed .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,229,138,.48),rgba(40,30,5,.42)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,229,138,.18),transparent 24deg)}'+
   '.bhero.s-frozen .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(117,232,255,.5),rgba(7,58,83,.55)),repeating-linear-gradient(58deg,transparent 0 7px,rgba(160,230,255,.26) 7px 8px)}'+
   '.bhero.s-tank .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,180,58,.48),rgba(80,40,5,.5)),repeating-linear-gradient(45deg,transparent 0 8px,rgba(255,180,58,.2) 8px 9px)}'+
-  // Agonizando: velo de sangre anime sobre el retrato + tinte rojo del rectángulo.
-  '.bhero.bf-agonizing .bf-battle-art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(255,24,24,.5),rgba(110,0,0,.72));mix-blend-mode:multiply;animation:bfBloodPulse 1.1s ease-in-out infinite;pointer-events:none}'+
+  // Agonizando: velo de sangre anime sobre el retrato + pulso rojo del rectángulo.
+  '.bhero.bf-agonizing{box-shadow:0 0 0 2px rgba(255,30,30,.85),0 0 26px rgba(255,0,0,.6)!important;animation:bfAgonShake 1.1s ease-in-out infinite!important}'+
+  '.bhero.bf-agonizing .bf-battle-art{filter:saturate(1.1) brightness(.7) drop-shadow(0 0 10px rgba(255,0,0,.7))!important}'+
+  '.bhero.bf-agonizing .bf-battle-art::after{content:"";position:absolute;inset:0;z-index:3;background:radial-gradient(circle at 50% 40%,rgba(255,40,40,.6),rgba(120,0,0,.88));mix-blend-mode:multiply;animation:bfBloodPulse 1.1s ease-in-out infinite;pointer-events:none}'+
+  '@keyframes bfAgonShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}'+
   '.bhero.bf-agonizing .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,30,30,.5),rgba(60,0,0,.6)),repeating-linear-gradient(90deg,transparent 0 12px,rgba(255,0,0,.16) 12px 13px)}'+
   '@keyframes bfBloodPulse{0%,100%{opacity:.5}50%{opacity:.85}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
