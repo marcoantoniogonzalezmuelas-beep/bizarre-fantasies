@@ -128,6 +128,14 @@
       "type": "string",
       "description": "URL of elite version art"
     },
+    "battle_art_url": {
+      "type": "string",
+      "description": "URL of the AI-generated battle scene art (base version in combat)"
+    },
+    "elite_battle_art_url": {
+      "type": "string",
+      "description": "URL of the AI-generated elite battle scene art (elite version in combat)"
+    },
     "in_auction": {
       "type": "boolean",
       "description": "If true, the hero is available in auctions"
