@@ -42,7 +42,7 @@ export const DEMO_TIPS_PATCH = `
         return x?head+'<br>✨ '+T('Efecto:','Effect:')+' '+x:head;
       }},
       {id:'coins',sel:['.coins-row'],has:'subasta|auction',place:'side',txt:T('🪙 Tus monedas de subasta','🪙 Your auction coins')},
-      {id:'eqcoins',sel:['#s-recruit .coins-row'],has:'equipamiento|equipment',place:'below',txt:T('🪙 Monedas de equipamiento: puedes pasarlas a la subasta de 10 en 10','🪙 Equipment coins: you can move them to the auction 10 at a time')}
+      {id:'eqcoins',sel:['#s-recruit .coins-row'],has:'equipamiento|equipment',place:'left',txt:T('🪙 Monedas de equipamiento: puedes pasarlas a la subasta de 10 en 10','🪙 Equipment coins: you can move them to the auction 10 at a time')}
     ],
     's-equip':[
       {id:'slot',sel:['.bf-slot-buy'],txt:T('⚔️ Equipa aquí: 1 arma y 1 armadura por héroe','⚔️ Equip here: 1 weapon and 1 armor per hero')},
@@ -125,6 +125,10 @@ export const DEMO_TIPS_PATCH = `
     // cerrar los tips.
     var coachEl=document.getElementById('coach');
     if(coachEl){var cr=coachEl.getBoundingClientRect();if(cr.width>4&&cr.height>4)placed.push({x:cr.left-4,y:cr.top-4,w:cr.width+8,h:cr.height+8});}
+    // Reservar también el botón "Transferir 10 monedas a la subasta" para que
+    // NINGÚN tip lo tape (el de monedas de equipamiento iría encima si no).
+    var xferEl=document.querySelector('#s-recruit .bf-xfer-btn');
+    if(xferEl){var xr=xferEl.getBoundingClientRect();if(xr.width>4&&xr.height>4)placed.push({x:xr.left-4,y:xr.top-4,w:xr.width+8,h:xr.height+8});}
     list.forEach(function(t,i){
       var n=nodes[i];
       if(dismissed[t.id]){n.tip.style.display='none';n.halo.style.display='none';return;}
@@ -157,6 +161,13 @@ export const DEMO_TIPS_PATCH = `
         // Centrado SOBRE el elemento (cartas grandes): no tapa nada de alrededor.
         n.tip.classList.add('bf-tip-col');finger.textContent='';finger.style.display='none';
         x=r.left+r.width/2-w/2;
+        y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
+      }else if(t.place==='left'){
+        // A la izquierda del elemento, centrado en vertical.
+        n.tip.classList.add('bf-tip-row');
+        finger.textContent='👉';
+        finger.style.setProperty('--px','6px');finger.style.setProperty('--py','0px');
+        x=r.left-w-10;
         y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
       }else if(t.place==='side'){
         // A un lado del elemento, centrado en vertical: nunca lo tapa.
