@@ -106,10 +106,12 @@ export const STATUS_AURA_PATCH = `
 
   function decorate(){document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
     var st=stateOf(card),old=card.dataset.bfAuraState||'';
-    stateClasses.forEach(function(c){card.classList.remove(c);});
-    if(st)card.classList.add('bf-state-'+st);
+    var existingWrap=card.querySelector('.bf-state-wrap');
 
     // ---- Agonía (≤10% vida, vivo) ----
+    // add/remove son no-op si la clase ya está: no alteran 'class', así que no
+    // disparan el MutationObserver. (Si lo hicieran, decorate se llamaría a sí
+    // mismo sin fin y el navegador se colgaría al entrar en batalla.)
     var h=heroFor(card);
     var alive=h?h.alive:!card.classList.contains('dead');
     var r=hpRatio(card);
@@ -122,11 +124,14 @@ export const STATUS_AURA_PATCH = `
     if(agonizing&&!abadge){abadge=document.createElement('div');abadge.className='bf-agonize-badge';abadge.innerHTML='🩸 AGONIZANDO';card.appendChild(abadge);}
     else if(!agonizing&&abadge)abadge.remove();
 
-    // El panel/aura/banner se recrean si FALTAN (el juego re-renderiza la carta
-    // y los borra) o si el estado cambia. Antes el early-return impedía volver
-    // a crearlos tras un repintado, y desaparecían (maldito/agonizando no se veían).
-    var existingWrap=card.querySelector('.bf-state-wrap');
+    // Estado (aura/banner/panel): si no cambió y el wrap ya existe, salir SIN
+    // tocar classList. Si removiéramos/añadiéramos las clases bf-state-* aquí
+    // siempre, el MutationObserver (que vigila 'class') dispararía decorate
+    // otra vez → bucle de microtareas infinito → cuelgue al entrar en batalla.
     if(st===old && existingWrap)return;
+
+    stateClasses.forEach(function(c){card.classList.remove(c);});
+    if(st)card.classList.add('bf-state-'+st);
     card.dataset.bfAuraState=st;
     if(existingWrap)existingWrap.remove();
     if(!st)return;
