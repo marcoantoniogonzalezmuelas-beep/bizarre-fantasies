@@ -277,6 +277,7 @@ export default function Home() {
 
   const iframeRef = useRef(null);
   const loadTimerRef = useRef(null);
+  const battleArtRef = useRef(null);
   const [blobUrl, setBlobUrl] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
   const [error, setError] = useState(false);
@@ -310,6 +311,11 @@ export default function Home() {
         // (evita el flash de iconos enormes tras recargar el iframe).
         setLoading(false);
         if (loadTimerRef.current) { clearTimeout(loadTimerRef.current); loadTimerRef.current = null; }
+        // Envía el mapa de escenas de batalla al iframe (lo reenvía en cada
+        // cambio de pantalla para asegurar que arrive aunque el iframe recargue).
+        if (battleArtRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfBattleArt: battleArtRef.current }, '*');
+        }
       }
       if (e.data && e.data.bfReloading) {
         // El iframe se va a recargar (Salir / Volver al inicio): tapamos para
@@ -370,6 +376,21 @@ export default function Home() {
       if (cards?.length) setDbCount(cards.length);
     });
     base44.auth.me().then(user => setIsAdmin(user?.role === 'admin')).catch(() => setIsAdmin(false));
+  }, []);
+
+  // Carga las escenas de batalla de los héroes (base + élite) y las envía al
+  // iframe para que el rectángulo de batalla muestre el arte de combate en vez
+  // del retrato, cambiando a la versión élite cuando el héroe entra en modo élite.
+  useEffect(() => {
+    base44.entities.Card.filter({ category: 'hero' }, 'number', 300).then(cards => {
+      const map = {};
+      (cards || []).forEach(c => {
+        if (c.card_id && c.battle_art_url) {
+          map[c.card_id] = { base: c.battle_art_url, elite: c.elite_battle_art_url || c.battle_art_url };
+        }
+      });
+      battleArtRef.current = map;
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {

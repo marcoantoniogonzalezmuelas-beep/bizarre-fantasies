@@ -46,13 +46,36 @@ export const BATTLE_ANIME_PATCH = `
     if(!bg||bg==='none'){try{bg=getComputedStyle(art).backgroundImage;}catch(e){bg='';}}
     return (bg&&bg!=='none')?bg:'';
   }
+  // Halla el héroe del juego a partir de la carta de batalla (b_p_<id>).
+  function heroFor(card){
+    var m=String(card.id||'').match(/^b_([po])_(.+)$/);
+    if(!m||typeof G==='undefined'||!G.team)return null;
+    return (G.team[m[1]]||[]).find(function(h){return h&&h.id===m[2];})||null;
+  }
+  // El padre (Home.jsx) envía el mapa de escenas de batalla { card_id: {base,elite} }.
+  window.addEventListener('message',function(e){
+    if(e.data&&e.data.bfBattleArt){window.__bfBattleArt=e.data.bfBattleArt;injectBgArt();}
+  });
   function injectBgArt(){
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
-      var art=card.querySelector('.bf-battle-art');if(!art)return;
-      var bg=artUrlOf(art);if(!bg)return;
       var el=card.querySelector('.bf-bhero-bgart');
       if(!el){el=document.createElement('div');el.className='bf-bhero-bgart';card.insertBefore(el,card.firstChild);}
-      if(el.style.backgroundImage!==bg)el.style.backgroundImage=bg;
+      var bg='';
+      // 1. Escena de batalla desde la base de datos (cambia a élite si corresponde).
+      var m=String(card.id||'').match(/^b_[po]_(.+)$/);
+      var hid=m?m[1]:'';
+      var map=window.__bfBattleArt||{};
+      if(hid&&map[hid]){
+        var h=heroFor(card);
+        var url=(h&&h.eliteMode)?map[hid].elite:map[hid].base;
+        if(url)bg='url("'+url+'")';
+      }
+      // 2. Fallback: arte del retrato (mientras no llegue el mapa).
+      if(!bg){
+        var art=card.querySelector('.bf-battle-art');
+        if(art)bg=artUrlOf(art);
+      }
+      if(bg&&el.style.backgroundImage!==bg)el.style.backgroundImage=bg;
     });
   }
   function hookRender(){
