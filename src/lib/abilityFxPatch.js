@@ -30,7 +30,30 @@ export const ABILITY_FX_PATCH = `
   '.bf-sfx-pop{animation:bfSfxPop .85s cubic-bezier(.2,1.5,.4,1) both}'+
   '@keyframes bfSfxPop{0%{transform:scale(0) rotate(-14deg);opacity:0}55%{transform:scale(1.14) rotate(4deg);opacity:1}75%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}'+
   '.bf-sfx-ring{position:absolute;left:50%;top:50%;width:96%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:4px solid currentColor;box-shadow:0 0 22px currentColor,inset 0 0 22px currentColor;opacity:0;animation:bfSfxRing 2.1s ease-out forwards}'+
-  '@keyframes bfSfxRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.55)}}';
+  '@keyframes bfSfxRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.15)}30%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(1.55)}}'+
+  // ===== RESURRECCIÓN (Revive — luz celestial blanca) =====
+  '.bf-abx-revive{position:absolute;inset:0;pointer-events:none;z-index:82;overflow:visible}'+
+  // Haz de luz vertical que baja desde arriba (luz celestial)
+  '.bf-revive-beam{position:absolute;left:50%;top:-30%;width:60%;height:140%;transform:translateX(-50%);background:linear-gradient(180deg,transparent 0%,rgba(255,255,255,.15) 15%,rgba(255,250,230,.55) 45%,rgba(255,255,255,.7) 50%,rgba(255,250,230,.55) 55%,rgba(255,255,255,.15) 85%,transparent 100%);filter:blur(6px);opacity:0;animation:bfReviveBeam 2.6s ease-out forwards}'+
+  '@keyframes bfReviveBeam{0%{opacity:0;transform:translateX(-50%) scaleY(0)}20%{opacity:1;transform:translateX(-50%) scaleY(1)}75%{opacity:.85}100%{opacity:0;transform:translateX(-50%) scaleY(1.1)}}'+
+  // Halo celestial expandiéndose (anillo de luz sagrada)
+  '.bf-revive-halo{position:absolute;left:50%;top:50%;width:120%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.65) 0%,rgba(255,250,220,.35) 35%,rgba(255,255,255,.1) 60%,transparent 75%);opacity:0;animation:bfReviveHalo 2.4s ease-out forwards}'+
+  '@keyframes bfReviveHalo{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}25%{opacity:1}60%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.4)}}'+
+  // Cruz celestial (cruz de luz sagrada que se forma y se disuelve)
+  '.bf-revive-cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:0;animation:bfReviveCross 2.2s ease-out forwards}'+
+  '.bf-revive-cross::before,.bf-revive-cross::after{content:"";position:absolute;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);box-shadow:0 0 18px rgba(255,255,255,.8)}'+
+  '.bf-revive-cross::before{width:120px;height:5px;left:-60px;top:-2.5px}'+
+  '.bf-revive-cross::after{width:5px;height:120px;left:-2.5px;top:-60px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.9),transparent)}'+
+  '@keyframes bfReviveCross{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-20deg)}30%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}65%{opacity:.7}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2) rotate(8deg)}}'+
+  // Chispas/luciérnagas blancas que suben
+  '.bf-revive-spark{position:absolute;bottom:10%;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 14px rgba(255,250,200,.8);opacity:0;animation:bfReviveSpark 2s ease-out forwards}'+
+  '@keyframes bfReviveSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-90px) scale(1.4)}}'+
+  // Resplandor blanco del retrato del héroe
+  '.bf-revive-glow{animation:bfReviveGlow 1.4s ease-out forwards}'+
+  '@keyframes bfReviveGlow{0%{filter:none}30%{filter:brightness(2.2) saturate(.3) drop-shadow(0 0 30px rgba(255,255,255,.9))}100%{filter:none}}'+
+  // Banner específico de resurrección
+  '.bf-revive-banner{position:absolute;left:50%;top:4%;transform:translateX(-50%);white-space:nowrap;font-family:Cinzel,serif;font-weight:900;font-size:17px;letter-spacing:.6px;padding:6px 18px;border-radius:12px;background:rgba(255,255,255,.95);color:#1a0b2e;border:2px solid #fff;box-shadow:0 0 24px rgba(255,255,255,.8),0 0 40px rgba(255,250,200,.4);animation:bfReviveBanner 3s ease forwards}'+
+  '@keyframes bfReviveBanner{0%{opacity:0;transform:translateX(-50%) translateY(12px) scale(.5)}12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.15)}22%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-18px)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   // Familias visuales según el tipo de habilidad (akind) del héroe.
@@ -38,7 +61,7 @@ export const ABILITY_FX_PATCH = `
     'aoe-cc':'melee','execute':'melee','pierce-cc':'melee','lifesteal-cc':'melee','crush-cc':'melee','unblock-cc':'melee','smash-equip':'melee',
     'aoe-ad':'ranged','pierce-ad':'ranged','big-ad':'ranged','double-ad':'ranged','mark':'ranged','evade':'ranged',
     'aoe-he':'magic','big-he':'magic','silence':'magic','drain':'magic','skip-turn':'magic','tk_dizzy':'magic','tk_confuse':'magic','tk_drunk':'magic','tk_none':'magic',
-    'self-heal':'holy','heal-ally':'holy','heal-all':'holy','revive':'holy','shield-ally':'holy',
+    'self-heal':'holy','heal-ally':'holy','heal-all':'holy','revive':'revive','shield-ally':'holy',
     'self-buff':'buff','debuff':'debuff','debuff-all':'debuff',
     'duck-summon':'duck','reflect-damage':'reflect'
   };
@@ -50,15 +73,46 @@ export const ABILITY_FX_PATCH = `
     buff:{color:'#ffd24a',icon:'▲',glyphs:['▲','✦','▲'],rise:1,flash:1},
     debuff:{color:'#8fe3ff',icon:'▼',glyphs:['▼','☁','✦'],fall:1,ring:1},
     duck:{color:'#ffe14a',icon:'🦆',glyphs:['🦆','🪶','🪶'],rise:1,shake:1,flash:1},
-    reflect:{color:'#c79bff',icon:'↺',glyphs:['◆','✦','◇'],ring:1,flash:1}
+    reflect:{color:'#c79bff',icon:'↺',glyphs:['◆','✦','◇'],ring:1,flash:1},
+    revive:{color:'#ffffff',icon:'✚',glyphs:['✚','❋','✦','✨'],special:'revive'}
   };
 
   function play(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));
     if(!card)return;
     var theme=THEMES[FAM[hero.akind]||'magic'];
+    var fam=FAM[hero.akind]||'magic';
     var clan=hero.clanColor||theme.color;
     if(getComputedStyle(card).position==='static')card.style.position='relative';
+
+    // ===== Tema especial: RESURRECCIÓN (luz celestial blanca) =====
+    if(theme.special==='revive'){
+      var rlayer=document.createElement('div');
+      rlayer.className='bf-abx-revive';
+      var rname=hero.eliteMode?(hero.eAbility||hero.ability||'Reaviva'):(hero.ability||'Reaviva');
+      var rhtml='<div class="bf-revive-beam"></div>';
+      rhtml+='<div class="bf-revive-halo"></div>';
+      rhtml+='<div class="bf-revive-halo" style="animation-delay:.25s"></div>';
+      rhtml+='<div class="bf-revive-cross"></div>';
+      for(var si=0;si<12;si++){
+        rhtml+='<div class="bf-revive-spark" style="left:'+(6+Math.random()*88)+'%;animation-delay:'+(Math.random()*0.6).toFixed(2)+'s;animation-duration:'+(1.6+Math.random()*0.8).toFixed(1)+'s"></div>';
+      }
+      rhtml+='<div class="bf-revive-banner">✚ '+String(rname).toUpperCase()+' ✚</div>';
+      rlayer.innerHTML=rhtml;
+      card.appendChild(rlayer);
+      card.classList.add('bf-revive-glow');
+      setTimeout(function(){card.classList.remove('bf-revive-glow');},1500);
+      setTimeout(function(){if(rlayer.parentNode)rlayer.parentNode.removeChild(rlayer);},3200);
+      // Remate anime del sistema
+      var A0=window.__bfAnime;
+      if(A0){
+        var rc0=card.getBoundingClientRect(),cc0={x:rc0.left+rc0.width/2,y:rc0.top+rc0.height/2};
+        A0.speedLines(cc0);
+        if(A0.spriteBurst)A0.spriteBurst('ab_holy',cc0,260,2200);
+      }
+      return;
+    }
+
     var layer=document.createElement('div');
     layer.className='bf-abx';
     layer.style.color=theme.color;
@@ -81,7 +135,6 @@ export const ABILITY_FX_PATCH = `
     if(A){
       var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
       A.speedLines(cc);
-      var fam=FAM[hero.akind]||'magic';
       // Sprite anime grande de la habilidad: el efecto más espectacular.
       if(A.spriteBurst)A.spriteBurst('ab_'+fam,cc,260,2150);
       if(fam==='melee'||fam==='ranged'||fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
