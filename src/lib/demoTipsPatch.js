@@ -32,6 +32,7 @@ export const DEMO_TIPS_PATCH = `
   var TIPS={
     's-recruit':[
       {id:'bid',sel:['.hcard-bid-zone'],txt:T('💰 Así se puja: ajusta con − / + y pulsa <b>Pujar</b>. ¡Es secreta!','💰 Bidding: adjust with − / + and press <b>Bid</b>. It\\'s secret!')},
+      {id:'bidcalc',always:true,sel:['div[id^="bidcalc_"]'],has:'bonificador|resta',place:'side',txt:T('📊 Debajo de las monedas a pujar: el <b>bonificador</b> (verde, te descuenta) y el <b>restador</b> del rival (rojo, te suma). Abajo del todo, en amarillo, el <b>coste real</b> del héroe si ganas (puja con bonificadores ya aplicados).','📊 Below the coins to bid: your <b>booster</b> (green, discounts) and the rival <b>penalty</b> (red, surcharges). At the very bottom, in yellow, the <b>real cost</b> of the hero if you win (bid with modifiers already applied).')},
       {id:'bonus',sel:['.bf-bonus-card'],place:'side',dyn:function(el){
         var x=(el.textContent||'').replace(/\\s+/g,' ').trim();
         x=x.replace(/^.*?(bonificador de esta ronda|this round.s booster)[:\\s·-]*/i,'');
@@ -107,8 +108,9 @@ export const DEMO_TIPS_PATCH = `
     var demo=false;
     try{demo=typeof G!=='undefined'&&G&&(G.demo||G.demoExample);}catch(e){}
     var active=document.querySelector('.screen.active');
-    var list=demo&&active?TIPS[active.id]:null;
-    if(!list){hideAll();return;}
+    var list=null;
+    if(active&&TIPS[active.id]) list=TIPS[active.id].filter(function(t){return demo||t.always;});
+    if(!list||!list.length){hideAll();return;}
     ensureNodes(list.length);
     var placed=[];
     list.forEach(function(t,i){
