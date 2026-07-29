@@ -16,8 +16,9 @@ export const DEMO_TIPS_PATCH = `
   '.bf-tip.bf-tip-row{flex-direction:row}.bf-tip.bf-tip-rowr{flex-direction:row-reverse}'+
   '.bf-tip-pill{position:relative;background:linear-gradient(180deg,rgba(40,28,64,.96),rgba(20,12,38,.97));border:1.5px solid rgba(255,210,74,.5);border-radius:14px;padding:7px 22px 7px 13px;color:#fff0c8;font-weight:700;font-size:13px;line-height:1.35;text-align:center;letter-spacing:.2px;animation:bfTipPulse 2.8s ease-in-out infinite}'+
   '@keyframes bfTipPulse{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 6px rgba(255,210,74,.18)}50%{box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 14px rgba(255,210,74,.42)}}'+
-  '.bf-tip-x{position:absolute;top:-1px;right:2px;pointer-events:auto;cursor:pointer;color:#ffd24a;font-size:14px;font-weight:900;line-height:1;padding:3px 4px;opacity:.85}'+
-  '.bf-tip-x:hover{opacity:1;color:#fff}'+
+  '.bf-tip-x{position:absolute;top:-7px;right:-7px;pointer-events:auto;cursor:pointer;color:#3a2600;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);border:1.5px solid #6f4809;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.5);opacity:1;z-index:2}'+
+  '.bf-tip-x:hover{filter:brightness(1.1);transform:scale(1.1)}'+
+  '#coach{z-index:100000!important}'+
   '.bf-tip-finger{font-size:26px;line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.6));animation:bfTipPoke .8s ease-in-out infinite}'+
   '@keyframes bfTipPoke{0%,100%{transform:translate(0,0)}50%{transform:translate(var(--px,0px),var(--py,7px))}}'+
   '.bf-tip-halo{position:fixed;z-index:99994;border-radius:16px;border:2px solid rgba(255,210,74,.55);pointer-events:none;display:none;animation:bfTipHalo 2s ease-out infinite}'+
@@ -113,6 +114,11 @@ export const DEMO_TIPS_PATCH = `
     if(!list||!list.length){hideAll();return;}
     ensureNodes(list.length);
     var placed=[];
+    // Reservar la zona del entrenador (botón "Seguir") para que NINGÚN tip la
+    // tape: siempre se puede pulsar "Seguir" y siempre se alcanza la × para
+    // cerrar los tips.
+    var coachEl=document.getElementById('coach');
+    if(coachEl){var cr=coachEl.getBoundingClientRect();if(cr.width>4&&cr.height>4)placed.push({x:cr.left-4,y:cr.top-4,w:cr.width+8,h:cr.height+8});}
     list.forEach(function(t,i){
       var n=nodes[i];
       if(dismissed[t.id]){n.tip.style.display='none';n.halo.style.display='none';return;}

@@ -77,6 +77,24 @@ export const DEMO_FLOW_PATCH = `
     }catch(e){}
     G.eqReady={p:true,o:true};
     show('s-equip'); renderEquip('p');
+    // En la demo el botón nativo "Listo — a la batalla" (eqDone) está desactivado
+    // por G.demoExample (tanto el wrapper como el original hacen return). Lo
+    // rebindamos para que TAMBIÉN arranque el combate, igual que el botón
+    // "Seguir" del entrenador, así se puede avanzar pulsando cualquiera.
+    if(!window.__bfDemoListoBound){
+      window.__bfDemoListoBound=true;
+      var bindListo=function(){
+        var sc=document.getElementById('s-equip'); if(!sc)return;
+        sc.querySelectorAll('button[onclick*="eqDone"]').forEach(function(b){
+          if(b.dataset.bfDemoListo==='1')return;
+          b.dataset.bfDemoListo='1';
+          b.removeAttribute('onclick');
+          b.onclick=function(e){e.preventDefault();e.stopPropagation();if(typeof window.demoBattle==='function')window.demoBattle();};
+        });
+      };
+      bindListo();
+      new MutationObserver(bindListo).observe(document.body,{childList:true,subtree:true});
+    }
     coach('PASO 2 · EQUIPAMIENTO. Cada IA gastó su presupuesto en armas, armaduras, hechizos y objetos (van a la mano).'+
           '  🔵 IA Azul: '+explainEquip('p')+
           '  🔴 IA Roja: '+explainEquip('o')+
