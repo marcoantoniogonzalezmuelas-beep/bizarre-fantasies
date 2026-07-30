@@ -281,9 +281,13 @@ export default function AdminCards() {
       const abilityName = isElite ? (form.elite_ability_name || form.ability_name) : form.ability_name;
       const abilityDesc = isElite ? (form.elite_ability_text || form.ability_text) : form.ability_text;
       const hint = customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '';
+      // El fondo debe ser NEGRO PURO y el personaje AISLADO para que el
+      // recorte (canvas → transparente) deje sola la criatura sobre el
+      // overlay, igual que las cinemáticas del Transformer/Tanque/Patitos.
+      const BG_RULE = ` CRITICAL — BACKGROUND: the character MUST appear ISOLATED on a PURE SOLID BLACK background (hex #000000), like a figurine floating in a void. Absolutely NO scene, NO battlefield, NO environment, NO landscape, NO sky, NO ground, NO background props, NO text, NO logo, NO signature, NO frame, NO border, NO plaque. Only the full-body character centered in the black void, with magical effects and a glowing aura erupting against the black.`;
       const prompt = isElite
-        ? `Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''}. Spectacular magical energy, glowing golden aura, enhanced ornate armor, fierce powerful combat pose, maximum dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy art, premium legendary trading card game ability artwork, character centered on a dark atmospheric background.${hint}`
-        : `3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ability "${abilityName || ''}". ${abilityDesc || ''}. Dynamic full-body action pose, mid-action, dramatic cinematic lighting, magical effects, dark fantasy anime art style, character centered on a dark atmospheric background, epic trading card game ability artwork.${hint}`;
+        ? `Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''}.${BG_RULE} Spectacular magical energy, glowing golden aura, enhanced ornate armor, fierce powerful combat pose, maximum dramatic cinematic lighting, anime-inspired dark fantasy art, premium legendary trading card game ability artwork.${hint}`
+        : `3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ability "${abilityName || ''}". ${abilityDesc || ''}.${BG_RULE} Dynamic full-body action pose, mid-action, dramatic cinematic lighting, dark fantasy anime art style, epic trading card game ability artwork.${hint}`;
       const refs = refImages(refUrl);
       const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
       if (result?.url) {
