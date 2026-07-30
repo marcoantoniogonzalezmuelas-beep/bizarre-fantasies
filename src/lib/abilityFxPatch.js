@@ -109,8 +109,8 @@ export const ABILITY_FX_PATCH = `
     revive:{color:'#ffffff',icon:'✚',glyphs:['✚','❋','✦','✨'],special:'revive'}
   };
 
-  // Héroes con animación propia en epicAbilityFxPatch.js — no duplicar.
-  var EPIC_FX_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1};
+  // Héroes con cinemática propia en epicAbilityFxPatch.js — no duplicar.
+  var EPIC_FX_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1};
 
   function play(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));

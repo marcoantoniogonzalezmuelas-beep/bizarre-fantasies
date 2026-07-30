@@ -1,229 +1,212 @@
-// Parche inyectado en el iframe: animaciones especiales temáticas para las
-// habilidades (normal y élite) de todos los héroes de la raza Épicas.
-// Cada héroe tiene una animación única que sustituye al efecto genérico.
-// Coffetath y KillerDucks tienen animaciones propias en abilityFxPatch y
-// specialCardCinematicPatch respectivamente.
+// Parche inyectado en el iframe: cinemáticas a pantalla completa para las
+// habilidades de los héroes épicos y de Solenna. Mismo estilo que las del
+// Fénix/Transformer (specialCardCinematicPatch): overlay a pantalla completa,
+// imagen grande del héroe con entrada 3D, partículas temáticas y título.
+// Funciona en AMBOS jugadores online: G.team viaja en el snapshot, así que
+// el escaneo de abilityUsed corre en host y cliente.
 export const EPIC_ABILITY_FX_PATCH = `
 <script>
 (function(){
-  if(window.__bfEpicAbxFx) return;
-  window.__bfEpicAbxFx = true;
+  if(window.__bfEpicCine) return;
+  window.__bfEpicCine = true;
 
   var css = ''+
-  '.bf-epic-fx{position:absolute;inset:0;pointer-events:none;z-index:81;overflow:visible}'+
-  '.bf-epic-banner{position:absolute;left:50%;top:4%;transform:translateX(-50%);white-space:nowrap;font-family:Cinzel,serif;font-weight:900;font-size:15px;letter-spacing:.4px;padding:5px 15px;border-radius:10px;background:rgba(8,5,14,.92);border:1.5px solid currentColor;box-shadow:0 0 16px currentColor;animation:bfEpicBanner 2.8s ease forwards}'+
-  '@keyframes bfEpicBanner{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.5)}12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.12)}22%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-16px)}}'+
-  '.bf-epic-glow{animation:bfEpicGlow 1.2s ease-out forwards}'+
-  '@keyframes bfEpicGlow{0%{filter:none}30%{filter:brightness(1.5) saturate(1.4) drop-shadow(0 0 20px currentColor)}100%{filter:none}}'+
-  // === KRUNDERKRAK — Devastación (martillo/rotura) / Aniquilación (fuego+calavera) ===
-  '.bf-kk-hammer{position:absolute;left:50%;top:28%;transform:translateX(-50%);font-size:52px;opacity:0;animation:bfKkHammer .9s ease-out forwards;text-shadow:0 0 20px currentColor}'+
-  '@keyframes bfKkHammer{0%{opacity:0;transform:translateX(-50%) scale(3) rotate(-35deg)}30%{opacity:1;transform:translateX(-50%) scale(1.2) rotate(8deg)}55%{transform:translateX(-50%) scale(.85) rotate(-3deg)}100%{opacity:0;transform:translateX(-50%) scale(1) rotate(0)}}'+
-  '.bf-kk-crack{position:absolute;left:50%;top:50%;height:3px;background:linear-gradient(90deg,transparent,#fff,transparent);transform:translate(-50%,-50%);animation:bfKkCrack 1s ease-out forwards;box-shadow:0 0 8px #fff}'+
-  '@keyframes bfKkCrack{0%{width:0;opacity:1}30%{width:130%;opacity:1}100%{width:150%;opacity:0}}'+
-  '.bf-kk-flame{position:absolute;font-size:30px;opacity:0;animation:bfKkFlame 1.6s ease-out forwards}'+
-  '@keyframes bfKkFlame{0%{opacity:0;transform:translateY(20px) scale(.5)}20%{opacity:1;transform:translateY(0) scale(1.3)}100%{opacity:0;transform:translateY(-50px) scale(.7)}}'+
-  '.bf-kk-skull{position:absolute;left:50%;top:35%;transform:translateX(-50%);font-size:46px;opacity:0;animation:bfKkSkull 2s ease-out forwards;filter:drop-shadow(0 0 16px #ff3333)}'+
-  '@keyframes bfKkSkull{0%{opacity:0;transform:translateX(-50%) scale(.3) rotate(-15deg)}25%{opacity:1;transform:translateX(-50%) scale(1.3) rotate(5deg)}70%{opacity:.8}100%{opacity:0;transform:translateX(-50%) scale(1.5) rotate(0)}}'+
-  // === EL HEAVY — Headbang (ondas sónicas) / Wall of Death (muro de calaveras) ===
-  '.bf-eh-ripple{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid currentColor;opacity:0;animation:bfEhRipple 1.5s ease-out forwards}'+
-  '@keyframes bfEhRipple{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:220%;height:220%;opacity:0;border-width:1px}}'+
-  '.bf-eh-note{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;opacity:0;animation:bfEhNote 1s ease-out forwards}'+
-  '@keyframes bfEhNote{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}40%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}'+
-  // Guitarra tocándose
-  '.bf-eh-guitar{position:absolute;left:50%;top:30%;transform:translateX(-50%);font-size:48px;opacity:0;animation:bfEhGuitar 2.5s ease-out forwards;filter:drop-shadow(0 0 16px currentColor)}'+
-  '@keyframes bfEhGuitar{0%{opacity:0;transform:translateX(-50%) scale(.3) rotate(-20deg)}15%{opacity:1;transform:translateX(-50%) scale(1.2) rotate(8deg)}35%{transform:translateX(-50%) scale(1) rotate(-5deg)}55%{transform:translateX(-50%) scale(1.1) rotate(6deg)}100%{opacity:0;transform:translateX(-50%) scale(1) rotate(0)}}'+
-  // Notas musicales cayendo
-  '.bf-eh-mnote{position:absolute;font-size:18px;opacity:0;animation:bfEhMnote 1.8s ease-in forwards}'+
-  '@keyframes bfEhMnote{0%{opacity:0;transform:translateY(-20px) scale(.4) rotate(-15deg)}20%{opacity:1;transform:translateY(0) scale(1.1) rotate(10deg)}100%{opacity:0;transform:translateY(70px) scale(.7) rotate(360deg)}}'+
-  '.bf-eh-wall{position:absolute;left:50%;top:50%;transform:translateX(-50%);font-size:38px;opacity:0;animation:bfEhWall 2s ease-out forwards}'+
-  '@keyframes bfEhWall{0%{opacity:0;transform:translateX(-50%) translateY(30px) scale(.4)}20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.2)}80%{opacity:.8}100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(1.4)}}'+
-  '.bf-eh-bloodbar{position:absolute;left:50%;top:60%;transform:translateX(-50%);width:80%;height:4px;border-radius:2px;background:linear-gradient(90deg,#ff0000,#8b0000);opacity:0;animation:bfEhBlood 1.5s ease-out forwards}'+
-  '@keyframes bfEhBlood{0%{opacity:0;width:0}30%{opacity:1;width:80%}100%{opacity:0;width:100%}}'+
-  // === SYLVEX — Mutación (ADN) / Evolución Suprema (espiral dorada) ===
-  '.bf-sy-dna{position:absolute;font-size:22px;opacity:0;animation:bfSyDna 2s ease-out forwards}'+
-  '@keyframes bfSyDna{0%{opacity:0;transform:scale(.3) rotate(0)}20%{opacity:1}100%{opacity:0;transform:scale(1.5) rotate(360deg)}}'+
-  '.bf-sy-mutate{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:50%;aspect-ratio:1;border-radius:50%;border:2px dashed currentColor;opacity:0;animation:bfSyMutate 1.8s ease-out forwards}'+
-  '@keyframes bfSyMutate{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(0)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(540deg)}}'+
-  '.bf-sy-evo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:55%;aspect-ratio:1;border-radius:50%;border:3px solid #ffd24a;box-shadow:0 0 24px #ffd24a,inset 0 0 24px #ffd24a;opacity:0;animation:bfSyEvo 2.2s ease-out forwards}'+
-  '@keyframes bfSyEvo{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(0)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(2) rotate(720deg)}}'+
-  '.bf-sy-star{position:absolute;font-size:26px;opacity:0;animation:bfSyStar 1.8s ease-out forwards}'+
-  '@keyframes bfSyStar{0%{opacity:0;transform:scale(0) rotate(0)}30%{opacity:1;transform:scale(1.3) rotate(180deg)}100%{opacity:0;transform:scale(1.6) rotate(360deg)}}'+
-  '.bf-sy-bar{position:absolute;left:50%;bottom:20%;transform:translateX(-50%);width:6px;height:0;border-radius:2px;background:linear-gradient(180deg,#ffd24a,#ff8c00);box-shadow:0 0 8px #ffd24a;animation:bfSyBar 1.5s ease-out forwards}'+
-  '@keyframes bfSyBar{0%{height:0;opacity:1}40%{height:50px;opacity:1}100%{height:80px;opacity:0}}'+
-  // === GORVAK — Onda de Impacto (anillos) / Devastación Orbital (proyectiles) ===
-  '.bf-go-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid currentColor;opacity:0;animation:bfGoRing 1.5s ease-out forwards}'+
-  '@keyframes bfGoRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}'+
-  '.bf-go-target{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:36px;opacity:0;animation:bfGoTarget 1s ease-out forwards}'+
-  '@keyframes bfGoTarget{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}40%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}'+
-  '.bf-go-proj{position:absolute;font-size:22px;opacity:0;animation:bfGoProj 1.4s ease-out forwards;text-shadow:0 0 10px currentColor}'+
-  '@keyframes bfGoProj{0%{opacity:0;transform:scale(.3) translate(0,0)}25%{opacity:1;transform:scale(1.2) translate(var(--tx,40px),var(--ty,-30px))}100%{opacity:0;transform:scale(.6) translate(calc(var(--tx,40px)*2.5),calc(var(--ty,-30px)*2.5))}}'+
-  '.bf-go-orbit{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60%;aspect-ratio:1;border-radius:50%;border:2px solid #ffd24a;box-shadow:0 0 20px #ffd24a;opacity:0;animation:bfGoOrbit 2s ease-out forwards}'+
-  '@keyframes bfGoOrbit{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(360deg)}}'+
-  // === ZARMANDIS — Juicio Divino (cruz sagrada) / Divinidad (halo dorado) ===
-  '.bf-za-cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:0;animation:bfZaCross 1.8s ease-out forwards}'+
-  '@keyframes bfZaCross{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-20deg)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(0)}70%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(10deg)}}'+
-  '.bf-za-ray{position:absolute;left:50%;top:50%;width:4px;height:80px;background:linear-gradient(180deg,transparent,currentColor,transparent);transform-origin:bottom center;opacity:0;animation:bfZaRay 1.5s ease-out forwards}'+
-  '@keyframes bfZaRay{0%{opacity:0;transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scaleY(0)}30%{opacity:1;transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scaleY(1.2)}100%{opacity:0;transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scaleY(1.5)}}'+
-  '.bf-za-halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,.55) 0%,rgba(255,180,0,.25) 40%,transparent 70%);opacity:0;animation:bfZaHalo 2s ease-out forwards}'+
-  '@keyframes bfZaHalo{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}'+
-  '.bf-za-god{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:40px;opacity:0;animation:bfZaGod 2s ease-out forwards;filter:drop-shadow(0 0 16px #ffd700)}'+
-  '@keyframes bfZaGod{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-15deg)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.3) rotate(5deg)}70%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(0)}}'+
-  // Donuts que flotan cayendo
-  '.bf-za-donut{position:absolute;font-size:22px;opacity:0;animation:bfZaDonut 2.2s ease-in forwards;filter:drop-shadow(0 0 8px rgba(255,200,100,.7))}'+
-  '@keyframes bfZaDonut{0%{opacity:0;transform:translateY(-30px) scale(.4) rotate(0deg)}15%{opacity:1;transform:translateY(0) scale(1.2) rotate(20deg)}100%{opacity:0;transform:translateY(80px) scale(.8) rotate(360deg)}}'+
-  // Lechugas (frascos de leche) que emergen
-  '.bf-za-milk{position:absolute;font-size:20px;opacity:0;animation:bfZaMilk 2s ease-out forwards;filter:drop-shadow(0 0 8px rgba(200,240,255,.7))}'+
-  '@keyframes bfZaMilk{0%{opacity:0;transform:scale(.3) rotate(0deg)}20%{opacity:1;transform:scale(1.1) rotate(-15deg)}100%{opacity:0;transform:scale(1.5) rotate(30deg) translateY(-40px)}}';
+  '#bf-epic-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfEcIn .3s ease-out}'+
+  '#bf-epic-cine.bf-ec-out{transition:opacity .4s;opacity:0}'+
+  '@keyframes bfEcIn{from{opacity:0}to{opacity:1}}'+
+  // Imagen del héroe — grande, a la derecha, con entrada 3D
+  '#bf-epic-cine .bf-ec-img{position:absolute;top:50%;left:72%;transform-origin:center;width:min(50vmin,420px);height:min(60vmin,500px);object-fit:cover;border-radius:14px;transform-style:preserve-3d;margin:calc(min(60vmin,500px)/-2) 0 0 calc(min(50vmin,420px)/-2);filter:drop-shadow(0 0 50px var(--ec-glow)) saturate(1.25) brightness(1.1);animation:bfEcImg 2.8s cubic-bezier(.2,.85,.3,1) forwards;border:2px solid var(--ec-color);box-shadow:0 0 60px var(--ec-glow),0 8px 30px rgba(0,0,0,.8)}'+
+  '@media(max-width:900px){#bf-epic-cine .bf-ec-img{left:78%;width:min(42vmin,320px);height:min(50vmin,380px);margin:calc(min(50vmin,380px)/-2) 0 0 calc(min(42vmin,320px)/-2)}}'+
+  '@keyframes bfEcImg{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.1);opacity:1}}'+
+  // Título
+  '#bf-epic-cine .bf-ec-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(24px,5.5vw,52px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfEcTtl 2.9s ease-out .3s forwards;color:var(--ec-color);text-shadow:0 0 28px var(--ec-glow),0 4px 12px #000}'+
+  '@keyframes bfEcTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
+  // Flash
+  '#bf-epic-cine .bf-ec-flash{position:absolute;inset:0;background:radial-gradient(circle,var(--ec-flash),transparent 65%);animation:bfEcFlash .7s ease-out .25s both}'+
+  '@keyframes bfEcFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}'+
+  // Velo de fondo (scrim)
+  '#bf-epic-cine .bf-ec-veil{position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.4),transparent);animation:bfEcVeil 2s ease-out forwards}'+
+  '@keyframes bfEcVeil{0%{opacity:0}30%{opacity:.6}100%{opacity:0}}'+
+  // Partículas: fuego
+  '.bf-ec-ember{position:absolute;bottom:-4%;width:9px;height:9px;border-radius:50%;background:var(--ec-color);box-shadow:0 0 12px var(--ec-glow);animation:bfEcEmber 1.6s ease-out infinite}'+
+  '@keyframes bfEcEmber{0%{opacity:0;transform:translateY(0) scale(1)}20%{opacity:1}100%{opacity:0;transform:translateY(-78vh) translateX(var(--dx,0px)) scale(.3)}}'+
+  // Partículas: notas musicales
+  '.bf-ec-note{position:absolute;font-size:22px;opacity:0;animation:bfEcNote 1.8s ease-in forwards;filter:drop-shadow(0 0 8px var(--ec-glow))}'+
+  '@keyframes bfEcNote{0%{opacity:0;transform:translateY(-20px) scale(.4) rotate(-15deg)}20%{opacity:1;transform:translateY(0) scale(1.1) rotate(10deg)}100%{opacity:0;transform:translateY(70vh) scale(.7) rotate(360deg)}}'+
+  // Partículas: ADN
+  '.bf-ec-dna{position:absolute;font-size:20px;opacity:0;animation:bfEcDna 2s ease-out forwards;filter:drop-shadow(0 0 8px var(--ec-glow))}'+
+  '@keyframes bfEcDna{0%{opacity:0;transform:scale(.3) rotate(0)}20%{opacity:1}100%{opacity:0;transform:scale(1.5) rotate(360deg)}}'+
+  // Partículas: estrellas
+  '.bf-ec-star{position:absolute;font-size:22px;opacity:0;animation:bfEcStar 1.8s ease-out forwards;filter:drop-shadow(0 0 10px var(--ec-glow))}'+
+  '@keyframes bfEcStar{0%{opacity:0;transform:scale(0) rotate(0)}30%{opacity:1;transform:scale(1.3) rotate(180deg)}100%{opacity:0;transform:scale(1.6) rotate(360deg)}}'+
+  // Anillos concéntricos
+  '.bf-ec-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid var(--ec-color);box-shadow:0 0 20px var(--ec-glow);opacity:0;animation:bfEcRing 1.5s ease-out forwards}'+
+  '@keyframes bfEcRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}'+
+  // Anillo orbital dorado
+  '.bf-ec-orbit{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60%;aspect-ratio:1;border-radius:50%;border:2px solid var(--ec-color);box-shadow:0 0 24px var(--ec-glow);opacity:0;animation:bfEcOrbit 2s ease-out forwards}'+
+  '@keyframes bfEcOrbit{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(360deg)}}'+
+  // Proyectiles
+  '.bf-ec-proj{position:absolute;font-size:22px;opacity:0;animation:bfEcProj 1.4s ease-out forwards;text-shadow:0 0 10px var(--ec-glow)}'+
+  '@keyframes bfEcProj{0%{opacity:0;transform:scale(.3) translate(0,0)}25%{opacity:1;transform:scale(1.2) translate(var(--tx,40px),var(--ty,-30px))}100%{opacity:0;transform:scale(.6) translate(calc(var(--tx,40px)*2.5),calc(var(--ty,-30px)*2.5))}}'+
+  // Rayos de luz
+  '.bf-ec-ray{position:absolute;left:50%;top:50%;width:4px;height:80px;background:linear-gradient(180deg,transparent,var(--ec-color),transparent);transform-origin:bottom center;opacity:0;animation:bfEcRay 1.5s ease-out forwards}'+
+  '@keyframes bfEcRay{0%{opacity:0;transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scaleY(0)}30%{opacity:1;transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scaleY(1.2)}100%{opacity:0;transform:translate(-50%,-100%) rotate(var(--rot,0deg)) scaleY(1.5)}}'+
+  // Halo dorado
+  '.bf-ec-halo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--ec-flash) 0%,transparent 70%);opacity:0;animation:bfEcHalo 2s ease-out forwards}'+
+  '@keyframes bfEcHalo{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}'+
+  // Chispas celestiales blancas
+  '.bf-ec-spark{position:absolute;bottom:10%;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 14px var(--ec-glow);opacity:0;animation:bfEcSpark 2s ease-out forwards}'+
+  '@keyframes bfEcSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-90vh) scale(1.4) translateX(var(--dx,0px))}}'+
+  // Haz de luz vertical
+  '.bf-ec-beam{position:absolute;left:50%;top:-30%;width:60%;height:140%;transform:translateX(-50%);background:linear-gradient(180deg,transparent 0%,var(--ec-flash) 45%,var(--ec-flash) 55%,transparent 100%);filter:blur(6px);opacity:0;animation:bfEcBeam 2.6s ease-out forwards}'+
+  '@keyframes bfEcBeam{0%{opacity:0;transform:translateX(-50%) scaleY(0)}20%{opacity:1;transform:translateX(-50%) scaleY(1)}75%{opacity:.85}100%{opacity:0;transform:translateX(-50%) scaleY(1.1)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
-  function makeBanner(name,color){
-    return '<div class="bf-epic-banner" style="color:'+color+'">'+String(name).toUpperCase()+'</div>';
-  }
+  // Mapa de arte de batalla recibido del padre (postMessage bfBattleArt).
+  var battleArtMap={};
+  window.addEventListener('message',function(e){
+    if(e.data&&e.data.bfBattleArt&&typeof e.data.bfBattleCart==='object')battleArtMap=e.data.bfBattleArt;
+    if(e.data&&e.data.bfBattleArt&&typeof e.data.bfBattleArt==='object')battleArtMap=e.data.bfBattleArt;
+  });
 
-  function buildLayer(html,color){
-    var layer=document.createElement('div');
-    layer.className='bf-epic-fx';
-    layer.style.color=color;
-    layer.innerHTML=html;
-    return layer;
-  }
-
-  function attach(card,layer,duration){
-    card.appendChild(layer);
-    card.classList.add('bf-epic-glow');
-    setTimeout(function(){card.classList.remove('bf-epic-glow');},1200);
-    setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},duration||3000);
-  }
-
-  function animeHook(card){
-    var A=window.__bfAnime;
-    if(A){var r=card.getBoundingClientRect(),c={x:r.left+r.width/2,y:r.top+r.height/2};A.speedLines(c);}
-  }
-
-  // === KRUNDERKRAK === Devastación: martillo que rompe / Aniquilación: calavera + fuego
-  function playKrunderKrak(card,isElite,ability,clan){
-    var color='#ff5544';
-    var html=makeBanner(ability,color);
-    html+='<span class="bf-kk-hammer" style="color:'+color+'">🔨</span>';
-    html+='<div class="bf-kk-crack"></div>';
-    html+='<div class="bf-kk-crack" style="transform:translate(-50%,-50%) rotate(60deg);animation-delay:.1s"></div>';
-    html+='<div class="bf-kk-crack" style="transform:translate(-50%,-50%) rotate(-60deg);animation-delay:.15s"></div>';
-    if(isElite){
-      html+='<span class="bf-kk-skull">☠️</span>';
-      for(var i=0;i<6;i++)html+='<span class="bf-kk-flame" style="left:'+(15+Math.random()*70)+'%;top:'+(40+Math.random()*35)+'%;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s">🔥</span>';
-    }
-    var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
-  }
-
-  // === EL HEAVY === Headbang: ondas sónicas / Wall of Death: muro de calaveras
-  function playHeavy(card,isElite,ability,clan){
-    var color='#ffaa44';
-    var html=makeBanner(ability,color);
-    if(isElite){
-      html+='<span class="bf-eh-wall" style="color:#ff3333">☠️💀☠️</span>';
-      html+='<div class="bf-eh-bloodbar"></div>';
-      for(var i=0;i<5;i++)html+='<span class="bf-kk-flame" style="left:'+(15+Math.random()*70)+'%;top:'+(35+Math.random()*40)+'%;animation-delay:'+(Math.random()*0.6).toFixed(2)+'s">💀</span>';
-    }else{
-      html+='<span class="bf-eh-guitar" style="color:'+color+'">🎸</span>';
-      for(var i=0;i<6;i++)html+='<span class="bf-eh-mnote" style="left:'+(15+Math.random()*70)+'%;top:'+(15+Math.random()*50)+'%;animation-delay:'+(Math.random()*0.9).toFixed(2)+'s;color:'+color+'">'+(['🎵','🎶','♪','♫'][i%4])+'</span>';
-      for(var i=0;i<3;i++)html+='<div class="bf-eh-ripple" style="color:'+color+';animation-delay:'+(i*0.3).toFixed(2)+'s"></div>';
-    }
-    var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
-  }
-
-  // === SYLVEX === Mutación: ADN / Evolución Suprema: espiral dorada + barras
-  function playSylvex(card,isElite,ability,clan){
-    var color=isElite?'#ffd24a':'#44ddff';
-    var html=makeBanner(ability,color);
-    if(isElite){
-      html+='<div class="bf-sy-evo"></div>';
-      html+='<div class="bf-sy-evo" style="animation-delay:.3s"></div>';
-      for(var i=0;i<3;i++)html+='<span class="bf-sy-star" style="left:'+(20+Math.random()*60)+'%;top:'+(20+Math.random()*50)+'%;animation-delay:'+(Math.random()*0.6).toFixed(2)+'s">⭐</span>';
-      for(var i=0;i<4;i++)html+='<div class="bf-sy-bar" style="left:'+(30+i*12)+'%;animation-delay:'+(i*0.15).toFixed(2)+'s"></div>';
-    }else{
-      for(var i=0;i<6;i++)html+='<span class="bf-sy-dna" style="left:'+(10+Math.random()*80)+'%;top:'+(10+Math.random()*70)+'%;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s;color:'+color+'">🧬</span>';
-      html+='<div class="bf-sy-mutate" style="color:'+color+'"></div>';
-    }
-    var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
-  }
-
-  // === GORVAK === Onda de Impacto: anillos / Devastación Orbital: proyectiles
-  function playGorvak(card,isElite,ability,clan){
-    var color=isElite?'#ffaa00':'#ffcc44';
-    var html=makeBanner(ability,color);
-    if(isElite){
-      html+='<div class="bf-go-orbit"></div>';
-      for(var i=0;i<8;i++){
-        var ang=(i/8)*360;
-        var tx=Math.cos(ang*Math.PI/180)*50;
-        var ty=Math.sin(ang*Math.PI/180)*50;
-        html+='<span class="bf-go-proj" style="left:50%;top:50%;--tx:'+tx.toFixed(0)+'px;--ty:'+ty.toFixed(0)+'px;animation-delay:'+(i*0.1).toFixed(2)+'s;color:'+color+'">➤</span>';
-      }
-    }else{
-      for(var i=0;i<4;i++)html+='<div class="bf-go-ring" style="color:'+color+';animation-delay:'+(i*0.2).toFixed(2)+'s"></div>';
-      html+='<span class="bf-go-target" style="color:'+color+'">🎯</span>';
-    }
-    var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
-  }
-
-  // === ZARMANDIS === Juicio Divino: cruz sagrada / Divinidad: halo dorado
-  function playZarmandis(card,isElite,ability,clan){
-    var color=isElite?'#ffd700':'#ffe88a';
-    var html=makeBanner(ability,color);
-    if(isElite){
-      html+='<div class="bf-za-halo"></div>';
-      html+='<span class="bf-za-god">🙏</span>';
-      for(var i=0;i<8;i++){
-        var rot=(i/8)*360;
-        html+='<div class="bf-za-ray" style="--rot:'+rot.toFixed(0)+'deg;color:'+color+';animation-delay:'+(i*0.08).toFixed(2)+'s"></div>';
-      }
-      for(var i=0;i<6;i++)html+='<span class="bf-za-donut" style="left:'+(8+Math.random()*84)+'%;top:'+(10+Math.random()*60)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">🍩</span>';
-      for(var i=0;i<5;i++)html+='<span class="bf-za-milk" style="left:'+(10+Math.random()*80)+'%;top:'+(15+Math.random()*55)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">🥛</span>';
-    }else{
-      html+='<span class="bf-za-god" style="font-size:36px">✝️</span>';
-      for(var i=0;i<6;i++){
-        var rot=(i/6)*360;
-        html+='<div class="bf-za-ray" style="--rot:'+rot.toFixed(0)+'deg;color:'+color+';animation-delay:'+(i*0.1).toFixed(2)+'s"></div>';
-      }
-      for(var i=0;i<4;i++)html+='<span class="bf-za-donut" style="left:'+(10+Math.random()*80)+'%;top:'+(15+Math.random()*55)+'%;animation-delay:'+(Math.random()*0.7).toFixed(2)+'s">🍩</span>';
-      for(var i=0;i<3;i++)html+='<span class="bf-za-milk" style="left:'+(15+Math.random()*70)+'%;top:'+(20+Math.random()*50)+'%;animation-delay:'+(Math.random()*0.7).toFixed(2)+'s">🥛</span>';
-    }
-    var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
-  }
-
-  var EPIC_NAMES = { 'KrunderKrak':1, 'El Heavy':1, 'Sylvex':1, 'Gorvak':1, 'Zarmandis':1 };
-
-  function play(side,hero){
+  // Obtiene la imagen del héroe desde el DOM o el mapa de batalla.
+  function getHeroArt(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));
-    if(!card)return;
-    if(getComputedStyle(card).position==='static')card.style.position='relative';
-    var isElite=!!hero.eliteMode;
-    var ability=isElite?(hero.eAbility||hero.ability||'Habilidad'):(hero.ability||'Habilidad');
-    var clan=hero.clanColor||'#cc88ff';
-    var name=hero.name;
-    if(name==='KrunderKrak')return playKrunderKrak(card,isElite,ability,clan);
-    if(name==='El Heavy')return playHeavy(card,isElite,ability,clan);
-    if(name==='Sylvex')return playSylvex(card,isElite,ability,clan);
-    if(name==='Gorvak')return playGorvak(card,isElite,ability,clan);
-    if(name==='Zarmandis')return playZarmandis(card,isElite,ability,clan);
+    if(card){
+      var bg=card.querySelector('.bf-bhero-bgart');
+      if(bg){
+        var s=getComputedStyle(bg).backgroundImage;
+        if(s&&s!=='none'){var m=s.match(/url\\(["']?(.+?)["']?\\)/);if(m)return m[1];}
+      }
+      var img=card.querySelector('img');
+      if(img&&img.src&&img.src.indexOf('data:')!==0)return img.src;
+    }
+    var cid=hero&&(hero.cid||hero.card_id);
+    if(cid&&battleArtMap[cid]){
+      return hero.eliteMode?battleArtMap[cid].elite:battleArtMap[cid].base;
+    }
+    return null;
   }
 
-  // Deduplicación: evita que la animación se dispare dos veces si tanto el
-  // hook de useAbility como el escaneo periódico detectan el mismo uso.
+  var THEMES={
+    'KrunderKrak':{
+      normal:{color:'#ff6a44',glow:'rgba(255,80,40,.85)',flash:'rgba(255,100,40,.7)',particles:'fire'},
+      elite:{color:'#ff3333',glow:'rgba(255,30,30,.9)',flash:'rgba(255,50,50,.8)',particles:'fire'}
+    },
+    'El Heavy':{
+      normal:{color:'#ffaa44',glow:'rgba(255,160,60,.85)',flash:'rgba(255,180,80,.7)',particles:'musical'},
+      elite:{color:'#ff4444',glow:'rgba(255,60,60,.9)',flash:'rgba(255,80,80,.8)',particles:'fire'}
+    },
+    'Sylvex':{
+      normal:{color:'#44ddff',glow:'rgba(60,180,255,.85)',flash:'rgba(80,200,255,.7)',particles:'dna'},
+      elite:{color:'#ffd24a',glow:'rgba(255,210,74,.9)',flash:'rgba(255,220,100,.8)',particles:'stars'}
+    },
+    'Gorvak':{
+      normal:{color:'#ffcc44',glow:'rgba(255,200,60,.85)',flash:'rgba(255,220,80,.7)',particles:'rings'},
+      elite:{color:'#ffaa00',glow:'rgba(255,170,0,.9)',flash:'rgba(255,180,20,.8)',particles:'orbits'}
+    },
+    'Zarmandis':{
+      normal:{color:'#ffe88a',glow:'rgba(255,215,100,.85)',flash:'rgba(255,230,150,.7)',particles:'rays'},
+      elite:{color:'#ffd700',glow:'rgba(255,215,0,.9)',flash:'rgba(255,230,50,.8)',particles:'halo'}
+    },
+    'Solenna':{
+      normal:{color:'#ffffff',glow:'rgba(255,255,255,.9)',flash:'rgba(255,255,255,.7)',particles:'celestial'},
+      elite:{color:'#fff5dc',glow:'rgba(255,250,220,.95)',flash:'rgba(255,255,240,.85)',particles:'celestial'}
+    }
+  };
+
+  var HERO_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1};
+
+  function buildParticles(kind,theme){
+    var html='';
+    if(kind==='fire'){
+      for(var i=0;i<18;i++)html+='<span class="bf-ec-ember" style="left:'+(4+Math.random()*92)+'%;--dx:'+((Math.random()*120-60).toFixed(0))+'px;animation-delay:'+(Math.random()*1.4).toFixed(2)+'s;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px"></span>';
+    }else if(kind==='musical'){
+      var notes=['🎵','🎶','♪','♫'];
+      for(var i=0;i<12;i++)html+='<span class="bf-ec-note" style="left:'+(8+Math.random()*84)+'%;top:-5%;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s">'+notes[i%4]+'</span>';
+    }else if(kind==='dna'){
+      for(var i=0;i<14;i++)html+='<span class="bf-ec-dna" style="left:'+(6+Math.random()*88)+'%;top:'+(10+Math.random()*75)+'%;animation-delay:'+(Math.random()*1).toFixed(2)+'s">🧬</span>';
+    }else if(kind==='stars'){
+      for(var i=0;i<14;i++)html+='<span class="bf-ec-star" style="left:'+(6+Math.random()*88)+'%;top:'+(10+Math.random()*75)+'%;animation-delay:'+(Math.random()*1).toFixed(2)+'s">⭐</span>';
+    }else if(kind==='rings'){
+      for(var i=0;i<4;i++)html+='<div class="bf-ec-ring" style="animation-delay:'+(i*0.25).toFixed(2)+'s"></div>';
+    }else if(kind==='orbits'){
+      html+='<div class="bf-ec-orbit"></div>';
+      for(var i=0;i<8;i++){
+        var ang=(i/8)*360,tx=Math.cos(ang*Math.PI/180)*50,ty=Math.sin(ang*Math.PI/180)*50;
+        html+='<span class="bf-ec-proj" style="left:50%;top:50%;--tx:'+tx.toFixed(0)+'px;--ty:'+ty.toFixed(0)+'px;animation-delay:'+(i*0.1).toFixed(2)+'s">➤</span>';
+      }
+    }else if(kind==='rays'){
+      for(var i=0;i<8;i++){var rot=(i/8)*360;html+='<div class="bf-ec-ray" style="--rot:'+rot.toFixed(0)+'deg;animation-delay:'+(i*0.08).toFixed(2)+'s"></div>';}
+      for(var i=0;i<6;i++)html+='<span class="bf-ec-star" style="left:'+(8+Math.random()*84)+'%;top:'+(10+Math.random()*70)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">✦</span>';
+    }else if(kind==='halo'){
+      html+='<div class="bf-ec-halo"></div>';
+      for(var i=0;i<10;i++){var rot=(i/10)*360;html+='<div class="bf-ec-ray" style="--rot:'+rot.toFixed(0)+'deg;animation-delay:'+(i*0.06).toFixed(2)+'s"></div>';}
+      for(var i=0;i<6;i++)html+='<span class="bf-ec-star" style="left:'+(8+Math.random()*84)+'%;top:'+(10+Math.random()*70)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">✨</span>';
+    }else if(kind==='celestial'){
+      html+='<div class="bf-ec-beam"></div>';
+      html+='<div class="bf-ec-halo"></div>';
+      for(var i=0;i<16;i++)html+='<span class="bf-ec-spark" style="left:'+(4+Math.random()*92)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
+    }
+    return html;
+  }
+
+  var lastCine=0;
+  function playCine(side,hero){
+    if(!hero||!hero.name||!HERO_NAMES[hero.name])return;
+    var themeSet=THEMES[hero.name];
+    if(!themeSet)return;
+    var isElite=!!hero.eliteMode;
+    var theme=isElite?themeSet.elite:themeSet.normal;
+    var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
+    var artUrl=getHeroArt(side,hero);
+
+    // Anti-duplicado: si ya hay un overlay o se reprodujo hace poco, no hacerlo.
+    var now=Date.now();
+    if(document.getElementById('bf-epic-cine')||now-lastCine<3200)return;
+    lastCine=now;
+
+    var ov=document.createElement('div');
+    ov.id='bf-epic-cine';
+    ov.style.setProperty('--ec-color',theme.color);
+    ov.style.setProperty('--ec-glow',theme.glow);
+    ov.style.setProperty('--ec-flash',theme.flash);
+
+    var html='<div class="bf-ec-veil"></div><div class="bf-ec-flash"></div>';
+    html+=buildParticles(theme.particles,theme);
+    if(artUrl){
+      html+='<img class="bf-ec-img" src="'+artUrl+'" alt="">';
+    }
+    html+='<div class="bf-ec-ttl">'+String(ability).toUpperCase()+'</div>';
+    ov.innerHTML=html;
+    document.body.appendChild(ov);
+
+    setTimeout(function(){ov.classList.add('bf-ec-out');},2700);
+    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},3200);
+
+    // Remate anime del sistema.
+    var A=window.__bfAnime;
+    if(A){
+      var r=ov.getBoundingClientRect(),c={x:r.left+r.width/2,y:r.top+r.height/2};
+      A.speedLines(c);
+    }
+  }
+
+  // Deduplicación entre el hook de useAbility y el escaneo.
   var lastFx={};
   function tryPlay(side,hero){
-    if(!hero||!hero.name||!EPIC_NAMES[hero.name])return;
+    if(!hero||!hero.name||!HERO_NAMES[hero.name])return;
     var key=side+'_'+hero.id;
     var now=Date.now();
     if(lastFx[key]&&now-lastFx[key]<1200)return;
     lastFx[key]=now;
-    try{play(side,hero);}catch(e){}
+    try{playCine(side,hero);}catch(e){}
   }
 
-  // Hook directo: feedback inmediato en el host (que llama useAbility).
+  // Hook directo: feedback inmediato en el host.
   function install(){
-    if(typeof window.useAbility!=='function'||window.__bfEpicAbxHooked)return false;
-    window.__bfEpicAbxHooked=true;
+    if(typeof window.useAbility!=='function'||window.__bfEpicCineHooked)return false;
+    window.__bfEpicCineHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,hero){
       try{tryPlay(side,hero);}catch(e){}
@@ -233,8 +216,7 @@ export const EPIC_ABILITY_FX_PATCH = `
   }
 
   // Escaneo periódico: detecta cuando abilityUsed pasa de false a true.
-  // Funciona en AMBOS jugadores (host y cliente) — el cliente no recibe
-  // la llamada a useAbility, solo la actualización de estado con abilityUsed.
+  // Funciona en AMBOS jugadores (host y cliente).
   var prevUsed={};
   function scanAbilities(){
     if(typeof G==='undefined'||!G||!G.team)return;
@@ -243,7 +225,6 @@ export const EPIC_ABILITY_FX_PATCH = `
         if(!h||!h.id)return;
         var key=side+'_'+h.id;
         var used=!!h.abilityUsed;
-        // Detecta transición false→true
         if(used&&!prevUsed[key]){
           tryPlay(side,h);
         }
@@ -254,7 +235,7 @@ export const EPIC_ABILITY_FX_PATCH = `
 
   var tries=0,t=setInterval(function(){
     scanAbilities();
-    if(!window.__bfEpicAbxHooked){
+    if(!window.__bfEpicCineHooked){
       if(install()||tries++>100)clearInterval(t);
     }
   },150);
