@@ -110,7 +110,7 @@ export const EPIC_ABILITY_FX_PATCH = `
       var img=card.querySelector('img');
       if(img&&img.src&&img.src.indexOf('data:')!==0)return img.src;
     }
-    var cid=hero&&(hero.cid||hero.card_id);
+    var cid=hero&&(hero.cid||hero.card_id||hero.id);
     if(cid&&battleArtMap[cid]){
       return hero.eliteMode?battleArtMap[cid].elite:battleArtMap[cid].base;
     }
@@ -118,27 +118,27 @@ export const EPIC_ABILITY_FX_PATCH = `
   }
 
   var THEMES={
-    'KrunderKrak':{
+    'kre':{
       normal:{color:'#ff6a44',glow:'rgba(255,80,40,.85)',flash:'rgba(255,100,40,.7)',particles:'fire'},
       elite:{color:'#ff3333',glow:'rgba(255,30,30,.9)',flash:'rgba(255,50,50,.8)',particles:'fire'}
     },
-    'El Heavy':{
+    'hev':{
       normal:{color:'#ffaa44',glow:'rgba(255,160,60,.85)',flash:'rgba(255,180,80,.7)',particles:'musical'},
       elite:{color:'#ff4444',glow:'rgba(255,60,60,.9)',flash:'rgba(255,80,80,.8)',particles:'fire'}
     },
-    'Sylvex':{
+    'syx':{
       normal:{color:'#44ddff',glow:'rgba(60,180,255,.85)',flash:'rgba(80,200,255,.7)',particles:'dna'},
       elite:{color:'#ffd24a',glow:'rgba(255,210,74,.9)',flash:'rgba(255,220,100,.8)',particles:'stars'}
     },
-    'Gorvak':{
+    'gor':{
       normal:{color:'#ffcc44',glow:'rgba(255,200,60,.85)',flash:'rgba(255,220,80,.7)',particles:'rings'},
       elite:{color:'#ffaa00',glow:'rgba(255,170,0,.9)',flash:'rgba(255,180,20,.8)',particles:'orbits'}
     },
-    'Zarmandis':{
+    'zer':{
       normal:{color:'#ffe88a',glow:'rgba(255,215,100,.85)',flash:'rgba(255,230,150,.7)',particles:'rays'},
       elite:{color:'#ffd700',glow:'rgba(255,215,0,.9)',flash:'rgba(255,230,50,.8)',particles:'halo'}
     },
-    'Solenna':{
+    'sol':{
       normal:{color:'#ffffff',glow:'rgba(255,255,255,.9)',flash:'rgba(255,255,255,.7)',particles:'celestial'},
       elite:{color:'#fff5dc',glow:'rgba(255,250,220,.95)',flash:'rgba(255,255,240,.85)',particles:'celestial'}
     },
@@ -148,8 +148,9 @@ export const EPIC_ABILITY_FX_PATCH = `
     }
   };
 
-  var HERO_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1};
-  var HERO_IDS={'nar':1};
+  // Matching por ID (card_id de la BD) — los nombres pueden cambiar en el
+  // Oráculo y el matching por nombre se rompería. Los IDs son estables.
+  var HERO_IDS={'kre':1,'hev':1,'syx':1,'gor':1,'zer':1,'sol':1,'nar':1};
 
   function buildParticles(kind,theme){
     var html='';
@@ -204,8 +205,8 @@ export const EPIC_ABILITY_FX_PATCH = `
 
   var lastCine=0;
   function playCine(side,hero){
-    if(!hero||(!HERO_NAMES[hero.name]&&!HERO_IDS[hero.id]))return;
-    var themeSet=THEMES[hero.name]||THEMES[hero.id];
+    if(!hero||!HERO_IDS[hero.id])return;
+    var themeSet=THEMES[hero.id];
     if(!themeSet)return;
     var isElite=!!hero.eliteMode;
     var theme=isElite?themeSet.elite:themeSet.normal;
@@ -243,10 +244,14 @@ export const EPIC_ABILITY_FX_PATCH = `
     }
   }
 
+  // Expone playCine para que otros parches (narbonElitePatch) puedan
+  // disparar la cinemática directamente sin esperar al escaneo.
+  window.__bfPlayEpicCine = playCine;
+
   // Deduplicación entre el hook de useAbility y el escaneo.
   var lastFx={};
   function tryPlay(side,hero){
-    if(!hero||(!HERO_NAMES[hero.name]&&!HERO_IDS[hero.id]))return;
+    if(!hero||!HERO_IDS[hero.id])return;
     var key=side+'_'+hero.id;
     var now=Date.now();
     if(lastFx[key]&&now-lastFx[key]<1200)return;

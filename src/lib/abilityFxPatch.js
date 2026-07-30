@@ -110,8 +110,9 @@ export const ABILITY_FX_PATCH = `
   };
 
   // Héroes con cinemática propia en epicAbilityFxPatch.js — no duplicar.
-  var EPIC_FX_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1,'Narbon':1};
-  var EPIC_FX_IDS={'nar':1};
+  // Matching por ID (card_id de la BD) — los nombres pueden cambiar.
+  var EPIC_FX_NAMES={};
+  var EPIC_FX_IDS={'kre':1,'hev':1,'syx':1,'gor':1,'zer':1,'sol':1,'nar':1};
 
   function play(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));
