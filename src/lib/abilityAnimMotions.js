@@ -93,6 +93,22 @@ export const MOTIONS = [
       '@keyframes bfAaMuzzle{0%{opacity:0;transform:scale(.2) rotate(0)}35%{opacity:1;transform:scale(1.3) rotate(25deg)}100%{opacity:0;transform:scale(1.8) rotate(60deg)}}',
     fxTag: '<div class="bf-aa-muzzle"></div>',
   },
+  // Cabeceo / headbanging: el personaje entra y bota arriba/abajo rápidamente
+  // (energía metalera) con notas musicales cayendo. La IA genera UNA imagen
+  // estática, así que el "cabeceo" mueve toda la criatura; para que se lea
+  // bien, el ARTE debe mostrarlo ya con la cabeza agachada y el pelo al viento.
+  {
+    id: 'headbang',
+    keywords: ['cabeza', 'headbang', 'headbanging', 'boba-cabeza', 'bobacabeza', 'cabecear', 'cabeceo', 'metal', 'rock', 'punk', 'cabeceo', 'mecer la cabeza', 'mover la cabeza', 'bailar la cabeza'],
+    anim: 'bfAaHeadbang',
+    keyframes:
+      '@keyframes bfAaHeadbang{0%{transform:translateY(28vh) scale(.2) rotate(-3deg);opacity:0}12%{opacity:1;transform:translateY(0) scale(1.1) rotate(0)}18%{transform:translateY(-5vh) scale(1.12) rotate(2deg)}24%{transform:translateY(1vh) scale(1.08) rotate(-2deg)}30%{transform:translateY(-4.5vh) scale(1.1) rotate(2deg)}36%{transform:translateY(1vh) scale(1.07) rotate(-1deg)}42%{transform:translateY(-3.5vh) scale(1.08) rotate(1deg)}48%{transform:translateY(1vh) scale(1.06) rotate(-1deg)}54%{transform:translateY(-2.5vh) scale(1.07) rotate(1deg)}60%{transform:translateY(0.5vh) scale(1.05)}68%{transform:translateY(-1.5vh) scale(1.06)}76%{transform:translateY(0) scale(1.1)}100%{transform:translateY(-6vh) scale(1.2);opacity:1}}',
+    fxCss:
+      '.bf-aa-note{position:absolute;top:-10%;color:var(--aa-color,#fff);font-size:clamp(20px,4vw,40px);opacity:0;animation:bfAaNote 2.2s linear forwards;text-shadow:0 0 14px var(--aa-glow,#fff);pointer-events:none;line-height:1}' +
+      '@keyframes bfAaNote{0%{opacity:0;transform:translateY(-8vh) rotate(-18deg)}12%{opacity:1}80%{opacity:.9}100%{opacity:0;transform:translateY(92vh) rotate(22deg)}}',
+    fxTag:
+      '<span class="bf-aa-note" style="left:14%;animation-delay:.1s">♪</span><span class="bf-aa-note" style="left:30%;animation-delay:.45s">♫</span><span class="bf-aa-note" style="left:48%;animation-delay:.2s">♪</span><span class="bf-aa-note" style="left:66%;animation-delay:.6s">♫</span><span class="bf-aa-note" style="left:82%;animation-delay:.35s">♪</span><span class="bf-aa-note" style="left:22%;animation-delay:.8s">♫</span><span class="bf-aa-note" style="left:58%;animation-delay:1s">♪</span>',
+  },
   DEFAULT_MOTION,
 ];
 
