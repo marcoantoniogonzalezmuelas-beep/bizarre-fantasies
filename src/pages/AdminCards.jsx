@@ -7,6 +7,7 @@ import CardList from '@/components/admin/CardList';
 import BackupCardsButton from '@/components/admin/BackupCardsButton';
 import BattleArtSection from '@/components/admin/BattleArtSection';
 import AbilityAnimSection from '@/components/admin/AbilityAnimSection';
+import ReferencePhotoSection from '@/components/admin/ReferencePhotoSection';
 import { CLAN_COLORS } from '@/lib/cardData';
 
 const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', elite_ability_anim_url: '', elite_ability_anim_desc: '', in_auction: true };
@@ -38,6 +39,8 @@ export default function AdminCards() {
   const [deleting, setDeleting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [referencePhoto, setReferencePhoto] = useState('');
+  const [useReferencePhoto, setUseReferencePhoto] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false)); }, []);
@@ -200,7 +203,8 @@ export default function AdminCards() {
     const isElite = target === 'elite_art_url' && !!form.art_url;
     const eliteRule = isElite ? ` VERSIÓN ÉLITE — REGLA CRÍTICA: la imagen de referencia adjunta es la versión normal de este personaje. Debes representar EXACTAMENTE AL MISMO PERSONAJE: misma cara, mismo cuerpo, misma especie, mismos colores, misma ropa/armadura base y mismos rasgos reconocibles. PROHIBIDO cambiarlo por otro personaje o alterar su identidad. Solo evoluciona su aspecto: pose más frenética y dinámica, expresión más intensa, aura/energía épica, detalles más bizarros y espectaculares (grietas de poder, brillos, mejoras en su equipo), iluminación más dramática.` : '';
     const prompt = `Ilustración que RELLENA POR COMPLETO el lienzo entero de borde a borde y esquina a esquina, con cero relleno, cero márgenes y cero espacio de fondo visible en cualquier lado, ni siquiera una franja de 1 píxel. Prohibido absolutamente: marco, borde blanco/gris/de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro decorativo dentro de la imagen, texto o logos. ENCUADRE CON ZONA SEGURA: el personaje/objeto y todos los elementos importantes deben quedar cómodamente dentro de la zona central del lienzo, con amplio aire respecto a los cuatro bordes (nada importante pegado a los bordes), de forma que ningún recorte posterior corte cabeza, pies, manos ni la montura; la cara en el tercio superior-medio del lienzo. El fondo (paisaje, textura o ambiente) pintado hasta el último borde y las cuatro esquinas, sin ninguna zona vacía. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable.${clanBg}${eliteRule} Indicaciones del admin: ${form.image_prompt}`;
-    const result = await base44.integrations.Core.GenerateImage(isElite ? { prompt, existing_image_urls: [form.art_url] } : { prompt });
+    const refs = refImages(isElite ? [form.art_url] : []);
+    const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
     const rawUrl = result?.url;
     if (rawUrl) {
       const croppedUrl = await cropAndUpload(rawUrl);
@@ -219,7 +223,8 @@ export default function AdminCards() {
       const prompt = isElite
         ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
         : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
-      const result = await base44.integrations.Core.GenerateImage(refUrl ? { prompt, existing_image_urls: [refUrl] } : { prompt });
+      const refs = refImages(refUrl);
+      const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
@@ -279,7 +284,8 @@ export default function AdminCards() {
       const prompt = isElite
         ? `Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''}. Spectacular magical energy, glowing golden aura, enhanced ornate armor, fierce powerful combat pose, maximum dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy art, premium legendary trading card game ability artwork, character centered on a dark atmospheric background.${hint}`
         : `3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ability "${abilityName || ''}". ${abilityDesc || ''}. Dynamic full-body action pose, mid-action, dramatic cinematic lighting, magical effects, dark fantasy anime art style, character centered on a dark atmospheric background, epic trading card game ability artwork.${hint}`;
-      const result = await base44.integrations.Core.GenerateImage(refUrl ? { prompt, existing_image_urls: [refUrl] } : { prompt });
+      const refs = refImages(refUrl);
+      const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
@@ -311,6 +317,30 @@ export default function AdminCards() {
     setUploading(false);
   }
 
+  async function uploadReferencePhoto(file) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const result = await base44.integrations.Core.UploadFile({ file });
+      if (result?.file_url) {
+        setReferencePhoto(result.file_url);
+        setUseReferencePhoto(true);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('No se pudo subir la foto de referencia.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // Construye la lista de existing_image_urls para una generación: añade la
+  // foto de referencia subida por el admin cuando tiene la casilla activada.
+  function refImages(base) {
+    const arr = Array.isArray(base) ? base.filter(Boolean) : (base ? [base] : []);
+    return useReferencePhoto && referencePhoto ? [...arr, referencePhoto] : arr;
+  }
+
   const clans = useMemo(() => {
     const set = new Set();
     cards.forEach(c => { if (c.clan) set.add(c.clan); });
@@ -331,5 +361,5 @@ export default function AdminCards() {
   return <div className="min-h-screen bg-[#0e0a16] px-4 py-6 text-[#efe9dc] md:px-8"><div className="mx-auto max-w-7xl"><div className="mb-6 flex flex-wrap items-center justify-between gap-3"><div><h1 className="font-heading text-3xl font-black text-[#fff5dc]">Backoffice de cartas</h1><p className="mt-1 text-sm text-[#cfc6dd]">Crea cartas por tipo y raza, genera imágenes con IA y edita la base de datos actual.</p></div><Link to="/" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Volver al juego</Link></div><div className="grid gap-6 lg:grid-cols-[1.08fr_.92fr]"><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">{editingId ? 'Editar carta' : 'Crear carta nueva'}</h2>{editingId && <button onClick={startNew} className="rounded-lg border border-[#ffd24a44] px-3 py-1.5 text-xs font-black text-[#ffe49a]">Nueva carta</button>}</div><div className="mb-4 flex gap-4">
   {form.art_url && <div className="flex-1 max-w-[210px] aspect-[7/10] overflow-hidden rounded-2xl border border-[#ffd24a44] bg-black/45"><img src={form.art_url} alt="Principal" className="h-full w-full object-cover" /></div>}
   {form.elite_art_url && <div className="flex-1 max-w-[210px] aspect-[7/10] overflow-hidden rounded-2xl border border-[#c05bff44] bg-black/45"><img src={form.elite_art_url} alt="Élite" className="h-full w-full object-cover" /></div>}
-</div><CardFields form={{ ...form, onGenerateStats: generateStats, generatingStats }} onChange={onChange} onGenerate={generateImage} generating={generating} onUpload={uploadImage} uploading={uploading} onConvertEpic={convertToEpic} onLevelUp={levelUpHero} saving={saving} /><BattleArtSection form={form} onGenerate={handleBattleArtAction} generating={generating} /><AbilityAnimSection form={form} onChange={onChange} onGenerate={handleAbilityAnimAction} generating={generating} /><div className="mt-5 flex gap-3"><button onClick={() => setPreviewOpen(true)} disabled={!form.name} className="flex-1 rounded-2xl border-2 border-[#ffd24a] px-5 py-3 font-heading font-black text-[#ffe49a] disabled:opacity-50">Vista previa</button><button onClick={saveCard} disabled={saving || !form.name} className="flex-1 rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></div>{canDelete && editingId && <button onClick={deleteCard} disabled={deleting} className="mt-3 w-full rounded-2xl border-2 border-[#cc3333] bg-[#cc333318] px-5 py-3 font-heading font-black text-[#ff9d9d] hover:bg-[#cc3333] hover:text-white disabled:opacity-50 transition-colors">{deleting ? 'Borrando...' : 'Borrar carta'}</button>}{previewOpen && <CardPreviewModal form={form} onClose={() => setPreviewOpen(false)} />}</section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><BackupCardsButton cards={cards} /></div><div className="my-4 grid gap-3 md:grid-cols-[1fr_160px_160px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todos los tipos</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="bizarro">Héroes bizarros</option><option value="race">Razas</option></select><select value={clanFilter} onChange={(e) => setClanFilter(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas las razas</option>{clans.map(clan => <option key={clan} value={clan}>{clan}</option>)}</select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
+</div><ReferencePhotoSection referencePhoto={referencePhoto} useReferencePhoto={useReferencePhoto} onToggleUse={setUseReferencePhoto} onUpload={uploadReferencePhoto} onClear={() => { setReferencePhoto(''); setUseReferencePhoto(false); }} uploading={uploading} /><CardFields form={{ ...form, onGenerateStats: generateStats, generatingStats }} onChange={onChange} onGenerate={generateImage} generating={generating} onUpload={uploadImage} uploading={uploading} onConvertEpic={convertToEpic} onLevelUp={levelUpHero} saving={saving} /><BattleArtSection form={form} onGenerate={handleBattleArtAction} generating={generating} /><AbilityAnimSection form={form} onChange={onChange} onGenerate={handleAbilityAnimAction} generating={generating} /><div className="mt-5 flex gap-3"><button onClick={() => setPreviewOpen(true)} disabled={!form.name} className="flex-1 rounded-2xl border-2 border-[#ffd24a] px-5 py-3 font-heading font-black text-[#ffe49a] disabled:opacity-50">Vista previa</button><button onClick={saveCard} disabled={saving || !form.name} className="flex-1 rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></div>{canDelete && editingId && <button onClick={deleteCard} disabled={deleting} className="mt-3 w-full rounded-2xl border-2 border-[#cc3333] bg-[#cc333318] px-5 py-3 font-heading font-black text-[#ff9d9d] hover:bg-[#cc3333] hover:text-white disabled:opacity-50 transition-colors">{deleting ? 'Borrando...' : 'Borrar carta'}</button>}{previewOpen && <CardPreviewModal form={form} onClose={() => setPreviewOpen(false)} />}</section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><BackupCardsButton cards={cards} /></div><div className="my-4 grid gap-3 md:grid-cols-[1fr_160px_160px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todos los tipos</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="bizarro">Héroes bizarros</option><option value="race">Razas</option></select><select value={clanFilter} onChange={(e) => setClanFilter(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas las razas</option>{clans.map(clan => <option key={clan} value={clan}>{clan}</option>)}</select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
 }
