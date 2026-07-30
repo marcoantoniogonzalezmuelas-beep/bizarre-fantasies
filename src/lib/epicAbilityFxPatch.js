@@ -15,9 +15,11 @@ export const EPIC_ABILITY_FX_PATCH = `
   '#bf-epic-cine.bf-ec-out{transition:opacity .4s;opacity:0}'+
   '@keyframes bfEcIn{from{opacity:0}to{opacity:1}}'+
   // Imagen del héroe — grande, a la derecha, con entrada 3D
-  '#bf-epic-cine .bf-ec-img{position:absolute;top:50%;left:72%;transform-origin:center;width:min(50vmin,420px);height:min(60vmin,500px);object-fit:cover;border-radius:14px;transform-style:preserve-3d;margin:calc(min(60vmin,500px)/-2) 0 0 calc(min(50vmin,420px)/-2);filter:drop-shadow(0 0 50px var(--ec-glow)) saturate(1.25) brightness(1.1);animation:bfEcImg 2.8s cubic-bezier(.2,.85,.3,1) forwards;border:2px solid var(--ec-color);box-shadow:0 0 60px var(--ec-glow),0 8px 30px rgba(0,0,0,.8)}'+
-  '@media(max-width:900px){#bf-epic-cine .bf-ec-img{left:78%;width:min(42vmin,320px);height:min(50vmin,380px);margin:calc(min(50vmin,380px)/-2) 0 0 calc(min(42vmin,320px)/-2)}}'+
-  '@keyframes bfEcImg{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.1);opacity:1}}'+
+  '#bf-epic-cine .bf-ec-glow-bg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,var(--ec-flash) 0%,transparent 60%);opacity:0;animation:bfEcGlowBg 2.4s ease-out forwards;pointer-events:none}'+
+  '@keyframes bfEcGlowBg{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}20%{opacity:.5}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}}'+
+  '#bf-epic-cine .bf-ec-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(68vmin,560px);height:min(72vmin,600px);object-fit:cover;border-radius:14px;transform-style:preserve-3d;margin:calc(min(72vmin,600px)/-2) 0 0 calc(min(68vmin,560px)/-2);filter:drop-shadow(0 0 60px var(--ec-glow)) saturate(1.4) brightness(1.15);animation:bfEcImg 3.2s cubic-bezier(.2,.85,.3,1) forwards;border:2px solid var(--ec-color);box-shadow:0 0 70px var(--ec-glow),0 8px 30px rgba(0,0,0,.8)}'+
+  '@media(max-width:900px){#bf-epic-cine .bf-ec-img{left:50%;width:min(54vmin,400px);height:min(58vmin,440px);margin:calc(min(58vmin,440px)/-2) 0 0 calc(min(54vmin,400px)/-2)}}'+
+  '@keyframes bfEcImg{0%{transform:rotateY(-90deg) rotateX(15deg) translateZ(-900px) scale(.15);opacity:0}12%{opacity:1}28%{transform:rotateY(35deg) rotateX(-8deg) translateZ(-250px) scale(.7) translateY(10vh)}42%{transform:rotateY(-22deg) rotateX(5deg) translateZ(0) scale(1.2) translateY(-2vh)}54%{transform:rotateY(18deg) rotateX(-3deg) scale(1.1) translateY(0)}66%{transform:rotateY(-10deg) rotateX(2deg) scale(1.15)}78%{transform:rotateY(6deg) scale(1.2)}100%{transform:rotateY(0) translateZ(0) scale(1.25) translateY(-8vh);opacity:1}}'+
   // Título
   '#bf-epic-cine .bf-ec-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(24px,5.5vw,52px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfEcTtl 2.9s ease-out .3s forwards;color:var(--ec-color);text-shadow:0 0 28px var(--ec-glow),0 4px 12px #000}'+
   '@keyframes bfEcTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
@@ -221,7 +223,7 @@ export const EPIC_ABILITY_FX_PATCH = `
     ov.style.setProperty('--ec-glow',theme.glow);
     ov.style.setProperty('--ec-flash',theme.flash);
 
-    var html='<div class="bf-ec-veil"></div><div class="bf-ec-flash"></div>';
+    var html='<div class="bf-ec-veil"></div><div class="bf-ec-glow-bg"></div><div class="bf-ec-flash"></div>';
     html+=buildParticles(theme.particles,theme);
     if(artUrl){
       html+='<img class="bf-ec-img" src="'+artUrl+'" alt="">';
