@@ -136,6 +136,22 @@
       "type": "string",
       "description": "URL of the AI-generated elite battle scene art (elite version in combat)"
     },
+    "ability_anim_url": {
+      "type": "string",
+      "description": "URL of the AI-generated 3D cinematic art for the normal ability animation"
+    },
+    "ability_anim_desc": {
+      "type": "string",
+      "description": "Description/prompt used to generate the 3D cinematic animation of the normal ability"
+    },
+    "elite_ability_anim_url": {
+      "type": "string",
+      "description": "URL of the AI-generated 3D cinematic art for the elite ability animation"
+    },
+    "elite_ability_anim_desc": {
+      "type": "string",
+      "description": "Description/prompt used to generate the 3D cinematic animation of the elite ability"
+    },
     "in_auction": {
       "type": "boolean",
       "description": "If true, the hero is available in auctions"
