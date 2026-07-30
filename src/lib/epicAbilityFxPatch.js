@@ -73,6 +73,8 @@ export const EPIC_ABILITY_FX_PATCH = `
   '.bf-ec-foo-drawer{position:absolute;bottom:4%;left:8%;right:8%;height:11%;background:linear-gradient(180deg,#8b1818,#5a1010);border-radius:3px;border:1px solid #3a0808;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px rgba(0,0,0,.4)}'+
   '.bf-ec-foo-ball{position:absolute;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#ccc 55%,#777);border:1px solid #333;box-shadow:0 1px 5px rgba(0,0,0,.7);opacity:0;animation:bfEcFooBall 1.4s ease-in-out infinite}'+
   '@keyframes bfEcFooBall{0%{opacity:0;transform:translateY(0) scale(.4)}15%{opacity:1;transform:translateY(-18px) scale(1.1)}50%{transform:translateY(2px) scale(1)}85%{opacity:.8}100%{opacity:0;transform:translateY(-18px) scale(.5)}}'+
+  '.bf-ec-foo-label{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:900;font-size:13px;letter-spacing:2px;color:#ffd24a;text-shadow:0 0 8px rgba(255,210,74,.8),0 1px 2px #000;opacity:0;animation:bfEcFooLabel 2.8s ease-out .4s forwards}'+
+  '@keyframes bfEcFooLabel{0%{opacity:0;transform:translateX(-50%) translateY(8px)}20%{opacity:1;transform:translateX(-50%) translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-4px)}}'+
   // Chess knight (horse)
   '.bf-ec-knight{position:absolute;left:50%;top:50%;font-size:140px;opacity:0;animation:bfEcKnight 2.8s cubic-bezier(.2,.85,.3,1) forwards;filter:drop-shadow(0 0 40px var(--ec-glow));transform:translate(-50%,-50%)}'+
   '@keyframes bfEcKnight{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-30deg) translateY(40vh)}20%{opacity:1}40%{transform:translate(-50%,-50%) scale(1.3) rotate(10deg)}60%{transform:translate(-50%,-50%) scale(1) rotate(-5deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.1) rotate(0) translateY(-10vh)}}'+
@@ -186,7 +188,7 @@ export const EPIC_ABILITY_FX_PATCH = `
         html+='<span class="bf-ec-foo-handle" style="right:2%;top:'+(ry-1)+'%"></span>';
         for(var fi=0;fi<3;fi++)html+='<span class="bf-ec-foo-fig" style="left:'+(18+fi*30)+'%;top:'+(ry-2)+'%"></span>';
       }
-      html+='</div><div class="bf-ec-foo-drawer"></div></div></div>';
+      html+='</div><div class="bf-ec-foo-drawer"></div><div class="bf-ec-foo-label">SOLTAITO</div></div></div>';
       html+='<span class="bf-ec-foo-ball" style="left:35%;top:25%;animation-duration:1.2s"></span>';
       html+='<span class="bf-ec-foo-ball" style="left:55%;top:30%;animation-delay:.4s;animation-duration:1.5s"></span>';
     }else if(kind==='chess_glue'){
