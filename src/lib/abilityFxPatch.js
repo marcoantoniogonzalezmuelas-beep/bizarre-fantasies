@@ -110,13 +110,14 @@ export const ABILITY_FX_PATCH = `
   };
 
   // Héroes con cinemática propia en epicAbilityFxPatch.js — no duplicar.
-  var EPIC_FX_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1};
+  var EPIC_FX_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1,'Narbon':1};
+  var EPIC_FX_IDS={'nar':1};
 
   function play(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));
     if(!card)return;
     // Los héroes épicos con animación propia se saltan la genérica.
-    if(hero&&hero.name&&EPIC_FX_NAMES[hero.name])return;
+    if(hero&&(EPIC_FX_NAMES[hero.name]||EPIC_FX_IDS[hero.id]))return;
     var theme=THEMES[FAM[hero.akind]||'magic'];
     var fam=FAM[hero.akind]||'magic';
     var clan=hero.clanColor||theme.color;
@@ -274,6 +275,7 @@ export const ABILITY_FX_PATCH = `
     if(!hero)return;
     // Los héroes épicos con animación propia los gestiona epicAbilityFxPatch.js.
     if(hero.name&&EPIC_FX_NAMES[hero.name])return;
+    if(hero.id&&EPIC_FX_IDS[hero.id])return;
     var key=side+'_'+hero.id;
     var now=Date.now();
     if(lastFx[key]&&now-lastFx[key]<1200)return;

@@ -59,7 +59,31 @@ export const EPIC_ABILITY_FX_PATCH = `
   '@keyframes bfEcSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-90vh) scale(1.4) translateX(var(--dx,0px))}}'+
   // Haz de luz vertical
   '.bf-ec-beam{position:absolute;left:50%;top:-30%;width:60%;height:140%;transform:translateX(-50%);background:linear-gradient(180deg,transparent 0%,var(--ec-flash) 45%,var(--ec-flash) 55%,transparent 100%);filter:blur(6px);opacity:0;animation:bfEcBeam 2.6s ease-out forwards}'+
-  '@keyframes bfEcBeam{0%{opacity:0;transform:translateX(-50%) scaleY(0)}20%{opacity:1;transform:translateX(-50%) scaleY(1)}75%{opacity:.85}100%{opacity:0;transform:translateX(-50%) scaleY(1.1)}}';
+  '@keyframes bfEcBeam{0%{opacity:0;transform:translateX(-50%) scaleY(0)}20%{opacity:1;transform:translateX(-50%) scaleY(1)}75%{opacity:.85}100%{opacity:0;transform:translateX(-50%) scaleY(1.1)}}'+
+  // Soccer ball
+  '.bf-ec-ball{position:absolute;font-size:28px;opacity:0;animation:bfEcBall 1.8s ease-out forwards;filter:drop-shadow(0 0 10px var(--ec-glow))}'+
+  '@keyframes bfEcBall{0%{opacity:0;transform:translateY(0) scale(.3) rotate(0)}20%{opacity:1;transform:translateY(-30vh) scale(1.2) rotate(180deg)}60%{opacity:.8;transform:translateY(-50vh) scale(1) rotate(360deg)}100%{opacity:0;transform:translateY(-70vh) scale(.7) rotate(540deg)}}'+
+  // Goalpost
+  '.bf-ec-goalpost{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);width:140px;height:90px;opacity:0;animation:bfEcGoalpost 2.2s ease-out .3s forwards}'+
+  '.bf-ec-goalpost::before{content:"";position:absolute;left:0;bottom:0;width:10px;height:100%;background:linear-gradient(180deg,#d4a574,#8b6940);border-radius:4px 4px 0 0;box-shadow:0 0 12px var(--ec-glow)}'+
+  '.bf-ec-goalpost::after{content:"";position:absolute;right:0;bottom:0;width:10px;height:100%;background:linear-gradient(180deg,#d4a574,#8b6940);border-radius:4px 4px 0 0;box-shadow:0 0 12px var(--ec-glow)}'+
+  '.bf-ec-goalpost-bar{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#d4a574,#8b6940);border-radius:3px}'+
+  '@keyframes bfEcGoalpost{0%{opacity:0;transform:translateX(-50%) translateY(40px) scale(.5)}30%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:.9}100%{opacity:0;transform:translateX(-50%) translateY(-10px) scale(1.1)}}'+
+  // Green field particles
+  '.bf-ec-turf{position:absolute;font-size:16px;opacity:0;animation:bfEcTurf 2s ease-out forwards}'+
+  '@keyframes bfEcTurf{0%{opacity:0;transform:scale(.3)}30%{opacity:.6}100%{opacity:0;transform:scale(1.5)}}'+
+  // Chess knight (horse)
+  '.bf-ec-knight{position:absolute;left:50%;top:50%;font-size:140px;opacity:0;animation:bfEcKnight 2.8s cubic-bezier(.2,.85,.3,1) forwards;filter:drop-shadow(0 0 40px var(--ec-glow));transform:translate(-50%,-50%)}'+
+  '@keyframes bfEcKnight{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-30deg) translateY(40vh)}20%{opacity:1}40%{transform:translate(-50%,-50%) scale(1.3) rotate(10deg)}60%{transform:translate(-50%,-50%) scale(1) rotate(-5deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.1) rotate(0) translateY(-10vh)}}'+
+  // Glue drips
+  '.bf-ec-glue{position:absolute;font-size:18px;opacity:0;animation:bfEcGlue 1.6s ease-out forwards;filter:drop-shadow(0 0 8px var(--ec-glow))}'+
+  '@keyframes bfEcGlue{0%{opacity:0;transform:translateY(0) scale(.3)}20%{opacity:1;transform:translateY(-20px) scale(1)}100%{opacity:0;transform:translateY(-60vh) scale(.7) rotate(180deg)}}'+
+  // Chains
+  '.bf-ec-chain{position:absolute;font-size:22px;opacity:0;animation:bfEcChain 1.8s ease-out forwards;filter:drop-shadow(0 0 8px var(--ec-glow))}'+
+  '@keyframes bfEcChain{0%{opacity:0;transform:scale(.3) rotate(0)}25%{opacity:1;transform:scale(1.2) rotate(45deg)}100%{opacity:0;transform:scale(1.5) rotate(360deg)}}'+
+  // Chess board squares
+  '.bf-ec-square{position:absolute;font-size:24px;opacity:0;animation:bfEcSquare 2s ease-out forwards}'+
+  '@keyframes bfEcSquare{0%{opacity:0;transform:scale(.3) rotate(0)}30%{opacity:.7;transform:scale(1.1) rotate(45deg)}100%{opacity:0;transform:scale(1.3) rotate(180deg)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   // Mapa de arte de batalla recibido del padre (postMessage bfBattleArt).
@@ -112,10 +136,15 @@ export const EPIC_ABILITY_FX_PATCH = `
     'Solenna':{
       normal:{color:'#ffffff',glow:'rgba(255,255,255,.9)',flash:'rgba(255,255,255,.7)',particles:'celestial'},
       elite:{color:'#fff5dc',glow:'rgba(255,250,220,.95)',flash:'rgba(255,255,240,.85)',particles:'celestial'}
+    },
+    'nar':{
+      normal:{color:'#4ade80',glow:'rgba(74,222,128,.85)',flash:'rgba(120,255,160,.7)',particles:'football'},
+      elite:{color:'#d4a574',glow:'rgba(212,165,116,.9)',flash:'rgba(255,200,140,.8)',particles:'chess_glue'}
     }
   };
 
   var HERO_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1,'Solenna':1};
+  var HERO_IDS={'nar':1};
 
   function buildParticles(kind,theme){
     var html='';
@@ -147,14 +176,23 @@ export const EPIC_ABILITY_FX_PATCH = `
       html+='<div class="bf-ec-beam"></div>';
       html+='<div class="bf-ec-halo"></div>';
       for(var i=0;i<16;i++)html+='<span class="bf-ec-spark" style="left:'+(4+Math.random()*92)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
+    }else if(kind==='football'){
+      html+='<div class="bf-ec-goalpost"><div class="bf-ec-goalpost-bar"></div></div>';
+      for(var i=0;i<10;i++)html+='<span class="bf-ec-ball" style="left:'+(8+Math.random()*84)+'%;bottom:-5%;animation-delay:'+(Math.random()*1.5).toFixed(2)+'s">⚽</span>';
+      for(var i=0;i<8;i++)html+='<span class="bf-ec-turf" style="left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;animation-delay:'+(Math.random()*1).toFixed(2)+'s">🟩</span>';
+    }else if(kind==='chess_glue'){
+      html+='<div class="bf-ec-knight">♞</div>';
+      for(var i=0;i<12;i++)html+='<span class="bf-ec-glue" style="left:'+(8+Math.random()*84)+'%;bottom:-5%;animation-delay:'+(Math.random()*1.5).toFixed(2)+'s">🩪</span>';
+      for(var i=0;i<8;i++)html+='<span class="bf-ec-chain" style="left:'+(10+Math.random()*80)+'%;top:'+(15+Math.random()*70)+'%;animation-delay:'+(Math.random()*1).toFixed(2)+'s">⛓</span>';
+      for(var i=0;i<6;i++)html+='<span class="bf-ec-square" style="left:'+(15+Math.random()*70)+'%;top:'+(20+Math.random()*60)+'%;animation-delay:'+(Math.random()*0.8).toFixed(2)+'s">⬛</span>';
     }
     return html;
   }
 
   var lastCine=0;
   function playCine(side,hero){
-    if(!hero||!hero.name||!HERO_NAMES[hero.name])return;
-    var themeSet=THEMES[hero.name];
+    if(!hero||(!HERO_NAMES[hero.name]&&!HERO_IDS[hero.id]))return;
+    var themeSet=THEMES[hero.name]||THEMES[hero.id];
     if(!themeSet)return;
     var isElite=!!hero.eliteMode;
     var theme=isElite?themeSet.elite:themeSet.normal;
@@ -195,7 +233,7 @@ export const EPIC_ABILITY_FX_PATCH = `
   // Deduplicación entre el hook de useAbility y el escaneo.
   var lastFx={};
   function tryPlay(side,hero){
-    if(!hero||!hero.name||!HERO_NAMES[hero.name])return;
+    if(!hero||(!HERO_NAMES[hero.name]&&!HERO_IDS[hero.id]))return;
     var key=side+'_'+hero.id;
     var now=Date.now();
     if(lastFx[key]&&now-lastFx[key]<1200)return;
