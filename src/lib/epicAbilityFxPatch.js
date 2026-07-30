@@ -191,6 +191,8 @@ export const EPIC_ABILITY_FX_PATCH = `
     var layer=buildLayer(html,color);attach(card,layer,3000);animeHook(card);
   }
 
+  var EPIC_NAMES = { 'KrunderKrak':1, 'El Heavy':1, 'Sylvex':1, 'Gorvak':1, 'Zarmandis':1 };
+
   function play(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));
     if(!card)return;
@@ -206,17 +208,56 @@ export const EPIC_ABILITY_FX_PATCH = `
     if(name==='Zarmandis')return playZarmandis(card,isElite,ability,clan);
   }
 
+  // Deduplicación: evita que la animación se dispare dos veces si tanto el
+  // hook de useAbility como el escaneo periódico detectan el mismo uso.
+  var lastFx={};
+  function tryPlay(side,hero){
+    if(!hero||!hero.name||!EPIC_NAMES[hero.name])return;
+    var key=side+'_'+hero.id;
+    var now=Date.now();
+    if(lastFx[key]&&now-lastFx[key]<1200)return;
+    lastFx[key]=now;
+    try{play(side,hero);}catch(e){}
+  }
+
+  // Hook directo: feedback inmediato en el host (que llama useAbility).
   function install(){
     if(typeof window.useAbility!=='function'||window.__bfEpicAbxHooked)return false;
     window.__bfEpicAbxHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,hero){
-      if(hero&&hero.name&&hero.clan==='Épicas')try{play(side,hero);}catch(e){}
+      try{tryPlay(side,hero);}catch(e){}
       return orig.apply(this,arguments);
     };
     return true;
   }
-  var tries=0,t=setInterval(function(){if(install()||tries++>100)clearInterval(t);},150);
+
+  // Escaneo periódico: detecta cuando abilityUsed pasa de false a true.
+  // Funciona en AMBOS jugadores (host y cliente) — el cliente no recibe
+  // la llamada a useAbility, solo la actualización de estado con abilityUsed.
+  var prevUsed={};
+  function scanAbilities(){
+    if(typeof G==='undefined'||!G||!G.team)return;
+    ['p','o'].forEach(function(side){
+      (G.team[side]||[]).forEach(function(h){
+        if(!h||!h.id)return;
+        var key=side+'_'+h.id;
+        var used=!!h.abilityUsed;
+        // Detecta transición false→true
+        if(used&&!prevUsed[key]){
+          tryPlay(side,h);
+        }
+        prevUsed[key]=used;
+      });
+    });
+  }
+
+  var tries=0,t=setInterval(function(){
+    scanAbilities();
+    if(!window.__bfEpicAbxHooked){
+      if(install()||tries++>100)clearInterval(t);
+    }
+  },150);
 })();
 </script>
 `;

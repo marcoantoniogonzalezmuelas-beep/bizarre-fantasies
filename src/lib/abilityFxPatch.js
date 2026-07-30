@@ -109,9 +109,14 @@ export const ABILITY_FX_PATCH = `
     revive:{color:'#ffffff',icon:'✚',glyphs:['✚','❋','✦','✨'],special:'revive'}
   };
 
+  // Héroes con animación propia en epicAbilityFxPatch.js — no duplicar.
+  var EPIC_FX_NAMES={'KrunderKrak':1,'El Heavy':1,'Sylvex':1,'Gorvak':1,'Zarmandis':1};
+
   function play(side,hero){
     var card=document.getElementById('b_'+side+'_'+(hero&&hero.id));
     if(!card)return;
+    // Los héroes épicos con animación propia se saltan la genérica.
+    if(hero&&hero.name&&EPIC_FX_NAMES[hero.name])return;
     var theme=THEMES[FAM[hero.akind]||'magic'];
     var fam=FAM[hero.akind]||'magic';
     var clan=hero.clanColor||theme.color;
