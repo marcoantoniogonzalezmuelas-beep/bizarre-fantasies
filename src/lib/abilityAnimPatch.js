@@ -12,6 +12,8 @@
 //
 // Funciona en AMBOS jugadores online: G.team viaja en el snapshot, así que
 // el escaneo de abilityUsed corre en host y cliente.
+import { ALL_MOTION_CSS, MOTIONS_MIN_JSON } from '@/lib/abilityAnimMotions';
+
 export const ABILITY_ANIM_PATCH = `
 <script>
 (function(){
@@ -64,12 +66,10 @@ export const ABILITY_ANIM_PATCH = `
   '#bf-abil-anim{position:fixed;inset:0;z-index:100007;pointer-events:none;overflow:hidden;perspective:900px;animation:bfAaIn .3s ease-out}'+
   '#bf-abil-anim.bf-aa-out{transition:opacity .4s;opacity:0}'+
   '@keyframes bfAaIn{from{opacity:0}to{opacity:1}}'+
-  // Criatura suelta (sin marco, sin fondo recortado) centrada y grande, como
-  // el Tanque/Transformer/Patitos: object-fit:contain + drop-shadow de glow,
-  // SIN border-radius ni borde ni caja — solo la silueta con halo.
-  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);filter:drop-shadow(0 0 60px var(--aa-glow,#fff)) saturate(1.4) brightness(1.15);animation:bfAaImg 3.2s cubic-bezier(.2,.85,.3,1) forwards}'+
+  // Criatura suelta (sin marco) centrada y grande; la animación de entrada
+  // se asigna inline según la variante de movimiento (abilityAnimMotions).
+  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);filter:drop-shadow(0 0 60px var(--aa-glow,#fff)) saturate(1.4) brightness(1.15)}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
-  '@keyframes bfAaImg{0%{transform:rotateY(-90deg) rotateX(15deg) translateZ(-900px) scale(.15);opacity:0}12%{opacity:1}28%{transform:rotateY(35deg) rotateX(-8deg) translateZ(-250px) scale(.7) translateY(10vh)}42%{transform:rotateY(-22deg) rotateX(5deg) translateZ(0) scale(1.2) translateY(-2vh)}54%{transform:rotateY(18deg) rotateX(-3deg) scale(1.1) translateY(0)}66%{transform:rotateY(-10deg) rotateX(2deg) scale(1.15)}78%{transform:rotateY(6deg) scale(1.2)}100%{transform:rotateY(0) translateZ(0) scale(1.25) translateY(-8vh);opacity:1}}'+
   '#bf-abil-anim .bf-aa-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
   '#bf-abil-anim .bf-aa-flash{position:absolute;inset:0;background:radial-gradient(circle,var(--aa-flash,#fff),transparent 65%);animation:bfAaFlash .7s ease-out .25s both}'+
@@ -79,8 +79,23 @@ export const ABILITY_ANIM_PATCH = `
   '.bf-aa-spark{position:absolute;bottom:10%;width:4px;height:4px;border-radius:50%;background:var(--aa-color,#fff);box-shadow:0 0 8px var(--aa-color,#fff),0 0 14px var(--aa-glow,#fff);opacity:0;animation:bfAaSpark 2s ease-out forwards}'+
   '@keyframes bfAaSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-85vh) scale(1.4) translateX(var(--dx,0px))}}'+
   '.bf-aa-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid var(--aa-color,#fff);box-shadow:0 0 20px var(--aa-glow,#fff);opacity:0;animation:bfAaRing 1.5s ease-out forwards}'+
-  '@keyframes bfAaRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}';
+  '@keyframes bfAaRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}'+
+  ALL_MOTION_CSS;
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+
+  // Variantes de movimiento temático (tajo, fogonazo, etc.) elegidas por
+  // palabras clave en la descripción de la animación. Inyectado desde el módulo
+  // compartido abilityAnimMotions para que juego y vista previa coincidan.
+  var MOTIONS_MIN = ${MOTIONS_MIN_JSON};
+  function pickMotionDesc(desc){
+    var d=String(desc||'').toLowerCase();
+    if(!d)return MOTIONS_MIN[MOTIONS_MIN.length-1];
+    for(var i=0;i<MOTIONS_MIN.length-1;i++){
+      var m=MOTIONS_MIN[i];
+      if(m.keywords.some(function(k){return d.indexOf(k)!==-1;}))return m;
+    }
+    return MOTIONS_MIN[MOTIONS_MIN.length-1];
+  }
 
   function hexToRgba(hex,a){
     if(!hex)return null;
@@ -122,10 +137,12 @@ export const ABILITY_ANIM_PATCH = `
     ov.style.setProperty('--aa-glow',hexToRgba(cc,0.85)||'rgba(255,210,74,0.85)');
     ov.style.setProperty('--aa-flash',hexToRgba(cc,0.7)||'rgba(255,255,255,0.7)');
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
+    var motion=pickMotionDesc(isElite?(entry.eliteDesc||entry.desc):entry.desc);
     var html='<div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
     for(var r=0;r<3;r++)html+='<div class="bf-aa-ring" style="animation-delay:'+(r*0.25).toFixed(2)+'s"></div>';
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
-    html+='<img class="bf-aa-img" src="'+(CUT[url]||url)+'" alt="">';
+    if(motion.fxTag)html+=motion.fxTag;
+    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(CUT[url]||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(ability).toUpperCase()+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);

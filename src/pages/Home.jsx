@@ -416,7 +416,7 @@ export default function Home() {
       const anim = {};
       (cards || []).forEach(c => {
         if (c.card_id && (c.ability_anim_url || c.elite_ability_anim_url)) {
-          anim[c.card_id] = { base: c.ability_anim_url, elite: c.elite_ability_anim_url || c.ability_anim_url };
+          anim[c.card_id] = { base: c.ability_anim_url, elite: c.elite_ability_anim_url || c.ability_anim_url, desc: c.ability_anim_desc, eliteDesc: c.elite_ability_anim_desc };
         }
       });
       abilityAnimRef.current = anim;

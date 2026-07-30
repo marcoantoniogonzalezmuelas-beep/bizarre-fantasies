@@ -21,12 +21,18 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
   const previewName = previewElite
     ? (form.elite_ability_name || form.ability_name || form.name)
     : (form.ability_name || form.name);
+  const previewDesc = previewElite
+    ? (form.elite_ability_anim_desc || form.ability_anim_desc || '')
+    : (form.ability_anim_desc || '');
 
   return (
     <div className="mt-2 rounded-2xl border border-[#3c9eff33] bg-[#0d1a2e]/60 p-4">
       <div className="mb-3 flex items-center gap-2">
         <span className="text-sm font-black uppercase tracking-wider text-[#7ec8ff]">🎬 Animaciones 3D de habilidad</span>
         <span className="text-[11px] text-[#5a8ab8]">Cinemática que irrumpe al usar la habilidad en combate</span>
+      </div>
+      <div className="mb-3 rounded-lg border border-[#3c9eff22] bg-[#0d1a2e]/40 px-3 py-2 text-[10px] leading-relaxed text-[#7fb0d8]">
+        <span className="font-black text-[#9dd0ff]">Movimientos temáticos:</span> si la descripción menciona un arma, la entrada cambia — <span className="text-[#ffe49a]">espada/sable/katana</span> (tajo), <span className="text-[#ffe49a]">pistola/revólver</span> (fogonazo+retroceso), <span className="text-[#ffe49a]">escopeta</span> (cono de perdigones), <span className="text-[#ffe49a]">metralleta/ametralladora</span> (ráfaga), <span className="text-[#ffe49a]">tirachinas/honda</span> (tensar y soltar), <span className="text-[#ffe49a]">escoba/barrer</span> (barrido). Cualquier otra acción que escribas (ej. "sirviendo un cortado") usa la entrada 3D genérica y la imagen muestra lo que pidas.
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {/* Habilidad normal */}
@@ -129,6 +135,7 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
           abilityName={previewName}
           clanColor={form.clan_color}
           elite={previewElite}
+          desc={previewDesc}
           onClose={() => setShowPreview(false)}
         />
       )}
