@@ -21,16 +21,54 @@ export const ABILITY_ANIM_PATCH = `
   // Mapa card_id -> {base, elite} recibido del padre por postMessage.
   var animMap={};
   window.__bfAbilityAnimMap=animMap;
+  // Recorta el fondo oscuro/negro de las imágenes de animación (lo vuelve
+  // transparente con un canvas) para que solo quede la criatura, igual que las
+  // cinemáticas del Tanque/Transformer/Patitos. Se cachea por URL.
+  var CUT={};
+  function cutout(url){
+    if(!url)return;
+    if(CUT[url])return CUT[url];
+    if(CUT[url]===false)return; // ya intentado (fallo/CORS): se usa la URL original
+    CUT[url]=false; // pendiente: mientras llega, se usa la URL original
+    var img=new Image();img.crossOrigin='anonymous';
+    img.onload=function(){
+      try{
+        var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+        var x=c.getContext('2d');x.drawImage(img,0,0);
+        var d=x.getImageData(0,0,c.width,c.height),p=d.data;
+        for(var i=0;i<p.length;i+=4){
+          var m=Math.max(p[i],p[i+1],p[i+2]);
+          if(m<32)p[i+3]=0;
+          else if(m<90)p[i+3]=Math.round(p[i+3]*(m-32)/58);
+        }
+        x.putImageData(d,0,0);
+        CUT[url]=c.toDataURL('image/png');
+      }catch(e){CUT[url]=false;}
+    };
+    img.onerror=function(){CUT[url]=false;};
+    img.src=url;
+  }
   window.addEventListener('message',function(e){
-    if(e.data&&e.data.bfAbilityAnim&&typeof e.data.bfAbilityAnim==='object')animMap=e.data.bfAbilityAnim;
+    if(e.data&&e.data.bfAbilityAnim&&typeof e.data.bfAbilityAnim==='object'){
+      animMap=e.data.bfAbilityAnim;
+      // Pre-recorta todas las imágenes para que el primer disparo ya salga sin fondo.
+      Object.keys(animMap).forEach(function(k){
+        var ent=animMap[k];if(!ent)return;
+        if(ent.base)cutout(ent.base);
+        if(ent.elite)cutout(ent.elite);
+      });
+    }
   });
 
   var css=''+
   '#bf-abil-anim{position:fixed;inset:0;z-index:100007;pointer-events:none;overflow:hidden;perspective:900px;animation:bfAaIn .3s ease-out}'+
   '#bf-abil-anim.bf-aa-out{transition:opacity .4s;opacity:0}'+
   '@keyframes bfAaIn{from{opacity:0}to{opacity:1}}'+
-  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(66vmin,540px);height:min(70vmin,580px);object-fit:cover;border-radius:14px;transform-style:preserve-3d;margin:calc(min(70vmin,580px)/-2) 0 0 calc(min(66vmin,540px)/-2);filter:drop-shadow(0 0 60px var(--aa-glow,#fff)) saturate(1.4) brightness(1.15);animation:bfAaImg 3.2s cubic-bezier(.2,.85,.3,1) forwards;border:2px solid var(--aa-color,#fff);box-shadow:0 0 70px var(--aa-glow,#fff),0 8px 30px rgba(0,0,0,.8)}'+
-  '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(52vmin,380px);height:min(56vmin,420px);margin:calc(min(56vmin,420px)/-2) 0 0 calc(min(52vmin,380px)/-2)}}'+
+  // Criatura suelta (sin marco, sin fondo recortado) centrada y grande, como
+  // el Tanque/Transformer/Patitos: object-fit:contain + drop-shadow de glow,
+  // SIN border-radius ni borde ni caja — solo la silueta con halo.
+  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);filter:drop-shadow(0 0 60px var(--aa-glow,#fff)) saturate(1.4) brightness(1.15);animation:bfAaImg 3.2s cubic-bezier(.2,.85,.3,1) forwards}'+
+  '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
   '@keyframes bfAaImg{0%{transform:rotateY(-90deg) rotateX(15deg) translateZ(-900px) scale(.15);opacity:0}12%{opacity:1}28%{transform:rotateY(35deg) rotateX(-8deg) translateZ(-250px) scale(.7) translateY(10vh)}42%{transform:rotateY(-22deg) rotateX(5deg) translateZ(0) scale(1.2) translateY(-2vh)}54%{transform:rotateY(18deg) rotateX(-3deg) scale(1.1) translateY(0)}66%{transform:rotateY(-10deg) rotateX(2deg) scale(1.15)}78%{transform:rotateY(6deg) scale(1.2)}100%{transform:rotateY(0) translateZ(0) scale(1.25) translateY(-8vh);opacity:1}}'+
   '#bf-abil-anim .bf-aa-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
@@ -87,7 +125,7 @@ export const ABILITY_ANIM_PATCH = `
     var html='<div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
     for(var r=0;r<3;r++)html+='<div class="bf-aa-ring" style="animation-delay:'+(r*0.25).toFixed(2)+'s"></div>';
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
-    html+='<img class="bf-aa-img" src="'+url+'" alt="">';
+    html+='<img class="bf-aa-img" src="'+(CUT[url]||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(ability).toUpperCase()+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
