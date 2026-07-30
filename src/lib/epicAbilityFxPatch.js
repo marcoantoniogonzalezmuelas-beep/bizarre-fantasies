@@ -60,18 +60,19 @@ export const EPIC_ABILITY_FX_PATCH = `
   // Haz de luz vertical
   '.bf-ec-beam{position:absolute;left:50%;top:-30%;width:60%;height:140%;transform:translateX(-50%);background:linear-gradient(180deg,transparent 0%,var(--ec-flash) 45%,var(--ec-flash) 55%,transparent 100%);filter:blur(6px);opacity:0;animation:bfEcBeam 2.6s ease-out forwards}'+
   '@keyframes bfEcBeam{0%{opacity:0;transform:translateX(-50%) scaleY(0)}20%{opacity:1;transform:translateX(-50%) scaleY(1)}75%{opacity:.85}100%{opacity:0;transform:translateX(-50%) scaleY(1.1)}}'+
-  // Soccer ball
-  '.bf-ec-ball{position:absolute;font-size:28px;opacity:0;animation:bfEcBall 1.8s ease-out forwards;filter:drop-shadow(0 0 10px var(--ec-glow))}'+
-  '@keyframes bfEcBall{0%{opacity:0;transform:translateY(0) scale(.3) rotate(0)}20%{opacity:1;transform:translateY(-30vh) scale(1.2) rotate(180deg)}60%{opacity:.8;transform:translateY(-50vh) scale(1) rotate(360deg)}100%{opacity:0;transform:translateY(-70vh) scale(.7) rotate(540deg)}}'+
-  // Goalpost
-  '.bf-ec-goalpost{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);width:140px;height:90px;opacity:0;animation:bfEcGoalpost 2.2s ease-out .3s forwards}'+
-  '.bf-ec-goalpost::before{content:"";position:absolute;left:0;bottom:0;width:10px;height:100%;background:linear-gradient(180deg,#d4a574,#8b6940);border-radius:4px 4px 0 0;box-shadow:0 0 12px var(--ec-glow)}'+
-  '.bf-ec-goalpost::after{content:"";position:absolute;right:0;bottom:0;width:10px;height:100%;background:linear-gradient(180deg,#d4a574,#8b6940);border-radius:4px 4px 0 0;box-shadow:0 0 12px var(--ec-glow)}'+
-  '.bf-ec-goalpost-bar{position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(90deg,#d4a574,#8b6940);border-radius:3px}'+
-  '@keyframes bfEcGoalpost{0%{opacity:0;transform:translateX(-50%) translateY(40px) scale(.5)}30%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:.9}100%{opacity:0;transform:translateX(-50%) translateY(-10px) scale(1.1)}}'+
-  // Green field particles
-  '.bf-ec-turf{position:absolute;font-size:16px;opacity:0;animation:bfEcTurf 2s ease-out forwards}'+
-  '@keyframes bfEcTurf{0%{opacity:0;transform:scale(.3)}30%{opacity:.6}100%{opacity:0;transform:scale(1.5)}}'+
+  // Futbolín (mesa de foosball) — mueble rojo con varillas, muñecos y palancas
+  '.bf-ec-foo{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(68vmin,480px);height:min(38vmin,280px);opacity:0;animation:bfEcFoo 2.8s cubic-bezier(.2,.85,.3,1) forwards}'+
+  '@keyframes bfEcFoo{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotateX(30deg) rotateY(-15deg)}20%{opacity:1}45%{transform:translate(-50%,-50%) scale(1.12) rotateX(-8deg) rotateY(10deg)}65%{transform:translate(-50%,-50%) scale(1) rotateX(3deg) rotateY(-3deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1.05) rotateX(0) rotateY(0)}}'+
+  '.bf-ec-foo-cabinet{width:100%;height:100%;background:linear-gradient(180deg,#b82828 0%,#a02020 45%,#7a1818 100%);border-radius:10px;border:3px solid #5a1010;box-shadow:0 14px 44px rgba(0,0,0,.85),0 0 50px var(--ec-glow),inset 0 3px 0 rgba(255,255,255,.18);position:relative;overflow:hidden}'+
+  '.bf-ec-foo-field{position:absolute;top:10%;left:6%;right:6%;bottom:20%;background:linear-gradient(180deg,#1a1208,#0a0804);border-radius:5px;border:2px solid #3a1a0a;overflow:hidden}'+
+  '.bf-ec-foo-rod{position:absolute;left:10%;right:10%;height:4px;background:linear-gradient(180deg,#e8e8e8,#999,#e8e8e8);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.7),0 0 6px rgba(200,200,200,.25)}'+
+  '.bf-ec-foo-fig{position:absolute;width:14px;height:14px;border-radius:50%;background:linear-gradient(180deg,#f0e0c0,#c0a080);border:1.5px solid #5a3a1a;box-shadow:0 1px 4px rgba(0,0,0,.6)}'+
+  '.bf-ec-foo-handle{position:absolute;width:11px;height:11px;border-radius:50%;background:linear-gradient(180deg,#d4a574,#8b6940);border:1.5px solid #5a3a1a;box-shadow:0 1px 3px rgba(0,0,0,.5)}'+
+  '.bf-ec-foo-coin{position:absolute;right:3%;top:12%;width:14px;height:22px;background:linear-gradient(180deg,#666,#2a2a2a);border-radius:2px;border:1px solid #000;box-shadow:inset 0 0 4px rgba(0,0,0,.9),0 1px 2px rgba(0,0,0,.5)}'+
+  '.bf-ec-foo-coin::before{content:"";position:absolute;left:50%;top:2px;transform:translateX(-50%);width:7px;height:18px;background:#0a0a0a;border-radius:1px}'+
+  '.bf-ec-foo-drawer{position:absolute;bottom:4%;left:8%;right:8%;height:11%;background:linear-gradient(180deg,#8b1818,#5a1010);border-radius:3px;border:1px solid #3a0808;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 1px 2px rgba(0,0,0,.4)}'+
+  '.bf-ec-foo-ball{position:absolute;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#ccc 55%,#777);border:1px solid #333;box-shadow:0 1px 5px rgba(0,0,0,.7);opacity:0;animation:bfEcFooBall 1.4s ease-in-out infinite}'+
+  '@keyframes bfEcFooBall{0%{opacity:0;transform:translateY(0) scale(.4)}15%{opacity:1;transform:translateY(-18px) scale(1.1)}50%{transform:translateY(2px) scale(1)}85%{opacity:.8}100%{opacity:0;transform:translateY(-18px) scale(.5)}}'+
   // Chess knight (horse)
   '.bf-ec-knight{position:absolute;left:50%;top:50%;font-size:140px;opacity:0;animation:bfEcKnight 2.8s cubic-bezier(.2,.85,.3,1) forwards;filter:drop-shadow(0 0 40px var(--ec-glow));transform:translate(-50%,-50%)}'+
   '@keyframes bfEcKnight{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-30deg) translateY(40vh)}20%{opacity:1}40%{transform:translate(-50%,-50%) scale(1.3) rotate(10deg)}60%{transform:translate(-50%,-50%) scale(1) rotate(-5deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.1) rotate(0) translateY(-10vh)}}'+
@@ -177,9 +178,17 @@ export const EPIC_ABILITY_FX_PATCH = `
       html+='<div class="bf-ec-halo"></div>';
       for(var i=0;i<16;i++)html+='<span class="bf-ec-spark" style="left:'+(4+Math.random()*92)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     }else if(kind==='football'){
-      html+='<div class="bf-ec-goalpost"><div class="bf-ec-goalpost-bar"></div></div>';
-      for(var i=0;i<10;i++)html+='<span class="bf-ec-ball" style="left:'+(8+Math.random()*84)+'%;bottom:-5%;animation-delay:'+(Math.random()*1.5).toFixed(2)+'s">⚽</span>';
-      for(var i=0;i<8;i++)html+='<span class="bf-ec-turf" style="left:'+(Math.random()*100)+'%;top:'+(Math.random()*100)+'%;animation-delay:'+(Math.random()*1).toFixed(2)+'s">🟩</span>';
+      html+='<div class="bf-ec-foo"><div class="bf-ec-foo-cabinet"><div class="bf-ec-foo-coin"></div><div class="bf-ec-foo-field">';
+      for(var ri=0;ri<4;ri++){
+        var ry=18+ri*20;
+        html+='<div class="bf-ec-foo-rod" style="top:'+ry+'%"></div>';
+        html+='<span class="bf-ec-foo-handle" style="left:2%;top:'+(ry-1)+'%"></span>';
+        html+='<span class="bf-ec-foo-handle" style="right:2%;top:'+(ry-1)+'%"></span>';
+        for(var fi=0;fi<3;fi++)html+='<span class="bf-ec-foo-fig" style="left:'+(18+fi*30)+'%;top:'+(ry-2)+'%"></span>';
+      }
+      html+='</div><div class="bf-ec-foo-drawer"></div></div></div>';
+      html+='<span class="bf-ec-foo-ball" style="left:35%;top:25%;animation-duration:1.2s"></span>';
+      html+='<span class="bf-ec-foo-ball" style="left:55%;top:30%;animation-delay:.4s;animation-duration:1.5s"></span>';
     }else if(kind==='chess_glue'){
       html+='<div class="bf-ec-knight">♞</div>';
       for(var i=0;i<12;i++)html+='<span class="bf-ec-glue" style="left:'+(8+Math.random()*84)+'%;bottom:-5%;animation-delay:'+(Math.random()*1.5).toFixed(2)+'s">🩪</span>';
