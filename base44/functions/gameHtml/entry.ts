@@ -919,7 +919,7 @@ function buildArtScript(dbCards) {
     if (window.__bfTransformerPatched || typeof SPELLS === 'undefined' || typeof HEROES === 'undefined' || typeof G === 'undefined' || typeof window.castSpell !== 'function') return;
     window.__bfTransformerPatched = true;
     TOKENS.forEach(function(t) { if (!HEROES.some(function(h){return h && h.id===t.id;})) HEROES.push(t); });
-    if (!SPELLS.some(function(s){return s && s.id==='sp_transform';})) SPELLS.push({ id:'sp_transform', name:'Transformer', element:'arcano', kind:'transform', base:1, mana:20, cost:25, foil:true, num:108, txt:'Transforma a un héroe en otro aleatorio y sorpresivo.' });
+    if (!SPELLS.some(function(s){return s && s.id==='sp_transform';})) SPELLS.push({ id:'sp_transform', name:'Transformer', element:'arcano', kind:'transform', base:1, mana:20, cost:25, foil:true, num:108, txt:'Transforma a uno de los 6 héroes (propio o rival) de forma totalmente aleatoria en un token sorpresivo.' });
     function bfMorph(t, by) {
       var morphPool = TOKENS.filter(function(token){ return token && token.id !== 'tk_patito_goma' && !token._bfDuck; }); var tk = morphPool[Math.floor(Math.random()*morphPool.length)], old = t.name;
       ['name','title','clan','clanColor','type','cc','ad','he','hp','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','akind','num','art','eliteArt'].forEach(function(k){ t[k]=tk[k]; });
@@ -937,14 +937,20 @@ function buildArtScript(dbCards) {
       if (typeof NET !== 'undefined' && NET.role === 'client') { if(typeof sendIntent==='function') sendIntent('castSpell',{id:id}); return; }
       var side=B.current.side, h=getHero(side,B.current.id), s=byId(SPELLS,id);
       if (h.mana < s.mana) { if(window.notif) notif('Maná insuficiente'); return; }
-      pendTarget('Héroe a transformar', enemySide(side), function(t){ h.mana-=s.mana; bfMorph(t, h.name+' lanza Transformer'); if(typeof finishAct==='function') finishAct(); });
+      var pool = (living('p')||[]).concat(living('o')||[]).filter(function(t){ return t && t.id !== h.id; });
+      if (!pool.length) return;
+      var tgt = pool[Math.floor(Math.random()*pool.length)];
+      h.mana -= s.mana;
+      bfMorph(tgt, h.name+' lanza Transformer');
+      if(typeof finishAct==='function') finishAct();
     };
     if (typeof window.castSpell_AI === 'function') {
       var origAi = window.castSpell_AI;
       window.castSpell_AI = function(side,h,s,target){
         if (!s || s.kind !== 'transform') return origAi.apply(this, arguments);
         h.mana -= s.mana;
-        var tgt = target || living(enemySide(side)).sort(function(a,b){return (b.cc+b.ad+b.he)-(a.cc+a.ad+a.he);})[0];
+        var pool = (living('p')||[]).concat(living('o')||[]).filter(function(t){ return t && t.id !== h.id; });
+        var tgt = target || (pool.length ? pool[Math.floor(Math.random()*pool.length)] : null);
         if (tgt) bfMorph(tgt, h.name+' lanza Transformer'); if (typeof endTurn==='function') endTurn();
       };
     }
