@@ -10,7 +10,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   if(window.__bfSpecCine)return;
   window.__bfSpecCine=true;
 
-  var PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6e80fa42f_generated_image.png';
+  var PHOENIX_PLUMA_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4581afaa7_generated_image.png';
+  var PHOENIX_AVE_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b990b1173_generated_image.png';
   var ROBOT_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
   var DUCK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';
   var TANK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/76149d71f_generated_image.png';
@@ -37,7 +38,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     img.onerror=function(){CUT[url]=url;};
     img.src=url;
   }
-  [PHOENIX_IMG,ROBOT_IMG,DUCK_IMG,TANK_IMG].forEach(cutout);
+  [PHOENIX_PLUMA_IMG,PHOENIX_AVE_IMG,ROBOT_IMG,DUCK_IMG,TANK_IMG].forEach(cutout);
 
   var css=''+
   '#bf-spec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfScIn .3s ease-out}'+
@@ -49,6 +50,10 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '@media(max-width:900px){#bf-spec-cine .bf-sc-img{left:78%;width:min(46vmin,340px);height:min(46vmin,340px);margin:calc(min(46vmin,340px)/-2) 0 0 calc(min(46vmin,340px)/-2)}}'+
   '#bf-spec-cine.bf-sc-phoenix .bf-sc-img{filter:drop-shadow(0 0 60px rgba(255,120,20,.8)) saturate(1.25);animation:bfScPhoenix 3s cubic-bezier(.2,.85,.3,1) forwards}'+
   '@keyframes bfScPhoenix{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.12);opacity:1}}'+
+  '#bf-spec-cine.bf-sc-phoenix-ave .bf-sc-img{width:min(72vmin,620px);height:min(72vmin,620px);left:78%;margin:calc(min(72vmin,620px)/-2) 0 0 calc(min(72vmin,620px)/-2);filter:drop-shadow(0 0 70px rgba(255,140,30,.85)) saturate(1.3) brightness(1.1);animation:bfScPhoenixAve 3.2s cubic-bezier(.2,.85,.3,1) forwards}'+
+  '@media(max-width:900px){#bf-spec-cine.bf-sc-phoenix-ave .bf-sc-img{left:75%;width:min(56vmin,420px);height:min(56vmin,420px);margin:calc(min(56vmin,420px)/-2) 0 0 calc(min(56vmin,420px)/-2)}}'+
+  '@keyframes bfScPhoenixAve{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.25)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1.1)}74%{transform:rotateY(8deg) scale(1.15)}100%{transform:rotateY(0) translateY(-6vh) scale(1.25);opacity:1}}'+
+  '#bf-spec-cine.bf-sc-phoenix-ave .bf-sc-ttl{color:#ffb347;text-shadow:0 0 32px rgba(255,120,20,1),0 4px 12px #000}'+
   '#bf-spec-cine.bf-sc-robot .bf-sc-img{filter:drop-shadow(0 0 50px rgba(60,160,255,.85)) saturate(1.2);animation:bfScRobot 3s cubic-bezier(.2,.9,.3,1) forwards}'+
   '@keyframes bfScRobot{0%{transform:rotateY(90deg) translateZ(-500px) scale(.3);opacity:0}16%{opacity:1}34%{transform:rotateY(-18deg) translateZ(0) scale(1.1)}44%{transform:rotateY(-14deg) translateX(-8px) scale(1.08)}50%{transform:rotateY(-16deg) translateX(8px) scale(1.1)}56%{transform:rotateY(-15deg) translateX(-5px) scale(1.09)}72%{transform:rotateY(10deg) scale(1)}100%{transform:rotateY(0) scale(1.06);opacity:1}}'+
   '#bf-spec-cine.bf-sc-duck .bf-sc-img{filter:drop-shadow(0 0 55px rgba(255,220,60,.9)) saturate(1.3);animation:bfScDuck 3s cubic-bezier(.2,.9,.3,1) forwards}'+
@@ -89,10 +94,11 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     lastCine=now;
     var ov=document.createElement('div');
     ov.id='bf-spec-cine';
-    ov.className=kind==='phoenix'?'bf-sc-phoenix':(kind==='duck'?'bf-sc-duck':(kind==='tank'?'bf-sc-tank':'bf-sc-robot'));
+    ov.className=kind==='phoenix_ave'?'bf-sc-phoenix-ave':(kind==='phoenix'?'bf-sc-phoenix':(kind==='duck'?'bf-sc-duck':(kind==='tank'?'bf-sc-tank':'bf-sc-robot')));
     var html='<div class="bf-sc-bg"></div><div class="bf-sc-flash"></div>';
-    if(kind==='phoenix'){
-      for(var i=0;i<16;i++)html+='<span class="bf-sc-ember" style="left:'+(6+Math.random()*88)+'%;--dx:'+((Math.random()*120-60).toFixed(0))+'px;animation-delay:'+(Math.random()*1.4).toFixed(2)+'s;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px"></span>';
+    if(kind==='phoenix'||kind==='phoenix_ave'){
+      var _n=kind==='phoenix_ave'?20:16;
+      for(var i=0;i<_n;i++)html+='<span class="bf-sc-ember" style="left:'+(6+Math.random()*88)+'%;--dx:'+((Math.random()*120-60).toFixed(0))+'px;animation-delay:'+(Math.random()*1.4).toFixed(2)+'s;width:'+(5+Math.random()*8)+'px;height:'+(5+Math.random()*8)+'px"></span>';
     }else if(kind==='duck'){
       // Casquillos de bala cayendo y fogonazos alrededor del patito.
       for(var d=0;d<14;d++)html+='<span class="bf-sc-shell" style="left:'+(55+Math.random()*38)+'%;top:'+(30+Math.random()*30)+'%;--dx:'+((-40-Math.random()*120).toFixed(0))+'px;animation-delay:'+(Math.random()*1).toFixed(2)+'s"></span>';
@@ -105,9 +111,9 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     }else{
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
-    var src=kind==='phoenix'?PHOENIX_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG));
+    var src=kind==='phoenix_ave'?PHOENIX_AVE_IMG:(kind==='phoenix'?PHOENIX_PLUMA_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG)));
     html+='<img class="bf-sc-img" src="'+(CUT[src]||src)+'" alt="">';
-    html+='<div class="bf-sc-ttl">'+(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!')))+'</div>';
+    html+='<div class="bf-sc-ttl">'+(kind==='phoenix_ave'?'¡EL AVE FÉNIX RESUCITA!':(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!'))))+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
     setTimeout(function(){ov.classList.add('bf-sc-out');},2700);
@@ -122,7 +128,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     window.__bfShowCardReveal=function(ev){
       try{
         var n=ev&&ev.name?String(ev.name):'';
-        if(/f[eé]nix/i.test(n))playCine('phoenix');
+        if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');
+        else if(/f[eé]nix/i.test(n))playCine('phoenix');
         else if(/transformer/i.test(n))playCine('robot');
       }catch(e){}
       return orig.apply(this,arguments);
@@ -144,7 +151,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
         if(ev.k==='transform')playCine('robot');
         else if(ev.k==='bfcard'&&ev.name){
           var n=String(ev.name);
-          if(/f[eé]nix/i.test(n))playCine('phoenix');
+          if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');
+          else if(/f[eé]nix/i.test(n))playCine('phoenix');
           else if(/transformer/i.test(n))playCine('robot');
         }
       });}catch(e){}
