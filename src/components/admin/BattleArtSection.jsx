@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import BattlePreview from './BattlePreview';
 
 // Sección de escenas de batalla (base + élite) en el editor del backoffice.
 // Muestra las imágenes generadas y permite regenerarlas con IA.
@@ -7,6 +8,7 @@ import React, { useState } from 'react';
 export default function BattleArtSection({ form, onGenerate, generating }) {
   const [basePrompt, setBasePrompt] = useState('');
   const [elitePrompt, setElitePrompt] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
   if (!['hero', 'bizarro'].includes(form.category)) return null;
 
@@ -89,6 +91,16 @@ export default function BattleArtSection({ form, onGenerate, generating }) {
           )}
         </div>
       </div>
+
+      {/* Vista previa del rectángulo de batalla */}
+      <button
+        type="button"
+        onClick={() => setShowPreview(!showPreview)}
+        className="mt-3 rounded-xl border border-[#ffd24a44] bg-[#1a0d2e]/60 px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#ffd24a] hover:bg-[#2a1547]/60"
+      >
+        {showPreview ? '🔼 Ocultar vista previa' : '👁️ Ver cómo se verá en batalla'}
+      </button>
+      {showPreview && <BattlePreview form={form} />}
     </div>
   );
 }
