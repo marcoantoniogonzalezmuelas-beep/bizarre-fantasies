@@ -267,17 +267,56 @@ export const ABILITY_FX_PATCH = `
   }
   new MutationObserver(scanSummons).observe(document.documentElement,{childList:true,subtree:true});
 
+  // Deduplicación: evita que la animación se dispare dos veces si tanto el
+  // hook de useAbility como el escaneo periódico detectan el mismo uso.
+  var lastFx={};
+  function tryPlay(side,hero){
+    if(!hero)return;
+    // Los héroes épicos con animación propia los gestiona epicAbilityFxPatch.js.
+    if(hero.name&&EPIC_FX_NAMES[hero.name])return;
+    var key=side+'_'+hero.id;
+    var now=Date.now();
+    if(lastFx[key]&&now-lastFx[key]<1200)return;
+    lastFx[key]=now;
+    try{play(side,hero);}catch(e){}
+  }
+
+  // Escaneo periódico: detecta cuando abilityUsed pasa de false a true.
+  // Funciona en AMBOS jugadores (host y cliente) — el cliente no recibe
+  // la llamada a useAbility, solo la actualización de estado con abilityUsed.
+  // G.team viaja en el snapshot online, así que esto corre en ambos.
+  var prevUsed={};
+  function scanAbilities(){
+    if(typeof G==='undefined'||!G||!G.team)return;
+    ['p','o'].forEach(function(side){
+      (G.team[side]||[]).forEach(function(h){
+        if(!h||!h.id)return;
+        var key=side+'_'+h.id;
+        var used=!!h.abilityUsed;
+        if(used&&!prevUsed[key]){
+          tryPlay(side,h);
+        }
+        prevUsed[key]=used;
+      });
+    });
+  }
+
   function install(){
     if(typeof window.useAbility!=='function'||window.__bfAbxHooked)return false;
     window.__bfAbxHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,hero){
-      if(hero)try{play(side,hero);}catch(e){}
+      if(hero)try{tryPlay(side,hero);}catch(e){}
       return orig.apply(this,arguments);
     };
     return true;
   }
-  var tries=0,t=setInterval(function(){if(install()||tries++>100)clearInterval(t);},150);
+  var tries=0,t=setInterval(function(){
+    scanAbilities();
+    if(!window.__bfAbxHooked){
+      if(install()||tries++>100)clearInterval(t);
+    }
+  },150);
 })();
 </script>
 `;
