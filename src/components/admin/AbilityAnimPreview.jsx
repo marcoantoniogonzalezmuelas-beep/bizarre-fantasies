@@ -62,7 +62,7 @@ function useCutout(url) {
 export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, elite, desc, onClose }) {
   const styleRef = useRef(null);
   const color = clanColor || (elite ? '#c05bff' : '#ffd24a');
-  const glow = hexToRgba(color, 0.85) || 'rgba(255,210,74,0.85)';
+  const glow = hexToRgba(color, 0.38) || 'rgba(255,210,74,0.38)';
   const flash = hexToRgba(color, 0.7) || 'rgba(255,255,255,0.7)';
   const cutUrl = useCutout(artUrl);
   const motion = pickMotion(desc);
@@ -116,7 +116,7 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
           width: 'min(74vmin,640px)', height: 'min(78vmin,680px)', objectFit: 'contain',
           transformStyle: 'preserve-3d',
           margin: 'calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2)',
-          filter: `drop-shadow(0 0 60px ${glow}) saturate(1.4) brightness(1.15)`,
+          filter: `drop-shadow(0 0 28px ${glow}) saturate(1.25) brightness(1.1)`,
           animation: `${motion.anim} 3.2s cubic-bezier(.2,.85,.3,1) forwards`,
         }}
       />
