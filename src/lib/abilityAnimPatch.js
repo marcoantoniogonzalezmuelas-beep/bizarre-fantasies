@@ -53,6 +53,10 @@ export const ABILITY_ANIM_PATCH = `
   window.addEventListener('message',function(e){
     if(e.data&&e.data.bfAbilityAnim&&typeof e.data.bfAbilityAnim==='object'){
       animMap=e.data.bfAbilityAnim;
+      // CRÍTICO: también actualizamos la referencia global para que otros
+      // parches (epicAbilityFxPatch) vean el mapa poblado y NO reproduzcan su
+      // cinemática antigua cuando este héroe ya tiene una animación nueva.
+      window.__bfAbilityAnimMap=animMap;
       // Pre-recorta todas las imágenes para que el primer disparo ya salga sin fondo.
       Object.keys(animMap).forEach(function(k){
         var ent=animMap[k];if(!ent)return;

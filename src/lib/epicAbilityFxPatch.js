@@ -252,7 +252,7 @@ export const EPIC_ABILITY_FX_PATCH = `
   var lastFx={};
   function tryPlay(side,hero){
     if(!hero||!HERO_IDS[hero.id])return;
-    if(window.__bfAbilityAnimMap){var _aak=hero.cid||hero.card_id||hero.id;if(_aak&&window.__bfAbilityAnimMap[_aak])return;}
+    if(window.__bfAbilityAnimMap){var _aak=hero.id||hero.cid||hero.card_id;if(_aak&&window.__bfAbilityAnimMap[_aak])return;}
     var key=side+'_'+hero.id;
     var now=Date.now();
     if(lastFx[key]&&now-lastFx[key]<1200)return;
