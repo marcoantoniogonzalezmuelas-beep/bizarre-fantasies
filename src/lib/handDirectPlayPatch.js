@@ -80,8 +80,20 @@ export const HAND_DIRECT_PLAY_PATCH = `
           flyChip(chip);
           if(kind==='spell'&&typeof window.castSpell==='function'){
             setTimeout(function(){ try{window.castSpell(id);}catch(err){} },340);
-          } else if(kind==='object'&&typeof window.actItemMenu==='function'){
-            setTimeout(function(){ window.actItemMenu(); },340);
+          } else if(kind==='object'){
+            // Objetos: siempre jugables. Se usan directo con useItem(idx) (índice
+            // en G.items[side]); el juego elige objetivo si lo necesita y
+            // consume la carta (desaparece de la mano al re-renderizar).
+            var bSide=(typeof B!=='undefined'&&B&&B.current)?(B.current.side||side):side;
+            if(bSide!==side){ if(typeof notif==='function') notif('Espera tu turno para usar objetos.'); return; }
+            var items=(typeof G!=='undefined'&&G&&G.items)?(G.items[side]||[]):[];
+            var oIdx=-1;
+            for(var k=0;k<items.length;k++){ if(items[k]&&items[k].name===name){ oIdx=k; break; } }
+            if(oIdx>=0&&typeof window.useItem==='function'){
+              setTimeout(function(){ try{window.useItem(oIdx);}catch(err){ if(typeof window.actItemMenu==='function')window.actItemMenu(); } },340);
+            } else if(typeof window.actItemMenu==='function'){
+              setTimeout(function(){ window.actItemMenu(); },340);
+            }
           }
         });
         play.parentNode.replaceChild(np,play);
