@@ -16,7 +16,11 @@ export const CARD_MAGNIFIER_PATCH = `
     '.bf-magnifier .bf-mag-name{position:absolute;left:0;right:0;bottom:0;padding:6px 8px 9px;font-family:Cinzel,serif;font-weight:900;font-size:15px;color:#fff5dc;text-align:center;text-transform:uppercase;text-shadow:0 2px 4px #000;background:linear-gradient(0deg,rgba(8,5,14,.95),rgba(8,5,14,.55) 65%,transparent);z-index:3}' +
     '.bf-magnifier .bf-mag-txt{position:absolute;left:8px;right:8px;bottom:44px;padding:5px 8px;border-radius:8px;background:rgba(8,5,14,.85);border:1px solid rgba(255,210,74,.3);color:#fff7ea;font-size:11px;font-weight:700;line-height:1.25;text-align:center;z-index:3}' +
     '.bf-magnifier .bf-mag-mana{position:absolute;top:8px;right:8px;z-index:4;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:17px;color:#eaf4ff;background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a);border:2px solid #8fc4ff;box-shadow:0 3px 8px rgba(0,0,0,.55),inset 0 1px 2px rgba(255,255,255,.5);text-shadow:0 1px 2px rgba(0,0,0,.5)}' +
-    '.bf-magnifier .bf-mag-mana small{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:.5px;color:#8fc4ff;text-shadow:0 1px 3px #000}';
+    '.bf-magnifier .bf-mag-mana small{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:.5px;color:#8fc4ff;text-shadow:0 1px 3px #000}' +
+    // La lupa (botón de zoom) de las cartas de la mano ya no es necesaria: el
+    // magnifier muestra el texto y el coste al pasar el ratón por encima. Solo
+    // se oculta en dispositivos con hover (donde el magnifier funciona).
+    '.chip.bf-chip-card .bf-chip-zoom{display:none!important}';
   document.head.appendChild(style);
 
   var mag = null;
@@ -51,21 +55,35 @@ export const CARD_MAGNIFIER_PATCH = `
     mag.querySelector('.bf-mag-art').style.backgroundImage = 'url("' + url + '")';
     var nameEl = chip.querySelector('.bf-chip-name');
     mag.querySelector('.bf-mag-name').textContent = nameEl ? nameEl.textContent : (chip.title || '');
+    var nm = nameEl ? nameEl.textContent.trim() : '';
+    // Busca la carta por nombre en hechizos/objetos/equipo para sacar su texto
+    // y su maná aunque la carta pequeña (chip) no los lleve (p.ej. la mano en
+    // batalla, donde el chip solo muestra nombre y arte).
+    var found = null;
+    if (nm) {
+      ['SPELLS','OBJECTS','MELEE','RANGED','ARMORS'].forEach(function(arr){
+        if (found) return;
+        var A = (typeof window[arr] !== 'undefined') ? window[arr] : null;
+        if (A) found = A.find(function(x){ return x && x.name === nm; });
+      });
+    }
     var info = chip.querySelector('.bf-chip-info');
     var t = mag.querySelector('.bf-mag-txt');
-    if (info && info.textContent) { t.textContent = info.textContent; t.style.display = ''; }
-    else t.style.display = 'none';
-    // Coste de maná (hechizos): mismo orbe azul que en la carta pequeña. Si la
-    // carta pequeña no lleva el orbe (p. ej. la mano en batalla), se busca el
-    // hechizo por nombre en la lista del juego.
+    var infoTxt = (info && info.textContent) ? info.textContent : (found ? (found.txt || found.description || found.abilityTxt || '') : '');
+    if (infoTxt) { t.textContent = infoTxt; t.style.display = ''; } else t.style.display = 'none';
+    // Coste de maná (hechizos/objetos): mismo orbe azul que en la carta pequeña.
+    // Si el chip no lleva el orbe, se busca por nombre en la lista del juego.
     var manaBadge = chip.querySelector('.bf-chip-cost.bf-mana-cost');
     var manaTxt = manaBadge && manaBadge.textContent ? manaBadge.textContent : '';
+    if (!manaTxt && found) {
+      var mv = (typeof window.bfManaFor === 'function') ? window.bfManaFor(found) : (found.mana != null ? found.mana : null);
+      if (mv != null) manaTxt = String(mv);
+    }
     if (!manaTxt) {
-      var nm = nameEl ? nameEl.textContent.trim() : '';
       var sp = (typeof SPELLS !== 'undefined' && nm) ? SPELLS.find(function(s){ return s && s.name === nm; }) : null;
       if (sp) {
-        var mv = (typeof window.bfManaFor === 'function') ? window.bfManaFor(sp) : (sp.mana != null ? sp.mana : null);
-        if (mv != null) manaTxt = String(mv);
+        var mv2 = (typeof window.bfManaFor === 'function') ? window.bfManaFor(sp) : (sp.mana != null ? sp.mana : null);
+        if (mv2 != null) manaTxt = String(mv2);
       }
     }
     var mm = mag.querySelector('.bf-mag-mana');
