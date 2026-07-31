@@ -84,7 +84,6 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
     dx: Math.round(Math.random() * 100 - 50),
     delay: Math.random() * 1.2,
   }));
-  const rings = [0, 0.25, 0.5];
 
   return (
     <div
@@ -98,9 +97,6 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
     >
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent,rgba(0,0,0,.4),transparent)', animation: 'bfAaPrvVeil 2s ease-out forwards' }} />
       <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle, ${flash}, transparent 65%)`, animation: 'bfAaPrvFlash .7s ease-out .25s both' }} />
-      {rings.map((d, i) => (
-        <div key={'r' + i} style={{ position: 'absolute', left: '50%', top: '50%', borderRadius: '50%', border: `3px solid ${color}`, boxShadow: `0 0 20px ${glow}`, opacity: 0, animation: `bfAaPrvRing 1.5s ease-out ${d}s forwards`, transform: 'translate(-50%,-50%)' }} />
-      ))}
       {sparks.map((sp, i) => (
         <span key={'s' + i} style={{ position: 'absolute', bottom: '10%', left: sp.left + '%', width: 4, height: 4, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}, 0 0 14px ${glow}`, opacity: 0, animation: `bfAaPrvSpark 2s ease-out ${sp.delay}s forwards`, ['--dx']: sp.dx + 'px' }} />
       ))}
@@ -116,7 +112,7 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
           width: 'min(74vmin,640px)', height: 'min(78vmin,680px)', objectFit: 'contain',
           transformStyle: 'preserve-3d',
           margin: 'calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2)',
-          filter: `drop-shadow(0 0 28px ${glow}) saturate(1.25) brightness(1.1)`,
+          filter: `saturate(1.25) brightness(1.1) drop-shadow(0 14px 34px rgba(0,0,0,.65))`,
           animation: `${motion.anim} 3.2s cubic-bezier(.2,.85,.3,1) forwards`,
         }}
       />
