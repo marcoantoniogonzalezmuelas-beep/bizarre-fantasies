@@ -44,18 +44,32 @@ export const MOTIONS = [
       '@keyframes bfAaSpread{0%{opacity:0;transform:scaleX(.2) scaleY(.4)}40%{opacity:.9;transform:scaleX(1) scaleY(1)}100%{opacity:0;transform:scaleX(1.3) scaleY(1.1)}}',
     fxTag: '<div class="bf-aa-spread"></div>',
   },
-  // Metralleta / ametralladora: sacudida rápida + varios fogonazos.
+  // Metralleta / ametralladora / plasma: retroceso + ráfaga de fogonazos
+  // encadenados, casquillos cayendo, destellos 💥, trazas de disparo y humo.
+  // Efecto artesanal al estilo del patito de goma (specialCardCinematicPatch).
   {
     id: 'rapid',
-    keywords: ['metralleta', 'metralla', 'ametralladora', 'machinegun', 'machine gun', 'subfusil', 'rafaga', 'ráfaga', 'rapid fire', 'rapidfire', 'fusil'],
+    keywords: ['metralleta', 'metralla', 'ametralladora', 'machinegun', 'machine gun', 'subfusil', 'rafaga', 'ráfaga', 'rapid fire', 'rapidfire', 'fusil', 'plasma'],
     anim: 'bfAaRapid',
     keyframes:
-      '@keyframes bfAaRapid{0%{transform:scale(.15) translateY(12vh);opacity:0}15%{opacity:1;transform:scale(1.25) translateY(0)}20%{transform:scale(1.2) translate(3vw,0)}26%{transform:scale(1.2) translate(-3vw,0)}32%{transform:scale(1.2) translate(2vw,0)}38%{transform:scale(1.2) translate(-2vw,0)}44%{transform:scale(1.2) translate(1.5vw,0)}50%{transform:scale(1.2) translate(-1.5vw,0)}58%{transform:scale(1.2) translate(1vw,0)}66%{transform:scale(1.2) translate(-1vw,0)}75%{transform:scale(1.2) translate(0,0)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
+      '@keyframes bfAaRapid{0%{transform:scale(.15) translateY(14vh);opacity:0}14%{opacity:1;transform:scale(1.3) translateY(0) rotate(0)}19%{transform:scale(1.22) translate(4vw,1vh) rotate(-2deg)}25%{transform:scale(1.22) translate(-4vw,0) rotate(1.5deg)}31%{transform:scale(1.22) translate(3vw,1vh) rotate(-1.5deg)}37%{transform:scale(1.22) translate(-3vw,0) rotate(1deg)}43%{transform:scale(1.22) translate(2.5vw,.5vh) rotate(-1deg)}49%{transform:scale(1.22) translate(-2vw,0) rotate(.8deg)}55%{transform:scale(1.2) translate(2vw,.5vh) rotate(-.8deg)}61%{transform:scale(1.2) translate(-1.5vw,0) rotate(.6deg)}68%{transform:scale(1.2) translate(1vw,0) rotate(-.5deg)}75%{transform:scale(1.18) translate(0,0) rotate(0)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
     fxCss:
-      '.bf-aa-muzzle{position:absolute;top:50%;left:62%;width:26vmin;height:26vmin;margin:-13vmin 0 0 -13vmin;background:radial-gradient(circle,#fff 0%,var(--aa-flash,#fff) 26%,transparent 62%);opacity:0;animation:bfAaMuzzle .5s ease-out forwards;filter:blur(1px)}' +
-      '@keyframes bfAaMuzzle{0%{opacity:0;transform:scale(.2) rotate(0)}35%{opacity:1;transform:scale(1.3) rotate(25deg)}100%{opacity:0;transform:scale(1.8) rotate(60deg)}}',
+      '.bf-aa-rmuzzle{position:absolute;top:50%;left:64%;width:24vmin;height:24vmin;margin:-12vmin 0 0 -12vmin;background:radial-gradient(circle,#fff 0%,var(--aa-flash,#fff) 22%,transparent 60%);opacity:0;animation:bfAaRMuzzle .4s ease-out forwards;filter:blur(.5px)}' +
+      '@keyframes bfAaRMuzzle{0%{opacity:0;transform:scale(.15) rotate(0)}30%{opacity:1;transform:scale(1.4) rotate(20deg)}100%{opacity:0;transform:scale(2) rotate(80deg)}}' +
+      '.bf-aa-shell{position:absolute;width:7px;height:12px;border-radius:3px;background:linear-gradient(180deg,#ffe27a,#c8901f);box-shadow:0 0 8px rgba(255,200,60,.8);opacity:0;animation:bfAaShell 1.1s ease-in forwards}' +
+      '@keyframes bfAaShell{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,40px),55vh) rotate(520deg)}}' +
+      '.bf-aa-boom{position:absolute;font-size:clamp(22px,5vw,42px);opacity:0;animation:bfAaBoom .55s ease-out infinite;filter:drop-shadow(0 0 12px rgba(255,180,40,.9))}' +
+      '@keyframes bfAaBoom{0%,100%{opacity:0;transform:scale(.3)}35%{opacity:1;transform:scale(1.25)}}' +
+      '.bf-aa-tracer{position:absolute;top:50%;left:60%;height:3px;width:0;background:linear-gradient(90deg,#fff,var(--aa-color,#fff),transparent);box-shadow:0 0 10px var(--aa-color,#fff);opacity:0;animation:bfAaTracer .5s ease-out forwards}' +
+      '@keyframes bfAaTracer{0%{opacity:0;width:0}20%{opacity:1;width:38vw}80%{opacity:.6}100%{opacity:0;width:42vw}}' +
+      '.bf-aa-smoke{position:absolute;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#b0b0b0,transparent 70%);opacity:0;animation:bfAaSmoke 1.3s ease-out infinite}' +
+      '@keyframes bfAaSmoke{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:.6}100%{opacity:0;transform:translate(var(--dx,40px),-26vh) scale(2)}}',
     fxTag:
-      '<div class="bf-aa-muzzle" style="animation-delay:.18s"></div><div class="bf-aa-muzzle" style="left:56%;animation-delay:.3s"></div><div class="bf-aa-muzzle" style="left:58%;animation-delay:.42s"></div><div class="bf-aa-muzzle" style="left:60%;animation-delay:.54s"></div>',
+      '<div class="bf-aa-rmuzzle" style="animation-delay:.16s"></div><div class="bf-aa-rmuzzle" style="left:60%;animation-delay:.26s"></div><div class="bf-aa-rmuzzle" style="left:62%;animation-delay:.36s"></div><div class="bf-aa-rmuzzle" style="left:59%;animation-delay:.46s"></div><div class="bf-aa-rmuzzle" style="left:61%;animation-delay:.56s"></div><div class="bf-aa-rmuzzle" style="left:63%;animation-delay:.66s"></div>' +
+      '<span class="bf-aa-boom" style="left:62%;top:42%;animation-delay:.2s">💥</span><span class="bf-aa-boom" style="left:64%;top:46%;animation-delay:.4s">💥</span><span class="bf-aa-boom" style="left:60%;top:44%;animation-delay:.6s">💥</span><span class="bf-aa-boom" style="left:63%;top:48%;animation-delay:.8s">💥</span>' +
+      '<span class="bf-aa-shell" style="left:60%;top:40%;--dx:50px;animation-delay:.22s"></span><span class="bf-aa-shell" style="left:58%;top:38%;--dx:70px;animation-delay:.34s"></span><span class="bf-aa-shell" style="left:62%;top:42%;--dx:55px;animation-delay:.46s"></span><span class="bf-aa-shell" style="left:59%;top:40%;--dx:80px;animation-delay:.58s"></span><span class="bf-aa-shell" style="left:61%;top:44%;--dx:60px;animation-delay:.7s"></span><span class="bf-aa-shell" style="left:63%;top:38%;--dx:75px;animation-delay:.82s"></span><span class="bf-aa-shell" style="left:57%;top:42%;--dx:65px;animation-delay:.94s"></span>' +
+      '<div class="bf-aa-tracer" style="animation-delay:.2s"></div><div class="bf-aa-tracer" style="top:54%;animation-delay:.4s"></div><div class="bf-aa-tracer" style="top:52%;animation-delay:.6s"></div>' +
+      '<span class="bf-aa-smoke" style="left:64%;top:50%;--dx:30px;animation-delay:.3s"></span><span class="bf-aa-smoke" style="left:62%;top:48%;--dx:20px;animation-delay:.6s"></span><span class="bf-aa-smoke" style="left:66%;top:52%;--dx:40px;animation-delay:.9s"></span>',
   },
   // Tirachinas / honda: tensar y soltar + proyectil.
   {
