@@ -10,6 +10,7 @@ export default function FlashNewsAdmin() {
   const [checking, setChecking] = useState(true);
   const [items, setItems] = useState([]);
   const [text, setText] = useState('');
+  const [textEn, setTextEn] = useState('');
   const [active, setActive] = useState(true);
   const [order, setOrder] = useState(0);
   const [editingId, setEditingId] = useState(null);
@@ -40,16 +41,16 @@ export default function FlashNewsAdmin() {
     setHtIds({ punkito: map.punkito?.id || null, contact_label: map.contact_label?.id || null, contact_body: map.contact_body?.id || null });
   }
 
-  function reset() { setText(''); setActive(true); setOrder(0); setEditingId(null); }
+  function reset() { setText(''); setTextEn(''); setActive(true); setOrder(0); setEditingId(null); }
 
   async function save() {
     if (!text.trim()) return;
     setSaving(true);
     try {
       if (editingId) {
-        await base44.entities.FlashNews.update(editingId, { text: text.trim(), active, order: Number(order) || 0 });
+        await base44.entities.FlashNews.update(editingId, { text: text.trim(), text_en: textEn.trim(), active, order: Number(order) || 0 });
       } else {
-        await base44.entities.FlashNews.create({ text: text.trim(), active, order: Number(order) || 0 });
+        await base44.entities.FlashNews.create({ text: text.trim(), text_en: textEn.trim(), active, order: Number(order) || 0 });
       }
       await load();
       reset();
@@ -61,7 +62,7 @@ export default function FlashNewsAdmin() {
     }
   }
 
-  function edit(it) { setText(it.text); setActive(it.active); setOrder(it.order || 0); setEditingId(it.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  function edit(it) { setText(it.text); setTextEn(it.text_en || ''); setActive(it.active); setOrder(it.order || 0); setEditingId(it.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   async function remove(id) {
     if (!window.confirm('¿Borrar esta noticia del cartel?')) return;
@@ -171,6 +172,14 @@ export default function FlashNewsAdmin() {
               placeholder="Escribe el texto de la noticia que aparecerá en el cartel digital..."
               rows={3}
               className="w-full resize-none rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"
+            />
+            <label className="mt-1 block text-[11px] font-black uppercase tracking-wider text-[#b06cff]">Traducción al inglés (opcional)</label>
+            <textarea
+              value={textEn}
+              onChange={(e) => setTextEn(e.target.value)}
+              placeholder="English version of the news (optional)..."
+              rows={3}
+              className="w-full resize-none rounded-xl border border-[#c06bff33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#c06bff]"
             />
             <div className="flex flex-wrap items-center gap-4">
               <label className="flex items-center gap-2 text-sm text-[#cfc6dd]">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Radio } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { getLang } from '@/lib/i18n';
 
 // Cartel digital de "Actualidad": un panel LED compacto flotante tipo
 // indicador de autopista / andén de metro. Se ancla abajo-centro, justo bajo
@@ -16,7 +17,9 @@ export default function FlashNewsMarquee() {
   }, []);
 
   if (!items.length) return null;
-  const joined = items.map((i) => i.text).join('      ◆      ');
+  const isEn = getLang() === 'en';
+  const label = isEn ? 'NEWS' : 'ACTUALIDAD';
+  const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
   return (
     <div className="pointer-events-none fixed bottom-1 left-1/2 z-40 w-full max-w-[620px] -translate-x-1/2 select-none px-2">
@@ -34,7 +37,7 @@ export default function FlashNewsMarquee() {
             style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}
           >
             <Radio className="h-3.5 w-3.5 text-[#ffd24a]" />
-            <span className="font-heading text-[10px] font-black tracking-[0.22em] text-[#ffd24a]">ACTUALIDAD</span>
+            <span className="font-heading text-[10px] font-black tracking-[0.22em] text-[#ffd24a]">{label}</span>
           </div>
           <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-0.5">
             <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">

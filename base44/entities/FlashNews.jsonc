@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Texto de la noticia que aparece en el cartel digital de la home"
     },
+    "text_en": {
+      "type": "string",
+      "description": "Traducci\u00f3n al ingl\u00e9s del texto (opcional; si no se rellena, se usa el texto en espa\u00f1ol)"
+    },
     "active": {
       "type": "boolean",
       "default": true,
