@@ -24,9 +24,9 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
   const MOB_W = 760; // ancho del cartel en coordenadas 1200 (escala igual que el juego)
 
   useEffect(() => {
-    // Limpia posiciones guardadas por versiones anteriores. V4: el cartel ahora
-    // se escala como el resto de la pantalla en móvil, coords distintas.
-    try { if (!sessionStorage.getItem('bfSignPosV4')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV3'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV4', '1'); } catch (e) {}
+    // Limpia posiciones guardadas por versiones anteriores. V5: el cartel ahora
+    // se ancla debajo del bloque "Contacta" (no al fondo absoluto).
+    try { if (!sessionStorage.getItem('bfSignPosV5')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV4'); sessionStorage.removeItem('bfSignPosV3'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV5', '1'); } catch (e) {}
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
@@ -64,13 +64,12 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
         return;
       }
     } catch (e) {}
-    // Posición por defecto: lo más bajo posible del viewport (por debajo de
-    // los iconos de Reglas/Razas/Ranking y del bloque "Contacta"), sin salirse
-    // de la pantalla. En móvil el bloque "Contacta" llega casi al fondo, así
-    // que el cartel se ancla justo debajo de éste; en tablet hay hueco de
-    // sobra y queda pegado al fondo. Así no solapa los iconos del menú.
-    const maxTop = window.innerHeight - visualH; // pegado al fondo: nunca se sale
-    const veryBottom = maxTop - 4;
+    // Posición por defecto: justo debajo del bloque "Contacta" del juego
+    // (dentro del iframe), igual que en escritorio. En móvil/tablet el juego
+    // está escalado y el bloque "Contacta" NO queda al fondo del viewport,
+    // así que el cartel debe seguirlo en coordenadas de pantalla, no pegarse
+    // al fondo absoluto. Si no se encuentra el ancla, sí al fondo.
+    const maxTop = Math.max(0, window.innerHeight - visualH - 4);
     let contactBottom = 0;
     const iframe = document.querySelector('iframe');
     if (iframe) {
@@ -83,9 +82,10 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
         contactBottom = ir.top + anchor.getBoundingClientRect().bottom * iframeScale;
       }
     }
-    const top = Math.max(veryBottom, Math.min(contactBottom + 4, maxTop));
+    const desired = contactBottom > 0 ? contactBottom + 4 : maxTop;
+    const top = Math.max(4, Math.min(maxTop, desired));
     const maxX = Math.max(0, window.innerWidth - visualW - 4);
-    setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.max(4, Math.round(top)) });
+    setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.round(top) });
   }, [scale]);
 
   // Recoloca al montar/cambiar noticias y al rotar; repite unas veces hasta
