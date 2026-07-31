@@ -3,10 +3,9 @@ import { Radio } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
 // Cartel digital de "Actualidad": un panel LED compacto flotante tipo
-// indicador de autopista / andén de metro. No ocupa toda la pantalla; queda
-// centrado arriba con marco metálico, matriz de puntos y texto ámbar que
-// rota de izquierda a derecha. Las noticias las gestiona el admin desde la
-// entidad FlashNews.
+// indicador de autopista / andén de metro. Se ancla abajo-centro, justo bajo
+// el icono de "Contacta con los Bizarros", sin ocupar toda la pantalla. Las
+// noticias las gestiona el admin desde la entidad FlashNews.
 export default function FlashNewsMarquee() {
   const [items, setItems] = useState([]);
 
@@ -20,27 +19,24 @@ export default function FlashNewsMarquee() {
   const joined = items.map((i) => i.text).join('      ◆      ');
 
   return (
-    <div className="pointer-events-none fixed left-1/2 top-3 z-40 -translate-x-1/2 select-none px-2 w-full max-w-[640px]">
-      <div
-        className="bf-led-sign relative overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-2 shadow-[0_6px_24px_rgba(0,0,0,.7),0_0_18px_rgba(255,210,74,.25)]"
-      >
-        {/* Marco metálico superior */}
+    <div className="pointer-events-none fixed bottom-1 left-1/2 z-40 w-full max-w-[620px] -translate-x-1/2 select-none px-2">
+      <div className="bf-led-sign relative overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1.5 shadow-[0_6px_24px_rgba(0,0,0,.7),0_0_18px_rgba(255,210,74,.25)]">
         <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
         <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
-        {/* Esquinas-tornillo */}
         <span className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
         <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
         <span className="absolute bottom-1.5 left-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
         <span className="absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
 
         <div className="relative flex items-center gap-2.5">
-          {/* Badge */}
-          <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/40 bg-[#1a1300] px-2 py-1" style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}>
+          <div
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/40 bg-[#1a1300] px-2 py-1"
+            style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}
+          >
             <Radio className="h-3.5 w-3.5 text-[#ffd24a]" />
             <span className="font-heading text-[10px] font-black tracking-[0.22em] text-[#ffd24a]">ACTUALIDAD</span>
           </div>
-          {/* Panel de texto LED */}
-          <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-1">
+          <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-0.5">
             <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">
               <span className="bf-led-text">{joined}</span>
               <span className="bf-led-sep"> ◆ </span>

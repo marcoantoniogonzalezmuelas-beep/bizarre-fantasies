@@ -1,0 +1,22 @@
+{
+  "name": "HomeText",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Identificador del texto de la home (punkito, contact_label, contact_body)"
+    },
+    "value": {
+      "type": "string",
+      "description": "Texto en espa\u00f1ol"
+    },
+    "value_en": {
+      "type": "string",
+      "description": "Texto en ingl\u00e9s (opcional)"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ]
+}

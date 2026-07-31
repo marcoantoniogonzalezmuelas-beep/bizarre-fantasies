@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Megaphone, Plus, Pencil, Trash2, Power, ArrowLeft } from 'lucide-react';
+import { Megaphone, Plus, Pencil, Trash2, Power, ArrowLeft, Type } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-// Backoffice del cartel digital de "Actualidad" de la home. El admin crea,
-// edita, ordena, activa/desactiva y borra las noticias que aparecen en la
-// marquesina superior del juego.
+// Backoffice del cartel digital de "Actualidad" de la home + de los textos de
+// la portada (bienvenida de Punkito y bloque "Contacta con los Bizarros").
 export default function FlashNewsAdmin() {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
@@ -16,6 +15,11 @@ export default function FlashNewsAdmin() {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  // Textos de la home (HomeText)
+  const [ht, setHt] = useState({ punkitoEs: '', punkitoEn: '', contactLabel: '', contactBody: '' });
+  const [htIds, setHtIds] = useState({ punkito: null, contact_label: null, contact_body: null });
+  const [savingHt, setSavingHt] = useState(false);
+
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false));
   }, []);
@@ -24,6 +28,16 @@ export default function FlashNewsAdmin() {
   async function load() {
     const list = await base44.entities.FlashNews.list('order', 200);
     setItems(list || []);
+    const tl = await base44.entities.HomeText.list('key', 50).catch(() => []);
+    const map = {};
+    (tl || []).forEach((t) => { map[t.key] = t; });
+    setHt({
+      punkitoEs: map.punkito?.value || '',
+      punkitoEn: map.punkito?.value_en || '',
+      contactLabel: map.contact_label?.value || '',
+      contactBody: map.contact_body?.value || '',
+    });
+    setHtIds({ punkito: map.punkito?.id || null, contact_label: map.contact_label?.id || null, contact_body: map.contact_body?.id || null });
   }
 
   function reset() { setText(''); setActive(true); setOrder(0); setEditingId(null); }
@@ -60,6 +74,36 @@ export default function FlashNewsAdmin() {
     await load();
   }
 
+  async function saveHt() {
+    setSavingHt(true);
+    try {
+      if (htIds.punkito) {
+        await base44.entities.HomeText.update(htIds.punkito, { value: ht.punkitoEs, value_en: ht.punkitoEn });
+      } else {
+        const c = await base44.entities.HomeText.create({ key: 'punkito', value: ht.punkitoEs, value_en: ht.punkitoEn });
+        setHtIds((p) => ({ ...p, punkito: c.id }));
+      }
+      if (htIds.contact_label) {
+        await base44.entities.HomeText.update(htIds.contact_label, { value: ht.contactLabel });
+      } else {
+        const c = await base44.entities.HomeText.create({ key: 'contact_label', value: ht.contactLabel });
+        setHtIds((p) => ({ ...p, contact_label: c.id }));
+      }
+      if (htIds.contact_body) {
+        await base44.entities.HomeText.update(htIds.contact_body, { value: ht.contactBody });
+      } else {
+        const c = await base44.entities.HomeText.create({ key: 'contact_body', value: ht.contactBody });
+        setHtIds((p) => ({ ...p, contact_body: c.id }));
+      }
+      alert('Textos de la home guardados. Recarga el juego para verlos.');
+    } catch (err) {
+      console.error(err);
+      alert('No se guardaron los textos.');
+    } finally {
+      setSavingHt(false);
+    }
+  }
+
   if (checking) return <div className="min-h-screen bg-[#0e0a16] p-8 text-[#efe9dc]">Cargando backoffice...</div>;
   if (!user || user.role !== 'admin') {
     return (
@@ -79,7 +123,7 @@ export default function FlashNewsAdmin() {
             <Megaphone className="h-7 w-7 text-[#ffd24a]" />
             <div>
               <h1 className="font-heading text-2xl font-black text-[#fff5dc]">Cartel de Actualidad</h1>
-              <p className="text-sm text-[#cfc6dd]">Noticias que rotan en la marquesina superior de la home.</p>
+              <p className="text-sm text-[#cfc6dd]">Noticias y textos de la portada del juego.</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -88,7 +132,36 @@ export default function FlashNewsAdmin() {
           </div>
         </div>
 
-        {/* Editor */}
+        {/* Textos de la home */}
+        <section className="mb-6 rounded-2xl border border-[#c06bff33] bg-[#140d24]/90 p-5 shadow-2xl">
+          <div className="mb-3 flex items-center gap-2">
+            <Type className="h-5 w-5 text-[#e2b0ff]" />
+            <h2 className="font-heading text-lg font-black text-[#e2b0ff]">Textos de la portada</h2>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#b06cff]">Bienvenida de Punkito (español)</label>
+              <textarea value={ht.punkitoEs} onChange={(e) => setHt({ ...ht, punkitoEs: e.target.value })} rows={3} className="w-full resize-none rounded-xl border border-[#c06bff33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#c06bff]" />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#b06cff]">Bienvenida de Punkito (inglés)</label>
+              <textarea value={ht.punkitoEn} onChange={(e) => setHt({ ...ht, punkitoEn: e.target.value })} rows={3} className="w-full resize-none rounded-xl border border-[#c06bff33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#c06bff]" />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#b06cff]">Texto del botón "Contacta"</label>
+              <input value={ht.contactLabel} onChange={(e) => setHt({ ...ht, contactLabel: e.target.value })} className="w-full rounded-xl border border-[#c06bff33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#c06bff]" />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#b06bff]">Cuerpo del bloque "Contacta" (los correos se enlazan solos)</label>
+              <textarea value={ht.contactBody} onChange={(e) => setHt({ ...ht, contactBody: e.target.value })} rows={3} className="w-full resize-none rounded-xl border border-[#c06bff33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#c06bff]" />
+            </div>
+            <div className="flex justify-end">
+              <button onClick={saveHt} disabled={savingHt} className="rounded-xl bg-[#c06bff] px-5 py-2 text-sm font-black text-white disabled:opacity-50">{savingHt ? 'Guardando...' : 'Guardar textos'}</button>
+            </div>
+          </div>
+        </section>
+
+        {/* Noticias del cartel */}
         <section className="mb-6 rounded-2xl border border-[#ffd24a33] bg-[#140d24]/90 p-5 shadow-2xl">
           <h2 className="mb-3 font-heading text-lg font-black text-[#ffe49a]">{editingId ? 'Editar noticia' : 'Nueva noticia'}</h2>
           <div className="flex flex-col gap-3">
@@ -116,7 +189,6 @@ export default function FlashNewsAdmin() {
           </div>
         </section>
 
-        {/* Lista */}
         <section className="rounded-2xl border border-[#ffd24a33] bg-[#140d24]/90 p-5 shadow-2xl">
           <h2 className="mb-3 font-heading text-lg font-black text-[#ffe49a]">Noticias · {items.length}</h2>
           {items.length === 0 ? (

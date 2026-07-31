@@ -1,20 +1,29 @@
 // Parche: agranda el botón "⌂ Salir" (arriba a la derecha) y añade en la
 // portada un botón recogido "¡Contacta Con Los Bizarros!" con icono épico que
-// despliega la explicación al hacer clic. Va elevado para no chocar en móvil
-// con Punkito ni con el icono del Oráculo.
+// despliega la explicación al hacer clic. El texto (etiqueta + cuerpo) lo
+// configura el admin desde la entidad HomeText; si no hay, usa los valores por
+// defecto. Va elevado para no chocar en móvil con Punkito ni con el Oráculo.
 const CONTACT_ICON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/448e1c85d_generated_image.png';
+const DEFAULT_LABEL = '¡Contacta Con Los Bizarros!';
+const DEFAULT_BODY = 'Escríbenos a retrolandbcn@gmail.com y cuéntanos tus ideas: cartas que quieras crear, mejorar, empeorar, subir de nivel… lo que sea. Además lo iremos haciendo por los rankings.';
 
-export const QUIT_CONTACT_PATCH = `
+export function buildQuitContactPatch(texts) {
+  const label = (texts && texts.contactLabel) || DEFAULT_LABEL;
+  const body = (texts && texts.contactBody) || DEFAULT_BODY;
+  return `
 <script>
 (function(){
   if (window.__bfQuitContactPatch) return;
   window.__bfQuitContactPatch = true;
 
+  var CONTACT_ICON = ${JSON.stringify(CONTACT_ICON)};
+  var LABEL = ${JSON.stringify(label)};
+  var BODY = ${JSON.stringify(body)};
+  function linkify(s){ return String(s).replace(/([^\\s@]+@[^\\s@]+\\.[^\\s@]+)/g, '<a href="mailto:$1">$1</a>'); }
+
   var style = document.createElement('style');
   style.textContent = [
     '#homeBtn{font-size:19px!important;font-weight:900!important;padding:12px 22px!important;border-radius:14px!important;letter-spacing:.5px;}',
-    // Reserva la esquina superior derecha para el botón Salir: la cabecera de
-    // la subasta (insignia de fase) y la de batalla no se meten debajo de él.
     '.r-header{padding-right:130px!important;box-sizing:border-box;}',
     '.b-header{padding-right:130px!important;padding-left:130px!important;box-sizing:border-box;}',
     '@keyframes bfContactGlow{0%,100%{box-shadow:0 0 14px rgba(192,91,255,.45),0 6px 20px rgba(0,0,0,.55);}50%{box-shadow:0 0 26px rgba(255,210,74,.65),0 6px 20px rgba(0,0,0,.55);}}',
@@ -27,11 +36,8 @@ export const QUIT_CONTACT_PATCH = `
     '.bf-contact.open .bf-contact-body{display:block;}',
     '.bf-contact a{color:#ff7ad9;font-weight:900;text-decoration:none;text-shadow:0 0 8px rgba(255,122,217,.6);}',
     '.bf-contact a:hover{color:#ffd24a;}',
-    '.bf-contact .bf-c-rank{color:#9be26b;font-weight:700;}',
     '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}'
   ].join('');
-  // En pantallas táctiles (móvil y tablet) el botón Salir va más compacto para
-  // no solaparse con los marcadores de la subasta ni de la batalla.
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
   if (isTouch) style.textContent += '#homeBtn{font-size:15px!important;padding:8px 14px!important;}';
   document.head.appendChild(style);
@@ -42,8 +48,8 @@ export const QUIT_CONTACT_PATCH = `
     var box = document.createElement('div');
     box.id = 'bf-contact';
     box.className = 'bf-contact';
-    box.innerHTML = '<div class="bf-contact-pill"><img src="${CONTACT_ICON}" alt=""/><span>¡Contacta Con Los Bizarros!</span></div>'
-      + '<div class="bf-contact-body">Escríbenos a <a href="mailto:retrolandbcn@gmail.com">retrolandbcn@gmail.com</a> y cuéntanos tus ideas: cartas que quieras crear, mejorar, empeorar, subir de nivel… lo que sea. <span class="bf-c-rank">Además lo iremos haciendo por los rankings.</span></div>';
+    box.innerHTML = '<div class="bf-contact-pill"><img src="' + CONTACT_ICON + '" alt=""/><span>' + LABEL + '</span></div>'
+      + '<div class="bf-contact-body">' + linkify(BODY) + '</div>';
     box.querySelector('.bf-contact-pill').addEventListener('click', function(e){
       e.stopPropagation();
       box.classList.toggle('open');
@@ -61,3 +67,4 @@ export const QUIT_CONTACT_PATCH = `
 })();
 </script>
 `;
+}
