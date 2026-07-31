@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Radio } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getLang } from '@/lib/i18n';
 
-// Cartel digital de "Actualidad": un panel LED compacto flotante tipo
-// indicador de autopista / andén de metro. Se ancla abajo-centro, justo bajo
-// el icono de "Contacta con los Bizarros", sin ocupar toda la pantalla. Las
-// noticias las gestiona el admin desde la entidad FlashNews.
+// Cartel digital de "Actualidad": panel LED compacto tipo indicador de
+// autopista/andén. Más ancho y con tipografía mayor; se ancla JUSTO DEBAJO del
+// icono "Contacta con los Bizarros" del juego (no al fondo) y es arrastrable
+// (la posición se guarda en sessionStorage). Las noticias las gestiona el
+// admin desde la entidad FlashNews.
 export default function FlashNewsMarquee() {
   const [items, setItems] = useState([]);
+  const [pos, setPos] = useState(null);
+  const signRef = useRef(null);
+  const drag = useRef(null);
 
   useEffect(() => {
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
@@ -16,36 +20,123 @@ export default function FlashNewsMarquee() {
       .catch(() => setItems([]));
   }, []);
 
+  // Calcula la posición: debajo del icono "Contacta" del juego (dentro del
+  // iframe), salvo que el usuario la haya arrastrado antes (sessionStorage).
+  const computePos = useCallback(() => {
+    if (!signRef.current) return;
+    const w = signRef.current.offsetWidth || 760;
+    const h = signRef.current.offsetHeight || 58;
+    try {
+      const stored = JSON.parse(sessionStorage.getItem('bfSignPos') || 'null');
+      if (stored) {
+        const maxX = Math.max(0, window.innerWidth - w - 4);
+        const maxY = Math.max(0, window.innerHeight - h - 4);
+        setPos({ left: Math.max(4, Math.min(maxX, stored.left)), top: Math.max(4, Math.min(maxY, stored.top)) });
+        return;
+      }
+    } catch (e) {}
+    let top = window.innerHeight - h - 12;
+    const iframe = document.querySelector('iframe');
+    if (iframe) {
+      const doc = iframe.contentDocument;
+      const pill = doc && doc.querySelector('#bf-contact .bf-contact-pill');
+      if (pill) {
+        const ir = iframe.getBoundingClientRect();
+        const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
+        const scale = ir.height / contentH;
+        top = ir.top + pill.getBoundingClientRect().bottom * scale + 8;
+      }
+    }
+    const maxX = Math.max(0, window.innerWidth - w - 4);
+    setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - w) / 2))), top: Math.max(4, Math.round(top)) });
+  }, []);
+
+  // Recoloca al montar/cambiar noticias y al rotar; repite unas veces hasta
+  // que el icono "Contacta" del juego aparezca (carga asíncrona del iframe).
+  useEffect(() => {
+    computePos();
+    const onResize = () => computePos();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', () => setTimeout(computePos, 300));
+    let n = 0;
+    const poll = setInterval(() => { computePos(); if (++n > 14) clearInterval(poll); }, 800);
+    return () => { window.removeEventListener('resize', onResize); clearInterval(poll); };
+  }, [computePos, items]);
+
+  // Arrastrar (mouse + tactil)
+  useEffect(() => {
+    function point(e) { return e.touches && e.touches[0] ? e.touches[0] : e; }
+    function onMove(e) {
+      if (!drag.current || !signRef.current) return;
+      const p = point(e);
+      const w = signRef.current.offsetWidth, h = signRef.current.offsetHeight;
+      const maxX = Math.max(0, window.innerWidth - w - 4);
+      const maxY = Math.max(0, window.innerHeight - h - 4);
+      setPos({ left: Math.max(4, Math.min(maxX, p.clientX - drag.current.sx)), top: Math.max(4, Math.min(maxY, p.clientY - drag.current.sy)) });
+      e.preventDefault();
+    }
+    function onUp() {
+      if (!drag.current) return;
+      drag.current = null;
+      if (pos) { try { sessionStorage.setItem('bfSignPos', JSON.stringify(pos)); } catch (e) {} }
+      signRef.current && (signRef.current.style.transition = '');
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchend', onUp);
+    return () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchend', onUp);
+    };
+  }, [pos]);
+
+  function startDrag(e) {
+    if (e.target && e.target.closest && e.target.closest('a')) return;
+    const p = e.touches && e.touches[0] ? e.touches[0] : e;
+    drag.current = { sx: p.clientX - (pos ? pos.left : 0), sy: p.clientY - (pos ? pos.top : 0) };
+    if (signRef.current) signRef.current.style.transition = 'none';
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   if (!items.length) return null;
   const isEn = getLang() === 'en';
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
-  return (
-    <div className="pointer-events-none fixed bottom-1 left-1/2 z-40 w-full max-w-[620px] -translate-x-1/2 select-none px-2">
-      <div className="bf-led-sign relative overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1.5 shadow-[0_6px_24px_rgba(0,0,0,.7),0_0_18px_rgba(255,210,74,.25)]">
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
-        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
-        <span className="absolute left-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
-        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
-        <span className="absolute bottom-1.5 left-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
-        <span className="absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
+  const style = pos ? { left: pos.left, top: pos.top, right: 'auto', bottom: 'auto', transform: 'none' } : undefined;
 
-        <div className="relative flex items-center gap-2.5">
-          <div
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/40 bg-[#1a1300] px-2 py-1"
-            style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}
-          >
-            <Radio className="h-3.5 w-3.5 text-[#ffd24a]" />
-            <span className="font-heading text-[10px] font-black tracking-[0.22em] text-[#ffd24a]">{label}</span>
-          </div>
-          <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-0.5">
-            <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">
-              <span className="bf-led-text">{joined}</span>
-              <span className="bf-led-sep"> ◆ </span>
-              <span className="bf-led-text">{joined}</span>
-              <span className="bf-led-sep"> ◆ </span>
-            </div>
+  return (
+    <div
+      ref={signRef}
+      onPointerDown={startDrag}
+      style={{ ...style, touchAction: 'none', cursor: 'grab' }}
+      className="bf-led-sign pointer-events-auto absolute z-40 w-[min(94vw,860px)] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-4 py-2.5 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)]"
+    >
+      <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
+      <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
+      <span className="absolute left-2 top-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
+      <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
+      <span className="absolute bottom-2 left-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
+      <span className="absolute bottom-2 right-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
+
+      <div className="relative flex items-center gap-3">
+        <div
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/45 bg-[#1a1300] px-2.5 py-1.5"
+          style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}
+        >
+          <Radio className="h-4 w-4 text-[#ffd24a]" />
+          <span className="font-heading text-[13px] font-black tracking-[0.22em] text-[#ffd24a]">{label}</span>
+        </div>
+        <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-0.5">
+          <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">
+            <span className="bf-led-text">{joined}</span>
+            <span className="bf-led-sep"> ◆ </span>
+            <span className="bf-led-text">{joined}</span>
+            <span className="bf-led-sep"> ◆ </span>
           </div>
         </div>
       </div>

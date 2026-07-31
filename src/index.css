@@ -133,6 +133,6 @@
 /* Cartel LED compacto (tipo panel de autopista / metro) */
 .bf-led-sign { background-image: radial-gradient(rgba(255,210,74,.06) 18%, transparent 60%), radial-gradient(rgba(255,210,74,.04) 12%, transparent 55%); background-size: 7px 7px, 11px 11px; background-position: 0 0, 3px 4px; }
 .bf-led-screen { min-height: 22px; }
-.bf-led-text { font-family: 'Rubik', monospace; font-size: 13px; font-weight: 800; color: #ffb000; text-shadow: 0 0 6px rgba(255,160,0,.85), 0 0 12px rgba(255,120,0,.5); letter-spacing: .4px; }
+.bf-led-text { font-family: 'Rubik', monospace; font-size: 18px; font-weight: 800; color: #ffb000; text-shadow: 0 0 7px rgba(255,160,0,.85), 0 0 14px rgba(255,120,0,.5); letter-spacing: .4px; }
 .bf-led-sep { color: #ffd24a; font-size: 12px; opacity: .8; }
 @keyframes bfMarqueeBadgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,210,74,.0); } 50% { box-shadow: 0 0 14px 2px rgba(255,210,74,.7); } }
