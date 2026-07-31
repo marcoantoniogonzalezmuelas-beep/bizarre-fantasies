@@ -147,7 +147,7 @@ export default function FlashNewsMarquee() {
         onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
         onClick={closeSign}
         aria-label={isEn ? 'Close' : 'Cerrar'}
-        className="absolute -top-2 -right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-[#ffd24a]/70 bg-[#1a1300] text-[#ffd24a] shadow-[0_2px_8px_rgba(0,0,0,.7)] transition-colors hover:bg-[#ffd24a] hover:text-[#3a2600]"
+        className="absolute top-1.5 right-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-[#ffd24a]/80 bg-[#1a1300] text-[#ffd24a] shadow-[0_2px_10px_rgba(0,0,0,.8)] transition-colors hover:bg-[#ffd24a] hover:text-[#3a2600]"
       >
         <X className="h-3.5 w-3.5" strokeWidth={3} />
       </button>
@@ -160,8 +160,8 @@ export default function FlashNewsMarquee() {
           <Radio className="h-3.5 w-3.5 text-[#ffd24a] lg:h-4 lg:w-4" />
           <span className="font-heading text-[11px] font-black tracking-[0.22em] text-[#ffd24a] lg:text-[13px]">{label}</span>
         </div>
-        <div className="bf-led-screen relative min-w-0 flex-1 overflow-hidden rounded-md py-0.5">
-          <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">
+        <div className="bf-led-screen relative min-w-0 flex-1 overflow-hidden rounded-md">
+          <div className="bf-marquee-track whitespace-nowrap">
             <span className="bf-led-text">{joined}</span>
             <span className="bf-led-sep"> ◆ </span>
             <span className="bf-led-text">{joined}</span>
