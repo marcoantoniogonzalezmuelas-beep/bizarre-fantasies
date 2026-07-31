@@ -529,7 +529,7 @@ export default function Home() {
       </div>
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
-        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', transform: pinch.z !== 1 ? `scale(${pinch.z})` : undefined, transformOrigin: 'bottom right' }}>
+        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', transform: `scale(${IS_MOBILE ? mobScale : 1})`, transformOrigin: 'bottom right' }}>
           <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
             <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
           </div>
