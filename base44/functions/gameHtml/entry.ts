@@ -1231,8 +1231,7 @@ function buildArtScript(dbCards) {
         var amt=adjustBid(s,b.heroId,b.amount);
         if(amt===null){if(G.acq&&G.acq[s])G.bids[s]={pass:true};else bfAiNoCoin(s);}
         else{
-          var c=Number((G.coins&&G.coins[s])||0),mc=minPoolCost(s),m=window.bidMods(s),mx=Math.max(mc,c-mc*Math.max(0,roundsLeft(s)-1)),h=findHero(b.heroId),mr=window.minRawBid(s,h);
-          G.bids[s].amount=Math.max(mr,Math.min(amt,mx+m.add-m.sub));
+          var c=Number((G.coins&&G.coins[s])||0),mc=minPoolCost(s),m=window.bidMods(s),mx=Math.max(mc,c-mc*Math.max(0,roundsLeft(s)-1)),h=findHero(b.heroId),mr=window.minRawBid(s,h),cap=mx+m.add-m.sub,bid=Math.min(amt,cap);if(bid<=mr)bid=Math.min(cap,mr+Math.max(1,Math.min(4,Math.floor(mx/15))));G.bids[s].amount=Math.max(mr,bid);
         }
       } else {
         // La IA pasó (seguramente por falta de monedas): si aún necesita un
@@ -1692,20 +1691,11 @@ function buildArtScript(dbCards) {
       tm.forEach(function(h,i){if(h){g.w[i]=!!(h.mwep||h.rwep);g.a[i]=!!h.armor;if(h.he>mH)mH=h.he;if(h.type==='HE')hC++;}});
       function bfHasSpell(id){return ((G.spellbook&&G.spellbook[side])||[]).indexOf(id)!==-1;}
       function bfItemCopies(id){var l=(G.items&&G.items[side])||[],n=0;for(var x=0;x<l.length;x++)if(l[x]&&l[x].id===id)n++;return n;}
-      function sc(it,h,k){
-        var s=0; if(k==='melee'||k==='ranged'||k==='armor'){
-          if(it.cc)s+=it.cc*(h.type==='CC'?2.5:0.5);if(it.power)s+=it.power*(h.type==='AD'?2.5:0.8);
-          if(it.hp)s+=it.hp*1.2;if(it.def)s+=it.def*2;if(it.mana)s+=it.mana*(h.type==='HE'?1.5:0.5);if(it.he)s+=it.he*(h.type==='HE'?2.5:0.5);
-          return s*(k==='ranged'&&h.type==='AD'?3:k==='melee'&&h.type==='CC'?3:k==='armor'?2.2:1);
-        } else {
-          s+=(it.power||0)*(1+mH*0.15)*1.5+(it.heal||0)*2+(it.mana||0)*1.5;
-          if(/Curación Divina|Maremoto|Tormenta|Cadena|Fuego/i.test(it.name||''))s+=15;
-          if(/f[eé]nix|despertar/i.test(it.name||''))s+=25;
-          if(k==='object')s+=40+(g.nObj===0?60:0);
-          if(k==='spell')s+=30+(g.nSp===0?60:0);
-          return s*(1+hC*0.6);
-        }
-      }
+      function sc(it,h,k){var s=0,r=h&&h.type;
+        if(k==='melee'||k==='ranged'||k==='armor'){if(it.cc)s+=it.cc*(r==='CC'?3:0.4);if(it.power)s+=it.power*(r==='AD'?3:0.5);if(it.hp)s+=it.hp*1.3;if(it.def)s+=it.def*2.2;if(it.mana)s+=it.mana*(r==='HE'?1.6:0.4);if(it.he)s+=it.he*(r==='HE'?2.2:0.4);var m=k==='ranged'?(r==='AD'?4:r==='CC'?0.4:0.9):k==='melee'?(r==='CC'?4:r==='AD'?0.4:0.9):2.6;return s*m;}
+        var p=Number(it.power||0),hl=Number(it.heal||0),mn=Number(it.mana||0);s+=p*(1+mH*0.18)*1.6+hl*2.2+mn*1.6;
+        if(/Curación Divina|Maremoto|Tormenta|Cadena|Bola de Fuego|Rayo/i.test(it.name||''))s+=18;if(/f[eé]nix|phoenix|revive|revivir|pluma/i.test(it.name||''))s+=30;if(/Curaci[oó]n|Bendici[oó]n|Escudo|Barrera|Man[aá]|Cristal|Orbe/i.test(it.name||''))s+=14;
+        if(k==='object')s+=35+(g.nObj===0?60:0)+(mn>0?25:0)+(hl>0?18:0);else if(k==='spell')s+=25+(g.nSp===0?70:0);return s*(1+hC*0.6);}
       var b=0;
       // Coste mínimo de hechizo/objeto: se reserva para garantizar comprar al menos 1 de cada.
       function bfMinCost(list){var m=Infinity;(list||[]).forEach(function(x){var c=Number(x&&x.cost||0);if(c>0&&c<m)m=c;});return m===Infinity?0:m;}
