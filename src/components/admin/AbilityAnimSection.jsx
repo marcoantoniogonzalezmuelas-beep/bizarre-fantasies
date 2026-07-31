@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AbilityAnimPreview from './AbilityAnimPreview';
+import { CINEMATIC_PRESETS } from '@/lib/cinematicPresets';
 
 // Sección del editor de backoffice para crear animaciones 3D cinemáticas.
 // Para héroes/bizarros se generan DOS versiones (normal y élite); para cartas
@@ -128,6 +129,26 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
             )}
           </div>
         )}
+      </div>
+
+      {/* Presets de cinemáticas legendarias pre-generadas (Transformer, Tanque,
+          Killerducks, Bebé Fénix…) asignables a cualquier carta, igual que la
+          animación del robot se asignó a la carta Transformer. */}
+      <div className="mt-3 rounded-lg border border-[#3c9eff22] bg-[#0d1a2e]/40 px-3 py-2">
+        <div className="mb-1.5 text-[10px] font-black uppercase tracking-wider text-[#9dd0ff]">Cinemáticas legendarias (preset)</div>
+        <div className="flex flex-wrap gap-1.5">
+          {CINEMATIC_PRESETS.map((p) => (
+            <button
+              key={p.url}
+              type="button"
+              onClick={() => onGenerate('__set_ability_anim_url', p.url)}
+              disabled={generating}
+              className={`rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors disabled:opacity-40 ${form.ability_anim_url === p.url ? 'border-[#3c9eff] bg-[#1a3a5e] text-[#cfeaff]' : 'border-[#3c9eff44] bg-[#0d1a2e]/60 text-[#7ec8ff] hover:bg-[#152a4a]/60'}`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Vista previa de la cinemática 3D */}

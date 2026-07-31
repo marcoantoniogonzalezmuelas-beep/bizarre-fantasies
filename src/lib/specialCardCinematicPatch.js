@@ -15,6 +15,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   var ROBOT_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
   var DUCK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';
   var TANK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/76149d71f_generated_image.png';
+  var BABY_PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cc96fe904_generated_image.png';
   // Recorte del fondo: las imágenes vienen sobre negro puro; se convierte el
   // negro en transparente con un canvas para que solo quede la criatura.
   var CUT={};
@@ -38,7 +39,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     img.onerror=function(){CUT[url]=url;};
     img.src=url;
   }
-  [PHOENIX_PLUMA_IMG,PHOENIX_AVE_IMG,ROBOT_IMG,DUCK_IMG,TANK_IMG].forEach(cutout);
+  [PHOENIX_PLUMA_IMG,PHOENIX_AVE_IMG,ROBOT_IMG,DUCK_IMG,TANK_IMG,BABY_PHOENIX_IMG].forEach(cutout);
 
   var css=''+
   '#bf-spec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfScIn .3s ease-out}'+
@@ -127,7 +128,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     }else{
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
-    var src=kind==='phoenix_ave'?PHOENIX_AVE_IMG:(kind==='phoenix'?PHOENIX_PLUMA_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG)));
+    var src=kind==='phoenix_ave'?PHOENIX_AVE_IMG:(kind==='phoenix'?BABY_PHOENIX_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG)));
     html+='<img class="bf-sc-img" src="'+(CUT[src]||src)+'" alt="">';
     html+='<div class="bf-sc-ttl">'+(kind==='phoenix_ave'?'¡EL AVE FÉNIX RESUCITA!':(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!'))))+'</div>';
     ov.innerHTML=html;
