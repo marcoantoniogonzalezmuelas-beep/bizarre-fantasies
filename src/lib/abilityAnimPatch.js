@@ -143,7 +143,7 @@ export const ABILITY_ANIM_PATCH = `
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
     var motion=pickMotionDesc(isElite?(entry.eliteDesc||entry.desc):entry.desc);
     var html='<div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
-    for(var r=0;r<3;r++)html+='<div class="bf-aa-ring" style="animation-delay:'+(r*0.25).toFixed(2)+'s"></div>';
+    // Sin anillos de halo del color de clan: parpadeaban al expandirse.
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
     html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(CUT[url]||url)+'" alt="">';
