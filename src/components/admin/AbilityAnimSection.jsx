@@ -14,6 +14,17 @@ const EQUIP_LABEL = {
   armor: 'Armadura', object: 'Objeto', bonus: 'Bonus', race: 'Raza',
 };
 
+// Animaciones 3D prehechas (ya generadas y usadas en el juego): el admin puede
+// asignarlas a una carta de equipamiento sin tener que generar una nueva.
+const PRESET_ANIMS = [
+  {
+    id: 'transformer',
+    name: 'Transformer (robot)',
+    url: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png',
+    desc: 'Robot gigante tipo Optimus que entra con sacudida mecánica, arcos eléctricos azules y destello final. Transformación épica, fondo negro puro, criatura aislada.',
+  },
+];
+
 export default function AbilityAnimSection({ form, onChange, onGenerate, generating }) {
   const [showPreview, setShowPreview] = useState(false);
   const [previewElite, setPreviewElite] = useState(false);
@@ -40,6 +51,11 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
     ? 'Cinemática que irrumpe al usar la habilidad en combate'
     : 'Cinemática que irrumpe al jugarse la carta en combate (una sola versión, sin élite)';
 
+  function applyPreset(p) {
+    onChange('ability_anim_url', p.url);
+    onChange('ability_anim_desc', p.desc);
+  }
+
   return (
     <div className="mt-2 rounded-2xl border border-[#3c9eff33] bg-[#0d1a2e]/60 p-4">
       <div className="mb-3 flex items-center gap-2">
@@ -49,6 +65,25 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
       <div className="mb-3 rounded-lg border border-[#3c9eff22] bg-[#0d1a2e]/40 px-3 py-2 text-[10px] leading-relaxed text-[#7fb0d8]">
         <span className="font-black text-[#9dd0ff]">Movimientos temáticos artesanales:</span> escribe la acción en la descripción y la cinemática interpreta el movimiento con efectos dedicados al estilo del patito de goma. Armas: <span className="text-[#ffe49a]">espada/sable/katana</span> (tajo + chispas + impacto), <span className="text-[#ffe49a]">pistola/revólver</span> (fogonazo + casquillo + humo), <span className="text-[#ffe49a]">escopeta</span> (cono de perdigones + casquillos + 💥), <span className="text-[#ffe49a]">metralleta/ametralladora/plasma/láser</span> (ráfaga + casquillos + trazas + destellos 💥), <span className="text-[#ffe49a]">tirachinas/honda</span> (tensar + proyectil + estela + impacto), <span className="text-[#ffe49a]">escoba/barrer</span> (barrido + polvo), <span className="text-[#ffe49a]">headbang/metal/rock/guitarra</span> (cabeceo + notas + luces de escenario). Acciones cotidianas y mágicas: <span className="text-[#b6e0ff]">beber/cerveza/vaso/brindis</span> (burbujas + espuma + salpicadura), <span className="text-[#b6e0ff]">servir/cortado/café/barista</span> (vapor + gotas + aroma ☕), <span className="text-[#b6e0ff]">magia/hechizo/arcano</span> (orbes + runas + espiral), <span className="text-[#b6e0ff]">fuego/llama/arder</span> (brasas + 💥 + calor), <span className="text-[#b6e0ff]">hielo/congelar/frío</span> (esquirlas + copos + escarcha), <span className="text-[#b6e0ff]">rayo/eléctrico/trueno</span> (relámpagos + arcos + destello), <span className="text-[#b6e0ff]">bailar/danza/fiesta</span> (giro + luces + 🎵), <span className="text-[#b6e0ff]">saltar/aterrizaje/épico/titán</span> (grieta + polvo + esquirlas), <span className="text-[#b6e0ff]">comer/galleta/chicle/helado/chupachup</span> (masticar + migas + motas de sabor), <span className="text-[#b6e0ff]">fumar/tabaco/cigarro/vape</span> (calar + anillos de humo + ceniza). Cualquier otra acción que escribas usa una entrada 3D rica con halo y motas de luz. <span className="text-[#ff9a4a]">Nota:</span> la IA genera <span className="font-black">una sola imagen estática</span>; el "movimiento" desplaza toda la criatura. Para un cabeceo real, pide en el ARTE que salga con la cabeza agachada y el pelo al viento.
       </div>
+
+      {/* Animaciones prehechas: el admin puede asignar la del Transformer
+          (u otras ya generadas) sin tener que crear una nueva con IA. */}
+      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-[#ffe49a33] bg-[#1a1300]/40 px-3 py-2">
+        <span className="text-[10px] font-black uppercase tracking-wider text-[#ffe49a]">Animaciones prehechas:</span>
+        {PRESET_ANIMS.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => applyPreset(p)}
+            disabled={generating}
+            className="rounded-lg border border-[#ffe49a55] bg-[#0d1a2e]/70 px-2.5 py-1 text-[10px] font-black text-[#ffe49a] hover:bg-[#ffe49a] hover:text-[#3a2600] disabled:opacity-40"
+            title={p.desc}
+          >
+            🤖 {p.name}
+          </button>
+        ))}
+      </div>
+
       <div className={`grid gap-4 ${isHero ? 'md:grid-cols-2' : ''}`}>
         {/* Versión base (única para equipamiento) */}
         <div className="flex flex-col gap-2">
