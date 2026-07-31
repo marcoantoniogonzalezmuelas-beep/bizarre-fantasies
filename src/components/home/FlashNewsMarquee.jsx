@@ -8,7 +8,7 @@ import { getLang } from '@/lib/i18n';
 // icono "Contacta con los Bizarros" del juego (no al fondo) y es arrastrable
 // (la posición se guarda en sessionStorage). Las noticias las gestiona el
 // admin desde la entidad FlashNews.
-export default function FlashNewsMarquee({ mobScale = 1 }) {
+export default function FlashNewsMarquee({ mobScale = 1, isMobile = false }) {
   const [items, setItems] = useState([]);
   const [pos, setPos] = useState(null);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
@@ -78,7 +78,7 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
       const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
       const iframeScale = ir.height / contentH;
       // Móvil/tablet: ancla bajo los iconos del menú; escritorio: bajo Contacta.
-      const sel = scale < 1 ? '#s-title .title-links' : '#bf-contact .bf-contact-pill';
+      const sel = isMobile ? '#s-title .title-links' : '#bf-contact .bf-contact-pill';
       const anchor = doc && doc.querySelector(sel);
       if (anchor) {
         anchorBottom = ir.top + anchor.getBoundingClientRect().bottom * iframeScale;
