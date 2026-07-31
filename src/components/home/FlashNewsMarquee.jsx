@@ -18,6 +18,9 @@ export default function FlashNewsMarquee() {
   const drag = useRef(null);
 
   useEffect(() => {
+    // Limpia posiciones guardadas por versiones anteriores del cartel (que lo
+    // anclaban al fondo); así recalcula la posición correcta bajo el logo/contacto.
+    try { if (!sessionStorage.getItem('bfSignPosV2')) sessionStorage.removeItem('bfSignPos'); sessionStorage.setItem('bfSignPosV2', '1'); } catch (e) {}
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
@@ -51,7 +54,7 @@ export default function FlashNewsMarquee() {
         ? (doc && doc.querySelector('.bf-title-logo'))
         : (doc && doc.querySelector('#bf-contact .bf-contact-pill'));
       if (anchor) {
-        top = ir.top + anchor.getBoundingClientRect().bottom * scale + (IS_MOBILE ? 4 : 8);
+        top = ir.top + anchor.getBoundingClientRect().bottom * scale + (IS_MOBILE ? 2 : 8);
       } else if (IS_MOBILE) {
         top = Math.round(window.innerHeight * 0.23);
       }
@@ -123,7 +126,7 @@ export default function FlashNewsMarquee() {
       ref={signRef}
       onPointerDown={startDrag}
       style={{ ...style, touchAction: 'none', cursor: 'grab' }}
-      className="bf-led-sign pointer-events-auto absolute z-40 w-[min(94vw,860px)] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1.5 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:px-4 lg:py-2.5"
+      className="bf-led-sign pointer-events-auto absolute z-40 w-[94vw] max-w-[860px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:px-4 lg:py-2.5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
       <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
@@ -132,15 +135,15 @@ export default function FlashNewsMarquee() {
       <span className="absolute bottom-2 left-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
       <span className="absolute bottom-2 right-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
 
-      <div className="relative flex items-center gap-3">
+      <div className="relative flex items-center gap-2 lg:gap-3">
         <div
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/45 bg-[#1a1300] px-2.5 py-1.5"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/45 bg-[#1a1300] px-2 py-0.5 lg:px-2.5 lg:py-1.5"
           style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}
         >
           <Radio className="h-3.5 w-3.5 text-[#ffd24a] lg:h-4 lg:w-4" />
           <span className="font-heading text-[11px] font-black tracking-[0.22em] text-[#ffd24a] lg:text-[13px]">{label}</span>
         </div>
-        <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-0.5">
+        <div className="bf-led-screen relative min-w-0 flex-1 overflow-hidden rounded-md py-0.5">
           <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">
             <span className="bf-led-text">{joined}</span>
             <span className="bf-led-sep"> ◆ </span>
