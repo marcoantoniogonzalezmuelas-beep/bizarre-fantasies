@@ -299,6 +299,44 @@ export const MOTIONS = [
       '<span class="bf-aa-beat" style="--a:0deg;animation-delay:.1s"></span><span class="bf-aa-beat" style="--a:72deg;animation-delay:.3s"></span><span class="bf-aa-beat" style="--a:144deg;animation-delay:.5s"></span><span class="bf-aa-beat" style="--a:216deg;animation-delay:.7s"></span><span class="bf-aa-beat" style="--a:288deg;animation-delay:.9s"></span>' +
       '<span class="bf-aa-note" style="left:20%;animation-delay:.2s">🎵</span><span class="bf-aa-note" style="left:36%;animation-delay:.5s">🎶</span><span class="bf-aa-note" style="left:56%;animation-delay:.8s">🎵</span><span class="bf-aa-note" style="left:74%;animation-delay:1.1s">🎶</span>',
   },
+  // COMER / masticar / chicle / helado / chupachup: bote de masticar + migas + motas de sabor.
+  {
+    id: 'eat',
+    keywords: ['comer', 'comiendo', 'masticar', 'masticando', 'galleta', 'galletas', 'chicle', 'mascar', 'mordisco', 'morder', 'tragar', 'devorar', 'helado', 'chupa-chup', 'chupachup', 'caramelo', 'bombón', 'bocadillo', 'bocata', 'emparedado', 'comida', 'alimento', 'merendar', 'tentempi', 'aperitivo', 'picar'],
+    anim: 'bfAaEat',
+    keyframes:
+      '@keyframes bfAaEat{0%{transform:scale(.12) translateY(22vh);opacity:0}14%{opacity:1;transform:scale(1.12) translateY(0)}24%{transform:scale(1.08) translateY(-1.5vh)}32%{transform:scale(1.12) translateY(.5vh)}40%{transform:scale(1.08) translateY(-1.5vh)}48%{transform:scale(1.12) translateY(.5vh)}56%{transform:scale(1.08) translateY(-1vh)}66%{transform:scale(1.1) translateY(0)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-crumb{position:absolute;width:7px;height:7px;border-radius:2px;background:linear-gradient(180deg,#f3d9a0,#b88a3e);box-shadow:0 0 8px rgba(200,160,80,.7);opacity:0;animation:bfAaCrumb 1.3s ease-out forwards}' +
+      '@keyframes bfAaCrumb{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),45vh) scale(1) rotate(var(--r,360deg))}}' +
+      '.bf-aa-flav{position:absolute;top:30%;width:10px;height:10px;border-radius:50%;background:var(--aa-color,#fff);box-shadow:0 0 14px var(--aa-glow,#fff);opacity:0;animation:bfAaFlav 2.2s ease-out forwards}' +
+      '@keyframes bfAaFlav{0%{opacity:0;transform:translateY(0) scale(.3)}18%{opacity:.9}100%{opacity:0;transform:translateY(-58vh) translateX(var(--dx,0px)) scale(1.4)}}' +
+      '.bf-aa-chomp{position:absolute;top:46%;left:50%;width:36vmin;height:36vmin;margin:-18vmin 0 0 -18vmin;border-radius:50%;background:radial-gradient(circle,var(--aa-glow,rgba(255,255,255,.5)),transparent 62%);opacity:0;animation:bfAaChomp 1.4s ease-out .2s forwards;filter:blur(4px)}' +
+      '@keyframes bfAaChomp{0%{opacity:0;transform:scale(.3)}30%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}',
+    fxTag:
+      '<div class="bf-aa-chomp"></div>' +
+      '<span class="bf-aa-crumb" style="left:40%;top:34%;--dx:-30px;--r:-220deg;animation-delay:.2s"></span><span class="bf-aa-crumb" style="left:54%;top:36%;--dx:40px;--r:240deg;animation-delay:.3s"></span><span class="bf-aa-crumb" style="left:48%;top:32%;--dx:-45px;--r:180deg;animation-delay:.5s"></span><span class="bf-aa-crumb" style="left:52%;top:38%;--dx:35px;--r:-260deg;animation-delay:.6s"></span><span class="bf-aa-crumb" style="left:46%;top:36%;--dx:50px;--r:300deg;animation-delay:.8s"></span><span class="bf-aa-crumb" style="left:50%;top:34%;--dx:-25px;--r:-180deg;animation-delay:1s"></span><span class="bf-aa-crumb" style="left:44%;top:38%;--dx:45px;--r:220deg;animation-delay:1.2s"></span><span class="bf-aa-crumb" style="left:56%;top:32%;--dx:-50px;--r:-240deg;animation-delay:1.4s"></span>' +
+      '<span class="bf-aa-flav" style="left:38%;--dx:18px;animation-delay:.3s"></span><span class="bf-aa-flav" style="left:52%;--dx:-22px;animation-delay:.6s"></span><span class="bf-aa-flav" style="left:62%;--dx:25px;animation-delay:.9s"></span><span class="bf-aa-flav" style="left:30%;--dx:-15px;animation-delay:1.2s"></span>',
+  },
+  // FUMAR / tabaco / cigarro / vape: calar + exhalar anillos de humo + ceniza.
+  {
+    id: 'smoke',
+    keywords: ['fumar', 'fumando', 'tabaco', 'humo', 'cigarro', 'cigarrillo', 'purito', 'puro', 'pipa', 'vape', 'vaporizador', 'calar', 'calada', 'porro', 'maría', 'mota', 'cachimba', 'shisha', 'narguile', 'boquita'],
+    anim: 'bfAaSmoke',
+    keyframes:
+      '@keyframes bfAaSmoke{0%{transform:scale(.15) translateY(16vh) rotate(-2deg);opacity:0}14%{opacity:1;transform:scale(1.1) translateY(0) rotate(0)}24%{transform:scale(1.08) translateY(-2vh) rotate(-1deg)}34%{transform:scale(1.12) translateY(.5vh) rotate(1deg)}44%{transform:scale(1.08) translateY(-1vh) rotate(-1deg)}54%{transform:scale(1.1) translateY(0) rotate(0)}100%{transform:scale(1.2) translateY(-6vh) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-puff{position:absolute;top:28%;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,rgba(200,200,210,.85),transparent 70%);opacity:0;animation:bfAaPuff 2.4s ease-out forwards;filter:blur(6px)}' +
+      '@keyframes bfAaPuff{0%{opacity:0;transform:translate(0,0) scale(.4)}18%{opacity:.8}100%{opacity:0;transform:translate(var(--dx,0px),-62vh) scale(3)}}' +
+      '.bf-aa-ring2{position:absolute;top:32%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:3px solid rgba(210,210,220,.9);box-shadow:0 0 14px rgba(180,180,200,.6);opacity:0;animation:bfAaRing2 2s ease-out forwards}' +
+      '@keyframes bfAaRing2{0%{opacity:0;transform:translate(0,0) scale(.3)}20%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,0px),-50vh) scale(3.4)}}' +
+      '.bf-aa-ash{position:absolute;width:4px;height:4px;border-radius:50%;background:#888;box-shadow:0 0 6px rgba(255,120,40,.8);opacity:0;animation:bfAaAsh 1.1s ease-in forwards}' +
+      '@keyframes bfAaAsh{0%{opacity:0;transform:translate(0,0) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),38vh) scale(.4) rotate(180deg)}}',
+    fxTag:
+      '<span class="bf-aa-puff" style="left:46%;--dx:-15px;animation-delay:.2s"></span><span class="bf-aa-puff" style="left:54%;--dx:20px;animation-delay:.5s"></span><span class="bf-aa-puff" style="left:48%;--dx:-25px;animation-delay:.9s"></span><span class="bf-aa-puff" style="left:52%;--dx:30px;animation-delay:1.3s"></span>' +
+      '<span class="bf-aa-ring2" style="--dx:-20px;animation-delay:.4s"></span><span class="bf-aa-ring2" style="--dx:25px;animation-delay:.9s"></span><span class="bf-aa-ring2" style="--dx:-10px;animation-delay:1.4s"></span>' +
+      '<span class="bf-aa-ash" style="left:50%;top:24%;--dx:8px;animation-delay:.3s"></span><span class="bf-aa-ash" style="left:48%;top:26%;--dx:-12px;animation-delay:.6s"></span><span class="bf-aa-ash" style="left:52%;top:22%;--dx:14px;animation-delay:.9s"></span><span class="bf-aa-ash" style="left:50%;top:28%;--dx:-6px;animation-delay:1.2s"></span>',
+  },
   // ATERRIZAJE HEROICO / épico: caída + grieta en el suelo + polvo + esquirlas.
   {
     id: 'heroic',
