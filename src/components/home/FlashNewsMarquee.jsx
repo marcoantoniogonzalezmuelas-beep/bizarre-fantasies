@@ -3,6 +3,9 @@ import { Radio } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getLang } from '@/lib/i18n';
 
+const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
+const IS_MOBILE = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA)) || /Android|iPhone|iPod|Mobile/i.test(UA);
+
 // Cartel digital de "Actualidad": panel LED compacto tipo indicador de
 // autopista/andén. Más ancho y con tipografía mayor; se ancla JUSTO DEBAJO del
 // icono "Contacta con los Bizarros" del juego (no al fondo) y es arrastrable
@@ -39,12 +42,18 @@ export default function FlashNewsMarquee() {
     const iframe = document.querySelector('iframe');
     if (iframe) {
       const doc = iframe.contentDocument;
-      const pill = doc && doc.querySelector('#bf-contact .bf-contact-pill');
-      if (pill) {
-        const ir = iframe.getBoundingClientRect();
-        const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
-        const scale = ir.height / contentH;
-        top = ir.top + pill.getBoundingClientRect().bottom * scale + 8;
+      const ir = iframe.getBoundingClientRect();
+      const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
+      const scale = ir.height / contentH;
+      // En móvil/tablet: justo debajo del anagrama del pollo BF (logo de arriba),
+      // libre de solapes con los iconos del pie. En escritorio: bajo "Contacta".
+      const anchor = IS_MOBILE
+        ? (doc && doc.querySelector('.bf-title-logo'))
+        : (doc && doc.querySelector('#bf-contact .bf-contact-pill'));
+      if (anchor) {
+        top = ir.top + anchor.getBoundingClientRect().bottom * scale + (IS_MOBILE ? 4 : 8);
+      } else if (IS_MOBILE) {
+        top = Math.round(window.innerHeight * 0.23);
       }
     }
     const maxX = Math.max(0, window.innerWidth - w - 4);
@@ -114,7 +123,7 @@ export default function FlashNewsMarquee() {
       ref={signRef}
       onPointerDown={startDrag}
       style={{ ...style, touchAction: 'none', cursor: 'grab' }}
-      className="bf-led-sign pointer-events-auto absolute z-40 w-[min(94vw,860px)] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-4 py-2.5 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)]"
+      className="bf-led-sign pointer-events-auto absolute z-40 w-[min(94vw,860px)] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1.5 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:px-4 lg:py-2.5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
       <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
@@ -128,8 +137,8 @@ export default function FlashNewsMarquee() {
           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#ffd24a]/45 bg-[#1a1300] px-2.5 py-1.5"
           style={{ animation: 'bfMarqueeBadgePulse 2.2s ease-in-out infinite' }}
         >
-          <Radio className="h-4 w-4 text-[#ffd24a]" />
-          <span className="font-heading text-[13px] font-black tracking-[0.22em] text-[#ffd24a]">{label}</span>
+          <Radio className="h-3.5 w-3.5 text-[#ffd24a] lg:h-4 lg:w-4" />
+          <span className="font-heading text-[11px] font-black tracking-[0.22em] text-[#ffd24a] lg:text-[13px]">{label}</span>
         </div>
         <div className="bf-led-screen relative flex-1 overflow-hidden rounded-md py-0.5">
           <div className="bf-marquee-track absolute left-0 top-1/2 -translate-y-1/2 whitespace-nowrap">
