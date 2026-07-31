@@ -8,13 +8,17 @@ import { getLang } from '@/lib/i18n';
 // icono "Contacta con los Bizarros" del juego (no al fondo) y es arrastrable
 // (la posición se guarda en sessionStorage). Las noticias las gestiona el
 // admin desde la entidad FlashNews.
-export default function FlashNewsMarquee({ mobScale = 1, isMobile = false }) {
+export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinchZ = 1, pinchTx = 0, pinchTy = 0 }) {
   const [items, setItems] = useState([]);
   const [pos, setPos] = useState(null);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
   const [enabled, setEnabled] = useState(true);
   const signRef = useRef(null);
   const drag = useRef(null);
+  // Zoom de pellizco del juego (móvil/tablet): el cartel se amplía igual que el
+  // contenido del iframe. pos se calcula sin zoom (z=1) y aquí se compone.
+  const pz = pinchZ || 1;
+  const pzRef = useRef(pz); pzRef.current = pz;
 
   // El juego se renderiza a 1200px de ancho dentro del iframe y se escala por
   // mobScale en móvil/tablet para la responsividad. El cartel vive fuera del
@@ -50,6 +54,10 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false }) {
   // iframe), salvo que el usuario la haya arrastrado antes (sessionStorage).
   const computePos = useCallback(() => {
     if (!signRef.current) return;
+    // Mientras hay zoom de pellizco, no recolocamos: la posición base (sin
+    // zoom) ya está guardada y el transform del pellizco la amplía igual que
+    // al juego. Recolocar aquí leería el ancla ya ampliada y descolocaría.
+    if (pzRef.current !== 1) return;
     // El cartel se escala por `scale` (igual que el iframe del juego en móvil).
     // offsetWidth/Height son el tamaño CSS (sin escalar); el tamaño visual es
     // ese × scale. Posicionamos en coordenadas de viewport (visuales).
@@ -149,10 +157,17 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false }) {
   // El cartel se escala por `scale` (igual que el juego en móvil) con origen
   // arriba-izquierda: su esquina superior izquierda queda en (left, top) y el
   // contenido crece desde ahí, igual que el iframe del juego.
+  // Transform base (sin zoom de pellizco): escala igual que el iframe del juego.
+  // Con pellizco (pz>1): translada y escala igual que el body del juego, de
+  // modo que el cartel crece desde su ancla a la vez que el contenido del iframe.
+  const baseTransform = `scale(${scale})`;
+  const zoomedTransform = pos
+    ? `translate(${(pinchTx || 0) * scale + (pz - 1) * pos.left}px, ${(pinchTy || 0) * scale + (pz - 1) * pos.top}px) scale(${pz * scale})`
+    : baseTransform;
   const baseStyle = {
     touchAction: 'none',
     cursor: 'grab',
-    transform: `scale(${scale})`,
+    transform: pz !== 1 ? zoomedTransform : baseTransform,
     transformOrigin: 'top left',
     ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
   };

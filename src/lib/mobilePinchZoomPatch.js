@@ -18,6 +18,9 @@ export const MOBILE_PINCH_PATCH = `
     var b = document.body;
     b.style.transformOrigin = '0 0';
     b.style.transform = (z === 1 && !tx && !ty) ? '' : 'translate(' + tx + 'px,' + ty + 'px) scale(' + z + ')';
+    // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
+    // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
+    try { window.parent.postMessage({ bfPinch: { z: z, tx: tx, ty: ty } }, '*'); } catch (e) {}
   }
 
   function clampT(){

@@ -304,6 +304,10 @@ export default function Home() {
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showOracle, setShowOracle] = useState(true);
+  // Zoom de pellizco (móvil/tablet): el juego lo aplica dentro del iframe y nos
+  // avía por postMessage para que el cartel de actualidad se amplíe igual.
+  const pinchRafRef = useRef(null);
+  const [pinch, setPinch] = useState({ z: 1, tx: 0, ty: 0 });
 
   useEffect(() => bindGameLobbyBridge(iframeRef), []);
 
@@ -345,6 +349,13 @@ export default function Home() {
         // El iframe se va a recargar (Salir / Volver al inicio): tapamos para
         // evitar el flash de iconos enormes antes de que el CSS del juego aplique.
         setLoading(true);
+      }
+      if (e.data && e.data.bfPinch) {
+        // El juego amplió su contenido con el pellizco: refleja el mismo zoom
+        // en el cartel de actualidad (throttle por rAF para no saturar).
+        const p = e.data.bfPinch;
+        if (pinchRafRef.current) cancelAnimationFrame(pinchRafRef.current);
+        pinchRafRef.current = requestAnimationFrame(() => setPinch({ z: p.z, tx: p.tx, ty: p.ty }));
       }
     };
     window.addEventListener('message', onMessage);
@@ -509,7 +520,7 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} />
+      <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />
       <div
         className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
         style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out', background: '#0e0a16' }}
