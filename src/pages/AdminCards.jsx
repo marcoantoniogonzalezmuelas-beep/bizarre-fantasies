@@ -277,7 +277,14 @@ export default function AdminCards() {
     setGenerating(target);
     try {
       const isElite = target === 'elite_ability_anim_url';
-      const refUrl = isElite ? (form.elite_art_url || form.art_url) : form.art_url;
+      // Referencia para la IA: la versión ÉLITE prefiere la animación NORMAL ya
+      // generada (que ya está sobre negro puro y recortada) antes que el arte
+      // de carta, para que herede el fondo oscuro en vez del fondo claro/dorado
+      // del arte élite (que al pasarse como existing_image_urls hace que la IA
+      // reproduzca un fondo blanco y luego no se recorte bien).
+      const refUrl = isElite
+        ? (form.ability_anim_url || form.elite_art_url || form.art_url)
+        : form.art_url;
       const abilityName = isElite ? (form.elite_ability_name || form.ability_name) : form.ability_name;
       const abilityDesc = isElite ? (form.elite_ability_text || form.ability_text) : form.ability_text;
       const hint = customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '';
@@ -286,10 +293,11 @@ export default function AdminCards() {
       // overlay, igual que las cinemáticas del Transformer/Tanque/Patitos.
       // La regla va PRIMERO y al FINAL para que la IA la priorice sobre la
       // escena que pudiera inferir de la descripción de la habilidad.
-      const BG_RULE = `CRITICAL — ABSOLUTE RULE (HIGHEST PRIORITY, OVERRIDES EVERYTHING ELSE): the ENTIRE background MUST be PURE SOLID BLACK (hex #000000), a flat black void, zero variation. The character/creature MUST appear ISOLATED and floating in this pure black void, like a figurine cut out. STRICTLY FORBIDDEN: any scene, battlefield, environment, landscape, sky, ground, floor, wall, horizon, background props, furniture, nature, smoke clouds behind the figure, text, logo, signature, watermark, frame, border, plaque, vignette, gradient background, colored background. Any non-character pixels MUST be pure #000000 black. Only the full-body character (with its magical effects and glowing aura) is visible, erupting against the pure black. THIS IS NON-NEGOTIABLE — if the background is not pure black the image is useless.`;
-      const BG_TAIL = ` REMINDER: pure #000000 black void background, character isolated, no scene whatsoever.`;
+      // Para la versión ÉLITE se refuerza aún más: prohibido fondo claro/dorado.
+      const BG_RULE = `CRITICAL — ABSOLUTE RULE (HIGHEST PRIORITY, OVERRIDES EVERYTHING ELSE): the ENTIRE background MUST be PURE SOLID BLACK (hex #000000), a flat black void, zero variation. The character/creature MUST appear ISOLATED and floating in this pure black void, like a figurine cut out. STRICTLY FORBIDDEN: any scene, battlefield, environment, landscape, sky, ground, floor, wall, horizon, background props, furniture, nature, smoke clouds behind the figure, text, logo, signature, watermark, frame, border, plaque, vignette, gradient background, colored background, white background, light background, golden background. Any non-character pixels MUST be pure #000000 black. Only the full-body character (with its magical effects and glowing aura) is visible, erupting against the pure black. THIS IS NON-NEGOTIABLE — if the background is not pure black the image is useless.`;
+      const BG_TAIL = ` REMINDER: pure #000000 black void background, character isolated, no scene whatsoever, absolutely no white or light background.`;
       const prompt = isElite
-        ? `${BG_RULE} Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''} Spectacular magical energy, glowing golden aura, enhanced ornate armor, fierce powerful combat pose, maximum dramatic cinematic lighting, anime-inspired dark fantasy art, premium legendary trading card game ability artwork.${hint}${BG_TAIL}`
+        ? `${BG_RULE} Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''} Spectacular magical energy, glowing aura (NOT a bright/golden background, only the aura glows against pure black), enhanced ornate armor, fierce powerful combat pose, dramatic cinematic lighting, anime-inspired dark fantasy art, premium legendary trading card game ability artwork. The background stays pure black even with the elite glow.${hint}${BG_TAIL}`
         : `${BG_RULE} 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ability "${abilityName || ''}". ${abilityDesc || ''} Dynamic full-body action pose, mid-action, dramatic cinematic lighting, dark fantasy anime art style, epic trading card game ability artwork.${hint}${BG_TAIL}`;
       const refs = refImages(refUrl);
       const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
