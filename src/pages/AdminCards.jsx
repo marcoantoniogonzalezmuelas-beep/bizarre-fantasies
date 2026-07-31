@@ -278,8 +278,10 @@ export default function AdminCards() {
     try {
       const isElite = target === 'elite_ability_anim_url';
       const refUrl = isElite ? (form.elite_art_url || form.art_url) : form.art_url;
-      const abilityName = isElite ? (form.elite_ability_name || form.ability_name) : form.ability_name;
-      const abilityDesc = isElite ? (form.elite_ability_text || form.ability_text) : form.ability_text;
+      const abilityName = isElite ? (form.elite_ability_name || form.ability_name || form.name) : (form.ability_name || form.name);
+      // Equipamiento (hechizos/armas/objetos…) no tiene ability_text: se usa la
+      // descripción de la carta como contexto de la cinemática.
+      const abilityDesc = isElite ? (form.elite_ability_text || form.ability_text || form.description) : (form.ability_text || form.description);
       const hint = customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '';
       // El fondo debe ser NEGRO PURO y el personaje AISLADO para que el
       // recorte (canvas → transparente) deje sola la criatura sobre el
