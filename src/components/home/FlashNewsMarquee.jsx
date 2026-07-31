@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Radio } from 'lucide-react';
+import { Radio, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getLang } from '@/lib/i18n';
 
@@ -14,17 +14,24 @@ const IS_MOBILE = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && navigator
 export default function FlashNewsMarquee() {
   const [items, setItems] = useState([]);
   const [pos, setPos] = useState(null);
+  const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
   const signRef = useRef(null);
   const drag = useRef(null);
 
   useEffect(() => {
     // Limpia posiciones guardadas por versiones anteriores del cartel (que lo
-    // anclaban al fondo); así recalcula la posición correcta bajo el logo/contacto.
+    // anclaba al fondo); así recalcula la posición correcta bajo el logo/contacto.
     try { if (!sessionStorage.getItem('bfSignPosV2')) sessionStorage.removeItem('bfSignPos'); sessionStorage.setItem('bfSignPosV2', '1'); } catch (e) {}
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
   }, []);
+
+  function closeSign(e) {
+    e.preventDefault(); e.stopPropagation();
+    setClosed(true);
+    try { sessionStorage.setItem('bfSignClosed', '1'); } catch (e) {}
+  }
 
   // Calcula la posición: debajo del icono "Contacta" del juego (dentro del
   // iframe), salvo que el usuario la haya arrastrado antes (sessionStorage).
@@ -114,7 +121,7 @@ export default function FlashNewsMarquee() {
     e.stopPropagation();
   }
 
-  if (!items.length) return null;
+  if (!items.length || closed) return null;
   const isEn = getLang() === 'en';
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
@@ -134,6 +141,16 @@ export default function FlashNewsMarquee() {
       <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
       <span className="absolute bottom-2 left-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
       <span className="absolute bottom-2 right-2 h-1.5 w-1.5 rounded-full bg-[#ffd24a]/40" />
+
+      <button
+        type="button"
+        onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+        onClick={closeSign}
+        aria-label={isEn ? 'Close' : 'Cerrar'}
+        className="absolute -top-2 -right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-[#ffd24a]/70 bg-[#1a1300] text-[#ffd24a] shadow-[0_2px_8px_rgba(0,0,0,.7)] transition-colors hover:bg-[#ffd24a] hover:text-[#3a2600]"
+      >
+        <X className="h-3.5 w-3.5" strokeWidth={3} />
+      </button>
 
       <div className="relative flex items-center gap-2 lg:gap-3">
         <div
