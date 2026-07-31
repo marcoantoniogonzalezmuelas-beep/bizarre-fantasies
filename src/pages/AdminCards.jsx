@@ -277,14 +277,7 @@ export default function AdminCards() {
     setGenerating(target);
     try {
       const isElite = target === 'elite_ability_anim_url';
-      // Referencia para la IA: la versión ÉLITE prefiere la animación NORMAL ya
-      // generada (que ya está sobre negro puro y recortada) antes que el arte
-      // de carta, para que herede el fondo oscuro en vez del fondo claro/dorado
-      // del arte élite (que al pasarse como existing_image_urls hace que la IA
-      // reproduzca un fondo blanco y luego no se recorte bien).
-      const refUrl = isElite
-        ? (form.ability_anim_url || form.elite_art_url || form.art_url)
-        : form.art_url;
+      const refUrl = isElite ? (form.elite_art_url || form.art_url) : form.art_url;
       const abilityName = isElite ? (form.elite_ability_name || form.ability_name) : form.ability_name;
       const abilityDesc = isElite ? (form.elite_ability_text || form.ability_text) : form.ability_text;
       const hint = customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '';
