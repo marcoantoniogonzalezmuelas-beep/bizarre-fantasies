@@ -46,8 +46,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '#bf-spec-cine .bf-sc-bg{display:none}'+
   // Criatura a la derecha de la pantalla, sin fondo, para no tapar la carta
   // revelada (que aparece centrada).
-  '#bf-spec-cine .bf-sc-img{position:absolute;top:50%;left:75%;transform-origin:center;width:min(56vmin,480px);height:min(56vmin,480px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(56vmin,480px)/-2) 0 0 calc(min(56vmin,480px)/-2)}'+
-  '@media(max-width:900px){#bf-spec-cine .bf-sc-img{left:78%;width:min(46vmin,340px);height:min(46vmin,340px);margin:calc(min(46vmin,340px)/-2) 0 0 calc(min(46vmin,340px)/-2)}}'+
+  '#bf-spec-cine .bf-sc-img{position:absolute;top:42%;left:82%;transform-origin:center;width:min(56vmin,480px);height:min(56vmin,480px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(56vmin,480px)/-2) 0 0 calc(min(56vmin,480px)/-2)}'+
+  '@media(max-width:900px){#bf-spec-cine .bf-sc-img{left:85%;top:40%;width:min(46vmin,340px);height:min(46vmin,340px);margin:calc(min(46vmin,340px)/-2) 0 0 calc(min(46vmin,340px)/-2)}}'+
   '#bf-spec-cine.bf-sc-phoenix .bf-sc-img{filter:drop-shadow(0 0 60px rgba(255,120,20,.8)) saturate(1.25);animation:bfScPhoenix 3s cubic-bezier(.2,.85,.3,1) forwards}'+
   '@keyframes bfScPhoenix{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.12);opacity:1}}'+
   '#bf-spec-cine.bf-sc-phoenix-ave .bf-sc-img{width:min(75vmin,640px);height:min(75vmin,640px);left:50%;top:45%;margin:calc(min(75vmin,640px)/-2) 0 0 calc(min(75vmin,640px)/-2);filter:drop-shadow(0 0 70px rgba(255,140,30,.9)) saturate(1.4) brightness(1.15);animation:bfScPhoenixAve 3.4s cubic-bezier(.2,.85,.3,1) forwards}'+
