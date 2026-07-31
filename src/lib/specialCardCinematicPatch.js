@@ -47,8 +47,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '#bf-spec-cine .bf-sc-bg{display:none}'+
   // Criatura a la derecha de la pantalla, sin fondo, para no tapar la carta
   // revelada (que aparece centrada).
-  '#bf-spec-cine .bf-sc-img{position:absolute;top:50%;left:75%;transform-origin:center;width:min(56vmin,480px);height:min(56vmin,480px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(56vmin,480px)/-2) 0 0 calc(min(56vmin,480px)/-2)}'+
-  '@media(max-width:900px){#bf-spec-cine .bf-sc-img{left:78%;width:min(46vmin,340px);height:min(46vmin,340px);margin:calc(min(46vmin,340px)/-2) 0 0 calc(min(46vmin,340px)/-2)}}'+
+  '#bf-spec-cine .bf-sc-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(70vmin,600px);height:min(70vmin,600px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(70vmin,600px)/-2) 0 0 calc(min(70vmin,600px)/-2)}'+
+  '@media(max-width:900px){#bf-spec-cine .bf-sc-img{width:min(56vmin,440px);height:min(56vmin,440px);margin:calc(min(56vmin,440px)/-2) 0 0 calc(min(56vmin,440px)/-2)}}'+
   '#bf-spec-cine.bf-sc-phoenix .bf-sc-img{filter:drop-shadow(0 0 60px rgba(255,120,20,.8)) saturate(1.25);animation:bfScPhoenix 3s cubic-bezier(.2,.85,.3,1) forwards}'+
   '@keyframes bfScPhoenix{0%{transform:rotateY(-55deg) rotateX(10deg) translateY(30vh) scale(.2);opacity:0}18%{opacity:1}38%{transform:rotateY(22deg) rotateX(-4deg) translateY(-2vh) scale(1.12)}56%{transform:rotateY(-14deg) rotateX(2deg) translateY(0) scale(1)}74%{transform:rotateY(8deg) scale(1.05)}100%{transform:rotateY(0) translateY(-6vh) scale(1.12);opacity:1}}'+
   '#bf-spec-cine.bf-sc-phoenix-ave .bf-sc-img{width:min(75vmin,640px);height:min(75vmin,640px);left:50%;top:45%;margin:calc(min(75vmin,640px)/-2) 0 0 calc(min(75vmin,640px)/-2);filter:drop-shadow(0 0 70px rgba(255,140,30,.9)) saturate(1.4) brightness(1.15);animation:bfScPhoenixAve 3.4s cubic-bezier(.2,.85,.3,1) forwards}'+
@@ -90,7 +90,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   '@keyframes bfScArc{0%,100%{opacity:0}45%{opacity:1}}'+
   // Ave Fénix: la cinemática ocupa el centro, así que la carta revelada se
   // desplaza a la izquierda para no solaparse con el ave.
-  'body.bf-phoenix-cine .bf-reveal{transform:translateX(-26vw)}';
+  'body.bf-card-cine .bf-reveal{transform:translateX(-26vw)}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   var lastCine=0;
@@ -103,7 +103,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     var ov=document.createElement('div');
     ov.id='bf-spec-cine';
     ov.className=kind==='phoenix_ave'?'bf-sc-phoenix-ave':(kind==='phoenix'?'bf-sc-phoenix':(kind==='duck'?'bf-sc-duck':(kind==='tank'?'bf-sc-tank':'bf-sc-robot')));
-    if(kind==='phoenix_ave')document.body.classList.add('bf-phoenix-cine');
+    document.body.classList.add('bf-card-cine');
     var html='<div class="bf-sc-bg"></div><div class="bf-sc-flash"></div>';
     if(kind==='phoenix'||kind==='phoenix_ave'){
       var _n=kind==='phoenix_ave'?20:16;
@@ -134,7 +134,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     ov.innerHTML=html;
     document.body.appendChild(ov);
     setTimeout(function(){ov.classList.add('bf-sc-out');},2700);
-    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);document.body.classList.remove('bf-phoenix-cine');},3150);
+    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);document.body.classList.remove('bf-card-cine');},3150);
   }
   window.__bfPlaySpecCine=playCine;
 
