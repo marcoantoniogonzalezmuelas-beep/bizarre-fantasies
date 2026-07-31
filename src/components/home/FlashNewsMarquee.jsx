@@ -24,9 +24,9 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
   const MOB_W = 760; // ancho del cartel en coordenadas 1200 (escala igual que el juego)
 
   useEffect(() => {
-    // Limpia posiciones guardadas por versiones anteriores. V5: el cartel ahora
-    // se ancla debajo del bloque "Contacta" (no al fondo absoluto).
-    try { if (!sessionStorage.getItem('bfSignPosV5')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV4'); sessionStorage.removeItem('bfSignPosV3'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV5', '1'); } catch (e) {}
+    // Limpia posiciones guardadas por versiones anteriores. V6: en móvil/tablet
+    // el cartel se ancla bajo los iconos del menú (no bajo "Contacta").
+    try { if (!sessionStorage.getItem('bfSignPosV6')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV5'); sessionStorage.removeItem('bfSignPosV4'); sessionStorage.removeItem('bfSignPosV3'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV6', '1'); } catch (e) {}
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
@@ -64,25 +64,27 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
         return;
       }
     } catch (e) {}
-    // Posición por defecto: justo debajo del bloque "Contacta" del juego
-    // (dentro del iframe), igual que en escritorio. En móvil/tablet el juego
-    // está escalado y el bloque "Contacta" NO queda al fondo del viewport,
-    // así que el cartel debe seguirlo en coordenadas de pantalla, no pegarse
-    // al fondo absoluto. Si no se encuentra el ancla, sí al fondo.
+    // Posición por defecto: debajo de los iconos del menú (Aprende/Reglas/
+    // Razas/Top Ranking) del juego en coordenadas de pantalla. En móvil/tablet
+    // el bloque "Contacta" queda en otro sitio, así que anclamos al menú
+    // (igual que se ve en escritorio, donde el menú y el cartel quedan juntos).
+    // En escritorio se sigue el bloque "Contacta" (que ahí sí está bien).
     const maxTop = Math.max(0, window.innerHeight - visualH - 4);
-    let contactBottom = 0;
+    let anchorBottom = 0;
     const iframe = document.querySelector('iframe');
     if (iframe) {
       const doc = iframe.contentDocument;
       const ir = iframe.getBoundingClientRect();
       const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
       const iframeScale = ir.height / contentH;
-      const anchor = doc && doc.querySelector('#bf-contact .bf-contact-pill');
+      // Móvil/tablet: ancla bajo los iconos del menú; escritorio: bajo Contacta.
+      const sel = scale < 1 ? '#s-title .title-links' : '#bf-contact .bf-contact-pill';
+      const anchor = doc && doc.querySelector(sel);
       if (anchor) {
-        contactBottom = ir.top + anchor.getBoundingClientRect().bottom * iframeScale;
+        anchorBottom = ir.top + anchor.getBoundingClientRect().bottom * iframeScale;
       }
     }
-    const desired = contactBottom > 0 ? contactBottom + 4 : maxTop;
+    const desired = anchorBottom > 0 ? anchorBottom + 4 : maxTop;
     const top = Math.max(4, Math.min(maxTop, desired));
     const maxX = Math.max(0, window.innerWidth - visualW - 4);
     setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.round(top) });
