@@ -8,7 +8,7 @@ import { getLang } from '@/lib/i18n';
 // icono "Contacta con los Bizarros" del juego (no al fondo) y es arrastrable
 // (la posición se guarda en sessionStorage). Las noticias las gestiona el
 // admin desde la entidad FlashNews.
-export default function FlashNewsMarquee() {
+export default function FlashNewsMarquee({ mobScale = 1 }) {
   const [items, setItems] = useState([]);
   const [pos, setPos] = useState(null);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
@@ -16,11 +16,17 @@ export default function FlashNewsMarquee() {
   const signRef = useRef(null);
   const drag = useRef(null);
 
+  // El juego se renderiza a 1200px de ancho dentro del iframe y se escala por
+  // mobScale en móvil/tablet para la responsividad. El cartel vive fuera del
+  // iframe, así que le aplicamos el MISMO scale para que se vea a la misma
+  // escala que el resto de la pantalla (no a tamaño real del viewport).
+  const scale = mobScale || 1;
+  const MOB_W = 760; // ancho del cartel en coordenadas 1200 (escala igual que el juego)
+
   useEffect(() => {
-    // Limpia posiciones guardadas por versiones anteriores del cartel (que lo
-    // anclaba debajo del icono "Contacta" y solapaba los iconos de Reglas/Razas
-    // en tablet). V3: ahora se ancla al fondo del viewport, algo más bajo.
-    try { if (!sessionStorage.getItem('bfSignPosV3')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV3', '1'); } catch (e) {}
+    // Limpia posiciones guardadas por versiones anteriores. V4: el cartel ahora
+    // se escala como el resto de la pantalla en móvil, coords distintas.
+    try { if (!sessionStorage.getItem('bfSignPosV4')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV3'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV4', '1'); } catch (e) {}
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
@@ -44,13 +50,16 @@ export default function FlashNewsMarquee() {
   // iframe), salvo que el usuario la haya arrastrado antes (sessionStorage).
   const computePos = useCallback(() => {
     if (!signRef.current) return;
-    const w = signRef.current.offsetWidth || 560;
-    const h = signRef.current.offsetHeight || 58;
+    // El cartel se escala por `scale` (igual que el iframe del juego en móvil).
+    // offsetWidth/Height son el tamaño CSS (sin escalar); el tamaño visual es
+    // ese × scale. Posicionamos en coordenadas de viewport (visuales).
+    const visualW = signRef.current.offsetWidth * scale;
+    const visualH = signRef.current.offsetHeight * scale;
     try {
       const stored = JSON.parse(sessionStorage.getItem('bfSignPos') || 'null');
       if (stored) {
-        const maxX = Math.max(0, window.innerWidth - w - 4);
-        const maxY = Math.max(0, window.innerHeight - h - 4);
+        const maxX = Math.max(0, window.innerWidth - visualW - 4);
+        const maxY = Math.max(0, window.innerHeight - visualH - 4);
         setPos({ left: Math.max(4, Math.min(maxX, stored.left)), top: Math.max(4, Math.min(maxY, stored.top)) });
         return;
       }
@@ -60,7 +69,7 @@ export default function FlashNewsMarquee() {
     // de la pantalla. En móvil el bloque "Contacta" llega casi al fondo, así
     // que el cartel se ancla justo debajo de éste; en tablet hay hueco de
     // sobra y queda pegado al fondo. Así no solapa los iconos del menú.
-    const maxTop = window.innerHeight - h; // pegado al fondo: nunca se sale
+    const maxTop = window.innerHeight - visualH; // pegado al fondo: nunca se sale
     const veryBottom = maxTop - 4;
     let contactBottom = 0;
     const iframe = document.querySelector('iframe');
@@ -68,16 +77,16 @@ export default function FlashNewsMarquee() {
       const doc = iframe.contentDocument;
       const ir = iframe.getBoundingClientRect();
       const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
-      const scale = ir.height / contentH;
+      const iframeScale = ir.height / contentH;
       const anchor = doc && doc.querySelector('#bf-contact .bf-contact-pill');
       if (anchor) {
-        contactBottom = ir.top + anchor.getBoundingClientRect().bottom * scale;
+        contactBottom = ir.top + anchor.getBoundingClientRect().bottom * iframeScale;
       }
     }
     const top = Math.max(veryBottom, Math.min(contactBottom + 4, maxTop));
-    const maxX = Math.max(0, window.innerWidth - w - 4);
-    setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - w) / 2))), top: Math.max(4, Math.round(top)) });
-  }, []);
+    const maxX = Math.max(0, window.innerWidth - visualW - 4);
+    setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.max(4, Math.round(top)) });
+  }, [scale]);
 
   // Recoloca al montar/cambiar noticias y al rotar; repite unas veces hasta
   // que el icono "Contacta" del juego aparezca (carga asíncrona del iframe).
@@ -97,7 +106,7 @@ export default function FlashNewsMarquee() {
     function onMove(e) {
       if (!drag.current || !signRef.current) return;
       const p = point(e);
-      const w = signRef.current.offsetWidth, h = signRef.current.offsetHeight;
+      const w = signRef.current.offsetWidth * scale, h = signRef.current.offsetHeight * scale;
       const maxX = Math.max(0, window.innerWidth - w - 4);
       const maxY = Math.max(0, window.innerHeight - h - 4);
       setPos({ left: Math.max(4, Math.min(maxX, p.clientX - drag.current.sx)), top: Math.max(4, Math.min(maxY, p.clientY - drag.current.sy)) });
@@ -119,7 +128,7 @@ export default function FlashNewsMarquee() {
       document.removeEventListener('mouseup', onUp);
       document.removeEventListener('touchend', onUp);
     };
-  }, [pos]);
+  }, [pos, scale]);
 
   function startDrag(e) {
     if (e.target && e.target.closest && e.target.closest('a')) return;
@@ -135,13 +144,23 @@ export default function FlashNewsMarquee() {
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
-  const style = pos ? { left: pos.left, top: pos.top, right: 'auto', bottom: 'auto', transform: 'none' } : undefined;
+  // El cartel se escala por `scale` (igual que el juego en móvil) con origen
+  // arriba-izquierda: su esquina superior izquierda queda en (left, top) y el
+  // contenido crece desde ahí, igual que el iframe del juego.
+  const baseStyle = {
+    touchAction: 'none',
+    cursor: 'grab',
+    transform: `scale(${scale})`,
+    transformOrigin: 'top left',
+    ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
+  };
+  const style = pos ? { ...baseStyle, left: pos.left, top: pos.top, right: 'auto', bottom: 'auto' } : baseStyle;
 
   return (
     <div
       ref={signRef}
       onPointerDown={startDrag}
-      style={{ ...style, touchAction: 'none', cursor: 'grab' }}
+      style={style}
       className="bf-led-sign pointer-events-auto absolute z-40 w-[86vw] max-w-[560px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:max-w-[760px] lg:px-4 lg:py-2.5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
