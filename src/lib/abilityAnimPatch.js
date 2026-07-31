@@ -84,7 +84,7 @@ export const ABILITY_ANIM_PATCH = `
   '@keyframes bfAaSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-85vh) scale(1.4) translateX(var(--dx,0px))}}'+
   '.bf-aa-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid var(--aa-color,#fff);box-shadow:0 0 20px var(--aa-glow,#fff);opacity:0;animation:bfAaRing 1.5s ease-out forwards}'+
   '@keyframes bfAaRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}'+
-  ALL_MOTION_CSS;
+  ${JSON.stringify(ALL_MOTION_CSS)};
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   // Variantes de movimiento temático (tajo, fogonazo, etc.) elegidas por
