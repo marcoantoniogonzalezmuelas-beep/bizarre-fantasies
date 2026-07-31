@@ -18,8 +18,9 @@ export default function FlashNewsMarquee() {
 
   useEffect(() => {
     // Limpia posiciones guardadas por versiones anteriores del cartel (que lo
-    // anclaba al fondo); así recalcula la posición correcta bajo el logo/contacto.
-    try { if (!sessionStorage.getItem('bfSignPosV2')) sessionStorage.removeItem('bfSignPos'); sessionStorage.setItem('bfSignPosV2', '1'); } catch (e) {}
+    // anclaba debajo del icono "Contacta" y solapaba los iconos de Reglas/Razas
+    // en tablet). V3: ahora se ancla al fondo del viewport, algo más bajo.
+    try { if (!sessionStorage.getItem('bfSignPosV3')) { sessionStorage.removeItem('bfSignPos'); sessionStorage.removeItem('bfSignPosV2'); } sessionStorage.setItem('bfSignPosV3', '1'); } catch (e) {}
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
@@ -43,7 +44,7 @@ export default function FlashNewsMarquee() {
   // iframe), salvo que el usuario la haya arrastrado antes (sessionStorage).
   const computePos = useCallback(() => {
     if (!signRef.current) return;
-    const w = signRef.current.offsetWidth || 760;
+    const w = signRef.current.offsetWidth || 560;
     const h = signRef.current.offsetHeight || 58;
     try {
       const stored = JSON.parse(sessionStorage.getItem('bfSignPos') || 'null');
@@ -54,20 +55,26 @@ export default function FlashNewsMarquee() {
         return;
       }
     } catch (e) {}
-    let top = window.innerHeight - h - 12;
+    // Posición por defecto: lo más bajo posible del viewport (por debajo de
+    // los iconos de Reglas/Razas/Ranking y del bloque "Contacta"), sin salirse
+    // de la pantalla. En móvil el bloque "Contacta" llega casi al fondo, así
+    // que el cartel se ancla justo debajo de éste; en tablet hay hueco de
+    // sobra y queda pegado al fondo. Así no solapa los iconos del menú.
+    const maxTop = window.innerHeight - h; // pegado al fondo: nunca se sale
+    const veryBottom = maxTop - 4;
+    let contactBottom = 0;
     const iframe = document.querySelector('iframe');
     if (iframe) {
       const doc = iframe.contentDocument;
       const ir = iframe.getBoundingClientRect();
       const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
       const scale = ir.height / contentH;
-      // Mismo sitio en móvil, tablet y escritorio: debajo del icono
-      // "Contacta con los Bizarros" del juego.
       const anchor = doc && doc.querySelector('#bf-contact .bf-contact-pill');
       if (anchor) {
-        top = ir.top + anchor.getBoundingClientRect().bottom * scale + 8;
+        contactBottom = ir.top + anchor.getBoundingClientRect().bottom * scale;
       }
     }
+    const top = Math.max(veryBottom, Math.min(contactBottom + 4, maxTop));
     const maxX = Math.max(0, window.innerWidth - w - 4);
     setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - w) / 2))), top: Math.max(4, Math.round(top)) });
   }, []);
@@ -135,7 +142,7 @@ export default function FlashNewsMarquee() {
       ref={signRef}
       onPointerDown={startDrag}
       style={{ ...style, touchAction: 'none', cursor: 'grab' }}
-      className="bf-led-sign pointer-events-auto absolute z-40 w-[94vw] max-w-[860px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:px-4 lg:py-2.5"
+      className="bf-led-sign pointer-events-auto absolute z-40 w-[86vw] max-w-[560px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:max-w-[760px] lg:px-4 lg:py-2.5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
       <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
