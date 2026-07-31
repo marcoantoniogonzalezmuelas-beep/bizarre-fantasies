@@ -1,0 +1,23 @@
+{
+  "name": "FlashNews",
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "Texto de la noticia que aparece en el cartel digital de la home"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si true, la noticia se muestra en el cartel"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "description": "Orden de aparici\u00f3n (menor primero)"
+    }
+  },
+  "required": [
+    "text"
+  ]
+}

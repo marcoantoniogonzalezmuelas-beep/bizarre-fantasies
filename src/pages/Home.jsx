@@ -53,6 +53,7 @@ import { AUCTION_THUMB_PATCH } from '@/lib/auctionThumbPatch';
 import { NARBON_ELITE_PATCH } from '@/lib/narbonElitePatch';
 import { TOKEN_ABILITIES_PATCH } from '@/lib/tokenAbilitiesPatch';
 import { ABILITY_ANIM_PATCH } from '@/lib/abilityAnimPatch';
+import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-07-31-abil-anim-v204';
@@ -500,6 +501,7 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
+      <FlashNewsMarquee />
       <div
         className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
         style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out', background: '#0e0a16' }}

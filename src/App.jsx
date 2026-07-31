@@ -12,6 +12,7 @@ import RacesPage from './pages/RacesPage';
 import Ranking from './pages/Ranking';
 import EnglishEntry from './pages/EnglishEntry';
 import AdminCards from './pages/AdminCards';
+import FlashNewsAdmin from './pages/FlashNewsAdmin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -49,6 +50,7 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={<Home />} />
       <Route path="/admin" element={<AdminCards />} />
+      <Route path="/admin/news" element={<FlashNewsAdmin />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/races" element={<RacesPage />} />
       <Route path="/ranking" element={<Ranking />} />
