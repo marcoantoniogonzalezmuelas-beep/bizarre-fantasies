@@ -20,6 +20,9 @@ export default function FlashNewsAdmin() {
   const [ht, setHt] = useState({ punkitoEs: '', punkitoEn: '', contactLabel: '', contactBody: '' });
   const [htIds, setHtIds] = useState({ punkito: null, contact_label: null, contact_body: null });
   const [savingHt, setSavingHt] = useState(false);
+  const [fnEnabled, setFnEnabled] = useState(true);
+  const [fnId, setFnId] = useState(null);
+  const [savingFn, setSavingFn] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false));
@@ -39,6 +42,8 @@ export default function FlashNewsAdmin() {
       contactBody: map.contact_body?.value || '',
     });
     setHtIds({ punkito: map.punkito?.id || null, contact_label: map.contact_label?.id || null, contact_body: map.contact_body?.id || null });
+    setFnEnabled(map.flashnews_enabled ? map.flashnews_enabled.value !== '0' : true);
+    setFnId(map.flashnews_enabled?.id || null);
   }
 
   function reset() { setText(''); setTextEn(''); setActive(true); setOrder(0); setEditingId(null); }
@@ -105,6 +110,26 @@ export default function FlashNewsAdmin() {
     }
   }
 
+  async function toggleFnEnabled() {
+    const next = !fnEnabled;
+    setFnEnabled(next);
+    setSavingFn(true);
+    try {
+      if (fnId) {
+        await base44.entities.HomeText.update(fnId, { value: next ? '1' : '0' });
+      } else {
+        const c = await base44.entities.HomeText.create({ key: 'flashnews_enabled', value: next ? '1' : '0' });
+        setFnId(c.id);
+      }
+    } catch (err) {
+      console.error(err);
+      setFnEnabled(!next);
+      alert('No se pudo guardar el estado del cartel.');
+    } finally {
+      setSavingFn(false);
+    }
+  }
+
   if (checking) return <div className="min-h-screen bg-[#0e0a16] p-8 text-[#efe9dc]">Cargando backoffice...</div>;
   if (!user || user.role !== 'admin') {
     return (
@@ -132,6 +157,29 @@ export default function FlashNewsAdmin() {
             <Link to="/" className="rounded-xl border border-[#ffd24a66] px-3 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Volver al juego</Link>
           </div>
         </div>
+
+        {/* Encendido/apagado del cartel en la home */}
+        <section className="mb-6 rounded-2xl border border-[#ffd24a33] bg-[#140d24]/90 p-5 shadow-2xl">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Power className={`h-5 w-5 ${fnEnabled ? 'text-[#ffd24a]' : 'text-[#6a5e3a]'}`} />
+              <div>
+                <h2 className="font-heading text-lg font-black text-[#ffe49a]">Cartel en la home</h2>
+                <p className="text-sm text-[#cfc6dd]">Mostrar u ocultar el cartel de Actualidad en la portada del juego.</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleFnEnabled}
+              disabled={savingFn}
+              aria-pressed={fnEnabled}
+              aria-label={fnEnabled ? 'Desactivar cartel' : 'Activar cartel'}
+              className={`relative inline-flex h-8 w-16 shrink-0 items-center rounded-full border transition-colors ${fnEnabled ? 'border-[#ffd24a] bg-[#ffd24a]' : 'border-[#6a5e3a] bg-[#3c3158]'} disabled:opacity-50`}
+            >
+              <span className={`inline-block h-6 w-6 transform rounded-full bg-[#0e0a16] shadow transition-transform ${fnEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] text-[#8a7faa]">{fnEnabled ? 'Cartel activo: se muestra en la home.' : 'Cartel apagado: no aparece en la home.'}</p>
+        </section>
 
         {/* Textos de la home */}
         <section className="mb-6 rounded-2xl border border-[#c06bff33] bg-[#140d24]/90 p-5 shadow-2xl">

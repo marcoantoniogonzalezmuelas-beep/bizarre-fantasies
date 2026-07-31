@@ -3,9 +3,6 @@ import { Radio, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getLang } from '@/lib/i18n';
 
-const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
-const IS_MOBILE = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA)) || /Android|iPhone|iPod|Mobile/i.test(UA);
-
 // Cartel digital de "Actualidad": panel LED compacto tipo indicador de
 // autopista/andén. Más ancho y con tipografía mayor; se ancla JUSTO DEBAJO del
 // icono "Contacta con los Bizarros" del juego (no al fondo) y es arrastrable
@@ -15,6 +12,7 @@ export default function FlashNewsMarquee() {
   const [items, setItems] = useState([]);
   const [pos, setPos] = useState(null);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
+  const [enabled, setEnabled] = useState(true);
   const signRef = useRef(null);
   const drag = useRef(null);
 
@@ -25,6 +23,14 @@ export default function FlashNewsMarquee() {
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
       .then((list) => setItems(list || []))
       .catch(() => setItems([]));
+  }, []);
+
+  // El admin puede desactivar el cartel entero desde el backoffice (HomeText
+  // key 'flashnews_enabled' = '0'). Si está apagado, no se muestra en la home.
+  useEffect(() => {
+    base44.entities.HomeText.filter({ key: 'flashnews_enabled' }, 'key', 5)
+      .then((list) => { if (list && list.length && list[0].value === '0') setEnabled(false); })
+      .catch(() => {});
   }, []);
 
   function closeSign(e) {
@@ -55,15 +61,11 @@ export default function FlashNewsMarquee() {
       const ir = iframe.getBoundingClientRect();
       const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
       const scale = ir.height / contentH;
-      // En móvil/tablet: justo debajo del anagrama del pollo BF (logo de arriba),
-      // libre de solapes con los iconos del pie. En escritorio: bajo "Contacta".
-      const anchor = IS_MOBILE
-        ? (doc && doc.querySelector('.bf-title-logo'))
-        : (doc && doc.querySelector('#bf-contact .bf-contact-pill'));
+      // Mismo sitio en móvil, tablet y escritorio: debajo del icono
+      // "Contacta con los Bizarros" del juego.
+      const anchor = doc && doc.querySelector('#bf-contact .bf-contact-pill');
       if (anchor) {
-        top = ir.top + anchor.getBoundingClientRect().bottom * scale + (IS_MOBILE ? 2 : 8);
-      } else if (IS_MOBILE) {
-        top = Math.round(window.innerHeight * 0.23);
+        top = ir.top + anchor.getBoundingClientRect().bottom * scale + 8;
       }
     }
     const maxX = Math.max(0, window.innerWidth - w - 4);
@@ -121,7 +123,7 @@ export default function FlashNewsMarquee() {
     e.stopPropagation();
   }
 
-  if (!items.length || closed) return null;
+  if (!items.length || closed || !enabled) return null;
   const isEn = getLang() === 'en';
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
