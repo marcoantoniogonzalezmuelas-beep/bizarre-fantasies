@@ -22,15 +22,24 @@ export const USED_OBJECTS_PILE_PATCH = `
   ].join('');
   document.head.appendChild(st);
 
-  var snap = null; // nº de objetos al iniciar la batalla actual
+  // nº de objetos al iniciar la batalla actual + último valor pintado (para
+  // evitar reescribir el innerHTML si no cambia: si lo reescribimos en cada
+  // callback del MutationObserver de #s-battle, el propio observer se dispara
+  // por nuestras mutaciones y entra en un bucle de retroalimentación que
+  // congela la página al arrancar la batalla).
+  var snap = null, lastUsed = -1;
   function renderPile(){
     try{
       if (typeof G === 'undefined' || !G) return;
       var hand = document.getElementById('hand_p');
-      if (!hand) { snap = null; return; } // fuera de batalla → reset
+      if (!hand) { snap = null; lastUsed = -1; return; } // fuera de batalla → reset
       var cur = (G.items && G.items.p) ? G.items.p.length : 0;
       if (snap === null) snap = cur; // primer render de esta batalla
       var used = Math.max(0, snap - cur);
+      // Solo tocamos el DOM cuando el nº de usados cambia: escribir innerHTML
+      // (aunque sea el mismo contenido) muta los hijos y dispara el observer.
+      if (used === lastUsed) return;
+      lastUsed = used;
       var box = hand.querySelector('.bf-used-box');
       if (!box){
         box = document.createElement('div');
@@ -43,16 +52,10 @@ export const USED_OBJECTS_PILE_PATCH = `
       box.innerHTML =
         '<div class="hand-lbl bf-used-lbl" title="Pila de descartes de objetos">Pila · Objetos usados (' + used + ')</div>' +
         '<div class="hand-chips bf-used-pile" title="Pila de descartes de objetos">' + chips + '</div>';
-    }catch(e){ snap = null; }
+    }catch(e){ snap = null; lastUsed = -1; }
   }
 
   setInterval(renderPile, 700);
-  try{
-    var obs = new MutationObserver(renderPile);
-    var battle = document.getElementById('s-battle');
-    if (battle) obs.observe(battle, {childList:true, subtree:true});
-    else document.addEventListener('DOMContentLoaded', function(){ var b=document.getElementById('s-battle'); if(b) obs.observe(b,{childList:true,subtree:true}); });
-  }catch(e){}
   renderPile();
 })();
 </script>

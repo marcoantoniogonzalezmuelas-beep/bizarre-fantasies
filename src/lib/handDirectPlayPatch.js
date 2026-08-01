@@ -80,11 +80,23 @@ export const HAND_DIRECT_PLAY_PATCH = `
       lastCounts[sd]=cur;
     });
   }
+  // Caché del último conteo pintado por lado: solo tocamos el DOM cuando
+  // cambia. Si reescribimos la pila en cada callback del MutationObserver de
+  // documentElement, el propio observer se dispara por nuestras mutaciones y
+  // entra en un bucle de retroalimentación que congela la página al arrancar
+  // la batalla.
+  var lastDiscardCount={p:-1,o:-1};
   function renderDiscardPile(side){
-    var hand=document.getElementById('hand_'+side); if(!hand) return;
-    var ex=hand.querySelector('.bf-discard-pile'); if(ex) ex.remove();
-    if(typeof G==='undefined'||!G||!G.itemDescarte) return;
-    var count=(G.itemDescarte[side]||[]).length; if(count<=0) return;
+    var hand=document.getElementById('hand_'+side); if(!hand){ lastDiscardCount[side]=-1; return; }
+    if(typeof G==='undefined'||!G||!G.itemDescarte){ var ex0=hand.querySelector('.bf-discard-pile'); if(ex0)ex0.remove(); lastDiscardCount[side]=-1; return; }
+    var count=(G.itemDescarte[side]||[]).length;
+    if(count<=0){
+      var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
+      lastDiscardCount[side]=-1; return;
+    }
+    if(count===lastDiscardCount[side]) return; // sin cambios → no mutamos
+    lastDiscardCount[side]=count;
+    var ex2=hand.querySelector('.bf-discard-pile'); if(ex2)ex2.remove();
     var pile=document.createElement('div'); pile.className='bf-discard-pile'; pile.title='Objetos usados · '+count;
     pile.innerHTML='<div class="bf-discard-stack'+(dJustSide===side?' bf-just':'')+'"><div class="bf-discard-card" style="top:3px;left:3px"></div><div class="bf-discard-card" style="top:0;left:0"></div><span class="bf-discard-count">'+count+'</span></div><div class="bf-discard-lbl">Usados</div>';
     var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
