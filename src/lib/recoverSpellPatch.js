@@ -60,7 +60,7 @@ export const RECOVER_SPELL_PATCH = `
   function injectSpell(){
     if (typeof SPELLS==='undefined' || !SPELLS) return false;
     if (SPELLS.some(function(s){return s&&s.id==='sp_recover';})) return true;
-    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:109, txt:'Recupera un objeto aleatorio de tu mazo de usados y lo devuelve a tu mano.' });
+    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:117, txt:'Recupera un objeto aleatorio de tu mazo de usados y lo devuelve a tu mano.' });
     return true;
   }
 
