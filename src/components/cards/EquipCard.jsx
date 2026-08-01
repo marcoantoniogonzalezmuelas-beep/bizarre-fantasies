@@ -174,8 +174,9 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
     : borderColor;
 
   const manaWord = getLang() === 'en' ? 'mana' : 'maná';
-  const statLine = type === 'spell' && item.mana != null
-    ? `🔵 ${item.mana} ${manaWord}`
+  const isSpell = type === 'spell';
+  const statLine = isSpell
+    ? null
     : item.cc != null
     ? `+${item.cc} CC`
     : item.power != null
@@ -188,29 +189,41 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
 
   return (
     <FullBleedCard item={item} type={type} borderColor={borderColor} artUrl={artUrl} onClick={onClick} zoomable={zoomable} fill={fill}>
-      <div className="flex flex-col gap-1.5">
-        {/* Cost coin */}
-        {item.cost != null && item.cost !== '—' && (
+      <>
+        <div className="flex flex-col gap-1.5">
+          {/* Cost coin */}
+          {item.cost != null && item.cost !== '—' && (
+            <div
+              className={`rounded-full flex items-center justify-center font-black text-[#5a3d06] shadow-md ${fill ? 'w-11 h-11 text-lg' : 'w-8 h-8 text-xs'}`}
+              style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}
+            >
+              {item.cost}
+            </div>
+          )}
+          {/* Tag / element */}
+          {tagLabel && (
+            <span className={`font-black text-white rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`} style={{ background: tagBg }}>
+              {tagLabel}
+            </span>
+          )}
+          {/* Stat (no spells: el maná va en el orbe azul superior derecho) */}
+          {statLine && (
+            <span className={`font-black text-[#ffe49a] bg-black/60 rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`}>
+              {statLine}
+            </span>
+          )}
+        </div>
+        {/* Orbe de maná (hechizos): círculo azul arriba a la derecha, igual que
+            el orbe de oro del coste pero azul. */}
+        {isSpell && item.mana != null && (
           <div
-            className={`rounded-full flex items-center justify-center font-black text-[#5a3d06] shadow-md ${fill ? 'w-11 h-11 text-lg' : 'w-8 h-8 text-xs'}`}
-            style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}
+            className={`rounded-full flex items-center justify-center font-black text-[#eaf4ff] shadow-md ${fill ? 'w-11 h-11 text-lg' : 'w-8 h-8 text-xs'}`}
+            style={{ background: 'radial-gradient(circle at 34% 30%, #bfe3ff, #3a8bff 46%, #103a8a)', border: '2px solid #8fc4ff', boxShadow: '0 3px 8px rgba(0,0,0,.55), 0 0 12px rgba(58,139,255,.4)' }}
           >
-            {item.cost}
+            {item.mana}
           </div>
         )}
-        {/* Tag / element */}
-        {tagLabel && (
-          <span className={`font-black text-white rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`} style={{ background: tagBg }}>
-            {tagLabel}
-          </span>
-        )}
-        {/* Stat */}
-        {statLine && (
-          <span className={`font-black text-[#ffe49a] bg-black/60 rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`}>
-            {statLine}
-          </span>
-        )}
-      </div>
+      </>
     </FullBleedCard>
   );
 }
