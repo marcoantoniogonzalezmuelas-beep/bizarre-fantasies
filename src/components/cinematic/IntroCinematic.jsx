@@ -18,6 +18,8 @@ const XABIERUS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const KRUNDER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/22295a6ed_generated_image.png';
 const PATITO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f920d0819_generated_image.png';
 const MORTHEX = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9e800cc3f_generated_image.png';
+const TRANSFORMER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
+const NARBON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2f9aade2d_generated_image.png';
 
 function buildScenes() {
   return [
@@ -28,6 +30,7 @@ function buildScenes() {
     { clash: { left: RENHUBERO_E, right: BOSKIMANO, accent: '#ffc24a', kind: 'chill' }, kicker: t('Descanso bizarro'), title: t('Brindis en medio del caos'), text: t('Renhubero brinda con una cerveza, escopeta al hombro; Boskimano se cura fumándose un pitillo. Beben y descansan juntos antes de la siguiente batalla.'), dur: 16 },
     { clash: { left: XABIERUS, right: KRUNDER, accent: '#7c9cff', kind: 'sword' }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus, el guerrero, hunde su espada; KrunderKrak, el maestro infulero, recibe el golpe imbloqueable. Acero contra furia épica.'), dur: 16 },
     { bg: HERO_ART[27], kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes.'), dur: 16 },
+    { clash: { left: TRANSFORMER, right: NARBON, accent: '#29a3ff', kind: 'shoot' }, kicker: t('Ataque bizarro'), title: t('Transformer embiste a Narbon'), text: t('El Transformer, robot gigante tipo Optimus, se transforma y dispara arcos eléctricos azules contra Narbon, que sigue jugando al futbolín impertérrito. Mecánico contra futbolín.'), dur: 16 },
     { clash: { left: PATITO, right: MORTHEX, accent: '#7cff5a', kind: 'clash' }, kicker: t('Choque bizarro'), title: t('Patito de goma contra Morthex'), text: t('El Patito de Goma, bloqueador de baño, se estampa contra Morthex, el no-muerto. Goma contra muerte en una colisión imposible.'), dur: 16 },
     { bg: HERO_ART[15], kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos.'), dur: 16 },
     { bg: HERO_ART[40], kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada.'), dur: 16 },
