@@ -9,7 +9,7 @@ const cover = (url) => ({ backgroundImage: `linear-gradient(rgba(6,4,12,.5),rgba
 
 function buildScenes() {
   return [
-    { bg: COVER_BG, kicker: t('Bizarre Fantasies'), title: t('El tiempo se ha roto'), text: t('Un mundo donde todas las épocas del tiempo colisionan: el presente, el futuro, la Edad Media y la fantasía épica — medieval y espacial.'), dur: 6 },
+    { bg: COVER_BG, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Un mundo donde todas las épocas del tiempo colisionan: el presente, el futuro, la Edad Media y la fantasía épica — medieval y espacial.'), dur: 8 },
     { bg: HERO_ART[2], kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el futuro, pasando por la Edad Media y la épica fantástica medieval y espacial. Todo cabe en Bizarre Fantasies.'), dur: 20 },
     { bg: HERO_ART[0], kicker: t('Base Set'), title: t('Héroes de cada era'), text: t('Retropoeta, Patrón, Xabierus, Narbon, Zarmandis, Chivo… los protagonistas del Base Set. Y muchos más por llegar en cada expansión.'), dur: 20 },
     { bg: HERO_ART[27], kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes.'), dur: 20 },

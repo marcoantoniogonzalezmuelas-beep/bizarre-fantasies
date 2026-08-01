@@ -44,6 +44,19 @@ export const buildLangSelectorPatch = (lang) => `
     wrap.appendChild(btn('es', 'ES', FLAG_ES));
     wrap.appendChild(btn('en', 'EN', FLAG_EN));
     title.appendChild(wrap);
+
+    // Botón "Intro" (cinemática de bienvenida) justo debajo del selector
+    // de idioma. Pequeño, con diseño de píldora violeta y icono de cine.
+    if (!document.getElementById('bf-intro-btn')) {
+      var intro = document.createElement('button');
+      intro.id = 'bf-intro-btn';
+      intro.type = 'button';
+      intro.setAttribute('aria-label', 'Intro');
+      intro.style.cssText = 'position:absolute;top:48px;right:10px;z-index:81;display:inline-flex;align-items:center;gap:5px;padding:5px 12px;font-size:11px;font-weight:900;letter-spacing:.16em;border:1.5px solid rgba(192,91,255,.7);border-radius:999px;cursor:pointer;line-height:1;background:linear-gradient(135deg,#1e0c32,#3c145a);color:#e8c0ff;box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 12px rgba(192,91,255,.4);text-shadow:0 1px 4px #000;transition:transform .15s ease;';
+      intro.innerHTML = '🎬 INTRO';
+      intro.onclick = function(e){ e.preventDefault(); e.stopPropagation(); try { window.parent.postMessage({ bfOpenIntro: true }, '*'); } catch(err){} };
+      title.appendChild(intro);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add);
