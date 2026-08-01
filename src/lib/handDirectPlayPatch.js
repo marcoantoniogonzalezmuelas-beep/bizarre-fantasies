@@ -26,10 +26,9 @@ export const HAND_DIRECT_PLAY_PATCH = `
   '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-play.bf-chip-play-new{animation:none}'+
   '@keyframes bfHandPlayPulse{0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)}50%{box-shadow:0 4px 22px rgba(255,210,74,.95),inset 0 1px 2px rgba(255,255,255,.6),0 0 20px rgba(255,210,74,.65)}}'+
   // Pila de objetos usados (descartes): mazo boca abajo junto a la mano.
-  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:3px;margin:2px 0 0 10px;vertical-align:top;cursor:default}'+
+  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:3px;margin:2px 0 0 10px;vertical-align:top;cursor:help}'+
   '.bf-discard-stack{position:relative;width:40px;height:56px}'+
-  '.bf-discard-card{position:absolute;width:40px;height:56px;border-radius:6px;border:1.5px solid #5a3a0a;background:linear-gradient(135deg,#1c1230,#0a0512);box-shadow:0 2px 6px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}'+
-  '.bf-discard-card::after{content:"\\2726";color:rgba(255,210,74,.3);font-size:16px}'+
+  '.bf-discard-card{position:absolute;width:40px;height:56px;border-radius:6px;border:1.5px solid #5a3a0a;background:url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png") center/cover #120a1e;box-shadow:0 2px 6px rgba(0,0,0,.6)}'+
   '.bf-discard-count{position:absolute;right:-7px;bottom:-7px;min-width:19px;height:19px;border-radius:10px;background:#FFD24A;color:#3a2600;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 5px rgba(0,0,0,.6);border:1px solid #7c5410}'+
   '.bf-discard-lbl{font-size:8.5px;font-weight:800;color:#a78be0;letter-spacing:.5px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
   '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-14px) rotate(8deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-stack.bf-just{animation:bfDiscardIn .4s ease-out}';
