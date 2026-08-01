@@ -30,14 +30,14 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
           <motion.img
             src={leftSrc} alt="" draggable={false}
             className="h-full w-auto max-w-none object-contain select-none"
-            initial={{ opacity: 0, x: '-8%' }}
-            animate={{ opacity: 1, x: ['0%', '8%', '0%'], y: [0, -10, 0], scale: [1, 1.05, 1], rotate: [-1.6, 1.6, -1.6] }}
+            initial={{ opacity: 0, x: '-12%' }}
+            animate={{ opacity: 1, x: ['0%', '16%', '-5%', '2%', '0%'], y: [0, -12, 3, -8, 0], scale: [1, 1.09, 0.97, 1.03, 1], rotate: [-2.2, 3, -1.2, 1.4, -2.2] }}
             transition={{
-              opacity: { duration: 0.7 },
-              x: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
-              y: { duration: 5, repeat: Infinity, ease: 'easeInOut' },
-              scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
-              rotate: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' },
+              opacity: { duration: 0.6 },
+              x: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
+              y: { duration: 4.6, repeat: Infinity, ease: 'easeInOut' },
+              scale: { duration: 3.6, repeat: Infinity, ease: 'easeInOut' },
+              rotate: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
             }}
           />
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
@@ -47,14 +47,14 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
           <motion.img
             src={rightSrc} alt="" draggable={false}
             className="h-full w-auto max-w-none object-contain select-none"
-            initial={{ opacity: 0, x: '8%' }}
-            animate={{ opacity: 1, x: ['0%', '-8%', '0%'], y: [0, -10, 0], scale: [1, 1.05, 1], rotate: [1.6, -1.6, 1.6] }}
+            initial={{ opacity: 0, x: '12%' }}
+            animate={{ opacity: 1, x: ['0%', '-16%', '5%', '-2%', '0%'], y: [0, -12, 3, -8, 0], scale: [1, 1.09, 0.97, 1.03, 1], rotate: [2.2, -3, 1.2, -1.4, 2.2] }}
             transition={{
-              opacity: { duration: 0.7 },
-              x: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' },
-              y: { duration: 5.4, repeat: Infinity, ease: 'easeInOut' },
-              scale: { duration: 4.2, repeat: Infinity, ease: 'easeInOut' },
-              rotate: { duration: 3.4, repeat: Infinity, ease: 'easeInOut' },
+              opacity: { duration: 0.6 },
+              x: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
+              y: { duration: 4.8, repeat: Infinity, ease: 'easeInOut' },
+              scale: { duration: 3.8, repeat: Infinity, ease: 'easeInOut' },
+              rotate: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' },
             }}
           />
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />

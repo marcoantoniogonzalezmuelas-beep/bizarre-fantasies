@@ -86,7 +86,10 @@ const UI_EN = {
   'Bonificador': 'Booster',
   // --- Cinemática de intro ---
   'Bienvenido al mundo de las fantasías bizarras': 'Welcome to the world of bizarre fantasies',
-  'El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial.': 'Time has shattered. Here every era collides: the present, the future, the Middle Ages and epic fantasy — medieval and cosmic.',
+  'El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.': 'Time has shattered. Here every era collides: the present, the future, the Middle Ages and epic fantasy — medieval and cosmic. One world, infinite eras.',
+  'Equipos': 'Teams',
+  'Tres contra tres': 'Three against three',
+  'Cada equipo se compone de tres héroes: uno cuerpo a cuerpo, uno a distancia y uno mágico. Reúne al tuyo, enfréntalo al rival y que el bizarro caiga del lado contrario.': 'Each team is made up of three heroes: one melee, one ranged and one magic. Gather yours, face the rival and may the bizarre fall on the other side.',
   'Eras': 'Eras',
   'Todas las épocas a la vez': 'All eras at once',
   'Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.': 'From the present day to the far future, through the Middle Ages and epic fantasy, medieval and cosmic. In Bizarre Fantasies, no era is left off the board.',

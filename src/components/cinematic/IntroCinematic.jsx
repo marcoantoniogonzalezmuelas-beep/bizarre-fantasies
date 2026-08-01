@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Volume2, VolumeX, SkipForward, Play } from 'lucide-react';
 import { startMusic, stopMusic, setMuted as setMusicMuted } from '@/lib/cinematicMusic';
 import BattleClash from '@/components/cinematic/BattleClash';
+import TeamVersus from '@/components/cinematic/TeamVersus';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 
@@ -35,6 +36,7 @@ function buildScenes() {
     { clash: { left: AVE, right: TANK, accent: '#ff7a18', kind: 'fire', swap: false }, kicker: t('Choque épico'), title: t('Ave Fénix contra el Tanque'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelto en llamas vivas. El Tanque planta las orugas, atrapa el fuego con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Fuego contra blindaje — y el asfalto, por debajo, empieza a fundirse.'), dur: 16 },
     { clash: { left: PLUMA, right: TANK, accent: '#ffb347', kind: 'fire', swap: true }, kicker: t('Renacimiento'), title: t('Pluma Fénix renace'), text: t('De una sola pluma ardiente renace un fénix joven: pequeño, veloz, envuelto en brasas. Se cuela entre las orugas del Tanque y le pica los cables con picotazos de fuego. El Tanque gira el cañón buscando al bicho, pero el fénix ya está en otro lado — y ríe, con voz de cría.'), dur: 15 },
     { clash: { left: ZAR, right: COF, accent: '#b13bff', kind: 'clash', swap: true }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 14 },
+    { versus: { left: [XAB, SOL, REN], right: [TRA, TANK, GOR], accent: '#ffd24a' }, kicker: t('Equipos'), title: t('Tres contra tres'), text: t('Cada equipo se compone de tres héroes: uno cuerpo a cuerpo, uno a distancia y uno mágico. Reúne al tuyo, enfréntalo al rival y que el bizarro caiga del lado contrario.'), dur: 12 },
     { clash: { left: KRU, right: GOR, accent: '#ffd24a', kind: 'sword', swap: false }, kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada: hoy campeón, mañana leyenda.'), dur: 14 },
     { clash: { left: KIL, right: REA, accent: '#7cff5a', kind: 'clash', swap: true }, kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: aquí el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos — te estábamos esperando.'), dur: 14 },
     { clash: { left: REN, right: BOS, accent: '#ffd24a', kind: 'clash', swap: false }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 8 },
@@ -84,6 +86,7 @@ export default function IntroCinematic({ onClose }) {
     <div className="fixed inset-0 z-[200000] bg-[#050308] overflow-hidden select-none">
       {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} />}
+      {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
 
       {/* Viñeta + legibilidad */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/70 via-transparent to-[#050308]/92 pointer-events-none" />
