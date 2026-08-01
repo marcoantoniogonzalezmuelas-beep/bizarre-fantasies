@@ -4,6 +4,7 @@ import { X, Volume2, VolumeX, SkipForward, Play } from 'lucide-react';
 import { startMusic, stopMusic, setMuted as setMusicMuted } from '@/lib/cinematicMusic';
 import BattleClash from '@/components/cinematic/BattleClash';
 import TeamVersus from '@/components/cinematic/TeamVersus';
+import ExpansionSlide from '@/components/cinematic/ExpansionSlide';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 
@@ -23,6 +24,7 @@ const ZAR = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b15
 const COF = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0b6d418b1_generated_image.png';   // Coffetath
 const TRA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';    // Transformer
 const KIL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';   // KillerDucks
+const KIL_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/566c990fc_generated_image.png'; // Patito de Goma (élite)
 const REA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/41f320812_generated_image.png';   // Reanimación Arcana
 const AVE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/caba9677e_generated_image.png';    // Ave Fénix
 const PLUMA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cc96fe904_generated_image.png';   // Pluma Fénix (bebé fénix)
@@ -52,16 +54,16 @@ const BATU = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e2
 
 function buildScenes() {
   return [
-    { clash: { left: HIL, right: UND, accent: '#7cff5a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
+    { clash: { left: HIL, right: BATU, accent: '#7cff5a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
     { clash: { left: REN, right: HEAVY, accent: '#7c9cff', kind: 'sword', swap: true, motion: 'diagonal' }, kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 12 },
     { clash: { left: SOL, right: COF_ELITE, accent: '#ffc24a', kind: 'chill', swap: false, motion: 'up' }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, los druidas se reúnen junto al fuego: se curan las heridas, filosofan sobre el caos y brindan con la pipa y la cerveza espumando. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 12 },
     { clash: { left: GOR, right: SYL, accent: '#ff5a3c', kind: 'clash', swap: false, motion: 'rotate' }, kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 12 },
     { clash: { left: TRA, right: TANK, accent: '#29a3ff', kind: 'shoot', swap: true, motion: 'charge' }, kicker: t('Choque mecánico'), title: t('Transformer contra el Tanque'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules contra el Tanque. El Tanque planta las orugas, atrapa los golpes con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Mecánico contra blindaje — y el asfalto empieza a fundirse.'), dur: 13 },
     { clash: { left: AVE, right: HANNAI, accent: '#ff7a18', kind: 'fire', swap: false, motion: 'down' }, kicker: t('Choque épico'), title: t('Ave Fénix contra Hannai Boa'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. Hannai Boa despliega su Sigilo Cuántico y se funde con las sombras: el fuego pasa de largo, las llamas lamien el vacío. Fuego contra sombra — y el fénix, desconcertado, remonta.'), dur: 13 },
     { clash: { left: PLUMA, right: SOL_ELITE, accent: '#ffb347', kind: 'fire', swap: true, motion: 'spin' }, kicker: t('Renacimiento'), title: t('Pluma Fénix renace'), text: t('De una sola pluma ardiente renace un fénix joven: pequeño, veloz, envuelto en brasas. Se cuela entre los pliegues del manto de Solenna y le picotea los tobillos con picotazos de fuego. Solenna sonríe, invoca su Resurrección y lo envuelve todo en una luz dorada — pero el fénix ya está en otro lado, y ríe con voz de cría.'), dur: 12 },
-    { clash: { left: ZAR, right: COF, accent: '#b13bff', kind: 'clash', swap: true, motion: 'cross' }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 12 },
+    { expansion: { ducks: [KIL, KIL_ELITE], others: [ZAR, COF], accent: '#b13bff' }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 12 },
     { versus: { left: [CLINT, FUTBOLISTA, GAMER], right: [ALFREDINHO, AJEDRECISTA, RETROPOETA], accent: '#ffd24a' }, kicker: t('Equipos'), title: t('Tres contra tres'), text: t('Cada equipo se compone de tres héroes: uno cuerpo a cuerpo, uno a distancia y uno mágico. Reúne al tuyo, enfréntalo al rival y que el bizarro caiga del lado contrario.'), dur: 11 },
-    { clash: { left: CHIVO, right: BATU, accent: '#ffd24a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 9 },
+    { clash: { left: CHIVO, right: UND, accent: '#ffd24a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 9 },
   ];
 }
 
@@ -109,6 +111,7 @@ export default function IntroCinematic({ onClose }) {
       {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} motion={cur.clash.motion} />}
       {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
+      {cur.expansion && <ExpansionSlide ducks={cur.expansion.ducks} others={cur.expansion.others} accent={cur.expansion.accent} />}
 
       {/* Viñeta + legibilidad */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/70 via-transparent to-[#050308]/92 pointer-events-none" />
