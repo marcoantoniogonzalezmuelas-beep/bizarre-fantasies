@@ -402,7 +402,7 @@ export default function Home() {
       if (e.data && e.data.bfArtMapRequest) {
         base44.entities.Card.list('number', 300).then(cards => {
           const isEn = getLang() === 'en';
-          const ITEM_CATS = ['spell', 'object', 'ranged_weapon', 'melee_weapon'];
+          const ITEM_CATS = ['spell', 'object', 'ranged_weapon', 'melee_weapon', 'armor'];
           const map = {};
           const info = {};
           const dict = {};
