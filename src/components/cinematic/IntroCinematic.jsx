@@ -12,7 +12,7 @@ const NAR = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2f9
 const REN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/089e4218d_generated_image.png';    // Renhubero
 const BOS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c36cac946_generated_image.png';    // Boskimano
 const KRU = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/22295a6ed_generated_image.png';   // KrunderKrak
-const HEA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/104e2f355_generated_image.png';    // El Heavy (tanque)
+const TANK = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/76149d71f_generated_image.png';   // Tanque (acción Tanquear)
 const SYL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/21b96f7c7_generated_image.png';   // Sylvex
 const GOR = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2b21e2f69_generated_image.png';   // Gorvak
 const SOL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49afa7a4e_generated_image.png';   // Solenna
@@ -21,8 +21,8 @@ const COF = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0b6
 const TRA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';    // Transformer
 const KIL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';   // KillerDucks
 const REA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/41f320812_generated_image.png';   // Reanimación Arcana
-// Ave Fénix: aún no tiene animación 3D generada; se usa su arte de carta.
-const FENIX = 'https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/254bd399c_card_art.jpg';
+const AVE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/caba9677e_generated_image.png';    // Ave Fénix
+const PLUMA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cc96fe904_generated_image.png';   // Pluma Fénix (bebé fénix)
 
 function buildScenes() {
   return [
@@ -32,7 +32,8 @@ function buildScenes() {
     { clash: { left: XAB, right: KRU, accent: '#7c9cff', kind: 'sword', swap: true }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus hunde la espada con el rugido de quien no conoce la retirada. KrunderKrak sonríe, el maestro infulero, y recibe el golpe imbloqueable: el acero canta, las chispas llueven y la leyenda de dos eras se escribe en una sola estocada.'), dur: 16 },
     { clash: { left: GOR, right: SYL, accent: '#ff5a3c', kind: 'clash', swap: false }, kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 14 },
     { clash: { left: TRA, right: NAR, accent: '#29a3ff', kind: 'shoot', swap: true }, kicker: t('Ataque bizarro'), title: t('Transformer embiste a Narbon'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules. Narbon ni levanta la vista: sigue jugando al futbolín, gritando «¡Soltaito!», mientras los destellos le rozan el flequillo. Mecánico contra futbolín — y el futbolín, por ahora, gana por goleada.'), dur: 16 },
-    { clash: { left: FENIX, right: HEA, accent: '#ff7a18', kind: 'fire', swap: false }, kicker: t('Choque épico'), title: t('Ave Fénix contra El Heavy'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. El Heavy, el tanque blindado, planta los pies, atrapa el fuego con la coraza humeante y responde con una carga de acero que hace tembrar el suelo. Fuego contra blindaje — y el asfalto, por debajo, empieza a fundirse.'), dur: 16 },
+    { clash: { left: AVE, right: TANK, accent: '#ff7a18', kind: 'fire', swap: false }, kicker: t('Choque épico'), title: t('Ave Fénix contra el Tanque'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelto en llamas vivas. El Tanque planta las orugas, atrapa el fuego con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Fuego contra blindaje — y el asfalto, por debajo, empieza a fundirse.'), dur: 16 },
+    { clash: { left: PLUMA, right: TANK, accent: '#ffb347', kind: 'fire', swap: true }, kicker: t('Renacimiento'), title: t('Pluma Fénix renace'), text: t('De una sola pluma ardiente renace un fénix joven: pequeño, veloz, envuelto en brasas. Se cuela entre las orugas del Tanque y le pica los cables con picotazos de fuego. El Tanque gira el cañón buscando al bicho, pero el fénix ya está en otro lado — y ríe, con voz de cría.'), dur: 15 },
     { clash: { left: ZAR, right: COF, accent: '#b13bff', kind: 'clash', swap: true }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 14 },
     { clash: { left: KRU, right: GOR, accent: '#ffd24a', kind: 'sword', swap: false }, kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada: hoy campeón, mañana leyenda.'), dur: 14 },
     { clash: { left: KIL, right: REA, accent: '#7cff5a', kind: 'clash', swap: true }, kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: aquí el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos — te estábamos esperando.'), dur: 14 },
