@@ -58,7 +58,7 @@ export const buildLangSelectorPatch = (lang) => `
       intro.id = 'bf-intro-btn';
       intro.type = 'button';
       intro.setAttribute('aria-label', 'Intro');
-      intro.style.cssText = 'position:absolute;top:46px;right:8px;z-index:92;display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 6px;font-family:Cinzel,serif;font-size:15px;font-weight:900;letter-spacing:.16em;border:3px solid #FFD24A;border-radius:999px;cursor:pointer;line-height:1;background:linear-gradient(135deg,#7c1fd6 0%,#b13bff 45%,#5a1f8a 100%);color:#fff7d6;box-shadow:0 0 0 4px rgba(255,210,74,.22),0 8px 22px rgba(0,0,0,.7),0 0 22px rgba(255,210,74,.75),inset 0 0 0 1px rgba(255,233,168,.6);text-shadow:0 1px 3px #000,0 0 12px rgba(255,210,74,.95);animation:bfIntroPulse 1.8s ease-in-out infinite;transition:transform .15s ease;';
+      intro.style.cssText = 'position:absolute !important;top:46px !important;right:8px !important;z-index:92;display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 6px;font-family:Cinzel,serif;font-size:15px;font-weight:900;letter-spacing:.16em;border:3px solid #FFD24A;border-radius:999px;cursor:pointer;line-height:1;background:linear-gradient(135deg,#7c1fd6 0%,#b13bff 45%,#5a1f8a 100%);color:#fff7d6;box-shadow:0 0 0 4px rgba(255,210,74,.22),0 8px 22px rgba(0,0,0,.7),0 0 22px rgba(255,210,74,.75),inset 0 0 0 1px rgba(255,233,168,.6);text-shadow:0 1px 3px #000,0 0 12px rgba(255,210,74,.95);animation:bfIntroPulse 1.8s ease-in-out infinite;transition:transform .15s ease;';
       var ico = document.createElement('img');
       ico.src = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c4111d79e_generated_image.png';
       ico.alt = '';
