@@ -56,6 +56,8 @@ import { NARBON_ELITE_PATCH } from '@/lib/narbonElitePatch';
 import { TOKEN_ABILITIES_PATCH } from '@/lib/tokenAbilitiesPatch';
 import { ABILITY_ANIM_PATCH } from '@/lib/abilityAnimPatch';
 import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
+import IntroCinematic from '@/components/cinematic/IntroCinematic';
+import { Film } from 'lucide-react';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const EXPECTED_PATCH_VERSION = 'bf-2026-07-31-abil-anim-v204';
@@ -306,6 +308,7 @@ export default function Home() {
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showOracle, setShowOracle] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
   // Zoom de pellizco (móvil/tablet): el juego lo aplica dentro del iframe y nos
   // avía por postMessage para que el cartel de actualidad se amplíe igual.
   const pinchRafRef = useRef(null);
@@ -523,6 +526,20 @@ export default function Home() {
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
       {showOracle && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
+      {showOracle && (
+        <button
+          onClick={() => setShowIntro(true)}
+          className="absolute top-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 px-5 py-3 rounded-full font-heading font-black text-[15px] text-[#2a1d05] bg-gradient-to-b from-[#ffe49a] via-[#FFD24A] to-[#d8a431] border border-[#ffe9a8] shadow-[0_10px_30px_rgba(255,210,74,.5)] hover:scale-[1.04] active:scale-95 transition-transform"
+          style={{ filter: 'drop-shadow(0 0 16px rgba(192,91,255,.45))' }}
+        >
+          <Film size={20} />
+          <span className="flex flex-col leading-tight items-start">
+            <span className="text-[9px] font-bold tracking-[0.25em] text-[#5a3d06] uppercase">{t('Cinematic intro')}</span>
+            <span>{t('Introdúcete en el mundo de Bizarre Fantasies')}</span>
+          </span>
+        </button>
+      )}
+      {showIntro && <IntroCinematic onClose={() => setShowIntro(false)} />}
       <div
         className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
         style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out', background: '#0e0a16' }}
