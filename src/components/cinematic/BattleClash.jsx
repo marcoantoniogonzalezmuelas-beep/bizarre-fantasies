@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-// Choque bizarro entre dos animaciones 3D reales del juego: las imágenes van
-// a pantalla completa, recortadas y SIN marco. La interacción (disparo, espada,
-// brindis, choque) se superpone en el centro según `kind`.
+// Choque bizarro entre dos animaciones 3D reales del juego (ability_anim):
+// renders aislados de personaje sobre fondo oscuro. Se muestran COMPLETOS
+// (object-contain, altura a pantalla) anclados a los bordes exteriores, de
+// modo que cada combatiente cabe entero en escritorio sin recortes y el
+// centro queda libre para el texto narrado. Sin marco, a pantalla completa.
 export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'clash' }) {
   const embers = useMemo(
-    () => Array.from({ length: 14 }, () => ({
+    () => Array.from({ length: 12 }, () => ({
       left: Math.random() * 100,
       delay: Math.random() * 3,
       dur: 2.5 + Math.random() * 2.5,
@@ -16,31 +18,33 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
   );
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden bg-[#050308]">
       <div className="absolute inset-0 flex">
-        {/* combatiente izquierdo (espejado para mirar al centro) */}
-        <div className="relative w-1/2 h-full overflow-hidden">
+        {/* combatiente izquierdo (espejado para mirar al centro), anclado al borde izquierdo */}
+        <div className="relative w-1/2 h-full flex justify-start items-center overflow-hidden">
           <motion.img
-            src={left} alt="" className="w-full h-full object-cover"
+            src={left} alt="" draggable={false}
+            className="h-full w-auto max-w-none object-contain select-none"
             style={{ transform: 'scaleX(-1)' }}
-            initial={{ scale: 1.18, x: '4%' }} animate={{ scale: 1.28, x: '-4%' }}
-            transition={{ duration: 14, ease: 'linear' }}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: [0, -8, 0], scale: [1, 1.03, 1] }}
+            transition={{ opacity: { duration: 0.8 }, y: { duration: 6, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 5, repeat: Infinity, ease: 'easeInOut' } }}
           />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, transparent 50%, #050308)' }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 55%, #050308)' }} />
         </div>
-        {/* combatiente derecho */}
-        <div className="relative w-1/2 h-full overflow-hidden">
+        {/* combatiente derecho, anclado al borde derecho */}
+        <div className="relative w-1/2 h-full flex justify-end items-center overflow-hidden">
           <motion.img
-            src={right} alt="" className="w-full h-full object-cover"
-            initial={{ scale: 1.18, x: '-4%' }} animate={{ scale: 1.28, x: '4%' }}
-            transition={{ duration: 14, ease: 'linear' }}
+            src={right} alt="" draggable={false}
+            className="h-full w-auto max-w-none object-contain select-none"
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: [0, -8, 0], scale: [1, 1.03, 1] }}
+            transition={{ opacity: { duration: 0.8 }, y: { duration: 6, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 5.4, repeat: Infinity, ease: 'easeInOut' } }}
           />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(270deg, transparent 50%, #050308)' }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 55%, #050308)' }} />
         </div>
       </div>
 
       {/* scrim central para legibilidad del texto narrado */}
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 65% 75% at 50% 50%, #050308d0, transparent 78%)' }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 62% 72% at 50% 52%, #050308d8, transparent 80%)' }} />
 
       {/* ---- efectos de interacción ---- */}
       {kind === 'shoot' && (
@@ -108,7 +112,7 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
       {/* brasas ascendentes */}
       {embers.map((e, k) => (
         <motion.span
-          key={k} className="absolute bottom-0 rounded-full"
+          key={k} className="absolute bottom-0 rounded-full pointer-events-none"
           style={{ left: `${e.left}%`, width: e.size, height: e.size, background: accent, boxShadow: `0 0 8px ${accent}` }}
           animate={{ y: [0, -300], opacity: [0, 0.8, 0] }}
           transition={{ duration: e.dur, repeat: Infinity, delay: e.delay, ease: 'easeOut' }}

@@ -23,18 +23,18 @@ const NARBON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/
 
 function buildScenes() {
   return [
-    { bg: COVER_BG, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Un mundo donde todas las épocas del tiempo colisionan: el presente, el futuro, la Edad Media y la fantasía épica — medieval y espacial.'), dur: 8 },
-    { bg: HERO_ART[2], kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el futuro, pasando por la Edad Media y la épica fantástica medieval y espacial. Todo cabe en Bizarre Fantasies.'), dur: 18 },
-    { bg: HERO_ART[0], kicker: t('Base Set'), title: t('Héroes de cada era'), text: t('Retropoeta, Patrón, Xabierus, Narbon, Zarmandis, Chivo… los protagonistas del Base Set. Y muchos más por llegar en cada expansión.'), dur: 18 },
-    { clash: { left: RENHUBERO, right: VAP_ROGERS, accent: '#ff5a3c', kind: 'shoot' }, kicker: t('Duelo bizarro'), title: t('Renhubero contra Vap Rogers'), text: t('Renhubero, comiendo pipas, saca la pistola; Vap Rogers, el vaquero, responde con su revólver. Se disparan a quemarropa en un duelo de eras.'), dur: 16 },
-    { clash: { left: RENHUBERO_E, right: BOSKIMANO, accent: '#ffc24a', kind: 'chill' }, kicker: t('Descanso bizarro'), title: t('Brindis en medio del caos'), text: t('Renhubero brinda con una cerveza, escopeta al hombro; Boskimano se cura fumándose un pitillo. Beben y descansan juntos antes de la siguiente batalla.'), dur: 16 },
-    { clash: { left: XABIERUS, right: KRUNDER, accent: '#7c9cff', kind: 'sword' }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus, el guerrero, hunde su espada; KrunderKrak, el maestro infulero, recibe el golpe imbloqueable. Acero contra furia épica.'), dur: 16 },
-    { bg: HERO_ART[27], kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes.'), dur: 16 },
-    { clash: { left: TRANSFORMER, right: NARBON, accent: '#29a3ff', kind: 'shoot' }, kicker: t('Ataque bizarro'), title: t('Transformer embiste a Narbon'), text: t('El Transformer, robot gigante tipo Optimus, se transforma y dispara arcos eléctricos azules contra Narbon, que sigue jugando al futbolín impertérrito. Mecánico contra futbolín.'), dur: 16 },
-    { clash: { left: PATITO, right: MORTHEX, accent: '#7cff5a', kind: 'clash' }, kicker: t('Choque bizarro'), title: t('Patito de goma contra Morthex'), text: t('El Patito de Goma, bloqueador de baño, se estampa contra Morthex, el no-muerto. Goma contra muerte en una colisión imposible.'), dur: 16 },
-    { bg: HERO_ART[15], kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos.'), dur: 16 },
-    { bg: HERO_ART[40], kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada.'), dur: 16 },
-    { bg: HERO_ART[33], kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos.'), dur: 16 },
+    { bg: COVER_BG, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
+    { bg: HERO_ART[2], kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 15 },
+    { clash: { left: RENHUBERO, right: VAP_ROGERS, accent: '#ff5a3c', kind: 'shoot' }, kicker: t('Duelo bizarro'), title: t('Renhubero contra Vap Rogers'), text: t('En la taberna del fin del mundo, Renhubero escupe una pipa y saca la pistola. Vap Rogers, el vaquero sin prisa, ya tiene el revólver amartillado bajo la mesa. Dos eras, un solo disparo — y nadie se ofrece a servir la siguiente ronda.'), dur: 16 },
+    { clash: { left: RENHUBERO_E, right: BOSKIMANO, accent: '#ffc24a', kind: 'chill' }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, Renhubero brinda con la escopeta al hombro y la cerveza espumando. Boskimano, al otro lado del fuego, se cura las heridas fumándose un pitillo y filosofa sobre el caos. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 16 },
+    { solo: { src: XABIERUS, accent: '#ffd24a' }, kicker: t('Héroe del Base Set'), title: t('Xabierus, el guerrero'), text: t('Xabierus alza la espada envuelto en furia dorada: un guerrero que desconoce la retirada. Donde otros ven un ejército, él ve apenas un obstáculo más. Su leyenda se escribe con acero y no admite rendiciones.'), dur: 16 },
+    { clash: { left: XABIERUS, right: KRUNDER, accent: '#7c9cff', kind: 'sword' }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus hunde la espada con el rugido de quien no conoce la retirada. KrunderKrak sonríe, el maestro infulero, y recibe el golpe imbloqueable: el acero canta, las chispas llueven y la leyenda de dos eras se escribe en una sola estocada.'), dur: 16 },
+    { bg: HERO_ART[27], kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 14 },
+    { clash: { left: TRANSFORMER, right: NARBON, accent: '#29a3ff', kind: 'shoot' }, kicker: t('Ataque bizarro'), title: t('Transformer embiste a Narbon'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules. Narbon ni levanta la vista: sigue jugando al futbolín, gritando «¡Soltaito!», mientras los destellos le rozan el flequillo. Mecánico contra futbolín — y el futbolín, por ahora, gana por goleada.'), dur: 16 },
+    { clash: { left: PATITO, right: MORTHEX, accent: '#7cff5a', kind: 'clash' }, kicker: t('Choque bizarro'), title: t('Patito de goma contra Morthex'), text: t('El Patito de Goma, bloqueador de baño, se lanza como un proyectil amarillo contra Morthex, el no-muerto que ya enterró su propia risa. Goma contra muerte, chirrido contra silencio — una colisión tan imposible que el propio Morthex, por primera vez en siglos, se pregunta si está soñando.'), dur: 16 },
+    { bg: HERO_ART[15], kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 14 },
+    { bg: HERO_ART[40], kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada: hoy campeón, mañana leyenda.'), dur: 14 },
+    { bg: HERO_ART[33], kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: aquí el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos — te estábamos esperando.'), dur: 14 },
     { bg: HERO_ELITE_ART[0], kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 8 },
   ];
 }
@@ -84,6 +84,37 @@ export default function IntroCinematic({ onClose }) {
     <div className="fixed inset-0 z-[200000] bg-[#050308] overflow-hidden select-none">
       {/* Choque bizarro entre cinemáticas reales del juego */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} />}
+
+      {/* Showcase a pantalla completa de una animación 3D real (ability_anim) */}
+      {cur.solo && (
+        <AnimatePresence mode="popLayout">
+          <motion.div
+            key={'solo' + i}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: 'easeOut' }}
+            className="absolute inset-0 flex items-center justify-center bg-[#050308] overflow-hidden"
+          >
+            <motion.img
+              src={cur.solo.src} alt="" draggable={false}
+              className="max-h-full max-w-full object-contain select-none"
+              style={{ filter: 'saturate(1.14) contrast(1.1) drop-shadow(0 0 60px rgba(255,210,74,.25))' }}
+              initial={{ scale: 1.05, opacity: 0 }}
+              animate={{ scale: 1.14, opacity: [0, 1, 0.92] }}
+              transition={{ duration: cur.dur || 16, ease: 'linear' }}
+            />
+            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 70% at 50% 55%, transparent 40%, #050308 92%)' }} />
+            {/* partículas doradas ascendentes */}
+            {Array.from({ length: 16 }).map((_, k) => (
+              <motion.span
+                key={k} className="absolute bottom-0 rounded-full pointer-events-none"
+                style={{ left: `${(k * 6.3) % 100}%`, width: 3, height: 3, background: cur.solo.accent, boxShadow: `0 0 10px ${cur.solo.accent}` }}
+                animate={{ y: [0, -340], opacity: [0, 0.9, 0] }}
+                transition={{ duration: 3 + (k % 3), repeat: Infinity, delay: k * 0.4, ease: 'easeOut' }}
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       {/* Fondo con Ken Burns por escena (solo en escenas con imagen) */}
       {cur.bg && (
