@@ -7,6 +7,14 @@ import TeamVersus from '@/components/cinematic/TeamVersus';
 import ExpansionSlide from '@/components/cinematic/ExpansionSlide';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
+import useStageZoom from '@/lib/useStageZoom';
+
+// Móvil/tablet: la intro se renderiza a ancho de escritorio (1200px) dentro de
+// un escenario escalado para caber en pantalla, con zoom de pellizco (igual que
+// el juego). En escritorio se muestra a tamaño natural.
+const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
+const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
+const IS_MOBILE = IS_TABLET || /Android|iPhone|iPod|Mobile/i.test(UA);
 
 // Animaciones 3D reales del juego (ability_anim de las cartas).
 const XAB = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0940b8c4c_generated_image.png';   // Xabierus
@@ -73,6 +81,7 @@ export default function IntroCinematic({ onClose }) {
   const [i, setI] = useState(0);
   const [muted, setMuted] = useState(false);
   const [finished, setFinished] = useState(false);
+  const stageRef = useStageZoom(1200);
 
   const audioRef = useRef(null);
   useEffect(() => {
@@ -109,6 +118,9 @@ export default function IntroCinematic({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-[200000] bg-[#050308] overflow-hidden select-none">
+      {/* Escenario de escritorio (1200px) escalado en móvil con zoom de pellizco.
+          En escritorio rellena el overlay (absolute inset-0). */}
+      <div ref={IS_MOBILE ? stageRef : null} className={IS_MOBILE ? 'absolute left-0 top-0 bg-[#050308]' : 'absolute inset-0'}>
       {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} motion={cur.clash.motion} />}
       {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
@@ -130,10 +142,10 @@ export default function IntroCinematic({ onClose }) {
             className="max-w-2xl"
           >
             {cur.kicker && (
-              <div className="font-heading tracking-[0.4em] text-[#ffd24a] text-xs md:text-sm mb-3 uppercase">{cur.kicker}</div>
+              <div className="font-heading tracking-[0.4em] text-[#ffd24a] text-sm mb-3 uppercase">{cur.kicker}</div>
             )}
-            <h2 className="font-heading font-black text-[#fff5dc] text-3xl md:text-5xl leading-tight mb-4" style={{ textShadow: '0 3px 18px #000, 0 0 28px rgba(255,210,74,.3)' }}>{cur.title}</h2>
-            {cur.text && <p className="font-body text-[#e6dff2] text-base md:text-xl leading-relaxed max-w-xl mx-auto" style={{ textShadow: '0 2px 8px #000' }}>{cur.text}</p>}
+            <h2 className="font-heading font-black text-[#fff5dc] text-5xl leading-tight mb-4" style={{ textShadow: '0 3px 18px #000, 0 0 28px rgba(255,210,74,.3)' }}>{cur.title}</h2>
+            {cur.text && <p className="font-body text-[#e6dff2] text-xl leading-relaxed max-w-xl mx-auto" style={{ textShadow: '0 2px 8px #000' }}>{cur.text}</p>}
             {cur.isEnd && (
               <button
                 onClick={close}
@@ -144,6 +156,7 @@ export default function IntroCinematic({ onClose }) {
             )}
           </motion.div>
         </AnimatePresence>
+      </div>
       </div>
 
       {/* Barra de progreso por escena */}

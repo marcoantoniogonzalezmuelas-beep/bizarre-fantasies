@@ -21,7 +21,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
     const fromLeft = side === 'l';
     return (
       <motion.div
-        className="relative h-[28vh] md:h-[40vh] w-full max-w-[44vw] md:max-w-[30vw] flex items-center justify-center"
+        className="relative h-[31%] w-auto flex items-center justify-center"
         initial={{ opacity: 0, x: fromLeft ? '-70%' : '70%', scale: 0.4 }}
         animate={{ opacity: 1, x: 0, scale: 1.2 }}
         transition={{
@@ -32,7 +32,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
       >
         <motion.img
           src={src} alt="" draggable={false}
-          className="h-full w-auto max-w-full object-contain select-none"
+          className="h-full w-auto max-w-none object-contain select-none"
           style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,.75))' }}
           animate={{ y: [0, -9, 0], rotate: fromLeft ? [-1.3, 1.3, -1.3] : [1.3, -1.3, 1.3] }}
           transition={{ duration: 3.2 + idx * 0.3, repeat: Infinity, ease: 'easeInOut' }}
@@ -47,9 +47,9 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
       <div className="absolute inset-y-0 left-0 w-1/2 pointer-events-none" style={{ background: `linear-gradient(90deg, ${accent}22, transparent)` }} />
       <div className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: `linear-gradient(270deg, ${accent}22, transparent)` }} />
 
-      <div className="absolute inset-0 flex items-center justify-center gap-1 md:gap-6 px-2 md:px-8">
+      <div className="absolute inset-0 flex items-center justify-center gap-6 px-8">
         {/* Bando izquierdo */}
-        <div className="flex flex-col items-center gap-1 md:gap-2">
+        <div className="flex flex-col items-center justify-center gap-3 h-full">
           {left.map((src, k) => <Hero key={'l' + k} src={src} side="l" idx={k} />)}
         </div>
 
@@ -61,7 +61,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
           transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
         >
           <motion.div
-            className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center font-heading font-black text-[#2a1d05] text-xl md:text-3xl border-2 border-[#ffe9a8]"
+            className="w-24 h-24 rounded-full flex items-center justify-center font-heading font-black text-[#2a1d05] text-3xl border-2 border-[#ffe9a8]"
             style={{ background: 'radial-gradient(circle at 35% 30%, #fff3c4, #FFD24A 55%, #c98a1f)', boxShadow: `0 0 26px ${accent}, 0 0 52px ${accent}88` }}
             animate={{ scale: [1, 1.12, 1] }}
             transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
@@ -71,7 +71,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
         </motion.div>
 
         {/* Bando derecho */}
-        <div className="flex flex-col items-center gap-1 md:gap-2">
+        <div className="flex flex-col items-center justify-center gap-3 h-full">
           {right.map((src, k) => <Hero key={'r' + k} src={src} side="r" idx={k} />)}
         </div>
       </div>

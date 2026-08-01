@@ -89,32 +89,32 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#050308]">
-      <div className="absolute inset-0 flex flex-col lg:flex-row">
-        {/* combatiente izquierdo (móvil: arriba · escritorio: izquierda) */}
-        <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-start overflow-hidden">
+      <div className="absolute inset-0 flex flex-row">
+        {/* combatiente izquierdo (escritorio: izquierda) */}
+        <div className="relative h-full w-1/2 flex items-center justify-start overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(62% 56% at 50% 50%, ${accent}3a, transparent 72%)` }} />
           <motion.img
             src={leftSrc} alt="" draggable={false}
-            className="w-full h-full object-cover select-none lg:h-full lg:w-auto lg:max-w-none lg:object-contain"
+            className="h-full w-auto max-w-none object-contain select-none"
             initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
           />
-          <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
         </div>
-        {/* combatiente derecho (móvil: abajo · escritorio: derecha) */}
-        <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-end overflow-hidden">
+        {/* combatiente derecho (escritorio: derecha) */}
+        <div className="relative h-full w-1/2 flex items-center justify-end overflow-hidden">
           <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(62% 56% at 50% 50%, ${accent}3a, transparent 72%)` }} />
           <motion.img
             src={rightSrc} alt="" draggable={false}
-            className="w-full h-full object-cover select-none lg:h-full lg:w-auto lg:max-w-none lg:object-contain"
+            className="h-full w-auto max-w-none object-contain select-none"
             initial={M.R.initial} animate={M.R.animate} transition={M.R.transition}
           />
-          <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
         </div>
       </div>
 
-      {/* halo de luz central (escritorio): aura del color de la escena tras el choque */}
+      {/* halo de luz central: aura del color de la escena tras el choque */}
       <motion.div
-        className="absolute inset-0 pointer-events-none hidden lg:block"
+        className="absolute inset-0 pointer-events-none"
         style={{ background: `radial-gradient(38% 62% at 50% 50%, ${accent}33, transparent 72%)` }}
         animate={{ opacity: [0.55, 0.9, 0.55] }}
         transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
