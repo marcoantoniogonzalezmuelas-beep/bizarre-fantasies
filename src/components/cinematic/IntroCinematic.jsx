@@ -9,26 +9,26 @@ import { t } from '@/lib/i18n';
 
 const cover = (url) => ({ backgroundImage: `linear-gradient(rgba(6,4,12,.5),rgba(6,4,12,.78)), url("${url}")` });
 
-// Cinemáticas reales del juego (arte de habilidad/batalla de las cartas).
-const AVE_FENIX = 'https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/254bd399c_card_art.jpg';
-const TRANSFORMER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
+// Animaciones 3D reales del juego (ability_anim / battle_art de las cartas).
+const RENHUBERO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/089e4218d_generated_image.png';
+const RENHUBERO_E = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8bae49d7b_generated_image.png';
+const BOSKIMANO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c36cac946_generated_image.png';
+const VAP_ROGERS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3601207f1_generated_image.png';
+const XABIERUS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0940b8c4c_generated_image.png';
+const KRUNDER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/22295a6ed_generated_image.png';
 const PATITO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f920d0819_generated_image.png';
-const KRUNDER_KRAK = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/22295a6ed_generated_image.png';
-const PACOPITON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8fca1cddf_generated_image.png';
-const CAJA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a2b6e61b7_generated_image.png';
-const RETROPOETA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/eddb18291_generated_image.png';
-const PATRON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fbcc8f3e1_generated_image.png';
+const MORTHEX = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9e800cc3f_generated_image.png';
 
 function buildScenes() {
   return [
     { bg: COVER_BG, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Un mundo donde todas las épocas del tiempo colisionan: el presente, el futuro, la Edad Media y la fantasía épica — medieval y espacial.'), dur: 8 },
     { bg: HERO_ART[2], kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el futuro, pasando por la Edad Media y la épica fantástica medieval y espacial. Todo cabe en Bizarre Fantasies.'), dur: 18 },
     { bg: HERO_ART[0], kicker: t('Base Set'), title: t('Héroes de cada era'), text: t('Retropoeta, Patrón, Xabierus, Narbon, Zarmandis, Chivo… los protagonistas del Base Set. Y muchos más por llegar en cada expansión.'), dur: 18 },
-    { clash: { left: AVE_FENIX, right: TRANSFORMER, accent: '#ff7a18' }, kicker: t('Choque bizarro'), title: t('Ave Fénix contra Transformer'), text: t('El Ave Fénix, renacida en llamas, embiste al Transformer mecánico: fuego místico contra acero arcano que muta. Dos eras imposibles chocan.'), dur: 16 },
-    { clash: { left: PATITO, right: KRUNDER_KRAK, accent: '#ffd24a' }, kicker: t('Choque bizarro'), title: t('Patito de goma contra KrunderKrak'), text: t('El Patito de Goma, bloqueador de baño, recibe el golpe imbloqueable del maestro infulero KrunderKrak. Goma contra furia épica: rebota.'), dur: 16 },
-    { clash: { left: PACOPITON, right: CAJA, accent: '#7cff5a' }, kicker: t('Choque bizarro'), title: t('El liche eterno contra el cartón legendario'), text: t('Pacopiton, el Eterno Liche, invoca a La Caja de Zapatos, el cartón legendario. No-muertos contra lo más bizarro del set.'), dur: 16 },
+    { clash: { left: RENHUBERO, right: VAP_ROGERS, accent: '#ff5a3c', kind: 'shoot' }, kicker: t('Duelo bizarro'), title: t('Renhubero contra Vap Rogers'), text: t('Renhubero, comiendo pipas, saca la pistola; Vap Rogers, el vaquero, responde con su revólver. Se disparan a quemarropa en un duelo de eras.'), dur: 16 },
+    { clash: { left: RENHUBERO_E, right: BOSKIMANO, accent: '#ffc24a', kind: 'chill' }, kicker: t('Descanso bizarro'), title: t('Brindis en medio del caos'), text: t('Renhubero brinda con una cerveza, escopeta al hombro; Boskimano se cura fumándose un pitillo. Beben y descansan juntos antes de la siguiente batalla.'), dur: 16 },
+    { clash: { left: XABIERUS, right: KRUNDER, accent: '#7c9cff', kind: 'sword' }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus, el guerrero, hunde su espada; KrunderKrak, el maestro infulero, recibe el golpe imbloqueable. Acero contra furia épica.'), dur: 16 },
     { bg: HERO_ART[27], kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes.'), dur: 16 },
-    { clash: { left: RETROPOETA, right: PATRON, accent: '#7c5bff' }, kicker: t('Choque bizarro'), title: t('Mago contra elfo'), text: t('Retropoeta, el Oráculo Digital, teje magia arcana contra Patrón, el Arquetipo elfo, que dispara sus flechas guiadas desde el claro.'), dur: 16 },
+    { clash: { left: PATITO, right: MORTHEX, accent: '#7cff5a', kind: 'clash' }, kicker: t('Choque bizarro'), title: t('Patito de goma contra Morthex'), text: t('El Patito de Goma, bloqueador de baño, se estampa contra Morthex, el no-muerto. Goma contra muerte en una colisión imposible.'), dur: 16 },
     { bg: HERO_ART[15], kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos.'), dur: 16 },
     { bg: HERO_ART[40], kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada.'), dur: 16 },
     { bg: HERO_ART[33], kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos.'), dur: 16 },
@@ -80,7 +80,7 @@ export default function IntroCinematic({ onClose }) {
   return (
     <div className="fixed inset-0 z-[200000] bg-[#050308] overflow-hidden select-none">
       {/* Choque bizarro entre cinemáticas reales del juego */}
-      {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} />}
+      {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} />}
 
       {/* Fondo con Ken Burns por escena (solo en escenas con imagen) */}
       {cur.bg && (
