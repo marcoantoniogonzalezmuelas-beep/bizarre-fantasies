@@ -34,6 +34,7 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
     <>
       <div
         className={`relative rounded-[18px] overflow-hidden cursor-pointer bg-[#07050b] shadow-[0_10px_26px_rgba(0,0,0,.55)] transition-transform hover:-translate-y-1 ${isRainbow ? 'bf-rainbow-border' : ''} ${fill ? 'w-full h-full' : 'h-[320px]'}`}
+      data-bf-marker="art"
         style={isRainbow ? undefined : { border: isGoldBorder ? '6px solid #FFD24A' : `2px solid ${isFoil ? '#ffe9a8aa' : borderColor + '88'}`, boxShadow: isGoldBorder ? undefined : (isFoil ? '0 10px 26px rgba(0,0,0,.55), 0 0 14px rgba(255,225,150,.32)' : undefined), animation: isGoldBorder ? 'bfGoldGlow 2.4s ease-in-out infinite' : undefined }}
         onClick={() => onClick?.(item)}
       >
@@ -113,12 +114,12 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
 
       {/* Bottom info panel */}
       <div className={`absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 backdrop-blur-sm ${fill ? 'py-5 pb-6' : 'py-3 pb-4'}`} style={{ borderColor: `${borderColor}44`, zIndex: 3 }}>
-        <div className={`font-heading font-black leading-tight text-[#fff5d9] ${fill ? 'text-2xl' : 'text-base'}`} style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
-        <div className={`mt-1.5 font-bold leading-snug text-[#efe9dc] ${fill ? 'text-[14px]' : 'text-[11px]'}`}>{item.txt || item.description}</div>
-        <div className={`mt-3 font-black text-[#bdae87] ${fill ? 'text-[10px]' : 'text-[8px]'}`}>Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
+        <div data-bf-marker="name" className={`font-heading font-black leading-tight text-[#fff5d9] ${fill ? 'text-2xl' : 'text-base'}`} style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
+        <div data-bf-marker="desc" className={`mt-1.5 font-bold leading-snug text-[#efe9dc] ${fill ? 'text-[14px]' : 'text-[11px]'}`}>{item.txt || item.description}</div>
+        <div data-bf-marker="num" className={`mt-3 font-black text-[#bdae87] ${fill ? 'text-[10px]' : 'text-[8px]'}`}>Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
       </div>
 
-      <div className={`absolute right-2 bottom-3 z-10 rounded-full overflow-hidden border-2 border-[#ffd24a99] shadow-[0_0_10px_rgba(255,210,74,.5)] ${fill ? 'w-11 h-11' : 'w-8 h-8'}`} style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
+      <div data-bf-marker="logo" className={`absolute right-2 bottom-3 z-10 rounded-full overflow-hidden border-2 border-[#ffd24a99] shadow-[0_0_10px_rgba(255,210,74,.5)] ${fill ? 'w-11 h-11' : 'w-8 h-8'}`} style={{ background: 'radial-gradient(circle at 40% 30%,#1a0a00,#0a0500)' }}>
         <img src="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" alt="Punkito" className="w-full h-full object-contain" />
       </div>
     </div>
@@ -195,6 +196,7 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
           {item.cost != null && item.cost !== '—' && (
             <div
               className={`rounded-full flex items-center justify-center font-black text-[#5a3d06] shadow-md ${fill ? 'w-11 h-11 text-lg' : 'w-8 h-8 text-xs'}`}
+              data-bf-marker="cost"
               style={{ background: 'radial-gradient(circle at 34% 30%, #ffeaa6, #FFD24A 46%, #a9771f)', border: '2px solid #7c5410' }}
             >
               {item.cost}
@@ -202,13 +204,13 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
           )}
           {/* Tag / element */}
           {tagLabel && (
-            <span className={`font-black text-white rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`} style={{ background: tagBg }}>
+            <span data-bf-marker="tag" className={`font-black text-white rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`} style={{ background: tagBg }}>
               {tagLabel}
             </span>
           )}
           {/* Stat (no spells: el maná va en el orbe azul superior derecho) */}
           {statLine && (
-            <span className={`font-black text-[#ffe49a] bg-black/60 rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`}>
+            <span data-bf-marker="stat" className={`font-black text-[#ffe49a] bg-black/60 rounded-full px-2.5 py-0.5 w-fit ${fill ? 'text-xs' : 'text-[10px]'}`}>
               {statLine}
             </span>
           )}
@@ -218,6 +220,7 @@ export default function EquipCard({ item, type, onClick, zoomable = true, fill =
         {isSpell && item.mana != null && (
           <div
             className={`rounded-full flex items-center justify-center font-black text-[#eaf4ff] shadow-md ${fill ? 'w-11 h-11 text-lg' : 'w-8 h-8 text-xs'}`}
+            data-bf-marker="mana"
             style={{ background: 'radial-gradient(circle at 34% 30%, #bfe3ff, #3a8bff 46%, #103a8a)', border: '2px solid #8fc4ff', boxShadow: '0 3px 8px rgba(0,0,0,.55), 0 0 12px rgba(58,139,255,.4)' }}
           >
             {item.mana}

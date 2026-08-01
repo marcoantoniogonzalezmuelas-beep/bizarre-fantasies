@@ -8,6 +8,7 @@ import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, 
 import HeroCard from '@/components/cards/HeroCard';
 import EquipCard from '@/components/cards/EquipCard';
 import CardPartsDiagram from '@/components/guide/CardPartsDiagram';
+import EquipPartsDiagram from '@/components/guide/EquipPartsDiagram';
 import CardTypeSection from '@/components/guide/CardTypeSection';
 import StatGlossary from '@/components/guide/StatGlossary';
 import { t } from '@/lib/i18n';
@@ -62,7 +63,7 @@ export default function CardGuide() {
   const hero = (h) => h ? <div key={h.id} className="w-[160px] sm:w-[180px]"><HeroCard hero={h} /></div> : null;
 
   return (
-    <div className="min-h-screen bg-[#050308] text-[#efe9dc]">
+    <div className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}>
       <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14aa] via-[#0a081055] to-[#050308dd]" />
       <div className="relative z-10 max-w-5xl mx-auto px-4 pb-20">
         <div className="sticky top-0 z-20 -mx-4 mb-6 px-4 py-3 flex items-center gap-3 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg,#1a1430ee,#120e1cee)', backdropFilter: 'blur(12px)' }}>
@@ -75,7 +76,20 @@ export default function CardGuide() {
           {t('En Bizarre Fantasies cada carta es un héroe, un hechizo, un arma, una armadura, un objeto o un bonificador. Esta guía explica qué es cada tipo, qué hace en el juego y qué significa cada stat. Empieza por las partes de una carta:')}
         </motion.p>
 
+        <motion.div {...fade(0.04)} className="mb-8 flex items-start gap-3 rounded-xl border border-[#c06bff]/40 bg-[#1a0d2a]/60 px-4 py-3 max-w-3xl">
+          <span className="text-xl mt-0.5 shrink-0">👆</span>
+          <p className="text-[14px] text-[#e6dff2] leading-relaxed">
+            <b className="text-[#FFD24A]">Cómo usar esta guía:</b> pasa el ratón (o toca en el móvil) sobre cada <b>marcador</b> de la carta para ver qué es: el coste de oro 🪙, la vida (HP) ❤️, CC, AD, HE, el maná 🔵, la habilidad… También puedes pasar el ratón por la lista de la derecha y se señalará lo mismo en la carta.
+          </p>
+        </motion.div>
+
         <motion.div {...fade(0.05)} className="mb-10"><CardPartsDiagram hero={ex.cc} /></motion.div>
+
+        <motion.div {...fade(0.08)} className="mb-10">
+          <h2 className="font-heading font-black text-lg md:text-xl text-[#FFD24A] mb-1 tracking-wide">Partes de una carta de equipamiento</h2>
+          <p className="text-[14px] text-[#e6dff2] mb-4 max-w-3xl">Hechizos, armas, armaduras y objetos comparten el mismo diseño: el coste de oro arriba a la izquierda, el texto de la habilidad abajo y, solo en los hechizos, el orbe azul de maná arriba a la derecha. Aquí tienes un hechizo de ejemplo:</p>
+          <EquipPartsDiagram item={ex.spell} type="spell" />
+        </motion.div>
 
         <div className="space-y-7">
           <motion.div {...fade(0.1)}><CardTypeSection icon="🦸" title={t('Héroes')} accent="#FFD24A" desc={t('Tus combatientes. Formas un equipo de 3 héroes, uno de cada tipo: CC (cuerpo a cuerpo), AD (a distancia) y HE (magia). Cada uno tiene sus stats, una habilidad propia y una forma Élite que renace al caer. Aquí tienes un ejemplo de cada tipo:')}>
