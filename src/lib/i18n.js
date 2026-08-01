@@ -126,6 +126,11 @@ const UI_EN = {
   'Cerrar': 'Close',
   'Activar música': 'Enable music',
   'Silenciar música': 'Mute music',
+  'Choque mecánico': 'Mechanical clash',
+  'Transformer contra el Tanque': 'Transformer vs the Tank',
+  'El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules contra el Tanque. El Tanque planta las orugas, atrapa los golpes con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Mecánico contra blindaje — y el asfalto empieza a fundirse.': 'Transformer unfolds its gears, a giant Optimus-style robot, and charges blue electric arcs against the Tank. The Tank digs in its treads, catches the blows with its smoking armor and answers with a steel volley that shakes the ground. Mechanical against armor — and the asphalt begins to melt.',
+  'Ave Fénix contra Hannai Boa': 'Phoenix vs Hannai Boa',
+  'El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. Hannai Boa despliega su Sigilo Cuántico y se funde con las sombras: el fuego pasa de largo, las llamas lamien el vacío. Fuego contra sombra — y el fénix, desconcertado, remonta.': 'The Phoenix blazes from the ashes and dives down wrapped in living flames. Hannai Boa unfurls her Quantum Sigil and melts into the shadows: the fire passes through, the flames lick the void. Fire against shadow — and the phoenix, bewildered, pulls up.',
 };
 
 export const t = (es) => (getLang() === 'en' ? (UI_EN[es] ?? es) : es);
