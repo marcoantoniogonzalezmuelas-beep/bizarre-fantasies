@@ -1567,7 +1567,7 @@ function buildArtScript(dbCards) {
         var byName = {};
         function reg(list, kind) {
           (list || []).forEach(function(it, i) {
-            if (it && it.name) byName[it.name] = { id: it.id, art: shopArt(kind, i) || (NUM_ART && NUM_ART[String(numFor(it))]) || '', kind: kind, txt: it.txt || '', mana: it.mana, num: numFor(it) };
+            if (it && it.name) byName[it.name] = { id: it.id, art: (NUM_ART && NUM_ART[String(numFor(it))]) || shopArt(kind, i) || '', kind: kind, txt: it.txt || '', mana: it.mana, num: numFor(it) };
           });
         }
         reg(MELEE, 'melee'); reg(RANGED, 'ranged'); reg(ARMORS, 'armor'); reg(SPELLS, 'spell'); reg(OBJECTS, 'object');
