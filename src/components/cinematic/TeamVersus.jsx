@@ -21,17 +21,17 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
     const fromLeft = side === 'l';
     return (
       <motion.div
-        className="relative h-[22vh] md:h-[26vh] w-full max-w-[34vw] md:max-w-[26vw] flex items-center justify-center"
-        initial={{ opacity: 0, x: fromLeft ? '-90%' : '90%' }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.7, delay: 0.15 * idx, ease: 'easeOut' }}
+        className="relative h-[33vh] md:h-[46vh] w-full max-w-[44vw] md:max-w-[31vw] flex items-center justify-center"
+        initial={{ opacity: 0, x: fromLeft ? '-80%' : '80%', scale: 0.55 }}
+        animate={{ opacity: 1, x: 0, scale: 1 }}
+        transition={{ duration: 0.95, delay: 0.12 * idx, ease: 'easeOut' }}
       >
         <motion.img
           src={src} alt="" draggable={false}
           className="h-full w-auto max-w-full object-contain select-none"
-          style={{ filter: 'drop-shadow(0 10px 22px rgba(0,0,0,.7))' }}
-          animate={{ y: [0, -9, 0], rotate: fromLeft ? [-1.2, 1.2, -1.2] : [1.2, -1.2, 1.2], scale: [1, 1.04, 1] }}
-          transition={{ duration: 3.4 + idx * 0.3, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,.75))' }}
+          animate={{ y: [0, -10, 0], rotate: fromLeft ? [-1.4, 1.4, -1.4] : [1.4, -1.4, 1.4], scale: [1, 1.07, 1] }}
+          transition={{ duration: 3.2 + idx * 0.3, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.div>
     );

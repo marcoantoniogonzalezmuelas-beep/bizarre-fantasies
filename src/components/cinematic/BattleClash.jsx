@@ -16,6 +16,8 @@ const MOTIONS = {
   diagonal: { entry: 14, x: [0, 15, -4, 0],       y: [0, 48, -12, 0],  scale: [1, 1.07, 0.98, 1],   rotate: [-3, 2, -1, 0],             mirrorY: true,  tx: 2.8, ty: 3.4, ts: 3.6, tr: 3 },
   rotate:   { entry: 8,  x: [0, 3, 0],            y: [0, -8, 0],       scale: [1, 1.06, 1],         rotate: [-16, 16, -16],            mirrorY: false, tx: 3,   ty: 4.5, ts: 3.5, tr: 2.2 },
   zoom:     { entry: 10, x: [0, 8, 0],            y: [0, -10, 0],      scale: [1, 1.14, 0.92, 1],   rotate: [-1.5, 1.5, -1.5],          mirrorY: false, tx: 2.6, ty: 4,   ts: 2,   tr: 3.2 },
+  cross:    { entry: 12, x: [0, 90, 0],            y: [0, -6, 0],       scale: [1, 1.05, 1],         rotate: [-1, 1, -1],               mirrorY: false, xunit: 'vw', tx: 3.8, ty: 5,   ts: 4,   tr: 4 },
+  spin:     { entry: 8,  x: [0, 4, 0],            y: [0, -10, 0],       scale: [1, 1.06, 1],         rotate: [0, 360],                   mirrorY: false, tx: 3.2, ty: 4.5, ts: 4,   tr: 3 },
 };
 
 function preset(name) {
@@ -27,7 +29,7 @@ function preset(name) {
       initial: { opacity: 0, x: (p.entry * s) + '%' },
       animate: {
         opacity: 1,
-        x: p.x.map((v) => (v * s) + '%'),
+        x: p.x.map((v) => (v * s) + (p.xunit || '%')),
         y: p.y.map((v) => v * my),
         scale: p.scale,
         rotate: p.rotate.map((v) => v * s),
