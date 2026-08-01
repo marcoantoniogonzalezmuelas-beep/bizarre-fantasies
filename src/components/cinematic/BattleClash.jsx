@@ -3,11 +3,48 @@ import { motion } from 'framer-motion';
 
 // Choque bizarro entre dos animaciones 3D reales del juego (ability_anim).
 // Se muestran COMPLETOS (object-contain, altura a pantalla) anclados a los
-// bordes exteriores, sin marco y a pantalla completa. Cada combatiente tiene
-// movimiento artesanal: flote vertical, embestida hacia el centro y retroceso,
-// temblor de respiración y pulso de escala. Con `swap` los combatientes
-// cambian de lado entre escenas para dar sensación de enfrentamiento.
-export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'clash', swap = false }) {
+// bordes exteriores, sin marco y a pantalla completa. El MOVIMIENTO de cada
+// combatiente se elige por la prop `motion` para que cada diapositiva se
+// mueva distinta: flote, embestida, caída, subida, diagonal, rotación, zoom.
+// Con `swap` los combatientes cambian de lado entre escenas.
+
+const MOTIONS = {
+  float:    { entry: 10, x: [0, 3, 0],            y: [0, -10, 0],      scale: [1, 1.04, 1],         rotate: [-1.2, 1.2, -1.2],          mirrorY: false, tx: 4,   ty: 5,   ts: 4,   tr: 3.2 },
+  charge:   { entry: 14, x: [0, 16, -5, 2, 0],    y: [0, -12, 3, -8, 0], scale: [1, 1.09, 0.97, 1.03, 1], rotate: [-2.2, 3, -1.2, 1.4, -2.2], mirrorY: false, tx: 2.4, ty: 4.6, ts: 3.6, tr: 3 },
+  down:     { entry: 8,  x: [0, 5, 0],            y: [0, 75, 0],       scale: [1, 1.05, 1],         rotate: [-2, 2, -2],                mirrorY: false, tx: 3,   ty: 2.6, ts: 4,   tr: 3 },
+  up:       { entry: 8,  x: [0, 5, 0],            y: [0, -75, 0],      scale: [1, 1.05, 1],         rotate: [-2, 2, -2],                mirrorY: false, tx: 3,   ty: 2.8, ts: 4,   tr: 3 },
+  diagonal: { entry: 14, x: [0, 15, -4, 0],       y: [0, 48, -12, 0],  scale: [1, 1.07, 0.98, 1],   rotate: [-3, 2, -1, 0],             mirrorY: true,  tx: 2.8, ty: 3.4, ts: 3.6, tr: 3 },
+  rotate:   { entry: 8,  x: [0, 3, 0],            y: [0, -8, 0],       scale: [1, 1.06, 1],         rotate: [-16, 16, -16],            mirrorY: false, tx: 3,   ty: 4.5, ts: 3.5, tr: 2.2 },
+  zoom:     { entry: 10, x: [0, 8, 0],            y: [0, -10, 0],      scale: [1, 1.14, 0.92, 1],   rotate: [-1.5, 1.5, -1.5],          mirrorY: false, tx: 2.6, ty: 4,   ts: 2,   tr: 3.2 },
+};
+
+function preset(name) {
+  const p = MOTIONS[name] || MOTIONS.float;
+  const mk = (side) => {
+    const s = side === 'r' ? -1 : 1;
+    const my = p.mirrorY ? -1 : 1;
+    return {
+      initial: { opacity: 0, x: (p.entry * s) + '%' },
+      animate: {
+        opacity: 1,
+        x: p.x.map((v) => (v * s) + '%'),
+        y: p.y.map((v) => v * my),
+        scale: p.scale,
+        rotate: p.rotate.map((v) => v * s),
+      },
+      transition: {
+        opacity: { duration: 0.6 },
+        x: { duration: p.tx, repeat: Infinity, ease: 'easeInOut' },
+        y: { duration: p.ty, repeat: Infinity, ease: 'easeInOut' },
+        scale: { duration: p.ts, repeat: Infinity, ease: 'easeInOut' },
+        rotate: { duration: p.tr, repeat: Infinity, ease: 'easeInOut' },
+      },
+    };
+  };
+  return { L: mk('l'), R: mk('r') };
+}
+
+export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'clash', swap = false, motion: motionName = 'float' }) {
   const embers = useMemo(
     () => Array.from({ length: 14 }, () => ({
       left: Math.random() * 100,
@@ -21,6 +58,7 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
   // swap: invierte qué combatiente va a cada lado.
   const leftSrc = swap ? right : left;
   const rightSrc = swap ? left : right;
+  const M = useMemo(() => preset(motionName), [motionName]);
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#050308]">
@@ -30,15 +68,7 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
           <motion.img
             src={leftSrc} alt="" draggable={false}
             className="h-full w-auto max-w-none object-contain select-none"
-            initial={{ opacity: 0, x: '-12%' }}
-            animate={{ opacity: 1, x: ['0%', '16%', '-5%', '2%', '0%'], y: [0, -12, 3, -8, 0], scale: [1, 1.09, 0.97, 1.03, 1], rotate: [-2.2, 3, -1.2, 1.4, -2.2] }}
-            transition={{
-              opacity: { duration: 0.6 },
-              x: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
-              y: { duration: 4.6, repeat: Infinity, ease: 'easeInOut' },
-              scale: { duration: 3.6, repeat: Infinity, ease: 'easeInOut' },
-              rotate: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-            }}
+            initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
           />
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
         </div>
@@ -47,15 +77,7 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
           <motion.img
             src={rightSrc} alt="" draggable={false}
             className="h-full w-auto max-w-none object-contain select-none"
-            initial={{ opacity: 0, x: '12%' }}
-            animate={{ opacity: 1, x: ['0%', '-16%', '5%', '-2%', '0%'], y: [0, -12, 3, -8, 0], scale: [1, 1.09, 0.97, 1.03, 1], rotate: [2.2, -3, 1.2, -1.4, 2.2] }}
-            transition={{
-              opacity: { duration: 0.6 },
-              x: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' },
-              y: { duration: 4.8, repeat: Infinity, ease: 'easeInOut' },
-              scale: { duration: 3.8, repeat: Infinity, ease: 'easeInOut' },
-              rotate: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' },
-            }}
+            initial={M.R.initial} animate={M.R.animate} transition={M.R.transition}
           />
           <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
         </div>
