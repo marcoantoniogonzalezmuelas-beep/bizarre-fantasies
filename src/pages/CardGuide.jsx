@@ -104,7 +104,6 @@ export default function CardGuide() {
               {labeledCard(ex.melee, 'melee', t('Arma C/C'))}
               {labeledCard(ex.armor, 'armor', t('Armadura'))}
               {labeledCard(ex.object, 'object', t('Objeto'))}
-              {labeledCard({ ...ex.bonus, cost: '—' }, 'bonus', t('Bonificador'))}
             </div>
           </div>
         </motion.div>
