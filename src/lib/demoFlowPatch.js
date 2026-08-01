@@ -190,6 +190,41 @@ export const DEMO_FLOW_PATCH = `
   gSty.textContent='@keyframes bfDemoGuidePulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 12px rgba(192,107,255,.4)}50%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 22px rgba(192,107,255,.85),0 0 30px rgba(255,210,74,.4)}}';
   document.head.appendChild(gSty);
   setInterval(ensureGuideBtn, 500);
+
+  // ---- Opción "Ver cinemática de intro" en el modal de "Aprender a jugar" ----
+  // Detecta el modal de la demo (por su texto explicativo) y muestra un botón
+  // flotante para ver la cinemática antes de empezar. Al acabar/saltar la
+  // intro, el padre envía bfStartDemo y arrancamos la demo aquí mismo.
+  function ensureDemoIntroBtn(){
+    var root=document.getElementById('modalRoot');
+    if(!root){ var rb=document.getElementById('bf-demo-intro-btn'); if(rb)rb.remove(); return; }
+    var isDemo=false;
+    root.querySelectorAll('*').forEach(function(el){
+      if(el.children.length) return;
+      var t=el.textContent||'';
+      if(/SUBASTA COMPLETA|salta directa al combate|skip.*combat|skip straight/i.test(t)) isDemo=true;
+    });
+    var btn=document.getElementById('bf-demo-intro-btn');
+    if(isDemo && !btn){
+      btn=document.createElement('button');
+      btn.id='bf-demo-intro-btn';
+      btn.type='button';
+      btn.style.cssText='position:fixed;left:50%;bottom:16%;transform:translateX(-50%);z-index:100000;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;cursor:pointer;font-family:Cinzel,serif;font-weight:900;font-size:14px;letter-spacing:.04em;border:2px solid rgba(192,91,255,.8);background:linear-gradient(135deg,#1e0c32,#3c145a);color:#e8c0ff;box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 16px rgba(192,91,255,.45);text-shadow:0 1px 4px #000;';
+      btn.innerHTML='🎬 Ver cinemática de intro';
+      btn.onclick=function(e){ e.preventDefault(); e.stopPropagation(); try{ window.parent.postMessage({bfOpenIntro:true,bfAutoDemo:true},'*'); }catch(err){} };
+      document.body.appendChild(btn);
+    } else if(!isDemo && btn){ btn.remove(); }
+  }
+  setInterval(ensureDemoIntroBtn, 400);
+  new MutationObserver(ensureDemoIntroBtn).observe(document.documentElement,{childList:true,subtree:true});
+
+  // El padre avisa cuando la cinemática cerró/saltó desde "Aprender a jugar":
+  // arrancamos la demo (subasta completa IA vs IA + combate).
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.bfStartDemo){
+      try{ if(typeof window.demoAuction==='function') window.demoAuction(); }catch(err){}
+    }
+  });
 })();
 </script>
 `;

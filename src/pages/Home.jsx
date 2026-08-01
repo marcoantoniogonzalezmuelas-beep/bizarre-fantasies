@@ -300,6 +300,9 @@ export default function Home() {
   const loadTimerRef = useRef(null);
   const battleArtRef = useRef(null);
   const abilityAnimRef = useRef(null);
+  // Cuando la cinemática de intro se abrió desde "Aprender a jugar" (demo),
+  // al cerrarla/saltarla arrancamos automáticamente la demo en el iframe.
+  const introAutoDemoRef = useRef(false);
   const [blobUrl, setBlobUrl] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
   const [error, setError] = useState(false);
@@ -362,7 +365,12 @@ export default function Home() {
         pinchRafRef.current = requestAnimationFrame(() => setPinch({ z: p.z, tx: p.tx, ty: p.ty }));
       }
       // Botón "Intro" de la portada del juego: abre la cinemática de intro.
-      if (e.data && e.data.bfOpenIntro) setShowIntro(true);
+      // Si viene con bfAutoDemo (desde "Aprender a jugar"), al cerrarla arranca
+      // la demo automáticamente dentro del iframe.
+      if (e.data && e.data.bfOpenIntro) {
+        introAutoDemoRef.current = !!e.data.bfAutoDemo;
+        setShowIntro(true);
+      }
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
@@ -527,7 +535,13 @@ export default function Home() {
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
       {showOracle && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
-      {showIntro && <IntroCinematic onClose={() => setShowIntro(false)} />}
+      {showIntro && <IntroCinematic onClose={() => {
+        setShowIntro(false);
+        if (introAutoDemoRef.current) {
+          introAutoDemoRef.current = false;
+          iframeRef.current?.contentWindow?.postMessage({ bfStartDemo: true }, '*');
+        }
+      }} />}
       <div
         className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
         style={{ opacity: loading ? 1 : 0, transition: loading ? 'none' : 'opacity 300ms ease-out', background: '#0e0a16' }}
