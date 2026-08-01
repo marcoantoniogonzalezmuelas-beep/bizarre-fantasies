@@ -1,40 +1,42 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Volume2, VolumeX, SkipForward, Play } from 'lucide-react';
-import { COVER_BG, HERO_ART, HERO_ELITE_ART } from '@/lib/artUrls';
 import { startMusic, stopMusic, setMuted as setMusicMuted } from '@/lib/cinematicMusic';
 import BattleClash from '@/components/cinematic/BattleClash';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 
-const cover = (url) => ({ backgroundImage: `linear-gradient(rgba(6,4,12,.5),rgba(6,4,12,.78)), url("${url}")` });
-
-// Animaciones 3D reales del juego (ability_anim / battle_art de las cartas).
-const RENHUBERO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/089e4218d_generated_image.png';
-const RENHUBERO_E = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8bae49d7b_generated_image.png';
-const BOSKIMANO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c36cac946_generated_image.png';
-const VAP_ROGERS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3601207f1_generated_image.png';
-const XABIERUS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0940b8c4c_generated_image.png';
-const KRUNDER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/22295a6ed_generated_image.png';
-const PATITO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f920d0819_generated_image.png';
-const MORTHEX = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9e800cc3f_generated_image.png';
-const TRANSFORMER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';
-const NARBON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2f9aade2d_generated_image.png';
+// Animaciones 3D reales del juego (ability_anim de las cartas).
+const XAB = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0940b8c4c_generated_image.png';   // Xabierus
+const NAR = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2f9aade2d_generated_image.png';     // Narbon
+const REN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/089e4218d_generated_image.png';    // Renhubero
+const BOS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c36cac946_generated_image.png';    // Boskimano
+const KRU = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/22295a6ed_generated_image.png';   // KrunderKrak
+const HEA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/104e2f355_generated_image.png';    // El Heavy (tanque)
+const SYL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/21b96f7c7_generated_image.png';   // Sylvex
+const GOR = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2b21e2f69_generated_image.png';   // Gorvak
+const SOL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/49afa7a4e_generated_image.png';   // Solenna
+const ZAR = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b158b0415_generated_image.png';   // Zarmandis
+const COF = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0b6d418b1_generated_image.png';   // Coffetath
+const TRA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/48f0023ab_generated_image.png';    // Transformer
+const KIL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';   // KillerDucks
+const REA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/41f320812_generated_image.png';   // Reanimación Arcana
+// Ave Fénix: aún no tiene animación 3D generada; se usa su arte de carta.
+const FENIX = 'https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/254bd399c_card_art.jpg';
 
 function buildScenes() {
   return [
-    { bg: COVER_BG, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
-    { bg: HERO_ART[2], kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 15 },
-    { clash: { left: RENHUBERO, right: VAP_ROGERS, accent: '#ff5a3c', kind: 'shoot' }, kicker: t('Duelo bizarro'), title: t('Renhubero contra Vap Rogers'), text: t('En la taberna del fin del mundo, Renhubero escupe una pipa y saca la pistola. Vap Rogers, el vaquero sin prisa, ya tiene el revólver amartillado bajo la mesa. Dos eras, un solo disparo — y nadie se ofrece a servir la siguiente ronda.'), dur: 16 },
-    { clash: { left: RENHUBERO_E, right: BOSKIMANO, accent: '#ffc24a', kind: 'chill' }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, Renhubero brinda con la escopeta al hombro y la cerveza espumando. Boskimano, al otro lado del fuego, se cura las heridas fumándose un pitillo y filosofa sobre el caos. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 16 },
-    { clash: { left: XABIERUS, right: KRUNDER, accent: '#7c9cff', kind: 'sword' }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus hunde la espada con el rugido de quien no conoce la retirada. KrunderKrak sonríe, el maestro infulero, y recibe el golpe imbloqueable: el acero canta, las chispas llueven y la leyenda de dos eras se escribe en una sola estocada.'), dur: 16 },
-    { bg: HERO_ART[27], kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 14 },
-    { clash: { left: TRANSFORMER, right: NARBON, accent: '#29a3ff', kind: 'shoot' }, kicker: t('Ataque bizarro'), title: t('Transformer embiste a Narbon'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules. Narbon ni levanta la vista: sigue jugando al futbolín, gritando «¡Soltaito!», mientras los destellos le rozan el flequillo. Mecánico contra futbolín — y el futbolín, por ahora, gana por goleada.'), dur: 16 },
-    { clash: { left: PATITO, right: MORTHEX, accent: '#7cff5a', kind: 'clash' }, kicker: t('Choque bizarro'), title: t('Patito de goma contra Morthex'), text: t('El Patito de Goma, bloqueador de baño, se lanza como un proyectil amarillo contra Morthex, el no-muerto que ya enterró su propia risa. Goma contra muerte, chirrido contra silencio — una colisión tan imposible que el propio Morthex, por primera vez en siglos, se pregunta si está soñando.'), dur: 16 },
-    { bg: HERO_ART[15], kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 14 },
-    { bg: HERO_ART[40], kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada: hoy campeón, mañana leyenda.'), dur: 14 },
-    { bg: HERO_ART[33], kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: aquí el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos — te estábamos esperando.'), dur: 14 },
-    { bg: HERO_ELITE_ART[0], kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 8 },
+    { clash: { left: REN, right: BOS, accent: '#7cff5a', kind: 'clash', swap: false }, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
+    { clash: { left: XAB, right: TRA, accent: '#7c9cff', kind: 'sword', swap: true }, kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 14 },
+    { clash: { left: SOL, right: COF, accent: '#ffc24a', kind: 'chill', swap: false }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, los druidas se reúnen junto al fuego: se curan las heridas, filosofan sobre el caos y brindan con la pipa y la cerveza espumando. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 15 },
+    { clash: { left: XAB, right: KRU, accent: '#7c9cff', kind: 'sword', swap: true }, kicker: t('Choque bizarro'), title: t('Xabierus contra KrunderKrak'), text: t('Xabierus hunde la espada con el rugido de quien no conoce la retirada. KrunderKrak sonríe, el maestro infulero, y recibe el golpe imbloqueable: el acero canta, las chispas llueven y la leyenda de dos eras se escribe en una sola estocada.'), dur: 16 },
+    { clash: { left: GOR, right: SYL, accent: '#ff5a3c', kind: 'clash', swap: false }, kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 14 },
+    { clash: { left: TRA, right: NAR, accent: '#29a3ff', kind: 'shoot', swap: true }, kicker: t('Ataque bizarro'), title: t('Transformer embiste a Narbon'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules. Narbon ni levanta la vista: sigue jugando al futbolín, gritando «¡Soltaito!», mientras los destellos le rozan el flequillo. Mecánico contra futbolín — y el futbolín, por ahora, gana por goleada.'), dur: 16 },
+    { clash: { left: FENIX, right: HEA, accent: '#ff7a18', kind: 'fire', swap: false }, kicker: t('Choque épico'), title: t('Ave Fénix contra El Heavy'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. El Heavy, el tanque blindado, planta los pies, atrapa el fuego con la coraza humeante y responde con una carga de acero que hace tembrar el suelo. Fuego contra blindaje — y el asfalto, por debajo, empieza a fundirse.'), dur: 16 },
+    { clash: { left: ZAR, right: COF, accent: '#b13bff', kind: 'clash', swap: true }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 14 },
+    { clash: { left: KRU, right: GOR, accent: '#ffd24a', kind: 'sword', swap: false }, kicker: t('Competición'), title: t('Rankings por temporadas'), text: t('Sube de nivel, cambia de raza y compite. Rankings dinámicos que rotan cada temporada: hoy campeón, mañana leyenda.'), dur: 14 },
+    { clash: { left: KIL, right: REA, accent: '#7cff5a', kind: 'clash', swap: true }, kicker: t('Espíritu'), title: t('Bizarro, excéntrico, con humor'), text: t('Un toque absurdamente divertido: aquí el único objetivo es pasarlo bien y entretenerse. Bienvenido al caos — te estábamos esperando.'), dur: 14 },
+    { clash: { left: REN, right: BOS, accent: '#ffd24a', kind: 'clash', swap: false }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 8 },
   ];
 }
 
@@ -46,8 +48,6 @@ export default function IntroCinematic({ onClose }) {
 
   const audioRef = useRef(null);
   useEffect(() => {
-    // Si hay una banda sonora propia (vídeo del usuario), se reproduce en bucle;
-    // si no, cae a la música procedural.
     if (INTRO_MUSIC_URL) {
       const a = new Audio(INTRO_MUSIC_URL);
       a.loop = true; a.volume = 0.85;
@@ -62,7 +62,7 @@ export default function IntroCinematic({ onClose }) {
   useEffect(() => {
     if (finished) return;
     const cur = scenes[i];
-    if (cur.isEnd) return; // la carta final espera al usuario
+    if (cur.isEnd) return;
     const id = setTimeout(() => {
       if (i < scenes.length - 1) setI(i + 1);
       else setFinished(true);
@@ -81,66 +81,12 @@ export default function IntroCinematic({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-[200000] bg-[#050308] overflow-hidden select-none">
-      {/* Choque bizarro entre cinemáticas reales del juego */}
-      {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} />}
-
-      {/* Showcase a pantalla completa de una animación 3D real (ability_anim) */}
-      {cur.solo && (
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={'solo' + i}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="absolute inset-0 flex items-center justify-center bg-[#050308] overflow-hidden"
-          >
-            <motion.img
-              src={cur.solo.src} alt="" draggable={false}
-              className="max-h-full max-w-full object-contain select-none"
-              style={{ filter: 'saturate(1.14) contrast(1.1) drop-shadow(0 0 60px rgba(255,210,74,.25))' }}
-              initial={{ scale: 1.05, opacity: 0 }}
-              animate={{ scale: 1.14, opacity: [0, 1, 0.92] }}
-              transition={{ duration: cur.dur || 16, ease: 'linear' }}
-            />
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 70% at 50% 55%, transparent 40%, #050308 92%)' }} />
-            {/* partículas doradas ascendentes */}
-            {Array.from({ length: 16 }).map((_, k) => (
-              <motion.span
-                key={k} className="absolute bottom-0 rounded-full pointer-events-none"
-                style={{ left: `${(k * 6.3) % 100}%`, width: 3, height: 3, background: cur.solo.accent, boxShadow: `0 0 10px ${cur.solo.accent}` }}
-                animate={{ y: [0, -340], opacity: [0, 0.9, 0] }}
-                transition={{ duration: 3 + (k % 3), repeat: Infinity, delay: k * 0.4, ease: 'easeOut' }}
-              />
-            ))}
-          </motion.div>
-        </AnimatePresence>
-      )}
-
-      {/* Fondo con Ken Burns por escena (solo en escenas con imagen) */}
-      {cur.bg && (
-      <AnimatePresence mode="popLayout">
-        <motion.div
-          key={i}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0.6 }}
-          transition={{ duration: 1.1, ease: 'easeOut' }}
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ ...cover(cur.bg), filter: 'saturate(1.12) contrast(1.08)' }}
-        >
-          <motion.div
-            className="absolute inset-0 bg-cover bg-center"
-            initial={{ scale: 1.12, x: '2%' }}
-            animate={{ scale: 1.22, x: '-2%' }}
-            transition={{ duration: cur.dur || 8, ease: 'linear' }}
-            style={{ backgroundImage: `url("${cur.bg}")`, filter: 'saturate(1.18) contrast(1.1) brightness(.9)' }}
-          />
-        </motion.div>
-      </AnimatePresence>
-      )}
+      {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
+      {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} />}
 
       {/* Viñeta + legibilidad */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/70 via-transparent to-[#050308]/92" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,transparent_30%,#050308_110%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/70 via-transparent to-[#050308]/92 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,transparent_30%,#050308_110%)] pointer-events-none" />
 
       {/* Contenido narrativo */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
