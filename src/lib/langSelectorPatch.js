@@ -9,6 +9,12 @@ export const buildLangSelectorPatch = (lang) => `
   var LANG = ${JSON.stringify(lang === 'en' ? 'en' : 'es')};
 
   function add(){
+    if (!document.getElementById('bf-intro-pulse-style')) {
+      var st = document.createElement('style');
+      st.id = 'bf-intro-pulse-style';
+      st.textContent = '@keyframes bfIntroPulse{0%,100%{box-shadow:0 0 0 4px rgba(255,210,74,.22),0 8px 22px rgba(0,0,0,.7),0 0 22px rgba(255,210,74,.75),inset 0 0 0 1px rgba(255,233,168,.6)}50%{box-shadow:0 0 0 6px rgba(255,210,74,.4),0 8px 22px rgba(0,0,0,.7),0 0 34px rgba(255,210,74,1),0 0 54px rgba(255,210,74,.5),inset 0 0 0 1px rgba(255,233,168,.8)}}';
+      document.head.appendChild(st);
+    }
     var title = document.getElementById('s-title');
     if (!title || document.getElementById('bf-lang-sel')) return;
     if (getComputedStyle(title).position === 'static') title.style.position = 'relative';
@@ -52,8 +58,17 @@ export const buildLangSelectorPatch = (lang) => `
       intro.id = 'bf-intro-btn';
       intro.type = 'button';
       intro.setAttribute('aria-label', 'Intro');
-      intro.style.cssText = 'position:absolute;top:48px;right:10px;z-index:81;display:inline-flex;align-items:center;gap:5px;padding:5px 12px;font-size:11px;font-weight:900;letter-spacing:.16em;border:1.5px solid rgba(192,91,255,.7);border-radius:999px;cursor:pointer;line-height:1;background:linear-gradient(135deg,#1e0c32,#3c145a);color:#e8c0ff;box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 12px rgba(192,91,255,.4);text-shadow:0 1px 4px #000;transition:transform .15s ease;';
-      intro.innerHTML = '🎬 INTRO';
+      intro.style.cssText = 'position:absolute;top:46px;right:8px;z-index:92;display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 6px;font-family:Cinzel,serif;font-size:15px;font-weight:900;letter-spacing:.16em;border:3px solid #FFD24A;border-radius:999px;cursor:pointer;line-height:1;background:linear-gradient(135deg,#7c1fd6 0%,#b13bff 45%,#5a1f8a 100%);color:#fff7d6;box-shadow:0 0 0 4px rgba(255,210,74,.22),0 8px 22px rgba(0,0,0,.7),0 0 22px rgba(255,210,74,.75),inset 0 0 0 1px rgba(255,233,168,.6);text-shadow:0 1px 3px #000,0 0 12px rgba(255,210,74,.95);animation:bfIntroPulse 1.8s ease-in-out infinite;transition:transform .15s ease;';
+      var ico = document.createElement('img');
+      ico.src = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c4111d79e_generated_image.png';
+      ico.alt = '';
+      ico.style.cssText = 'width:34px;height:34px;border-radius:999px;object-fit:cover;flex-shrink:0;box-shadow:0 0 10px rgba(255,210,74,.8),0 0 4px #000;';
+      intro.appendChild(ico);
+      var lbl = document.createElement('span');
+      lbl.textContent = 'INTRO';
+      intro.appendChild(lbl);
+      intro.onmouseenter = function(){ intro.style.transform='scale(1.08)'; };
+      intro.onmouseleave = function(){ intro.style.transform=''; };
       intro.onclick = function(e){ e.preventDefault(); e.stopPropagation(); try { window.parent.postMessage({ bfOpenIntro: true }, '*'); } catch(err){} };
       title.appendChild(intro);
     }
