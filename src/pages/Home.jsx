@@ -310,6 +310,9 @@ export default function Home() {
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showOracle, setShowOracle] = useState(true);
+  // El modal de "Aprender a jugar" (demo) se abre sobre la portada: mientras
+  // esté visible, ocultamos el cartel de flash news para que no tape el modal.
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   // Zoom de pellizco (móvil/tablet): el juego lo aplica dentro del iframe y nos
   // avía por postMessage para que el cartel de actualidad se amplíe igual.
@@ -370,6 +373,9 @@ export default function Home() {
       if (e.data && e.data.bfOpenIntro) {
         introAutoDemoRef.current = !!e.data.bfAutoDemo;
         setShowIntro(true);
+      }
+      if (e.data && typeof e.data.bfDemoModalOpen === 'boolean') {
+        setDemoModalOpen(e.data.bfDemoModalOpen);
       }
     };
     window.addEventListener('message', onMessage);
@@ -534,7 +540,7 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      {showOracle && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
+      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {

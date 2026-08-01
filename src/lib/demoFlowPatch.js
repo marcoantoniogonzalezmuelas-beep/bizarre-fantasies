@@ -192,27 +192,33 @@ export const DEMO_FLOW_PATCH = `
   setInterval(ensureGuideBtn, 500);
 
   // ---- Opción "Ver cinemática de intro" en el modal de "Aprender a jugar" ----
-  // Detecta el modal de la demo (por su texto explicativo) y muestra un botón
-  // flotante para ver la cinemática antes de empezar. Al acabar/saltar la
-  // intro, el padre envía bfStartDemo y arrancamos la demo aquí mismo.
+  // Detecta el modal de la demo por su botón "Empezar demo" (visible) e inserta
+  // un segundo botón para ver la cinemática antes de empezar. Al acabar/saltar
+  // la intro, el padre envía bfStartDemo y arrancamos la demo aquí mismo.
+  // Mientras el modal esté abierto avisamos al padre para que oculte el cartel
+  // de flash news.
   function ensureDemoIntroBtn(){
     var root=document.getElementById('modalRoot');
-    if(!root){ var rb=document.getElementById('bf-demo-intro-btn'); if(rb)rb.remove(); return; }
-    var isDemo=false;
-    root.querySelectorAll('*').forEach(function(el){
-      if(el.children.length) return;
-      var t=el.textContent||'';
-      if(/SUBASTA COMPLETA|salta directa al combate|skip.*combat|skip straight/i.test(t)) isDemo=true;
+    if(!root){
+      var rb=document.getElementById('bf-demo-intro-btn'); if(rb)rb.remove();
+      if(window.__bfDemoModalOpen){ window.__bfDemoModalOpen=false; try{window.parent.postMessage({bfDemoModalOpen:false},'*');}catch(e){} }
+      return;
+    }
+    var startBtn=null;
+    root.querySelectorAll('button').forEach(function(b){
+      if(!startBtn && /Empezar demo|Empezar la demo|Start demo/i.test(b.textContent||'') && b.offsetParent!==null) startBtn=b;
     });
+    var isDemo=!!startBtn;
+    if(window.__bfDemoModalOpen!==isDemo){ window.__bfDemoModalOpen=isDemo; try{window.parent.postMessage({bfDemoModalOpen:isDemo},'*');}catch(e){} }
     var btn=document.getElementById('bf-demo-intro-btn');
-    if(isDemo && !btn){
+    if(isDemo && !btn && startBtn){
       btn=document.createElement('button');
       btn.id='bf-demo-intro-btn';
       btn.type='button';
-      btn.style.cssText='position:fixed;left:50%;bottom:16%;transform:translateX(-50%);z-index:100000;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;cursor:pointer;font-family:Cinzel,serif;font-weight:900;font-size:14px;letter-spacing:.04em;border:2px solid rgba(192,91,255,.8);background:linear-gradient(135deg,#1e0c32,#3c145a);color:#e8c0ff;box-shadow:0 8px 24px rgba(0,0,0,.6),0 0 16px rgba(192,91,255,.45);text-shadow:0 1px 4px #000;';
+      btn.style.cssText='display:block;width:100%;margin-top:10px;padding:11px 16px;border-radius:12px;cursor:pointer;font-family:Cinzel,serif;font-weight:900;font-size:14px;letter-spacing:.04em;border:2px solid rgba(192,91,255,.8);background:linear-gradient(135deg,#1e0c32,#3c145a);color:#e8c0ff;box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(192,91,255,.4);text-shadow:0 1px 4px #000;';
       btn.innerHTML='🎬 Ver cinemática de intro';
       btn.onclick=function(e){ e.preventDefault(); e.stopPropagation(); try{ window.parent.postMessage({bfOpenIntro:true,bfAutoDemo:true},'*'); }catch(err){} };
-      document.body.appendChild(btn);
+      startBtn.parentNode.insertBefore(btn, startBtn);
     } else if(!isDemo && btn){ btn.remove(); }
   }
   setInterval(ensureDemoIntroBtn, 400);
