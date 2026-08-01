@@ -112,6 +112,14 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
         </div>
       </div>
 
+      {/* halo de luz central (escritorio): aura del color de la escena tras el choque */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none hidden lg:block"
+        style={{ background: `radial-gradient(38% 62% at 50% 50%, ${accent}33, transparent 72%)` }}
+        animate={{ opacity: [0.55, 0.9, 0.55] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
       {/* scrim central para legibilidad del texto narrado */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 58% 68% at 50% 52%, #050308e0, transparent 82%)' }} />
 
