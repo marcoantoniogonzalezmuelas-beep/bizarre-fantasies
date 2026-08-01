@@ -8,6 +8,18 @@ export const CARD_MAGNIFIER_PATCH = `
   window.__bfCardMagnifier = true;
   if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
 
+  // La página padre envía un mapa nombre → { text, mana, category } con la
+  // descripción real de cada carta (sacada de la base de datos). Es la fuente
+  // fiable del texto de habilidad, ya que los arrays SPELLS/OBJECTS del juego
+  // no siempre incluyen la descripción legible.
+  var __bfMagInfo = {};
+  window.addEventListener('message', function(e){
+    if (e.data && e.data.bfCardInfo) __bfMagInfo = e.data.bfCardInfo || {};
+  });
+  function requestInfo(){ try { window.parent.postMessage({bfArtMapRequest: 1}, '*'); } catch(e) {} }
+  requestInfo();
+  setInterval(function(){ if (!Object.keys(__bfMagInfo).length) requestInfo(); }, 1500);
+
   var style = document.createElement('style');
   style.textContent = '.bf-magnifier{position:fixed;z-index:100500;pointer-events:none;width:250px;aspect-ratio:3/4.1;border-radius:14px;overflow:hidden;border:2px solid rgba(255,210,74,.75);background:#07050b;box-shadow:0 18px 50px rgba(0,0,0,.8),0 0 26px rgba(255,210,74,.35);opacity:0;transform:scale(.92);transition:opacity .12s ease,transform .12s ease}' +
     '.bf-magnifier.show{opacity:1;transform:scale(1)}' +
@@ -67,9 +79,15 @@ export const CARD_MAGNIFIER_PATCH = `
         if (A) found = A.find(function(x){ return x && x.name === nm; });
       });
     }
-    var info = chip.querySelector('.bf-chip-info');
     var t = mag.querySelector('.bf-mag-txt');
-    var infoTxt = (info && info.textContent) ? info.textContent : (found ? (found.txt || found.description || found.abilityTxt || '') : '');
+    // Prioridad: mapa de la BD (bfCardInfo) → chip .bf-chip-info → campos del
+    // array del juego (txt/description/abilityTxt/text). Así el texto aparece
+    // tanto en batalla (chip sin info) como en equipo.
+    var infoTxt = '';
+    if (nm && __bfMagInfo[nm] && __bfMagInfo[nm].text) infoTxt = __bfMagInfo[nm].text;
+    if (!infoTxt) { var info2 = chip.querySelector('.bf-chip-info'); if (info2 && info2.textContent) infoTxt = info2.textContent; }
+    if (!infoTxt && found) infoTxt = found.txt || found.description || found.abilityTxt || found.text || '';
+    if (!infoTxt && nm) requestInfo();
     if (infoTxt) { t.textContent = infoTxt; t.style.display = ''; } else t.style.display = 'none';
     // Coste de maná (hechizos/objetos): mismo orbe azul que en la carta pequeña.
     // Si el chip no lleva el orbe, se busca por nombre en la lista del juego.
