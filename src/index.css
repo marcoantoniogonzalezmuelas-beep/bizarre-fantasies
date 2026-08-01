@@ -96,6 +96,15 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Modo "escritorio con zoom" en móvil/tablet (Oráculo y Guía de Cartas):
+   cuando useDesktopZoom activa la clase bf-dz en <html>, los grids usan el
+   nº de columnas de escritorio aunque el viewport sea de móvil, para que la
+   página se vea como en un PC y el usuario la navegue con zoom de pellizco. */
+@media (max-width: 1024px) {
+  html.bf-dz .grid.grid-cols-2 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  html.bf-dz .grid.grid-cols-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* Podio del Top Ranking: efectos siempre visibles (aura, brillo barrido, flote) */
 @keyframes bfPodiumFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes bfPodiumGlow { 0%,100% { box-shadow: 0 8px 22px rgba(0,0,0,.55), 0 0 12px var(--pod-glow); } 50% { box-shadow: 0 8px 22px rgba(0,0,0,.55), 0 0 30px var(--pod-glow), 0 0 52px var(--pod-glow); } }

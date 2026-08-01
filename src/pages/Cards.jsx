@@ -10,6 +10,7 @@ import ClanSigil from '@/components/cards/ClanSigil';
 import DownloadDocsButton from '@/components/cards/DownloadDocsButton';
 import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 import { getLang, t } from '@/lib/i18n';
+import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const TABS = [
   { key: 'heroes', label: 'Héroes' },
@@ -83,6 +84,7 @@ const normalizeItem = (card) => {
 };
 
 export default function Cards() {
+  useDesktopZoom();
   const loc = useLocation();
   const params = new URLSearchParams(loc.search);
   const initialTab = params.get('tab') || 'heroes';

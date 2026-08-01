@@ -12,6 +12,7 @@ import EquipPartsDiagram from '@/components/guide/EquipPartsDiagram';
 import CardTypeSection from '@/components/guide/CardTypeSection';
 import StatGlossary from '@/components/guide/StatGlossary';
 import { t } from '@/lib/i18n';
+import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const freshArt = (card, url) => {
   if (!url) return undefined;
@@ -39,6 +40,7 @@ const fade = (delay = 0) => ({
 });
 
 export default function CardGuide() {
+  useDesktopZoom();
   const [cards, setCards] = useState([]);
   useEffect(() => { base44.entities.Card.list('number', 300).then(c => setCards(c || [])).catch(() => setCards([])); }, []);
   const isToken = (c) => String(c.card_id || '').startsWith('tk_');
