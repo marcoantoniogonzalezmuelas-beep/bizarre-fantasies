@@ -169,6 +169,27 @@ export const DEMO_FLOW_PATCH = `
   // las funciones nativas (este script corre tras el del juego, al final del
   // body). Las funciones referenciadas (aiDecision, tryResolveRound, ...)
   // existen en el momento del clic, no al cargar.
+
+  // ---- Botón "Conocer las Cartas" durante la SUBASTA del demo ----
+  // Aparece solo en la pantalla de reclutamiento (s-recruit) mientras el demo
+  // está activo: es el momento ideal para invitar a ver la guía visual antes
+  // de seguir. Al pulsar, navega a la página padre /guiacartas.
+  function ensureGuideBtn(){
+    var show = (typeof G!=='undefined' && G && G.demo && curScreen()==='s-recruit');
+    var btn = document.getElementById('bf-demo-guide-btn');
+    if (show && !btn){
+      btn = document.createElement('div');
+      btn.id = 'bf-demo-guide-btn';
+      btn.style.cssText = 'position:fixed;top:14px;right:14px;z-index:99999;display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 14px;border-radius:13px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:13px;letter-spacing:.3px;box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 16px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
+      btn.innerHTML = '<span style="font-size:18px">🃏</span> Conocer las Cartas';
+      btn.onclick = function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas'},'*'); }catch(e){} };
+      document.body.appendChild(btn);
+    } else if (!show && btn){ btn.remove(); }
+  }
+  var gSty=document.createElement('style');
+  gSty.textContent='@keyframes bfDemoGuidePulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 12px rgba(192,107,255,.4)}50%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 22px rgba(192,107,255,.85),0 0 30px rgba(255,210,74,.4)}}';
+  document.head.appendChild(gSty);
+  setInterval(ensureGuideBtn, 500);
 })();
 </script>
 `;

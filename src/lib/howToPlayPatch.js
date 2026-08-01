@@ -71,8 +71,15 @@ export const HOW_TO_PLAY_PATCH = `
     return '<div class="rb-st" style="--stc:'+color+'"><div class="rb-st-i">'+icon+'</div><div class="rb-st-b"><div class="rb-st-t">'+name+'</div><div class="rb-st-x">'+text+'</div></div></div>';
   }
 
+  if(!window.bfOpenGuide){ window.bfOpenGuide=function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas'},'*'); }catch(e){} }; }
+
   function bodyHtml(){
     return '<div class="rules-body">'+CSS+
+    '<div onclick="bfOpenGuide()" style="cursor:pointer;display:flex;align-items:center;gap:12px;margin:10px 0 14px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(192,107,255,.18),rgba(28,16,46,.7));border:2px solid rgba(192,107,255,.6);box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 16px rgba(192,107,255,.25)">'+
+    '<div style="flex:0 0 40px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;background:radial-gradient(circle at 40% 30%,#3a1e5a,#1a0d2a);border:2px solid rgba(192,107,255,.7)">🃏</div>'+
+    '<div style="flex:1"><div class="rb-step-t" style="color:#e2b0ff">Conocer las Cartas · guía visual</div><div class="rb-step-x">¿Qué es cada carta, qué hace en el juego y qué significan CC, AD, HE, maná, coste de oro…? Ábrelo antes de seguir.</div></div>'+
+    '<div style="flex:0 0 auto;font-family:Cinzel,serif;font-weight:900;color:#3a2600;background:radial-gradient(circle at 35% 30%,#ffeaa6,#FFD24A 50%,#a9771f);border:2px solid #7c5410;border-radius:10px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.5)">Abrir ▸</div>'+
+    '</div>'+
     '<p><b>🎯 Objetivo:</b> arma un equipo de <b>3 héroes</b>, equípalos bien y derrota a los 3 héroes del rival en un combate por turnos.</p>'+
 
     '<div class="rb-step"><div class="rb-step-n">1</div><div class="rb-step-b"><div class="rb-step-t">Subasta · 3 fases</div><div class="rb-step-x">'+

@@ -8,6 +8,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Cards from './pages/Cards';
+import CardGuide from './pages/CardGuide';
 import RacesPage from './pages/RacesPage';
 import Ranking from './pages/Ranking';
 import EnglishEntry from './pages/EnglishEntry';
@@ -52,6 +53,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin" element={<AdminCards />} />
       <Route path="/admin/news" element={<FlashNewsAdmin />} />
       <Route path="/cards" element={<Cards />} />
+      <Route path="/guiacartas" element={<CardGuide />} />
       <Route path="/races" element={<RacesPage />} />
       <Route path="/ranking" element={<Ranking />} />
       <Route path="/en" element={<EnglishEntry />} />

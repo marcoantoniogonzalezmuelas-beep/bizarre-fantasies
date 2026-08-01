@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, BookOpen } from 'lucide-react';
 import HeroCard from '@/components/cards/HeroCard';
 import EquipCard from '@/components/cards/EquipCard';
 import RaceCard from '@/components/cards/RaceCard';
@@ -147,7 +147,12 @@ export default function Cards() {
           <Link to="/" className="-ml-2 p-2.5 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-[#ffffff10] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={24} /></Link>
           <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">{t('ORÁCULO BIZARRO')}</h1>
           <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} {t('cartas · Base Set')}</span>
-          <div className="ml-auto flex items-center gap-2"><DownloadDocsButton cards={dbCards} /></div>
+          <div className="ml-auto flex items-center gap-2">
+            <Link to="/guiacartas" className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg border border-[#b8902a] text-[#FFD24A] bg-[#FFD24A11] hover:bg-[#FFD24A22] active:scale-95 transition-all">
+              <BookOpen size={15} /> {t('Conocer las Cartas')}
+            </Link>
+            <DownloadDocsButton cards={dbCards} />
+          </div>
         </div>
 
         {/* Tabs */}
