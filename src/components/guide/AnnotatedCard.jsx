@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // parts: [{ k, i, n, d, c, note? }]  — k coincide con data-bf-marker; si un
 // part no tiene marcador en la carta (p.ej. maná en un héroe) se muestra solo
 // su nota al activarlo.
-export default function AnnotatedCard({ parts, children, width, height, hint }) {
+export default function AnnotatedCard({ parts, children, width, height, hint, aboveCard }) {
   const wrapRef = useRef(null);
   const [rects, setRects] = useState({});
   const [active, setActive] = useState(null);
@@ -53,6 +53,7 @@ export default function AnnotatedCard({ parts, children, width, height, hint }) 
   return (
     <div className="grid md:grid-cols-2 gap-8 items-center">
       <div className="flex flex-col items-center">
+        {aboveCard}
         <div ref={wrapRef} className="relative" style={{ width, height }}>
           {children}
 

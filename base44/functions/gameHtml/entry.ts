@@ -33,6 +33,12 @@ function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
   const NUM_ART={};[[EQUIP.melee,artSets.melee],[EQUIP.ranged,artSets.ranged],[EQUIP.armor,artSets.armor],[EQUIP.spell,artSets.spell],[EQUIP.object,artSets.object]].forEach(([c,a])=>c.nums.forEach((n,i)=>{if(a[i])NUM_ART[n]=a[i];}));
+  // Hechizos/objetos/equipo NUEVOS (números fuera del base set, p.ej.
+  // Transformer 108 o Reanimación Arcana 117) también necesitan su arte en
+  // la tienda de equipamiento y al jugarse: NUM_ART se indexa por número de
+  // carta, así que registramos el arte de la BD para cualquier carta de
+  // equipo, incluso las que no están en los arrays base.
+  (dbCards||[]).forEach(c=>{ if(!c||!c.art_url)return; if(['melee_weapon','ranged_weapon','armor','spell','object'].includes(c.category)) NUM_ART[Number(c.number)]=freshArt(c,c.art_url); });
   const dbHeroes = dbCards.filter(c => c.category === 'hero' && c.in_auction !== false);
   // BD = única fuente de arte: las bases se inicializan vacías (mismo length
   // sólo como andamiaje de índices). Si una carta no está en la BD, no se

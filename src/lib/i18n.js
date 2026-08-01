@@ -77,6 +77,13 @@ const UI_EN = {
   'Cartas que modifican la partida: más monedas, ventajas para ti o castigos al rival. Cada ronda de subasta trae uno único que no se repite.': 'Cards that change the match: more coins, perks for you or penalties for your rival. Each auction round brings a unique one that never repeats.',
   'Explorar el Oráculo completo': 'Explore the full Oracle',
   'Glosario de stats': 'Stat glossary',
+  'Ejemplos de cada tipo:': 'Examples of each type:',
+  'Hechizo': 'Spell',
+  'Arma a distancia': 'Ranged weapon',
+  'Arma C/C': 'Melee weapon',
+  'Armadura': 'Armor',
+  'Objeto': 'Object',
+  'Bonificador': 'Booster',
 };
 
 export const t = (es) => (getLang() === 'en' ? (UI_EN[es] ?? es) : es);

@@ -61,6 +61,12 @@ export default function CardGuide() {
 
   const card = (item, type) => <div key={item?.id || type} className="w-[160px] sm:w-[180px]"><EquipCard item={item} type={type} /></div>;
   const hero = (h) => h ? <div key={h.id} className="w-[160px] sm:w-[180px]"><HeroCard hero={h} /></div> : null;
+  const labeledCard = (item, type, label) => item ? (
+    <div key={item.id || type} className="flex flex-col items-center gap-1.5">
+      <div className="w-[150px] sm:w-[168px]"><EquipCard item={item} type={type} /></div>
+      <span className="text-[11px] font-bold text-[#bdae87]">{label}</span>
+    </div>
+  ) : null;
 
   return (
     <div className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4c66c24cd_generated_image.png")' }}>
@@ -90,6 +96,17 @@ export default function CardGuide() {
           <h2 className="font-heading font-black text-lg md:text-xl text-[#FFD24A] mb-1 tracking-wide">{t('Partes de una carta de equipamiento')}</h2>
           <p className="text-[14px] text-[#e6dff2] mb-4 max-w-3xl">{t('Hechizos, armas, armaduras y objetos comparten el mismo diseño: el coste de oro arriba a la izquierda, el texto de la habilidad abajo y, solo en los hechizos, el orbe azul de maná arriba a la derecha. Aquí tienes un hechizo de ejemplo:')}</p>
           <EquipPartsDiagram item={ex.spell} type="spell" />
+          <div className="mt-8">
+            <div className="font-heading font-bold text-[14px] text-[#ffe9a8] mb-3">{t('Ejemplos de cada tipo:')}</div>
+            <div className="flex flex-wrap gap-4 justify-center">
+              {labeledCard(ex.spell, 'spell', t('Hechizo'))}
+              {labeledCard(ex.ranged, 'ranged', t('Arma a distancia'))}
+              {labeledCard(ex.melee, 'melee', t('Arma C/C'))}
+              {labeledCard(ex.armor, 'armor', t('Armadura'))}
+              {labeledCard(ex.object, 'object', t('Objeto'))}
+              {labeledCard({ ...ex.bonus, cost: '—' }, 'bonus', t('Bonificador'))}
+            </div>
+          </div>
         </motion.div>
 
         <div className="space-y-7">
