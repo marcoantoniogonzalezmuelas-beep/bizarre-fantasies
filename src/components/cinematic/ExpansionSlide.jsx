@@ -6,6 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 //    bordes, chocan en el centro y se desvanecen.
 //  · Fase 2: aparecen otros dos héroes desde los bordes y flotan suavemente.
 // A pantalla completa, sin marco, sobre fondo oscuro.
+//
+// Responsive: en móvil/tablet (debajo de lg) los dos combatientes se apilan
+// verticalmente (uno arriba, otro abajo), cada uno a todo el ancho con
+// object-contain, para que se vean enteros sin huecos negros. En escritorio
+// quedan lado a lado, anclados a los bordes exteriores. Además, cada
+// combatiente lleva un halo de luz del color de la escena detrás.
 export default function ExpansionSlide({ ducks = [null, null], others = [null, null], accent = '#b13bff', switchAt = 5200 }) {
   const [phase, setPhase] = useState(0);
   useEffect(() => {
@@ -46,26 +52,31 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
     };
   };
 
+  const IMG = 'w-full h-full object-cover select-none lg:h-full lg:w-auto lg:max-w-none lg:object-contain';
+  const HALO = `radial-gradient(62% 56% at 50% 50%, ${accent}3a, transparent 72%)`;
+
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#050308]">
       <AnimatePresence mode="wait">
         {phase === 0 ? (
-          <div key="ducks" className="absolute inset-0 flex">
-            <div className="relative w-1/2 h-full flex justify-center lg:justify-start items-center overflow-hidden">
+          <div key="ducks" className="absolute inset-0 flex flex-col lg:flex-row">
+            <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-start overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.img
                 src={ducks[0]} alt="" draggable={false}
-                className="max-h-[80vh] max-w-[170%] object-contain select-none lg:h-full lg:w-auto lg:max-w-none lg:max-h-full"
+                className={IMG}
                 initial={duckMotion('l').initial} animate={duckMotion('l').animate} transition={duckMotion('l').transition}
               />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
+              <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
             </div>
-            <div className="relative w-1/2 h-full flex justify-center lg:justify-end items-center overflow-hidden">
+            <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-end overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.img
                 src={ducks[1]} alt="" draggable={false}
-                className="max-h-[80vh] max-w-[170%] object-contain select-none lg:h-full lg:w-auto lg:max-w-none lg:max-h-full"
+                className={IMG}
                 initial={duckMotion('r').initial} animate={duckMotion('r').animate} transition={duckMotion('r').transition}
               />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
+              <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
             </div>
             {/* destello central del choque */}
             <motion.div
@@ -76,8 +87,9 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
             />
           </div>
         ) : (
-          <div key="others" className="absolute inset-0 flex">
-            <div className="relative w-1/2 h-full flex justify-center lg:justify-start items-center overflow-hidden">
+          <div key="others" className="absolute inset-0 flex flex-col lg:flex-row">
+            <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-start overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.div
                 className="h-full flex items-center justify-center"
                 animate={{ y: [0, -9, 0], rotate: [-1.3, 1.3, -1.3] }}
@@ -85,15 +97,16 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
               >
                 <motion.img
                   src={others[0]} alt="" draggable={false}
-                  className="max-h-[80vh] max-w-[170%] object-contain select-none lg:h-full lg:w-auto lg:max-w-none lg:max-h-full"
+                  className={IMG}
                   initial={{ opacity: 0, x: '24vw', scale: 0.55 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   transition={{ opacity: { duration: 0.7 }, x: { duration: 0.9, ease: 'easeOut' }, scale: { duration: 0.9, ease: 'easeOut' } }}
                 />
               </motion.div>
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
+              <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
             </div>
-            <div className="relative w-1/2 h-full flex justify-center lg:justify-end items-center overflow-hidden">
+            <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-end overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.div
                 className="h-full flex items-center justify-center"
                 animate={{ y: [0, -9, 0], rotate: [1.3, -1.3, 1.3] }}
@@ -101,13 +114,13 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
               >
                 <motion.img
                   src={others[1]} alt="" draggable={false}
-                  className="max-h-[80vh] max-w-[170%] object-contain select-none lg:h-full lg:w-auto lg:max-w-none lg:max-h-full"
+                  className={IMG}
                   initial={{ opacity: 0, x: '-24vw', scale: 0.55 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   transition={{ opacity: { duration: 0.7, delay: 0.1 }, x: { duration: 0.9, delay: 0.1, ease: 'easeOut' }, scale: { duration: 0.9, delay: 0.1, ease: 'easeOut' } }}
                 />
               </motion.div>
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
+              <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
             </div>
           </div>
         )}

@@ -89,24 +89,26 @@ export default function BattleClash({ left, right, accent = '#ff7a18', kind = 'c
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#050308]">
-      <div className="absolute inset-0 flex">
-        {/* combatiente izquierdo, anclado al borde izquierdo */}
-        <div className="relative w-1/2 h-full flex justify-center lg:justify-start items-center overflow-hidden">
+      <div className="absolute inset-0 flex flex-col lg:flex-row">
+        {/* combatiente izquierdo (móvil: arriba · escritorio: izquierda) */}
+        <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-start overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(62% 56% at 50% 50%, ${accent}3a, transparent 72%)` }} />
           <motion.img
             src={leftSrc} alt="" draggable={false}
-            className="max-h-[80vh] max-w-[170%] object-contain select-none lg:h-full lg:w-auto lg:max-w-none lg:max-h-full"
+            className="w-full h-full object-cover select-none lg:h-full lg:w-auto lg:max-w-none lg:object-contain"
             initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
           />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
+          <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
         </div>
-        {/* combatiente derecho, anclado al borde derecho */}
-        <div className="relative w-1/2 h-full flex justify-center lg:justify-end items-center overflow-hidden">
+        {/* combatiente derecho (móvil: abajo · escritorio: derecha) */}
+        <div className="relative h-1/2 lg:h-full lg:w-1/2 flex items-center justify-center lg:justify-end overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(62% 56% at 50% 50%, ${accent}3a, transparent 72%)` }} />
           <motion.img
             src={rightSrc} alt="" draggable={false}
-            className="max-h-[80vh] max-w-[170%] object-contain select-none lg:h-full lg:w-auto lg:max-w-none lg:max-h-full"
+            className="w-full h-full object-cover select-none lg:h-full lg:w-auto lg:max-w-none lg:object-contain"
             initial={M.R.initial} animate={M.R.animate} transition={M.R.transition}
           />
-          <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
+          <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
         </div>
       </div>
 
