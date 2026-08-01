@@ -63,8 +63,9 @@ export default function CardGuide() {
   const hero = (h) => h ? <div key={h.id} className="w-[160px] sm:w-[180px]"><HeroCard hero={h} /></div> : null;
 
   return (
-    <div className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}>
-      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14aa] via-[#0a081055] to-[#050308dd]" />
+    <div className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4c66c24cd_generated_image.png")' }}>
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[#06040acc]" />
+      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0a0812dd] via-[#070512bb] to-[#050308ee]" />
       <div className="relative z-10 max-w-5xl mx-auto px-4 pb-20">
         <div className="sticky top-0 z-20 -mx-4 mb-6 px-4 py-3 flex items-center gap-3 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg,#1a1430ee,#120e1cee)', backdropFilter: 'blur(12px)' }}>
           <Link to="/cards" className="-ml-1 p-2 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-white/5"><ArrowLeft size={22} /></Link>
@@ -79,15 +80,15 @@ export default function CardGuide() {
         <motion.div {...fade(0.04)} className="mb-8 flex items-start gap-3 rounded-xl border border-[#c06bff]/40 bg-[#1a0d2a]/60 px-4 py-3 max-w-3xl">
           <span className="text-xl mt-0.5 shrink-0">👆</span>
           <p className="text-[14px] text-[#e6dff2] leading-relaxed">
-            <b className="text-[#FFD24A]">Cómo usar esta guía:</b> pasa el ratón (o toca en el móvil) sobre cada <b>marcador</b> de la carta para ver qué es: el coste de oro 🪙, la vida (HP) ❤️, CC, AD, HE, el maná 🔵, la habilidad… También puedes pasar el ratón por la lista de la derecha y se señalará lo mismo en la carta.
+            <b className="text-[#FFD24A]">{t('Cómo usar esta guía:')}</b> {t('pasa el ratón (o toca en el móvil) sobre cada marcador de la carta para ver qué es: el coste de oro, la vida (HP), CC, AD, HE, el maná y la habilidad. También puedes pasar el ratón por la lista de la derecha y se señalará lo mismo en la carta.')}
           </p>
         </motion.div>
 
         <motion.div {...fade(0.05)} className="mb-10"><CardPartsDiagram hero={ex.cc} /></motion.div>
 
         <motion.div {...fade(0.08)} className="mb-10">
-          <h2 className="font-heading font-black text-lg md:text-xl text-[#FFD24A] mb-1 tracking-wide">Partes de una carta de equipamiento</h2>
-          <p className="text-[14px] text-[#e6dff2] mb-4 max-w-3xl">Hechizos, armas, armaduras y objetos comparten el mismo diseño: el coste de oro arriba a la izquierda, el texto de la habilidad abajo y, solo en los hechizos, el orbe azul de maná arriba a la derecha. Aquí tienes un hechizo de ejemplo:</p>
+          <h2 className="font-heading font-black text-lg md:text-xl text-[#FFD24A] mb-1 tracking-wide">{t('Partes de una carta de equipamiento')}</h2>
+          <p className="text-[14px] text-[#e6dff2] mb-4 max-w-3xl">{t('Hechizos, armas, armaduras y objetos comparten el mismo diseño: el coste de oro arriba a la izquierda, el texto de la habilidad abajo y, solo en los hechizos, el orbe azul de maná arriba a la derecha. Aquí tienes un hechizo de ejemplo:')}</p>
           <EquipPartsDiagram item={ex.spell} type="spell" />
         </motion.div>
 
