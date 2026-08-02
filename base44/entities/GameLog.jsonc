@@ -1,0 +1,137 @@
+{
+  "name": "GameLog",
+  "type": "object",
+  "properties": {
+    "room_code": {
+      "type": "string",
+      "description": "C\u00f3digo de sala (vac\u00edo en local/IA)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "online",
+        "local",
+        "ia"
+      ],
+      "description": "Modo de partida"
+    },
+    "player_nick": {
+      "type": "string",
+      "description": "Nick del jugador que registra el log"
+    },
+    "opponent_nick": {
+      "type": "string",
+      "description": "Nick del rival"
+    },
+    "player_clan": {
+      "type": "string",
+      "description": "Clan del jugador"
+    },
+    "opponent_clan": {
+      "type": "string",
+      "description": "Clan del rival"
+    },
+    "player_heroes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "number": {
+            "type": "number"
+          },
+          "elite": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "H\u00e9roes del jugador"
+    },
+    "opponent_heroes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "number": {
+            "type": "number"
+          },
+          "elite": {
+            "type": "boolean"
+          }
+        }
+      },
+      "description": "H\u00e9roes del rival"
+    },
+    "turns_played": {
+      "type": "number",
+      "description": "N\u00famero de turnos jugados"
+    },
+    "winner": {
+      "type": "string",
+      "enum": [
+        "player",
+        "opponent",
+        "draw"
+      ]
+    },
+    "player_won": {
+      "type": "boolean",
+      "description": "Si true, el jugador que registra gan\u00f3"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "turn": {
+            "type": "number"
+          },
+          "side": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Eventos clave de la partida (jugadas, habilidades, compras)"
+    },
+    "items_bought": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "side": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Objetos/hechizos comprados por cada lado"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Duraci\u00f3n de la partida en segundos"
+    }
+  },
+  "required": [
+    "mode",
+    "player_nick"
+  ]
+}

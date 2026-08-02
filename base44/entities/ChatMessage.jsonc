@@ -1,0 +1,31 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "room_code": {
+      "type": "string",
+      "description": "C\u00f3digo de la sala multiplayer"
+    },
+    "sender_nick": {
+      "type": "string",
+      "description": "Nick del remitente"
+    },
+    "sender_is_host": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si true, el remitente es el anfitri\u00f3n de la sala"
+    },
+    "text": {
+      "type": "string",
+      "description": "Texto del mensaje (vac\u00edo si es solo emoji)"
+    },
+    "emoji_id": {
+      "type": "string",
+      "description": "Identificador del emoji de h\u00e9roe enviado (opcional)"
+    }
+  },
+  "required": [
+    "room_code",
+    "sender_nick"
+  ]
+}
