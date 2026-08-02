@@ -91,22 +91,51 @@ export const SHOP_SPELL_ART_PATCH = `
   }
 
   // ---- Hechizo "Reanimación Arcana" (id sp_recover): arte del modal + maná + texto desde la BD ----
+  // El juego busca el arte de tres formas distintas y todas fallan para
+  // sp_recover porque su nº secuencial (cardNo) no coincide con su nº de BD:
+  //   · injectEquipArt(): NUM_ART[cardNo('sp_recover')] → nº secuencial "060"
+  //   · bfConfirm modal:  SPELL_ART[idx] || NUM_ART[numFor(item)] → idx 14 / "060"
+  //   · handArtByName():  SPELL_ART[idx] || NUM_ART[s.num||0] → idx 14 / "0" o "117"
+  // syncRecover registra el arte en TODAS las claves que usa el juego y
+  // invalida el caché de handArtByName para que la mano pinte el arte.
   function syncRecover() {
     if (typeof SPELLS === 'undefined' || !SPELLS) return;
-    var sp = null;
-    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; break; } }
+    var sp = null, spIdx = -1;
+    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; spIdx = i; break; } }
     if (!sp) return;
     var art = ART_BY_NAME[sp.name], info = INFO_BY_NAME[sp.name];
-    // El nº real lo aporta la BD (info.number); el arte se indexa por ese nº.
-    if (info && info.number != null) {
-      sp.num = info.number;
-      if (art && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(info.number)] = art; } catch (e) {} }
+    var dbNum = (info && info.number != null) ? info.number : sp.num;
+    if (dbNum != null && dbNum !== 0) sp.num = dbNum;
+    // 1) NUM_ART por nº de BD (lo usa handArtByName con s.num)
+    if (art && typeof NUM_ART !== 'undefined' && dbNum != null && dbNum !== 0) {
+      try { NUM_ART[String(dbNum)] = art; } catch (e) {}
+    }
+    // 2) NUM_ART por nº secuencial cardNo (lo usa injectEquipArt y numFor).
+    //    También actualiza CARD_NO para que cardNo('sp_recover') devuelva el
+    //    nº real de la BD en vez de "000" (CARD_NO se cachea al primer uso y
+    //    no se reconstruye cuando se añade sp_recover a SPELLS después).
+    if (typeof cardNo === 'function') {
+      try {
+        if (dbNum != null && dbNum !== 0 && typeof CARD_NO !== 'undefined') {
+          CARD_NO['sp_recover'] = String(dbNum).padStart(3, '0');
+        }
+        if (art && typeof NUM_ART !== 'undefined') {
+          var seq = cardNo('sp_recover'); if (seq) NUM_ART[String(seq)] = art;
+        }
+      } catch (e) {}
+    }
+    // 3) SPELL_ART por índice en SPELLS (lo usa bfConfirm y handArtByName)
+    if (art && spIdx >= 0 && typeof SPELL_ART !== 'undefined') {
+      try { SPELL_ART[spIdx] = art; } catch (e) {}
     }
     if (info) {
       if (info.mana != null) sp.mana = info.mana;
       if (info.text) sp.txt = info.text;
       if (info.cost != null) sp.cost = info.cost;
     }
+    // 4) Invalida el caché de handArtByName para que la mano repinte el arte
+    try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
+    if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
   }
 
   // Re-renderiza la tienda de equipo tras sincronizar el hechizo de la BD, para
