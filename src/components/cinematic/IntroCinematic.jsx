@@ -8,6 +8,7 @@ import ExpansionSlide from '@/components/cinematic/ExpansionSlide';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 import useStageZoom from '@/lib/useStageZoom';
+import { preloadCutout } from '@/lib/useCutoutSrc';
 
 // Móvil/tablet: la intro se renderiza a ancho de escritorio (1200px) dentro de
 // un escenario escalado para caber en pantalla, con zoom de pellizco (igual que
@@ -78,6 +79,13 @@ function buildScenes() {
 
 export default function IntroCinematic({ onClose }) {
   const scenes = useMemo(() => buildScenes(), []);
+  useEffect(() => {
+    scenes.forEach((s) => {
+      if (s.clash) { preloadCutout(s.clash.left); preloadCutout(s.clash.right); }
+      if (s.versus) { [...s.versus.left, ...s.versus.right].forEach(preloadCutout); }
+      if (s.expansion) { [...s.expansion.ducks, ...s.expansion.others].forEach(preloadCutout); }
+    });
+  }, [scenes]);
   const [i, setI] = useState(0);
   const [muted, setMuted] = useState(false);
   const [finished, setFinished] = useState(false);

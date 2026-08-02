@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
 // Diapositiva de Expansiones temáticas, en dos fases:
 //  · Fase 1: los Patitos de Goma (animación normal y élite) entran desde los
@@ -45,7 +46,13 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
     };
   };
 
+  const d0 = useCutoutSrc(ducks[0]);
+  const d1 = useCutoutSrc(ducks[1]);
+  const o0 = useCutoutSrc(others[0]);
+  const o1 = useCutoutSrc(others[1]);
+
   const IMG = 'h-full w-auto max-w-none object-contain select-none';
+  const IMG_STYLE = { filter: 'drop-shadow(0 14px 26px rgba(0,0,0,.7))' };
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
@@ -56,21 +63,25 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
               className="relative h-full w-1/2 flex items-center justify-start overflow-hidden"
               style={{ maskImage: 'linear-gradient(to right, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, #000 52%, transparent 100%)' }}
             >
-              <motion.img
-                src={ducks[0]} alt="" draggable={false}
-                className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-                initial={duckMotion('l').initial} animate={duckMotion('l').animate} transition={duckMotion('l').transition}
-              />
+              {d0 && (
+                <motion.img
+                  src={d0} alt="" draggable={false}
+                  className={IMG} style={IMG_STYLE}
+                  initial={duckMotion('l').initial} animate={duckMotion('l').animate} transition={duckMotion('l').transition}
+                />
+              )}
             </div>
             <div
               className="relative h-full w-1/2 flex items-center justify-end overflow-hidden"
               style={{ maskImage: 'linear-gradient(to left, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, #000 52%, transparent 100%)' }}
             >
-              <motion.img
-                src={ducks[1]} alt="" draggable={false}
-                className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-                initial={duckMotion('r').initial} animate={duckMotion('r').animate} transition={duckMotion('r').transition}
-              />
+              {d1 && (
+                <motion.img
+                  src={d1} alt="" draggable={false}
+                  className={IMG} style={IMG_STYLE}
+                  initial={duckMotion('r').initial} animate={duckMotion('r').animate} transition={duckMotion('r').transition}
+                />
+              )}
             </div>
           </div>
         ) : (
@@ -84,13 +95,15 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
                 animate={{ y: [0, -9, 0], rotate: [-1.3, 1.3, -1.3] }}
                 transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <motion.img
-                  src={others[0]} alt="" draggable={false}
-                  className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-                  initial={{ opacity: 0, x: '312px', scale: 0.55 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  transition={{ opacity: { duration: 0.7 }, x: { duration: 0.9, ease: 'easeOut' }, scale: { duration: 0.9, ease: 'easeOut' } }}
-                />
+                {o0 && (
+                  <motion.img
+                    src={o0} alt="" draggable={false}
+                    className={IMG} style={IMG_STYLE}
+                    initial={{ opacity: 0, x: '312px', scale: 0.55 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ opacity: { duration: 0.7 }, x: { duration: 0.9, ease: 'easeOut' }, scale: { duration: 0.9, ease: 'easeOut' } }}
+                  />
+                )}
               </motion.div>
             </div>
             <div
@@ -102,13 +115,15 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
                 animate={{ y: [0, -9, 0], rotate: [1.3, -1.3, 1.3] }}
                 transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <motion.img
-                  src={others[1]} alt="" draggable={false}
-                  className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-                  initial={{ opacity: 0, x: '-312px', scale: 0.55 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  transition={{ opacity: { duration: 0.7, delay: 0.1 }, x: { duration: 0.9, delay: 0.1, ease: 'easeOut' }, scale: { duration: 0.9, delay: 0.1, ease: 'easeOut' } }}
-                />
+                {o1 && (
+                  <motion.img
+                    src={o1} alt="" draggable={false}
+                    className={IMG} style={IMG_STYLE}
+                    initial={{ opacity: 0, x: '-312px', scale: 0.55 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{ opacity: { duration: 0.7, delay: 0.1 }, x: { duration: 0.9, delay: 0.1, ease: 'easeOut' }, scale: { duration: 0.9, delay: 0.1, ease: 'easeOut' } }}
+                  />
+                )}
               </motion.div>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
 // Versus 3 vs 3: seis héroes (tres por bando) en formación enfrentada con
 // un emblema "VS" central, entrada desde los laterales y flote suave. Cada
@@ -19,6 +20,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
 
   const Hero = ({ src, side, idx }) => {
     const fromLeft = side === 'l';
+    const cut = useCutoutSrc(src);
     return (
       <motion.div
         className="relative h-[31%] w-auto flex items-center justify-center"
@@ -30,13 +32,15 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
           scale: { duration: 8, delay: 0.15 * idx, ease: 'easeOut' },
         }}
       >
-        <motion.img
-          src={src} alt="" draggable={false}
-          className="h-full w-auto max-w-none object-contain select-none"
-          style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,.75))', mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-          animate={{ y: [0, -9, 0], rotate: fromLeft ? [-1.3, 1.3, -1.3] : [1.3, -1.3, 1.3] }}
-          transition={{ duration: 3.2 + idx * 0.3, repeat: Infinity, ease: 'easeInOut' }}
-        />
+        {cut && (
+          <motion.img
+            src={cut} alt="" draggable={false}
+            className="h-full w-auto max-w-none object-contain select-none"
+            style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,.75))' }}
+            animate={{ y: [0, -9, 0], rotate: fromLeft ? [-1.3, 1.3, -1.3] : [1.3, -1.3, 1.3] }}
+            transition={{ duration: 3.2 + idx * 0.3, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        )}
       </motion.div>
     );
   };

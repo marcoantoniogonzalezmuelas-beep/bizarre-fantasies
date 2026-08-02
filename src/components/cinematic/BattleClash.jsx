@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
 // Choque bizarro entre dos animaciones 3D reales del juego (ability_anim).
 // Se muestran COMPLETOS (object-contain, altura a pantalla) anclados a los
@@ -58,6 +59,8 @@ export default function BattleClash({ left, right, accent = '#ff7a18', swap = fa
 
   const leftSrc = swap ? right : left;
   const rightSrc = swap ? left : right;
+  const leftCut = useCutoutSrc(leftSrc);
+  const rightCut = useCutoutSrc(rightSrc);
   const M = useMemo(() => preset(motionName), [motionName]);
 
   return (
@@ -67,21 +70,27 @@ export default function BattleClash({ left, right, accent = '#ff7a18', swap = fa
           className="relative h-full w-1/2 flex items-center justify-start overflow-hidden"
           style={{ maskImage: 'linear-gradient(to right, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, #000 52%, transparent 100%)' }}
         >
-          <motion.img
-            src={leftSrc} alt="" draggable={false}
-            className="h-full w-auto max-w-none object-contain select-none" style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-            initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
-          />
+          {leftCut && (
+            <motion.img
+              src={leftCut} alt="" draggable={false}
+              className="h-full w-auto max-w-none object-contain select-none"
+              style={{ filter: 'drop-shadow(0 14px 26px rgba(0,0,0,.7))' }}
+              initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
+            />
+          )}
         </div>
         <div
           className="relative h-full w-1/2 flex items-center justify-end overflow-hidden"
           style={{ maskImage: 'linear-gradient(to left, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, #000 52%, transparent 100%)' }}
         >
-          <motion.img
-            src={rightSrc} alt="" draggable={false}
-            className="h-full w-auto max-w-none object-contain select-none" style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
-            initial={M.R.initial} animate={M.R.animate} transition={M.R.transition}
-          />
+          {rightCut && (
+            <motion.img
+              src={rightCut} alt="" draggable={false}
+              className="h-full w-auto max-w-none object-contain select-none"
+              style={{ filter: 'drop-shadow(0 14px 26px rgba(0,0,0,.7))' }}
+              initial={M.R.initial} animate={M.R.animate} transition={M.R.transition}
+            />
+          )}
         </div>
       </div>
 
