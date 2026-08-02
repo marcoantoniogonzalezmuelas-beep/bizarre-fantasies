@@ -75,9 +75,10 @@ export const SHOP_SPELL_ART_PATCH = `
     var nm = card.querySelector('.bf-shop-name'); if (nm) nm.textContent = name;
     if (info.number != null) ensureEl(card, 'bf-shop-num', 'Nº ' + info.number);
     if (info.category === 'spell' && info.mana != null) ensureEl(card, 'bf-shop-mana', info.mana);
-    if (info.text) ensureEl(card, 'bf-shop-txt', info.text);
-    var sl = statLine(info);
-    if (sl) ensureEl(card, 'bf-shop-stat', sl);
+    // El texto de habilidad y los stats no se muestran en la carta de la tienda
+    // (no caben / no se leen): se ven al pasar el ratón con el card magnifier.
+    var oldTxt = card.querySelector('.bf-shop-txt'); if (oldTxt) oldTxt.remove();
+    var oldStat = card.querySelector('.bf-shop-stat'); if (oldStat) oldStat.remove();
   }
 
   function scan() {

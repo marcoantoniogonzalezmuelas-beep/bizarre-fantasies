@@ -44,11 +44,22 @@ export const CARD_MAGNIFIER_PATCH = `
     document.body.appendChild(mag);
     return mag;
   }
-  function artOf(chip){
-    var l = chip.querySelector('.bf-chip-art-layer');
-    var bg = l && l.style.backgroundImage;
-    var m = bg && bg.match(/url\\(["']?(.*?)["']?\\)/);
-    return m ? m[1] : '';
+  function artOf(el){
+    var sels = ['.bf-chip-art-layer','.shop-card-art-sharp','.bf-quick-art','.bf-bonus-art'];
+    for (var i=0;i<sels.length;i++){
+      var l = el.querySelector(sels[i]); if (!l) continue;
+      var bg = l.style.backgroundImage || getComputedStyle(l).backgroundImage;
+      var m = bg && bg.match(/url\\(["']?(.*?)["']?\\)/);
+      if (m && m[1]) return m[1];
+    }
+    return '';
+  }
+  function nameOf(el){
+    var sels = ['.bf-chip-name','.bf-shop-name','.bf-quick-name','.bf-bonus-name','.shop-name'];
+    for (var i=0;i<sels.length;i++){
+      var n = el.querySelector(sels[i]); if (n && n.textContent && n.textContent.trim()) return n.textContent.trim();
+    }
+    return '';
   }
   function place(chip){
     var r = chip.getBoundingClientRect(), w = 250, h = w * 4.1 / 3;
@@ -65,9 +76,8 @@ export const CARD_MAGNIFIER_PATCH = `
     ensure();
     mag.querySelector('.bf-mag-fill').style.backgroundImage = 'url("' + url + '")';
     mag.querySelector('.bf-mag-art').style.backgroundImage = 'url("' + url + '")';
-    var nameEl = chip.querySelector('.bf-chip-name');
-    mag.querySelector('.bf-mag-name').textContent = nameEl ? nameEl.textContent : (chip.title || '');
-    var nm = nameEl ? nameEl.textContent.trim() : '';
+    var nm = nameOf(chip);
+    mag.querySelector('.bf-mag-name').textContent = nm || (chip.title || '');
     // Busca la carta por nombre en hechizos/objetos/equipo para sacar su texto
     // y su maná aunque la carta pequeña (chip) no los lleve (p.ej. la mano en
     // batalla, donde el chip solo muestra nombre y arte).
@@ -116,8 +126,9 @@ export const CARD_MAGNIFIER_PATCH = `
   function hide(){ if (mag) mag.classList.remove('show'); }
 
   document.addEventListener('mouseover', function(e){
-    var chip = e.target.closest && e.target.closest('.chip.bf-chip-card');
-    if (chip) show(chip); else hide();
+    if (!e.target.closest) { hide(); return; }
+    var el = e.target.closest('.chip.bf-chip-card') || e.target.closest('.shop-card.has-art') || e.target.closest('.bf-quick-card');
+    if (el) show(el); else hide();
   });
   window.addEventListener('scroll', hide, true);
 })();
