@@ -35,7 +35,6 @@ export const BATTLE_RULES_PATCH = `
   // ===== 1. TRANSFORMER: objetivo aleatorio de TODOS los héroes vivos =====
   function hookTransformer(){
     if(typeof window.castSpell!=='function'||window.castSpell.__bfTrans)return;
-    window.castSpell.__bfTrans=1;
     var orig=window.castSpell;
     window.castSpell=function(id){
       try{
@@ -52,11 +51,11 @@ export const BATTLE_RULES_PATCH = `
           var tSide=null,tIdx=-1;
           ['p','o'].forEach(function(sd){ if(tSide!==null)return; var t=G.team[sd]||[]; for(var i=0;i<t.length;i++){ if(t[i]===target){tSide=sd;tIdx=i;break;} } });
           if(tSide===null)return orig.apply(this,arguments);
+          // Valida tokens ANTES de descontar maná: si no hay tokens, no se
+          // cobra el hechizo y se avisa al jugador en vez de fallar en silencio.
+          var tp=(typeof TOKENS!=='undefined'&&TOKENS&&TOKENS.length)?TOKENS:((typeof HEROES!=='undefined'?HEROES:[]).filter(function(tk){return tk&&String(tk.id||'').indexOf('tk_')===0;}));
+          if(!tp||!tp.length){if(typeof notif==='function')notif('No hay tokens disponibles');return;}
           h.mana-=s.mana;
-          // El equipo del héroe transformado va al descarte (lo detecta el diff
-          // de discardPilePatch al desaparecer el héroe del snapshot de G.team).
-          var tp=(typeof TOKENS!=='undefined'&&TOKENS&&TOKENS.length)?TOKENS:((typeof HEROES!=='undefined'?HEROES:[]).filter(function(h){return h&&String(h.id||'').indexOf('tk_')===0;}));
-          if(!tp||!tp.length)return;
           var tk=tp[Math.floor(Math.random()*tp.length)];
           var inst=(typeof makeInstance==='function')?makeInstance(tk):JSON.parse(JSON.stringify(tk));
           inst.boughtFor=0;
@@ -72,6 +71,7 @@ export const BATTLE_RULES_PATCH = `
       }catch(e){}
       return orig.apply(this,arguments);
     };
+    window.castSpell.__bfTrans=1;
   }
 
   // ===== 2+4. Muerte → equipo al descarte; revivir → sin equipo ni estados =====
