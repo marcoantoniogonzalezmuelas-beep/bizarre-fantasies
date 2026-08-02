@@ -124,12 +124,11 @@ export const DISCARD_PILE_PATCH = `
     if(just) window.__bfDiscardJust=null;
   }
 
-  // ---- API para Reanimación Arcana: saca un objeto aleatorio del descarte ----
+  // ---- API para Reanimación Arcana: saca una carta aleatoria del descarte ----
+  // (objetos, armas o armaduras — cualquier tipo de carta descartada).
   window.bfDiscardPop=function(side){
-    var pile=ensurePile(side); if(!pile) return null;
-    var objs=[]; pile.forEach(function(e){ if(e&&e.kind==='object') objs.push(e); });
-    if(!objs.length) return null;
-    var entry=objs[Math.floor(Math.random()*objs.length)];
+    var pile=ensurePile(side); if(!pile||!pile.length) return null;
+    var entry=pile[Math.floor(Math.random()*pile.length)];
     var idx=pile.indexOf(entry); if(idx>=0) pile.splice(idx,1);
     return entry;
   };

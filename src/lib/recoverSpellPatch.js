@@ -134,9 +134,23 @@ export const RECOVER_SPELL_PATCH = `
           var entry=(typeof window.bfDiscardPop==='function')?window.bfDiscardPop(side):null;
           if (!entry) { if(typeof notif==='function')notif('El mazo de usados está vacío.'); return; }
           h.mana-=s.mana;
-          var tmpl=(typeof OBJECTS!=='undefined')?byId(OBJECTS,entry.id):null;
-          var recName=tmpl?tmpl.name:(entry.name||'Objeto');
-          if (tmpl) G.items[side].push((typeof deep==='function')?deep(tmpl):JSON.parse(JSON.stringify(tmpl)));
+          var recName=entry.name||'Objeto';
+          if (entry.kind==='object') {
+            // Objeto consumible: lo devuelve a la mano como objeto usable.
+            var tmpl=(typeof OBJECTS!=='undefined')?byId(OBJECTS,entry.id):null;
+            if (tmpl) { recName=tmpl.name; G.items[side].push((typeof deep==='function')?deep(tmpl):JSON.parse(JSON.stringify(tmpl))); }
+          } else {
+            // Equipo (arma/armadura): lo devuelve a la mano como objeto
+            // recuperable — al usarlo se equipa gratis en el héroe actual.
+            var arr=entry.kind==='mwep'?(typeof MELEE!=='undefined'?MELEE:[]):entry.kind==='rwep'?(typeof RANGED!=='undefined'?RANGED:[]):(typeof ARMORS!=='undefined'?ARMORS:[]);
+            var eq=(typeof byId==='function')?byId(arr,entry.id):null;
+            if (eq) {
+              recName=eq.name;
+              var rec=(typeof deep==='function')?deep(eq):JSON.parse(JSON.stringify(eq));
+              rec._bfRecoveredEq=true; rec._bfSlot=entry.kind; rec.kind='object'; rec.num=entry.num||0;
+              G.items[side].push(rec);
+            }
+          }
           if (typeof pushLog==='function') pushLog('lg',h.name+' reanima '+recName+' del mazo de usados.');
           if (typeof pushFx==='function') {
             pushFx({k:'bfcard',name:s.name,kind:'spell',side:side});
