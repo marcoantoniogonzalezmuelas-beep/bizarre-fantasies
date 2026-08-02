@@ -11,8 +11,8 @@ export const NET_RECONNECT_PATCH = `
 (function(){
   if(window.__bfNetReconnect)return;
   window.__bfNetReconnect=true;
-  var RETRY_MS=3000,MAX_WAIT=180000;
-  var rec={active:false,until:0,timer:null,pendConn:null};
+  var RETRY_MS=3000,MAX_WAIT=300000;
+  var rec={active:false,until:0,timer:null,pendConn:null,tickInterval:null,waiting:false};
   // Flag: el jugador local ha salido intencionalmente (no hay que reconectar).
   var quitting=false;
 
@@ -41,6 +41,7 @@ export const NET_RECONNECT_PATCH = `
   '#bf-reconnect .bf-rec-spin{width:44px;height:44px;margin:0 auto 14px;border-radius:50%;border:4px solid #3c3158;border-top-color:#FFD24A;animation:bfRecSpin 1s linear infinite}@keyframes bfRecSpin{to{transform:rotate(360deg)}}'+
   '#bf-reconnect .bf-rec-msg{font-family:Cinzel,serif;font-weight:900;font-size:18px;color:#ffe49a}'+
   '#bf-reconnect .bf-rec-sub{margin-top:8px;font-size:13px;line-height:1.45;color:#cfc6dd}'+
+  '#bf-reconnect .bf-rec-timer{margin-top:14px;font-family:Cinzel,serif;font-weight:900;font-size:34px;color:#FFD24A;text-shadow:0 0 18px rgba(255,210,74,.5);display:none}'+
   '#bf-reconnect .bf-rec-btns{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}'+
   '#bf-reconnect .bf-rec-exit{padding:10px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
   '#bf-reconnect .bf-rec-wait{padding:10px 20px;border-radius:11px;border:1px solid rgba(125,223,125,.6);background:rgba(90,200,120,.15);color:#9be26b;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
@@ -53,28 +54,41 @@ export const NET_RECONNECT_PATCH = `
   '#bf-quit-notify .bf-qn-btn{margin-top:20px;padding:12px 24px;border-radius:12px;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:15px;cursor:pointer}';
   document.head.appendChild(style);
 
-  function overlay(msg,sub,showWait){
+  function overlay(msg,sub){
     var el=document.getElementById('bf-reconnect');
     if(!el){
       el=document.createElement('div');el.id='bf-reconnect';
-      el.innerHTML='<div class="bf-rec-box"><div class="bf-rec-spin"></div><div class="bf-rec-msg"></div><div class="bf-rec-sub"></div><div class="bf-rec-btns"><button class="bf-rec-wait">Seguir esperando</button><button class="bf-rec-exit">Abandonar partida</button></div></div>';
+      el.innerHTML='<div class="bf-rec-box"><div class="bf-rec-spin"></div><div class="bf-rec-msg"></div><div class="bf-rec-sub"></div><div class="bf-rec-timer"></div><div class="bf-rec-btns"><button class="bf-rec-wait">Esperar 5 minutos</button><button class="bf-rec-exit">Volver al inicio</button></div></div>';
       document.body.appendChild(el);
       el.querySelector('.bf-rec-exit').onclick=function(){
-        quitting=true;clearResume();clearTimeout(rec.timer);
+        quitting=true;clearResume();clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);
         try{if(NET.conn)NET.conn.close();}catch(e){}
         try{if(NET.peer)NET.peer.destroy();}catch(e){}
         location.reload();
       };
       el.querySelector('.bf-rec-wait').onclick=function(){
-        // Reinicia el temporizador de espera: le damos 3 minutos más al
-        // rival para que vuelva a conectarse.
-        rec.until=Date.now()+MAX_WAIT;
-        el.querySelector('.bf-rec-wait').textContent='Esperando…';
+        // Empieza la cuenta atrás de 5 minutos visible para el jugador.
+        rec.until=Date.now()+MAX_WAIT;rec.waiting=true;
+        el.querySelector('.bf-rec-wait').style.display='none';
+        el.querySelector('.bf-rec-timer').style.display='block';
+        startTick();
       };
     }
     el.querySelector('.bf-rec-msg').textContent=msg;
     el.querySelector('.bf-rec-sub').textContent=sub||'';
     el.style.display='flex';
+  }
+  function startTick(){
+    if(rec.tickInterval)clearInterval(rec.tickInterval);
+    var el=document.getElementById('bf-reconnect');if(!el)return;
+    var tEl=el.querySelector('.bf-rec-timer');
+    rec.tickInterval=setInterval(function(){
+      if(!rec.active){clearInterval(rec.tickInterval);return;}
+      var rem=Math.max(0,Math.ceil((rec.until-Date.now())/1000));
+      var m=Math.floor(rem/60),s=rem%60;
+      if(tEl)tEl.textContent=m+':'+(s<10?'0':'')+s;
+      if(rem<=0){clearInterval(rec.tickInterval);}
+    },500);
   }
 
   // Aviso de salida intencional: el rival ha abandonado la partida.
@@ -102,12 +116,12 @@ export const NET_RECONNECT_PATCH = `
 
   function resumed(){
     var was=rec.active;
-    rec.active=false;rec.pendConn=null;clearTimeout(rec.timer);hideOverlay();
+    rec.active=false;rec.pendConn=null;rec.waiting=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();
     if(was&&typeof notif==='function')notif('✔ Conexión restablecida. ¡La partida continúa!');
   }
   function giveUp(msg){
-    rec.active=false;clearTimeout(rec.timer);hideOverlay();clearResume();
-    if(typeof modal==='function')modal('<h3>Conexión perdida</h3><div class="modal-note" style="font-size:15px">'+(msg||'No se pudo recuperar la conexión con el otro jugador.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
+    rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
+    if(typeof modal==='function')modal('<h3>Tiempo de espera agotado</h3><div class="modal-note" style="font-size:15px">'+(msg||'Tu rival no ha vuelto en 5 minutos. La partida no se puede reanudar.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
 
   function sendBye(){
@@ -192,9 +206,9 @@ export const NET_RECONNECT_PATCH = `
 
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
-    rec.active=true;rec.until=Date.now()+MAX_WAIT;
-    if(NET.role==='client'){overlay('Conexión perdida','Tu rival puede haberse salido por error. Intentando reconectar… Puedes seguir esperando o abandonar.');clientRetry();}
-    else{overlay('Tu rival se ha desconectado','Puede que haya salido por error (recarga, corte de red…). Esperando a que vuelva. Puedes seguir esperando o abandonar la partida.');hostWait();}
+    rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
+    if(NET.role==='client'){overlay('Tu rival se ha desconectado','Puedes volver al inicio o esperar 5 minutos a que vuelva para reanudar la partida.');clientRetry();}
+    else{overlay('Tu rival se ha desconectado','Puedes volver al inicio o esperar 5 minutos a que vuelva para reanudar la partida.');hostWait();}
   }
   window.__bfConnLost=connLost;
 
@@ -205,27 +219,24 @@ export const NET_RECONNECT_PATCH = `
     var btn=document.getElementById('homeBtn');
     if(!btn)return;
     window.__bfQuitHooked=true;
-    // Intercepta el click: si hay partida online en curso, pregunta confirmación
-    // y envía 'bye' antes de dejar que el juego recargue.
-    var origHandler=btn.onclick;
+    // Al salir de una partida online NO se envía 'bye': el rival verá
+    // "Tu rival se ha desconectado" con opción de esperar 5 minutos o
+    // volver al inicio. El jugador que sale puede reanudar al volver.
     btn.addEventListener('click',function(e){
       if(typeof G==='undefined'||!G.online||G._gameOver)return;
       if(typeof NET==='undefined'||!NET.role)return;
-      // Si ya está en medio de una confirmación del juego, no intervenir.
       if(btn.dataset.bfConfirming==='1'){btn.dataset.bfConfirming='';return;}
       e.preventDefault();e.stopPropagation();
       btn.dataset.bfConfirming='1';
-      // Modal de confirmación: ¿salir de la partida online?
       if(typeof modal==='function'){
-        modal('<h3>Salir de la partida</h3><div class="modal-note" style="font-size:15px">Si sales, tu rival recibirá un aviso y la partida terminará. ¿Estás seguro?</div><div style="margin-top:16px;text-align:center;display:flex;gap:10px;justify-content:center"><button class="btn primary" id="bf-quit-yes">Sí, salir</button><button class="btn" id="bf-quit-no">Cancelar</button></div>');
+        modal('<h3>Salir de la partida</h3><div class="modal-note" style="font-size:15px">Podrás reanudar la partida cuando vuelvas. Tu rival podrá esperar 5 minutos o volver al inicio.</div><div style="margin-top:16px;text-align:center;display:flex;gap:10px;justify-content:center"><button class="btn primary" id="bf-quit-yes">Salir</button><button class="btn" id="bf-quit-no">Cancelar</button></div>');
         setTimeout(function(){
           var yes=document.getElementById('bf-quit-yes'),no=document.getElementById('bf-quit-no');
-          if(yes)yes.onclick=function(){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();setTimeout(function(){location.reload();},200);};
+          if(yes)yes.onclick=function(){quitting=true;setTimeout(function(){location.reload();},200);};
           if(no)no.onclick=function(){btn.dataset.bfConfirming='';};
         },50);
       } else {
-        // Sin modal: confirm nativo como fallback.
-        if(confirm('¿Salir de la partida? Tu rival será notificado.')){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();setTimeout(function(){location.reload();},200);}
+        if(confirm('¿Salir de la partida? Podrás reanudarla cuando vuelvas.')){quitting=true;setTimeout(function(){location.reload();},200);}
         else btn.dataset.bfConfirming='';
       }
     },true);
@@ -250,8 +261,14 @@ export const NET_RECONNECT_PATCH = `
   // código (hostWait recrea el peer) y espera a que el rival se reconecte.
   window.bfAwaitRival=function(){
     if(rec.active)return;
-    rec.active=true;rec.until=Date.now()+MAX_WAIT;
-    overlay('Esperando al otro jugador','La sala se ha reabierto. La partida se reanudará cuando vuelva a conectarse…');
+    rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=true;
+    overlay('Esperando al otro jugador','La sala se ha reabierto. La partida se reanudará cuando tu rival vuelva a conectarse.');
+    var el=document.getElementById('bf-reconnect');
+    if(el){
+      el.querySelector('.bf-rec-wait').style.display='none';
+      el.querySelector('.bf-rec-timer').style.display='block';
+    }
+    startTick();
     hostWait();
   };
 
