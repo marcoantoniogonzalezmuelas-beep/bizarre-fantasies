@@ -117,17 +117,17 @@ export default function IntroCinematic({ onClose }) {
   const cur = scenes[i];
 
   return (
-    <div className="fixed inset-0 z-[200000] bg-[#050308] overflow-hidden select-none">
+    <div className="fixed inset-0 z-[200000] bg-black overflow-hidden select-none">
       {/* Escenario de escritorio (1200px) escalado en móvil con zoom de pellizco.
           En escritorio rellena el overlay (absolute inset-0). */}
-      <div ref={IS_MOBILE ? stageRef : null} className={IS_MOBILE ? 'absolute left-0 top-0 bg-[#050308]' : 'absolute inset-0'}>
+      <div ref={IS_MOBILE ? stageRef : null} className={IS_MOBILE ? 'absolute left-0 top-0 bg-black' : 'absolute inset-0'}>
       {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} motion={cur.clash.motion} />}
       {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
       {cur.expansion && <ExpansionSlide ducks={cur.expansion.ducks} others={cur.expansion.others} accent={cur.expansion.accent} />}
 
       {/* Viñeta + legibilidad */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/70 via-transparent to-[#050308]/92 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/92 pointer-events-none" />
 
       {/* Contenido narrativo */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">

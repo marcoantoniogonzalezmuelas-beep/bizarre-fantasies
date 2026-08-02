@@ -5,13 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 //  · Fase 1: los Patitos de Goma (animación normal y élite) entran desde los
 //    bordes, chocan en el centro y se desvanecen.
 //  · Fase 2: aparecen otros dos héroes desde los bordes y flotan suavemente.
-// A pantalla completa, sin marco, sobre fondo oscuro.
-//
-// Responsive: en móvil/tablet (debajo de lg) los dos combatientes se apilan
-// verticalmente (uno arriba, otro abajo), cada uno a todo el ancho con
-// object-contain, para que se vean enteros sin huecos negros. En escritorio
-// quedan lado a lado, anclados a los bordes exteriores. Además, cada
-// combatiente lleva un halo de luz del color de la escena detrás.
+// A pantalla completa, sin marco, sobre fondo NEGRO PURO que se funde con la
+// animación (sin halos ni degradados ni costura entre mitades).
 export default function ExpansionSlide({ ducks = [null, null], others = [null, null], accent = '#b13bff', switchAt = 5200 }) {
   const [phase, setPhase] = useState(0);
   useEffect(() => {
@@ -31,8 +26,6 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
 
   const dur = switchAt / 1000;
 
-  // Fase 1: cada patito entra desde el borde exterior, embiste al centro y se
-  // desvanece. No vuelve a aparecer suyo: en su lugar entran otros héroes.
   const duckMotion = (side) => {
     const s = side === 'r' ? -1 : 1;
     return {
@@ -53,43 +46,30 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
   };
 
   const IMG = 'h-full w-auto max-w-none object-contain select-none';
-  const HALO = `radial-gradient(62% 56% at 50% 50%, ${accent}3a, transparent 72%)`;
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#050308]">
+    <div className="absolute inset-0 overflow-hidden bg-black">
       <AnimatePresence mode="wait">
         {phase === 0 ? (
           <div key="ducks" className="absolute inset-0 flex flex-row">
             <div className="relative h-full w-1/2 flex items-center justify-start overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.img
                 src={ducks[0]} alt="" draggable={false}
                 className={IMG}
                 initial={duckMotion('l').initial} animate={duckMotion('l').animate} transition={duckMotion('l').transition}
               />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
             </div>
             <div className="relative h-full w-1/2 flex items-center justify-end overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.img
                 src={ducks[1]} alt="" draggable={false}
                 className={IMG}
                 initial={duckMotion('r').initial} animate={duckMotion('r').animate} transition={duckMotion('r').transition}
               />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
             </div>
-            {/* destello central del choque */}
-            <motion.div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full"
-              style={{ background: `radial-gradient(${accent}, transparent 70%)` }}
-              animate={{ scale: [0.6, 1.8, 0.6], opacity: [0.4, 0.9, 0.4] }}
-              transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-            />
           </div>
         ) : (
           <div key="others" className="absolute inset-0 flex flex-row">
             <div className="relative h-full w-1/2 flex items-center justify-start overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.div
                 className="h-full flex items-center justify-center"
                 animate={{ y: [0, -9, 0], rotate: [-1.3, 1.3, -1.3] }}
@@ -103,10 +83,8 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
                   transition={{ opacity: { duration: 0.7 }, x: { duration: 0.9, ease: 'easeOut' }, scale: { duration: 0.9, ease: 'easeOut' } }}
                 />
               </motion.div>
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, transparent 52%, #050308)' }} />
             </div>
             <div className="relative h-full w-1/2 flex items-center justify-end overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none" style={{ background: HALO }} />
               <motion.div
                 className="h-full flex items-center justify-center"
                 animate={{ y: [0, -9, 0], rotate: [1.3, -1.3, 1.3] }}
@@ -120,13 +98,12 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
                   transition={{ opacity: { duration: 0.7, delay: 0.1 }, x: { duration: 0.9, delay: 0.1, ease: 'easeOut' }, scale: { duration: 0.9, delay: 0.1, ease: 'easeOut' } }}
                 />
               </motion.div>
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(270deg, transparent 52%, #050308)' }} />
             </div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* brasas ascendentes */}
+      {/* brasas ascendentes ambientales */}
       {embers.map((e, k) => (
         <motion.span
           key={k} className="absolute bottom-0 rounded-full pointer-events-none"
