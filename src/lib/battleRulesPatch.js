@@ -75,8 +75,29 @@ export const BATTLE_RULES_PATCH = `
   }
 
   // ===== 2+4. Muerte → equipo al descarte; revivir → sin equipo ni estados =====
+  // SOLO se rastrean muertes/revividas durante la pantalla de batalla. Fuera de
+  // ella (subasta, tienda) se resetea el tracking: así el primer scan dentro de
+  // batalla inicializa todos los héroes como vivos sin disparar onRevive (que
+  // les limpiaría el equipo equivocadamente al empezar la batalla).
   var prevAlive={};
+  var wasInBattle=false;
   function scanLifeChanges(){
+    var battle=document.getElementById('s-battle');
+    var inB=battle&&battle.classList.contains('active');
+    if(!inB){ prevAlive={}; wasInBattle=false; return; }
+    // Al ENTRAR a batalla (transición de no-batalla → batalla): inicializa
+    // todos los héroes como vivos sin disparar callbacks.
+    if(!wasInBattle){
+      wasInBattle=true;
+      if(typeof G!=='undefined'&&G&&G.team){
+        ['p','o'].forEach(function(side){
+          (G.team[side]||[]).forEach(function(h){
+            if(h&&h.id) prevAlive[side+'_'+h.id]=!!h.alive;
+          });
+        });
+      }
+      return;
+    }
     if(typeof G==='undefined'||!G||!G.team)return;
     ['p','o'].forEach(function(side){
       (G.team[side]||[]).forEach(function(h){
