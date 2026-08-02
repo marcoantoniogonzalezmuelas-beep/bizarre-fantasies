@@ -1,43 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Zoom de pellizco sobre un "escenario" de ancho fijo (p.ej. 1200px) que se
-// escala para caber en el viewport del móvil/tablet. A diferencia de
-// useDesktopZoom (que escala el <body>), este hook escala un elemento
-// concreto (el overlay de la cinemática) sin afectar al resto de la página.
+// Escala un "escenario" de ancho/alto fijos (desktop) para que QUEPE ENTERO en
+// el viewport (contain), con letterboxing y centrado. El usuario puede pellizcar
+// para ampliar (1×–4×) y arrastrar para desplazarlo. Así una escena pensada
+// para escritorio se ve completa en cualquier orientación de móvil/tablet
+// (aunque sea pequeña) y el usuario la amplía con el zoom del dispositivo.
 //
-// El escenario se renderiza a su ancho natural de escritorio y se escala con
-// CSS transform para que quepa en pantalla; el usuario puede pellizcar para
-// ampliar (1×–4×) y arrastrar para desplazarlo, igual que en el juego.
-export default function useStageZoom(stageWidth = 1200) {
+// A diferencia de useDesktopZoom (que escala el <body>), este hook escala un
+// elemento concreto (el overlay de la cinemática) sin afectar al resto.
+export default function useStageZoom(stageWidth = 1200, stageHeight) {
   const ref = useRef(null);
+  // Altura del escenario = proporción de escritorio (16:9) salvo que se indique.
+  const sh = stageHeight != null ? stageHeight : Math.round(stageWidth * 9 / 16);
+
   const [fit, setFit] = useState(() => {
     if (typeof window === 'undefined') return 1;
-    return Math.min(1, window.innerWidth / stageWidth);
+    return Math.min(window.innerWidth / stageWidth, window.innerHeight / sh);
   });
 
-  // Zoom de usuario (1× = ajustado, hasta 4×) y desplazamiento en px del
-    // escenario (coordenadas locales, pre-scale).
+  // Zoom de usuario (1× = ajustado, hasta 4×) y desplazamiento (px, pre-scale).
   const zoom = useRef(1);
   const pan = useRef({ x: 0, y: 0 });
-  const stageH = useRef(0);
   const gesture = useRef(null);
 
-  const computeFit = () => Math.min(1, window.innerWidth / stageWidth);
+  const computeFit = () => Math.min(window.innerWidth / stageWidth, window.innerHeight / sh);
 
+  // Centra el escenario escalado en el viewport y le suma el pan del usuario.
   const apply = () => {
     const el = ref.current;
     if (!el) return;
     const s = fit * zoom.current;
-    el.style.transform = `translate(${pan.current.x}px, ${pan.current.y}px) scale(${s})`;
+    const ox = (window.innerWidth - stageWidth * s) / 2;
+    const oy = (window.innerHeight - sh * s) / 2;
+    el.style.transform = `translate(${ox + pan.current.x}px, ${oy + pan.current.y}px) scale(${s})`;
     el.style.transformOrigin = '0 0';
   };
 
   const clampPan = () => {
     const s = fit * zoom.current;
-    const visW = window.innerWidth / s;
-    const visH = window.innerHeight / s;
-    const maxX = Math.max(0, (stageWidth - visW) / 2);
-    const maxY = Math.max(0, (stageH.current - visH) / 2);
+    const dispW = stageWidth * s;
+    const dispH = sh * s;
+    const maxX = Math.max(0, (dispW - window.innerWidth) / 2);
+    const maxY = Math.max(0, (dispH - window.innerHeight) / 2);
     pan.current.x = Math.max(-maxX, Math.min(maxX, pan.current.x));
     pan.current.y = Math.max(-maxY, Math.min(maxY, pan.current.y));
   };
@@ -45,16 +49,14 @@ export default function useStageZoom(stageWidth = 1200) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Altura del escenario = pantalla / fit → al escalar rellena toda la altura.
-    stageH.current = window.innerHeight / fit;
     el.style.width = stageWidth + 'px';
-    el.style.height = stageH.current + 'px';
+    el.style.height = sh + 'px';
     el.style.touchAction = 'none';
     apply();
 
     const onResize = () => {
-      setFit(computeFit());
-      stageH.current = window.innerHeight / computeFit();
+      const nf = computeFit();
+      setFit(nf);
       pan.current = { x: 0, y: 0 };
       zoom.current = 1;
       apply();
@@ -91,18 +93,20 @@ export default function useStageZoom(stageWidth = 1200) {
       if (!e.touches || e.touches.length < 2) gesture.current = null;
     };
 
-    el.addEventListener('touchstart', onStart, { passive: false });
-    el.addEventListener('touchmove', onMove, { passive: false });
-    el.addEventListener('touchend', onEnd);
-    el.addEventListener('touchcancel', onEnd);
+    // Listeners en window: el pellizco funciona en toda la pantalla (también
+    // en las bandas de letterbox), no sólo dentro del escenario.
+    window.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+    window.addEventListener('touchcancel', onEnd);
 
     return () => {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onResize);
-      el.removeEventListener('touchstart', onStart);
-      el.removeEventListener('touchmove', onMove);
-      el.removeEventListener('touchend', onEnd);
-      el.removeEventListener('touchcancel', onEnd);
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+      window.removeEventListener('touchcancel', onEnd);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fit]);
