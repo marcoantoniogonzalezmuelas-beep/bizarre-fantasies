@@ -22,7 +22,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (!e.data) return;
     if (e.data.bfArtMap)   ART_BY_NAME  = e.data.bfArtMap  || {};
     if (e.data.bfCardInfo) INFO_BY_NAME = e.data.bfCardInfo || {};
-    if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncRecover(); scan(); rerenderShop(); }, 0); }
+    if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncAllEquip(); scan(); rerenderShop(); }, 0); }
   });
   try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
 
@@ -90,66 +90,70 @@ export const SHOP_SPELL_ART_PATCH = `
     });
   }
 
-  // ---- Hechizo "Reanimación Arcana" (id sp_recover): arte del modal + maná + texto desde la BD ----
-  // El juego busca el arte de tres formas distintas y todas fallan para
-  // sp_recover porque su nº secuencial (cardNo) no coincide con su nº de BD:
-  //   · injectEquipArt(): NUM_ART[cardNo('sp_recover')] → nº secuencial "060"
-  //   · bfConfirm modal:  SPELL_ART[idx] || NUM_ART[numFor(item)] → idx 14 / "060"
-  //   · handArtByName():  SPELL_ART[idx] || NUM_ART[s.num||0] → idx 14 / "0" o "117"
-  // syncRecover registra el arte en TODAS las claves que usa el juego y
-  // invalida el caché de handArtByName para que la mano pinte el arte.
-  function syncRecover() {
+  // ---- Sincronización genérica: el juego siempre busca arte por nº de BD ----
+  // El juego usa tres vías para buscar el arte de equipo:
+  //   · injectEquipArt(): NUM_ART[cardNo(id)]  — cardNo devuelve el nº secuencial
+  //   · bfConfirm modal:  SPELL_ART[idx] || NUM_ART[numFor(item)]  — idx/sequential
+  //   · handArtByName():  SPELL_ART[idx] || NUM_ART[s.num]  — s.num = nº de BD
+  //
+  // NUM_ART se rellena desde la BD por nº de carta (buildArtScript + Home.jsx).
+  // El problema es que cardNo() asigna nº SECUENCIALES (1,2,3…) que no siempre
+  // coinciden con el nº de BD — sobre todo en cartas añadidas dinámicamente
+  // (p.ej. sp_recover).  En lugar de registrar el arte en varias claves, basta
+  // con asegurar que cardNo(id) devuelva siempre el nº de BD real de cada carta:
+  // así las tres vías convergen en NUM_ART[nº_BD] y cualquier carta nueva de la
+  // BD funciona sin casos especiales ni parches por carta.
+  function syncAllEquip() {
     if (typeof SPELLS === 'undefined' || !SPELLS) return;
-    var sp = null, spIdx = -1;
-    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; spIdx = i; break; } }
-    if (!sp) return;
-    var art = ART_BY_NAME[sp.name], info = INFO_BY_NAME[sp.name];
-    var dbNum = (info && info.number != null) ? info.number : sp.num;
-    if (dbNum != null && dbNum !== 0) sp.num = dbNum;
-    // 1) NUM_ART por nº de BD (lo usa handArtByName con s.num)
-    if (art && typeof NUM_ART !== 'undefined' && dbNum != null && dbNum !== 0) {
-      try { NUM_ART[String(dbNum)] = art; } catch (e) {}
-    }
-    // 2) NUM_ART por nº secuencial cardNo (lo usa injectEquipArt y numFor).
-    //    También actualiza CARD_NO para que cardNo('sp_recover') devuelva el
-    //    nº real de la BD en vez de "000" (CARD_NO se cachea al primer uso y
-    //    no se reconstruye cuando se añade sp_recover a SPELLS después).
-    if (typeof cardNo === 'function') {
-      try {
-        if (dbNum != null && dbNum !== 0 && typeof CARD_NO !== 'undefined') {
-          CARD_NO['sp_recover'] = String(dbNum).padStart(3, '0');
+    var changed = false;
+    var arrs = [SPELLS, (typeof OBJECTS !== 'undefined') ? OBJECTS : []];
+    for (var a = 0; a < arrs.length; a++) {
+      var arr = arrs[a]; if (!arr) continue;
+      for (var i = 0; i < arr.length; i++) {
+        var item = arr[i]; if (!item || !item.name) continue;
+        var info = INFO_BY_NAME[item.name]; if (!info || info.number == null || info.number === 0) continue;
+        // 1) Asegura que item.num = nº de BD (lo usa handArtByName)
+        if (item.num !== info.number) { item.num = info.number; changed = true; }
+        // 2) Asegura que CARD_NO[id] = nº de BD padded (lo usa cardNo → injectEquipArt, numFor, bfConfirm)
+        if (item.id && typeof CARD_NO !== 'undefined') {
+          var padded = String(info.number).padStart(3, '0');
+          if (CARD_NO[item.id] !== padded) { CARD_NO[item.id] = padded; changed = true; }
         }
-        if (art && typeof NUM_ART !== 'undefined') {
-          var seq = cardNo('sp_recover'); if (seq) NUM_ART[String(seq)] = art;
+        // 3) Si el juego no tiene el arte en NUM_ART (carta nueva dinámica), lo registra por nº de BD
+        var art = ART_BY_NAME[item.name];
+        if (art && typeof NUM_ART !== 'undefined' && !NUM_ART[String(info.number)]) {
+          try { NUM_ART[String(info.number)] = art; changed = true; } catch (e) {}
         }
-      } catch (e) {}
+      }
     }
-    // 3) SPELL_ART por índice en SPELLS (lo usa bfConfirm y handArtByName)
-    if (art && spIdx >= 0 && typeof SPELL_ART !== 'undefined') {
-      try { SPELL_ART[spIdx] = art; } catch (e) {}
+    // Propaga mana/texto/coste desde la BD (para hechizos inyectados dinámicamente)
+    if (typeof SPELLS !== 'undefined') {
+      for (var s = 0; s < SPELLS.length; s++) {
+        var sp = SPELLS[s]; if (!sp || !sp.name) continue;
+        var si = INFO_BY_NAME[sp.name]; if (!si) continue;
+        if (si.mana != null) sp.mana = si.mana;
+        if (si.text) sp.txt = si.text;
+        if (si.cost != null) sp.cost = si.cost;
+      }
     }
-    if (info) {
-      if (info.mana != null) sp.mana = info.mana;
-      if (info.text) sp.txt = info.text;
-      if (info.cost != null) sp.cost = info.cost;
+    if (changed) {
+      try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
+      if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
     }
-    // 4) Invalida el caché de handArtByName para que la mano repinte el arte
-    try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
-    if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
   }
 
-  // Re-renderiza la tienda de equipo tras sincronizar el hechizo de la BD, para
-  // que el botón "Comprar" y el arte del modal aparezcan aunque la tienda ya
-  // se hubiera renderizado antes de llegar los datos de la BD (Oráculo).
+  // Re-renderiza la tienda de equipo tras sincronizar, para que el botón
+  // "Comprar" y el arte aparezcan aunque la tienda ya se hubiera renderizado
+  // antes de llegar los datos de la BD (Oráculo).
   function rerenderShop(){ if (typeof window.renderEquip === 'function' && typeof G !== 'undefined' && G && G.eqSide) { try { window.renderEquip(G.eqSide); } catch (e) {} } }
   function wrap() {
     if (typeof window.eqShopGrid !== 'function' || window.eqShopGrid.__bfNameArt) return;
     var orig = window.eqShopGrid;
-    window.eqShopGrid = function () { try { syncRecover(); } catch(e){} var html = orig.apply(this, arguments); setTimeout(function(){ syncRecover(); scan(); }, 0); return html; };
+    window.eqShopGrid = function () { try { syncAllEquip(); } catch(e){} var html = orig.apply(this, arguments); setTimeout(function(){ syncAllEquip(); scan(); }, 0); return html; };
     window.eqShopGrid.__bfNameArt = true;
   }
   wrap();
-  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncRecover(); scan(); }, 500);
+  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncAllEquip(); scan(); }, 500);
   new MutationObserver(function(){ requestAnimationFrame(scan); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
