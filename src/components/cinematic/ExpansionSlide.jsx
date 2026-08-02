@@ -58,7 +58,7 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
             >
               <motion.img
                 src={ducks[0]} alt="" draggable={false}
-                className={IMG} style={{ mixBlendMode: 'screen' }}
+                className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
                 initial={duckMotion('l').initial} animate={duckMotion('l').animate} transition={duckMotion('l').transition}
               />
             </div>
@@ -68,7 +68,7 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
             >
               <motion.img
                 src={ducks[1]} alt="" draggable={false}
-                className={IMG} style={{ mixBlendMode: 'screen' }}
+                className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
                 initial={duckMotion('r').initial} animate={duckMotion('r').animate} transition={duckMotion('r').transition}
               />
             </div>
@@ -86,7 +86,7 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
               >
                 <motion.img
                   src={others[0]} alt="" draggable={false}
-                  className={IMG} style={{ mixBlendMode: 'screen' }}
+                  className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
                   initial={{ opacity: 0, x: '312px', scale: 0.55 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   transition={{ opacity: { duration: 0.7 }, x: { duration: 0.9, ease: 'easeOut' }, scale: { duration: 0.9, ease: 'easeOut' } }}
@@ -104,7 +104,7 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
               >
                 <motion.img
                   src={others[1]} alt="" draggable={false}
-                  className={IMG} style={{ mixBlendMode: 'screen' }}
+                  className={IMG} style={{ mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
                   initial={{ opacity: 0, x: '-312px', scale: 0.55 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   transition={{ opacity: { duration: 0.7, delay: 0.1 }, x: { duration: 0.9, delay: 0.1, ease: 'easeOut' }, scale: { duration: 0.9, delay: 0.1, ease: 'easeOut' } }}

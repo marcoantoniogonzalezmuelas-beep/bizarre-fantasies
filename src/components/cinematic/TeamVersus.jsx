@@ -33,7 +33,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
         <motion.img
           src={src} alt="" draggable={false}
           className="h-full w-auto max-w-none object-contain select-none"
-          style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,.75))', mixBlendMode: 'screen' }}
+          style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,.75))', mixBlendMode: 'screen', maskImage: 'linear-gradient(to top, transparent, #000 14%)', WebkitMaskImage: 'linear-gradient(to top, transparent, #000 14%)' }}
           animate={{ y: [0, -9, 0], rotate: fromLeft ? [-1.3, 1.3, -1.3] : [1.3, -1.3, 1.3] }}
           transition={{ duration: 3.2 + idx * 0.3, repeat: Infinity, ease: 'easeInOut' }}
         />
