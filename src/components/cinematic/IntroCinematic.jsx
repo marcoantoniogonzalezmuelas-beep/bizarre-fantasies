@@ -128,7 +128,6 @@ export default function IntroCinematic({ onClose }) {
 
       {/* Viñeta + legibilidad */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/70 via-transparent to-[#050308]/92 pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,transparent_30%,#050308_110%)] pointer-events-none" />
 
       {/* Contenido narrativo */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
