@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { HERO_EMOJIS } from '@/lib/heroEmojis';
+import { EMOJI_CATEGORIES } from '@/lib/heroEmojis';
 import { MessageCircle, X, Send, Smile } from 'lucide-react';
 
 // Overlay de chat entre jugadores en partidas multiplayer. Se muestra como un
@@ -15,6 +15,7 @@ export default function ChatOverlay() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [showEmojis, setShowEmojis] = useState(false);
+  const [emojiCat, setEmojiCat] = useState(0);
   const [unread, setUnread] = useState(0);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
@@ -105,7 +106,7 @@ export default function ChatOverlay() {
   if (!status?.connOpen || !status?.roomCode) return null;
 
   const emojiMap = {};
-  HERO_EMOJIS.forEach((em) => { emojiMap[em.id] = em; });
+  EMOJI_CATEGORIES.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
 
   const fmtTime = (d) => {
     try { return new Date(d).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
@@ -215,23 +216,40 @@ export default function ChatOverlay() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Selector de emojis */}
+          {/* Selector de emojis con pestañas por categoría */}
           {showEmojis && (
-            <div
-              className="px-2 py-2 grid grid-cols-4 gap-1.5"
-              style={{ borderTop: '1px solid rgba(255,210,74,0.15)', background: 'rgba(0,0,0,0.2)' }}
-            >
-              {HERO_EMOJIS.map((em) => (
-                <button
-                  key={em.id}
-                  onClick={() => { send(input, em.id); setShowEmojis(false); }}
-                  className="flex flex-col items-center gap-0.5 rounded-lg p-1 transition-all hover:scale-110 hover:bg-white/10"
-                  title={`${em.name} (${em.clan})`}
-                >
-                  <img src={em.url} alt={em.name} className="rounded-full" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
-                  <span className="text-[8px] opacity-50 truncate w-full text-center" style={{ color: '#ffe49a', maxWidth: '52px' }}>{em.name}</span>
-                </button>
-              ))}
+            <div style={{ borderTop: '1px solid rgba(255,210,74,0.15)', background: 'rgba(0,0,0,0.25)' }}>
+              {/* Pestañas */}
+              <div className="flex gap-1 px-2 pt-1.5 overflow-x-auto no-scrollbar">
+                {EMOJI_CATEGORIES.map((cat, i) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setEmojiCat(i)}
+                    className="rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition-all"
+                    style={{
+                      background: emojiCat === i ? 'rgba(255,210,74,0.2)' : 'rgba(255,255,255,0.05)',
+                      border: emojiCat === i ? '1px solid rgba(255,210,74,0.4)' : '1px solid transparent',
+                      color: emojiCat === i ? '#FFD24A' : '#ffe49a',
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+              {/* Grid de emojis */}
+              <div className="px-2 py-2 grid grid-cols-4 gap-1.5 overflow-y-auto no-scrollbar" style={{ maxHeight: '200px' }}>
+                {EMOJI_CATEGORIES[emojiCat]?.emojis.map((em) => (
+                  <button
+                    key={em.id}
+                    onClick={() => { send(input, em.id); setShowEmojis(false); }}
+                    className="flex flex-col items-center gap-0.5 rounded-lg p-1 transition-all hover:scale-110 hover:bg-white/10"
+                    title={`${em.name}${em.clan ? ` (${em.clan})` : ''}${em.ability ? ` · ${em.ability}` : ''}`}
+                  >
+                    <img src={em.url} alt={em.name} className="rounded-full" style={{ width: '40px', height: '40px', objectFit: 'cover' }} loading="lazy" />
+                    <span className="text-[8px] opacity-50 truncate w-full text-center" style={{ color: '#ffe49a', maxWidth: '52px' }}>{em.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
