@@ -139,8 +139,9 @@ export const DISCARD_PILE_PATCH = `
     renderPile(side);
   }
 
-  setInterval(tick,500);
-  new MutationObserver(function(){ requestAnimationFrame(tick); }).observe(document.documentElement,{childList:true,subtree:true});
+  setInterval(tick,1000);
+  var _bfDt=0;
+  new MutationObserver(function(){ var n=Date.now(); if(n-_bfDt<500)return; _bfDt=n; requestAnimationFrame(tick); }).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 `;

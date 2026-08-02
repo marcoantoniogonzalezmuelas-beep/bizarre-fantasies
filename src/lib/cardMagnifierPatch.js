@@ -142,7 +142,8 @@ export const CARD_MAGNIFIER_PATCH = `
     var el = e.target.closest('.chip.bf-chip-card') || e.target.closest('.shop-card.has-art') || e.target.closest('.bf-quick-card');
     if (el) show(el); else hide();
   });
-  window.addEventListener('scroll', hide, true);
+  var _bfSc=0;
+  window.addEventListener('scroll', function(){ var n=Date.now(); if(n-_bfSc<100)return; _bfSc=n; hide(); }, { passive: true, capture: true });
 })();
 </script>
 `;

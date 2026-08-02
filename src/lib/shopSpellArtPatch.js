@@ -153,8 +153,9 @@ export const SHOP_SPELL_ART_PATCH = `
     window.eqShopGrid.__bfNameArt = true;
   }
   wrap();
-  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncAllEquip(); scan(); }, 500);
-  new MutationObserver(function(){ requestAnimationFrame(scan); }).observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncAllEquip(); scan(); }, 1000);
+  var _bfSt=0;
+  new MutationObserver(function(){ var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 `;

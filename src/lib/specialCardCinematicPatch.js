@@ -224,7 +224,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     });
     tankReady=true;
   }
-  new MutationObserver(function(){scanDucks();scanTanks();}).observe(document.documentElement,{childList:true,subtree:true});
+  var _bfSc=0; new MutationObserver(function(){var n=Date.now();if(n-_bfSc<500)return;_bfSc=n;scanDucks();scanTanks();}).observe(document.documentElement,{childList:true,subtree:true});
 
   var tries=0,iv=setInterval(function(){var a=hook(),b=hookFlush();if((a||window.__bfShowCardReveal&&window.__bfShowCardReveal.__bfSpec)&&(b||window.flushFx&&window.flushFx.__bfSpecCineFx)||tries++>120)clearInterval(iv);},200);
 })();

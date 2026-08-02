@@ -89,7 +89,7 @@ export const BATTLE_ANIME_PATCH = `
   }
   var t=0,timer=setInterval(function(){t++;hookRender();injectBgArt();if(t>140)clearInterval(timer);},120);
   hookRender();injectBgArt();
-  new MutationObserver(function(){injectBgArt();}).observe(document.documentElement,{childList:true,subtree:true});
+  var _bfBp=0; new MutationObserver(function(){var n=Date.now();if(n-_bfBp<500)return;_bfBp=n;injectBgArt();}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 `;

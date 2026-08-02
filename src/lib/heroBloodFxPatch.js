@@ -75,8 +75,8 @@ export const HERO_BLOOD_FX_PATCH = `
 
   var t=0, timer=setInterval(function(){t++;update();if(t>100)clearInterval(timer);},150);
   update();
-  new MutationObserver(update).observe(document.documentElement,{childList:true,subtree:true});
-  setInterval(update, 800);
+  var _bfBf=0; new MutationObserver(function(){var n=Date.now();if(n-_bfBf<500)return;_bfBf=n;update();}).observe(document.documentElement,{childList:true,subtree:true});
+  setInterval(update, 1500);
 })();
 </script>
 `;

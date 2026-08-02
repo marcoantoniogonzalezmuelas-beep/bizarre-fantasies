@@ -212,8 +212,8 @@ export const STATUS_AURA_PATCH = `
 
   var t=0,timer=setInterval(function(){t++;hookRender();installAbilities();installTurns();decorate();if(t>80)clearInterval(timer);},150);
   hookRender();installAbilities();installTurns();decorate();
-  new MutationObserver(function(){decorate();}).observe(document.documentElement,{childList:true,subtree:true});
-  setInterval(decorate,700);
+  var _bfAu=0; new MutationObserver(function(){var n=Date.now();if(n-_bfAu<500)return;_bfAu=n;decorate();}).observe(document.documentElement,{childList:true,subtree:true});
+  setInterval(decorate,1500);
 })();
 </script>
 `;

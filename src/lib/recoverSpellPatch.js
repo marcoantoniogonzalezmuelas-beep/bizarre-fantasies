@@ -95,8 +95,17 @@ export const RECOVER_SPELL_PATCH = `
       if (RECOVER_INFO.mana != null) sp.mana = RECOVER_INFO.mana;
       if (RECOVER_INFO.cost != null) sp.cost = RECOVER_INFO.cost;
     }
-    // Arte: se aplica directamente al DOM del chip (no arrays nativos del juego).
-    if (RECOVER_ART) applyArtToChips();
+    // Registra el arte en TODAS las vías nativas del juego para que
+    // injectHandArt() lo encuentre y renderice la carta completa (icono de
+    // juego, orbe de maná, etc.) igual que las demás cartas de equipo.
+    if (RECOVER_ART && RECOVER_NUM && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(RECOVER_NUM)] = RECOVER_ART; } catch (e) {} }
+    if (RECOVER_ART && spIdx >= 0 && typeof SPELL_ART !== 'undefined') { try { SPELL_ART[spIdx] = RECOVER_ART; } catch (e) {} }
+    if (sp.id && typeof CARD_NO !== 'undefined' && RECOVER_NUM) { try { CARD_NO[sp.id] = String(RECOVER_NUM).padStart(3, '0'); } catch (e) {} }
+    try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
+    if (RECOVER_ART) {
+      if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
+      applyArtToChips();
+    }
   }
 
   // Aplica el arte directamente a los chips de la mano (fallback si el juego no
@@ -202,14 +211,19 @@ export const RECOVER_SPELL_PATCH = `
     };
   }
 
-  function hook(){ hookCast(); hookFlush(); }
+  function hookRender(){
+    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfRecR)return;
+    var orig=window.renderBattle;
+    window.renderBattle=function(){var r=orig.apply(this,arguments);setTimeout(function(){if(RECOVER_ART&&typeof window.injectHandArt==='function'){try{window.injectHandArt();}catch(e){}}applyArtToChips();},30);return r;};
+    window.renderBattle.__bfRecR=1;
+  }
+  function hook(){ hookCast(); hookFlush(); hookRender(); }
   hook();
   var iv=setInterval(function(){ injectSpell(); hook(); },300);
   setTimeout(function(){ if (H.cast && H.flush) clearInterval(iv); }, 12000);
-  // Sincroniza el arte del hechizo periódicamente y con un MutationObserver
-  // para re-aplicarlo en cuanto el juego re-renderiza la mano.
-  setInterval(syncRecoverArt, 500);
-  new MutationObserver(function(){ if (RECOVER_ART) applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(syncRecoverArt, 1500);
+  var _bfRt=0;
+  new MutationObserver(function(){ var n=Date.now(); if(n-_bfRt<500)return; _bfRt=n; if(RECOVER_ART) applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 `;
