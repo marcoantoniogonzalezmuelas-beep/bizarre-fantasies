@@ -69,7 +69,7 @@ export default function BattleClash({ left, right, accent = '#ff7a18', swap = fa
         >
           <motion.img
             src={leftSrc} alt="" draggable={false}
-            className="h-full w-auto max-w-none object-contain select-none"
+            className="h-full w-auto max-w-none object-contain select-none" style={{ mixBlendMode: 'screen' }}
             initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
           />
         </div>
@@ -79,7 +79,7 @@ export default function BattleClash({ left, right, accent = '#ff7a18', swap = fa
         >
           <motion.img
             src={rightSrc} alt="" draggable={false}
-            className="h-full w-auto max-w-none object-contain select-none"
+            className="h-full w-auto max-w-none object-contain select-none" style={{ mixBlendMode: 'screen' }}
             initial={M.R.initial} animate={M.R.animate} transition={M.R.transition}
           />
         </div>
