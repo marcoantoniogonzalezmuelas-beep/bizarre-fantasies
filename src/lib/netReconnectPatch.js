@@ -137,6 +137,20 @@ export const NET_RECONNECT_PATCH = `
       if(msg.t==='reject'){giveUp(msg.reason||'Conexión rechazada.');return;}
       if(msg.t==='bye'){rivalQuit();return;}
       if(msg.t==='snap'){resumed();applySnapshot(msg);return;}
+      if(msg.t==='bfFullSync'){
+        // Snapshot completo enviado por el host al reanudar: restaura TODOS los
+        // campos de G y B para que el cliente siga en el mismo estado exacto.
+        resumed();
+        try{
+          if(msg.G){Object.keys(msg.G).forEach(function(k){if(msg.G[k]!==undefined)G[k]=msg.G[k];});}
+          if(msg.B){B={round:msg.B.round,qi:msg.B.qi,queue:msg.B.queue||[],over:!!msg.B.over,current:msg.B.current||null,log:msg.B.log||[],wd:null,seq:msg.B.seq||0,pending:null};}
+          var s=currentScreen();
+          if(s==='s-recruit'){try{renderRecruit(NET.mySide);}catch(e){}}
+          else if(s==='s-equip'){try{renderEquip(NET.mySide);}catch(e){}}
+          else if(s==='s-battle'){try{renderBattle();}catch(e){}}
+        }catch(e){}
+        return;
+      }
       if(msg.t==='end'){G._gameOver=true;hideOverlay();clearResume();showResult(msg.pWin===(NET.mySide==='p'));return;}
       if(msg.t==='welcome'){resumed();return;}
     });
@@ -289,6 +303,19 @@ export const NET_RECONNECT_PATCH = `
           resumed();
           if(typeof pushLog==='function')pushLog('li','🔌 '+(msg.name||'El rival')+' se ha reconectado a la partida.');
           setTimeout(function(){try{netSync(currentScreen());}catch(e){}},300);
+          // Snapshot completo: envía TODOS los campos de G y B al cliente para
+          // que reanude en el mismo estado exacto (netSync nativo puede no
+          // enviar todo). Si es batalla, relanza el turno en curso.
+          setTimeout(function(){
+            try{
+              var GF=['names','coins','equipReserve','equipCoins','bfEquipXfer','team','spellbook','items','bonus','eqReady','pendDebt','pools','curType','aIndex','cands','epicCands','bids','bidsIn','eqShop','eqSide','phaseResult','phaseNeeds','subRound'];
+              var snap={t:'bfFullSync',G:{}};
+              GF.forEach(function(k){if(typeof G!=='undefined'&&G[k]!==undefined)snap.G[k]=G[k];});
+              if(typeof B!=='undefined'&&B)snap.B={round:B.round,qi:B.qi,queue:B.queue,over:B.over,current:B.current,log:(B.log||[]).slice(-40),seq:B.seq};
+              NET.conn.send(snap);
+            }catch(e){}
+            if(currentScreen()==='s-battle'&&typeof B!=='undefined'&&B&&!B.over)setTimeout(function(){try{stepTurn();}catch(e){}},600);
+          },600);
         } else if(typeof handleIntent==='function')handleIntent(msg);
       });
       conn.on('close',function(){
