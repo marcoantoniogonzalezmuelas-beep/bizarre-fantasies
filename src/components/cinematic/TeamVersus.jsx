@@ -55,57 +55,59 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
         </div>
       </div>
 
-      {/* Emblema VS estilo Street Fighter, arriba-centro para no tapar el texto */}
-      <motion.div
-        className="absolute top-[7%] left-1/2 z-10"
-        style={{ x: '-50%' }}
-        initial={{ opacity: 0, scale: 0.2, rotate: -40 }}
-        animate={{ opacity: 1, scale: [0.2, 1.35, 1], rotate: [-40, 8, 0] }}
-        transition={{ duration: 0.9, delay: 0.55, ease: 'easeOut' }}
-      >
+      {/* VS recortado (sólo letras, fondo negro) centrado: V arriba y S abajo
+          con el texto del slide entre ambas, sin solaparse. Estilo pincel
+          degradado amarillo→naranja→rojo→negro con contorno blanco. */}
+      {[
+        { ch: 'V', rot: -8, y0: '-120%', cls: 'top-[10%]' },
+        { ch: 'S', rot: 6, y0: '120%', cls: 'bottom-[10%]' },
+      ].map((it, k) => (
         <motion.div
-          className="relative"
-          animate={{ rotate: [0, -1.5, 0] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+          key={it.ch}
+          className={'absolute left-1/2 z-10 ' + it.cls}
+          style={{ x: '-50%' }}
+          initial={{ opacity: 0, y: it.y0, scale: 0.3, rotate: it.rot * 3 }}
+          animate={{ opacity: 1, y: 0, scale: [0.3, 1.18, 1], rotate: [it.rot * 3, it.rot * 0.4, it.rot] }}
+          transition={{ duration: 0.9, delay: 0.5 + k * 0.12, ease: 'easeOut' }}
         >
-          {/* estrella/burst detrás */}
-          <div
-            className="absolute -inset-8 rounded-full blur-[2px]"
-            style={{ background: `radial-gradient(circle, ${accent}55, transparent 68%)` }}
-          />
-          {/* placas inclinadas rojo/amarillo partido en diagonal */}
-          <div
-            className="relative skew-x-[-14deg] border-y-2 border-[#ffe9a8] overflow-hidden"
-            style={{
-              background: 'linear-gradient(90deg, #d61313 49%, #ffd24a 51%)',
-              boxShadow: '0 10px 30px rgba(0,0,0,.7), 0 0 18px rgba(255,210,74,.4)',
-              clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)',
-            }}
+          <motion.div
+            className="relative"
+            animate={{ rotate: [it.rot, it.rot * 1.3, it.rot], y: [0, k === 0 ? -6 : 6, 0] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <div className="px-9 py-1.5 skew-x-[14deg] flex items-center justify-center">
-              <span
-                className="font-heading font-black italic text-white text-5xl leading-none tracking-tight"
-                style={{ textShadow: '0 0 8px #000, 3px 3px 0 #000, -2px -2px 0 #b30303' }}
-              >
-                VS
-              </span>
-            </div>
-          </div>
-          {/* destellos laterales */}
-          <motion.div
-            className="absolute -right-3 top-1/2 -translate-y-1/2 h-16 w-2 bg-[#ffe9a8] rounded-full origin-center"
-            style={{ boxShadow: '0 0 10px #ffe9a8' }}
-            animate={{ scaleY: [0.6, 1.1, 0.6], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute -left-3 top-1/2 -translate-y-1/2 h-16 w-2 bg-[#ff8a85] rounded-full origin-center"
-            style={{ boxShadow: '0 0 10px #ff8a85' }}
-            animate={{ scaleY: [0.6, 1.1, 0.6], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-          />
+            <span
+              className="block font-heading select-none"
+              style={{
+                fontStyle: 'italic',
+                fontWeight: 900,
+                fontSize: 'clamp(96px, 19vw, 230px)',
+                lineHeight: 0.82,
+                background: 'linear-gradient(180deg, #ffe23a 0%, #ffae00 18%, #ff5a00 38%, #e60b0b 58%, #8b0000 80%, #1a0000 100%)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                color: 'transparent',
+                WebkitTextStroke: 'clamp(2px, 0.55vw, 5px) #ffffff',
+                filter: 'drop-shadow(6px 6px 3px rgba(130,130,130,.95)) drop-shadow(0 0 2px #000)',
+                textShadow: '0 0 14px rgba(255,90,0,.35)',
+              }}
+            >
+              {it.ch}
+            </span>
+            {/* goteo de tinta bajo cada letra */}
+            <span
+              className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
+              style={{
+                width: 'clamp(6px, 0.9vw, 9px)',
+                height: 'clamp(10px, 1.6vw, 18px)',
+                background: 'linear-gradient(180deg, #e60b0b, #1a0000)',
+                [k === 0 ? 'bottom' : 'top']: '-2px',
+                filter: 'drop-shadow(0 2px 1px rgba(80,80,80,.8))',
+              }}
+            />
+          </motion.div>
         </motion.div>
-      </motion.div>
+      ))}
 
       {/* brasas ascendentes */}
       {embers.map((e, k) => (
