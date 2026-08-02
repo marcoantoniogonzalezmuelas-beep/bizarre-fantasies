@@ -95,15 +95,8 @@ export const RECOVER_SPELL_PATCH = `
       if (RECOVER_INFO.mana != null) sp.mana = RECOVER_INFO.mana;
       if (RECOVER_INFO.cost != null) sp.cost = RECOVER_INFO.cost;
     }
-    if (RECOVER_ART && RECOVER_NUM && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(RECOVER_NUM)] = RECOVER_ART; } catch (e) {} }
-    if (RECOVER_ART && spIdx >= 0 && typeof SPELL_ART !== 'undefined') { try { SPELL_ART[spIdx] = RECOVER_ART; } catch (e) {} }
-    if (sp.id && typeof CARD_NO !== 'undefined' && RECOVER_NUM) { try { CARD_NO[sp.id] = String(RECOVER_NUM).padStart(3, '0'); } catch (e) {} }
-    // Invalida la caché de arte de mano del juego: si se construyó antes de
-    // que registráramos el arte del hechizo inyectado, devolvería vacío para
-    // siempre. Forzando null, el juego la reconstruye y ya encuentra NUM_ART[117].
-    try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
+    // Arte: se aplica directamente al DOM del chip (no arrays nativos del juego).
     if (RECOVER_ART) applyArtToChips();
-    if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
   }
 
   // Aplica el arte directamente a los chips de la mano (fallback si el juego no
@@ -114,26 +107,21 @@ export const RECOVER_SPELL_PATCH = `
   // puede usar clases distintas en la mano vs la tienda.
   function applyArtToChips() {
     if (!RECOVER_ART) return;
-    // Revisa ambas manos: en online el jugador local puede estar en cualquier lado.
     ['hand_p','hand_o'].forEach(function(hid){
-    var hand = document.getElementById(hid); if (!hand) return;
-    hand.querySelectorAll('.chip').forEach(function (chip) {
-      // Busca "Reanimación Arcana" en el texto de TODO el chip.
-      var txt = (chip.textContent || '').trim();
-      var title = chip.title || '';
-      if (txt.indexOf('Reanimación Arcana') < 0 && title.indexOf('Reanimación Arcana') < 0) return;
-      chip.classList.add('bf-chip-card');
-      // El arte puede ir en una capa propia o directamente en el chip.
-      var artLayer = chip.querySelector('.bf-chip-art-layer');
-      if (!artLayer) { artLayer = document.createElement('div'); artLayer.className = 'bf-chip-art-layer'; artLayer.style.cssText = 'position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0'; chip.insertBefore(artLayer, chip.firstChild); }
-      var cur = artLayer.style.backgroundImage || '';
-      if (cur.indexOf(RECOVER_ART) < 0) {
-        artLayer.style.backgroundImage = 'url("' + RECOVER_ART + '")';
-        artLayer.style.backgroundSize = 'cover';
-        artLayer.style.backgroundPosition = 'center';
-      }
+      var hand = document.getElementById(hid); if (!hand) return;
+      hand.querySelectorAll('.chip').forEach(function (chip) {
+        var txt = (chip.textContent || '').trim();
+        var title = chip.title || '';
+        if (txt.indexOf('Reanimación Arcana') < 0 && title.indexOf('Reanimación Arcana') < 0) return;
+        chip.classList.add('bf-chip-card');
+        // Aplica el arte directamente sobre el chip con !important (inline
+        // style !important pisa cualquier CSS del juego). Sin arrays nativos.
+        chip.style.setProperty('background-image', 'url("' + RECOVER_ART + '")', 'important');
+        chip.style.setProperty('background-size', 'cover', 'important');
+        chip.style.setProperty('background-position', 'center', 'important');
+        chip.style.setProperty('background-color', '#120a1e', 'important');
+      });
     });
-    }); // fin forEach hid
   }
 
   // --- Hook castSpell: maneja 'bf_recover' (recuperar objeto del descarte) ---
@@ -218,9 +206,10 @@ export const RECOVER_SPELL_PATCH = `
   hook();
   var iv=setInterval(function(){ injectSpell(); hook(); },300);
   setTimeout(function(){ if (H.cast && H.flush) clearInterval(iv); }, 12000);
-  // Sigue sincronizando el arte del hechizo periódicamente (cubre el caso en
-  // que la mano se re-renderiza después de que llegaron los datos de la BD).
+  // Sincroniza el arte del hechizo periódicamente y con un MutationObserver
+  // para re-aplicarlo en cuanto el juego re-renderiza la mano.
   setInterval(syncRecoverArt, 500);
+  new MutationObserver(function(){ if (RECOVER_ART) applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 `;

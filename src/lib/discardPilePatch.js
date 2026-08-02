@@ -14,19 +14,18 @@ export const DISCARD_PILE_PATCH = `
 
   var CARD_BACK = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png';
 
-  // La pila de descartes es una carta más boca abajo (mismo reverso que la
-  // mano del rival) con un borde de color distinto (naranja/ámbar) para
-  // distinguirla de las cartas del jugador (dorado) y del rival (violeta).
-  // Un pequeño badge muestra el nº de cartas descartadas.
+  // La pila de descartes es una carta boca abajo igual que las del rival:
+  // mismo reverso, mismo borde violeta, mismo shadow. Selector de alta
+  // especificidad #s-battle #hand_p .bf-discard-card + !important para
+  // pisar el CSS del juego. El badge y la etiqueta van fuera de la carta
+  // (siblings, no children) para que no los oculte el display:none.
   var css = ''+
-  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 0 10px;vertical-align:top;cursor:help;user-select:none;position:relative;border:none!important;outline:none!important;box-shadow:none!important}'+
-  '.bf-discard-stack{position:relative;border-radius:10px;overflow:hidden;background-image:url("'+CARD_BACK+'")!important;background-size:cover!important;background-position:center!important;background-color:#120a1e!important;border:1.5px solid rgba(255,140,50,.7)!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)!important;pointer-events:none;outline:none!important}'+
-  '#hand_p .bf-discard-pile,#hand_o .bf-discard-pile{border:none!important;outline:none!important;box-shadow:none!important;background:transparent!important}'+
-  '#hand_p .bf-discard-stack,#hand_o .bf-discard-stack{border:1.5px solid rgba(255,140,50,.7)!important;outline:none!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)!important;background-color:#120a1e!important}'+
-  '#hand_p .bf-discard-pile *,#hand_o .bf-discard-pile *{border:none!important;outline:none!important}'+
+  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 0 10px;vertical-align:top;cursor:help;user-select:none;position:relative}'+
+  '#s-battle #hand_p .bf-discard-card,#s-battle #hand_o .bf-discard-card{position:relative;border-radius:10px;overflow:hidden;background-image:url("'+CARD_BACK+'")!important;background-size:cover!important;background-position:center!important;background-color:#120a1e!important;border:1.5px solid rgba(192,107,255,.65)!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(160,80,255,.28)!important;pointer-events:none;outline:none!important;cursor:default!important}'+
+  '#s-battle #hand_p .bf-discard-card > *,#s-battle #hand_o .bf-discard-card > *{display:none!important}'+
   '.bf-discard-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#ff8c32,#d4601a);border:1.5px solid #1a0e04;color:#fff;font-family:Rubik,sans-serif;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,.6),0 0 8px rgba(255,140,50,.5);z-index:5;pointer-events:none}'+
-  '.bf-discard-lbl{font-family:Cinzel,serif;font-size:8px;font-weight:900;color:rgba(255,140,50,.95);letter-spacing:.6px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
-  '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-16px) rotate(10deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-stack.bf-just{animation:bfDiscardIn .45s ease-out}';
+  '.bf-discard-lbl{font-family:Cinzel,serif;font-size:8px;font-weight:900;color:rgba(192,107,255,.95);letter-spacing:.6px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
+  '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-16px) rotate(10deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-card.bf-just{animation:bfDiscardIn .45s ease-out}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function mySide(){ try{ if(typeof NET!=='undefined'&&NET.role==='client'&&NET.mySide) return NET.mySide; }catch(e){} return 'p'; }
@@ -110,31 +109,12 @@ export const DISCARD_PILE_PATCH = `
     var pile=document.createElement('div'); pile.className='bf-discard-pile';
     pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
     var just=(window.__bfDiscardJust===side);
-    var html='<div class="bf-discard-stack'+(just?' bf-just':'')+'" style="width:'+cw+'px;height:'+ch+'px">';
-    if(count===0) html+='<div style="position:absolute;inset:0;opacity:.45"></div>';
-    html+='</div>';
+    var html='<div class="bf-discard-card'+(just?' bf-just':'')+'" style="width:'+cw+'px;height:'+ch+'px"></div>';
     if(count>0) html+='<div class="bf-discard-badge">'+(count>99?'99+':count)+'</div>';
     html+='<div class="bf-discard-lbl">Descartes</div>';
     pile.innerHTML=html;
     var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
-    pile.style.border='none';
-    pile.style.outline='none';
-    pile.style.boxShadow='none';
     if(ref&&ref.parentNode===hand) hand.insertBefore(pile,ref.nextSibling); else hand.appendChild(pile);
-    // Forza el estilo del stack y todos sus hijos tras insertarlo: usa
-    // setProperty('border', ...,'important') para PISAR el CSS del juego que
-    // aplica bordes blancos a los divs/chips dentro de #hand_p.
-    var stk=pile.querySelector('.bf-discard-stack');
-    if(stk){
-      stk.style.setProperty('border','1.5px solid rgba(255,140,50,.7)','important');
-      stk.style.setProperty('outline','none','important');
-      stk.style.setProperty('box-shadow','0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)','important');
-      stk.style.setProperty('background-color','#120a1e','important');
-    }
-    pile.querySelectorAll('*').forEach(function(el){
-      el.style.setProperty('border','none','important');
-      el.style.setProperty('outline','none','important');
-    });
     if(just) window.__bfDiscardJust=null;
   }
 

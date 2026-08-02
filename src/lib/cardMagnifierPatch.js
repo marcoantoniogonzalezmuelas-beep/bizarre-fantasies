@@ -29,6 +29,8 @@ export const CARD_MAGNIFIER_PATCH = `
     '.bf-magnifier .bf-mag-txt{position:absolute;left:8px;right:8px;bottom:44px;padding:5px 8px;border-radius:8px;background:rgba(8,5,14,.85);border:1px solid rgba(255,210,74,.3);color:#fff7ea;font-size:11px;font-weight:700;line-height:1.25;text-align:center;z-index:3}' +
     '.bf-magnifier .bf-mag-mana{position:absolute;top:8px;right:8px;z-index:4;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:17px;color:#eaf4ff;background:radial-gradient(circle at 34% 28%,#bfe3ff,#3a8bff 46%,#103a8a);border:2px solid #8fc4ff;box-shadow:0 3px 8px rgba(0,0,0,.55),inset 0 1px 2px rgba(255,255,255,.5);text-shadow:0 1px 2px rgba(0,0,0,.5)}' +
     '.bf-magnifier .bf-mag-mana small{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:.5px;color:#8fc4ff;text-shadow:0 1px 3px #000}' +
+    '.bf-magnifier .bf-mag-gold{position:absolute;top:8px;left:8px;z-index:4;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:1000;font-size:17px;color:#3a2600;background:radial-gradient(circle at 34% 28%,#ffe27a,#d4a017 46%,#8a5a00);border:2px solid #ffd24a;box-shadow:0 3px 8px rgba(0,0,0,.55),inset 0 1px 2px rgba(255,255,255,.5);text-shadow:0 1px 2px rgba(255,255,255,.4)}' +
+    '.bf-magnifier .bf-mag-gold small{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:.5px;color:#ffd24a;text-shadow:0 1px 3px #000}' +
     // La lupa (botón de zoom) de las cartas de la mano ya no es necesaria: el
     // magnifier muestra el texto y el coste al pasar el ratón por encima. Solo
     // se oculta en dispositivos con hover (donde el magnifier funciona).
@@ -40,7 +42,7 @@ export const CARD_MAGNIFIER_PATCH = `
     if (mag) return mag;
     mag = document.createElement('div');
     mag.className = 'bf-magnifier';
-    mag.innerHTML = '<div class="bf-mag-fill"></div><div class="bf-mag-art"></div><div class="bf-mag-txt"></div><div class="bf-mag-name"></div><div class="bf-mag-mana"><small>MANÁ</small></div>';
+    mag.innerHTML = '<div class="bf-mag-fill"></div><div class="bf-mag-art"></div><div class="bf-mag-txt"></div><div class="bf-mag-name"></div><div class="bf-mag-mana"><small>MANÁ</small></div><div class="bf-mag-gold"><small>ORO</small></div>';
     document.body.appendChild(mag);
     return mag;
   }
@@ -120,6 +122,16 @@ export const CARD_MAGNIFIER_PATCH = `
       mm.insertBefore(document.createTextNode(manaTxt), mm.firstChild);
       mm.style.display = 'flex';
     } else mm.style.display = 'none';
+    // Coste de oro (equipo/objetos): orbe dorado arriba-izquierda.
+    var goldTxt = '';
+    if (nm && __bfMagInfo[nm] && __bfMagInfo[nm].cost != null) goldTxt = String(__bfMagInfo[nm].cost);
+    if (!goldTxt && found && found.cost != null) goldTxt = String(found.cost);
+    var gd = mag.querySelector('.bf-mag-gold');
+    if (goldTxt) {
+      gd.childNodes[0] && gd.childNodes[0].nodeType === 3 && gd.removeChild(gd.childNodes[0]);
+      gd.insertBefore(document.createTextNode(goldTxt), gd.firstChild);
+      gd.style.display = 'flex';
+    } else gd.style.display = 'none';
     place(chip);
     mag.classList.add('show');
   }
