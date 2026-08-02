@@ -66,20 +66,50 @@ export const RECOVER_SPELL_PATCH = `
     return true;
   }
 
-  // Al recibir los datos de la BD (número/mana/texto/coste reales de la carta),
-  // actualiza el hechizo inyectado para que use su numeración única real.
+  // Arte y datos de la BD (número/mana/texto/coste reales de la carta).
+  // Se pide el mapa nombre → arte y nombre → info a la página padre, y se
+  // registran en NUM_ART / SPELL_ART / CARD_NO por nº de BD para que el
+  // hechizo inyectado dinámicamente se renderice igual que las cartas nativas.
+  var RECOVER_ART = '', RECOVER_NUM = 0;
   window.addEventListener('message', function (e) {
-    if (!e.data || !e.data.bfCardInfo) return;
-    var info = e.data.bfCardInfo['Reanimación Arcana']; if (!info) return;
-    if (typeof SPELLS === 'undefined' || !SPELLS) return;
-    var sp = null;
-    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; break; } }
-    if (!sp) return;
-    if (info.number != null) sp.num = info.number;
-    if (info.mana != null) sp.mana = info.mana;
-    if (info.text) sp.txt = info.text;
-    if (info.cost != null) sp.cost = info.cost;
+    if (!e.data) return;
+    if (e.data.bfArtMap && e.data.bfArtMap['Reanimación Arcana']) RECOVER_ART = e.data.bfArtMap['Reanimación Arcana'];
+    if (e.data.bfCardInfo) { var info = e.data.bfCardInfo['Reanimación Arcana']; if (info && info.number != null) RECOVER_NUM = info.number; }
+    if (e.data.bfArtMap || e.data.bfCardInfo) setTimeout(syncRecoverArt, 0);
   });
+  try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
+
+  // Sincroniza el arte del hechizo con la BD: registra el arte por nº de carta
+  // único en NUM_ART, en SPELL_ART por índice y en CARD_NO por id, para que las
+  // tres vías de lookup del juego (injectEquipArt, bfConfirm, handArtByName)
+  // encuentren el arte igual que con las cartas nativas.
+  function syncRecoverArt() {
+    if (typeof SPELLS === 'undefined' || !SPELLS) return;
+    var sp = null, spIdx = -1;
+    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; spIdx = i; break; } }
+    if (!sp) return;
+    if (RECOVER_NUM) sp.num = RECOVER_NUM;
+    if (RECOVER_ART && RECOVER_NUM && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(RECOVER_NUM)] = RECOVER_ART; } catch (e) {} }
+    if (RECOVER_ART && spIdx >= 0 && typeof SPELL_ART !== 'undefined') { try { SPELL_ART[spIdx] = RECOVER_ART; } catch (e) {} }
+    if (sp.id && typeof CARD_NO !== 'undefined' && RECOVER_NUM) { try { CARD_NO[sp.id] = String(RECOVER_NUM).padStart(3, '0'); } catch (e) {} }
+    if (RECOVER_ART) applyArtToChips();
+    if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
+  }
+
+  // Aplica el arte directamente a los chips de la mano (fallback si el juego no
+  // re-renderiza tras registrar el arte).
+  function applyArtToChips() {
+    document.querySelectorAll('.chip').forEach(function (chip) {
+      var nameEl = chip.querySelector('.bf-chip-name');
+      var name = nameEl ? nameEl.textContent.trim() : (chip.title || '');
+      if (name !== 'Reanimación Arcana') return;
+      chip.classList.add('bf-chip-card');
+      var artLayer = chip.querySelector('.bf-chip-art-layer');
+      if (!artLayer) { artLayer = document.createElement('div'); artLayer.className = 'bf-chip-art-layer'; chip.insertBefore(artLayer, chip.firstChild); }
+      var cur = artLayer.style.backgroundImage || '';
+      if (cur.indexOf(RECOVER_ART) < 0) { artLayer.style.backgroundImage = 'url("' + RECOVER_ART + '")'; artLayer.style.backgroundSize = 'cover'; artLayer.style.backgroundPosition = 'center'; }
+    });
+  }
 
   // --- Hook castSpell: maneja 'bf_recover' (recuperar objeto del descarte) ---
   var H={};
@@ -149,6 +179,9 @@ export const RECOVER_SPELL_PATCH = `
   hook();
   var iv=setInterval(function(){ injectSpell(); hook(); },300);
   setTimeout(function(){ if (H.cast && H.flush) clearInterval(iv); }, 12000);
+  // Sigue sincronizando el arte del hechizo periódicamente (cubre el caso en
+  // que la mano se re-renderiza después de que llegaron los datos de la BD).
+  setInterval(syncRecoverArt, 500);
 })();
 </script>
 `;
