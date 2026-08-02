@@ -29,6 +29,30 @@ export const DEFAULT_MOTION = {
 };
 
 export const MOTIONS = [
+  // CHILANA / tiro libre / bicicleta (fútbol): el héroe se inclina ~200°
+  // simulando una chilena (bicycle kick): salta, se invierte boca abajo al
+  // impacto, mantiene el remate y aterriza. Balón que sale disparado + césped
+  // + líneas de movimiento. Va PRIMERO para que "Tiro Libre" encaje aquí antes
+  // que con el keyword "tiro" del motion de disparo.
+  {
+    id: 'bicycle',
+    keywords: ['chilana', 'chilena', 'bicycle', 'bicicleta', 'tijera', 'scissor', 'tiro libre', 'free kick', 'freekick', 'futbolista', 'fútbol', 'futbol', 'football', 'soccer', 'chutar', 'chut', 'volea', 'volley', 'penal', 'penalty', 'penalti', 'rematar', 'remate'],
+    anim: 'bfAaBicycle',
+    keyframes:
+      '@keyframes bfAaBicycle{0%{transform:scale(.2) translateY(22vh) rotate(0);opacity:0}16%{opacity:1;transform:scale(1.1) translateY(0) rotate(0)}30%{transform:scale(1.15) translateY(-10vh) rotate(-95deg)}45%{transform:scale(1.2) translateY(-16vh) rotate(-200deg)}55%{transform:scale(1.18) translateY(-14vh) rotate(-200deg)}68%{transform:scale(1.1) translateY(-4vh) rotate(-40deg)}82%{transform:scale(1.1) translateY(-2vh) rotate(0)}100%{transform:scale(1.2) translateY(-6vh) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-sball{position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#222 70%);box-shadow:0 0 16px rgba(255,255,255,.8),0 0 28px var(--aa-glow,#fff);opacity:0;animation:bfAaSBall .9s ease-out .35s forwards}' +
+      '@keyframes bfAaSBall{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}15%{opacity:1;transform:translate(0,0) scale(1) rotate(0)}100%{opacity:0;transform:translate(60vw,-18vh) scale(.7) rotate(720deg)}}' +
+      '.bf-aa-grass{position:absolute;width:9px;height:9px;border-radius:50% 50% 0 0;background:linear-gradient(180deg,#7ec846,#3f7a1f);opacity:0;animation:bfAaGrass 1.3s ease-out forwards;filter:drop-shadow(0 0 6px rgba(80,160,40,.6))}' +
+      '@keyframes bfAaGrass{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(0)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,40px),var(--dy,-30px)) scale(1.4) rotate(var(--r,180deg))}}' +
+      '.bf-aa-sstreak{position:absolute;top:50%;left:50%;width:46vmin;height:6px;margin:-3px 0 0 -23vmin;background:linear-gradient(90deg,transparent,#fff 45%,#fff 55%,transparent);transform-origin:center;filter:drop-shadow(0 0 12px var(--aa-color,#fff));opacity:0;animation:bfAaSStreak .6s ease-out .4s forwards}' +
+      '@keyframes bfAaSStreak{0%{opacity:0;transform:rotate(-18deg) scaleX(.2)}40%{opacity:.9;transform:rotate(-18deg) scaleX(1)}100%{opacity:0;transform:rotate(-18deg) scaleX(1.4)}}' +
+      '.bf-aa-pitch{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 75%,rgba(80,160,40,.18),transparent 60%);opacity:0;animation:bfAaPitch 2.6s ease-out forwards}' +
+      '@keyframes bfAaPitch{0%{opacity:0}30%{opacity:.5}100%{opacity:0}}',
+    fxTag:
+      '<div class="bf-aa-pitch"></div><div class="bf-aa-sstreak"></div><div class="bf-aa-sball"></div>' +
+      '<span class="bf-aa-grass" style="left:40%;top:62%;--dx:-40px;--dy:-25px;--r:-160deg;animation-delay:.2s"></span><span class="bf-aa-grass" style="left:52%;top:64%;--dx:55px;--dy:-20px;--r:180deg;animation-delay:.28s"></span><span class="bf-aa-grass" style="left:46%;top:60%;--dx:-60px;--dy:-35px;--r:-220deg;animation-delay:.36s"></span><span class="bf-aa-grass" style="left:56%;top:66%;--dx:70px;--dy:-30px;--r:200deg;animation-delay:.44s"></span><span class="bf-aa-grass" style="left:48%;top:68%;--dx:-30px;--dy:-40px;--r:-180deg;animation-delay:.5s"></span><span class="bf-aa-grass" style="left:54%;top:62%;--dx:45px;--dy:-25px;--r:240deg;animation-delay:.58s"></span>',
+  },
   // Espada / arma blanca: tajo diagonal + estela + lluvia de chispas + destello.
   {
     id: 'slash',

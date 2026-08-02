@@ -65,7 +65,7 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
   const glow = hexToRgba(color, 0.38) || 'rgba(255,210,74,0.38)';
   const flash = hexToRgba(color, 0.7) || 'rgba(255,255,255,0.7)';
   const cutUrl = useCutout(artUrl);
-  const motion = pickMotion(desc);
+  const motion = pickMotion(desc || abilityName);
 
   useEffect(() => {
     if (!styleRef.current) {

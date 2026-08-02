@@ -141,7 +141,8 @@ export const ABILITY_ANIM_PATCH = `
     ov.style.setProperty('--aa-glow',hexToRgba(cc,0.38)||'rgba(255,210,74,0.38)');
     ov.style.setProperty('--aa-flash',hexToRgba(cc,0.7)||'rgba(255,255,255,0.7)');
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
-    var motion=pickMotionDesc(isElite?(entry.eliteDesc||entry.desc):entry.desc);
+    var descSrc=isElite?(entry.eliteDesc||entry.desc):entry.desc;
+    var motion=pickMotionDesc(descSrc||ability);
     var html='<div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
     // Sin anillos de halo del color de clan: parpadeaban al expandirse.
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
