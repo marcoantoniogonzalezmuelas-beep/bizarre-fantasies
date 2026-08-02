@@ -62,7 +62,7 @@ export const RECOVER_SPELL_PATCH = `
     if (SPELLS.some(function(s){return s&&s.id==='sp_recover';})) return true;
     // El nº/maná/texto los aporta la BD (Oráculo) via bfCardInfo; aquí sólo
     // se inyecta el hechizo con valores por defecto y syncRecover los actualiza.
-    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:0, txt:'Recupera un objeto aleatorio de tu mazo de usados y lo devuelve a tu mano.' });
+    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:0, txt:'Recupera una carta aleatoria de tu pila de descartes y la devuelve a tu mano.' });
     return true;
   }
 
@@ -70,11 +70,11 @@ export const RECOVER_SPELL_PATCH = `
   // Se pide el mapa nombre → arte y nombre → info a la página padre, y se
   // registran en NUM_ART / SPELL_ART / CARD_NO por nº de BD para que el
   // hechizo inyectado dinámicamente se renderice igual que las cartas nativas.
-  var RECOVER_ART = '', RECOVER_NUM = 0;
+  var RECOVER_ART = '', RECOVER_NUM = 0, RECOVER_INFO = null;
   window.addEventListener('message', function (e) {
     if (!e.data) return;
     if (e.data.bfArtMap && e.data.bfArtMap['Reanimación Arcana']) RECOVER_ART = e.data.bfArtMap['Reanimación Arcana'];
-    if (e.data.bfCardInfo) { var info = e.data.bfCardInfo['Reanimación Arcana']; if (info && info.number != null) RECOVER_NUM = info.number; }
+    if (e.data.bfCardInfo) { var info = e.data.bfCardInfo['Reanimación Arcana']; if (info) { RECOVER_NUM = info.number || 0; RECOVER_INFO = info; } }
     if (e.data.bfArtMap || e.data.bfCardInfo) setTimeout(syncRecoverArt, 0);
   });
   try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
@@ -89,6 +89,12 @@ export const RECOVER_SPELL_PATCH = `
     for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; spIdx = i; break; } }
     if (!sp) return;
     if (RECOVER_NUM) sp.num = RECOVER_NUM;
+    // Propaga el texto/maná/coste reales de la BD al hechizo inyectado.
+    if (RECOVER_INFO) {
+      if (RECOVER_INFO.text) sp.txt = RECOVER_INFO.text;
+      if (RECOVER_INFO.mana != null) sp.mana = RECOVER_INFO.mana;
+      if (RECOVER_INFO.cost != null) sp.cost = RECOVER_INFO.cost;
+    }
     if (RECOVER_ART && RECOVER_NUM && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(RECOVER_NUM)] = RECOVER_ART; } catch (e) {} }
     if (RECOVER_ART && spIdx >= 0 && typeof SPELL_ART !== 'undefined') { try { SPELL_ART[spIdx] = RECOVER_ART; } catch (e) {} }
     if (sp.id && typeof CARD_NO !== 'undefined' && RECOVER_NUM) { try { CARD_NO[sp.id] = String(RECOVER_NUM).padStart(3, '0'); } catch (e) {} }
