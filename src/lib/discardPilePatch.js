@@ -16,8 +16,8 @@ export const DISCARD_PILE_PATCH = `
 
   var css = ''+
   '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:4px 0 0 12px;vertical-align:top;cursor:help;user-select:none}'+
-  '.bf-discard-stack{position:relative;width:46px;height:64px}'+
-  '.bf-discard-card{position:absolute;width:46px;height:64px;border-radius:7px;border:1.5px solid #4a3210;background:url("'+CARD_BACK+'") center/cover #120a1e;box-shadow:0 2px 7px rgba(0,0,0,.6)}'+
+  '.bf-discard-stack{position:relative}'+
+  '.bf-discard-card{position:absolute;border-radius:7px;border:1.5px solid #4a3210;background:url("'+CARD_BACK+'") center/cover #120a1e;box-shadow:0 2px 7px rgba(0,0,0,.6)}'+
   '.bf-discard-count{position:absolute;right:-8px;bottom:-8px;min-width:21px;height:21px;border-radius:11px;background:#FFD24A;color:#3a2600;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 5px rgba(0,0,0,.6);border:1px solid #7c5410}'+
   '.bf-discard-lbl{font-size:9px;font-weight:800;color:#a78be0;letter-spacing:.5px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
   '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-16px) rotate(10deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-stack.bf-just{animation:bfDiscardIn .45s ease-out}';
@@ -90,13 +90,18 @@ export const DISCARD_PILE_PATCH = `
     if(count===lastCount[side]) { var ex=hand.querySelector('.bf-discard-pile'); if(ex) return; }
     lastCount[side]=count;
     var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
+    // Medimos el tamaño real de las cartas de la mano (.chip) para que la
+    // pila de descartes tenga exactamente el mismo tamaño que las cartas.
+    var cw=46,ch=64;
+    var refChip=hand.querySelector('.chip');
+    if(refChip){ var r=refChip.getBoundingClientRect(); if(r.width) cw=Math.round(r.width); if(r.height) ch=Math.round(r.height); }
     var pile=document.createElement('div'); pile.className='bf-discard-pile';
     pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
     var just=(window.__bfDiscardJust===side);
-    var html='<div class="bf-discard-stack'+(just?' bf-just':'')+'">';
+    var html='<div class="bf-discard-stack'+(just?' bf-just':'')+'" style="width:'+cw+'px;height:'+ch+'px">';
     var shown=Math.min(count,3);
-    for(var i=0;i<shown;i++) html+='<div class="bf-discard-card" style="top:'+(i*2)+'px;left:'+(i*2)+'px"></div>';
-    if(count===0) html+='<div class="bf-discard-card" style="top:0;left:0;opacity:.45"></div>';
+    for(var i=0;i<shown;i++) html+='<div class="bf-discard-card" style="width:'+cw+'px;height:'+ch+'px;top:'+(i*3)+'px;left:'+(i*3)+'px"></div>';
+    if(count===0) html+='<div class="bf-discard-card" style="width:'+cw+'px;height:'+ch+'px;top:0;left:0;opacity:.45"></div>';
     html+='<span class="bf-discard-count">'+count+'</span></div><div class="bf-discard-lbl">Descartes</div>';
     pile.innerHTML=html;
     var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
