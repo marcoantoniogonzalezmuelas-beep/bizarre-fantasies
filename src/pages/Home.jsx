@@ -413,7 +413,17 @@ export default function Home() {
             if (isItem && c.art_url) map[c.name] = c.art_url;
             // Texto del Oráculo + coste de maná, para la carta revelada al jugarse.
             const text = en.description || en.ability_text || c.description || c.ability_text || '';
-            if (isItem && (text || c.mana != null)) info[c.name] = { text, mana: c.mana != null ? c.mana : null, category: c.category };
+            if (isItem) {
+              info[c.name] = {
+                text,
+                mana: c.mana != null ? c.mana : null,
+                category: c.category,
+                number: c.number,
+                cost: c.cost,
+                cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, power: c.power,
+                ability: c.ability_name,
+              };
+            }
             if (isEn && c.en) {
               ['title', 'ability_name', 'ability_text', 'elite_ability_name', 'elite_ability_text', 'description'].forEach(f => {
                 if (c[f] && c.en[f] && c[f] !== c.en[f]) dict[c[f]] = c.en[f];
