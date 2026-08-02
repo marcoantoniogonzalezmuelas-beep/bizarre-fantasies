@@ -620,7 +620,7 @@ export default function Home() {
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
-      <ChatOverlay />
+      <ChatOverlay mobScale={IS_MOBILE ? mobScale : 1} pinchZ={pinch.z} />
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { MessageCircle, X, Send, Smile } from 'lucide-react';
 // con mensajes en tiempo real (suscripción a la entidad ChatMessage por sala)
 // y un selector de emojis de héroes generados por IA.
 
-export default function ChatOverlay() {
+export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   const [status, setStatus] = useState(null);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -116,13 +116,20 @@ export default function ChatOverlay() {
     <>
       {/* Icono plegable (borde derecho, no se solapa con retratos arriba ni mano abajo) */}
       {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Abrir chat"
-          className="fixed z-40 flex items-center justify-center rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+        <div
+          className="fixed z-40"
           style={{
             right: '6px',
             top: 'calc(50% - 22px)',
+            transform: `scale(${mobScale * pinchZ})`,
+            transformOrigin: 'top right',
+          }}
+        >
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Abrir chat"
+          className="flex items-center justify-center rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+          style={{
             width: '44px',
             height: '44px',
             background: 'rgba(14, 10, 22, 0.85)',
@@ -140,6 +147,7 @@ export default function ChatOverlay() {
             </span>
           )}
         </button>
+        </div>
       )}
 
       {/* Panel desplegado */}

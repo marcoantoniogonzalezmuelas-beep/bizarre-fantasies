@@ -13,6 +13,8 @@ export const MOBILE_PINCH_PATCH = `
 
   var z = 1, tx = 0, ty = 0;   // escala y desplazamiento actuales
   var pinch = null;            // estado del gesto en curso
+  var lastZ = 1, lastTx = 0, lastTy = 0;  // evita postMessage redundantes
+  var rafId = null;
 
   function apply(){
     var b = document.body;
@@ -20,7 +22,20 @@ export const MOBILE_PINCH_PATCH = `
     b.style.transform = (z === 1 && !tx && !ty) ? '' : 'translate(' + tx + 'px,' + ty + 'px) scale(' + z + ')';
     // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
     // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
-    try { window.parent.postMessage({ bfPinch: { z: z, tx: tx, ty: ty } }, '*'); } catch (e) {}
+    // Solo se envía si los valores cambiaron (evita postMessage redundantes).
+    if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
+      lastZ = z; lastTx = tx; lastTy = ty;
+      try { window.parent.postMessage({ bfPinch: { z: z, tx: tx, ty: ty } }, '*'); } catch (e) {}
+    }
+  }
+  // Throttle con rAF: coalesciona varios touchmove en un solo apply por frame.
+  function scheduleApply(){
+    if (rafId) return;
+    rafId = requestAnimationFrame(function(){ rafId = null; apply(); });
+  }
+  function applyNow(){
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    apply();
   }
 
   function clampT(){
@@ -53,7 +68,7 @@ export const MOBILE_PINCH_PATCH = `
     tx = c.x - px * nz;
     ty = c.y - py * nz;
     clampT();
-    apply();
+    scheduleApply();
   }
 
   function onEnd(e){
@@ -62,7 +77,7 @@ export const MOBILE_PINCH_PATCH = `
       pinch = null;
       var b = document.body;
       b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
-      if (z < 1.05) { z = 1; tx = 0; ty = 0; apply(); }
+      if (z < 1.05) { z = 1; tx = 0; ty = 0; applyNow(); }
       setTimeout(function(){ b.style.transition = ''; }, 300);
     }
   }
@@ -74,7 +89,7 @@ export const MOBILE_PINCH_PATCH = `
     if (z === 1 && !tx && !ty) return;
     var b = document.body;
     b.style.transition = 'transform .22s ease';
-    z = 1; tx = 0; ty = 0; apply();
+    z = 1; tx = 0; ty = 0; applyNow();
     setTimeout(function(){ b.style.transition = ''; }, 260);
   }
   // Otros parches (enfoque de la acción en batalla) pueden pedir el reencuadre.
@@ -89,6 +104,10 @@ export const MOBILE_PINCH_PATCH = `
       }
     }
   }).observe(document.documentElement, { childList: true, subtree: true });
+
+  // will-change promueve el body a su propia capa de composición GPU para que
+  // el transform del pellizco sea fluido (sin repintar todo el DOM del juego).
+  try { document.body.style.willChange = 'transform'; } catch (e) {}
 
   // capture:true + passive:false para adelantarnos a los handlers del juego
   // y poder hacer preventDefault del gesto de 2 dedos.
