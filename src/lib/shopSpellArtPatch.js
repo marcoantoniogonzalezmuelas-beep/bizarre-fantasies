@@ -1,11 +1,11 @@
-// Parche inyectado en el iframe: el ARTE, el maná y el texto de las cartas de la
-// tienda de equipamiento se resuelven por NOMBRE desde la base de datos (mapas
-// bfArtMap y bfCardInfo que envía la página padre). Olvidamos las referencias
-// antiguas (SPELL_ART/OBJECT_ART/MELEE_ART/... por índice y SPELL_MANA): cada
-// carta nueva (Transformer, Reanimación Arcana, o las que vengan) sólo necesita
-// su art_url, mana y texto en la BD para verse en la rejilla Y en el modal de
-// compra. El coste en monedas y el botón de comprar los sigue gestionando el
-// propio juego — no los tocamos.
+// Parche inyectado en el iframe: ARTE de la rejilla de la tienda por NOMBRE
+// desde la BD (mapa bfArtMap). El arte del MODAL de compra se resuelve como
+//   SPELL_ART[indexInList(SPELLS,id)] || NUM_ART[String(numFor(item))]
+// así que para el hechizo nuevo "Reanimación Arcana" (inyectado por
+// recoverSpellPatch, sin entrada en SPELL_ART) sólo necesitamos asegurar
+// NUM_ART con un num ÚNICO que no colisione con ningún nº de carta de la BD,
+// y traer su maná/texto desde la BD. NO tocamos los arrays posicionales de las
+// cartas nativas (SPELL_ART/OBJECT_ART/MELEE_ART...) para no cruzar arte.
 export const SHOP_SPELL_ART_PATCH = `
 <script>
 (function(){
@@ -18,7 +18,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (!e.data) return;
     if (e.data.bfArtMap)  ART_BY_NAME  = e.data.bfArtMap  || {};
     if (e.data.bfCardInfo) INFO_BY_NAME = e.data.bfCardInfo || {};
-    if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncDb(); scan(); }, 0); }
+    if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncRecover(); scan(); }, 0); }
   });
   try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
 
@@ -42,46 +42,36 @@ export const SHOP_SPELL_ART_PATCH = `
     });
   }
 
-  // ---- Sincroniza arte (arrays posicionales + NUM_ART), maná y texto desde la BD ----
-  // El modal de compra (bfConfirm) resuelve el arte como
-  //   SPELL_ART[idx] || NUM_ART[num]   (hechizos)
-  //   OBJECT_ART[idx] || NUM_ART[num]   (objetos)
-  //   artFor(kind, idx) = MELEE/RANGED/ARMOR_ART[idx]   (armas/armaduras)
-  // y el maná vía bfManaFor(item) → item.mana. Sobreescribimos estos arrays y
-  // el campo mana/txt de cada entrada con los valores de la BD, por nombre, así
-  // el modal muestra siempre el arte, maná y texto reales de la carta.
-  function syncDb() {
-    function upd(list, artArr) {
-      if (!list) return;
-      for (var i = 0; i < list.length; i++) {
-        var it = list[i]; if (!it || !it.name) continue;
-        var url = ART_BY_NAME[it.name], info = INFO_BY_NAME[it.name];
-        if (url) {
-          if (artArr) { try { artArr[i] = url; } catch (e) {} }
-          var n = String(it.num || 0);
-          if (n !== '0' && typeof NUM_ART !== 'undefined') { try { NUM_ART[n] = url; } catch (e) {} }
-        }
-        if (info) {
-          if (info.mana != null) it.mana = info.mana;
-          if (info.text) it.txt = info.text;
-        }
+  // ---- Hechizo "Reanimación Arcana" (id sp_recover): arte del modal + maná + texto desde la BD ----
+  // Usa un num único (999) para NUM_ART → sin colisión con los nºs reales (1..117).
+  function syncRecover() {
+    if (typeof SPELLS === 'undefined' || !SPELLS) return;
+    var sp = null;
+    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; break; } }
+    if (!sp) return;
+    var art = ART_BY_NAME[sp.name], info = INFO_BY_NAME[sp.name];
+    if (art) {
+      sp.num = 999;
+      if (typeof NUM_ART !== 'undefined') {
+        try { NUM_ART['999'] = art; } catch (e) {}
+        // Por si cardNo('sp_recover') devolviera algo, lo cubrimos también.
+        try { if (typeof cardNo === 'function') { var cn = cardNo('sp_recover'); if (cn) NUM_ART[String(cn)] = art; } } catch (e) {}
       }
     }
-    try { upd(typeof SPELLS !== 'undefined' ? SPELLS : null, typeof SPELL_ART !== 'undefined' ? SPELL_ART : null); } catch (e) {}
-    try { upd(typeof OBJECTS !== 'undefined' ? OBJECTS : null, typeof OBJECT_ART !== 'undefined' ? OBJECT_ART : null); } catch (e) {}
-    try { upd(typeof MELEE !== 'undefined' ? MELEE : null, typeof MELEE_ART !== 'undefined' ? MELEE_ART : null); } catch (e) {}
-    try { upd(typeof RANGED !== 'undefined' ? RANGED : null, typeof RANGED_ART !== 'undefined' ? RANGED_ART : null); } catch (e) {}
-    try { upd(typeof ARMORS !== 'undefined' ? ARMORS : null, typeof ARMOR_ART !== 'undefined' ? ARMOR_ART : null); } catch (e) {}
+    if (info) {
+      if (info.mana != null) sp.mana = info.mana;
+      if (info.text) sp.txt = info.text;
+    }
   }
 
   function wrap() {
     if (typeof window.eqShopGrid !== 'function' || window.eqShopGrid.__bfNameArt) return;
     var orig = window.eqShopGrid;
-    window.eqShopGrid = function () { var html = orig.apply(this, arguments); setTimeout(function(){ syncDb(); scan(); }, 0); return html; };
+    window.eqShopGrid = function () { var html = orig.apply(this, arguments); setTimeout(function(){ syncRecover(); scan(); }, 0); return html; };
     window.eqShopGrid.__bfNameArt = true;
   }
   wrap();
-  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncDb(); scan(); }, 600);
+  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncRecover(); scan(); }, 600);
   new MutationObserver(function(){ requestAnimationFrame(scan); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>

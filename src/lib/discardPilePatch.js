@@ -1,12 +1,10 @@
 // Parche inyectado en el iframe: pila ÚNICA de descartes en batalla.
-// Muestra un mazo boca abajo con el reverso del juego, junto a la mano del
-// jugador, siempre visible (incluso vacío). A medida que se usan cartas se van
-// apilando y el contador crece. Hoy se descartan:
+// Se ancla a posición FIJA (abajo-izquierda) durante la batalla para que sea
+// siempre visible. Muestra un mazo boca abajo con el reverso del juego + contador
+// + tooltip. Hoy se descartan:
 //  - Objetos consumidos (diff de G.items[side]).
-//  - Armas/armaduras destruidas o perdidas por un héroe (diff de mwep/rwep/
-//    armor en G.team[side] — p.ej. al transformarse un héroe en token).
-// Está pensado para crecer: cualquier otro tipo de carta que en el futuro se
-// descarte sólo tiene que hacer push en G.itemDescarte[side].
+//  - Armas/armaduras que un héroe pierde (diff de mwep/rwep/armor en
+//    G.team[side] — p.ej. al transformarse un héroe en token).
 // G.itemDescarte[side] = array de entradas { id, kind, name, num }.
 export const DISCARD_PILE_PATCH = `
 <script>
@@ -17,7 +15,7 @@ export const DISCARD_PILE_PATCH = `
   var CARD_BACK = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png';
 
   var css = ''+
-  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:2px 0 0 12px;vertical-align:top;cursor:help}'+
+  '#bf-discard-pile-fixed{position:fixed;left:10px;bottom:10px;z-index:10090;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:help;user-select:none}'+
   '.bf-discard-stack{position:relative;width:46px;height:64px}'+
   '.bf-discard-card{position:absolute;width:46px;height:64px;border-radius:7px;border:1.5px solid #4a3210;background:url("'+CARD_BACK+'") center/cover #120a1e;box-shadow:0 2px 7px rgba(0,0,0,.6)}'+
   '.bf-discard-count{position:absolute;right:-8px;bottom:-8px;min-width:21px;height:21px;border-radius:11px;background:#FFD24A;color:#3a2600;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 5px rgba(0,0,0,.6);border:1px solid #7c5410}'+
@@ -82,28 +80,27 @@ export const DISCARD_PILE_PATCH = `
     lastEq[side]=cur;
   }
 
-  // ---- Render (idempotente: sólo toca el DOM cuando cambia el conteo) ----
+  // ---- Render fijo (idempotente: sólo repecta cuando cambia el conteo) ----
   var lastCount={p:-1,o:-1};
   function renderPile(side){
-    var hand=document.getElementById('hand_'+side);
-    if(!hand){ lastCount[side]=-1; return; }
     var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
-    if(!inB){ var e0=hand.querySelector('.bf-discard-pile'); if(e0)e0.remove(); lastCount[side]=-1; return; }
+    var el=document.getElementById('bf-discard-pile-fixed');
+    if(!inB){ if(el)el.remove(); lastCount[side]=-1; return; }
     var count=ensurePile(side)?G.itemDescarte[side].length:0;
-    if(count===lastCount[side]) return;
+    if(count===lastCount[side]&&el) return;
     lastCount[side]=count;
-    var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
-    var pile=document.createElement('div'); pile.className='bf-discard-pile';
-    pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
+    if(!el){
+      el=document.createElement('div'); el.id='bf-discard-pile-fixed';
+      document.body.appendChild(el);
+    }
     var just=(window.__bfDiscardJust===side);
     var html='<div class="bf-discard-stack'+(just?' bf-just':'')+'">';
     var shown=Math.min(count,3);
     for(var i=0;i<shown;i++) html+='<div class="bf-discard-card" style="top:'+(i*2)+'px;left:'+(i*2)+'px"></div>';
     if(count===0) html+='<div class="bf-discard-card" style="top:0;left:0;opacity:.45"></div>';
     html+='<span class="bf-discard-count">'+count+'</span></div><div class="bf-discard-lbl">Descartes</div>';
-    pile.innerHTML=html;
-    var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
-    if(ref&&ref.parentNode===hand) hand.insertBefore(pile,ref.nextSibling); else hand.appendChild(pile);
+    el.innerHTML=html;
+    el.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
     if(just) window.__bfDiscardJust=null;
   }
 
@@ -121,7 +118,7 @@ export const DISCARD_PILE_PATCH = `
     var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
     if(!inB){
       lastItems={p:null,o:null}; lastEq={p:null,o:null};
-      document.querySelectorAll('.bf-discard-pile').forEach(function(p){p.remove();});
+      var el=document.getElementById('bf-discard-pile-fixed'); if(el)el.remove();
       lastCount={p:-1,o:-1}; return;
     }
     var side=mySide();
