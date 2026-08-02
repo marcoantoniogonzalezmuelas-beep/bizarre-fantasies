@@ -52,14 +52,20 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
       <AnimatePresence mode="wait">
         {phase === 0 ? (
           <div key="ducks" className="absolute inset-0 flex flex-row">
-            <div className="relative h-full w-1/2 flex items-center justify-start overflow-hidden">
+            <div
+              className="relative h-full w-1/2 flex items-center justify-start overflow-hidden"
+              style={{ maskImage: 'linear-gradient(to right, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, #000 52%, transparent 100%)' }}
+            >
               <motion.img
                 src={ducks[0]} alt="" draggable={false}
                 className={IMG}
                 initial={duckMotion('l').initial} animate={duckMotion('l').animate} transition={duckMotion('l').transition}
               />
             </div>
-            <div className="relative h-full w-1/2 flex items-center justify-end overflow-hidden">
+            <div
+              className="relative h-full w-1/2 flex items-center justify-end overflow-hidden"
+              style={{ maskImage: 'linear-gradient(to left, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, #000 52%, transparent 100%)' }}
+            >
               <motion.img
                 src={ducks[1]} alt="" draggable={false}
                 className={IMG}
@@ -69,7 +75,10 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
           </div>
         ) : (
           <div key="others" className="absolute inset-0 flex flex-row">
-            <div className="relative h-full w-1/2 flex items-center justify-start overflow-hidden">
+            <div
+              className="relative h-full w-1/2 flex items-center justify-start overflow-hidden"
+              style={{ maskImage: 'linear-gradient(to right, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, #000 52%, transparent 100%)' }}
+            >
               <motion.div
                 className="h-full flex items-center justify-center"
                 animate={{ y: [0, -9, 0], rotate: [-1.3, 1.3, -1.3] }}
@@ -84,7 +93,10 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
                 />
               </motion.div>
             </div>
-            <div className="relative h-full w-1/2 flex items-center justify-end overflow-hidden">
+            <div
+              className="relative h-full w-1/2 flex items-center justify-end overflow-hidden"
+              style={{ maskImage: 'linear-gradient(to left, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, #000 52%, transparent 100%)' }}
+            >
               <motion.div
                 className="h-full flex items-center justify-center"
                 animate={{ y: [0, -9, 0], rotate: [1.3, -1.3, 1.3] }}

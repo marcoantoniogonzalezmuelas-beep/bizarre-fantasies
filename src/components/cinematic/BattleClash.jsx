@@ -63,14 +63,20 @@ export default function BattleClash({ left, right, accent = '#ff7a18', swap = fa
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
       <div className="absolute inset-0 flex flex-row">
-        <div className="relative h-full w-1/2 flex items-center justify-start overflow-hidden">
+        <div
+          className="relative h-full w-1/2 flex items-center justify-start overflow-hidden"
+          style={{ maskImage: 'linear-gradient(to right, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, #000 52%, transparent 100%)' }}
+        >
           <motion.img
             src={leftSrc} alt="" draggable={false}
             className="h-full w-auto max-w-none object-contain select-none"
             initial={M.L.initial} animate={M.L.animate} transition={M.L.transition}
           />
         </div>
-        <div className="relative h-full w-1/2 flex items-center justify-end overflow-hidden">
+        <div
+          className="relative h-full w-1/2 flex items-center justify-end overflow-hidden"
+          style={{ maskImage: 'linear-gradient(to left, #000 52%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to left, #000 52%, transparent 100%)' }}
+        >
           <motion.img
             src={rightSrc} alt="" draggable={false}
             className="h-full w-auto max-w-none object-contain select-none"
