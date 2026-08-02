@@ -60,9 +60,26 @@ export const RECOVER_SPELL_PATCH = `
   function injectSpell(){
     if (typeof SPELLS==='undefined' || !SPELLS) return false;
     if (SPELLS.some(function(s){return s&&s.id==='sp_recover';})) return true;
-    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:999, txt:'Recupera un objeto aleatorio de tu mazo de usados y lo devuelve a tu mano.' });
+    // El nº/maná/texto los aporta la BD (Oráculo) via bfCardInfo; aquí sólo
+    // se inyecta el hechizo con valores por defecto y syncRecover los actualiza.
+    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:0, txt:'Recupera un objeto aleatorio de tu mazo de usados y lo devuelve a tu mano.' });
     return true;
   }
+
+  // Al recibir los datos de la BD (número/mana/texto/coste reales de la carta),
+  // actualiza el hechizo inyectado para que use su numeración única real.
+  window.addEventListener('message', function (e) {
+    if (!e.data || !e.data.bfCardInfo) return;
+    var info = e.data.bfCardInfo['Reanimación Arcana']; if (!info) return;
+    if (typeof SPELLS === 'undefined' || !SPELLS) return;
+    var sp = null;
+    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; break; } }
+    if (!sp) return;
+    if (info.number != null) sp.num = info.number;
+    if (info.mana != null) sp.mana = info.mana;
+    if (info.text) sp.txt = info.text;
+    if (info.cost != null) sp.cost = info.cost;
+  });
 
   // --- Hook castSpell: maneja 'bf_recover' (recuperar objeto del descarte) ---
   var H={};

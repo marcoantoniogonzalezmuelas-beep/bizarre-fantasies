@@ -96,13 +96,15 @@ export const SHOP_SPELL_ART_PATCH = `
     for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; break; } }
     if (!sp) return;
     var art = ART_BY_NAME[sp.name], info = INFO_BY_NAME[sp.name];
-    if (art) {
-      sp.num = 999;
-      if (typeof NUM_ART !== 'undefined') { try { NUM_ART['999'] = art; } catch (e) {} }
+    // El nº real lo aporta la BD (info.number); el arte se indexa por ese nº.
+    if (info && info.number != null) {
+      sp.num = info.number;
+      if (art && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(info.number)] = art; } catch (e) {} }
     }
     if (info) {
       if (info.mana != null) sp.mana = info.mana;
       if (info.text) sp.txt = info.text;
+      if (info.cost != null) sp.cost = info.cost;
     }
   }
 
