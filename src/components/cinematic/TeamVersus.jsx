@@ -42,11 +42,7 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
   };
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[#050308]">
-      {/* resplandor lateral por bando */}
-      <div className="absolute inset-y-0 left-0 w-1/2 pointer-events-none" style={{ background: `linear-gradient(90deg, ${accent}22, transparent)` }} />
-      <div className="absolute inset-y-0 right-0 w-1/2 pointer-events-none" style={{ background: `linear-gradient(270deg, ${accent}22, transparent)` }} />
-
+    <div className="absolute inset-0 overflow-hidden bg-black">
       <div className="absolute inset-0 flex items-center justify-center gap-6 px-8">
         {/* Bando izquierdo */}
         <div className="flex flex-col items-center justify-center gap-3 h-full">
