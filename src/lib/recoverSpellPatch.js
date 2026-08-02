@@ -3,6 +3,11 @@
 // devuelve a la mano. Se inyecta en SPELLS (comprable en la tienda de equipo),
 // engancha castSpell para su kind 'bf_recover', y reproduce una cinemática 3D
 // arcano-necromántica que se ve en ambos jugadores online (via flushFx).
+//
+// El arte, nº de carta, maná, coste y texto se sincronizan automáticamente
+// desde la BD (Oráculo) mediante shopSpellArtPatch.syncAllEquip() — sistema
+// genérico que funciona para CUALQUIER carta nueva añadida a la BD sin
+// necesitar un parche dedicado por carta.
 export const RECOVER_SPELL_PATCH = `
 <script>
 (function(){
@@ -60,78 +65,20 @@ export const RECOVER_SPELL_PATCH = `
   function injectSpell(){
     if (typeof SPELLS==='undefined' || !SPELLS) return false;
     if (SPELLS.some(function(s){return s&&s.id==='sp_recover';})) return true;
-    // El nº/maná/texto los aporta la BD (Oráculo) via bfCardInfo; aquí sólo
-    // se inyecta el hechizo con valores por defecto y syncRecover los actualiza.
+    // El nº/maná/texto/coste los sincroniza shopSpellArtPatch.syncAllEquip()
+    // desde la BD (Oráculo); aquí sólo se inyecta con valores por defecto.
     SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:0, txt:'Recupera una carta aleatoria de tu pila de descartes y la devuelve a tu mano.' });
     return true;
   }
 
-  // Arte y datos de la BD (número/mana/texto/coste reales de la carta).
-  // Se pide el mapa nombre → arte y nombre → info a la página padre, y se
-  // registran en NUM_ART / SPELL_ART / CARD_NO por nº de BD para que el
-  // hechizo inyectado dinámicamente se renderice igual que las cartas nativas.
-  var RECOVER_ART = '', RECOVER_NUM = 0, RECOVER_INFO = null;
-  window.addEventListener('message', function (e) {
-    if (!e.data) return;
-    if (e.data.bfArtMap && e.data.bfArtMap['Reanimación Arcana']) RECOVER_ART = e.data.bfArtMap['Reanimación Arcana'];
-    if (e.data.bfCardInfo) { var info = e.data.bfCardInfo['Reanimación Arcana']; if (info) { RECOVER_NUM = info.number || 0; RECOVER_INFO = info; } }
-    if (e.data.bfArtMap || e.data.bfCardInfo) setTimeout(syncRecoverArt, 0);
-  });
-  try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
+  // El arte, nº, maná, coste y texto de ESTE hechizo se sincronizan
+  // automáticamente desde la BD (Oráculo) mediante shopSpellArtPatch.
+  // syncAllEquip() + applyArtToChips() — sistema genérico que funciona para
+  // cualquier carta nueva sin necesitar un parche dedicado por carta.
 
-  // Sincroniza el arte del hechizo con la BD: registra el arte por nº de carta
-  // único en NUM_ART, en SPELL_ART por índice y en CARD_NO por id, para que las
-  // tres vías de lookup del juego (injectEquipArt, bfConfirm, handArtByName)
-  // encuentren el arte igual que con las cartas nativas.
-  function syncRecoverArt() {
-    if (typeof SPELLS === 'undefined' || !SPELLS) return;
-    var sp = null, spIdx = -1;
-    for (var i = 0; i < SPELLS.length; i++) { if (SPELLS[i] && SPELLS[i].id === 'sp_recover') { sp = SPELLS[i]; spIdx = i; break; } }
-    if (!sp) return;
-    if (RECOVER_NUM) sp.num = RECOVER_NUM;
-    // Propaga el texto/maná/coste reales de la BD al hechizo inyectado.
-    if (RECOVER_INFO) {
-      if (RECOVER_INFO.text) sp.txt = RECOVER_INFO.text;
-      if (RECOVER_INFO.mana != null) sp.mana = RECOVER_INFO.mana;
-      if (RECOVER_INFO.cost != null) sp.cost = RECOVER_INFO.cost;
-    }
-    // Registra el arte en TODAS las vías nativas del juego para que
-    // injectHandArt() lo encuentre y renderice la carta completa (icono de
-    // juego, orbe de maná, etc.) igual que las demás cartas de equipo.
-    if (RECOVER_ART && RECOVER_NUM && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(RECOVER_NUM)] = RECOVER_ART; } catch (e) {} }
-    if (RECOVER_ART && spIdx >= 0 && typeof SPELL_ART !== 'undefined') { try { SPELL_ART[spIdx] = RECOVER_ART; } catch (e) {} }
-    if (sp.id && typeof CARD_NO !== 'undefined' && RECOVER_NUM) { try { CARD_NO[sp.id] = String(RECOVER_NUM).padStart(3, '0'); } catch (e) {} }
-    try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
-    if (RECOVER_ART) {
-      if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
-      applyArtToChips();
-    }
-  }
 
-  // Aplica el arte directamente a los chips de la mano (fallback si el juego no
-  // re-renderiza tras registrar el arte).
-  // Aplica el arte directamente a los chips de la mano (fallback si el juego no
-  // re-renderiza tras registrar el arte). Busca el chip por texto contenido
-  // en cualquier elemento interno (no sólo .bf-chip-name), porque el juego
-  // puede usar clases distintas en la mano vs la tienda.
-  function applyArtToChips() {
-    if (!RECOVER_ART) return;
-    ['hand_p','hand_o'].forEach(function(hid){
-      var hand = document.getElementById(hid); if (!hand) return;
-      hand.querySelectorAll('.chip').forEach(function (chip) {
-        var txt = (chip.textContent || '').trim();
-        var title = chip.title || '';
-        if (txt.indexOf('Reanimación Arcana') < 0 && title.indexOf('Reanimación Arcana') < 0) return;
-        chip.classList.add('bf-chip-card');
-        // Aplica el arte directamente sobre el chip con !important (inline
-        // style !important pisa cualquier CSS del juego). Sin arrays nativos.
-        chip.style.setProperty('background-image', 'url("' + RECOVER_ART + '")', 'important');
-        chip.style.setProperty('background-size', 'cover', 'important');
-        chip.style.setProperty('background-position', 'center', 'important');
-        chip.style.setProperty('background-color', '#120a1e', 'important');
-      });
-    });
-  }
+
+
 
   // --- Hook castSpell: maneja 'bf_recover' (recuperar objeto del descarte) ---
   var H={};
@@ -211,19 +158,10 @@ export const RECOVER_SPELL_PATCH = `
     };
   }
 
-  function hookRender(){
-    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfRecR)return;
-    var orig=window.renderBattle;
-    window.renderBattle=function(){var r=orig.apply(this,arguments);setTimeout(function(){if(RECOVER_ART&&typeof window.injectHandArt==='function'){try{window.injectHandArt();}catch(e){}}applyArtToChips();},30);return r;};
-    window.renderBattle.__bfRecR=1;
-  }
-  function hook(){ hookCast(); hookFlush(); hookRender(); }
+  function hook(){ hookCast(); hookFlush(); }
   hook();
   var iv=setInterval(function(){ injectSpell(); hook(); },300);
   setTimeout(function(){ if (H.cast && H.flush) clearInterval(iv); }, 12000);
-  setInterval(syncRecoverArt, 1500);
-  var _bfRt=0;
-  new MutationObserver(function(){ var n=Date.now(); if(n-_bfRt<500)return; _bfRt=n; if(RECOVER_ART) applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 `;

@@ -90,6 +90,31 @@ export const SHOP_SPELL_ART_PATCH = `
     });
   }
 
+  // ---- Fallback genérico: aplica arte a chips de la mano por NOMBRE ----
+  // Si injectHandArt() no pinta una carta (p.ej. hechizos inyectados
+  // dinámicamente), este fallback aplica el arte directamente sobre el chip
+  // buscando el nombre en ART_BY_NAME. Funciona para CUALQUIER carta de la BD
+  // — sin necesitar un parche dedicado por carta.
+  function applyArtToChips() {
+    if (!ART_BY_NAME) return;
+    ['hand_p','hand_o'].forEach(function(hid){
+      var hand = document.getElementById(hid); if (!hand) return;
+      hand.querySelectorAll('.chip').forEach(function (chip) {
+        if (chip.dataset.bfArtDone === '1') return;
+        var name = (chip.textContent || '').trim();
+        if (!name) name = chip.title || '';
+        if (!name) return;
+        var art = ART_BY_NAME[name]; if (!art) return;
+        chip.classList.add('bf-chip-card');
+        chip.style.setProperty('background-image', 'url("' + art + '")', 'important');
+        chip.style.setProperty('background-size', 'cover', 'important');
+        chip.style.setProperty('background-position', 'center', 'important');
+        chip.style.setProperty('background-color', '#120a1e', 'important');
+        chip.dataset.bfArtDone = '1';
+      });
+    });
+  }
+
   // ---- Sincronización genérica: el juego siempre busca arte por nº de BD ----
   // El juego usa tres vías para buscar el arte de equipo:
   //   · injectEquipArt(): NUM_ART[cardNo(id)]  — cardNo devuelve el nº secuencial
@@ -139,6 +164,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (changed) {
       try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
       if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
+      applyArtToChips();
     }
   }
 
@@ -155,7 +181,7 @@ export const SHOP_SPELL_ART_PATCH = `
   wrap();
   setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncAllEquip(); scan(); }, 1000);
   var _bfSt=0;
-  new MutationObserver(function(){ var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); }).observe(document.documentElement, { childList: true, subtree: true });
+  new MutationObserver(function(){ var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 `;
