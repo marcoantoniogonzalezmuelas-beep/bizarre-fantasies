@@ -43,34 +43,69 @@ export default function TeamVersus({ left = [], right = [], accent = '#ffd24a' }
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
-      <div className="absolute inset-0 flex items-center justify-center gap-6 px-8">
+      <div className="absolute inset-0 flex items-center justify-center gap-10 px-10">
         {/* Bando izquierdo */}
         <div className="flex flex-col items-center justify-center gap-3 h-full">
           {left.map((src, k) => <Hero key={'l' + k} src={src} side="l" idx={k} />)}
         </div>
-
-        {/* Emblema VS */}
-        <motion.div
-          className="relative z-10 flex items-center justify-center"
-          initial={{ opacity: 0, scale: 0.4 }}
-          animate={{ opacity: 1, scale: [0.4, 1.25, 1] }}
-          transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-        >
-          <motion.div
-            className="w-24 h-24 rounded-full flex items-center justify-center font-heading font-black text-[#2a1d05] text-3xl border-2 border-[#ffe9a8]"
-            style={{ background: 'radial-gradient(circle at 35% 30%, #fff3c4, #FFD24A 55%, #c98a1f)', boxShadow: `0 0 26px ${accent}, 0 0 52px ${accent}88` }}
-            animate={{ scale: [1, 1.12, 1] }}
-            transition={{ duration: 1.3, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            VS
-          </motion.div>
-        </motion.div>
 
         {/* Bando derecho */}
         <div className="flex flex-col items-center justify-center gap-3 h-full">
           {right.map((src, k) => <Hero key={'r' + k} src={src} side="r" idx={k} />)}
         </div>
       </div>
+
+      {/* Emblema VS estilo Street Fighter, arriba-centro para no tapar el texto */}
+      <motion.div
+        className="absolute top-[7%] left-1/2 z-10"
+        style={{ x: '-50%' }}
+        initial={{ opacity: 0, scale: 0.2, rotate: -40 }}
+        animate={{ opacity: 1, scale: [0.2, 1.35, 1], rotate: [-40, 8, 0] }}
+        transition={{ duration: 0.9, delay: 0.55, ease: 'easeOut' }}
+      >
+        <motion.div
+          className="relative"
+          animate={{ rotate: [0, -1.5, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {/* estrella/burst detrás */}
+          <div
+            className="absolute -inset-8 rounded-full blur-[2px]"
+            style={{ background: `radial-gradient(circle, ${accent}55, transparent 68%)` }}
+          />
+          {/* placas inclinadas rojo/amarillo partido en diagonal */}
+          <div
+            className="relative skew-x-[-14deg] border-y-2 border-[#ffe9a8] overflow-hidden"
+            style={{
+              background: 'linear-gradient(90deg, #d61313 49%, #ffd24a 51%)',
+              boxShadow: '0 10px 30px rgba(0,0,0,.7), 0 0 18px rgba(255,210,74,.4)',
+              clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)',
+            }}
+          >
+            <div className="px-9 py-1.5 skew-x-[14deg] flex items-center justify-center">
+              <span
+                className="font-heading font-black italic text-white text-5xl leading-none tracking-tight"
+                style={{ textShadow: '0 0 8px #000, 3px 3px 0 #000, -2px -2px 0 #b30303' }}
+              >
+                VS
+              </span>
+            </div>
+          </div>
+          {/* destellos laterales */}
+          <motion.div
+            className="absolute -right-3 top-1/2 -translate-y-1/2 h-16 w-2 bg-[#ffe9a8] rounded-full origin-center"
+            style={{ boxShadow: '0 0 10px #ffe9a8' }}
+            animate={{ scaleY: [0.6, 1.1, 0.6], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute -left-3 top-1/2 -translate-y-1/2 h-16 w-2 bg-[#ff8a85] rounded-full origin-center"
+            style={{ boxShadow: '0 0 10px #ff8a85' }}
+            animate={{ scaleY: [0.6, 1.1, 0.6], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+          />
+        </motion.div>
+      </motion.div>
 
       {/* brasas ascendentes */}
       {embers.map((e, k) => (
