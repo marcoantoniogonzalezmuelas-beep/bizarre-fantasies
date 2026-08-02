@@ -21,6 +21,9 @@ export const DISCARD_PILE_PATCH = `
   var css = ''+
   '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 0 10px;vertical-align:top;cursor:help;user-select:none;position:relative;border:none!important;outline:none!important;box-shadow:none!important}'+
   '.bf-discard-stack{position:relative;border-radius:10px;overflow:hidden;background-image:url("'+CARD_BACK+'")!important;background-size:cover!important;background-position:center!important;background-color:#120a1e!important;border:1.5px solid rgba(255,140,50,.7)!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)!important;pointer-events:none;outline:none!important}'+
+  '#hand_p .bf-discard-pile,#hand_o .bf-discard-pile{border:none!important;outline:none!important;box-shadow:none!important;background:transparent!important}'+
+  '#hand_p .bf-discard-stack,#hand_o .bf-discard-stack{border:1.5px solid rgba(255,140,50,.7)!important;outline:none!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)!important;background-color:#120a1e!important}'+
+  '#hand_p .bf-discard-pile *,#hand_o .bf-discard-pile *{border:none!important;outline:none!important}'+
   '.bf-discard-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#ff8c32,#d4601a);border:1.5px solid #1a0e04;color:#fff;font-family:Rubik,sans-serif;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,.6),0 0 8px rgba(255,140,50,.5);z-index:5;pointer-events:none}'+
   '.bf-discard-lbl{font-family:Cinzel,serif;font-size:8px;font-weight:900;color:rgba(255,140,50,.95);letter-spacing:.6px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
   '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-16px) rotate(10deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-stack.bf-just{animation:bfDiscardIn .45s ease-out}';
@@ -118,9 +121,20 @@ export const DISCARD_PILE_PATCH = `
     pile.style.outline='none';
     pile.style.boxShadow='none';
     if(ref&&ref.parentNode===hand) hand.insertBefore(pile,ref.nextSibling); else hand.appendChild(pile);
-    // Forza el estilo del stack tras insertarlo (pisa el CSS del juego).
+    // Forza el estilo del stack y todos sus hijos tras insertarlo: usa
+    // setProperty('border', ...,'important') para PISAR el CSS del juego que
+    // aplica bordes blancos a los divs/chips dentro de #hand_p.
     var stk=pile.querySelector('.bf-discard-stack');
-    if(stk){ stk.style.border='1.5px solid rgba(255,140,50,.7)'; stk.style.outline='none'; stk.style.boxShadow='0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)'; }
+    if(stk){
+      stk.style.setProperty('border','1.5px solid rgba(255,140,50,.7)','important');
+      stk.style.setProperty('outline','none','important');
+      stk.style.setProperty('box-shadow','0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3)','important');
+      stk.style.setProperty('background-color','#120a1e','important');
+    }
+    pile.querySelectorAll('*').forEach(function(el){
+      el.style.setProperty('border','none','important');
+      el.style.setProperty('outline','none','important');
+    });
     if(just) window.__bfDiscardJust=null;
   }
 

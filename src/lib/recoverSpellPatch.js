@@ -98,23 +98,42 @@ export const RECOVER_SPELL_PATCH = `
     if (RECOVER_ART && RECOVER_NUM && typeof NUM_ART !== 'undefined') { try { NUM_ART[String(RECOVER_NUM)] = RECOVER_ART; } catch (e) {} }
     if (RECOVER_ART && spIdx >= 0 && typeof SPELL_ART !== 'undefined') { try { SPELL_ART[spIdx] = RECOVER_ART; } catch (e) {} }
     if (sp.id && typeof CARD_NO !== 'undefined' && RECOVER_NUM) { try { CARD_NO[sp.id] = String(RECOVER_NUM).padStart(3, '0'); } catch (e) {} }
+    // Invalida la caché de arte de mano del juego: si se construyó antes de
+    // que registráramos el arte del hechizo inyectado, devolvería vacío para
+    // siempre. Forzando null, el juego la reconstruye y ya encuentra NUM_ART[117].
+    try { if (typeof window.__bfHandArtByName !== 'undefined') window.__bfHandArtByName = null; } catch (e) {}
     if (RECOVER_ART) applyArtToChips();
     if (typeof window.injectHandArt === 'function') { try { window.injectHandArt(); } catch (e) {} }
   }
 
   // Aplica el arte directamente a los chips de la mano (fallback si el juego no
   // re-renderiza tras registrar el arte).
+  // Aplica el arte directamente a los chips de la mano (fallback si el juego no
+  // re-renderiza tras registrar el arte). Busca el chip por texto contenido
+  // en cualquier elemento interno (no sólo .bf-chip-name), porque el juego
+  // puede usar clases distintas en la mano vs la tienda.
   function applyArtToChips() {
-    document.querySelectorAll('.chip').forEach(function (chip) {
-      var nameEl = chip.querySelector('.bf-chip-name');
-      var name = nameEl ? nameEl.textContent.trim() : (chip.title || '');
-      if (name !== 'Reanimación Arcana') return;
+    if (!RECOVER_ART) return;
+    // Revisa ambas manos: en online el jugador local puede estar en cualquier lado.
+    ['hand_p','hand_o'].forEach(function(hid){
+    var hand = document.getElementById(hid); if (!hand) return;
+    hand.querySelectorAll('.chip').forEach(function (chip) {
+      // Busca "Reanimación Arcana" en el texto de TODO el chip.
+      var txt = (chip.textContent || '').trim();
+      var title = chip.title || '';
+      if (txt.indexOf('Reanimación Arcana') < 0 && title.indexOf('Reanimación Arcana') < 0) return;
       chip.classList.add('bf-chip-card');
+      // El arte puede ir en una capa propia o directamente en el chip.
       var artLayer = chip.querySelector('.bf-chip-art-layer');
-      if (!artLayer) { artLayer = document.createElement('div'); artLayer.className = 'bf-chip-art-layer'; chip.insertBefore(artLayer, chip.firstChild); }
+      if (!artLayer) { artLayer = document.createElement('div'); artLayer.className = 'bf-chip-art-layer'; artLayer.style.cssText = 'position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0'; chip.insertBefore(artLayer, chip.firstChild); }
       var cur = artLayer.style.backgroundImage || '';
-      if (cur.indexOf(RECOVER_ART) < 0) { artLayer.style.backgroundImage = 'url("' + RECOVER_ART + '")'; artLayer.style.backgroundSize = 'cover'; artLayer.style.backgroundPosition = 'center'; }
+      if (cur.indexOf(RECOVER_ART) < 0) {
+        artLayer.style.backgroundImage = 'url("' + RECOVER_ART + '")';
+        artLayer.style.backgroundSize = 'cover';
+        artLayer.style.backgroundPosition = 'center';
+      }
     });
+    }); // fin forEach hid
   }
 
   // --- Hook castSpell: maneja 'bf_recover' (recuperar objeto del descarte) ---
