@@ -97,14 +97,24 @@ export const SHOP_SPELL_ART_PATCH = `
   // — sin necesitar un parche dedicado por carta.
   function applyArtToChips() {
     if (!ART_BY_NAME) return;
+    var names = Object.keys(ART_BY_NAME);
+    if (!names.length) return;
     ['hand_p','hand_o'].forEach(function(hid){
       var hand = document.getElementById(hid); if (!hand) return;
       hand.querySelectorAll('.chip').forEach(function (chip) {
         if (chip.dataset.bfArtDone === '1') return;
-        var name = (chip.textContent || '').trim();
-        if (!name) name = chip.title || '';
-        if (!name) return;
-        var art = ART_BY_NAME[name]; if (!art) return;
+        // Saltar si el juego ya pintó el arte (injectHandArt pone background-image inline)
+        var bg = chip.style.backgroundImage;
+        if (bg && bg !== 'none' && bg.indexOf('url') === 0) { chip.dataset.bfArtDone = '1'; return; }
+        // Matching por SUBSTRING: los chips contienen texto extra (maná, nº…)
+        var txt = (chip.textContent || '').trim();
+        var title = chip.title || '';
+        var matched = null;
+        for (var n = 0; n < names.length; n++) {
+          if (txt.indexOf(names[n]) >= 0 || title.indexOf(names[n]) >= 0) { matched = names[n]; break; }
+        }
+        if (!matched) return;
+        var art = ART_BY_NAME[matched];
         chip.classList.add('bf-chip-card');
         chip.style.setProperty('background-image', 'url("' + art + '")', 'important');
         chip.style.setProperty('background-size', 'cover', 'important');
@@ -149,6 +159,13 @@ export const SHOP_SPELL_ART_PATCH = `
         if (art && typeof NUM_ART !== 'undefined' && !NUM_ART[String(info.number)]) {
           try { NUM_ART[String(info.number)] = art; changed = true; } catch (e) {}
         }
+        // 4) SPELL_ART[idx] — la PRIMERA vía de lookup de injectHandArt para
+        //    hechizos. Sin esto, los hechizos inyectados dinámicamente no
+        //    muestran arte en la mano (el fallback NUM_ART[s.num] puede fallar
+        //    si s.num aún es 0 o si el índice no coincide).
+        if (a === 0 && art && typeof SPELL_ART !== 'undefined') {
+          if (SPELL_ART[i] !== art) { try { SPELL_ART[i] = art; changed = true; } catch (e) {} }
+        }
       }
     }
     // Propaga mana/texto/coste desde la BD (para hechizos inyectados dinámicamente)
@@ -178,8 +195,26 @@ export const SHOP_SPELL_ART_PATCH = `
     window.eqShopGrid = function () { try { syncAllEquip(); } catch(e){} var html = orig.apply(this, arguments); setTimeout(function(){ syncAllEquip(); scan(); }, 0); return html; };
     window.eqShopGrid.__bfNameArt = true;
   }
+  // Hook renderBattle: tras cada repintado de batalla, re-aplica el arte a los
+  // chips de la mano inmediatamente (sin esperar al MutationObserver de 500ms).
+  // Es vital para que los hechizos inyectados dinámicamente (como sp_recover)
+  // muestren su arte en la mano durante la batalla, no el placeholder "F###".
+  function hookRender() {
+    if (typeof window.renderBattle !== 'function' || window.renderBattle.__bfShopArt) return;
+    var orig = window.renderBattle;
+    window.renderBattle = function() {
+      var r = orig.apply(this, arguments);
+      setTimeout(function() {
+        try { if (typeof window.injectHandArt === 'function') window.injectHandArt(); } catch(e) {}
+        applyArtToChips();
+      }, 30);
+      return r;
+    };
+    window.renderBattle.__bfShopArt = 1;
+  }
   wrap();
-  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); syncAllEquip(); scan(); }, 1000);
+  hookRender();
+  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); if (typeof window.renderBattle === 'function' && !window.renderBattle.__bfShopArt) hookRender(); syncAllEquip(); scan(); }, 1000);
   var _bfSt=0;
   new MutationObserver(function(){ var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
