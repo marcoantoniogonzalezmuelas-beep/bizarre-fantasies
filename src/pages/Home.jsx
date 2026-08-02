@@ -471,6 +471,17 @@ export default function Home() {
         }
       });
       abilityAnimRef.current = anim;
+      // Envía los mapas al iframe inmediatamente tras cargar los datos de la
+      // BD, sin esperar al siguiente cambio de pantalla del juego. Así los
+      // héroes que usen su habilidad justo al empezar la batalla ya tienen
+      // el mapa de animaciones 3D disponible (evita que se pierdan las nuevas).
+      try {
+        const iw = iframeRef.current?.contentWindow;
+        if (iw) {
+          if (battleArtRef.current) iw.postMessage({ bfBattleArt: battleArtRef.current }, '*');
+          if (abilityAnimRef.current) iw.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
+        }
+      } catch (e) {}
     }).catch(() => {});
   }, []);
 

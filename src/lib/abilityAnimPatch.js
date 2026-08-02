@@ -63,6 +63,12 @@ export const ABILITY_ANIM_PATCH = `
         if(ent.base)cutout(ent.base);
         if(ent.elite)cutout(ent.elite);
       });
+      // Si el mapa llega después de que un héroe ya usó su habilidad, el
+      // escaneo anterior no pudo encontrar la animación (lookup vacío) y
+      // marcó prev[key]=true. Reseteando prev, el próximo escaneo reevalúa
+      // todos los héroes con abilityUsed=true y reproduce la animación ahora
+      // que el mapa está disponible.
+      prev={};
     }
   });
 
