@@ -81,18 +81,19 @@ export const RECOVER_SPELL_PATCH = `
           if (h.mana<s.mana) { if(typeof notif==='function')notif('Maná insuficiente'); return; }
           if (typeof G==='undefined'||!G) return;
           if (!G.itemDescarte) G.itemDescarte={p:[],o:[]};
-          var pile=G.itemDescarte[side]||(G.itemDescarte[side]=[]);
-          if (pile.length===0) { if(typeof notif==='function')notif('El mazo de usados está vacío.'); return; }
+          if (!G.itemDescarte[side]) G.itemDescarte[side]=[];
+          // La pila de descartes guarda entradas {id,kind,name,num}. Sólo se
+          // pueden reanimar objetos; bfDiscardPop saca uno aleatorio de la pila.
+          var entry=(typeof window.bfDiscardPop==='function')?window.bfDiscardPop(side):null;
+          if (!entry) { if(typeof notif==='function')notif('El mazo de usados está vacío.'); return; }
           h.mana-=s.mana;
-          var pickIdx=Math.floor(Math.random()*pile.length);
-          var oid=pile.splice(pickIdx,1)[0];
-          var tmpl=(typeof OBJECTS!=='undefined')?byId(OBJECTS,oid):null;
-          var recName=tmpl?tmpl.name:'Objeto';
+          var tmpl=(typeof OBJECTS!=='undefined')?byId(OBJECTS,entry.id):null;
+          var recName=tmpl?tmpl.name:(entry.name||'Objeto');
           if (tmpl) G.items[side].push((typeof deep==='function')?deep(tmpl):JSON.parse(JSON.stringify(tmpl)));
           if (typeof pushLog==='function') pushLog('lg',h.name+' reanima '+recName+' del mazo de usados.');
           if (typeof pushFx==='function') {
             pushFx({k:'bfcard',name:s.name,kind:'spell',side:side});
-            pushFx({k:'bfrecover',side:side,name:recName});
+            pushFx({k:'bfrecover',side:side,name:recName,id:entry.id});
           }
           if (typeof notif==='function') notif(recName+' → mano');
           if (typeof finishAct==='function') finishAct();
@@ -113,10 +114,11 @@ export const RECOVER_SPELL_PATCH = `
         (list||[]).forEach(function(ev){
           if (!ev) return;
           if (ev.k==='bfrecover') {
-            // Cliente: el descarte es local-derivado; decrementa en 1 para
-            // sincronizar la pila (el host ya quitó el objeto al reanimarlo).
+            // Cliente: el descarte es local-derivado; el host ya quitó el objeto
+            // al reanimarlo, así que quitamos de la pila local la entrada con ese id.
             if (typeof NET!=='undefined' && NET.role==='client' && typeof G!=='undefined' && G && G.itemDescarte && G.itemDescarte[ev.side]) {
-              G.itemDescarte[ev.side].pop();
+              var arr=G.itemDescarte[ev.side];
+              for(var j=0;j<arr.length;j++){ if(arr[j]&&arr[j].id===ev.id){ arr.splice(j,1); break; } }
             }
             try { playRecoverCine(); } catch(e){}
           }

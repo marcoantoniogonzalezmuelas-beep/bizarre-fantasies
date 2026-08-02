@@ -9,6 +9,8 @@
 //  - Animación: la carta vuela desde la mano al centro del campo de batalla al
 //    jugarse. La cinemática 3D (fénix, transformer…) y la exhibición de la carta
 //    en el centro las gestionan los parches existentes al detectarse el efecto.
+//  La pila de descartes (cartas usadas/destruidas) la gestiona el parche
+//  dedicado discardPilePatch; aquí ya no la tocamos.
 export const HAND_DIRECT_PLAY_PATCH = `
 <script>
 (function(){
@@ -24,14 +26,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
   '.chip.bf-chip-card .bf-chip-play.bf-chip-play-new{background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f)!important;border:2px solid #7c5410!important;color:#3a2600!important;box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)!important;width:40px!important;height:40px!important;font-weight:1000;animation:bfHandPlayPulse 1.8s ease-in-out infinite}'+
   '.chip.bf-chip-card .bf-chip-play.bf-chip-play-new .bf-chip-play-ico{font-size:18px;line-height:1;text-shadow:0 1px 1px rgba(255,255,255,.4)}'+
   '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-play.bf-chip-play-new{animation:none}'+
-  '@keyframes bfHandPlayPulse{0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)}50%{box-shadow:0 4px 22px rgba(255,210,74,.95),inset 0 1px 2px rgba(255,255,255,.6),0 0 20px rgba(255,210,74,.65)}}'+
-  // Pila de objetos usados (descartes): mazo boca abajo junto a la mano.
-  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:3px;margin:2px 0 0 10px;vertical-align:top;cursor:help}'+
-  '.bf-discard-stack{position:relative;width:40px;height:56px}'+
-  '.bf-discard-card{position:absolute;width:40px;height:56px;border-radius:6px;border:1.5px solid #5a3a0a;background:url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png") center/cover #120a1e;box-shadow:0 2px 6px rgba(0,0,0,.6)}'+
-  '.bf-discard-count{position:absolute;right:-7px;bottom:-7px;min-width:19px;height:19px;border-radius:10px;background:#FFD24A;color:#3a2600;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 5px rgba(0,0,0,.6);border:1px solid #7c5410}'+
-  '.bf-discard-lbl{font-size:8.5px;font-weight:800;color:#a78be0;letter-spacing:.5px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
-  '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-14px) rotate(8deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-stack.bf-just{animation:bfDiscardIn .4s ease-out}';
+  '@keyframes bfHandPlayPulse{0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)}50%{box-shadow:0 4px 22px rgba(255,210,74,.95),inset 0 1px 2px rgba(255,255,255,.6),0 0 20px rgba(255,210,74,.65)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function mySide(){ try{ if(typeof NET!=='undefined'&&NET.role==='client'&&NET.mySide) return NET.mySide; }catch(e){} return 'p'; }
@@ -56,54 +51,6 @@ export const HAND_DIRECT_PLAY_PATCH = `
     requestAnimationFrame(function(){fly.style.left=(tx-70)+'px';fly.style.top=(ty-95)+'px';fly.style.transform='scale(1.45) rotate('+(Math.random()*20-10)+'deg)';fly.style.opacity='0';});
     setTimeout(function(){if(fly.parentNode)fly.parentNode.removeChild(fly);},820);
   }
-
-  // ---- Pila de descartes (objetos usados) ----
-  // Cuando un objeto se consume (desaparece de G.items[side]) se mueve a
-  // G.itemDescarte[side] (array de ids). Se sincroniza por diff de G.items
-  // (que ya viaja en el snapshot online), así no hace falta tocar netSync.
-  function idCounts(arr){var c={};(arr||[]).forEach(function(it){if(!it)return;var k=it.id||it.name;c[k]=(c[k]||0)+1;});return c;}
-  var dBattle=false,lastCounts=null,dJustSide=null;
-  function syncDiscard(){
-    if(typeof G==='undefined'||!G||!G.items) return;
-    var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
-    if(!inB){dBattle=false;lastCounts=null;return;}
-    if(!dBattle){
-      if(!G.itemDescarte) G.itemDescarte={p:[],o:[]};
-      lastCounts={p:idCounts(G.items.p),o:idCounts(G.items.o)};
-      dBattle=true; return;
-    }
-    if(!G.itemDescarte) G.itemDescarte={p:[],o:[]};
-    ['p','o'].forEach(function(sd){
-      var cur=idCounts(G.items[sd]),prev=lastCounts[sd]||{};
-      Object.keys(prev).forEach(function(id){var c=prev[id]-(cur[id]||0);if(c>0){for(var i=0;i<c;i++)G.itemDescarte[sd].push(id);dJustSide=sd;}});
-      lastCounts[sd]=cur;
-    });
-  }
-  // Caché del último conteo pintado por lado: solo tocamos el DOM cuando
-  // cambia. Si reescribimos la pila en cada callback del MutationObserver de
-  // documentElement, el propio observer se dispara por nuestras mutaciones y
-  // entra en un bucle de retroalimentación que congela la página al arrancar
-  // la batalla.
-  var lastDiscardCount={p:-1,o:-1};
-  function renderDiscardPile(side){
-    var hand=document.getElementById('hand_'+side); if(!hand){ lastDiscardCount[side]=-1; return; }
-    if(typeof G==='undefined'||!G||!G.itemDescarte){ var ex0=hand.querySelector('.bf-discard-pile'); if(ex0)ex0.remove(); lastDiscardCount[side]=-1; return; }
-    var count=(G.itemDescarte[side]||[]).length;
-    if(count<=0){
-      var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
-      lastDiscardCount[side]=-1; return;
-    }
-    if(count===lastDiscardCount[side]) return; // sin cambios → no mutamos
-    lastDiscardCount[side]=count;
-    var ex2=hand.querySelector('.bf-discard-pile'); if(ex2)ex2.remove();
-    var pile=document.createElement('div'); pile.className='bf-discard-pile'; pile.title='Objetos usados · '+count;
-    pile.innerHTML='<div class="bf-discard-stack'+(dJustSide===side?' bf-just':'')+'"><div class="bf-discard-card" style="top:3px;left:3px"></div><div class="bf-discard-card" style="top:0;left:0"></div><span class="bf-discard-count">'+count+'</span></div><div class="bf-discard-lbl">Usados</div>';
-    var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
-    if(ref&&ref.parentNode===hand) hand.insertBefore(pile,ref.nextSibling); else hand.appendChild(pile);
-  }
-  // Hook para una futura habilidad de "recuperar objeto": saca el último objeto
-  // descartado del lado indicado y devuelve su id para re-añadirlo a la mano.
-  window.bfDiscardPop=function(side){ if(typeof G==='undefined'||!G||!G.itemDescarte) return null; var arr=G.itemDescarte[side]||[]; return arr.length?arr.pop():null; };
 
   function process(){
     var side=mySide();
@@ -154,7 +101,6 @@ export const HAND_DIRECT_PLAY_PATCH = `
         play.parentNode.replaceChild(np,play);
       }
     });
-    if(inBattle){ syncDiscard(); renderDiscardPile(side); if(dJustSide) dJustSide=null; }
   }
 
   new MutationObserver(function(){ requestAnimationFrame(process); }).observe(document.documentElement,{childList:true,subtree:true});
