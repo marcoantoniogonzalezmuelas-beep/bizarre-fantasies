@@ -14,15 +14,15 @@ export const DISCARD_PILE_PATCH = `
 
   var CARD_BACK = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png';
 
-  // La pila de descartes se dibuja como una carta boca abajo idéntica en
-  // estilo a las cartas de la mano del rival (borde dorado, reverso, proporción
-  // 3/4.1), con un contador y la etiqueta "Descartes" debajo.
+  // La pila de descartes es una carta más boca abajo (mismo reverso que la
+  // mano del rival) con un borde de color distinto (naranja/ámbar) para
+  // distinguirla de las cartas del jugador (dorado) y del rival (violeta).
+  // Un pequeño badge muestra el nº de cartas descartadas.
   var css = ''+
-  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:5px;margin:6px 0 0 14px;vertical-align:top;cursor:help;user-select:none}'+
-  '.bf-discard-stack{position:relative;border-radius:10px;overflow:hidden;border:1.5px solid rgba(255,210,74,.6);background:#07050b;box-shadow:0 5px 14px rgba(0,0,0,.6),0 0 12px rgba(255,210,74,.22)}'+
-  '.bf-discard-card{position:absolute;border-radius:9px;background:url("'+CARD_BACK+'") center/cover #120a1e}'+
-
-  '.bf-discard-lbl{font-family:Cinzel,serif;font-size:9px;font-weight:900;color:#ffd24a;letter-spacing:.6px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
+  '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 0 10px;vertical-align:top;cursor:help;user-select:none;position:relative}'+
+  '.bf-discard-stack{position:relative;border-radius:10px;overflow:hidden;background-image:url("'+CARD_BACK+'");background-size:cover;background-position:center;background-color:#120a1e;border:1.5px solid rgba(255,140,50,.7);box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(255,140,50,.3);pointer-events:none}'+
+  '.bf-discard-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#ff8c32,#d4601a);border:1.5px solid #1a0e04;color:#fff;font-family:Rubik,sans-serif;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,.6),0 0 8px rgba(255,140,50,.5);z-index:5;pointer-events:none}'+
+  '.bf-discard-lbl{font-family:Cinzel,serif;font-size:8px;font-weight:900;color:rgba(255,140,50,.95);letter-spacing:.6px;text-transform:uppercase;text-shadow:0 1px 2px #000;white-space:nowrap}'+
   '@keyframes bfDiscardIn{from{opacity:0;transform:translateY(-16px) rotate(10deg) scale(.8)}to{opacity:1;transform:none}}.bf-discard-stack.bf-just{animation:bfDiscardIn .45s ease-out}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
@@ -108,10 +108,10 @@ export const DISCARD_PILE_PATCH = `
     pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
     var just=(window.__bfDiscardJust===side);
     var html='<div class="bf-discard-stack'+(just?' bf-just':'')+'" style="width:'+cw+'px;height:'+ch+'px">';
-    var shown=Math.min(count,3);
-    for(var i=0;i<shown;i++) html+='<div class="bf-discard-card" style="top:'+(i*2)+'px;left:'+(i*2)+'px;width:'+cw+'px;height:'+ch+'px"></div>';
-    if(count===0) html+='<div class="bf-discard-card" style="top:0;left:0;width:'+cw+'px;height:'+ch+'px;opacity:.5"></div>';
-    html+='</div><div class="bf-discard-lbl">Descartes</div>';
+    if(count===0) html+='<div style="position:absolute;inset:0;opacity:.45"></div>';
+    html+='</div>';
+    if(count>0) html+='<div class="bf-discard-badge">'+(count>99?'99+':count)+'</div>';
+    html+='<div class="bf-discard-lbl">Descartes</div>';
     pile.innerHTML=html;
     var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
     if(ref&&ref.parentNode===hand) hand.insertBefore(pile,ref.nextSibling); else hand.appendChild(pile);
