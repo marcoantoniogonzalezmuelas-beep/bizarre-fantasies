@@ -27,7 +27,7 @@ export const NET_RECONNECT_PATCH = `
   window.__bfGetResume=function(){
     try{
       var i=JSON.parse(localStorage.getItem(RESUME_KEY)||'null');
-      if(i&&i.code&&Date.now()-(i.ts||0)<600000)return i;
+      if(i&&i.code&&Date.now()-(i.ts||0)<300000)return i;
     }catch(e){}
     return null;
   };
@@ -219,9 +219,9 @@ export const NET_RECONNECT_PATCH = `
     var btn=document.getElementById('homeBtn');
     if(!btn)return;
     window.__bfQuitHooked=true;
-    // Al salir de una partida online NO se envía 'bye': el rival verá
-    // "Tu rival se ha desconectado" con opción de esperar 5 minutos o
-    // volver al inicio. El jugador que sale puede reanudar al volver.
+    // Botón "Salir" = salida INTENCIONAL: se envía 'bye' para que el rival
+    // reciba "ha abandonado" con opción de volver al inicio (sin esperarl.
+    // Se borra la copia de reanudación: el que sale a propósito no reanuda.
     btn.addEventListener('click',function(e){
       if(typeof G==='undefined'||!G.online||G._gameOver)return;
       if(typeof NET==='undefined'||!NET.role)return;
@@ -229,14 +229,14 @@ export const NET_RECONNECT_PATCH = `
       e.preventDefault();e.stopPropagation();
       btn.dataset.bfConfirming='1';
       if(typeof modal==='function'){
-        modal('<h3>Salir de la partida</h3><div class="modal-note" style="font-size:15px">Podrás reanudar la partida cuando vuelvas. Tu rival podrá esperar 5 minutos o volver al inicio.</div><div style="margin-top:16px;text-align:center;display:flex;gap:10px;justify-content:center"><button class="btn primary" id="bf-quit-yes">Salir</button><button class="btn" id="bf-quit-no">Cancelar</button></div>');
+        modal('<h3>Salir de la partida</h3><div class="modal-note" style="font-size:15px">Si sales, tu rival será notificado y la partida terminará.</div><div style="margin-top:16px;text-align:center;display:flex;gap:10px;justify-content:center"><button class="btn primary" id="bf-quit-yes">Sí, salir</button><button class="btn" id="bf-quit-no">Cancelar</button></div>');
         setTimeout(function(){
           var yes=document.getElementById('bf-quit-yes'),no=document.getElementById('bf-quit-no');
-          if(yes)yes.onclick=function(){quitting=true;setTimeout(function(){location.reload();},200);};
+          if(yes)yes.onclick=function(){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();setTimeout(function(){location.reload();},200);};
           if(no)no.onclick=function(){btn.dataset.bfConfirming='';};
         },50);
       } else {
-        if(confirm('¿Salir de la partida? Podrás reanudarla cuando vuelvas.')){quitting=true;setTimeout(function(){location.reload();},200);}
+        if(confirm('¿Salir de la partida? Tu rival será notificado.')){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();setTimeout(function(){location.reload();},200);}
         else btn.dataset.bfConfirming='';
       }
     },true);

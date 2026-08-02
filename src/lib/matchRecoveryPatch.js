@@ -11,7 +11,7 @@ export const MATCH_RECOVERY_PATCH = `
 (function(){
   if(window.__bfMatchRecovery)return;
   window.__bfMatchRecovery=true;
-  var KEY='bfSavedMatch',TTL=600000;
+  var KEY='bfSavedMatch',TTL=300000;
   // Campos de G que hay que conservar para que el anfitrión pueda retomar
   // la partida como autoridad (el snapshot online no incluye todos).
   var GF=['names','coins','equipReserve','equipCoins','bfEquipXfer','team','spellbook','items','bonus','eqReady','pendDebt','pools','curType','aIndex','cands','epicCands','bids','bidsIn','eqShop','eqSide','phaseResult','phaseNeeds','subRound'];
@@ -79,8 +79,11 @@ export const MATCH_RECOVERY_PATCH = `
   }
 
   // ---- Aviso "Reanudar partida" en la portada ----
+  // El jugador que salió por error (recarga, cierre accidental) ve SOLO la
+  // opción de reanudar + un reloj de cuenta atrás de 5 minutos. Si no
+  // reanuda en ese tiempo, los datos caducan y la opción desaparece.
   var st=document.createElement('style');
-  st.textContent='#bf-resume{position:fixed;inset:0;z-index:100600;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(4px)}#bf-resume .bf-res-box{text-align:center;max-width:360px;padding:26px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.6);box-shadow:0 18px 50px rgba(0,0,0,.7)}#bf-resume .bf-res-ico{font-size:40px;margin-bottom:8px}#bf-resume .bf-res-t{font-family:Cinzel,serif;font-weight:900;font-size:19px;color:#ffe49a}#bf-resume .bf-res-s{margin-top:8px;font-size:13px;line-height:1.45;color:#cfc6dd}#bf-resume button{font-family:Cinzel,serif;font-weight:900;font-size:14px;border-radius:11px;padding:11px 18px;cursor:pointer;margin:6px}#bf-resume .bf-res-go{border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}#bf-resume .bf-res-no{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#efe9dc}';
+  st.textContent='#bf-resume{position:fixed;inset:0;z-index:100600;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(4px)}#bf-resume .bf-res-box{text-align:center;max-width:360px;padding:26px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.6);box-shadow:0 18px 50px rgba(0,0,0,.7)}#bf-resume .bf-res-ico{font-size:40px;margin-bottom:8px}#bf-resume .bf-res-t{font-family:Cinzel,serif;font-weight:900;font-size:19px;color:#ffe49a}#bf-resume .bf-res-s{margin-top:8px;font-size:13px;line-height:1.45;color:#cfc6dd}#bf-resume .bf-res-clock{margin-top:16px;font-family:Cinzel,serif;font-weight:900;font-size:36px;color:#FFD24A;text-shadow:0 0 18px rgba(255,210,74,.5)}#bf-resume .bf-res-clock-lbl{margin-top:4px;font-size:11px;color:#9a8fb5;letter-spacing:.5px}#bf-resume .bf-res-go{margin-top:14px;font-family:Cinzel,serif;font-weight:900;font-size:15px;border-radius:12px;padding:13px 22px;cursor:pointer;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}';
   document.head.appendChild(st);
 
   function maybePrompt(){
@@ -93,20 +96,26 @@ export const MATCH_RECOVERY_PATCH = `
     var d=host||cli;
     if(!d)return;
     window.__bfResumeAsked=true;
-    var min=Math.max(1,Math.round((Date.now()-(d.ts||0))/60000));
     var ov=document.createElement('div');
     ov.id='bf-resume';
-    ov.innerHTML='<div class="bf-res-box"><div class="bf-res-ico">⚔️</div><div class="bf-res-t">Partida online en curso</div><div class="bf-res-s">Tienes una partida online sin terminar (hace '+min+' min, sala '+(d.code||'')+').<br>¿Quieres reanudarla donde estaba?</div><div style="margin-top:14px"><button class="bf-res-go">Reanudar partida</button><button class="bf-res-no">Descartar</button></div></div>';
+    ov.innerHTML='<div class="bf-res-box"><div class="bf-res-ico">⚔️</div><div class="bf-res-t">Reanudar partida</div><div class="bf-res-s">Tienes una partida online sin terminar.<br>Puedes reanudarla donde estaba.</div><div class="bf-res-clock">5:00</div><div class="bf-res-clock-lbl">TIEMPO RESTANTE</div><button class="bf-res-go">Reanudar partida</button></div>';
     document.body.appendChild(ov);
+    // Reloj de cuenta atrás de 5 minutos: cuando llega a 0, el aviso se cierra
+    // (los datos ya han caducado, el rival ya no estará esperando).
+    var tEl=ov.querySelector('.bf-res-clock');
+    var t0=(d.ts||Date.now()),end=t0+TTL;
+    var tickIv=setInterval(function(){
+      if(!ov.parentNode){clearInterval(tickIv);return;}
+      var rem=Math.max(0,Math.ceil((end-Date.now())/1000));
+      var m=Math.floor(rem/60),s=rem%60;
+      tEl.textContent=m+':'+(s<10?'0':'')+s;
+      if(rem<=0){clearInterval(tickIv);ov.remove();}
+    },500);
     ov.querySelector('.bf-res-go').onclick=function(){
+      clearInterval(tickIv);
       ov.remove();
       if(host)restoreHost(host);
       else if(window.bfResumeMatch)window.bfResumeMatch();
-    };
-    ov.querySelector('.bf-res-no').onclick=function(){
-      clearSave();
-      try{localStorage.removeItem('bfResumeMatch');}catch(e){}
-      ov.remove();
     };
   }
   setInterval(maybePrompt,1000);
