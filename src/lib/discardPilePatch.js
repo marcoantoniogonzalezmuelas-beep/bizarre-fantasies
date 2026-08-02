@@ -83,23 +83,27 @@ export const DISCARD_PILE_PATCH = `
     lastEq[side]=cur;
   }
 
-  // ---- Render fijo (idempotente: sólo repecta cuando cambia el conteo) ----
+  // ---- Render fijo (idempotente: repecta al cambiar el conteo O el tamaño) ----
   var lastCount={p:-1,o:-1};
+  var lastSize={p:0,o:0};
+  // Las cartas de la mano se encogen cuando no es tu turno: la pila de
+  // descartes ha de verse SIEMPRE al tamaño completo de carta de mano, así
+  // que cacheamos el tamaño más grande medido y no dejamos que encoja.
+  var maxW=0,maxH=0;
   function renderPile(side){
     var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
     var hand=document.getElementById('hand_'+side);
-    if(!inB||!hand){ var e0=document.querySelector('.bf-discard-pile'); if(e0)e0.remove(); lastCount[side]=-1; return; }
+    if(!inB||!hand){ var e0=document.querySelector('.bf-discard-pile'); if(e0)e0.remove(); lastCount[side]=-1; lastSize[side]=0; return; }
     var count=ensurePile(side)?G.itemDescarte[side].length:0;
-    if(count===lastCount[side]) { var ex=hand.querySelector('.bf-discard-pile'); if(ex) return; }
-    lastCount[side]=count;
-    var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
-    // Medimos el tamaño real de las cartas de la mano (.chip) para que la
-    // pila de descartes tenga exactamente el mismo tamaño que las cartas.
-    // Tamaño = mismo que las cartas de la mano (chip.bf-chip-card); si no hay,
-    // caemos a la proporción de carta 3/4.1.
-    var cw=80,ch=110;
+    var cw=0,ch=0;
     var refChip=hand.querySelector('.chip.bf-chip-card')||hand.querySelector('.chip');
     if(refChip){ var r=refChip.getBoundingClientRect(); if(r.width) cw=Math.round(r.width); if(r.height) ch=Math.round(r.height); }
+    if(cw>maxW)maxW=cw; if(ch>maxH)maxH=ch;
+    cw=maxW||cw||80; ch=maxH||ch||110;
+    var sizeKey=cw*1000+ch;
+    if(count===lastCount[side] && sizeKey===lastSize[side]) { var ex=hand.querySelector('.bf-discard-pile'); if(ex) return; }
+    lastCount[side]=count; lastSize[side]=sizeKey;
+    var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
     var pile=document.createElement('div'); pile.className='bf-discard-pile';
     pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
     var just=(window.__bfDiscardJust===side);
@@ -129,7 +133,7 @@ export const DISCARD_PILE_PATCH = `
     if(!inB){
       lastItems={p:null,o:null}; lastEq={p:null,o:null};
       var el=document.querySelector('.bf-discard-pile'); if(el)el.remove();
-      lastCount={p:-1,o:-1}; return;
+      lastCount={p:-1,o:-1}; lastSize={p:0,o:0}; return;
     }
     var side=mySide();
     try{ diffObjects(side); diffEq(side); }catch(e){}

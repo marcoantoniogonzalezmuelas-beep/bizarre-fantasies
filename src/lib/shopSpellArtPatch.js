@@ -22,7 +22,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (!e.data) return;
     if (e.data.bfArtMap)   ART_BY_NAME  = e.data.bfArtMap  || {};
     if (e.data.bfCardInfo) INFO_BY_NAME = e.data.bfCardInfo || {};
-    if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncRecover(); scan(); }, 0); }
+    if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncRecover(); scan(); rerenderShop(); }, 0); }
   });
   try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
 
@@ -109,10 +109,14 @@ export const SHOP_SPELL_ART_PATCH = `
     }
   }
 
+  // Re-renderiza la tienda de equipo tras sincronizar el hechizo de la BD, para
+  // que el botón "Comprar" y el arte del modal aparezcan aunque la tienda ya
+  // se hubiera renderizado antes de llegar los datos de la BD (Oráculo).
+  function rerenderShop(){ if (typeof window.renderEquip === 'function' && typeof G !== 'undefined' && G && G.eqSide) { try { window.renderEquip(G.eqSide); } catch (e) {} } }
   function wrap() {
     if (typeof window.eqShopGrid !== 'function' || window.eqShopGrid.__bfNameArt) return;
     var orig = window.eqShopGrid;
-    window.eqShopGrid = function () { var html = orig.apply(this, arguments); setTimeout(function(){ syncRecover(); scan(); }, 0); return html; };
+    window.eqShopGrid = function () { try { syncRecover(); } catch(e){} var html = orig.apply(this, arguments); setTimeout(function(){ syncRecover(); scan(); }, 0); return html; };
     window.eqShopGrid.__bfNameArt = true;
   }
   wrap();
