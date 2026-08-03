@@ -29,6 +29,20 @@ export default function DrunkLights() {
     []
   );
 
+  // Burbujas chispeantes: pequeñas, rápidas y brillantes, como las de la cerveza
+  // espumando al brindis. Llevan un destelle blanco (sparkle) que parpadea.
+  const sparkles = useMemo(
+    () => Array.from({ length: 16 }, (_, i) => ({
+      left: 4 + i * 6.1 + (i % 3) * 3,
+      size: 6 + (i % 4) * 5,
+      dur: 3.2 + (i % 4) * 0.9,
+      delay: (i % 5) * 0.6,
+      drift: (i % 2 ? 1 : -1) * (10 + (i % 3) * 8),
+      hue: ['#fff2c0', '#ffe49a', '#fff8e0', '#ffd870'][i % 4],
+    })),
+    []
+  );
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
       {/* Tambaleo general suave (visión doble/desfase) */}
@@ -57,6 +71,17 @@ export default function DrunkLights() {
             border: '1px solid rgba(255,230,170,.18)', mixBlendMode: 'screen' }}
           animate={{ y: ['0vh', '-46vh'], x: [-b.drift/3, b.drift/3, -b.drift/3], opacity: [0, 0.7, 0.5, 0] }}
           transition={{ duration: b.dur, repeat: Infinity, ease: 'easeInOut', delay: b.delay }}
+        />
+      ))}
+
+      {/* Burbujas chispeantes (espuma del brindis) */}
+      {sparkles.map((s, k) => (
+        <motion.div key={'s'+k} className="absolute bottom-[-4%] rounded-full pointer-events-none"
+          style={{ left: `${s.left}%`, width: s.size, height: s.size,
+            background: `radial-gradient(circle at 38% 32%, #ffffff 0%, ${s.hue} 45%, ${s.hue}33 72%, transparent 80%)`,
+            boxShadow: `0 0 10px ${s.hue}, 0 0 18px ${s.hue}88`, mixBlendMode: 'screen' }}
+          animate={{ y: ['0vh', '-52vh'], x: [-s.drift/2, s.drift/2, -s.drift/3, s.drift/2], opacity: [0, 1, 0.9, 0], scale: [0.7, 1.15, 1, 0.6] }}
+          transition={{ duration: s.dur, repeat: Infinity, ease: 'easeOut', delay: s.delay }}
         />
       ))}
 

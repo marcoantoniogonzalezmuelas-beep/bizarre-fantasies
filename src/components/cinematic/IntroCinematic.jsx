@@ -9,6 +9,7 @@ import MetalLights from '@/components/cinematic/MetalLights';
 import DrunkLights from '@/components/cinematic/DrunkLights';
 import ComedyLights from '@/components/cinematic/ComedyLights';
 import DroneLights from '@/components/cinematic/DroneLights';
+import DecepticonLights from '@/components/cinematic/DecepticonLights';
 import PhoenixLights from '@/components/cinematic/PhoenixLights';
 import ArcadeLights from '@/components/cinematic/ArcadeLights';
 import CraneLights from '@/components/cinematic/CraneLights';
@@ -82,7 +83,7 @@ function buildScenes() {
     { clash: { left: RETROPOETA_ELITE, right: HEAVY, accent: '#7c9cff', kind: 'sword', swap: true, motion: 'diagonal', fx: 'metal' }, kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 12 },
     { clash: { left: REV_ELITE, right: ELD_ELITE, accent: '#ffc24a', kind: 'chill', swap: false, motion: 'up', fx: 'drunk' }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, el reverendo y el anciano elfo se reúnen junto al fuego: se curan las heridas, filosofan sobre el caos y brindan con la pipa y la cerveza espumando. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 12 },
     { clash: { left: GOR, right: SYL, accent: '#ff5a3c', kind: 'clash', swap: false, motion: 'rotate', fx: 'crane' }, kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 12 },
-    { clash: { left: TRA, right: TANK, accent: '#29a3ff', kind: 'shoot', swap: true, motion: 'charge' }, kicker: t('Choque mecánico'), title: t('Transformer contra el Tanque'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules contra el Tanque. El Tanque planta las orugas, atrapa los golpes con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Mecánico contra blindaje — y el asfalto empieza a fundirse.'), dur: 13 },
+    { clash: { left: TRA, right: TANK, accent: '#29a3ff', kind: 'shoot', swap: true, motion: 'charge', fx: 'decepticon' }, kicker: t('Choque mecánico'), title: t('Transformer contra el Tanque'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules contra el Tanque. El Tanque planta las orugas, atrapa los golpes con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Mecánico contra blindaje — y el asfalto empieza a fundirse.'), dur: 13 },
     { clash: { left: AVE, right: HANNAI, accent: '#ff7a18', kind: 'fire', swap: false, motion: 'down', fx: 'phoenix' }, kicker: t('Choque épico'), title: t('Ave Fénix contra Hannai Boa'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. Hannai Boa despliega su Sigilo Cuántico y se funde con las sombras: el fuego pasa de largo, las llamas lamien el vacío. Fuego contra sombra — y el fénix, desconcertado, remonta.'), dur: 13 },
     { clash: { left: PLUMA, right: SOL_ELITE, accent: '#ffb347', kind: 'fire', swap: true, motion: 'spin', fx: 'punkito' }, kicker: t('Renacimiento'), title: t('Pluma Fénix renace'), text: t('De una sola pluma ardiente renace un fénix joven: pequeño, veloz, envuelto en brasas. Se cuela entre los pliegues del manto de Solenna y le picotea los tobillos con picotazos de fuego. Solenna sonríe, invoca su Resurrección y lo envuelve todo en una luz dorada — pero el fénix ya está en otro lado, y ríe con voz de cría.'), dur: 12 },
     { expansion: { ducks: [KIL, KIL_ELITE], others: [ZAR, COF], accent: '#b13bff' }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 12 },
@@ -152,6 +153,7 @@ export default function IntroCinematic({ onClose }) {
       {cur.clash && cur.clash.fx === 'phoenix' && <PhoenixLights />}
       {cur.clash && cur.clash.fx === 'crane' && <CraneLights />}
       {cur.clash && cur.clash.fx === 'punkito' && <PunkitoLights />}
+{cur.clash && cur.clash.fx === 'decepticon' && <DecepticonLights />}
       {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
       {cur.versus && cur.versus.fx === 'arcade' && <ArcadeLights />}
       {cur.expansion && <ExpansionSlide ducks={cur.expansion.ducks} others={cur.expansion.others} accent={cur.expansion.accent} />}
