@@ -1,4 +1,4 @@
-// Parche inyectado en el iframe: hechizo "Reanimación Arcana" (nº 109).
+// Parche inyectado en el iframe: hechizo "Reanimación Arcana" (nº 117).
 // Recupera un objeto aleatorio del mazo de usados (G.itemDescarte[side]) y lo
 // devuelve a la mano. Se inyecta en SPELLS (comprable en la tienda de equipo),
 // engancha castSpell para su kind 'bf_recover', y reproduce una cinemática 3D
@@ -67,7 +67,7 @@ export const RECOVER_SPELL_PATCH = `
     if (SPELLS.some(function(s){return s&&s.id==='sp_recover';})) return true;
     // El nº/maná/texto/coste los sincroniza shopSpellArtPatch.syncAllEquip()
     // desde la BD (Oráculo); aquí sólo se inyecta con valores por defecto.
-    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:0, txt:'Recupera una carta aleatoria de tu pila de descartes y la devuelve a tu mano.' });
+    SPELLS.push({ id:'sp_recover', name:'Reanimación Arcana', element:'arcano', kind:'bf_recover', base:1, mana:12, cost:16, foil:true, num:117, txt:'Recupera una carta aleatoria de tu pila de descartes y la devuelve a tu mano.' });
     return true;
   }
 
