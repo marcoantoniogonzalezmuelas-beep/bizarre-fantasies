@@ -90,17 +90,22 @@ export const SHOP_SPELL_ART_PATCH = `
     });
   }
 
+  function mySide(){ try{ if(typeof NET!=='undefined'&&NET.role==='client'&&NET.mySide) return NET.mySide; }catch(e){} return 'p'; }
   // ---- Fallback genérico: aplica arte a chips de la mano por NOMBRE ----
   // Si injectHandArt() no pinta una carta (p.ej. hechizos inyectados
   // dinámicamente), este fallback aplica el arte directamente sobre el chip
   // buscando el nombre en ART_BY_NAME. Funciona para CUALQUIER carta de la BD
   // — sin necesitar un parche dedicado por carta.
+  // SOLO se aplica a la mano del jugador (mySide): la del rival se muestra
+  // boca abajo con el reverso del pollito (rivalHandBackPatch).
   function applyArtToChips() {
     if (!ART_BY_NAME) return;
     var names = Object.keys(ART_BY_NAME);
     if (!names.length) return;
-    ['hand_p','hand_o'].forEach(function(hid){
-      var hand = document.getElementById(hid); if (!hand) return;
+    var side = mySide();
+    var rivalSide = side === 'p' ? 'o' : 'p';
+    var hand = document.getElementById('hand_' + side);
+    if (hand) {
       hand.querySelectorAll('.chip').forEach(function (chip) {
         if (chip.dataset.bfArtDone === '1') return;
         // Saltar si el juego ya pintó el arte (injectHandArt pone background-image inline)
@@ -122,7 +127,18 @@ export const SHOP_SPELL_ART_PATCH = `
         chip.style.setProperty('background-color', '#120a1e', 'important');
         chip.dataset.bfArtDone = '1';
       });
-    });
+    }
+    // Limpia cualquier arte inline que injectHandArt u otra función haya puesto
+    // en la mano del rival — el reverso del pollito lo pinta rivalHandBackPatch.
+    var rivalHand = document.getElementById('hand_' + rivalSide);
+    if (rivalHand) {
+      rivalHand.querySelectorAll('.chip').forEach(function (chip) {
+        chip.style.removeProperty('background-image');
+        chip.style.removeProperty('background-size');
+        chip.style.removeProperty('background-position');
+        chip.style.removeProperty('background-color');
+      });
+    }
   }
 
   // ---- Sincronización genérica: el juego siempre busca arte por nº de BD ----
