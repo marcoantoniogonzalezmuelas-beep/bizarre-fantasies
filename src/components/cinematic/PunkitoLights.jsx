@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useCutoutSrc } from '@/lib/useCutoutSrc';
+import { useLightCutoutSrc } from '@/lib/useCutoutSrc';
 
 const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/97f6581ac_generated_image.png';
 
@@ -9,7 +9,7 @@ const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6
 // dejando estelas de luz mientras dos focos lo siguen y proyectan pools.
 export default function PunkitoLights() {
   const colors = ['#ffd24a', '#ffe27a', '#ff9a6a', '#b13bff', '#05d9ff'];
-  const cut = useCutoutSrc(PUNKITO_IMG);
+  const cut = useLightCutoutSrc(PUNKITO_IMG);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">

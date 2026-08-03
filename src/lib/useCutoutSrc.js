@@ -31,6 +31,44 @@ function process(url, done) {
   img.src = url;
 }
 
+// Variante que recorta fondos CLAROS (blanco/gris claro) en lugar de oscuros.
+// Útil para imágenes generadas que salen con fondo blanco en lugar de negro.
+const cacheLight = new Map();
+function processLight(url, done) {
+  if (cacheLight.has(url)) { done(cacheLight.get(url)); return; }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    try {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, c.width, c.height); const p = d.data;
+      for (let i = 0; i < p.length; i += 4) {
+        const mn = Math.min(p[i], p[i + 1], p[i + 2]);
+        if (mn > 232) p[i + 3] = 0;
+        else if (mn > 180) p[i + 3] = Math.round(p[i + 3] * (232 - mn) / 52);
+      }
+      x.putImageData(d, 0, 0);
+      const out = c.toDataURL('image/png');
+      cacheLight.set(url, out); done(out);
+    } catch (e) { cacheLight.set(url, url); done(url); }
+  };
+  img.onerror = () => { cacheLight.set(url, url); done(url); };
+  img.src = url;
+}
+
+export function useLightCutoutSrc(url) {
+  const [src, setSrc] = useState(() => cacheLight.get(url) || null);
+  useEffect(() => {
+    if (!url) return;
+    let cancelled = false;
+    processLight(url, (out) => { if (!cancelled) setSrc(out); });
+    return () => { cancelled = true; };
+  }, [url]);
+  return src;
+}
+
 export function preloadCutout(url) {
   if (!url || cache.has(url)) return;
   process(url, () => {});
