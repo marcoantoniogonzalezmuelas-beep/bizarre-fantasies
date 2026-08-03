@@ -12,11 +12,34 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
   const [enabled, setEnabled] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [topY, setTopY] = useState(null); // px (viewport) justo debajo de los iconos
   const signRef = useRef(null);
 
   const pz = pinchZ || 1;
   const scale = mobScale || 1;
   const MOB_W = 760; // ancho del cartel en coordenadas 1200 (escala igual que el juego)
+
+  // Mide la fila de iconos del menú (Aprende a jugar, Reglas, Razas…) dentro
+  // del iframe y coloca el cartel justo debajo. El iframe está en (0,0)
+  // escalado desde su esquina superior izquierda, así que la y en viewport =
+  // y_del_iframe * scale. Repite en resize/scroll para seguir al layout.
+  useEffect(() => {
+    const measure = () => {
+      const iframe = document.querySelector('iframe');
+      const doc = iframe?.contentDocument;
+      const links = doc?.querySelector('.title-links');
+      if (!links) return;
+      const r = links.getBoundingClientRect();
+      // r está en coordenadas internas del iframe (1200 en móvil); al estar el
+      // iframe en (0,0) escalado desde top-left, viewport-y = r.bottom * scale.
+      setTopY(r.bottom * scale + 14);
+    };
+    measure();
+    const iv = setInterval(measure, 800);
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', () => setTimeout(measure, 300));
+    return () => { clearInterval(iv); window.removeEventListener('resize', measure); };
+  }, [scale]);
 
   useEffect(() => {
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
@@ -50,22 +73,22 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     return () => clearInterval(iv);
   }, []);
 
-  if (!items.length || closed || !enabled || modalOpen) return null;
+  if (!items.length || closed || !enabled || modalOpen || topY == null) return null;
   const isEn = getLang() === 'en';
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
-  // Fijo: centrado horizontalmente y anclado abajo. Solo escala su tamaño
-  // con el zoom de pellizco (sin translación), igual que los iconos del menú.
-  // Origen "center bottom": al escalar crece hacia arriba dejando el borde
-  // inferior fijo en su ancla (no se desplaza al ampliarse).
+  // Fijo: centrado horizontalmente y anclado JUSTO DEBAJO de los iconos del
+  // menú. Solo escala su tamaño con el zoom de pellizco (sin translación),
+  // igual que los iconos. Origen "center top": crece hacia abajo desde el
+  // ancla superior (los iconos), así no se monta encima de ellos al zoom.
   const s = scale * pz;
   const style = {
     position: 'fixed',
     left: '50%',
-    bottom: isMobile ? '6vh' : '9vh',
+    top: topY,
     transform: `translateX(-50%) scale(${s})`,
-    transformOrigin: 'center bottom',
+    transformOrigin: 'center top',
     ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
   };
 
