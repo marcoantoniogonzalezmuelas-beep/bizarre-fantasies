@@ -6,6 +6,17 @@ import { t } from '@/lib/i18n';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5f6dbe23d_generated_image.png';
+const M = (h) => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + h;
+const AI_AVATARS = {
+  'IA Novata': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a' },
+  'AI Novice': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a' },
+  'IA Bersérker': { art: M('274f7a3e2_generated_image.png'), color: '#ff5a3c' },
+  'AI Berserker': { art: M('274f7a3e2_generated_image.png'), color: '#ff5a3c' },
+  'IA Estratega': { art: M('88ab0dd62_generated_image.png'), color: '#7c9cff' },
+  'AI Strategist': { art: M('88ab0dd62_generated_image.png'), color: '#7c9cff' },
+  'IA Némesis': { art: M('fd6b3a75e_generated_image.png'), color: '#c06bff' },
+  'AI Nemesis': { art: M('fd6b3a75e_generated_image.png'), color: '#c06bff' },
+};
 
 function top(map, n = 10, extraMap) {
   return Object.entries(map)
@@ -35,9 +46,12 @@ export default function Ranking() {
   // Tokens invocados en batalla (no son héroes): fuera de las listas de héroes.
   const SUMMON_TOKENS = ['Patito de Goma'];
   const wins = {}, losses = {}, heroWins = {}, heroLosses = {}, heroDeaths = {}, heroElites = {};
+  const aiWins = {}, aiLosses = {};
   (results || []).forEach(r => {
     if (!r.winner_is_ai) wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
     if (!r.loser_is_ai) losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
+    if (r.winner_is_ai) aiWins[r.winner_nick] = (aiWins[r.winner_nick] || 0) + 1;
+    if (r.loser_is_ai) aiLosses[r.loser_nick] = (aiLosses[r.loser_nick] || 0) + 1;
     (r.winner_heroes || []).forEach(h => {
       if (!h.name || SUMMON_TOKENS.includes(h.name)) return;
       heroWins[h.name] = (heroWins[h.name] || 0) + 1;
@@ -54,6 +68,11 @@ export default function Ranking() {
   const playerExtra = (nick) => {
     const w = wins[nick] || 0, l = losses[nick] || 0;
     return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
+  };
+  const aiExtra = (nick) => {
+    const w = aiWins[nick] || 0, l = aiLosses[nick] || 0;
+    if (w + l === 0) return '';
+    return `${w}V · ${l}D · ${Math.round((w / (w + l)) * 100)}%`;
   };
 
   return (
@@ -80,6 +99,9 @@ export default function Ranking() {
           <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
               <RankList title={t('Mejores jugadores')} icon="👑" rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} />
+            </div>
+            <div className="md:col-span-2">
+              <RankList title={t('Rivales IA más temibles')} icon="🤖" rows={top(aiWins, 10, aiExtra)} valueLabel={t('victorias')} accent="#c06bff" empty={t('Ninguna IA ha ganado todavía. ¡Enfréntate a ellas!')} artMap={AI_AVATARS} />
             </div>
             <RankList title={t('Héroes más victoriosos')} icon="⚔️" rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
             <RankList title={t('Héroes más derrotados')} icon="💀" rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
