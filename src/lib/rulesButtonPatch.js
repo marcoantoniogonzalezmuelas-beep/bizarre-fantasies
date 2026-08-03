@@ -29,8 +29,9 @@ export const RULES_BUTTON_PATCH = `
       // Clona sin listeners (addEventListener) y sobreescribe el onclick
       // inline para que NO abra el modal nativo, solo navegue a la app.
       var clone=btn.cloneNode(true);
-      clone.onclick=function(){try{window.parent.postMessage({bfNavigate:NAV_TO},'*');}catch(e){}};
       clone.removeAttribute('onclick');
+      clone.onclick=null;
+      clone.addEventListener('click',function(){try{window.parent.postMessage({bfNavigate:NAV_TO},'*');}catch(e){}});
       btn.replaceWith(clone);
       done=true;
     });
