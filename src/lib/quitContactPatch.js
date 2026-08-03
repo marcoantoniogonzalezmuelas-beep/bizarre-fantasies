@@ -82,6 +82,48 @@ export function buildQuitContactPatch(texts) {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchModal);
   else watchModal();
 
+  // Móvil/tablet: zona táctil invisible ampliada (~22px) alrededor del botón
+  // "Salir" para que sea más fácil acertar sin aumentar su tamaño visual. La
+  // zona es transparente, sigue al botón al reposicionarse y reenvía el toque.
+  function patchHomeHit(){
+    if (!isTouch) return;
+    var btn = document.getElementById('homeBtn');
+    if (!btn || btn.dataset.bfHit === '1') return;
+    btn.dataset.bfHit = '1';
+    var hit = document.createElement('div');
+    hit.className = 'bf-home-hit';
+    hit.setAttribute('aria-hidden', 'true');
+    function sync(){
+      var r = btn.getBoundingClientRect();
+      if (!r.width) return;
+      var pad = 22;
+      var s = hit.style;
+      s.position = 'fixed';
+      s.width = (r.width + pad*2) + 'px';
+      s.height = (r.height + pad*2) + 'px';
+      s.left = (r.left - pad) + 'px';
+      s.top = (r.top - pad) + 'px';
+    }
+    function fire(e){ e.preventDefault(); e.stopPropagation(); btn.click(); }
+    hit.addEventListener('click', fire);
+    hit.addEventListener('touchstart', fire, { passive:false });
+    document.body.appendChild(hit);
+    sync();
+    window.addEventListener('resize', sync);
+    window.addEventListener('orientationchange', function(){ setTimeout(sync, 300); });
+    window.addEventListener('scroll', sync, true);
+    setInterval(sync, 700);
+  }
+  var hitStyle = document.createElement('style');
+  hitStyle.textContent = '.bf-home-hit{position:fixed;z-index:5990;background:transparent;border:0;cursor:pointer;pointer-events:auto;}#homeBtn{position:relative;z-index:5995;}';
+  document.head.appendChild(hitStyle);
+  function ensureHomeHit(){
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', patchHomeHit); }
+    else patchHomeHit();
+    new MutationObserver(function(){ var n=Date.now(); if(n-(patchHomeHit._t||0)<400)return; patchHomeHit._t=n; patchHomeHit(); }).observe(document.documentElement, { childList:true, subtree:true });
+  }
+  ensureHomeHit();
+
   function inject(){
     var title = document.getElementById('s-title');
     if (!title || document.getElementById('bf-contact')) return;
