@@ -23,15 +23,6 @@ export const DEMO_TIPS_PATCH = `
   '@keyframes bfTipPoke{0%,100%{transform:translate(0,0)}50%{transform:translate(var(--px,0px),var(--py,7px))}}'+
   '.bf-tip-halo{position:fixed;z-index:99994;border-radius:16px;border:2px solid rgba(255,210,74,.55);pointer-events:none;display:none;animation:bfTipHalo 2s ease-out infinite}'+
   '@keyframes bfTipHalo{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}';
-  var IS_MOB=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent||'')||navigator.maxTouchPoints>1;
-  if(IS_MOB){
-    css+=''+
-    '.bf-tip{max-width:480px!important}'+
-    '.bf-tip-pill{padding:20px 56px 20px 32px!important;font-size:38px!important;border-radius:24px!important;border-width:3px!important;line-height:1.3!important}'+
-    '.bf-tip-x{width:46px;height:46px;font-size:28px;border-width:3px!important;top:-10px;right:-10px}'+
-    '.bf-tip-finger{font-size:56px!important}'+
-    '.bf-tip-halo{border-width:4px!important;border-radius:20px!important}';
-  }
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   var EN=!!window.__bfLangEn;
@@ -120,6 +111,7 @@ export const DEMO_TIPS_PATCH = `
   // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
   // volver a la portada (s-title) — fin de la demo.
   function tick(){
+    if(document.body.style.transform)return;
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;
@@ -151,9 +143,7 @@ export const DEMO_TIPS_PATCH = `
         }
       }
       if(!el){n.tip.style.display='none';n.halo.style.display='none';return;}
-      var rawR=el.getBoundingClientRect();
-      var PS=window.__bfPinchState||{z:1,tx:0,ty:0};
-      var r={left:(rawR.left-PS.tx)/PS.z,top:(rawR.top-PS.ty)/PS.z,width:rawR.width/PS.z,height:rawR.height/PS.z,right:(rawR.right-PS.tx)/PS.z,bottom:(rawR.bottom-PS.ty)/PS.z};
+      var r=el.getBoundingClientRect();
       n.halo.style.display='block';
       n.halo.style.left=(r.left-5)+'px';n.halo.style.top=(r.top-5)+'px';
       n.halo.style.width=(r.width+10)+'px';n.halo.style.height=(r.height+10)+'px';
@@ -166,7 +156,7 @@ export const DEMO_TIPS_PATCH = `
       }
       n.tip.style.display='flex';
       var finger=n.tip.querySelector('.bf-tip-finger');
-      var w=n.tip.offsetWidth||(IS_MOB?380:190),h=n.tip.offsetHeight||(IS_MOB?130:62),x,y;
+      var w=n.tip.offsetWidth||190,h=n.tip.offsetHeight||62,x,y;
       n.tip.className='bf-tip';
       if(t.place==='over'){
         // Centrado SOBRE el elemento (cartas grandes): no tapa nada de alrededor.

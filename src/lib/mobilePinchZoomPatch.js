@@ -20,10 +20,6 @@ export const MOBILE_PINCH_PATCH = `
     var b = document.body;
     b.style.transformOrigin = '0 0';
     b.style.transform = (z === 1 && !tx && !ty) ? '' : 'translate(' + tx + 'px,' + ty + 'px) scale(' + z + ')';
-    // Estado del pellizco accesible a otros parches (tips de la demo) para que
-    // conviertan coordenadas visuales → coordenadas del body y se posicionen
-    // correctamente aunque el body tenga transform de pellizco.
-    window.__bfPinchState = { z: z, tx: tx, ty: ty };
     // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
     // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
     // Solo se envía si los valores cambiaron (evita postMessage redundantes).
