@@ -13,7 +13,7 @@ const STATS = [
   { k: '🔵', n: T('Maná', 'Mana'), d: T('Reserva para hechizos y objetos. No se regenera: recúpéralo con Cristal u Orbe de Maná.', 'Reserve for spells and items. It doesn’t regenerate: recover it with a Mana Crystal or Orb.'), c: '#6ec6ff' },
   { k: '🪙', n: T('Coste de oro', 'Gold cost'), d: T('Monedas que cuesta en subasta / equipamiento.', 'Coins it costs in auction / equipment.'), c: '#FFD24A' },
   { k: 'Pow', n: T('Potencia', 'Power'), d: T('Multiplicador de daño del arma a distancia.', 'Ranged weapon damage multiplier.'), c: '#caa12f' },
-  { k: '⚡', n: T('Velocidad', 'Speed'), d: T('Desempata turnos iguales: va antes quien tenga más.', 'Breaks turn ties: the higher speed goes first.'), c: '#ffe14a' },
+  { k: '⚡', n: T('Velocidad', 'Speed'), d: T('Marcador ⚡ + número en cada héroe. Desempata turnos del mismo tipo: va antes el más rápido. Los más veloces (≥21) brillan en oro con el sello RÁPIDO.', 'The ⚡ + number marker on each hero. Breaks same-type turn ties: the faster goes first. The fastest (≥21) glow gold with a RÁPIDO badge.'), c: '#ffe14a' },
   { k: '⭐', n: T('Forma Élite', 'Elite Form'), d: T('Al caer por primera vez renace con stats mejoradas; si vuelve a caer, muere (salvo Pluma/Ave Fénix).', 'On its first fall it is reborn with improved stats; if it falls again, it dies (except Phoenix Feather/Phoenix Bird).'), c: '#c06bff' },
 ];
 

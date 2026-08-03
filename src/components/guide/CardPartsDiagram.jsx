@@ -12,6 +12,7 @@ const PARTS = [
   { k: 'art', i: '🎨', n: T('Arte', 'Art'), d: T('Ilustración única de la carta.', 'The card’s unique illustration.'), c: '#c9a227' },
   { k: 'name', i: '📛', n: T('Nombre · Título', 'Name · Title'), d: T('El héroe y su epíteto o apellido.', 'The hero and their epithet or surname.'), c: '#fff5dc' },
   { k: 'cost', i: '🪙', n: T('Coste de oro', 'Gold cost'), d: T('Monedas que cuesta comprarla (orbe dorado arriba a la izquierda).', 'Coins it costs to buy (gold orb, top left).'), c: '#FFD24A' },
+  { k: 'speed', i: '⚡', n: T('Velocidad', 'Speed'), d: T('Marcador ⚡ + número: la velocidad base del héroe. Desempata turnos del mismo tipo (va antes el más rápido).', 'The ⚡ + number marker: the hero\'s base speed. Breaks turn ties of the same type (faster goes first).'), note: T('Los héroes más veloces (≥21) brillan en oro con el sello RÁPIDO — ¡busca ese dorado para fichar a los más rápidos!', 'The fastest heroes (≥21) glow gold with a RÁPIDO badge — look for that gold to draft the quickest!'), c: '#ffe14a' },
   { k: 'clan', i: '🛡', n: T('Raza · Clan', 'Race · Clan'), d: T('Cada raza tiene su color y símbolo (Guerreros, Druidas, No-muertos…).', 'Each race has its color and symbol (Warriors, Druids, Undead…).'), c: '#b8902a' },
   { k: 'cc', i: '⚔️', n: 'CC', d: T('Cuerpo a Cuerpo: daño del golpe melé.', 'Melee: damage of the melee strike.'), c: '#ff4b45' },
   { k: 'ad', i: '🏹', n: 'AD', d: T('A Distancia: el daño del disparo es potencia × AD.', 'Ranged: shot damage is weapon power × AD.'), c: '#54e876' },

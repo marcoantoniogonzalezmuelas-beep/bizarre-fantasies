@@ -161,8 +161,9 @@ export default function Reglas() {
             <div className="space-y-2.5 text-sm leading-relaxed">
               <p><b className="text-[#ffe9a8]">Cada ronda:</b> {t('los héroes que puedan actuar lo hacen por tipo de acción — primero los de distancia (AD), luego los hechizos y por último los de cuerpo a cuerpo (CC): el arquero dispara antes de que llegue el melé.')}</p>
               <p><b className="text-[#ffe9a8]">Desempate por velocidad:</b> {t('dentro del mismo tipo, actúa antes el héroe con más velocidad. Cada héroe parte de una velocidad base según su raza, y algunas armas y armaduras la aumentan: tu equipo sí puede cambiar cuándo te toca actuar.')}</p>
+              <p><b className="text-[#ffe9a8]">⚡ Marcador de velocidad:</b> {t('cada héroe lleva <b>⚡ + un número</b> con su velocidad base, arriba en la carta. Los más veloces (≥21) brillan en <b style="color:#FFD24A">dorado con el sello RÁPIDO</b>: de un vistazo ves quién vuela al ficharlo y al ordenar los turnos.')}</p>
               <p><b className="text-[#ffe9a8]">Estados que sí mueven tu turno:</b> {t('Congelado actúa con velocidad reducida (va más tarde); Dormido y Paralizado pierden su próximo turno. El resto de estados cambian tus stats o tu daño, no cuándo te toca actuar.')}</p>
-              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. Junto a cada héroe verás un pequeño indicador de velocidad (cuanto más lleno, más rápido) para que sepas su velocidad base al planear tu equipo; al equiparlo, algunas armas y armaduras lo suben.')}</p>
+              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. Cada héroe lleva arriba el marcador <b>⚡ + su velocidad</b>; los más veloces (≥21) brillan en <b style="color:#FFD24A">dorado con RÁPIDO</b>. Así sabes de un vistazo quién es más rápido al planear tu equipo; al equiparlo, algunas armas y armaduras lo suben.')}</p>
             </div>
           </div>
 
