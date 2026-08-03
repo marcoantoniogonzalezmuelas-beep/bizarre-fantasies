@@ -63,6 +63,10 @@
     "power": {
       "type": "number"
     },
+    "velocidad": {
+      "type": "number",
+      "description": "Velocidad base del h\u00e9roe (iniciativa de turno). Refleja el stat primario (CC\u2192cc, AD\u2192ad, HE\u2192he) y es editable desde el backoffice."
+    },
     "ability_name": {
       "type": "string"
     },
@@ -86,6 +90,10 @@
     },
     "elite_hp": {
       "type": "number"
+    },
+    "elite_velocidad": {
+      "type": "number",
+      "description": "Velocidad de la versi\u00f3n \u00e9lite del h\u00e9roe (iniciativa de turno)."
     },
     "tag": {
       "type": "string"

@@ -21,7 +21,10 @@ export default function HeroCardFace({ hero, elite }) {
   const he = elite ? hero.eHe : hero.he;
   const hp = elite ? hero.eHp : hero.hp;
   // Velocidad base = stat primaria según el tipo del héroe (CC/AD/HE).
-  const velStat = hero.type === 'CC' ? cc : hero.type === 'AD' ? ad : he;
+  // Si el admin fijó una velocidad propia en el backoffice, se usa esa.
+  const _derivedVel = hero.type === 'CC' ? cc : hero.type === 'AD' ? ad : he;
+  const _storedVel = elite ? hero.elite_velocidad : hero.velocidad;
+  const velStat = (_storedVel != null && _storedVel !== '' && !isNaN(Number(_storedVel))) ? Number(_storedVel) : _derivedVel;
   const velFast = typeof velStat === 'number' && velStat >= 21; // top ~25% del set (8-26)
   const abilityName = elite ? hero.eAbility : hero.ability;
   const abilityTxt = elite ? hero.eTxt : hero.abilityTxt;

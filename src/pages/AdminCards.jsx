@@ -10,8 +10,8 @@ import AbilityAnimSection from '@/components/admin/AbilityAnimSection';
 import ReferencePhotoSection from '@/components/admin/ReferencePhotoSection';
 import { CLAN_COLORS } from '@/lib/cardData';
 
-const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', elite_ability_anim_url: '', elite_ability_anim_desc: '', in_auction: true };
-const numericFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp'];
+const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', velocidad: '', elite_velocidad: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', elite_ability_anim_url: '', elite_ability_anim_desc: '', in_auction: true };
+const numericFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'velocidad', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp', 'elite_velocidad'];
 
 function cleanPayload(form) {
   const payload = { ...form };
@@ -92,9 +92,14 @@ export default function AdminCards() {
       });
       
       const resData = response || {};
+      // Velocidad: refleja el stat primario (CC/AD/HE) generado por la IA.
+      const _v = resData.type === 'CC' ? resData.cc : resData.type === 'AD' ? resData.ad : resData.he;
+      const _ev = resData.type === 'CC' ? resData.elite_cc : resData.type === 'AD' ? resData.elite_ad : resData.elite_he;
       setForm(prev => ({
         ...prev,
-        ...resData
+        ...resData,
+        velocidad: (_v != null && _v !== '' && !isNaN(Number(_v))) ? Number(_v) : prev.velocidad,
+        elite_velocidad: (_ev != null && _ev !== '' && !isNaN(Number(_ev))) ? Number(_ev) : prev.elite_velocidad,
       }));
     } catch (err) {
       console.error(err);
@@ -124,6 +129,18 @@ export default function AdminCards() {
       }
       if (name === 'clan' && CLAN_COLORS[value]) {
         next.clan_color = CLAN_COLORS[value];
+      }
+      // Velocidad: refleja automáticamente el stat primario (CC/AD/HE) del
+      // héroe al cambiar sus stats manualmente o al cambiar el rol. Si el
+      // admin edita la velocidad directamente (name === 'velocidad'), se
+      // respeta su valor (no se sobreescribe).
+      if (['hero', 'bizarro'].includes(next.category) && ['cc', 'ad', 'he', 'type'].includes(name)) {
+        const primary = next.type === 'CC' ? next.cc : next.type === 'AD' ? next.ad : next.he;
+        if (primary != null && primary !== '' && !isNaN(Number(primary))) next.velocidad = Number(primary);
+      }
+      if (['hero', 'bizarro'].includes(next.category) && ['elite_cc', 'elite_ad', 'elite_he', 'type'].includes(name)) {
+        const ePrimary = next.type === 'CC' ? next.elite_cc : next.type === 'AD' ? next.elite_ad : next.elite_he;
+        if (ePrimary != null && ePrimary !== '' && !isNaN(Number(ePrimary))) next.elite_velocidad = Number(ePrimary);
       }
       return next;
     });
@@ -251,7 +268,7 @@ export default function AdminCards() {
   async function levelUpHero() {
     if (!['hero', 'bizarro'].includes(form.category)) return;
     const bump = (v) => (v != null && v !== '' && !isNaN(Number(v))) ? Number(v) + 1 : v;
-    const stats = { cc: bump(form.cc), ad: bump(form.ad), he: bump(form.he), hp: bump(form.hp), elite_cc: bump(form.elite_cc), elite_ad: bump(form.elite_ad), elite_he: bump(form.elite_he), elite_hp: bump(form.elite_hp) };
+    const stats = { cc: bump(form.cc), ad: bump(form.ad), he: bump(form.he), hp: bump(form.hp), velocidad: bump(form.velocidad), elite_cc: bump(form.elite_cc), elite_ad: bump(form.elite_ad), elite_he: bump(form.elite_he), elite_hp: bump(form.elite_hp), elite_velocidad: bump(form.elite_velocidad) };
     const newCost = Math.round((Number(form.cost) || 0) * 1.1) + 1;
     setForm(prev => ({ ...prev, ...stats, cost: newCost }));
     if (editingId) {
