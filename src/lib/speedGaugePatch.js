@@ -1,64 +1,68 @@
-// Parche: indicador VISUAL de velocidad (gráfico, no numérico) en todo el juego.
-// La velocidad real la calcula el juego con velocity(h) = stat primaria + equipo
-// + estados. Aquí solo leemos el número ya renderizado (o el stat de la fase en
-// subasta) y lo dibujamos como una barra ⚡ de 5 segmentos (más llena = más rápido).
-//
-// - Batalla: reemplaza "VEL X" (.vel-badge) y "vX" (.ctb-vel) por la barra; en
-//   .vel-tag sustituye solo el "vX" conservando el icono de rol.
-// - Subasta: añade a cada carta de héroe un indicador de su velocidad base
-//   (el stat del tipo de la fase: CC/AD/HE) para planificar al elegir.
+// Parche: indicador de VELOCIDAD claro y visual en todo el juego.
+// Muestra ⚡ + el número de velocidad de cada héroe; los más veloces brillan
+// en ORO con la etiqueta "RÁPIDO" para que destaquen:
+//  - Subasta: el héroe más rápido de cada fase lleva el sello dorado → incentivo
+//    para pujar por los veloces.
+//  - Batalla: el héroe más veloz de los presentes luce el sello dorado.
+// La velocidad la calcula el juego (stat primaria + equipo + estados); aquí
+// solo leemos el número ya renderizado (o el stat de la fase en subasta).
 export const SPEED_GAUGE_PATCH = `
 <script>
 (function(){
   if (window.__bfSpeedGauge) return;
   window.__bfSpeedGauge = true;
 
-  var MAXV = 20; // referencia para los 5 segmentos (más lleno = más rápido)
-  function fillCount(v){ return Math.max(0, Math.min(5, Math.round(v / MAXV * 5))); }
-  function segs(v, compact){
-    var n = fillCount(v);
-    var s = '<span class="bf-vel-segs' + (compact ? ' bf-vel-compact' : '') + '">';
-    for (var i=0;i<5;i++) s += '<span class="bf-vel-seg' + (i<n ? ' on' : '') + '"></span>';
-    return s + '</span>';
-  }
-  function gauge(v, compact){
-    return '<span class="bf-vel-gauge" title="Velocidad ' + v + '"><span class="bf-vel-ico">⚡</span>' + segs(v, compact) + '</span>';
-  }
-
-  var css = ''+
-  '.bf-vel-gauge{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;line-height:1;white-space:nowrap}'+
-  '.bf-vel-ico{font-size:12px;color:#FFD24A;filter:drop-shadow(0 0 3px rgba(255,210,74,.7));line-height:1}'+
-  '.bf-vel-segs{display:inline-flex;gap:2px}'+
-  '.bf-vel-seg{width:5px;height:11px;border-radius:2px;background:#2a2030;border:1px solid #15101e}'+
-  '.bf-vel-seg.on{background:linear-gradient(180deg,#ffe27a,#FFD24A);border-color:#a9771f;box-shadow:0 0 4px rgba(255,210,74,.55)}'+
-  '.bf-vel-compact .bf-vel-seg{width:3px;height:8px}'+
-  '.bf-vel-compact.bf-vel-segs{gap:1.5px}'+
-  // Indicador en la carta de subasta: esquina superior izquierda, bajo la moneda
-  '.bf-vel-auction{position:absolute;top:62px;left:14px;z-index:6;display:inline-flex;align-items:center;gap:3px;padding:3px 6px 3px 4px;border-radius:8px;background:rgba(10,6,16,.72);border:1px solid rgba(255,210,74,.4);backdrop-filter:blur(2px)}'+
-  '.bf-vel-auction .bf-vel-ico{font-size:10px}'+
-  '.bf-vel-auction .bf-vel-seg{width:4px;height:9px}';
-  var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+  var RAPIDO = 21; // umbral absoluto de "muy rápido" (top ~25% del set: 8-26)
 
   function numFromTxt(t){ var m = String(t).match(/-?\\d+(\\.\\d+)?/); return m ? parseFloat(m[0]) : null; }
 
-  function patchBadges(){
-    // Batalla — "VEL X" → barra
+  var css = ''+
+  // Píldora de velocidad (batalla, stat row)
+  '.bf-vel-pill{display:inline-flex;align-items:center;gap:2px;font-family:Rubik,sans-serif;font-weight:900;font-size:13px;line-height:1;color:#ffd24a;white-space:nowrap}'+
+  '.bf-vel-pill.bf-vel-fast{color:#fff5cc;text-shadow:0 0 8px rgba(255,210,74,.9),0 1px 2px #000;filter:drop-shadow(0 0 5px rgba(255,210,74,.7));animation:bfVelPulse 1.8s ease-in-out infinite}'+
+  '.bf-vel-pill .bf-vel-ico{font-size:13px;line-height:1}'+
+  // Mini (barra de turnos y etiqueta de nombre)
+  '.bf-vel-mini{display:inline-flex;align-items:center;gap:1px;font-family:Rubik,sans-serif;font-weight:900;font-size:10px;line-height:1;color:#ffd24a;white-space:nowrap}'+
+  '.bf-vel-mini.bf-vel-fast{color:#fff5cc;text-shadow:0 0 6px rgba(255,210,74,.9);filter:drop-shadow(0 0 4px rgba(255,210,74,.7))}'+
+  // Sello en la carta de subasta (esquina superior central, prominente)
+  '.bf-vel-auc{position:absolute;top:7px;left:50%;transform:translateX(-50%);z-index:8;display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;font-family:Rubik,sans-serif;font-size:13px;font-weight:900;letter-spacing:.3px;background:rgba(8,5,16,.85);border:1.5px solid rgba(255,210,74,.55);color:#ffd24a;backdrop-filter:blur(2px);white-space:nowrap;line-height:1}'+
+  '.bf-vel-auc.bf-vel-fast{background:radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614);border:2px solid #6f4809;color:#4a2e03;box-shadow:0 0 16px rgba(255,210,74,.85),0 2px 8px rgba(0,0,0,.55);animation:bfVelPulse 1.8s ease-in-out infinite}'+
+  '.bf-vel-auc .bf-vel-lbl{font-size:8px;letter-spacing:1.2px;font-weight:1000}'+
+  '@keyframes bfVelPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(255,210,74,.5))}50%{filter:drop-shadow(0 0 10px rgba(255,210,74,.95))}}';
+  var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+
+  function pillHtml(v, fast){ return '<span class="bf-vel-pill' + (fast ? ' bf-vel-fast' : '') + '"><span class="bf-vel-ico">⚡</span>' + v + '</span>'; }
+  function miniHtml(v, fast){ return '<span class="bf-vel-mini' + (fast ? ' bf-vel-fast' : '') + '"><span class="bf-vel-ico">⚡</span>' + v + '</span>'; }
+
+  // Batalla: velocidad máxima entre los héroes presentes (para marcar el más veloz)
+  function battleMaxV(){
+    var mx = null;
+    document.querySelectorAll('.vel-badge,.ctb-vel,.vel-tag').forEach(function(el){
+      var v = (el.__bfV != null) ? el.__bfV : numFromTxt(el.textContent);
+      if (v != null && (mx == null || v > mx)) mx = v;
+    });
+    return mx;
+  }
+
+  function patchBattle(){
+    var mx = battleMaxV();
+    // Stat row del héroe activo — "VEL X" → ⚡X (dororo si es el más veloz)
     document.querySelectorAll('.vel-badge').forEach(function(el){
-      if (el.querySelector('.bf-vel-gauge')) return;
-      var v = numFromTxt(el.textContent);
+      var v = (el.__bfV != null) ? el.__bfV : numFromTxt(el.textContent);
       if (v == null) return;
-      el.innerHTML = gauge(v);
+      el.__bfV = v;
+      el.innerHTML = pillHtml(v, v === mx && mx != null);
     });
-    // Barra de turnos — "vX" → barra compacta
+    // Barra de turnos — "vX" → ⚡X mini
     document.querySelectorAll('.ctb-vel').forEach(function(el){
-      if (el.querySelector('.bf-vel-gauge')) return;
-      var v = numFromTxt(el.textContent);
+      var v = (el.__bfV != null) ? el.__bfV : numFromTxt(el.textContent);
       if (v == null) return;
-      el.innerHTML = gauge(v, true);
+      el.__bfV = v;
+      el.innerHTML = miniHtml(v, v === mx && mx != null);
     });
-    // Etiqueta de nombre — sustituye solo el "vX" conservando el icono de rol
+    // Etiqueta de nombre — sustituye solo el "vX" conservando icono de rol
     document.querySelectorAll('.vel-tag').forEach(function(el){
-      if (el.querySelector('.bf-vel-gauge')) return;
+      if (el.querySelector('.bf-vel-mini')) return;
       var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
       var node, hit = null;
       while ((node = w.nextNode())) {
@@ -67,14 +71,15 @@ export const SPEED_GAUGE_PATCH = `
       }
       if (!hit) return;
       var v = parseFloat(hit.node.nodeValue.slice(hit.index, hit.index + hit.len).replace(/[^\\d.-]/g, ''));
+      el.__bfV = v;
       var span = document.createElement('span');
-      span.className = 'bf-vel-gauge';
-      span.innerHTML = '<span class="bf-vel-ico" style="font-size:10px">⚡</span>' + segs(v, true);
+      span.innerHTML = miniHtml(v, v === mx && mx != null);
       hit.node.nodeValue = hit.node.nodeValue.slice(0, hit.index) + hit.node.nodeValue.slice(hit.index + hit.len);
       hit.node.parentNode.insertBefore(span, hit.node.nextSibling);
     });
   }
 
+  // Subasta: velocidad base = stat del tipo de la fase (CC/AD/HE)
   function phaseStatKey(){
     var rec = document.getElementById('s-recruit');
     var t = rec ? (rec.textContent || '') : '';
@@ -94,23 +99,39 @@ export const SPEED_GAUGE_PATCH = `
     var key = phaseStatKey();
     if (!key) return;
     var ph = phaseLabel();
+    // Cada héroe tiene 2 caras (normal + élite); la base es la de menor stat.
+    // El sello dorado RÁPIDO marca la cara base del héroe más veloz de la fase
+    // (la que se ve al pujar), para incentivar pujar por los veloces.
+    var entries = [];
     rec.querySelectorAll('.cardface.bf-hero-card').forEach(function(card){
       var statEl = card.querySelector('.bf-stat-' + key);
       if (!statEl) return;
       var v = numFromTxt(statEl.textContent);
       if (v == null) return;
-      var old = card.querySelector('.bf-vel-auction');
-      if (old && card.getAttribute('data-bf-velphase') === ph) return; // ya puesto esta fase
+      var nm = (card.querySelector('.bf-hero-name') || {}).textContent || '';
+      entries.push({ card: card, v: v, name: nm });
+    });
+    if (!entries.length) return;
+    var baseByName = {};
+    entries.forEach(function(e){ if (!(e.name in baseByName) || e.v < baseByName[e.name]) baseByName[e.name] = e.v; });
+    var baseMax = null;
+    Object.keys(baseByName).forEach(function(nm){ if (baseMax == null || baseByName[nm] > baseMax) baseMax = baseByName[nm]; });
+    entries.forEach(function(e){
+      var isBase = (e.v === baseByName[e.name]);
+      var fast = isBase && baseMax != null && e.v === baseMax;
+      var old = e.card.querySelector('.bf-vel-auc');
+      if (old && e.card.getAttribute('data-bf-velphase') === ph && old.__bfV === e.v && old.classList.contains('bf-vel-fast') === fast) return;
       if (old) old.remove();
       var g = document.createElement('span');
-      g.className = 'bf-vel-auction';
-      g.innerHTML = '<span class="bf-vel-ico">⚡</span>' + segs(v, false);
-      card.appendChild(g);
-      card.setAttribute('data-bf-velphase', ph);
+      g.className = 'bf-vel-auc' + (fast ? ' bf-vel-fast' : '');
+      g.__bfV = e.v;
+      g.innerHTML = '<span class="bf-vel-ico">⚡</span>' + e.v + (fast ? '<span class="bf-vel-lbl">RÁPIDO</span>' : '');
+      e.card.appendChild(g);
+      e.card.setAttribute('data-bf-velphase', ph);
     });
   }
 
-  function tick(){ patchBadges(); patchAuction(); }
+  function tick(){ patchBattle(); patchAuction(); }
   setInterval(tick, 280);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
   else tick();

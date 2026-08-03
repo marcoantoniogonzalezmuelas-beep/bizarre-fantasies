@@ -20,6 +20,9 @@ export default function HeroCardFace({ hero, elite }) {
   const ad = elite ? hero.eAd : hero.ad;
   const he = elite ? hero.eHe : hero.he;
   const hp = elite ? hero.eHp : hero.hp;
+  // Velocidad base = stat primaria según el tipo del héroe (CC/AD/HE).
+  const velStat = hero.type === 'CC' ? cc : hero.type === 'AD' ? ad : he;
+  const velFast = typeof velStat === 'number' && velStat >= 21; // top ~25% del set (8-26)
   const abilityName = elite ? hero.eAbility : hero.ability;
   const abilityTxt = elite ? hero.eTxt : hero.abilityTxt;
   const artUrl = elite ? (hero.eliteArt || hero.art) : hero.art;
@@ -45,6 +48,10 @@ export default function HeroCardFace({ hero, elite }) {
       <div data-bf-marker="cost" className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
       <div className="absolute top-2.5 right-2 z-10 w-11 h-12 rounded-full bg-black/70 border border-[#ffd24a88] text-[#ead49a] flex flex-col items-center justify-center text-xl shadow-lg">
         <span>{TYPE_ICON[hero.type] || '★'}</span><span className="text-[7px] font-black leading-none">{hero.type}</span>
+      </div>
+      {/* Sello de velocidad ⚡ — dorado y brillante para los héroes más veloces */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-black leading-none whitespace-nowrap" style={{ fontFamily: 'Rubik, sans-serif', background: velFast ? 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)' : 'rgba(8,5,16,.82)', color: velFast ? '#4a2e03' : '#ffd24a', border: velFast ? '2px solid #6f4809' : '1.5px solid rgba(255,210,74,.55)', boxShadow: velFast ? '0 0 14px rgba(255,210,74,.8),0 2px 6px rgba(0,0,0,.5)' : '0 2px 6px rgba(0,0,0,.5)', animation: velFast ? 'bfVelPulse 1.8s ease-in-out infinite' : undefined }}>
+        <span>⚡</span><span>{velStat}</span>{velFast && <span className="text-[7px] tracking-wider font-black">RÁPIDO</span>}
       </div>
       <div data-bf-marker="clan" className="absolute left-4 bottom-5 z-20 w-5 h-5 rounded-full flex items-center justify-center shadow-lg" style={{ background: `radial-gradient(circle at 34% 28%, ${color}55, ${color}cc 45%, #1a1420)`, border: `1.5px solid ${color}99`, boxShadow: `0 0 8px ${color}55` }}>
         <ClanSigil clan={hero.clan} size={13} color="#fff7dc" />
