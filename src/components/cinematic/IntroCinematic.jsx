@@ -58,6 +58,7 @@ const CLINT = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a
 const FUTBOLISTA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/37644e0d0_generated_image.png'; // El Futbolista (Tiro Libre)
 const GAMER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/13266939b_generated_image.png';    // El Gamer
 const ALFREDINHO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/95146ea6f_generated_image.png'; // Alfredinho (Doble Disparo)
+const BERM_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d60007ad8_generated_image.png'; // Bermellus (élite)
 const AJEDRECISTA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6c3c2bc98_generated_image.png'; // El Ajedrecista (habilidad)
 const RETROPOETA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2ca9bc580_generated_image.png'; // Retropoeta
 const RETROPOETA_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e179830c9_generated_image.png'; // Retropoeta (versión élite)
@@ -69,7 +70,7 @@ const ELD_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d6
 
 function buildScenes() {
   return [
-    { clash: { left: HIL, right: NIX, accent: '#7cff5a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
+    { clash: { left: BERM_ELITE, right: ALFREDINHO, accent: '#7cff5a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
     { clash: { left: RETROPOETA_ELITE, right: HEAVY, accent: '#7c9cff', kind: 'sword', swap: true, motion: 'diagonal', fx: 'metal' }, kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 12 },
     { clash: { left: REV_ELITE, right: ELD_ELITE, accent: '#ffc24a', kind: 'chill', swap: false, motion: 'up', fx: 'drunk' }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, el reverendo y el anciano elfo se reúnen junto al fuego: se curan las heridas, filosofan sobre el caos y brindan con la pipa y la cerveza espumando. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 12 },
     { clash: { left: GOR, right: SYL, accent: '#ff5a3c', kind: 'clash', swap: false, motion: 'rotate' }, kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 12 },
