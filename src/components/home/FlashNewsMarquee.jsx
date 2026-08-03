@@ -100,8 +100,10 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
       const ir = iframe.getBoundingClientRect();
       const contentH = (doc.documentElement && doc.documentElement.clientHeight) || ir.height || 1;
       const iframeScale = ir.height / contentH;
-      // Móvil/tablet: ancla bajo los iconos del menú; escritorio: bajo Contacta.
-      const sel = isMobile ? '#s-title .title-links' : '#bf-contact .bf-contact-pill';
+      // Ancla bajo los iconos del menú (Aprende/Reglas/Razas/Top Ranking) en
+      // todos los dispositivos: el cartel va ENTRE el menú y el botón de
+      // contacto, que se empuja hacia abajo con margin-top (CONTACT_REPOSITION).
+      const sel = '#s-title .title-links';
       const anchor = doc && doc.querySelector(sel);
       if (anchor) {
         anchorBottom = ir.top + anchor.getBoundingClientRect().bottom * iframeScale;
