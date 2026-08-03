@@ -23,8 +23,10 @@ export const GAME_LOG_PATCH = `
     try{
       if(typeof G==='undefined'||G.demo){battleStart=null;return;}
       if(window.__bfLogSent)return;
-      window.__bfLogSent=true;
       var isOnline=(typeof online==='function')?online():false;
+      // Online: solo el host envía el log (evita duplicar la partida en la BD).
+      if(isOnline&&typeof NET!=='undefined'&&NET.role==='client')return;
+      window.__bfLogSent=true;
       var mode=isOnline?'online':(G.oppHuman?'local':'ia');
       var playerNick='',opponentNick='';
       if(isOnline&&typeof NET!=='undefined'){

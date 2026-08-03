@@ -59,6 +59,7 @@ import { MODE_ICON_PATCH } from '@/lib/modeIconPatch';
 import { DEMO_FLOW_PATCH } from '@/lib/demoFlowPatch';
 import { TYPE_MEDAL_PATCH } from '@/lib/typeMedalPatch';
 import { ACTION_PANEL_STABLE_PATCH } from '@/lib/actionPanelStablePatch';
+import { AI_STRATEGY_PATCH } from '@/lib/aiStrategyPatch';
 
 import { buildHomeTextsPatch } from '@/lib/homeTextsPatch';
 import { AUCTION_THUMB_PATCH } from '@/lib/auctionThumbPatch';
@@ -360,8 +361,48 @@ export default function Home() {
   // avía por postMessage para que el cartel de actualidad se amplíe igual.
   const pinchRafRef = useRef(null);
   const [pinch, setPinch] = useState({ z: 1, tx: 0, ty: 0 });
+  const aiStrategyRef = useRef(null);
 
   useEffect(() => bindGameLobbyBridge(iframeRef), []);
+
+  // Estrategia de la IA: analiza los logs de partidas guardados y genera
+  // parámetros para que la IA juegue mejor. Se cachea 6 h en localStorage
+  // para no llamar al LLM en cada carga. La estrategia se envía al iframe
+  // para que el parche la aplique.
+  useEffect(() => {
+    const CACHE_KEY = 'bfAiStrategyCache';
+    const TTL = 6 * 60 * 60 * 1000; // 6 horas
+    let cancelled = false;
+
+    const sendToStrat = (strat) => {
+      try { iframeRef.current?.contentWindow?.postMessage({ bfAiStrategy: strat }, '*'); } catch (e) {}
+    };
+
+    const fetchAndCache = async () => {
+      try {
+        const res = await base44.functions.invoke('getAiStrategy', {});
+        if (cancelled) return;
+        const strat = res.data?.strategy;
+        if (strat) {
+          aiStrategyRef.current = strat;
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ strat, ts: Date.now() })); } catch (e) {}
+          sendToStrat(strat);
+        }
+      } catch (e) {}
+    };
+
+    try {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+      if (cached && cached.strat && (Date.now() - cached.ts < TTL)) {
+        aiStrategyRef.current = cached.strat;
+        sendToStrat(cached.strat);
+      } else {
+        fetchAndCache();
+      }
+    } catch (e) {
+      fetchAndCache();
+    }
+  }, []);
 
   // Móvil: el juego se renderiza a ancho de escritorio (1200px) dentro del
   // iframe y se escala para caber en la pantalla. El zoom táctil (pellizcar)
@@ -403,6 +444,11 @@ export default function Home() {
           setTimeout(() => {
             iframeRef.current?.contentWindow?.postMessage({ bfStartDemo: true }, '*');
           }, 700);
+        }
+        // Reenvía la estrategia de la IA al iframe cuando este señala que está
+        // listo, por si el primer envío llegó antes de que el patch estuviera instalado.
+        if (aiStrategyRef.current) {
+          try { iframeRef.current?.contentWindow?.postMessage({ bfAiStrategy: aiStrategyRef.current }, '*'); } catch (e) {}
         }
       }
       if (e.data && e.data.bfReloading) {
@@ -570,7 +616,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + NIXARA_ABILITY_PATCH + ABILITY_ANIM_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
+        const INJECT = CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + NIXARA_ABILITY_PATCH + ABILITY_ANIM_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_STRATEGY_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus').replace(/Despertar/g, 'Sanar').replace(/despertar/g, 'sanar');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
