@@ -307,6 +307,18 @@ export default function Home() {
     return () => document.removeEventListener('contextmenu', blockContextMenu);
   }, []);
 
+  // Al volver de "Conocer las cartas" tras salir desde la demo: si el flag
+  // sigue en sessionStorage, arrancamos la demo automáticamente cuando el
+  // juego termine de cargar (bfScreen 's-title').
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('bfDemoReturn') === '1') {
+        sessionStorage.removeItem('bfDemoReturn');
+        autoDemoRef.current = true;
+      }
+    } catch (e) {}
+  }, []);
+
   const iframeRef = useRef(null);
   const loadTimerRef = useRef(null);
   const battleArtRef = useRef(null);
@@ -314,6 +326,9 @@ export default function Home() {
   // Cuando la cinemática de intro se abrió desde "Aprender a jugar" (demo),
   // al cerrarla/saltarla arrancamos automáticamente la demo en el iframe.
   const introAutoDemoRef = useRef(false);
+  // Reanudar la demo al volver de "Conocer las cartas": si el flag está en
+  // sessionStorage, al cargar Home arrancamos la demo automáticamente.
+  const autoDemoRef = useRef(false);
   const [blobUrl, setBlobUrl] = useState('');
   const [srcDoc, setSrcDoc] = useState('');
   const [error, setError] = useState(false);
@@ -365,6 +380,14 @@ export default function Home() {
         if (abilityAnimRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
         }
+        // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
+        // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
+        if (autoDemoRef.current && e.data.bfScreen === 's-title') {
+          autoDemoRef.current = false;
+          setTimeout(() => {
+            iframeRef.current?.contentWindow?.postMessage({ bfStartDemo: true }, '*');
+          }, 700);
+        }
       }
       if (e.data && e.data.bfReloading) {
         // El iframe se va a recargar (Salir / Volver al inicio): tapamos para
@@ -405,11 +428,11 @@ export default function Home() {
       if (e.data && e.data.bfGameLog) {
         base44.entities.GameLog.create(e.data.bfGameLog).catch(() => {});
       }
-      if (e.data && typeof e.data.bfNavigate === 'string') navigate(e.data.bfNavigate);
-      // Botón "Conocer las Cartas" desde la partida demo: abre la guía en una
-      // pestaña nueva para que la demo se quede viva en el iframe actual.
-      if (e.data && e.data.bfOpenGuideTab) {
-        try { window.open('/guiacartas', '_blank', 'noopener'); } catch (e) {}
+      if (e.data && typeof e.data.bfNavigate === 'string') {
+        // Si venimos de la partida demo (botón "Conocer las cartas"), marcamos
+        // que al volver a Home hay que reanudar la demo automáticamente.
+        if (e.data.fromDemo) { try { sessionStorage.setItem('bfDemoReturn', '1'); } catch (e) {} }
+        navigate(e.data.bfNavigate);
       }
       if (e.data && typeof e.data.bfSetLang === 'string') setLang(e.data.bfSetLang);
       // El juego pide el arte de hechizos/objetos para la carta revelada al
