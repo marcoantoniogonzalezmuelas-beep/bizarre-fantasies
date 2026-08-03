@@ -39,7 +39,7 @@ export function buildQuitContactPatch(texts) {
     '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}'
   ].join('');
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
-  if (isTouch) style.textContent += '#homeBtn{font-size:15px!important;padding:8px 14px!important;}';
+  if (isTouch) style.textContent += '#homeBtn{font-size:28px!important;padding:16px 28px!important;min-height:54px!important;line-height:1!important;}';
   document.head.appendChild(style);
 
   function inject(){

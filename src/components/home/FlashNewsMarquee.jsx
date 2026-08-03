@@ -78,15 +78,17 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     // ese × scale. Posicionamos en coordenadas de viewport (visuales).
     const visualW = signRef.current.offsetWidth * scale;
     const visualH = signRef.current.offsetHeight * scale;
-    try {
-      const stored = JSON.parse(sessionStorage.getItem('bfSignPos') || 'null');
-      if (stored) {
-        const maxX = Math.max(0, window.innerWidth - visualW - 4);
-        const maxY = Math.max(0, window.innerHeight - visualH - 4);
-        setPos({ left: Math.max(4, Math.min(maxX, stored.left)), top: Math.max(4, Math.min(maxY, stored.top)) });
-        return;
-      }
-    } catch (e) {}
+    if (!isMobile) {
+      try {
+        const stored = JSON.parse(sessionStorage.getItem('bfSignPos') || 'null');
+        if (stored) {
+          const maxX = Math.max(0, window.innerWidth - visualW - 4);
+          const maxY = Math.max(0, window.innerHeight - visualH - 4);
+          setPos({ left: Math.max(4, Math.min(maxX, stored.left)), top: Math.max(4, Math.min(maxY, stored.top)) });
+          return;
+        }
+      } catch (e) {}
+    }
     // Posición por defecto: debajo de los iconos del menú (Aprende/Reglas/
     // Razas/Top Ranking) del juego en coordenadas de pantalla. En móvil/tablet
     // el bloque "Contacta" queda en otro sitio, así que anclamos al menú
@@ -113,7 +115,7 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     const top = Math.max(4, Math.min(maxTop, desired));
     const maxX = Math.max(0, window.innerWidth - visualW - 4);
     setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.round(top) });
-  }, [scale]);
+  }, [scale, isMobile]);
 
   // Recoloca al montar/cambiar noticias y al rotar; repite unas veces hasta
   // que el icono "Contacta" del juego aparezca (carga asíncrona del iframe).
@@ -182,9 +184,8 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     ? `translate(${(pinchTx || 0) * scale + (pz - 1) * pos.left}px, ${(pinchTy || 0) * scale + (pz - 1) * pos.top}px) scale(${pz * scale})`
     : baseTransform;
   const baseStyle = {
-    touchAction: 'none',
-    cursor: 'grab',
-    transform: pz !== 1 ? zoomedTransform : baseTransform,
+    ...(isMobile ? {} : { touchAction: 'none', cursor: 'grab' }),
+    transform: isMobile ? baseTransform : (pz !== 1 ? zoomedTransform : baseTransform),
     transformOrigin: 'top left',
     ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
   };
@@ -193,7 +194,7 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   return (
     <div
       ref={signRef}
-      onPointerDown={startDrag}
+      onPointerDown={isMobile ? undefined : startDrag}
       style={style}
       className="bf-led-sign pointer-events-auto fixed z-40 w-[86vw] max-w-[560px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:max-w-[760px] lg:px-4 lg:py-2.5"
     >

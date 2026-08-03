@@ -111,6 +111,7 @@ export const DEMO_TIPS_PATCH = `
   // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
   // volver a la portada (s-title) — fin de la demo.
   function tick(){
+    if(document.body.style.transform){hideAll();return;}
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;

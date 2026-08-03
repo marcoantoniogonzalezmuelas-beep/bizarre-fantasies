@@ -52,6 +52,12 @@ export const NET_RECONNECT_PATCH = `
   '#bf-quit-notify .bf-qn-t{font-family:Cinzel,serif;font-weight:900;font-size:19px;color:#ff8a6a}'+
   '#bf-quit-notify .bf-qn-s{margin-top:8px;font-size:14px;line-height:1.5;color:#d8c8cc}'+
   '#bf-quit-notify .bf-qn-btn{margin-top:20px;padding:12px 24px;border-radius:12px;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:15px;cursor:pointer}';
+  style.textContent += '#bf-quit-confirm{position:fixed;z-index:100600;top:60px;right:10px;max-width:min(300px,92vw);padding:16px 18px;border-radius:14px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.55);box-shadow:0 12px 40px rgba(0,0,0,.6);font-family:Rubik,sans-serif;text-align:center;display:none}'+
+  '#bf-quit-confirm .bf-qc-t{font-family:Cinzel,serif;font-weight:900;font-size:16px;color:#ffe49a;margin-bottom:6px}'+
+  '#bf-quit-confirm .bf-qc-s{font-size:13px;color:#cfc6dd;line-height:1.4;margin-bottom:14px}'+
+  '#bf-quit-confirm .bf-qc-btns{display:flex;gap:10px;justify-content:center}'+
+  '#bf-quit-confirm .bf-qc-yes{padding:10px 18px;border-radius:10px;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer;min-height:40px}'+
+  '#bf-quit-confirm .bf-qc-no{padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer;min-height:40px}';
   document.head.appendChild(style);
 
   function overlay(msg,sub){
@@ -242,17 +248,16 @@ export const NET_RECONNECT_PATCH = `
       if(btn.dataset.bfConfirming==='1'){btn.dataset.bfConfirming='';return;}
       e.preventDefault();e.stopPropagation();
       btn.dataset.bfConfirming='1';
-      if(typeof modal==='function'){
-        modal('<h3>Salir de la partida</h3><div class="modal-note" style="font-size:15px">Si sales, tu rival será notificado y la partida terminará.</div><div style="margin-top:16px;text-align:center;display:flex;gap:10px;justify-content:center"><button class="btn primary" id="bf-quit-yes">Sí, salir</button><button class="btn" id="bf-quit-no">Cancelar</button></div>');
-        setTimeout(function(){
-          var yes=document.getElementById('bf-quit-yes'),no=document.getElementById('bf-quit-no');
-          if(yes)yes.onclick=function(){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();setTimeout(function(){location.reload();},200);};
-          if(no)no.onclick=function(){btn.dataset.bfConfirming='';};
-        },50);
-      } else {
-        if(confirm('¿Salir de la partida? Tu rival será notificado.')){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();setTimeout(function(){location.reload();},200);}
-        else btn.dataset.bfConfirming='';
+      if(typeof window.__bfPinchReset==='function')window.__bfPinchReset();
+      var qc=document.getElementById('bf-quit-confirm');
+      if(!qc){
+        qc=document.createElement('div');qc.id='bf-quit-confirm';
+        qc.innerHTML='<div class="bf-qc-t">Salir de la partida</div><div class="bf-qc-s">Tu rival será notificado y la partida terminará.</div><div class="bf-qc-btns"><button class="bf-qc-yes">Sí, salir</button><button class="bf-qc-no">Cancelar</button></div>';
+        document.body.appendChild(qc);
+        qc.querySelector('.bf-qc-yes').onclick=function(){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();qc.style.display='none';setTimeout(function(){location.reload();},200);};
+        qc.querySelector('.bf-qc-no').onclick=function(){btn.dataset.bfConfirming='';qc.style.display='none';};
       }
+      qc.style.display='block';
     },true);
   }
   setInterval(function(){if(typeof G!=='undefined'&&G.online)hookQuitButton();},1000);
