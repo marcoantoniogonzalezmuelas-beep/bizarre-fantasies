@@ -31,17 +31,28 @@ export const AI_STRATEGY_PATCH = `
   };
   window.__bfAiStrat = STRAT;
 
+  // El nivel de IA (aiLevelPatch) sobreescribe los parámetros de agresividad,
+  // frecuencia de habilidades, selección de objetivo y timing de compras.
+  // Las preferencias de héroes (preferHeroes/avoidHeroes) vienen del análisis
+  // de logs y se conservan — mejoran con más partidas jugadas.
+  function applyLevel() {
+    var lvl = window.__bfAiLevelMeta;
+    if (lvl) {
+      STRAT.bidAggression = lvl.bidAggression;
+      STRAT.abilityUsage = lvl.abilityUsage;
+      STRAT.targetPriority = lvl.targetPriority;
+      STRAT.purchaseTiming = lvl.purchaseTiming;
+    }
+  }
+
   window.addEventListener('message', function(e){
     if (!e.data || !e.data.bfAiStrategy) return;
     try {
       var s = e.data.bfAiStrategy;
-      if (typeof s.bidAggression === 'number') STRAT.bidAggression = Math.max(0, Math.min(1, s.bidAggression));
-      if (typeof s.abilityUsage === 'number') STRAT.abilityUsage = Math.max(0, Math.min(1, s.abilityUsage));
-      if (s.targetPriority) STRAT.targetPriority = s.targetPriority;
-      if (s.purchaseTiming) STRAT.purchaseTiming = s.purchaseTiming;
       if (Array.isArray(s.preferHeroes)) STRAT.preferHeroes = s.preferHeroes;
       if (Array.isArray(s.avoidHeroes)) STRAT.avoidHeroes = s.avoidHeroes;
       if (s.notes) STRAT.notes = s.notes;
+      applyLevel();
     } catch(err) {}
   });
 
