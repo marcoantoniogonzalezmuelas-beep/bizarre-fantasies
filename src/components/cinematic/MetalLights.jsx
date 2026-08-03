@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { preloadCutout } from '@/lib/useCutoutSrc';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
-const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4d15e9c1d_generated_image.png';
+const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6056056ef_generated_image.png';
 
 // Focos de escenario: pequeñas lámparas circulares colgadas arriba que proyectan
 // pools de luz suaves hacia abajo. Pensado para la diapositiva de El Heavy —
@@ -51,55 +51,48 @@ export default function MetalLights() {
   );
 }
 
-// Punkito volando soltando grandes chorros de luz coloreados hacia abajo.
+// Punkito volando por toda la diapositiva con vuelo errático, soltando
+// grandes chorros de luz coloreados hacia abajo. Renderizado igual que el
+// resto de flyers del cine (recorte del fondo negro → sprite visible).
 function PunkitoJets() {
-  const cut = PUNKITO_IMG;
-  preloadCutout(PUNKITO_IMG);
+  const cut = useCutoutSrc(PUNKITO_IMG);
   const jets = useMemo(
-    () => Array.from({ length: 5 }, (_, i) => ({
-      hue: ['#ffd27a', '#ff9a6a', '#8fb6ff', '#c08bff', '#7ad9c0'][i % 5],
-      dx: (i - 2) * 26,
-      dur: 1.6 + (i % 3) * 0.5,
-      delay: i * 0.18,
-      w: 60 + (i % 3) * 30,
+    () => Array.from({ length: 7 }, (_, i) => ({
+      hue: ['#ffd27a', '#ff9a6a', '#8fb6ff', '#c08bff', '#7ad9c0', '#ff8fc0', '#ffe27a'][i % 7],
+      dx: (i - 3) * 20,
+      dur: 1.8 + (i % 3) * 0.5,
+      delay: i * 0.2,
+      w: 64 + (i % 3) * 30,
     })),
     []
   );
   return (
     <motion.div
-      className="absolute left-1/2 top-1/2"
-      style={{ x: '-50%', y: '-50%' }}
-      animate={{ rotate: 360 }}
-      transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+      className="absolute top-[8%] left-0 z-[2]"
+      animate={{ x: ['10vw', '66vw', '30vw', '58vw', '18vw', '48vw', '10vw'], y: [0, -90, 60, -30, 80, -50, 0], rotate: [-10, 12, -5, 8, -7, 6, -10] }}
+      transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
     >
-      <motion.div
-        className="absolute"
-        style={{ left: '24vw', top: 0 }}
-        animate={{ rotate: -360 }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-      >
-        {/* Chorros de luz que caen desde el pollito punky */}
-        {jets.map((j, k) => (
-          <motion.div key={k}
-            className="absolute left-1/2 top-[70%] -translate-x-1/2 rounded-full pointer-events-none"
-            style={{ width: j.w, height: '70vh', marginLeft: j.dx,
-              background: `linear-gradient(to bottom, ${j.hue}cc 0%, ${j.hue}55 35%, transparent 78%)`,
-              filter: 'blur(9px)', mixBlendMode: 'screen', transformOrigin: '50% 0%' }}
-            animate={{ opacity: [0.2, 0.9, 0.4, 0.85, 0.2], scaleY: [0.7, 1.1, 0.85, 1, 0.7] }}
-            transition={{ duration: j.dur, repeat: Infinity, ease: 'easeInOut', delay: j.delay }}
-          />
-        ))}
+      {/* Chorros de luz que caen desde el pollito punky */}
+      {jets.map((j, k) => (
+        <motion.div key={k}
+          className="absolute left-1/2 top-[65%] -translate-x-1/2 rounded-full pointer-events-none"
+          style={{ width: j.w, height: '60vh', marginLeft: j.dx,
+            background: `linear-gradient(to bottom, ${j.hue}cc 0%, ${j.hue}55 35%, transparent 78%)`,
+            filter: 'blur(9px)', mixBlendMode: 'screen', transformOrigin: '50% 0%' }}
+          animate={{ opacity: [0.2, 0.9, 0.4, 0.85, 0.2], scaleY: [0.7, 1.1, 0.85, 1, 0.7] }}
+          transition={{ duration: j.dur, repeat: Infinity, ease: 'easeInOut', delay: j.delay }}
+        />
+      ))}
 
-        {cut && (
-          <motion.img
-            src={cut} alt="Pollito punky" draggable={false}
-            className="relative select-none pointer-events-none rounded-full"
-            style={{ width: 92, height: 92, objectFit: 'cover', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,.7))' }}
-            animate={{ scale: [1, 1.06, 0.97, 1.04, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        )}
-      </motion.div>
+      {cut && (
+        <motion.img
+          src={cut} alt="Pollito punky" draggable={false}
+          className="relative select-none pointer-events-none"
+          style={{ width: 120, height: 'auto', filter: 'drop-shadow(0 8px 14px rgba(0,0,0,.8))' }}
+          animate={{ scale: [1, 1.06, 0.97, 1.04, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
     </motion.div>
   );
 }
