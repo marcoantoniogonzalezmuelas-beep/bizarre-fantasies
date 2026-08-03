@@ -113,8 +113,15 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     }
     const desired = anchorBottom > 0 ? anchorBottom + 4 : maxTop;
     const top = Math.max(4, Math.min(maxTop, desired));
-    const maxX = Math.max(0, window.innerWidth - visualW - 4);
-    setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.round(top) });
+    if (isMobile) {
+      // En móvil/tablet el cartel se ancla por su centro CSS: left = (viewport - MOB_W)/2
+      // para que, al escalar con el pellizco desde 'top center', crezca simétrico
+      // sin desplazarse lateralmente (igual que el icono del Oráculo).
+      setPos({ left: Math.round((window.innerWidth - MOB_W) / 2), top: Math.round(top) });
+    } else {
+      const maxX = Math.max(0, window.innerWidth - visualW - 4);
+      setPos({ left: Math.max(4, Math.min(maxX, Math.round((window.innerWidth - visualW) / 2))), top: Math.round(top) });
+    }
   }, [scale, isMobile]);
 
   // Recoloca al montar/cambiar noticias y al rotar; repite unas veces hasta
@@ -198,7 +205,7 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   const baseStyle = {
     ...(isMobile ? {} : { touchAction: 'none', cursor: 'grab' }),
     transform: isMobile ? mobileTransform : (pz !== 1 ? zoomedTransform : baseTransform),
-    transformOrigin: 'top left',
+    transformOrigin: isMobile ? 'top center' : 'top left',
     ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
   };
   const style = pos ? { ...baseStyle, left: pos.left, top: pos.top, right: 'auto', bottom: 'auto' } : baseStyle;

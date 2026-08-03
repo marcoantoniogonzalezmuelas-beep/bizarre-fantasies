@@ -36,7 +36,11 @@ export function buildQuitContactPatch(texts) {
     '.bf-contact.open .bf-contact-body{display:block;}',
     '.bf-contact a{color:#ff7ad9;font-weight:900;text-decoration:none;text-shadow:0 0 8px rgba(255,122,217,.6);}',
     '.bf-contact a:hover{color:#ffd24a;}',
-    '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}'
+    '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}',
+    // Modal de "Salir" en móvil/tablet: sin fondo negro (solo el cuadro),
+    // y posicionado junto al botón Salir (arriba a la derecha) en vez de
+    // centrado en pantalla.
+    '@media (max-width:1024px){#modalRoot .mo{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;padding:0!important}#modalRoot .mo>.mb{position:fixed!important;top:74px!important;right:10px!important;left:auto!important;max-width:min(340px,calc(100vw - 20px))!important;width:auto!important;max-height:72vh!important;margin:0!important;transform:none!important}.bf-confirm-overlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}.bf-confirm-box{position:relative!important;top:64px!important;right:10px!important;margin:0!important;max-width:min(320px,calc(100vw - 20px))!important}}'
   ].join('');
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
   if (isTouch) style.textContent += '#homeBtn{font-size:28px!important;padding:16px 28px!important;min-height:54px!important;line-height:1!important;}';
