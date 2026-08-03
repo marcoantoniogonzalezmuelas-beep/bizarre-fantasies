@@ -70,8 +70,8 @@ function PunkitoJets() {
     <motion.div
       className="absolute top-0 left-0 z-[2]"
       animate={{
-        x: ['38vw', '70vw', '20vw', '78vw', '10vw', '64vw', '28vw', '52vw', '38vw'],
-        y: ['12vh', '-28vh', '6vh', '-18vh', '22vh', '-12vh', '26vh', '-8vh', '12vh'],
+        x: ['20vw', '62vw', '14vw', '74vw', '30vw', '68vw', '22vw', '54vw', '20vw'],
+        y: ['18vh', '44vh', '12vh', '58vh', '28vh', '52vh', '16vh', '40vh', '18vh'],
         rotate: [0, 380, 720, 1080, 700, 1180, 540, 900, 1440],
       }}
       transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', times: [0, 0.13, 0.26, 0.38, 0.5, 0.62, 0.75, 0.88, 1] }}
