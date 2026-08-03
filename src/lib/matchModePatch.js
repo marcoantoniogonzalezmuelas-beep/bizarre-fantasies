@@ -42,8 +42,8 @@ export const MATCH_MODE_PATCH = `
   document.head.appendChild(st);
 
   function modeMeta(m){
-    if(m==='m3') return {label:'Match a 3 · primero en llegar a 3 victorias', target:3};
-    if(m==='m5') return {label:'Match a 5 · primero en llegar a 5 victorias', target:5};
+    if(m==='m3') return {label:'Match a 3 · primero en llegar a 2 victorias', target:2};
+    if(m==='m5') return {label:'Match a 5 · primero en llegar a 3 victorias', target:3};
     return {label:'Libre · marcador global entre los dos jugadores', target:0};
   }
   function ns(){ return (typeof NET!=='undefined') ? NET : null; }
@@ -61,8 +61,8 @@ export const MATCH_MODE_PATCH = `
     wrap.className='ig';
     wrap.innerHTML = '<label>Modalidad de la partida</label>'+
       '<div class="bf-mode-pick">'+
-        '<div class="bf-mode-opt" data-m="m3"><div class="bf-mode-t">Match a 3</div><div class="bf-mode-s">Empieza 0-0 · gana quien llegue a 3 victorias</div></div>'+
-        '<div class="bf-mode-opt" data-m="m5"><div class="bf-mode-t">Match a 5</div><div class="bf-mode-s">Empieza 0-0 · gana quien llegue a 5 victorias</div></div>'+
+        '<div class="bf-mode-opt" data-m="m3"><div class="bf-mode-t">Match a 3</div><div class="bf-mode-s">Empieza 0-0 · gana quien llegue a 2 victorias</div></div>'+
+        '<div class="bf-mode-opt" data-m="m5"><div class="bf-mode-t">Match a 5</div><div class="bf-mode-s">Empieza 0-0 · gana quien llegue a 3 victorias</div></div>'+
         '<div class="bf-mode-opt active" data-m="free"><div class="bf-mode-t">Libre</div><div class="bf-mode-s">Marcador global de todas vuestras partidas</div></div>'+
       '</div>';
     var roomIg = room.closest('.ig');
