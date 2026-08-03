@@ -131,6 +131,22 @@ export const DEMO_FLOW_PATCH = `
     G.coins={p:START_COINS,o:START_COINS};
     G.aIndex=0; G.subRound=0; G.phaseResult=null;
     try{ startAuctionPhase(); }catch(e){}
+    // SOLO en la 1ª fase de la subasta del demo: fuerza un bonificador que
+    // modifique la puja (BID_ADD suma / BID_SUB resta al rival) para que el
+    // tip explicativo del bidcalc (bonificador verde / restador rojo) tenga
+    // sentido. En fases posteriores vuelve al azado normal del juego.
+    try{
+      if (G.demo && Number(G.aIndex||0)===0 && Number(G.subRound||0)===0 && typeof BONUS!=='undefined' && BONUS) {
+        var bidBs=BONUS.filter(function(b){ return b && (b.type==='BID_ADD'||b.type==='BID_SUB'); });
+        if (bidBs.length) {
+          if (!G.bonus) G.bonus={p:null,o:null};
+          ['p','o'].forEach(function(s){
+            var pick=bidBs[Math.floor(Math.random()*bidBs.length)];
+            G.bonus[s]=pick;
+          });
+        }
+      }
+    }catch(e){}
     // Mostrar la pantalla de subasta con la TERNA de 6 héroes ANTES del mensaje
     // del entrenador. Sin esto el "Empezar demo" dejaba la pantalla anterior
     // (el modal) y el espectador veía el mensaje sin contexto, y al pulsar
