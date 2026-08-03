@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
@@ -100,8 +101,11 @@ export default function Reglas() {
       <div className="fixed inset-0 bg-gradient-to-b from-[#0e0a16]/85 via-[#0e0a16]/72 to-[#0e0a16]/96" />
 
       <div className="relative max-w-5xl mx-auto px-4 py-8 pb-20">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 gap-3">
           <Link to="/" className="text-sm font-bold text-[#cfc6dd] border border-[#3c3158] rounded-xl px-4 py-2 bg-[#161028]/80 hover:bg-[#221a3d] transition-colors">{t('← Volver al juego')}</Link>
+          <Link to="/guiacartas" className="flex items-center gap-2 text-sm font-bold text-[#ffe9a8] border border-[#ffd24a]/55 rounded-xl px-4 py-2 bg-[#161028]/80 hover:bg-[#221a3d] transition-colors shadow-[0_0_14px_rgba(255,210,74,.18)]">
+            <BookOpen size={16} /> {t('Conocer las Cartas')}
+          </Link>
         </div>
 
         <div className="text-center mb-10">
@@ -150,6 +154,17 @@ export default function Reglas() {
             <p><b style={{ color: '#ffaa00' }}>⭐ Forma Élite:</b> {t('cuando un héroe cae por primera vez, renace en Élite con parte de su vida y stats mejorados según su raza. Al revivir renace limpio: sin estados negativos y sin arma ni armadura (van a la pila de descartes). Si vuelve a caer, muere de verdad — salvo Pluma Fénix o Ave Fénix.')}</p>
             <p><b style={{ color: '#ffd24a' }}>🔑 Regla de oro de habilidades:</b> {t('cada héroe puede usar su habilidad normal y su habilidad élite una sola vez por batalla (se cuentan por separado). Una vez jugada, no se puede volver a usar en esa batalla, ni siquiera tras revivir.')}</p>
             <p><b style={{ color: '#a06bff' }}>♻️ Pila de descartes:</b> {t('cuando un héroe cae, su arma y armadura van a tu pila de descartes; los objetos consumidos también. Con Reanimación Arcana recuperas una carta aleatoria de la pila: los objetos vuelven a ser jugables y las armas/armaduras se equipan gratis al jugarlas desde la mano.')}</p>
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
+            <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">☠️ {t('Muerte y reanimación de héroes')}</div>
+            <div className="space-y-2.5 text-sm leading-relaxed">
+              <p><b className="text-[#ff7a6a]">Caer a 0 de vida:</b> {t('el héroe queda fuera de combate. Su arma y su armadura se van a tu pila de descartes, igual que los objetos que hubiera consumido.')}</p>
+              <p><b style={{ color: '#ffaa00' }}>Primera caída → renace en Élite:</b> {t('vuelve con parte de su vida y stats mejorados según su raza. Renace limpio: sin estados negativos y sin arma ni armadura (están en la pila de descartes).')}</p>
+              <p><b className="text-[#ff5252]">Segunda caída → muerte definitiva:</b> {t('el héroe queda eliminado permanentemente de la batalla… salvo que jugues Pluma Fénix o Ave Fénix, que lo traen de vuelta una vez más.')}</p>
+              <p><b style={{ color: '#a06bff' }}>♻️ Reanimación Arcana:</b> {t('recuperas una carta aleatoria de tu pila de descartes: los objetos vuelven a ser jugables y las armas/armaduras se equipan gratis al jugarlas desde la mano.')}</p>
+              <p><b style={{ color: '#ffd24a' }}>🔑 Habilidades:</b> {t('cada héroe puede usar su habilidad normal y su habilidad élite una sola vez por batalla (se cuentan por separado). Al revivir no recupera una habilidad ya gastada.')}</p>
+            </div>
           </div>
 
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5">
