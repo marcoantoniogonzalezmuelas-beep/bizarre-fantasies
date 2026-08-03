@@ -45,13 +45,18 @@ export default function Ranking() {
 
   // Tokens invocados en batalla (no son héroes): fuera de las listas de héroes.
   const SUMMON_TOKENS = ['Patito de Goma'];
+  // IAs y jugadores comparten ranking: se cuentan todas las victorias y
+  // derrotas sin filtrar por winner_is_ai / loser_is_ai.
   const wins = {}, losses = {}, heroWins = {}, heroLosses = {}, heroDeaths = {}, heroElites = {};
-  const aiWins = {}, aiLosses = {};
+  // Mapa nick → avatar: se construye con el avatar MÁS RECIENTE de cada nick
+  // (results viene ordenado por -created_date). Así, aunque un jugador cambie
+  // de avatar entre partidas, el ranking muestra siempre el último que usó.
+  const playerArtMap = {};
   (results || []).forEach(r => {
-    if (!r.winner_is_ai) wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
-    if (!r.loser_is_ai) losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
-    if (r.winner_is_ai) aiWins[r.winner_nick] = (aiWins[r.winner_nick] || 0) + 1;
-    if (r.loser_is_ai) aiLosses[r.loser_nick] = (aiLosses[r.loser_nick] || 0) + 1;
+    wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
+    losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
+    if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
+    if (r.loser_avatar && !playerArtMap[r.loser_nick]) playerArtMap[r.loser_nick] = { art: r.loser_avatar };
     (r.winner_heroes || []).forEach(h => {
       if (!h.name || SUMMON_TOKENS.includes(h.name)) return;
       heroWins[h.name] = (heroWins[h.name] || 0) + 1;
@@ -65,14 +70,12 @@ export default function Ranking() {
       if (h.elite) heroElites[h.name] = (heroElites[h.name] || 0) + 1;
     });
   });
+  // Fallback de avatares para IAs cuyas partidas se registraron antes de que
+  // se guardara el avatar en el resultado.
+  Object.keys(AI_AVATARS).forEach(k => { if (!playerArtMap[k]) playerArtMap[k] = AI_AVATARS[k]; });
   const playerExtra = (nick) => {
     const w = wins[nick] || 0, l = losses[nick] || 0;
     return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
-  };
-  const aiExtra = (nick) => {
-    const w = aiWins[nick] || 0, l = aiLosses[nick] || 0;
-    if (w + l === 0) return '';
-    return `${w}V · ${l}D · ${Math.round((w / (w + l)) * 100)}%`;
   };
 
   return (
@@ -98,10 +101,7 @@ export default function Ranking() {
         ) : (
           <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <RankList title={t('Mejores jugadores')} icon="👑" rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} />
-            </div>
-            <div className="md:col-span-2">
-              <RankList title={t('Rivales IA más temibles')} icon="🤖" rows={top(aiWins, 10, aiExtra)} valueLabel={t('victorias')} accent="#c06bff" empty={t('Ninguna IA ha ganado todavía. ¡Enfréntate a ellas!')} artMap={AI_AVATARS} />
+              <RankList title={t('Mejores jugadores')} icon="👑" rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
             </div>
             <RankList title={t('Héroes más victoriosos')} icon="⚔️" rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
             <RankList title={t('Héroes más derrotados')} icon="💀" rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />

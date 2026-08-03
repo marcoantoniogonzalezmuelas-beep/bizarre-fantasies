@@ -21,6 +21,9 @@ export default function RankList({ title, icon, rows, valueLabel, accent = '#FFD
           {listRows.map((r, i) => (
             <li key={r.name} className="flex items-center gap-3 rounded-xl px-3 py-2 bg-[#1e1735]/80 border border-[#2c2347]">
               <span className="w-7 text-center font-black text-base">{MEDALS[i + offset] || <span className="text-[#8f84a8] text-sm">{i + offset + 1}</span>}</span>
+              {artMap && artMap[r.name]?.art && (
+                <img src={artMap[r.name].art} alt="" className="w-7 h-7 rounded-full object-cover border border-[#2c2347] flex-shrink-0" />
+              )}
               <span className="flex-1 font-bold text-[#efe9dc] truncate">{r.name}</span>
               {r.extra && <span className="hidden sm:inline text-[11px] text-[#8f84a8]">{r.extra}</span>}
               <span className="font-heading font-black text-base" style={{ color: accent }}>

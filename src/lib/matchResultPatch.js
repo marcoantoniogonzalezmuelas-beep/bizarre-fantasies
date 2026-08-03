@@ -30,10 +30,17 @@ export const MATCH_RESULT_PATCH = `
         loser=(G.names&&G.names[loserSide])||'Rival';
         if(!G.oppHuman){if(winnerSide==='o')winnerIsAi=true;else loserIsAi=true;}
       }
+      // Avatares: el del jugador (bfMyAvatar) para el lado 'p', el del rival
+      // (bfOppAvatar) para el lado 'o'. El ranking usa el más reciente para
+      // que cada nick muestre siempre su último avatar aunque lo cambie.
+      var pAv=(window.bfMyAvatar&&window.bfMyAvatar.url)||'';
+      var oAv=(window.bfOppAvatar&&window.bfOppAvatar.url)||'';
       window.parent.postMessage({bfMatchResult:{
         winner_nick:winner,loser_nick:loser,
         mode:isOnline?'online':(G.oppHuman?'local':'ia'),
         winner_is_ai:winnerIsAi,loser_is_ai:loserIsAi,
+        winner_avatar:winnerSide==='p'?pAv:oAv,
+        loser_avatar:loserSide==='p'?pAv:oAv,
         winner_heroes:heroList(G.team&&G.team[winnerSide]),
         loser_heroes:heroList(G.team&&G.team[loserSide])
       }},'*');
