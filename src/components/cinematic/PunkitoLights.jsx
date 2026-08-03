@@ -42,11 +42,11 @@ export default function PunkitoLights() {
         ))}
       </div>
 
-      {/* Punkito volando (imagen recortada sobre fondo negro) */}
+      {/* Pollito volando desde abajo con vuelo muy irregular (zigzag caótico) */}
       <motion.div
-        className="absolute top-[10%] left-0"
-        animate={{ x: ['10vw', '72vw', '40vw', '16vw', '10vw'], y: [0, -24, 14, -10, 0], rotate: [-7, 7, -3, 5, -7] }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-[8%] left-0"
+        animate={{ x: ['12vw', '64vw', '22vw', '50vw', '8vw', '58vw', '12vw'], y: [0, -120, 40, -180, 20, -90, 0], rotate: [-12, 14, -6, 18, -8, 9, -12] }}
+        transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
       >
         {cut && (
           <motion.img

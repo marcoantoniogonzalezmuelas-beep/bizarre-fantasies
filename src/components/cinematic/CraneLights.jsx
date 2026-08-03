@@ -61,11 +61,11 @@ export default function CraneLights() {
         ))}
       </div>
 
-      {/* Samurái recorriendo la escena con su katana brillante */}
+      {/* Samurái volando desde abajo con su katana brillante, vuelo irregular */}
       <motion.div
-        className="absolute top-[8%] left-0"
-        animate={{ x: ['14vw', '64vw', '38vw', '22vw', '14vw'], y: [0, -14, 10, -8, 0], rotate: [-4, 3, -2, 4, -4] }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute bottom-[6%] left-0"
+        animate={{ x: ['14vw', '58vw', '24vw', '48vw', '16vw', '40vw', '14vw'], y: [0, -140, 30, -90, 20, -60, 0], rotate: [-6, 9, -3, 12, -5, 6, -6] }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       >
         {cut && (
           <motion.img
