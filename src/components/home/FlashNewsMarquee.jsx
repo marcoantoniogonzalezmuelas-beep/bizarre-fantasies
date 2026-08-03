@@ -7,7 +7,7 @@ import { getLang } from '@/lib/i18n';
 // iconos del menú del juego (Aprende a jugar, Reglas…). No se arrastra: solo
 // adapta su tamaño con el zoom de pellizco y con la escala móvil del juego.
 // Las noticias las gestiona el admin desde la entidad FlashNews.
-export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinchZ = 1 }) {
+export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinchZ = 1, inGameSpace = false }) {
   const [items, setItems] = useState([]);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
   const [enabled, setEnabled] = useState(true);
@@ -19,27 +19,33 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   const scale = mobScale || 1;
   const MOB_W = 760; // ancho del cartel en coordenadas 1200 (escala igual que el juego)
 
-  // Mide la fila de iconos del menú (Aprende a jugar, Reglas, Razas…) dentro
-  // del iframe y coloca el cartel justo debajo. El iframe está en (0,0)
-  // escalado desde su esquina superior izquierda, así que la y en viewport =
-  // y_del_iframe * scale. Repite en resize/scroll para seguir al layout.
+  // En modo inGameSpace (móvil) el cartel vive dentro de un wrapper que replica
+  // el transform del iframe (escala + pellizco). Durante el pellizco el cuerpo
+  // del juego se transforma, por lo que getBoundingClientRect devolvería la
+  // posición ya transformada; congelamos la base y deja que el wrapper aplique
+  // zoom/pan. Solo medimos la posición base cuando NO hay pellizco activo.
+  const pzRef = useRef(1);
+  useEffect(() => { pzRef.current = pinchZ || 1; }, [pinchZ]);
+
   useEffect(() => {
     const measure = () => {
+      if (inGameSpace && pzRef.current !== 1) return; // congelar base durante pellizco
       const iframe = document.querySelector('iframe');
       const doc = iframe?.contentDocument;
       const links = doc?.querySelector('.title-links');
       if (!links) return;
       const r = links.getBoundingClientRect();
-      // r está en coordenadas internas del iframe (1200 en móvil); al estar el
-      // iframe en (0,0) escalado desde top-left, viewport-y = r.bottom * scale.
-      setTopY(r.bottom * scale + 14);
+      // r.bottom está en coordenadas internas del iframe (espacio 1200 en
+      // móvil, viewport en escritorio). Sumamos 14px de margen en ese mismo
+      // espacio. El wrapper del móvil aplica luego la escala/pellizco.
+      setTopY(r.bottom + 14);
     };
     measure();
-    const iv = setInterval(measure, 800);
+    const iv = setInterval(measure, 500);
     window.addEventListener('resize', measure);
     window.addEventListener('orientationchange', () => setTimeout(measure, 300));
     return () => { clearInterval(iv); window.removeEventListener('resize', measure); };
-  }, [scale]);
+  }, [scale, inGameSpace]);
 
   useEffect(() => {
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
@@ -78,19 +84,14 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
-  // Fijo: centrado horizontalmente y anclado JUSTO DEBAJO de los iconos del
-  // menú. Solo escala su tamaño con el zoom de pellizco (sin translación),
-  // igual que los iconos. Origen "center top": crece hacia abajo desde el
-  // ancla superior (los iconos), así no se monta encima de ellos al zoom.
+  // inGameSpace (móvil): el cartel se posiciona en coordenadas 1200 dentro del
+  // wrapper que replica el transform del iframe; por eso NO aplica su propia
+  // escala/pellizco (lo hace el wrapper) y usa position:absolute.
+  // Escritorio: fijo en viewport, centrado, sin pellizco (pz=1).
   const s = scale * pz;
-  const style = {
-    position: 'fixed',
-    left: '50%',
-    top: topY,
-    transform: `translateX(-50%) scale(${s})`,
-    transformOrigin: 'center top',
-    ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
-  };
+  const style = inGameSpace
+    ? { position: 'absolute', left: 600, top: topY, width: 760, maxWidth: 'none', transform: 'translateX(-50%)', transformOrigin: 'center top' }
+    : { position: 'fixed', left: '50%', top: topY, transform: `translateX(-50%) scale(${s})`, transformOrigin: 'center top', ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}) };
 
   return (
     <div

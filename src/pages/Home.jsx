@@ -612,9 +612,11 @@ export default function Home() {
     );
   }
 
+  const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? window.innerHeight : 800) / mobScale) : 800;
+
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} isMobile={IS_MOBILE} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
+      {!IS_MOBILE && showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={1} isMobile={false} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
@@ -628,9 +630,9 @@ export default function Home() {
       >
         <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
       </div>
-      {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
-      {showOracle && (
-        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', transform: `scale(${(IS_MOBILE ? mobScale : 1) * pinch.z})`, transformOrigin: 'bottom right' }}>
+      {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial (escritorio) */}
+      {!IS_MOBILE && showOracle && (
+        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', transform: `scale(${pinch.z})`, transformOrigin: 'bottom right' }}>
           <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
             <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
           </div>
@@ -639,6 +641,28 @@ export default function Home() {
             <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} {t('cartas · Base Set')}</div>
           </div>
         </Link>
+      )}
+      {/* Móvil/tablet: el Oráculo y el cartel de Actualidad viven DENTRO de un
+        contenedor que replica exactamente el transform del iframe (escala móvil
+        + pellizco con desplazamiento), así que zoom y pellizco les afectan
+        igual que al resto del juego (icono de contactar, menús…). */}
+      {IS_MOBILE && showOracle && (
+        <div className="absolute inset-0 z-20 pointer-events-none" style={{ overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `translate(${pinch.tx}px, ${pinch.ty}px) scale(${pinch.z})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+              <Link to="/cards" className="absolute flex items-center gap-2 group pointer-events-auto" style={{ bottom: 20, right: 16, filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', textDecoration: 'none' }}>
+                <div className="relative rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110" style={{ width: 48, height: 48 }}>
+                  <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
+                </div>
+                <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
+                  <div className="font-heading font-black text-[13px] text-[#e2b0ff] leading-none tracking-wide">{t('Oráculo Bizarro')}</div>
+                  <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} {t('cartas · Base Set')}</div>
+                </div>
+              </Link>
+              {!demoModalOpen && <FlashNewsMarquee inGameSpace mobScale={1} isMobile pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
+            </div>
+          </div>
+        </div>
       )}
 
       {(blobUrl || srcDoc) && (
