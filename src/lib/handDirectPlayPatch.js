@@ -24,6 +24,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
   '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-play{display:none!important}'+
   '.chip.bf-chip-card.bf-chip-no-mana::after{content:"\\1F512";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:26px;z-index:6;filter:drop-shadow(0 2px 5px #000);pointer-events:none}'+
   '.chip.bf-chip-card .bf-chip-play.bf-chip-play-new{background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f)!important;border:2px solid #7c5410!important;color:#3a2600!important;box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)!important;width:40px!important;height:40px!important;font-weight:1000;animation:bfHandPlayPulse 1.8s ease-in-out infinite}'+
+  '.chip.bf-chip-card.bf-chip-equip{border:2px solid #5fa8ff!important;box-shadow:0 0 14px rgba(95,168,255,.5),0 4px 12px rgba(0,0,0,.5)!important}'+
   '.chip.bf-chip-card .bf-chip-play.bf-chip-play-new .bf-chip-play-ico{font-size:18px;line-height:1;text-shadow:0 1px 1px rgba(255,255,255,.4)}'+
   '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-play.bf-chip-play-new{animation:none}'+
   '@keyframes bfHandPlayPulse{0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)}50%{box-shadow:0 4px 22px rgba(255,210,74,.95),inset 0 1px 2px rgba(255,255,255,.6),0 0 20px rgba(255,210,74,.65)}}';
@@ -32,7 +33,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
   function mySide(){ try{ if(typeof NET!=='undefined'&&NET.role==='client'&&NET.mySide) return NET.mySide; }catch(e){} return 'p'; }
   function activeMana(){ var a=document.querySelector('.bhero.active-turn'); if(!a) return null; var mp=a.querySelector('.mp-num'); var m=mp?String(mp.textContent).match(/-?\\d+/):null; return m?parseInt(m[0],10):null; }
   function activeSide(){ var a=document.querySelector('.bhero.active-turn'); return a?(String(a.id||'').split('_')[1]||'p'):null; }
-  function findByName(name){ var key=(name||'').trim(); if(!key) return null; var sp=(typeof SPELLS!=='undefined'?SPELLS:[]).find(function(s){return s&&s.name===key;}); if(sp) return {item:sp,kind:'spell'}; var ob=(typeof OBJECTS!=='undefined'?OBJECTS:[]).find(function(o){return o&&o.name===key;}); if(ob) return {item:ob,kind:'object'}; return null; }
+  function findByName(name){ var key=(name||'').trim(); if(!key) return null; var sp=(typeof SPELLS!=='undefined'?SPELLS:[]).find(function(s){return s&&s.name===key;}); if(sp) return {item:sp,kind:'spell'}; var ob=(typeof OBJECTS!=='undefined'?OBJECTS:[]).find(function(o){return o&&o.name===key;}); if(ob) return {item:ob,kind:'object'}; var mw=(typeof MELEE!=='undefined'?MELEE:[]).find(function(m){return m&&m.name===key;}); if(mw) return {item:mw,kind:'object',equip:true}; var rw=(typeof RANGED!=='undefined'?RANGED:[]).find(function(r){return r&&r.name===key;}); if(rw) return {item:rw,kind:'object',equip:true}; var ar=(typeof ARMORS!=='undefined'?ARMORS:[]).find(function(a){return a&&a.name===key;}); if(ar) return {item:ar,kind:'object',equip:true}; return null; }
   function manaOf(it){ try{ if(typeof window.bfManaFor==='function') return window.bfManaFor(it); }catch(e){} return (it&&it.mana!=null)?it.mana:null; }
 
   function flyChip(chip){
@@ -61,6 +62,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
       var name=nameEl?nameEl.textContent.trim():(chip.title||'');
       var found=findByName(name);
       var kind=found?found.kind:'spell';
+      if(found&&found.equip) chip.classList.add('bf-chip-equip'); else chip.classList.remove('bf-chip-equip');
       // Maná: atenuiza los hechizos cuando es el turno del jugador y falta maná.
       if(kind==='spell'){
         var cost=found?manaOf(found.item):null;
@@ -70,6 +72,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
       // Sustituye el botón de jugar por uno propio (sin listeners del juego) que
       // lanza directo con castSpell(id), saltándose el menú de hechizos.
       var play=chip.querySelector('.bf-chip-play');
+      if(!play&&found){ play=document.createElement('div');play.className='bf-chip-play';chip.appendChild(play); }
       if(play&&play.dataset.bfDirect!=='1'){
         var np=play.cloneNode(true);
         np.dataset.bfDirect='1';

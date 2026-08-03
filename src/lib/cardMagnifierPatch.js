@@ -54,6 +54,9 @@ export const CARD_MAGNIFIER_PATCH = `
       var m = bg && bg.match(/url\\(["']?(.*?)["']?\\)/);
       if (m && m[1]) return m[1];
     }
+    var bg2 = el.style.backgroundImage || getComputedStyle(el).backgroundImage;
+    var m2 = bg2 && bg2.match(/url\\(["']?(.*?)["']?\\)/);
+    if (m2 && m2[1]) return m2[1];
     return '';
   }
   function nameOf(el){
