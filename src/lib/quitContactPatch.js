@@ -73,10 +73,11 @@ export function buildQuitContactPatch(texts) {
       if(!ov){ov=document.querySelector('#modalRoot .mo');}
       if(ov&&ov!==last){
         last=ov;
+        if(hitEl) hitEl.style.display='none';
         var box=ov.querySelector('.bf-confirm-box')||ov.querySelector('.mb')||ov;
         // Pequeño retardo para que el CSS de posicionamiento aplique.
         setTimeout(function(){scrollToModal(box);},60);
-      }else if(!ov){last=null;}
+      }else if(!ov){last=null; if(hitEl) hitEl.style.display='';}
     },250);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchModal);
@@ -108,14 +109,16 @@ export function buildQuitContactPatch(texts) {
     hit.addEventListener('click', fire);
     hit.addEventListener('touchstart', fire, { passive:false });
     document.body.appendChild(hit);
+    hitEl = hit;
     sync();
     window.addEventListener('resize', sync);
     window.addEventListener('orientationchange', function(){ setTimeout(sync, 300); });
     window.addEventListener('scroll', sync, true);
     setInterval(sync, 700);
   }
+  var hitEl = null;
   var hitStyle = document.createElement('style');
-  hitStyle.textContent = '.bf-home-hit{position:fixed;z-index:5990;background:transparent;border:0;cursor:pointer;pointer-events:auto;}#homeBtn{position:relative;z-index:5995;}';
+  hitStyle.textContent = '.bf-home-hit{position:fixed;z-index:5990;background:transparent;border:0;cursor:pointer;pointer-events:auto;}';
   document.head.appendChild(hitStyle);
   function ensureHomeHit(){
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', patchHomeHit); }
