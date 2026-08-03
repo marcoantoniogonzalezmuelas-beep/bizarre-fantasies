@@ -210,10 +210,12 @@ export const STATUS_AURA_PATCH = `
     window.stepTurn.__bfOddStates=1;return true;
   }
 
-  var t=0,timer=setInterval(function(){t++;hookRender();installAbilities();installTurns();decorate();if(t>80)clearInterval(timer);},150);
+  // Hook a renderBattle + interval de respaldo SUAVE (sin MutationObserver
+  // del documento entero — eso causaba parpadeo en móvil/tablet al dispararse
+  // con cualquier cambio de DOM y re-inyectar decoraciones).
+  var t=0,timer=setInterval(function(){t++;hookRender();installAbilities();installTurns();decorate();if(t>40)clearInterval(timer);},300);
   hookRender();installAbilities();installTurns();decorate();
-  var _bfAu=0; new MutationObserver(function(){var n=Date.now();if(n-_bfAu<500)return;_bfAu=n;decorate();}).observe(document.documentElement,{childList:true,subtree:true});
-  setInterval(decorate,1500);
+  setInterval(decorate,2000);
 })();
 </script>
 `;

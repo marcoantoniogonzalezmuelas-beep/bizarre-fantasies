@@ -78,7 +78,7 @@ export const BATTLE_ANIME_PATCH = `
         var art=card.querySelector('.bf-battle-art');
         if(art)bg=artUrlOf(art);
       }
-      if(bg&&el.style.backgroundImage!==bg)el.style.backgroundImage=bg;
+      if(bg&&el.dataset.bfBg!==bg){el.style.backgroundImage=bg;el.dataset.bfBg=bg;}
     });
   }
   function hookRender(){
@@ -87,9 +87,10 @@ export const BATTLE_ANIME_PATCH = `
     window.renderBattle=function(){o.apply(this,arguments);try{injectBgArt();}catch(e){}};
     window.renderBattle.__bfAnimeBg=1;
   }
-  var t=0,timer=setInterval(function(){t++;hookRender();injectBgArt();if(t>140)clearInterval(timer);},120);
+  // Hook a renderBattle: inyecta el bgart SÍNCRONAMENTE tras cada render
+  // (sin MutationObserver ni interval agresivo — eso causaba parpadeo en móvil).
+  var t=0,timer=setInterval(function(){t++;hookRender();if(t>30)clearInterval(timer);},300);
   hookRender();injectBgArt();
-  var _bfBp=0; new MutationObserver(function(){var n=Date.now();if(n-_bfBp<500)return;_bfBp=n;injectBgArt();}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 `;
