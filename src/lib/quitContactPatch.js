@@ -37,16 +37,15 @@ export function buildQuitContactPatch(texts) {
     '.bf-contact a{color:#ff7ad9;font-weight:900;text-decoration:none;text-shadow:0 0 8px rgba(255,122,217,.6);}',
     '.bf-contact a:hover{color:#ffd24a;}',
     '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}',
-    // Modal de "Salir" en móvil/tablet: SIN fondo (nada de overlay/oscurecer),
-    // solo la ventanita limpia flotando junto al botón Salir. El overlay no
-    // bloquea la pantalla detrás (pointer-events:none); solo el cuadro es
-    // interactivo. Ventanita estándar: borde dorado, fondo oscuro, compacta.
-    '@media (max-width:1024px){'
-      + '.bf-confirm-overlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}'
-      + '.bf-confirm-box{pointer-events:auto!important;position:relative!important;top:70px!important;right:12px!important;margin:0!important;width:min(290px,calc(100vw - 24px))!important;max-width:min(290px,calc(100vw - 24px))!important}'
-      + '#modalRoot .mo{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important}'
-      + '#modalRoot .mo>.mb{pointer-events:auto!important;position:fixed!important;top:74px!important;right:12px!important;left:auto!important;width:min(290px,calc(100vw - 24px))!important;max-width:min(290px,calc(100vw - 24px))!important;margin:0!important;transform:none!important}'
-    + '}'
+    // Modal de "Salir" — SIEMPRE la ventanita limpia (sin fondo/overlay negro),
+    // para todos los casos y dispositivos. El overlay no bloquea la pantalla
+    // detrás (pointer-events:none); solo el cuadro es interactivo. Ventanita
+    // estándar: borde dorado, fondo oscuro, compacta, flotando junto al botón.
+    '@keyframes bfQuitZoom{from{opacity:0;transform:scale(.9) translateY(-6px);}to{opacity:1;transform:scale(1) translateY(0);}}',
+    '.bf-confirm-overlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}',
+    '.bf-confirm-box{pointer-events:auto!important;position:relative!important;top:70px!important;right:12px!important;margin:0!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;animation:bfQuitZoom .18s ease-out!important;}',
+    '#modalRoot .mo{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important;}',
+    '#modalRoot .mo>.mb{pointer-events:auto!important;position:fixed!important;top:74px!important;right:12px!important;left:auto!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;margin:0!important;transform:none!important;animation:bfQuitZoom .18s ease-out!important;}'
   ].join('');
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
   if (isTouch) style.textContent += '#homeBtn{font-size:28px!important;padding:16px 28px!important;min-height:54px!important;line-height:1!important;}';
