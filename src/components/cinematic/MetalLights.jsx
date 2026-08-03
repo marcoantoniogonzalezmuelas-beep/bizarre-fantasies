@@ -1,73 +1,47 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-// Luces de concierto metal: haces de focos giratorios (rojo/azul/violeta/verde)
-// que barren el escenario desde lo alto + estroboscopia rápida + neblina de
-// escenario. Pensado para la diapositiva de El Heavy (headbang).
+// Focos de escenario: pequeñas lámparas circulares colgadas arriba que proyectan
+// pools de luz suaves hacia abajo. Pensado para la diapositiva de El Heavy —
+// ambiente de concierto, pero discreto (sin haces bestiales ni estroboscopia).
 export default function MetalLights() {
-  const beams = useMemo(() => {
-    const hues = ['#ff2d2d', '#2d7bff', '#b03bff', '#3bff8a', '#ff8a2d'];
-    return Array.from({ length: 5 }, (_, i) => ({
-      left: 8 + i * 21,
+  const spots = useMemo(() => {
+    const hues = ['#ffd27a', '#ff9a6a', '#8fb6ff', '#c08bff', '#ffd27a', '#7ad9c0', '#ff8fc0'];
+    return Array.from({ length: 7 }, (_, i) => ({
+      left: 8 + i * 12.6,
       hue: hues[i % hues.length],
-      width: 26 + (i % 3) * 8,
-      dur: 4 + (i % 3) * 1.4,
-      delay: i * 0.5,
-      rot: [28 - i * 6, -34 + i * 5, 18 - i * 4, -22 + i * 6],
+      size: 120 + (i % 3) * 50,
+      dur: 5 + (i % 3) * 1.6,
+      delay: i * 0.45,
+      sway: (i % 2 ? 1 : -1) * (6 + (i % 3) * 4),
     }));
   }, []);
 
-  const strobes = useMemo(
-    () => Array.from({ length: 3 }, (_, i) => ({ delay: i * 0.37, dur: 0.55 + i * 0.1, hue: ['#ffffff', '#ff2d2d', '#2d7bff'][i] })),
-    []
-  );
-
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-      {/* Neblina de escenario (humo bajo) */}
-      <div className="absolute -bottom-10 left-0 right-0 h-1/2 opacity-40 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(120,90,160,.5), transparent 65%)' }} />
-
-      {/* Haces de focos giratorios */}
-      {beams.map((b, k) => (
-        <div key={k} className="absolute top-[-6%] h-[130%] pointer-events-none"
-          style={{ left: `${b.left}%`, width: `${b.width}vw` }}>
+      {/* Fila de focos circulares pequeños colgados arriba */}
+      {spots.map((s, k) => (
+        <div key={k} className="absolute top-0 -translate-x-1/2 pointer-events-none" style={{ left: `${s.left}%` }}>
+          {/* Lámpara/foco (circulito sólido) */}
+          <div className="absolute top-[-6px] left-1/2 -translate-x-1/2 rounded-full"
+            style={{ width: 16, height: 16, background: `radial-gradient(circle at 38% 32%, #fff, ${s.hue} 55%, #1a1018)`, boxShadow: `0 0 10px ${s.hue}, 0 2px 6px rgba(0,0,0,.6)`, border: '1.5px solid rgba(0,0,0,.5)' }} />
+          {/* Pool de luz que baja suave */}
           <motion.div
-            className="absolute top-0 left-1/2 -translate-x-1/2 origin-top"
+            className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full"
             style={{
-              width: '180%', height: '100%',
-              background: `linear-gradient(to bottom, ${b.hue}cc 0%, ${b.hue}55 18%, ${b.hue}12 42%, transparent 72%)`,
-              filter: 'blur(1.4px)',
-              mixBlendMode: 'screen',
+              width: s.size, height: s.size * 1.4,
+              background: `radial-gradient(ellipse 45% 60% at 50% 18%, ${s.hue}88 0%, ${s.hue}33 38%, transparent 72%)`,
+              filter: 'blur(6px)', mixBlendMode: 'screen',
             }}
-            animate={{ rotate: b.rot, opacity: [0.5, 0.9, 0.4, 0.8] }}
-            transition={{ duration: b.dur, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut', delay: b.delay }}
+            animate={{ x: [-s.sway / 2, s.sway / 2, -s.sway / 2], opacity: [0.5, 0.85, 0.5] }}
+            transition={{ duration: s.dur, repeat: Infinity, repeatType: 'mirror', ease: 'easeInOut', delay: s.delay }}
           />
         </div>
       ))}
 
-      {/* Barrido de luz que cruza el escenario */}
-      <motion.div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'linear-gradient(80deg, transparent 38%, rgba(255,255,255,.10) 49%, transparent 60%)', mixBlendMode: 'screen' }}
-        animate={{ x: ['-30%', '130%'] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-      />
-
-      {/* Estroboscopia rápida (flashes de color) */}
-      {strobes.map((s, k) => (
-        <motion.div key={k} className="absolute inset-0 pointer-events-none"
-          style={{ background: s.hue, mixBlendMode: 'screen' }}
-          animate={{ opacity: [0, 0, 0.18, 0, 0] }}
-          transition={{ duration: s.dur, repeat: Infinity, delay: s.delay, ease: 'linear' }}
-        />
-      ))}
-
-      {/* Pulso de calor en el centro del escenario */}
-      <motion.div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(255,60,60,.22), transparent 65%)', filter: 'blur(20px)' }}
-        animate={{ scale: [0.8, 1.15, 0.8], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-      />
+      {/* Neblina muy sutil de escenario */}
+      <div className="absolute -bottom-10 left-0 right-0 h-1/3 opacity-25 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(120,90,160,.4), transparent 70%)' }} />
     </div>
   );
 }
