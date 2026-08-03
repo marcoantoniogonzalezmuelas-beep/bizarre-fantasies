@@ -67,8 +67,12 @@ function PunkitoJets() {
   return (
     <motion.div
       className="absolute top-[6%] left-0"
-      animate={{ x: ['14vw', '74vw', '44vw', '20vw', '14vw'], y: [0, -16, 12, -8, 0], rotate: [-6, 6, -3, 4, -6] }}
-      transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
+      animate={{
+        x: ['14vw', '72vw', '30vw', '64vw', '18vw', '50vw', '14vw'],
+        y: [0, -120, 80, -40, 110, -90, 0],
+        rotate: [-8, 12, -5, 9, -7, 6, -8],
+      }}
+      transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
     >
       {/* Chorros de luz que caen desde Punkito */}
       {jets.map((j, k) => (
@@ -85,8 +89,8 @@ function PunkitoJets() {
       {cut && (
         <motion.img
           src={cut} alt="Punkito" draggable={false}
-          className="relative select-none pointer-events-none"
-          style={{ width: 110, height: 'auto', filter: 'drop-shadow(0 8px 14px rgba(0,0,0,.7))' }}
+          className="relative select-none pointer-events-none rounded-full"
+          style={{ width: 88, height: 88, objectFit: 'cover', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.7))' }}
           animate={{ scale: [1, 1.06, 0.97, 1.04, 1] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         />
