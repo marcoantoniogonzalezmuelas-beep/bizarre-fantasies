@@ -160,9 +160,9 @@ export default function Reglas() {
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">⚡ {t('Velocidad y orden de turnos')}</div>
             <div className="space-y-2.5 text-sm leading-relaxed">
               <p><b className="text-[#ffe9a8]">Cada ronda:</b> {t('los héroes que puedan actuar lo hacen por tipo de acción — primero los de distancia (AD), luego los hechizos y por último los de cuerpo a cuerpo (CC): el arquero dispara antes de que llegue el melé.')}</p>
-              <p><b className="text-[#ffe9a8]">Desempate por velocidad:</b> {t('dentro del mismo tipo, actúa antes el héroe con más velocidad. La velocidad es un valor propio de cada héroe: las armas y armaduras cambian tu daño y tus stats, pero NO tu turno — no te hacen ni más rápido ni más lento.')}</p>
+              <p><b className="text-[#ffe9a8]">Desempate por velocidad:</b> {t('dentro del mismo tipo, actúa antes el héroe con más velocidad. Cada héroe parte de una velocidad base según su raza, y algunas armas y armaduras la aumentan: tu equipo sí puede cambiar cuándo te toca actuar.')}</p>
               <p><b className="text-[#ffe9a8]">Estados que sí mueven tu turno:</b> {t('Congelado actúa con velocidad reducida (va más tarde); Dormido y Paralizado pierden su próximo turno. El resto de estados cambian tus stats o tu daño, no cuándo te toca actuar.')}</p>
-              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. La velocidad solo decide el orden entre héroes del mismo tipo, así que tenla en cuenta al planear tu equipo.')}</p>
+              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. Junto a cada héroe verás un pequeño indicador de velocidad (cuanto más lleno, más rápido) para que sepas su velocidad base al planear tu equipo; al equiparlo, algunas armas y armaduras lo suben.')}</p>
             </div>
           </div>
 
