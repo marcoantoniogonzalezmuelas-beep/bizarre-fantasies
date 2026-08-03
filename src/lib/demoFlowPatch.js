@@ -194,20 +194,22 @@ export const DEMO_FLOW_PATCH = `
       btn.onclick = function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas',fromDemo:true},'*'); }catch(e){} };
       document.body.appendChild(btn);
     }
-    // Coloca el botón a la izquierda del badge, centrado en vertical.
+    // El botón se coloca UNA sola vez (al crearse) y luego queda FIJO en
+    // esa posición: no se reposiciona nunca, aunque el badge o la pantalla
+    // se muevan (re-renderizados, scroll, zoom de pellizco, etc.).
+    if (btn.dataset.bfPlaced === '1') return;
     var bw = btn.offsetWidth || 160, bh = btn.offsetHeight || 40;
     var x = br.left - bw - 10;
     var y;
     if (x >= 6) {
-      // Cabe a la izquierda del badge: lo centra en vertical con él.
       y = Math.max(6, Math.min(window.innerHeight - bh - 6, br.top + br.height/2 - bh/2));
     } else {
-      // No cabe a la izquierda (móvil): lo pone ENCIMA del badge, centrado.
       x = Math.max(6, Math.min(window.innerWidth - bw - 6, br.left + br.width/2 - bw/2));
       y = Math.max(6, br.top - bh - 8);
     }
     btn.style.left = x + 'px';
     btn.style.top = y + 'px';
+    btn.dataset.bfPlaced = '1';
   }
   if(!window.__bfDemoGuideSty){
     window.__bfDemoGuideSty=true;
