@@ -194,19 +194,21 @@ export const DEMO_FLOW_PATCH = `
       btn.onclick = function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas',fromDemo:true},'*'); }catch(e){} };
       document.body.appendChild(btn);
     }
-    // El botón se coloca UNA sola vez (al crearse) y luego queda FIJO en
-    // esa posición: no se reposiciona nunca, aunque el badge o la pantalla
-    // se muevan (re-renderizados, scroll, zoom de pellizco, etc.).
+    // Espera unos ticks a que el badge se asiente (el juego re-renderiza
+    // constantemente) antes de la PRIMERA colocación. Después queda FIJO.
+    if (btn.dataset.bfPlaced !== '1') {
+      btn.dataset.bfTicks = String(Number(btn.dataset.bfTicks || 0) + 1);
+      if (Number(btn.dataset.bfTicks) < 3) return;
+    }
     if (btn.dataset.bfPlaced === '1') return;
     var bw = btn.offsetWidth || 160, bh = btn.offsetHeight || 40;
+    // Altura: centro vertical del badge (Cuerpo a Cuerpo / tipo de subasta).
+    var cy = br.top + br.height / 2;
+    var y = Math.max(6, Math.min(window.innerHeight - bh - 6, cy - bh / 2));
+    // Horizontal: a la izquierda del badge si cabe; si no, a la derecha.
     var x = br.left - bw - 10;
-    var y;
-    if (x >= 6) {
-      y = Math.max(6, Math.min(window.innerHeight - bh - 6, br.top + br.height/2 - bh/2));
-    } else {
-      x = Math.max(6, Math.min(window.innerWidth - bw - 6, br.left + br.width/2 - bw/2));
-      y = Math.max(6, br.top - bh - 8);
-    }
+    if (x < 6) x = br.right + 10;
+    x = Math.max(6, Math.min(window.innerWidth - bw - 6, x));
     btn.style.left = x + 'px';
     btn.style.top = y + 'px';
     btn.dataset.bfPlaced = '1';
