@@ -213,7 +213,7 @@ export const DEMO_TIPS_PATCH = `
   }
 
   tipEl.querySelector('.bf-tut-x').addEventListener('click',function(e){
-    e.stopPropagation();e.preventDefault();hideTip();
+    e.stopPropagation();e.preventDefault();advance();
   });
 
   // Reposicionar al hacer scroll
