@@ -5,6 +5,7 @@ import { startMusic, stopMusic, setMuted as setMusicMuted } from '@/lib/cinemati
 import BattleClash from '@/components/cinematic/BattleClash';
 import TeamVersus from '@/components/cinematic/TeamVersus';
 import ExpansionSlide from '@/components/cinematic/ExpansionSlide';
+import MetalLights from '@/components/cinematic/MetalLights';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 import useStageZoom from '@/lib/useStageZoom';
@@ -58,6 +59,7 @@ const GAMER = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/1
 const ALFREDINHO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/95146ea6f_generated_image.png'; // Alfredinho (Doble Disparo)
 const AJEDRECISTA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6c3c2bc98_generated_image.png'; // El Ajedrecista (habilidad)
 const RETROPOETA = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2ca9bc580_generated_image.png'; // Retropoeta
+const RETROPOETA_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e179830c9_generated_image.png'; // Retropoeta (versión élite)
 const CHIVO = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/0259c21e4_generated_image.png';     // Chivo
 const BATU = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e20f77c2e_generated_image.png';    // Batu
 const NIX = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/16ec909b5_generated_image.png';   // Nixara
@@ -65,7 +67,7 @@ const NIX = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/16e
 function buildScenes() {
   return [
     { clash: { left: HIL, right: NIX, accent: '#7cff5a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('Bienvenido al mundo de las fantasías bizarras'), text: t('El tiempo se ha roto. Aquí todas las épocas colisionan: el presente, el futuro, la Edad Media y la épica fantástica — medieval y espacial. Un solo mundo, infinitas eras.'), dur: 8 },
-    { clash: { left: REN, right: HEAVY, accent: '#7c9cff', kind: 'sword', swap: true, motion: 'diagonal' }, kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 12 },
+    { clash: { left: RETROPOETA_ELITE, right: HEAVY, accent: '#7c9cff', kind: 'sword', swap: true, motion: 'diagonal', fx: 'metal' }, kicker: t('Eras'), title: t('Todas las épocas a la vez'), text: t('Desde los días actuales hasta el lejano futuro, pasando por la Edad Media y la épica fantástica, medieval y espacial. En Bizarre Fantasies, ninguna era queda fuera del tablero.'), dur: 12 },
     { clash: { left: SOL, right: COF_ELITE, accent: '#ffc24a', kind: 'chill', swap: false, motion: 'up' }, kicker: t('Tregua bizarra'), title: t('Brindis en medio del caos'), text: t('Tras la batalla, los druidas se reúnen junto al fuego: se curan las heridas, filosofan sobre el caos y brindan con la pipa y la cerveza espumando. «Salud», dice uno; «y muérdete la lengua», responde el otro — pero ambos ríen.'), dur: 12 },
     { clash: { left: GOR, right: SYL, accent: '#ff5a3c', kind: 'clash', swap: false, motion: 'rotate' }, kicker: t('Combates'), title: t('Batallas de RPG japonés'), text: t('Combates por turnos al estilo de los grandes RPG japoneses de los 90 y 2000: estratégicos, épicos y emocionantes. Cada turno, una decisión; cada carta, un destino.'), dur: 12 },
     { clash: { left: TRA, right: TANK, accent: '#29a3ff', kind: 'shoot', swap: true, motion: 'charge' }, kicker: t('Choque mecánico'), title: t('Transformer contra el Tanque'), text: t('El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules contra el Tanque. El Tanque planta las orugas, atrapa los golpes con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Mecánico contra blindaje — y el asfalto empieza a fundirse.'), dur: 13 },
@@ -131,6 +133,7 @@ export default function IntroCinematic({ onClose }) {
       <div ref={IS_MOBILE ? stageRef : null} className={IS_MOBILE ? 'absolute left-0 top-0 bg-black' : 'absolute inset-0'}>
       {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} motion={cur.clash.motion} />}
+      {cur.clash && cur.clash.fx === 'metal' && <MetalLights />}
       {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
       {cur.expansion && <ExpansionSlide ducks={cur.expansion.ducks} others={cur.expansion.others} accent={cur.expansion.accent} />}
 
