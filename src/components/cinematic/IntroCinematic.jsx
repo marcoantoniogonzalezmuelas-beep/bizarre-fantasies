@@ -14,6 +14,7 @@ import PhoenixLights from '@/components/cinematic/PhoenixLights';
 import ArcadeLights from '@/components/cinematic/ArcadeLights';
 import CraneLights from '@/components/cinematic/CraneLights';
 import PunkitoLights from '@/components/cinematic/PunkitoLights';
+import FlyLights from '@/components/cinematic/FlyLights';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 import useStageZoom from '@/lib/useStageZoom';
@@ -87,7 +88,7 @@ function buildScenes() {
     { clash: { left: AVE, right: HANNAI, accent: '#ff7a18', kind: 'fire', swap: false, motion: 'down', fx: 'phoenix' }, kicker: t('Choque épico'), title: t('Ave Fénix contra Hannai Boa'), text: t('El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. Hannai Boa despliega su Sigilo Cuántico y se funde con las sombras: el fuego pasa de largo, las llamas lamien el vacío. Fuego contra sombra — y el fénix, desconcertado, remonta.'), dur: 13 },
     { clash: { left: PLUMA, right: SOL_ELITE, accent: '#ffb347', kind: 'fire', swap: true, motion: 'spin', fx: 'punkito' }, kicker: t('Renacimiento'), title: t('Pluma Fénix renace'), text: t('De una sola pluma ardiente renace un fénix joven: pequeño, veloz, envuelto en brasas. Se cuela entre los pliegues del manto de Solenna y le picotea los tobillos con picotazos de fuego. Solenna sonríe, invoca su Resurrección y lo envuelve todo en una luz dorada — pero el fénix ya está en otro lado, y ríe con voz de cría.'), dur: 12 },
     { expansion: { ducks: [KIL, KIL_ELITE], others: [ZAR, COF], accent: '#b13bff' }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 12 },
-    { versus: { left: [CLINT, FUTBOLISTA, GAMER], right: [ALFREDINHO, AJEDRECISTA, NAR], accent: '#ffd24a', fx: 'arcade' }, kicker: t('Equipos'), title: t('Tres contra tres'), text: t('Cada equipo se compone de tres héroes: uno cuerpo a cuerpo, uno a distancia y uno mágico. Reúne al tuyo, enfréntalo al rival y que el bizarro caiga del lado contrario.'), dur: 11 },
+    { versus: { left: [CLINT, FUTBOLISTA, GAMER], right: [HIL, AJEDRECISTA, NAR], accent: '#ffd24a', fx: 'arcade' }, kicker: t('Equipos'), title: t('Tres contra tres'), text: t('Cada equipo se compone de tres héroes: uno cuerpo a cuerpo, uno a distancia y uno mágico. Reúne al tuyo, enfréntalo al rival y que el bizarro caiga del lado contrario.'), dur: 11 },
     { clash: { left: PATRON_ELITE, right: BUTIFARRA_ELITE, accent: '#ffd24a', kind: 'clash', swap: false, motion: 'float', fx: 'drone' }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 9 },
   ];
 }
@@ -149,6 +150,7 @@ export default function IntroCinematic({ onClose }) {
       {cur.clash && cur.clash.fx === 'metal' && <MetalLights />}
       {cur.clash && cur.clash.fx === 'drunk' && <DrunkLights />}
       {cur.clash && cur.clash.fx === 'comedy' && <ComedyLights />}
+      {cur.clash && cur.clash.fx === 'comedy' && <FlyLights />}
       {cur.clash && cur.clash.fx === 'drone' && <DroneLights />}
       {cur.clash && cur.clash.fx === 'phoenix' && <PhoenixLights />}
       {cur.clash && cur.clash.fx === 'crane' && <CraneLights />}
