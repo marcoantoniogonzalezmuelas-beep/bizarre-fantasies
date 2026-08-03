@@ -1,7 +1,5 @@
 // Parche inyectado en el iframe: reglas de batalla.
-// 1) TRANSFORMER: el héroe que se transforma puede ser cualquiera de los vivos
-//    en batalla (tuyo o del rival), no sólo del rival.
-// 2) MUERTE: el equipo (arma/armadura) del héroe va a la pila de descartes con
+// 1) MUERTE: el equipo (arma/armadura) del héroe va a la pila de descartes con
 //    animación. El héroe revive sin armas ni armaduras.
 // 3) HABILIDAD UNA VEZ POR BATALLA: la normal y la élite se trackean por
 //    separado. Una vez jugada, no se puede volver a jugar (botón en gris).
@@ -31,48 +29,6 @@ export const BATTLE_RULES_PATCH = `
   function eqName(slot,id){ var it=findInList(eqArrFor(slot),id); return it?it.name:'Equipo'; }
   function eqNum(slot,id){ var it=findInList(eqArrFor(slot),id); return (it&&it.num)||0; }
   function eqArt(slot,id){ var it=findInList(eqArrFor(slot),id); if(!it)return ''; var n=it.num||0; if(typeof NUM_ART!=='undefined'&&n&&NUM_ART[String(n)])return NUM_ART[String(n)]; return ''; }
-
-  // ===== 1. TRANSFORMER: objetivo aleatorio de TODOS los héroes vivos =====
-  function hookTransformer(){
-    if(typeof window.castSpell!=='function'||window.castSpell.__bfTrans)return;
-    var orig=window.castSpell;
-    window.castSpell=function(id){
-      try{
-        var s=(typeof SPELLS!=='undefined')?byId(SPELLS,id):null;
-        if(s&&/transformer/i.test(s.name)){
-          if(typeof NET!=='undefined'&&NET.role==='client'){sendIntent('castSpell',{id:id});return;}
-          var side=(typeof B!=='undefined'&&B&&B.current)?B.current.side:'p';
-          var h=(typeof getHero==='function')?getHero(side,B.current.id):null;
-          if(!h)return orig.apply(this,arguments);
-          if(h.mana<s.mana){if(typeof notif==='function')notif('Maná insuficiente');return;}
-          var alive=allLiving();
-          if(!alive.length)return orig.apply(this,arguments);
-          var target=alive[Math.floor(Math.random()*alive.length)];
-          var tSide=null,tIdx=-1;
-          ['p','o'].forEach(function(sd){ if(tSide!==null)return; var t=G.team[sd]||[]; for(var i=0;i<t.length;i++){ if(t[i]===target){tSide=sd;tIdx=i;break;} } });
-          if(tSide===null)return orig.apply(this,arguments);
-          // Valida tokens ANTES de descontar maná: si no hay tokens, no se
-          // cobra el hechizo y se avisa al jugador en vez de fallar en silencio.
-          var tp=(typeof TOKENS!=='undefined'&&TOKENS&&TOKENS.length)?TOKENS:((typeof HEROES!=='undefined'?HEROES:[]).filter(function(tk){return tk&&String(tk.id||'').indexOf('tk_')===0;}));
-          if(!tp||!tp.length){if(typeof notif==='function')notif('No hay tokens disponibles');return;}
-          h.mana-=s.mana;
-          var tk=tp[Math.floor(Math.random()*tp.length)];
-          var inst=(typeof makeInstance==='function')?makeInstance(tk):JSON.parse(JSON.stringify(tk));
-          inst.boughtFor=0;
-          G.team[tSide][tIdx]=inst;
-          if(typeof pushLog==='function')pushLog('li',s.name+': ¡'+target.name+' se transforma en '+inst.name+'!');
-          if(typeof pushFx==='function'){pushFx({k:'bfcard',name:s.name,kind:'spell',side:side});pushFx({k:'transform',side:tSide,id:inst.id});}
-          if(typeof notif==='function')notif(target.name+' → '+inst.name);
-          if(typeof renderBattle==='function')renderBattle();
-          if(typeof netSync==='function')netSync('s-battle');
-          if(typeof finishAct==='function')finishAct();
-          return;
-        }
-      }catch(e){}
-      return orig.apply(this,arguments);
-    };
-    window.castSpell.__bfTrans=1;
-  }
 
   // ===== 2+4. Muerte → equipo al descarte; revivir → sin equipo ni estados =====
   // SOLO se rastrean muertes/revividas durante la pantalla de batalla. Fuera de
@@ -270,7 +226,7 @@ export const BATTLE_RULES_PATCH = `
 
   setInterval(function(){scanLifeChanges();scanAbilityUsage();greyUsedAbilities();},200);
   var tries=0,iv=setInterval(function(){
-    hookTransformer();hookAbilityOnce();hookUseItemForEquip();hookRender();
+    hookAbilityOnce();hookUseItemForEquip();hookRender();
     if(++tries>300)clearInterval(iv);
   },150);
 })();

@@ -943,7 +943,7 @@ function buildArtScript(dbCards) {
       if (typeof NET !== 'undefined' && NET.role === 'client') { if(typeof sendIntent==='function') sendIntent('castSpell',{id:id}); return; }
       var side=B.current.side, h=getHero(side,B.current.id), s=byId(SPELLS,id);
       if (h.mana < s.mana) { if(window.notif) notif('Maná insuficiente'); return; }
-      var pool = (living('p')||[]).concat(living('o')||[]).filter(function(t){ return t && t.id !== h.id; });
+      var pool = (living('p')||[]).concat(living('o')||[]).filter(function(t){ return t && t.alive; });
       if (!pool.length) return;
       var tgt = pool[Math.floor(Math.random()*pool.length)];
       h.mana -= s.mana;
@@ -955,7 +955,7 @@ function buildArtScript(dbCards) {
       window.castSpell_AI = function(side,h,s,target){
         if (!s || s.kind !== 'transform') return origAi.apply(this, arguments);
         h.mana -= s.mana;
-        var pool = (living('p')||[]).concat(living('o')||[]).filter(function(t){ return t && t.id !== h.id; });
+        var pool = (living('p')||[]).concat(living('o')||[]).filter(function(t){ return t && t.alive; });
         var tgt = target || (pool.length ? pool[Math.floor(Math.random()*pool.length)] : null);
         if (tgt) bfMorph(tgt, h.name+' lanza Transformer'); if (typeof endTurn==='function') endTurn();
       };
