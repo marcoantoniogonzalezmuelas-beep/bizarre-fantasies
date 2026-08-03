@@ -172,24 +172,50 @@ export const DEMO_FLOW_PATCH = `
 
   // ---- Botón "Conocer las Cartas" durante la SUBASTA del demo ----
   // Aparece solo en la pantalla de reclutamiento (s-recruit) mientras el demo
-  // está activo: es el momento ideal para invitar a ver la guía visual antes
-  // de seguir. Al pulsar, navega a la página padre /guiacartas.
+  // está activo, anclado a la IZQUIERDA del indicador de fase (.phase-badge)
+  // para no solaparse con el botón de salir (esquina sup. derecha). Al pulsar,
+  // navega a la página padre /guiacartas.
   function ensureGuideBtn(){
     var show = (typeof G!=='undefined' && G && G.demo && curScreen()==='s-recruit');
     var btn = document.getElementById('bf-demo-guide-btn');
-    if (show && !btn){
+    if (!show){ if(btn) btn.remove(); return; }
+    var badge = document.querySelector('#s-recruit .phase-badge');
+    if(!badge){ if(btn) btn.remove(); return; }
+    // Mientras haya zoom de pellizco, no reposita (se mueve con el body).
+    var bt = getComputedStyle(document.body).transform;
+    if (bt && bt !== 'none') return;
+    var br = badge.getBoundingClientRect();
+    if (br.width < 4) { if(btn) btn.remove(); return; }
+    if (!btn){
       btn = document.createElement('div');
       btn.id = 'bf-demo-guide-btn';
-      btn.style.cssText = 'position:fixed;top:14px;right:14px;z-index:99999;display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 14px;border-radius:13px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:13px;letter-spacing:.3px;box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 16px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
-      btn.innerHTML = '<span style="font-size:18px">🃏</span> Conocer las Cartas';
+      btn.style.cssText = 'position:fixed;z-index:99999;display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 13px;border-radius:11px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:12px;letter-spacing:.3px;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 12px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;white-space:nowrap;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
+      btn.innerHTML = '<span style="font-size:16px">🃏</span> Conocer las Cartas';
       btn.onclick = function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas'},'*'); }catch(e){} };
       document.body.appendChild(btn);
-    } else if (!show && btn){ btn.remove(); }
+    }
+    // Coloca el botón a la izquierda del badge, centrado en vertical.
+    var bw = btn.offsetWidth || 160, bh = btn.offsetHeight || 40;
+    var x = br.left - bw - 10;
+    var y;
+    if (x >= 6) {
+      // Cabe a la izquierda del badge: lo centra en vertical con él.
+      y = Math.max(6, Math.min(window.innerHeight - bh - 6, br.top + br.height/2 - bh/2));
+    } else {
+      // No cabe a la izquierda (móvil): lo pone ENCIMA del badge, centrado.
+      x = Math.max(6, Math.min(window.innerWidth - bw - 6, br.left + br.width/2 - bw/2));
+      y = Math.max(6, br.top - bh - 8);
+    }
+    btn.style.left = x + 'px';
+    btn.style.top = y + 'px';
   }
-  var gSty=document.createElement('style');
-  gSty.textContent='@keyframes bfDemoGuidePulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 12px rgba(192,107,255,.4)}50%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 22px rgba(192,107,255,.85),0 0 30px rgba(255,210,74,.4)}}';
-  document.head.appendChild(gSty);
-  setInterval(ensureGuideBtn, 500);
+  if(!window.__bfDemoGuideSty){
+    window.__bfDemoGuideSty=true;
+    var gSty=document.createElement('style');
+    gSty.textContent='@keyframes bfDemoGuidePulse{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 10px rgba(192,107,255,.4)}50%{box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 18px rgba(192,107,255,.8),0 0 26px rgba(255,210,74,.4)}}';
+    document.head.appendChild(gSty);
+  }
+  setInterval(ensureGuideBtn, 400);
 
   // ---- Opción "Ver cinemática de intro" en el modal de "Aprender a jugar" ----
   // Detecta el modal de la demo por su botón "Empezar demo" (visible) e inserta
