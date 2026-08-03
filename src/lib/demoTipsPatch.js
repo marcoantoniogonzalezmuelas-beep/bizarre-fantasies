@@ -111,7 +111,12 @@ export const DEMO_TIPS_PATCH = `
   // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
   // volver a la portada (s-title) — fin de la demo.
   function tick(){
-    if(document.body.style.transform)return;
+    // Mientras el body tenga CUALQUIER transform (pellizco activo O la
+    // transición de reseteo), los tips se quedan quietos y se mueven/escalan
+    // con el body como el resto de la pantalla. Solo reposicionamos cuando el
+    // transform computado es 'none' (body sin transformar).
+    var bt=getComputedStyle(document.body).transform;
+    if(bt&&bt!=='none')return;
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;
