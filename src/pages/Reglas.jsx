@@ -82,14 +82,11 @@ function Em({ img }) {
   );
 }
 
-// Muestra el color real como ejemplo visual (cuadrado relleno) junto a su
-// código hex, para que el lector vea el color en vez de solo su coordenada.
+// Muestra el color real como ejemplo visual (cuadrado relleno) junto al
+// nombre del color que ya aparece en el texto; sin mostrar el código hex.
 function Swatch({ c }) {
   return (
-    <span className="inline-flex align-middle items-center gap-1 mx-0.5">
-      <span className="inline-block w-4 h-4 rounded-[4px] border border-white/25" style={{ background: c, boxShadow: `0 0 8px ${c}cc` }} aria-hidden="true" />
-      <span className="font-mono text-[11px] font-bold" style={{ color: c }}>color:{c}</span>
-    </span>
+    <span className="inline-flex align-middle w-4 h-4 rounded-[4px] border border-white/25 mx-0.5" style={{ background: c, boxShadow: `0 0 8px ${c}cc` }} aria-hidden="true" />
   );
 }
 
@@ -194,10 +191,7 @@ export default function Reglas() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {STATES.map((s) => (
                 <div key={s.n} className="flex items-start gap-3 bg-gradient-to-b from-[#140a23]/85 to-[#0a050f]/95 rounded-xl p-3 border" style={{ borderColor: s.c + '88', boxShadow: `inset 0 0 18px -10px ${s.c}` }}>
-                  <div className="shrink-0 flex flex-col items-center gap-1">
-                    <span className="w-9 h-9 rounded-lg border-2 border-white/15" style={{ background: s.c, boxShadow: `0 0 14px ${s.c}cc` }} aria-hidden="true" />
-                    <span className="font-mono text-[10px] font-bold leading-none" style={{ color: s.c }}>color:{s.c}</span>
-                  </div>
+                  <span className="shrink-0 w-9 h-9 rounded-lg border-2 border-white/15" style={{ background: s.c, boxShadow: `0 0 14px ${s.c}cc` }} aria-hidden="true" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xl leading-none">{s.i}</span>
