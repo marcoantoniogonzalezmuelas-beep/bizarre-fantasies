@@ -122,24 +122,35 @@ export const DISCARD_PILE_PATCH = `
   }
 
   // ---- Guardián: fuerza el reverso en la pila de descartes ----
-  // Otros parches pueden poner background-image inline con !important sobre
-  // .bf-discard-card. Este guardián lo re-aplica, pero SOLO cuando hay cartas
-  // que vigilar y sin MutationObserver (el interval es suficiente; el observer
-  // alimentaba la cascada de repintados que causaba parpadeo en móvil/tablet).
+  // Otros parches (injectHandArt, applyArtToChips) pueden poner background-image
+  // inline con !important sobre .bf-discard-card, pisando el reverso. Este
+  // guardián re-aplica TODOS los estilos del reverso sin condiciones (no basta
+  // comparar el valor inline: otras clases CSS con !important también pisan y
+  // no se ven en .style). Sin MutationObserver (el interval es suficiente) y
+  // solo cuando hay cartas que vigilar — así no alimenta cascadas de repintado.
   function forceDiscardBack(){
     var cards=document.querySelectorAll('.bf-discard-card');
     if(!cards.length)return;
     cards.forEach(function(card){
-      if(card.style.getPropertyValue('background-image')!=='url("'+CARD_BACK+'")')
-        card.style.setProperty('background-image','url("'+CARD_BACK+'")','important');
-      if(card.style.getPropertyValue('background-size')!=='cover')
-        card.style.setProperty('background-size','cover','important');
-      if(card.style.getPropertyValue('border-radius')!=='10px')
-        card.style.setProperty('border-radius','10px','important');
-      if(card.style.getPropertyValue('overflow')!=='hidden')
-        card.style.setProperty('overflow','hidden','important');
+      card.style.setProperty('background-image','url("'+CARD_BACK+'")','important');
+      card.style.setProperty('background-size','cover','important');
+      card.style.setProperty('background-position','center','important');
+      card.style.setProperty('background-color','#120a1e','important');
+      card.style.setProperty('border','1.5px solid rgba(192,107,255,.65)','important');
+      card.style.setProperty('border-radius','10px','important');
+      card.style.setProperty('overflow','hidden','important');
+      card.style.setProperty('box-shadow','0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(160,80,255,.28)','important');
+      card.style.setProperty('position','relative','important');
+      card.style.setProperty('pointer-events','none','important');
       var img=card.querySelector('.bf-discard-back');
       if(!img){img=document.createElement('img');img.className='bf-discard-back';img.src=CARD_BACK;img.alt='';card.appendChild(img);}
+      img.style.setProperty('position','absolute','important');
+      img.style.setProperty('inset','0','important');
+      img.style.setProperty('width','100%','important');
+      img.style.setProperty('height','100%','important');
+      img.style.setProperty('object-fit','cover','important');
+      img.style.setProperty('display','block','important');
+      img.style.setProperty('pointer-events','none','important');
     });
   }
   setInterval(forceDiscardBack,500);
