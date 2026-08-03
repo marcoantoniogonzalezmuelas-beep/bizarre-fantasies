@@ -110,26 +110,34 @@ export const DEMO_TIPS_PATCH = `
   // a true tras la demo y hacían que los tips aparecieran en partidas reales.
   // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
   // volver a la portada (s-title) — fin de la demo.
+  var lastScreen='';
   function tick(){
     // Durante la resolución de la fase de subasta (coach mostrando el resultado)
     // el flujo de demo activa esta pausa: los tips no cuadran en esa pantalla.
     // Va ANTES del check de transform para que en móvil/tablet también se
     // oculten durante la resolución (igual que en PC, donde no hay zoom).
-    if(window.__bfDemoTipsPause){hideAll();return;}
+    // hideAll SOLO al cambiar de estado — nunca en cada tick: así los tips
+    // locked no se resetean por ticks espurios y no se mueven al hacer scroll.
+    if(window.__bfDemoTipsPause){ if(lastScreen!=='__pause'){lastScreen='__pause';hideAll();} return; }
     // Mientras el body tenga CUALQUIER transform (pellizco activo O la
     // transición de reseteo), los tips son position:fixed y el body
     // transformado cambia su containing block — se verían en posiciones
     // equivocadas y parpadearían. Los ocultamos durante el zoom y los
     // recolocamos al volver a transform:none (sin parpadeo).
     var bt=getComputedStyle(document.body).transform;
-    if(bt&&bt!=='none'){hideAll();return;}
+    if(bt&&bt!=='none'){ if(lastScreen!=='__zoom'){lastScreen='__zoom';hideAll();} return; }
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;
     try{demo=!!window.__bfDemoOn;}catch(e){}
     var list=null;
     if(active&&TIPS[active.id]&&demo) list=TIPS[active.id];
-    if(!list||!list.length){hideAll();return;}
+    var screenId=active?active.id:'';
+    // hideAll SOLO al cambiar de pantalla — nunca en cada tick. Así los tips
+    // ya colocados (__bfLocked) no se resetean al hacer scroll (que no cambia
+    // la pantalla) y se quedan fijos en su ubicación.
+    if(!list||!list.length){ if(screenId!==lastScreen){lastScreen=screenId;hideAll();} return; }
+    if(screenId!==lastScreen){lastScreen=screenId;hideAll();}
     ensureNodes(list.length);
     var placed=[];
     // Reservar la zona del entrenador (botón "Seguir") para que NINGÚN tip la
@@ -246,7 +254,7 @@ export const DEMO_TIPS_PATCH = `
   // Resetea los tips cerrados y oculta todo: lo llama el flujo de demo al
   // arrancar una partida demo nueva, así los tips vuelven a aparecer y no
   // se quedan descartados de una demo anterior.
-  window.__bfResetDemoTips=function(){ dismissed={}; hideAll(); };
+  window.__bfResetDemoTips=function(){ dismissed={}; lastScreen=''; hideAll(); };
   setInterval(tick,350);
 })();
 </script>
