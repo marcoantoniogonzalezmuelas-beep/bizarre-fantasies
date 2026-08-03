@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { EMOJI_CATEGORIES } from '@/lib/heroEmojis';
-import { MessageCircle, X, Send, Smile } from 'lucide-react';
+import { MessageCircle, X, Send, Smile, GripHorizontal } from 'lucide-react';
+import useDragOffset from '@/hooks/useDragOffset';
 
 // Overlay de chat entre jugadores en partidas multiplayer. Se muestra como un
 // icono circular plegable en el borde derecho de la pantalla (que no se solapa
@@ -22,6 +23,10 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   const unsubRef = useRef(null);
   const myNickRef = useRef('');
   const openRef = useRef(false);
+  const listRef = useRef(null);
+  // El icono y la ventana se pueden mover libremente por la pantalla.
+  const iconDrag = useDragOffset();
+  const panelDrag = useDragOffset();
 
   useEffect(() => { openRef.current = open; }, [open]);
 
@@ -75,6 +80,16 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
   useEffect(() => { if (open) setUnread(0); }, [open]);
 
+  // Al abrir el chat siempre se ve el final de la conversación (último mensaje).
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => {
+      const el = listRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 60);
+    return () => clearTimeout(t);
+  }, [open, messages.length]);
+
   const send = useCallback(async (text, emojiId) => {
     const trimmed = (text || '').trim();
     if (!trimmed && !emojiId) return;
@@ -121,13 +136,15 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
           style={{
             right: '6px',
             top: 'calc(50% - 22px)',
-            transform: `scale(${mobScale * pinchZ})`,
+            transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px) scale(${mobScale * pinchZ})`,
             transformOrigin: 'top right',
+            touchAction: 'none',
           }}
         >
         <button
-          onClick={() => setOpen(true)}
-          aria-label="Abrir chat"
+          {...iconDrag.dragHandlers}
+          onClick={() => { if (!iconDrag.didDrag()) setOpen(true); }}
+          aria-label="Abrir chat (arrastrable)"
           className="flex items-center justify-center rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95"
           style={{
             width: '44px',
@@ -164,15 +181,17 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
             borderRadius: '12px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 24px rgba(255,210,74,0.15)',
             backdropFilter: 'blur(12px)',
+            transform: `translate(${panelDrag.offset.x}px, ${panelDrag.offset.y}px)`,
           }}
         >
-          {/* Cabecera */}
+          {/* Cabecera (zona de arrastre de la ventana) */}
           <div
-            className="flex items-center justify-between px-3 py-2"
-            style={{ borderBottom: '1px solid rgba(255,210,74,0.2)', background: 'linear-gradient(180deg, rgba(255,210,74,0.08), transparent)' }}
+            {...panelDrag.dragHandlers}
+            className="flex items-center justify-between px-3 py-2 cursor-move select-none"
+            style={{ borderBottom: '1px solid rgba(255,210,74,0.2)', background: 'linear-gradient(180deg, rgba(255,210,74,0.08), transparent)', touchAction: 'none' }}
           >
             <div className="flex items-center gap-2">
-              <MessageCircle size={16} style={{ color: '#FFD24A' }} />
+              <GripHorizontal size={14} style={{ color: '#ffe49a', opacity: 0.6 }} />
               <span className="font-heading text-sm font-bold" style={{ color: '#FFD24A' }}>Chat de sala</span>
               <span className="text-[10px] opacity-50" style={{ color: '#ffe49a' }}>{status.roomCode}</span>
             </div>
@@ -186,7 +205,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
           </div>
 
           {/* Mensajes */}
-          <div className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar" style={{ minHeight: '120px' }}>
+          <div ref={listRef} className="flex-1 overflow-y-auto px-2 py-2 space-y-2 no-scrollbar" style={{ minHeight: '120px' }}>
             {messages.length === 0 && (
               <div className="flex items-center justify-center h-full text-center text-xs opacity-40 py-8" style={{ color: '#ffe49a' }}>
                 No hay mensajes aún.<br />¡Saluda a tu rival!

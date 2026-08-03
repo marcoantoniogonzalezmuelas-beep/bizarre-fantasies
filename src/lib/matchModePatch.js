@@ -202,18 +202,25 @@ export const MATCH_MODE_PATCH = `
 
     var n=ensureState(); if(!n) return origShowResult.apply(this, arguments);
     var myWin = !!youWin;
-    var winnerSide = (myWin === (n.mySide==='p')) ? 'p' : 'o';
+    // El anfitrión SIEMPRE es 'p' y el invitado 'o'. Antes se leía n.mySide a
+    // secas: si venía vacío, ganador y perdedor salían invertidos (pantalla y
+    // cinemática equivocadas para los dos jugadores).
+    var mySide = n.mySide || (n.role==='client' ? 'o' : 'p');
+    var winnerSide = (myWin === (mySide==='p')) ? 'p' : 'o';
+    var winnerNick = (winnerSide==='p') ? (n.names_self||'Anfitrión') : (n.names_opp||'Rival');
 
     // Solo el HOST es autoritativo con el marcador. El cliente espera el bfsync.
     if(n.role==='host'){
       if(typeof G!=='undefined' && !G.__bfScored){ G.__bfScored = true; n.score[winnerSide] = (n.score[winnerSide]||0)+1; }
+      // Marcador general único (+1 por victoria, una sola vez por partida).
+      try{ if(window.bfSeriesScore) window.bfSeriesScore.scoreOnce(winnerNick); }catch(e){}
       var meta = modeMeta(n.matchMode||'free');
       var champSide=null;
       if(meta.target>0){ if((n.score.p||0)>=meta.target) champSide='p'; else if((n.score.o||0)>=meta.target) champSide='o'; }
       var names = (typeof G!=='undefined'?G.names:{p:n.names_self,o:n.names_opp});
       // El host gana si winnerSide==='p' (host siempre es 'p').
-      try{ netSend({ t:'bfsync', matchMode:n.matchMode||'free', score:{p:n.score.p||0,o:n.score.o||0}, names:names, champSide:champSide, myWin:(winnerSide==='o') }); }catch(e){}
-      renderResultScreen({ myWin: (winnerSide===n.mySide), score:{p:n.score.p||0,o:n.score.o||0}, matchMode:n.matchMode, names:names, champSide:champSide });
+      try{ netSend({ t:'bfsync', matchMode:n.matchMode||'free', score:{p:n.score.p||0,o:n.score.o||0}, names:names, champSide:champSide, winnerNick:winnerNick, myWin:(winnerSide==='o') }); }catch(e){}
+      renderResultScreen({ myWin: (winnerSide===mySide), score:{p:n.score.p||0,o:n.score.o||0}, matchMode:n.matchMode, names:names, champSide:champSide });
     }
     // El cliente no hace nada aquí: su pantalla la pinta el bfsync del host.
   };

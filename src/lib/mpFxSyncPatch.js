@@ -20,13 +20,32 @@ export const MP_FX_SYNC_PATCH = `
   var pendingFx = [];
   var sendTimer = null;
 
+  // Los eventos fx del motor llevan referencias a objetos de héroe (con
+  // referencias circulares al estado del juego). PeerJS no puede serializarlos:
+  // el envío lanzaba una excepción y el invitado NO veía ninguna animación.
+  // Aquí se copia solo lo que necesita el renderizador: valores planos.
+  function clean(ev) {
+    if (!ev || typeof ev !== 'object') return null;
+    var out = {};
+    Object.keys(ev).forEach(function(k) {
+      var v = ev[k];
+      var t = typeof v;
+      if (v === null || t === 'string' || t === 'number' || t === 'boolean') { out[k] = v; return; }
+      // Referencias a héroes/cartas: se reducen a su identificador y nombre.
+      if (t === 'object' && (v.id || v.name)) {
+        out[k] = { id: v.id, name: v.name, num: v.num, elite: !!v.eliteMode };
+      }
+    });
+    return out;
+  }
+
   function sendPendingFx() {
     if (typeof NET === 'undefined' || NET.role !== 'host' || !NET.conn || !NET.conn.open) {
       pendingFx = [];
       return;
     }
     if (!pendingFx.length) return;
-    try { NET.conn.send({ t: 'bfFxSync', evs: pendingFx }); } catch(e) {}
+    try { NET.conn.send({ t: 'bfFxSync', evs: pendingFx.map(clean).filter(Boolean) }); } catch(e) {}
     pendingFx = [];
   }
 
