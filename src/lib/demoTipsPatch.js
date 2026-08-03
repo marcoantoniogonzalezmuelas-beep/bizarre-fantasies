@@ -1,6 +1,8 @@
 // Parche inyectado en el iframe: durante "Aprende a jugar" (la demo IA vs IA)
 // aparecen tips visuales flotantes — píldora dorada con dedo animado y halo —
-// anclados a los controles reales de cada pantalla. Cada tip se puede cerrar
+// anclados a los controles reales de cada pantalla. Los tips SE REPOSICIONAN
+// en cada tick Y al hacer scroll, de modo que siempre apuntan al elemento
+// correcto aunque el contenido del juego se desplace. Cada tip se puede cerrar
 // (×), los de los marcadores de monedas se colocan A UN LADO para no taparlos,
 // y los textos son bilingües (ES/EN según el idioma activo) para que no
 // parpadeen con el traductor en vivo.
@@ -76,7 +78,7 @@ export const DEMO_TIPS_PATCH = `
       nodes.push({tip:tip,halo:halo});
     }
   }
-  function hideAll(){nodes.forEach(function(n){n.tip.style.display='none';n.halo.style.display='none';n.tip.__bfLocked=false;n.tip.__bfX=null;n.tip.__bfY=null;});}
+  function hideAll(){nodes.forEach(function(n){n.tip.style.display='none';n.halo.style.display='none';n.tip.__bfLastX=null;n.tip.__bfLastY=null;});}
 
   function visible(el){
     if(!el)return false;
@@ -108,33 +110,16 @@ export const DEMO_TIPS_PATCH = `
   // Los tips son SOLO de la partida demo. Usamos un flag dedicado
   // (window.__bfDemoOn) en vez de G.demo/G.demoExample, porque esos se quedaban
   // a true tras la demo y hacían que los tips aparecieran en partidas reales.
-  // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
-  // volver a la portada (s-title) — fin de la demo.
   var lastScreen='';
   function tick(){
-    // Durante la resolución de la fase de subasta (coach mostrando el resultado)
-    // el flujo de demo activa esta pausa: los tips no cuadran en esa pantalla.
-    // Va ANTES del check de transform para que en móvil/tablet también se
-    // oculten durante la resolución (igual que en PC, donde no hay zoom).
-    // hideAll SOLO al cambiar de estado — nunca en cada tick: así los tips
-    // locked no se resetean por ticks espurios y no se mueven al hacer scroll.
     if(window.__bfDemoTipsPause){ if(lastScreen!=='__pause'){lastScreen='__pause';hideAll();} return; }
-    // Mientras el body tenga CUALQUIER transform (pellizco activo O la
-    // transición de reseteo), los tips son position:fixed y el body
-    // transformado cambia su containing block — se verían en posiciones
-    // equivocadas y parpadearían. Los ocultamos durante el zoom y los
-    // recolocamos al volver a transform:none (sin parpadeo).
     var bt=getComputedStyle(document.body).transform;
     if(bt&&bt!=='none'){ if(lastScreen!=='__zoom'){lastScreen='__zoom';hideAll();} return; }
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;
     try{demo=!!window.__bfDemoOn;}catch(e){}
-    // Demo apagado: oculta tips (solo una vez al cambiar de estado).
     if(!demo){ if(lastScreen!=='__off'){lastScreen='__off';hideAll();} return; }
-    // Sin .screen.active (re-render brevísimo del juego): NO se resetean los
-    // tips locked. Se quedan fijos en su sitio sin moverse. Solo hideAll cuando
-    // hay una pantalla activa REAL y distinta a la anterior.
     if(!active) return;
     var list=null;
     if(TIPS[active.id]) list=TIPS[active.id];
@@ -144,12 +129,10 @@ export const DEMO_TIPS_PATCH = `
     ensureNodes(list.length);
     var placed=[];
     // Reservar la zona del entrenador (botón "Seguir") para que NINGÚN tip la
-    // tape: siempre se puede pulsar "Seguir" y siempre se alcanza la × para
-    // cerrar los tips.
+    // tape: siempre se puede pulsar "Seguir" y siempre se alcanza la ×.
     var coachEl=document.getElementById('coach');
     if(coachEl){var cr=coachEl.getBoundingClientRect();if(cr.width>4&&cr.height>4)placed.push({x:cr.left-4,y:cr.top-4,w:cr.width+8,h:cr.height+8});}
-    // Reservar también el botón "Transferir 10 monedas a la subasta" para que
-    // NINGÚN tip lo tape (el de monedas de equipamiento iría encima si no).
+    // Reservar el botón "Transferir 10 monedas a la subasta".
     var xferEl=document.querySelector('#s-recruit .bf-xfer-btn');
     if(xferEl){var xr=xferEl.getBoundingClientRect();if(xr.width>4&&xr.height>4)placed.push({x:xr.left-4,y:xr.top-4,w:xr.width+8,h:xr.height+8});}
     list.forEach(function(t,i){
@@ -164,23 +147,22 @@ export const DEMO_TIPS_PATCH = `
           el=cands[c];break;
         }
       }
-      // Si el elemento no se encuentra en este tick (el juego re-renderiza
-      // el DOM constantemente durante la demo), NO ocultamos el tip: lo
-      // dejamos en su última posición. Solo se ocultan al cambiar de pantalla
-      // o al terminar la demo (hideAll). Esto elimina el parpadeo.
-      if(!el)return;
-      // Tip ya colocado (mismo ID): posición FIJA. No se recoloca aunque el
-      // elemento se mueva por scroll o re-render. Solo actualiza texto
-      // dinámico y aporta su zona al solape de tips nuevos.
-      if(n.tip.__bfLocked){
-        var ltxt=t.dyn?t.dyn(el):t.txt;
-        if(n.tip.__bfTxt!==ltxt){n.tip.__bfTxt=ltxt;n.tip.querySelector('.bf-tip-txt').innerHTML=ltxt;}
-        if(n.tip.style.display!=='flex')n.tip.style.display='flex';
-        placed.push({x:n.tip.__bfX,y:n.tip.__bfY,w:n.tip.offsetWidth||190,h:n.tip.offsetHeight||62});
+      // Elemento no encontrado (re-render brevísimo): el tip se queda en su
+      // última posición visible. NO se oculta ni se reposiciona.
+      if(!el){
+        if(n.tip.__bfLastX!=null){
+          if(n.tip.style.display!=='flex')n.tip.style.display='flex';
+          placed.push({x:n.tip.__bfLastX,y:n.tip.__bfLastY,w:n.tip.offsetWidth||190,h:n.tip.offsetHeight||62});
+        }
         return;
       }
+      // === REPOSICIONAR EN CADA TICK ===
+      // El tip sigue al elemento: getBoundingClientRect() da la posición actual
+      // (viewport), y como el tip es position:fixed, se coloca ahí. Al hacer
+      // scroll el elemento se mueve y el tip se mueve con él en el siguiente
+      // tick (o inmediatamente vía el listener de scroll).
       var r=el.getBoundingClientRect();
-      // El halo solo se actualiza si cambió de posición (evita reflow).
+      // Halo: solo se actualiza si cambió de posición (evita reflow).
       var hl=Math.round(r.left-5),ht=Math.round(r.top-5),hw=Math.round(r.width+10),hh=Math.round(r.height+10);
       if(n.halo.__bfL!==hl||n.halo.__bfT!==ht||n.halo.__bfW!==hw||n.halo.__bfH!==hh){
         n.halo.__bfL=hl;n.halo.__bfT=ht;n.halo.__bfW=hw;n.halo.__bfH=hh;
@@ -188,10 +170,9 @@ export const DEMO_TIPS_PATCH = `
         n.halo.style.left=hl+'px';n.halo.style.top=ht+'px';
         n.halo.style.width=hw+'px';n.halo.style.height=hh+'px';
       }
-      // El texto solo se escribe si cambió (evita parpadeos con el traductor).
+      // Texto: solo se escribe si cambió (evita parpadeos con el traductor).
       var txt=t.dyn?t.dyn(el):t.txt;
       if(n.tip.__bfId!==t.id||n.tip.__bfTxt!==txt){
-        if(n.tip.__bfId!==t.id){n.tip.__bfLocked=false;}
         n.tip.__bfId=t.id;n.tip.__bfTxt=txt;
         n.tip.querySelector('.bf-tip-txt').innerHTML=txt;
         n.tip.querySelector('.bf-tip-finger').style.display='';
@@ -199,23 +180,18 @@ export const DEMO_TIPS_PATCH = `
       if(n.tip.style.display!=='flex')n.tip.style.display='flex';
       var finger=n.tip.querySelector('.bf-tip-finger');
       var w=n.tip.offsetWidth||190,h=n.tip.offsetHeight||62,x,y;
-      // Evita resetear className cada tick: solo cambia la clase de orientación
-      // si es distinta a la anterior (elimina reflujo y parpadeo).
       var placeCls='bf-tip-col';
       if(t.place==='over'){
-        // Centrado SOBRE el elemento (cartas grandes): no tapa nada de alrededor.
         placeCls='bf-tip-col';finger.textContent='';finger.style.display='none';
         x=r.left+r.width/2-w/2;
         y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
       }else if(t.place==='left'){
-        // A la izquierda del elemento, centrado en vertical.
         placeCls='bf-tip-row';
         finger.textContent='👉';
         finger.style.setProperty('--px','6px');finger.style.setProperty('--py','0px');
         x=r.left-w-10;
         y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
       }else if(t.place==='side'){
-        // A un lado del elemento, centrado en vertical: nunca lo tapa.
         var right=r.right+10+w<window.innerWidth-6;
         placeCls=right?'bf-tip-rowr':'bf-tip-row';
         finger.textContent=right?'👈':'👉';
@@ -223,8 +199,6 @@ export const DEMO_TIPS_PATCH = `
         x=right?r.right+10:r.left-w-10;
         y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
       }else if(t.place==='below'){
-        // SIEMPRE debajo del elemento: no tapa lo que hay encima (p. ej. el
-        // bonificador de la ronda).
         placeCls='bf-tip-colr';finger.textContent='👆';
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','-7px');
         x=r.left+r.width/2-w/2;y=r.bottom+8;
@@ -237,7 +211,6 @@ export const DEMO_TIPS_PATCH = `
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','-7px');
         x=r.left+r.width/2-w/2;y=r.bottom+8;
       }
-      // Solo actualiza la clase de orientación si cambió (evita reflujo).
       if(n.tip.__bfPlaceCls!==placeCls){
         n.tip.__bfPlaceCls=placeCls;
         n.tip.className='bf-tip '+placeCls;
@@ -246,17 +219,28 @@ export const DEMO_TIPS_PATCH = `
       y=Math.round(Math.max(6,y));
       y=resolveOverlap(x,y,w,h,placed);
       placed.push({x:x,y:y,w:w,h:h});
-      n.tip.__bfX=x;n.tip.__bfY=y;
-      n.tip.style.left=x+'px';
-      n.tip.style.top=y+'px';
-      n.tip.__bfLocked=true;
+      // Solo actualiza left/top si cambió >1px (evita reflow innecesario).
+      if(n.tip.__bfLastX!==x||n.tip.__bfLastY!==y){
+        n.tip.__bfLastX=x;n.tip.__bfLastY=y;
+        n.tip.style.left=x+'px';
+        n.tip.style.top=y+'px';
+      }
     });
-    // Oculta los nodos sobrantes de la pantalla anterior (evita tips huérfanos).
     for(var k=list.length;k<nodes.length;k++){nodes[k].tip.style.display='none';nodes[k].halo.style.display='none';}
   }
+
+  // Listener de scroll: reposiciona los tips INMEDIATAMENTE al desplazar
+  // (capture: true para capturar scroll en cualquier contenedor del juego).
+  // Throttle con requestAnimationFrame para no saturar.
+  var scrollRAF=null;
+  function onScroll(){
+    if(scrollRAF)return;
+    scrollRAF=requestAnimationFrame(function(){scrollRAF=null;tick();});
+  }
+  window.addEventListener('scroll',onScroll,true);
+
   // Resetea los tips cerrados y oculta todo: lo llama el flujo de demo al
-  // arrancar una partida demo nueva, así los tips vuelven a aparecer y no
-  // se quedan descartados de una demo anterior.
+  // arrancar una partida demo nueva.
   window.__bfResetDemoTips=function(){ dismissed={}; lastScreen=''; hideAll(); };
   setInterval(tick,350);
 })();
