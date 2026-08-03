@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Target } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
@@ -124,7 +124,7 @@ export default function Reglas() {
 
         <div className="rounded-2xl bg-[#0c0714]/70 border border-[#ffd24a]/25 p-5 md:p-7 mb-5 shadow-[0_10px_30px_rgba(0,0,0,.5)]">
           <p className="text-lg mb-5">
-            <b className="text-[#ffe9a8]">🎯 Objetivo:</b> {t('arma un equipo de ')}
+            <b className="text-[#ffe9a8] inline-flex items-center gap-2"><span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[radial-gradient(circle_at_34%_28%,#fff0ae,#FFD24A_45%,#b77614)] border-2 border-[#7c5410] shadow-[0_0_10px_rgba(255,210,74,.5)]"><Target size={15} className="text-[#4a2e03]" /></span> Objetivo:</b> {t('arma un equipo de ')}
             <b>3 héroes</b>, {t('equípalos bien y derrota a los 3 héroes del rival en un combate por turnos.')}.
           </p>
 
