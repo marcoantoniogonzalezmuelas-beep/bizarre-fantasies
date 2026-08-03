@@ -111,15 +111,18 @@ export const DEMO_TIPS_PATCH = `
   // El flag se activa al arrancar la demo (demoAuction) y se desactiva al
   // volver a la portada (s-title) — fin de la demo.
   function tick(){
-    // Mientras el body tenga CUALQUIER transform (pellizco activo O la
-    // transición de reseteo), los tips se quedan quietos y se mueven/escalan
-    // con el body como el resto de la pantalla. Solo reposicionamos cuando el
-    // transform computado es 'none' (body sin transformar).
-    var bt=getComputedStyle(document.body).transform;
-    if(bt&&bt!=='none')return;
     // Durante la resolución de la fase de subasta (coach mostrando el resultado)
     // el flujo de demo activa esta pausa: los tips no cuadran en esa pantalla.
+    // Va ANTES del check de transform para que en móvil/tablet también se
+    // oculten durante la resolución (igual que en PC, donde no hay zoom).
     if(window.__bfDemoTipsPause){hideAll();return;}
+    // Mientras el body tenga CUALQUIER transform (pellizco activo O la
+    // transición de reseteo), los tips son position:fixed y el body
+    // transformado cambia su containing block — se verían en posiciones
+    // equivocadas y parpadearían. Los ocultamos durante el zoom y los
+    // recolocamos al volver a transform:none (sin parpadeo).
+    var bt=getComputedStyle(document.body).transform;
+    if(bt&&bt!=='none'){hideAll();return;}
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;
