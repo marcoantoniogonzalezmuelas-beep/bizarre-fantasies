@@ -1,5 +1,8 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
+
+const BEER_JUG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/038191cb4_generated_image.png';
 
 // Luces de borrachera: pools de luz suaves que se tambalean (sway) con leve
 // desfase y visión doble, más burbujas translúcidas que flotan. Ambiente de
@@ -85,9 +88,45 @@ export default function DrunkLights() {
         />
       ))}
 
+      {/* Jarra de cerveza volando que genera las luces del brindis */}
+      <BeerJugFlyer />
+
       {/* Neblina cálida de taberna */}
       <div className="absolute -bottom-10 left-0 right-0 h-1/3 opacity-30 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at 50% 120%, rgba(180,120,60,.4), transparent 72%)' }} />
     </div>
+  );
+}
+
+function BeerJugFlyer() {
+  const cut = useCutoutSrc(BEER_JUG_IMG);
+  const jetColors = ['#ffcf7a', '#ffd27a', '#9ad8ff', '#ffe08a', '#9ad8ff', '#ffe08a', '#ffd27a'];
+  const jets = useMemo(() => Array.from({ length: 7 }, (_, i) => ({
+    dx: (i - 3) * 18, hue: jetColors[i % jetColors.length],
+    dur: 1.8 + (i % 3) * 0.5, delay: i * 0.2, w: 60 + (i % 3) * 30,
+  })), []);
+  return (
+    <motion.div className="absolute top-[8%] left-0 z-[2]"
+      animate={{ x: ['12vw', '66vw', '34vw', '58vw', '20vw', '48vw', '12vw'], y: [0, -90, 60, -30, 80, -50, 0], rotate: [-8, 10, -4, 7, -6, 5, -8] }}
+      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}>
+      {/* Chorros de luz dorada que caen desde la jarra */}
+      {jets.map((j, k) => (
+        <motion.div key={k} className="absolute left-1/2 top-[65%] -translate-x-1/2 rounded-full pointer-events-none"
+          style={{ width: j.w, height: '62vh', marginLeft: j.dx,
+            background: `linear-gradient(to bottom, ${j.hue}cc 0%, ${j.hue}55 35%, transparent 78%)`,
+            filter: 'blur(8px)', mixBlendMode: 'screen', transformOrigin: '50% 0%' }}
+          animate={{ opacity: [0.2, 0.9, 0.4, 0.85, 0.2], scaleY: [0.7, 1.1, 0.85, 1, 0.7] }}
+          transition={{ duration: j.dur, repeat: Infinity, ease: 'easeInOut', delay: j.delay }}
+        />
+      ))}
+      {cut && (
+        <motion.img src={cut} alt="Jarra de cerveza" draggable={false}
+          className="relative select-none pointer-events-none"
+          style={{ width: 92, height: 'auto', filter: 'drop-shadow(0 6px 12px rgba(0,0,0,.7))' }}
+          animate={{ scale: [1, 1.05, 0.97, 1.03, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+    </motion.div>
   );
 }
