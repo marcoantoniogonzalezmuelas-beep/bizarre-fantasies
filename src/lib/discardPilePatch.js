@@ -22,6 +22,15 @@ export const DISCARD_PILE_PATCH = `
   var css = ''+
   '.bf-discard-pile{display:inline-flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 0 10px;vertical-align:top;cursor:help;user-select:none;position:relative}'+
   '#s-battle .bf-discard-card{position:relative!important;border-radius:10px!important;overflow:hidden!important;background-image:url("'+CARD_BACK+'")!important;background-size:cover!important;background-position:center!important;background-color:#120a1e!important;border:1.5px solid rgba(192,107,255,.65)!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(160,80,255,.28)!important;pointer-events:none!important;outline:none!important;cursor:default!important}'+
+  // Tamaño FIJO igual que una carta de la mano (.chip.bf-chip-card). Antes se
+  // medía el chip de la mano en cada tick: al principio (mano vacía) el chip de
+  // referencia era el placeholder "—" y luego pasaba a ser una carta real, así
+  // que la pila cambiaba de tamaño en mitad de la partida y el reverso se veía
+  // recortado/estirado de forma distinta. Con medidas fijas el arte es siempre
+  // el mismo.
+  '#s-battle .bf-discard-card{width:88px!important;height:120px!important}'+
+  '@media(min-width:641px) and (max-width:1024px){#s-battle .bf-discard-card{width:96px!important;height:131px!important}}'+
+  '@media(max-width:420px){#s-battle .bf-discard-card{width:76px!important;height:104px!important}}'+
   '#s-battle .bf-discard-card > *:not(.bf-discard-back){display:none!important}'+
   '#s-battle .bf-discard-back{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}'+
   '.bf-discard-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:50%;background:linear-gradient(180deg,#ff8c32,#d4601a);border:1.5px solid #1a0e04;color:#fff;font-family:Rubik,sans-serif;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(0,0,0,.6),0 0 8px rgba(255,140,50,.5);z-index:5;pointer-events:none}'+
@@ -88,30 +97,18 @@ export const DISCARD_PILE_PATCH = `
 
   // ---- Render fijo (idempotente: repecta al cambiar el conteo O el tamaño) ----
   var lastCount={p:-1,o:-1};
-  // Las cartas de la mano se encogen cuando no es tu turno: la pila de
-  // descartes ha de verse SIEMPRE al tamaño completo de carta de mano, así
-  // que cacheamos el tamaño más grande medido y no dejamos que encoja.
-  var maxW=0,maxH=0;
   function renderPile(side){
     var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
     var hand=document.getElementById('hand_'+side);
     if(!inB||!hand){ var e0=document.querySelector('.bf-discard-pile'); if(e0)e0.remove(); lastCount[side]=-1; return; }
     var count=ensurePile(side)?G.itemDescarte[side].length:0;
-    var cw=0,ch=0;
-    var refChip=hand.querySelector('.chip.bf-chip-card')||hand.querySelector('.chip');
-    // offsetWidth/offsetHeight = tamaño CSS SIN transform. getBoundingClientRect
-    // incluye el scale del body en móvil/tablet y causaba que la pila saliera
-    // enorme: medía el tamaño ya escalado y el body lo volvía a escalar.
-    if(refChip){ if(refChip.offsetWidth) cw=refChip.offsetWidth; if(refChip.offsetHeight) ch=refChip.offsetHeight; }
-    if(cw>maxW)maxW=cw; if(ch>maxH)maxH=ch;
-    cw=maxW||cw||80; ch=maxH||ch||110;
     if(count===lastCount[side]) { var ex=hand.querySelector('.bf-discard-pile'); if(ex) return; }
     lastCount[side]=count;
     var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
     var pile=document.createElement('div'); pile.className='bf-discard-pile';
     pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
     var just=(window.__bfDiscardJust===side);
-    var cardStyle='width:'+cw+'px!important;height:'+ch+'px!important;background-image:url("'+CARD_BACK+'")!important;background-size:cover!important;background-position:center!important;background-color:#120a1e!important;border:1.5px solid rgba(192,107,255,.65)!important;border-radius:10px!important;overflow:hidden!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(160,80,255,.28)!important;position:relative!important;pointer-events:none!important;cursor:default!important';
+    var cardStyle='background-image:url("'+CARD_BACK+'")!important;background-size:cover!important;background-position:center!important;background-color:#120a1e!important;border:1.5px solid rgba(192,107,255,.65)!important;border-radius:10px!important;overflow:hidden!important;box-shadow:0 4px 12px rgba(0,0,0,.6),0 0 10px rgba(160,80,255,.28)!important;position:relative!important;pointer-events:none!important;cursor:default!important';
     var imgStyle='position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;pointer-events:none!important';
     var html='<div class="bf-discard-card'+(just?' bf-just':'')+'" style="'+cardStyle+'"><img class="bf-discard-back" src="'+CARD_BACK+'" alt="" style="'+imgStyle+'" /></div>';
     if(count>0) html+='<div class="bf-discard-badge">'+(count>99?'99+':count)+'</div>';
@@ -170,7 +167,7 @@ export const DISCARD_PILE_PATCH = `
     if(!inB){
       lastItems={p:null,o:null}; lastEq={p:null,o:null};
       var el=document.querySelector('.bf-discard-pile'); if(el)el.remove();
-      lastCount={p:-1,o:-1}; maxW=0; maxH=0; return;
+      lastCount={p:-1,o:-1}; return;
     }
     var side=mySide();
     try{ diffObjects(side); diffEq(side); }catch(e){}
