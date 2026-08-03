@@ -20,14 +20,14 @@ export default function PhoenixLights() {
       ].map((c, k) => (
         <motion.div key={k}
           className="absolute top-0 -translate-x-1/2"
-          style={{ left: `${c.x}%`, width: 160, height: '78%', transformOrigin: '50% 0%' }}
-          animate={{ x: [0, 220, -120, 60, 0], opacity: [0.5, 0.9, 0.55, 0.85, 0.5] }}
+          style={{ left: `${c.x}%`, width: 320, height: '82%', transformOrigin: '50% 0%' }}
+          animate={{ x: [0, 220, -120, 60, 0], opacity: [0.55, 0.95, 0.6, 0.9, 0.55] }}
           transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: c.delay }}
         >
           <div className="absolute top-0 left-1/2 -translate-x-1/2"
-            style={{ width: 6, height: '78%', background: `linear-gradient(to bottom, ${c.color}, transparent)`, filter: 'blur(3px)' }} />
+            style={{ width: 10, height: '82%', background: `linear-gradient(to bottom, ${c.color}, transparent)`, filter: 'blur(4px)' }} />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full"
-            style={{ width: 160, height: 160, background: `radial-gradient(ellipse 50% 70% at 50% 22%, ${c.color}55 0%, ${c.color}22 42%, transparent 72%)`, filter: 'blur(7px)', mixBlendMode: 'screen' }} />
+            style={{ width: 320, height: 320, background: `radial-gradient(ellipse 50% 70% at 50% 22%, ${c.color}66 0%, ${c.color}33 42%, transparent 72%)`, filter: 'blur(10px)', mixBlendMode: 'screen' }} />
         </motion.div>
       ))}
 
@@ -35,7 +35,7 @@ export default function PhoenixLights() {
       <div className="absolute -bottom-6 left-0 right-0 h-1/4 flex justify-around opacity-70">
         {colors.slice(0, 4).map((c, i) => (
           <motion.div key={i} className="rounded-full"
-            style={{ width: 140, height: 50, background: `radial-gradient(ellipse 60% 80% at 50% 50%, ${c}55, transparent 70%)`, filter: 'blur(8px)', mixBlendMode: 'screen' }}
+            style={{ width: 280, height: 90, background: `radial-gradient(ellipse 60% 80% at 50% 50%, ${c}66, transparent 70%)`, filter: 'blur(10px)', mixBlendMode: 'screen' }}
             animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.9, 1.1, 0.9] }}
             transition={{ duration: 2.6 + i * 0.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
           />

@@ -1,15 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useLightCutoutSrc } from '@/lib/useCutoutSrc';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
-const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/97f6581ac_generated_image.png';
+const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ff41e8435_generated_image.png';
 
 // Luces del dron, pero con Punkito (la mascota del juego) volando en su lugar:
 // Punkito recorre la escena en arco dentro de su burbuja circular dorada
 // dejando estelas de luz mientras dos focos lo siguen y proyectan pools.
 export default function PunkitoLights() {
   const colors = ['#ffd24a', '#ffe27a', '#ff9a6a', '#b13bff', '#05d9ff'];
-  const cut = useLightCutoutSrc(PUNKITO_IMG);
+  const cut = useCutoutSrc(PUNKITO_IMG);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
