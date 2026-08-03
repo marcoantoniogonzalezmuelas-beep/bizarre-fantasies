@@ -49,7 +49,7 @@ const STEPS = [
 const COINS = [
   { icon: '🪙', title: 'Monedas', text: 'Empiezas con 100 de subasta y 100 de equipamiento. Si te quedas corto pujando, puedes transferir monedas del equipamiento a la subasta de 10 en 10. Al acabar toda la subasta, las monedas de subasta que te sobren se suman a tu presupuesto de equipamiento, junto con los bonificadores positivos de equipamiento que te hayan salido durante la subasta.' },
   { icon: '✦', title: 'Cartas Épicas', text: 'Las más poderosas: cuestan +20 monedas. No salen normalmente; ciertos bonificadores hacen que tú (o tu rival) recibáis una oferta Épica extra.' },
-  { icon: '🏦', title: '¿Sin monedas al final?', text: 'Nunca te quedas sin tu tercer héroe: reclutas con deuda y lo que falte se resta de tu presupuesto de equipamiento.' },
+  { icon: '🏦', title: '¿Sin monedas de subasta?', text: 'Si te quedas sin monedas para pujar, pulsa Transferir monedas de equipamiento: pasas monedas de tu bolsa de equipamiento a la de subasta (de 10 en 10) y sigues pujando. Sin deudas — lo que transfieras sale de tu presupuesto de equipamiento, así que gástalo con cabeza.' },
 ];
 
 const ACTIONS = [
@@ -154,6 +154,16 @@ export default function Reglas() {
             <p><b style={{ color: '#ffaa00' }}>⭐ Forma Élite:</b> {t('cuando un héroe cae por primera vez, renace en Élite con parte de su vida y stats mejorados según su raza. Al revivir renace limpio: sin estados negativos y sin arma ni armadura (van a la pila de descartes). Si vuelve a caer, muere de verdad — salvo Pluma Fénix o Ave Fénix.')}</p>
             <p><b style={{ color: '#ffd24a' }}>🔑 Regla de oro de habilidades:</b> {t('cada héroe puede usar su habilidad normal y su habilidad élite una sola vez por batalla (se cuentan por separado). Una vez jugada, no se puede volver a usar en esa batalla, ni siquiera tras revivir.')}</p>
             <p><b style={{ color: '#a06bff' }}>♻️ Pila de descartes:</b> {t('cuando un héroe cae, su arma y armadura van a tu pila de descartes; los objetos consumidos también. Con Reanimación Arcana recuperas una carta aleatoria de la pila: los objetos vuelven a ser jugables y las armas/armaduras se equipan gratis al jugarlas desde la mano.')}</p>
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
+            <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">⚡ {t('Velocidad y orden de turnos')}</div>
+            <div className="space-y-2.5 text-sm leading-relaxed">
+              <p><b className="text-[#ffe9a8]">Cada ronda:</b> {t('los héroes que puedan actuar lo hacen por tipo de acción — primero los de distancia (AD), luego los hechizos y por último los de cuerpo a cuerpo (CC): el arquero dispara antes de que llegue el melé.')}</p>
+              <p><b className="text-[#ffe9a8]">Desempate por velocidad:</b> {t('dentro del mismo tipo, actúa antes el héroe con más velocidad. La velocidad es un valor propio de cada héroe: las armas y armaduras cambian tu daño y tus stats, pero NO tu turno — no te hacen ni más rápido ni más lento.')}</p>
+              <p><b className="text-[#ffe9a8]">Estados que sí mueven tu turno:</b> {t('Congelado actúa con velocidad reducida (va más tarde); Dormido y Paralizado pierden su próximo turno. El resto de estados cambian tus stats o tu daño, no cuándo te toca actuar.')}</p>
+              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. La velocidad solo decide el orden entre héroes del mismo tipo, así que tenla en cuenta al planear tu equipo.')}</p>
+            </div>
           </div>
 
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
