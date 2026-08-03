@@ -130,14 +130,17 @@ export const DEMO_TIPS_PATCH = `
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;
     try{demo=!!window.__bfDemoOn;}catch(e){}
+    // Demo apagado: oculta tips (solo una vez al cambiar de estado).
+    if(!demo){ if(lastScreen!=='__off'){lastScreen='__off';hideAll();} return; }
+    // Sin .screen.active (re-render brevísimo del juego): NO se resetean los
+    // tips locked. Se quedan fijos en su sitio sin moverse. Solo hideAll cuando
+    // hay una pantalla activa REAL y distinta a la anterior.
+    if(!active) return;
     var list=null;
-    if(active&&TIPS[active.id]&&demo) list=TIPS[active.id];
-    var screenId=active?active.id:'';
-    // hideAll SOLO al cambiar de pantalla — nunca en cada tick. Así los tips
-    // ya colocados (__bfLocked) no se resetean al hacer scroll (que no cambia
-    // la pantalla) y se quedan fijos en su ubicación.
-    if(!list||!list.length){ if(screenId!==lastScreen){lastScreen=screenId;hideAll();} return; }
+    if(TIPS[active.id]) list=TIPS[active.id];
+    var screenId=active.id;
     if(screenId!==lastScreen){lastScreen=screenId;hideAll();}
+    if(!list||!list.length) return;
     ensureNodes(list.length);
     var placed=[];
     // Reservar la zona del entrenador (botón "Seguir") para que NINGÚN tip la
