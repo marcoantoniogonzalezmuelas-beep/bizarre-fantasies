@@ -18,8 +18,8 @@ export const TYPE_MEDAL_PATCH = `
   st.textContent = [
     '.bf-type-medal{background:transparent!important;border:0!important;box-shadow:none!important;}',
     '.bf-type-medal>span{display:none!important;}',
-    '.bf-type-medal.bf-emblem{width:44px!important;height:44px!important;border-radius:50%!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;background:transparent!important;border:0!important;box-shadow:none!important;}',
-    '.bf-type-medal.bf-emblem img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;transform:scale(1.85)!important;}'
+    '.bf-type-medal.bf-emblem{width:32px!important;height:32px!important;border-radius:50%!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;background:transparent!important;border:0!important;box-shadow:none!important;}',
+    '.bf-type-medal.bf-emblem img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;transform:scale(1.5)!important;}'
   ].join('');
   document.head.appendChild(st);
 
