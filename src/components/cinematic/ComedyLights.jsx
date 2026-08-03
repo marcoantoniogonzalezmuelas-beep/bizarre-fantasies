@@ -30,14 +30,14 @@ export default function ComedyLights() {
   );
 
   const confetti = useMemo(
-    () => Array.from({ length: 10 }, (_, i) => ({
-      left: 5 + i * 9.2,
-      size: 5 + (i % 3) * 3,
-      dur: 6 + (i % 4) * 1.4,
-      delay: i * 0.7,
-      drift: (i % 2 ? 1 : -1) * (14 + (i % 3) * 10),
-      hue: ['#ffd24a', '#ff7adf', '#7ad6ff', '#9dff8a', '#ff9a6a'][i % 5],
-      rot: (i % 2 ? 1 : -1) * 60,
+    () => Array.from({ length: 18 }, (_, i) => ({
+      left: 3 + i * 5.4,
+      size: 8 + (i % 4) * 5,
+      dur: 5 + (i % 4) * 1.2,
+      delay: (i % 5) * 0.8,
+      drift: (i % 2 ? 1 : -1) * (18 + (i % 3) * 14),
+      hue: ['#ffd24a', '#ff7adf', '#7ad6ff', '#9dff8a', '#ff9a6a', '#ffe27a', '#b08bff'][i % 7],
+      rot: (i % 2 ? 1 : -1) * (80 + (i % 3) * 40),
     })),
     []
   );
@@ -71,9 +71,9 @@ export default function ComedyLights() {
       {/* Confeti que cae flotando */}
       {confetti.map((c, k) => (
         <motion.div key={'c'+k} className="absolute top-[-6%] rounded-[2px] pointer-events-none"
-          style={{ left: `${c.left}%`, width: c.size, height: c.size * 1.6,
-            background: c.hue, boxShadow: `0 0 8px ${c.hue}aa`, mixBlendMode: 'screen' }}
-          animate={{ y: ['0vh', '52vh'], x: [-c.drift/3, c.drift/3, -c.drift/3], rotate: [c.rot, -c.rot, c.rot], opacity: [0, 0.95, 0.7, 0] }}
+          style={{ left: `${c.left}%`, width: c.size, height: c.size * 1.8,
+            background: c.hue, boxShadow: `0 0 10px ${c.hue}cc` }}
+          animate={{ y: ['0vh', '88vh'], x: [-c.drift/2, c.drift/2, -c.drift/2, c.drift/2], rotate: [c.rot, -c.rot, c.rot, -c.rot], opacity: [0, 1, 1, 0.8, 0] }}
           transition={{ duration: c.dur, repeat: Infinity, ease: 'easeIn', delay: c.delay }}
         />
       ))}
