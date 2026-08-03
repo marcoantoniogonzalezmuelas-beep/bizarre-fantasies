@@ -21,10 +21,10 @@ export const AI_LEVEL_PATCH = `
   var isEn = function(){ try { return localStorage.getItem('bfLang') === 'en'; } catch(e) { return false; } };
 
   var LEVELS = [
-    { id: 'novice',     name: 'IA Novata',    name_en: 'AI Novice',    desc: 'Puja bajo, usa pocas habilidades',       desc_en: 'Low bids, rarely uses abilities',          bidAggression: 0.30, abilityUsage: 0.30, targetPriority: 'weakest',   purchaseTiming: 'late',     unlockReq: 0, prevId: null },
-    { id: 'berserker',  name: 'IA Bersérker', name_en: 'AI Berserker', desc: 'Agresiva al máximo, sin piedad',           desc_en: 'Max aggression, no mercy',                 bidAggression: 0.90, abilityUsage: 0.95, targetPriority: 'strongest', purchaseTiming: 'early',    unlockReq: 2, prevId: 'novice' },
-    { id: 'strategist', name: 'IA Estratega', name_en: 'AI Strategist', desc: 'Equilibrada y táctica (recomendada)',       desc_en: 'Balanced and tactical (recommended)',       bidAggression: 0.70, abilityUsage: 0.75, targetPriority: 'balanced',  purchaseTiming: 'balanced', unlockReq: 3, prevId: 'berserker' },
-    { id: 'nemesis',    name: 'IA Némesis',   name_en: 'AI Nemesis',   desc: 'Roba tus héroes, juega casi perfecto',      desc_en: 'Steals your heroes, near-perfect play',      bidAggression: 1.0,  abilityUsage: 1.0,  targetPriority: 'healer',    purchaseTiming: 'balanced', unlockReq: 5, prevId: 'strategist' },
+    { id: 'novice',     name: 'IA Novata',    name_en: 'AI Novice',    desc: 'Puja bajo, usa pocas habilidades',       desc_en: 'Low bids, rarely uses abilities',          bidAggression: 0.30, abilityUsage: 0.30, targetPriority: 'weakest',   purchaseTiming: 'late',     unlockReq: 0, prevId: null, avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ac6f97a53_generated_image.png' },
+    { id: 'berserker',  name: 'IA Bersérker', name_en: 'AI Berserker', desc: 'Agresiva al máximo, sin piedad',           desc_en: 'Max aggression, no mercy',                 bidAggression: 0.90, abilityUsage: 0.95, targetPriority: 'strongest', purchaseTiming: 'early',    unlockReq: 2, prevId: 'novice', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/274f7a3e2_generated_image.png' },
+    { id: 'strategist', name: 'IA Estratega', name_en: 'AI Strategist', desc: 'Equilibrada y táctica (recomendada)',       desc_en: 'Balanced and tactical (recommended)',       bidAggression: 0.70, abilityUsage: 0.75, targetPriority: 'balanced',  purchaseTiming: 'balanced', unlockReq: 3, prevId: 'berserker', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/88ab0dd62_generated_image.png' },
+    { id: 'nemesis',    name: 'IA Némesis',   name_en: 'AI Nemesis',   desc: 'Roba tus héroes, juega casi perfecto',      desc_en: 'Steals your heroes, near-perfect play',      bidAggression: 1.0,  abilityUsage: 1.0,  targetPriority: 'healer',    purchaseTiming: 'balanced', unlockReq: 5, prevId: 'strategist', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd6b3a75e_generated_image.png' },
   ];
 
   var KEY = 'bfAiLevel';
@@ -79,6 +79,10 @@ export const AI_LEVEL_PATCH = `
     '.bf-level-wins{margin-top:4px;font-size:11px;color:#ffd24a;font-weight:700}',
     '.bf-level-bar{margin-top:6px;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}',
     '.bf-level-bar-fill{height:100%;background:linear-gradient(90deg,#ffd24a,#ff9a3c);border-radius:3px;transition:width .3s ease}',
+    '.bf-level-av{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,210,74,.3);overflow:hidden;margin:0 auto 6px;object-fit:cover}',
+    '.bf-level-av img{width:100%;height:100%;object-fit:cover}',
+    '.bf-level-opt.active .bf-level-av{border-color:#ffd24a;box-shadow:0 0 14px rgba(255,210,74,.45)}',
+    '.bf-level-opt.locked .bf-level-av{filter:grayscale(.75) brightness(.45)}',
   ].join('');
   document.head.appendChild(st);
 
@@ -109,7 +113,8 @@ export const AI_LEVEL_PATCH = `
       var name = isEn() ? lvl.name_en : lvl.name;
       var desc = isEn() ? lvl.desc_en : lvl.desc;
 
-      var html = '<div class="bf-level-t">' + name + (unlocked ? '' : ' 🔒') + '</div>';
+      var html = '<div class="bf-level-av"><img src="' + lvl.avatar + '"></div>';
+      html += '<div class="bf-level-t">' + name + (unlocked ? '' : ' 🔒') + '</div>';
       html += '<div class="bf-level-s">' + desc + '</div>';
 
       if (unlocked) {
@@ -194,7 +199,7 @@ export const AI_LEVEL_PATCH = `
       setTimeout(function(){
         if (typeof G !== 'undefined' && G && G.names) {
           var lvl = window.__bfAiLevelMeta;
-          if (lvl) G.names.o = isEn() ? lvl.name_en : lvl.name;
+          if (lvl) { G.names.o = isEn() ? lvl.name_en : lvl.name; if (lvl.avatar) window.bfOppAvatar = { id: 'ai_' + lvl.id, name: isEn() ? lvl.name_en : lvl.name, url: lvl.avatar }; }
         }
       }, 200);
       return r;
