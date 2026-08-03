@@ -40,7 +40,7 @@ const STEPS = [
     title: 'Combate por rondas',
     body: (
       <>
-        Orden de turnos: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, va antes quien tenga más velocidad). En cada carta: barra <b style={{ color: '#7ce287' }}>verde = vida</b> y barra <b style={{ color: '#6ec6ff' }}>azul = maná</b>.
+        Orden de turnos: <b>distancia → hechizos → cuerpo a cuerpo</b> (si empatan, va antes quien tenga más velocidad). En cada carta: barra <Swatch c="#7ce287" /> <b style={{ color: '#7ce287' }}>verde = vida</b> y barra <Swatch c="#6ec6ff" /> <b style={{ color: '#6ec6ff' }}>azul = maná</b>.
       </>
     ),
   },
@@ -82,13 +82,24 @@ function Em({ img }) {
   );
 }
 
+// Muestra el color real como ejemplo visual (cuadrado relleno) junto a su
+// código hex, para que el lector vea el color en vez de solo su coordenada.
+function Swatch({ c }) {
+  return (
+    <span className="inline-flex align-middle items-center gap-1 mx-0.5">
+      <span className="inline-block w-4 h-4 rounded-[4px] border border-white/25" style={{ background: c, boxShadow: `0 0 8px ${c}cc` }} aria-hidden="true" />
+      <span className="font-mono text-[11px] font-bold" style={{ color: c }}>color:{c}</span>
+    </span>
+  );
+}
+
 function Step({ n, title, body }) {
   return (
     <div className="flex gap-3.5 items-start bg-gradient-to-br from-[#1c102e]/70 to-[#0c0714]/85 border border-[#ffd24a]/28 rounded-2xl p-4 shadow-[0_6px_16px_rgba(0,0,0,.4)]">
       <div className="flex-0 w-10 h-10 rounded-full flex items-center justify-center font-heading font-black text-base text-[#3a2600] bg-[radial-gradient(circle_at_35%_30%,#ffeaa6,#FFD24A_50%,#a9771f)] border-2 border-[#7c5410] shadow-[0_2px_8px_rgba(0,0,0,.5)]">{n}</div>
       <div className="flex-1">
         <div className="font-heading font-black text-[#ffd24a] tracking-wide mb-1 text-lg">{title}</div>
-        <div className="text-[#efe9dc] text-sm leading-relaxed">{body}</div>
+        <div className="text-[#efe9dc] text-base leading-relaxed">{body}</div>
       </div>
     </div>
   );
@@ -128,7 +139,7 @@ export default function Reglas() {
             {COINS.map((c) => (
               <div key={c.title} className="bg-gradient-to-b from-[#140a23]/85 to-[#0a050f]/95 border border-[#ffd24a]/40 rounded-2xl p-4">
                 <div className="font-heading font-black text-[#ffd24a] text-base mb-1">{c.icon} {c.title}</div>
-                <div className="text-[#d8d0e4] text-sm leading-relaxed">{c.text}</div>
+                <div className="text-[#d8d0e4] text-base leading-relaxed">{c.text}</div>
               </div>
             ))}
           </div>
@@ -140,8 +151,8 @@ export default function Reglas() {
                   <img src={a.img} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className={a.wide ? 'flex-1' : ''}>
-                  <div className="font-heading font-black text-[#ffd24a] text-sm">{a.title}</div>
-                  <div className="text-[#d8d0e4] text-xs leading-snug">{a.text}</div>
+                  <div className="font-heading font-black text-[#ffd24a] text-base">{a.title}</div>
+                  <div className="text-[#d8d0e4] text-sm leading-snug">{a.text}</div>
                 </div>
               </div>
             ))}
@@ -158,18 +169,18 @@ export default function Reglas() {
 
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">⚡ {t('Velocidad y orden de turnos')}</div>
-            <div className="space-y-2.5 text-sm leading-relaxed">
+            <div className="space-y-2.5 text-base leading-relaxed">
               <p><b className="text-[#ffe9a8]">Cada ronda:</b> {t('los héroes que puedan actuar lo hacen por tipo de acción — primero los de distancia (AD), luego los hechizos y por último los de cuerpo a cuerpo (CC): el arquero dispara antes de que llegue el melé.')}</p>
               <p><b className="text-[#ffe9a8]">Desempate por velocidad:</b> {t('dentro del mismo tipo, actúa antes el héroe con más velocidad. Cada héroe parte de una velocidad base según su raza, y algunas armas y armaduras la aumentan: tu equipo sí puede cambiar cuándo te toca actuar.')}</p>
-              <p><b className="text-[#ffe9a8]">⚡ Marcador de velocidad:</b> {t('cada héroe lleva <b>⚡ + un número</b> con su velocidad base, arriba en la carta. Los más veloces (≥21) brillan en <b style="color:#FFD24A">dorado con el sello RÁPIDO</b>: de un vistazo ves quién vuela al ficharlo y al ordenar los turnos.')}</p>
+              <p><b className="text-[#ffe9a8]">⚡ Marcador de velocidad:</b> {t('cada héroe lleva <b>⚡ + un número</b> con su velocidad base, arriba en la carta. Los más veloces (≥21) brillan en ')}<Swatch c="#FFD24A" />{t(' <b style="color:#FFD24A">dorado con el sello RÁPIDO</b>: de un vistazo ves quién vuela al ficharlo y al ordenar los turnos.')}</p>
               <p><b className="text-[#ffe9a8]">Estados que sí mueven tu turno:</b> {t('Congelado actúa con velocidad reducida (va más tarde); Dormido y Paralizado pierden su próximo turno. El resto de estados cambian tus stats o tu daño, no cuándo te toca actuar.')}</p>
-              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. Cada héroe lleva arriba el marcador <b>⚡ + su velocidad</b>; los más veloces (≥21) brillan en <b style="color:#FFD24A">dorado con RÁPIDO</b>. Así sabes de un vistazo quién es más rápido al planear tu equipo; al equiparlo, algunas armas y armaduras lo suben.')}</p>
+              <p><b className="text-[#ffe9a8]">¿Y en la subasta?</b> {t('el tipo de héroe (CC/AD/HE) ya marca su banda de turno y lo ves al elegir. Cada héroe lleva arriba el marcador <b>⚡ + su velocidad</b>; los más veloces (≥21) brillan en ')}<Swatch c="#FFD24A" />{t(' <b style="color:#FFD24A">dorado con RÁPIDO</b>. Así sabes de un vistazo quién es más rápido al planear tu equipo; al equiparlo, algunas armas y armaduras lo suben.')}</p>
             </div>
           </div>
 
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">☠️ {t('Muerte y reanimación de héroes')}</div>
-            <div className="space-y-2.5 text-sm leading-relaxed">
+            <div className="space-y-2.5 text-base leading-relaxed">
               <p><b className="text-[#ff7a6a]">Caer a 0 de vida:</b> {t('el héroe queda fuera de combate. Su arma y su armadura se van a tu pila de descartes, igual que los objetos que hubiera consumido.')}</p>
               <p><b style={{ color: '#ffaa00' }}>Primera caída → renace en Élite:</b> {t('vuelve con parte de su vida y stats mejorados según su raza. Renace limpio: sin estados negativos y sin arma ni armadura (están en la pila de descartes).')}</p>
               <p><b className="text-[#ff5252]">Segunda caída → muerte definitiva:</b> {t('el héroe queda eliminado permanentemente de la batalla… salvo que jugues Pluma Fénix o Ave Fénix, que lo traen de vuelta una vez más.')}</p>
@@ -182,11 +193,17 @@ export default function Reglas() {
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">✨ {t('Estados de combate')}</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {STATES.map((s) => (
-                <div key={s.n} className="flex items-start gap-2.5 bg-gradient-to-b from-[#140a23]/85 to-[#0a050f]/95 rounded-xl p-2.5 border" style={{ borderColor: s.c + '66', boxShadow: `inset 0 0 14px -8px ${s.c}` }}>
-                  <div className="flex-0 w-8 h-8 rounded-full flex items-center justify-center text-base bg-black/45 border" style={{ borderColor: s.c, boxShadow: `0 0 8px ${s.c}66` }}>{s.i}</div>
-                  <div className="flex-1">
-                    <div className="font-black text-sm tracking-wide" style={{ color: s.c }}>{s.n}</div>
-                    <div className="text-[#d8d0e4] text-xs leading-snug">{s.x}</div>
+                <div key={s.n} className="flex items-start gap-3 bg-gradient-to-b from-[#140a23]/85 to-[#0a050f]/95 rounded-xl p-3 border" style={{ borderColor: s.c + '88', boxShadow: `inset 0 0 18px -10px ${s.c}` }}>
+                  <div className="shrink-0 flex flex-col items-center gap-1">
+                    <span className="w-9 h-9 rounded-lg border-2 border-white/15" style={{ background: s.c, boxShadow: `0 0 14px ${s.c}cc` }} aria-hidden="true" />
+                    <span className="font-mono text-[10px] font-bold leading-none" style={{ color: s.c }}>color:{s.c}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl leading-none">{s.i}</span>
+                      <span className="font-black text-base tracking-wide" style={{ color: s.c }}>{s.n}</span>
+                    </div>
+                    <div className="text-[#e6dff2] text-sm leading-snug mt-1">{s.x}</div>
                   </div>
                 </div>
               ))}
