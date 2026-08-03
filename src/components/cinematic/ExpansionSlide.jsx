@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
+const DONUT_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/feef33293_generated_image.png';
+
 // Diapositiva de Expansiones temáticas, en dos fases:
 //  · Fase 1: los Patitos de Goma (animación normal y élite) entran desde los
 //    bordes, chocan en el centro y se desvanecen.
@@ -130,6 +132,9 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
         )}
       </AnimatePresence>
 
+      {/* Donut de fresa volador con luces */}
+      <DonutFlyer accent={accent} />
+
       {/* brasas ascendentes ambientales */}
       {embers.map((e, k) => (
         <motion.span
@@ -140,5 +145,67 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
         />
       ))}
     </div>
+  );
+}
+
+// Donut de fresa volador que recorre la escena en arco dejando estelas de luz
+// rosadas y pulsos de brillo, como una mascota dulce y mágica.
+function DonutFlyer({ accent }) {
+  const cut = useCutoutSrc(DONUT_IMG);
+  const colors = useMemo(
+    () => ['#ff5a8a', '#ff8fb0', '#ffd24a', '#b13bff', '#ffb3d9'],
+    []
+  );
+  return (
+    <motion.div
+      className="absolute top-[10%] left-0 pointer-events-none z-[2]"
+      animate={{ x: ['14vw', '70vw', '38vw', '20vw', '14vw'], y: [0, -28, 18, -14, 0], rotate: [-10, 10, -5, 7, -10] }}
+      transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      {/* Conos de luz que caen del donut */}
+      {[
+        { dx: -30, hue: colors[0], delay: 0 },
+        { dx: 30, hue: colors[1], delay: 0.6 },
+      ].map((c, k) => (
+        <motion.div key={k}
+          className="absolute left-1/2 top-[60%] -translate-x-1/2 pointer-events-none rounded-full"
+          style={{ width: 120, height: '70vh', marginLeft: c.dx,
+            background: `linear-gradient(to bottom, ${c.hue}aa 0%, ${c.hue}44 45%, transparent 80%)`,
+            filter: 'blur(10px)', mixBlendMode: 'screen' }}
+          animate={{ opacity: [0.2, 0.85, 0.3, 0.8, 0.2], scaleY: [0.7, 1.1, 0.85, 1, 0.7] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut', delay: c.delay }}
+        />
+      ))}
+
+      {/* Sprinkles de luz que parpadean alrededor del donut */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <motion.span key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{ width: 5 + (i % 3) * 2, height: 5 + (i % 3) * 2, background: colors[i % colors.length],
+            boxShadow: `0 0 8px ${colors[i % colors.length]}`,
+            left: 40 + Math.cos(i) * 70, top: 30 + (i % 2 ? -1 : 1) * 40 }}
+          animate={{ opacity: [0, 1, 0], scale: [0.4, 1.4, 0.4] }}
+          transition={{ duration: 0.9 + (i % 3) * 0.3, repeat: Infinity, ease: 'easeOut', delay: i * 0.22 }}
+        />
+      ))}
+
+      {cut && (
+        <motion.img
+          src={cut} alt="Donut de fresa" draggable={false}
+          className="relative select-none pointer-events-none"
+          style={{ width: 120, height: 'auto', filter: 'drop-shadow(0 8px 14px rgba(0,0,0,.7))' }}
+          animate={{ scale: [1, 1.08, 0.96, 1.05, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+
+      {/* Halo de color alrededor del donut */}
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        style={{ width: 140, height: 140, filter: 'blur(14px)', mixBlendMode: 'screen' }}
+        animate={{ background: colors.map((c) => `radial-gradient(circle, ${c}aa, transparent 70%)`) }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </motion.div>
   );
 }
