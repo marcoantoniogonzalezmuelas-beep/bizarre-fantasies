@@ -1,17 +1,17 @@
 // Parche inyectado en el iframe: selector de Nivel de IA en la pantalla de
-// "vs IA". El jugador elige el nivel antes de arrancar la partida y la
-// estrategia de la IA (aiStrategyPatch) se ajusta según el nivel elegido.
+// "vs IA" con SISTEMA DE DESBLOQUEO por victorias.
 //
-// Niveles:
-//   - IA Novata     → puja baja, usa pocas habilidades, ataca al más débil
-//   - IA Bersérker  → agresiva al máximo, sin estrategia, ataca al más fuerte
-//   - IA Estratega  → equilibrada y táctica (recomendada)
-//   - IA Némesis    → puja calculada, roba tus héroes, sin piedad
+// Niveles y requisitos de desbloqueo:
+//   - IA Novata     → SIEMPRE disponible
+//   - IA Bersérker  → desbloqueada al ganar 2 partidas vs IA Novata
+//   - IA Estratega  → desbloqueada al ganar 3 partidas vs IA Bersérker
+//   - IA Némesis    → desbloqueada al ganar 5 partidas vs IA Estratega
 //
-// El nivel se guarda en localStorage y sobreescribe los parámetros de
-// agresividad/frecuencia de la estrategia recibida del análisis de logs,
-// conservando las preferencias de héroes (preferHeroes/avoidHeroes) que sí
-// dependen del análisis y mejoran con más partidas.
+// El contador de victorias se guarda en localStorage (bfAiWins_{levelId}) y
+// se incrementa al ganar una partida contra la IA (hook sobre showResult).
+// El nivel seleccionado sobreescribe los parámetros de agresividad de la
+// estrategia (aiStrategyPatch), conservando las preferencias de héroes del
+// análisis de logs.
 export const AI_LEVEL_PATCH = `
 <script>
 (function(){
@@ -21,40 +21,64 @@ export const AI_LEVEL_PATCH = `
   var isEn = function(){ try { return localStorage.getItem('bfLang') === 'en'; } catch(e) { return false; } };
 
   var LEVELS = [
-    { id: 'novice',     name: 'IA Novata',    name_en: 'AI Novice',    desc: 'Puja bajo, usa pocas habilidades', desc_en: 'Low bids, rarely uses abilities',  bidAggression: 0.30, abilityUsage: 0.30, targetPriority: 'weakest',   purchaseTiming: 'late' },
-    { id: 'berserker',  name: 'IA Bersérker', name_en: 'AI Berserker', desc: 'Agresiva al máximo, sin piedad',     desc_en: 'Max aggression, no mercy',          bidAggression: 0.90, abilityUsage: 0.95, targetPriority: 'strongest', purchaseTiming: 'early' },
-    { id: 'strategist', name: 'IA Estratega', name_en: 'AI Strategist', desc: 'Equilibrada y táctica (recomendada)', desc_en: 'Balanced and tactical (recommended)', bidAggression: 0.70, abilityUsage: 0.75, targetPriority: 'balanced',  purchaseTiming: 'balanced' },
-    { id: 'nemesis',    name: 'IA Némesis',   name_en: 'AI Nemesis',   desc: 'Roba tus héroes, juega perfecto',    desc_en: 'Steals your heroes, plays perfectly', bidAggression: 1.0,  abilityUsage: 1.0,  targetPriority: 'healer',    purchaseTiming: 'balanced' },
+    { id: 'novice',     name: 'IA Novata',    name_en: 'AI Novice',    desc: 'Puja bajo, usa pocas habilidades',       desc_en: 'Low bids, rarely uses abilities',          bidAggression: 0.30, abilityUsage: 0.30, targetPriority: 'weakest',   purchaseTiming: 'late',     unlockReq: 0, prevId: null },
+    { id: 'berserker',  name: 'IA Bersérker', name_en: 'AI Berserker', desc: 'Agresiva al máximo, sin piedad',           desc_en: 'Max aggression, no mercy',                 bidAggression: 0.90, abilityUsage: 0.95, targetPriority: 'strongest', purchaseTiming: 'early',    unlockReq: 2, prevId: 'novice' },
+    { id: 'strategist', name: 'IA Estratega', name_en: 'AI Strategist', desc: 'Equilibrada y táctica (recomendada)',       desc_en: 'Balanced and tactical (recommended)',       bidAggression: 0.70, abilityUsage: 0.75, targetPriority: 'balanced',  purchaseTiming: 'balanced', unlockReq: 3, prevId: 'berserker' },
+    { id: 'nemesis',    name: 'IA Némesis',   name_en: 'AI Nemesis',   desc: 'Roba tus héroes, juega casi perfecto',      desc_en: 'Steals your heroes, near-perfect play',      bidAggression: 1.0,  abilityUsage: 1.0,  targetPriority: 'healer',    purchaseTiming: 'balanced', unlockReq: 5, prevId: 'strategist' },
   ];
 
   var KEY = 'bfAiLevel';
-  function getLevelId(){ try { return localStorage.getItem(KEY) || 'strategist'; } catch(e) { return 'strategist'; } }
-  function getMeta(){ var id = getLevelId(); return LEVELS.find(function(l){ return l.id === id; }) || LEVELS[2]; }
+  function getLevelId(){ try { return localStorage.getItem(KEY) || 'novice'; } catch(e) { return 'novice'; } }
+  function getMeta(){ var id = getLevelId(); return LEVELS.find(function(l){ return l.id === id; }) || LEVELS[0]; }
+  function getWins(levelId){ try { return parseInt(localStorage.getItem('bfAiWins_' + levelId) || '0', 10); } catch(e) { return 0; } }
+  function addWin(levelId){ var w = getWins(levelId) + 1; try { localStorage.setItem('bfAiWins_' + levelId, String(w)); } catch(e) {} return w; }
+  function isUnlocked(lvl){ if (!lvl || lvl.unlockReq === 0) return true; return getWins(lvl.prevId) >= lvl.unlockReq; }
+
   function setLevel(id){
+    var lvl = LEVELS.find(function(l){ return l.id === id; }) || LEVELS[0];
+    if (!isUnlocked(lvl)) return false;
     try { localStorage.setItem(KEY, id); } catch(e) {}
-    var lvl = LEVELS.find(function(l){ return l.id === id; }) || LEVELS[2];
     window.__bfAiLevelMeta = lvl;
-    // Aplica el nivel sobre la estrategia ya recibida (si existe).
     if (window.__bfAiStrat) {
       window.__bfAiStrat.bidAggression = lvl.bidAggression;
       window.__bfAiStrat.abilityUsage = lvl.abilityUsage;
       window.__bfAiStrat.targetPriority = lvl.targetPriority;
       window.__bfAiStrat.purchaseTiming = lvl.purchaseTiming;
     }
+    return true;
   }
+
+  // Al cargar: si el nivel guardado está bloqueado, bajar al más alto disponible.
+  (function validate(){
+    var lvl = getMeta();
+    if (!isUnlocked(lvl)) {
+      for (var i = LEVELS.length - 1; i >= 0; i--) {
+        if (isUnlocked(LEVELS[i])) { try { localStorage.setItem(KEY, LEVELS[i].id); } catch(e) {} break; }
+      }
+    }
+  })();
+
   window.__bfAiLevelMeta = getMeta();
   window.__bfAiLevels = LEVELS;
+  window.__bfAiGetWins = getWins;
+  window.__bfAiIsUnlocked = isUnlocked;
 
   // ---- CSS ----
   var st = document.createElement('style');
   st.textContent = [
     '.bf-level-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px}',
     '@media(max-width:520px){.bf-level-pick{grid-template-columns:1fr}}',
-    '.bf-level-opt{cursor:pointer;text-align:center;padding:11px 8px;border-radius:13px;background:linear-gradient(180deg,rgba(20,14,38,.7),rgba(10,7,20,.8));border:2px solid rgba(255,210,74,.24);transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}',
+    '.bf-level-opt{cursor:pointer;text-align:center;padding:11px 8px;border-radius:13px;background:linear-gradient(180deg,rgba(20,14,38,.7),rgba(10,7,20,.8));border:2px solid rgba(255,210,74,.24);transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;position:relative}',
     '.bf-level-opt:hover{transform:translateY(-2px);border-color:rgba(255,210,74,.5)}',
     '.bf-level-opt.active{border-color:#ffd24a;box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 22px rgba(255,210,74,.4);background:linear-gradient(180deg,rgba(48,34,84,.78),rgba(20,13,38,.86))}',
+    '.bf-level-opt.locked{opacity:.5;cursor:not-allowed;filter:grayscale(.5)}',
+    '.bf-level-opt.locked:hover{transform:none;border-color:rgba(255,100,100,.4)}',
     '.bf-level-t{font-family:"Cinzel",serif;font-weight:800;font-size:14px;color:#fff5dc;text-shadow:0 2px 4px #000}',
     '.bf-level-s{margin-top:3px;font-size:10px;color:#cfc6dd;line-height:1.25}',
+    '.bf-level-lock{margin-top:4px;font-size:11px;color:#ff7a7a;font-weight:700}',
+    '.bf-level-wins{margin-top:4px;font-size:11px;color:#ffd24a;font-weight:700}',
+    '.bf-level-bar{margin-top:6px;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden}',
+    '.bf-level-bar-fill{height:100%;background:linear-gradient(90deg,#ffd24a,#ff9a3c);border-radius:3px;transition:width .3s ease}',
   ].join('');
   document.head.appendChild(st);
 
@@ -64,8 +88,7 @@ export const AI_LEVEL_PATCH = `
     if (!input) return;
     var box = input.closest('.setup-box') || input.closest('.screen') || input.parentElement;
     if (!box || box.dataset.bfLevel === '1') return;
-    // No inyectar en la pantalla local (tiene p2name)
-    if (box.querySelector('#p2name')) return;
+    if (box.querySelector('#p2name')) return; // No en local
     box.dataset.bfLevel = '1';
 
     var ig = input.closest('.ig') || input.parentElement;
@@ -77,18 +100,46 @@ export const AI_LEVEL_PATCH = `
     wrap.innerHTML = '<label>' + label + '</label><div class="bf-level-pick"></div>';
     var grid = wrap.querySelector('.bf-level-pick');
     var cur = getLevelId();
+
     LEVELS.forEach(function(lvl){
+      var unlocked = isUnlocked(lvl);
       var opt = document.createElement('div');
-      opt.className = 'bf-level-opt' + (cur === lvl.id ? ' active' : '');
-      opt.innerHTML = '<div class="bf-level-t">' + (isEn() ? lvl.name_en : lvl.name) + '</div>' +
-        '<div class="bf-level-s">' + (isEn() ? lvl.desc_en : lvl.desc) + '</div>';
+      opt.className = 'bf-level-opt' + (cur === lvl.id && unlocked ? ' active' : '') + (unlocked ? '' : ' locked');
+
+      var name = isEn() ? lvl.name_en : lvl.name;
+      var desc = isEn() ? lvl.desc_en : lvl.desc;
+
+      var html = '<div class="bf-level-t">' + name + (unlocked ? '' : ' 🔒') + '</div>';
+      html += '<div class="bf-level-s">' + desc + '</div>';
+
+      if (unlocked) {
+        var w = getWins(lvl.id);
+        if (w > 0) html += '<div class="bf-level-wins">' + (isEn() ? 'Wins: ' : 'Victorias: ') + w + '</div>';
+      } else {
+        var prev = LEVELS.find(function(l){ return l.id === lvl.prevId; });
+        var prevName = prev ? (isEn() ? prev.name_en : prev.name) : '';
+        var have = getWins(lvl.prevId);
+        html += '<div class="bf-level-lock">' + (isEn() ? 'Win ' : 'Gana ') + have + '/' + lvl.unlockReq + ' vs ' + prevName + '</div>';
+        html += '<div class="bf-level-bar"><div class="bf-level-bar-fill" style="width:' + Math.min(100, Math.round(have / lvl.unlockReq * 100)) + '%"></div></div>';
+      }
+
+      opt.innerHTML = html;
       opt.onclick = function(){
+        if (!unlocked) {
+          if (typeof notif === 'function') {
+            var prev2 = LEVELS.find(function(l){ return l.id === lvl.prevId; });
+            var prev2Name = prev2 ? (isEn() ? prev2.name_en : prev2.name) : '';
+            notif(isEn() ? ('Locked. Win ' + lvl.unlockReq + ' vs ' + prev2Name + ' first') : ('Bloqueada. Gana ' + lvl.unlockReq + ' vs ' + prev2Name + ' primero'));
+          }
+          return;
+        }
         grid.querySelectorAll('.bf-level-opt').forEach(function(o){ o.classList.remove('active'); });
         opt.classList.add('active');
         setLevel(lvl.id);
       };
       grid.appendChild(opt);
     });
+
     ig.parentNode.insertBefore(wrap, ig.nextSibling);
   }
 
@@ -97,7 +148,7 @@ export const AI_LEVEL_PATCH = `
   else document.addEventListener('DOMContentLoaded', injectLevelPicker);
   setInterval(injectLevelPicker, 400);
 
-  // ---- Sobreescribe el nombre de la IA con el del nivel ----
+  // ---- Detectar victorias contra la IA y contarlas ----
   function isAiGame(){
     try {
       if (typeof G === 'undefined' || !G || G.demo) return false;
@@ -106,10 +157,39 @@ export const AI_LEVEL_PATCH = `
     } catch(e) { return false; }
   }
 
+  function installWinHook(){
+    if (typeof window.showResult !== 'function' || window.showResult.__bfWinCount) return;
+    var orig = window.showResult;
+    window.showResult = function(youWin){
+      try {
+        if (youWin && isAiGame() && typeof G !== 'undefined' && !G.__bfWinCounted) {
+          G.__bfWinCounted = true;
+          var lvl = window.__bfAiLevelMeta;
+          if (lvl) {
+            var newWins = addWin(lvl.id);
+            // ¿Se desbloquea un nivel nuevo?
+            var nextLvl = LEVELS.find(function(l){ return l.prevId === lvl.id; });
+            if (nextLvl && newWins >= nextLvl.unlockReq && getWins(lvl.id) === nextLvl.unlockReq) {
+              if (typeof notif === 'function') {
+                var nm = isEn() ? nextLvl.name_en : nextLvl.name;
+                setTimeout(function(){ notif((isEn() ? 'Unlocked: ' : 'Desbloqueada: ') + nm + ' ⚡'); }, 1200);
+              }
+            }
+          }
+        }
+      } catch(e) {}
+      return orig.apply(this, arguments);
+    };
+    window.showResult.__bfWinCount = 1;
+  }
+  setInterval(installWinHook, 300);
+
+  // ---- Sobreescribe el nombre de la IA con el del nivel ----
   function installAiName(){
     if (typeof window.startVsAI !== 'function' || window.startVsAI.__bfLvlName) return;
     var orig = window.startVsAI;
     window.startVsAI = function(){
+      if (typeof G !== 'undefined') G.__bfWinCounted = false;
       var r = orig.apply(this, arguments);
       setTimeout(function(){
         if (typeof G !== 'undefined' && G && G.names) {
@@ -123,7 +203,7 @@ export const AI_LEVEL_PATCH = `
   }
   setInterval(installAiName, 300);
 
-  // Mantiene el nombre del nivel durante la partida (por si el juego lo reescribe).
+  // Mantiene el nombre del nivel durante la partida.
   setInterval(function(){
     if (!isAiGame()) return;
     if (typeof G === 'undefined' || !G || !G.names) return;
@@ -134,6 +214,16 @@ export const AI_LEVEL_PATCH = `
       G.names.o = expected;
     }
   }, 2000);
+
+  // Avisa al padre del nivel actual y las victorias (para posible persistencia).
+  function notifyParent(){
+    try {
+      var payload = { bfAiProgress: { level: getLevelId(), wins: {} } };
+      LEVELS.forEach(function(l){ payload.bfAiProgress.wins[l.id] = getWins(l.id); });
+      window.parent.postMessage(payload, '*');
+    } catch(e) {}
+  }
+  setInterval(notifyParent, 3000);
 })();
 </script>
 `;
