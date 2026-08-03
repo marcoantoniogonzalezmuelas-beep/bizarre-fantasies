@@ -38,6 +38,14 @@ export const MATCH_SCORE_PATCH = `
   }
   function writeAll(d){ try{ localStorage.setItem('bfScoreByNick',JSON.stringify(d)); }catch(e){} }
 
+  // Reset general único: pone a cero todos los marcadores históricos.
+  try{
+    if(localStorage.getItem('bfScoreReset')!=='v1'){
+      localStorage.removeItem('bfScoreByNick');
+      localStorage.setItem('bfScoreReset','v1');
+    }
+  }catch(e){}
+
   function get(){
     var n=nicks(),all=readAll(),rec=all[pairKey(n)]||{};
     return {self:rec[n.self.toLowerCase()]||0,opp:rec[n.opp.toLowerCase()]||0,selfNick:n.self,oppNick:n.opp};

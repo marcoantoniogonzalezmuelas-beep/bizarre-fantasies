@@ -42,9 +42,9 @@ export const MATCH_MODE_PATCH = `
   document.head.appendChild(st);
 
   function modeMeta(m){
-    if(m==='m3') return {label:'Match a 3 · primero en llegar a 2 victorias', target:2};
-    if(m==='m5') return {label:'Match a 5 · primero en llegar a 3 victorias', target:3};
-    return {label:'Libre · juega tantas partidas como quieras', target:0};
+    if(m==='m3') return {label:'Match a 3 · primero en llegar a 3 victorias', target:3};
+    if(m==='m5') return {label:'Match a 5 · primero en llegar a 5 victorias', target:5};
+    return {label:'Libre · marcador global entre los dos jugadores', target:0};
   }
   function ns(){ return (typeof NET!=='undefined') ? NET : null; }
   function ensureState(){ var n=ns(); if(!n) return null; if(!n.score) n.score={p:0,o:0}; if(!n.matchMode) n.matchMode='free'; return n; }
@@ -61,9 +61,9 @@ export const MATCH_MODE_PATCH = `
     wrap.className='ig';
     wrap.innerHTML = '<label>Modalidad de la partida</label>'+
       '<div class="bf-mode-pick">'+
-        '<div class="bf-mode-opt" data-m="m3"><div class="bf-mode-t">Match a 3</div><div class="bf-mode-s">Gana quien llegue a 2 victorias</div></div>'+
-        '<div class="bf-mode-opt" data-m="m5"><div class="bf-mode-t">Match a 5</div><div class="bf-mode-s">Gana quien llegue a 3 victorias</div></div>'+
-        '<div class="bf-mode-opt active" data-m="free"><div class="bf-mode-t">Libre</div><div class="bf-mode-s">Partidas sueltas con marcador</div></div>'+
+        '<div class="bf-mode-opt" data-m="m3"><div class="bf-mode-t">Match a 3</div><div class="bf-mode-s">Empieza 0-0 · gana quien llegue a 3 victorias</div></div>'+
+        '<div class="bf-mode-opt" data-m="m5"><div class="bf-mode-t">Match a 5</div><div class="bf-mode-s">Empieza 0-0 · gana quien llegue a 5 victorias</div></div>'+
+        '<div class="bf-mode-opt active" data-m="free"><div class="bf-mode-t">Libre</div><div class="bf-mode-s">Marcador global de todas vuestras partidas</div></div>'+
       '</div>';
     var roomIg = room.closest('.ig');
     roomIg.parentNode.insertBefore(wrap, roomIg.nextSibling);
@@ -152,7 +152,18 @@ export const MATCH_MODE_PATCH = `
     // que se ve en la barra superior: tus victorias · las del rival.
     var gen = (window.bfSeriesScore&&window.bfSeriesScore.get)?window.bfSeriesScore.get():null;
     var nameP = gen?gen.selfNick:(n.names_self||'Tú'), nameO = gen?gen.oppNick:(n.names_opp||'Rival');
+    // En modo libre el marcador de la pantalla final ES el global (histórico).
+    // En Match a 3 / 5 se muestra el marcador del match (empieza 0-0) y debajo
+    // una línea con el global, porque estas partidas también suman al general.
+    var mySideR = n.mySide || (n.role==='client' ? 'o' : 'p');
+    var ms = data.score || n.score || {p:0,o:0};
+    var isMatch = (data.matchMode||n.matchMode)!=='free';
     var sp = gen?gen.self:0, so = gen?gen.opp:0;
+    if(isMatch){
+      sp = (mySideR==='p')?(ms.p||0):(ms.o||0);
+      so = (mySideR==='p')?(ms.o||0):(ms.p||0);
+    }
+    var genLine = (isMatch&&gen)?('<div class="bf-mode-lbl">Marcador global: '+gen.selfNick+' '+gen.self+' — '+gen.opp+' '+gen.oppNick+'</div>'):'';
     var myWin = !!data.myWin;
     var champSide = data.champSide || null;
 
@@ -183,13 +194,13 @@ export const MATCH_MODE_PATCH = `
           '<div class="bf-score-sep">—</div>'+
           '<div class="bf-score-col"><div class="bf-score-name">'+nameO+'</div><div class="bf-score-num">'+so+'</div></div>'+
         '</div>'+
-        '<div class="bf-mode-lbl">'+meta.label+'</div>'+
+        '<div class="bf-mode-lbl">'+meta.label+'</div>'+ genLine +
         '<div style="margin-top:22px">'+btns+'</div>'+
       '</div>';
     }
     setTimeout(function(){ if(typeof window.bfEndCinematic==='function') window.bfEndCinematic(myWin); }, 80);
     if(champSide){
-      var champName = champSide==='p'?nameP:nameO;
+      var champName = (champSide===mySideR)?nameP:nameO;
       setTimeout(function(){ championAnimation(champName); }, 1100);
     }
   }
