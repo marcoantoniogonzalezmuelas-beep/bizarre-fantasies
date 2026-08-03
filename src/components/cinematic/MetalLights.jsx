@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { preloadCutout } from '@/lib/useCutoutSrc';
 
-const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/97f6581ac_generated_image.png';
+const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4d15e9c1d_generated_image.png';
 
 // Focos de escenario: pequeñas lámparas circulares colgadas arriba que proyectan
 // pools de luz suaves hacia abajo. Pensado para la diapositiva de El Heavy —
