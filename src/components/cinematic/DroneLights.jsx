@@ -1,5 +1,8 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
+
+const DRONE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/3e9b60175_generated_image.png';
 
 // Dron que sobrevuela la escena emitiendo focos de color que barren e iluminan
 // a los dos héroes. El dron vuela en un arco horizontal, bobeando, y desde él
@@ -38,20 +41,7 @@ export default function DroneLights() {
       ))}
 
       {/* Dron volando en arco, bobing */}
-      <motion.div
-        className="absolute top-[7%] left-0"
-        animate={{ x: ['10vw', '78vw', '46vw', '14vw', '10vw'], y: [0, -14, 10, -8, 0] }}
-        transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <Drone />
-        {/* Halo del dron */}
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
-          style={{ width: 90, height: 90, filter: 'blur(10px)', mixBlendMode: 'screen' }}
-          animate={{ background: colors.map((c) => `radial-gradient(circle, ${c}88, transparent 70%)`) }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </motion.div>
+      <DroneFlyer colors={colors} />
 
       {/* Neblina sutil de escenario */}
       <div className="absolute -bottom-10 left-0 right-0 h-1/3 opacity-20 pointer-events-none"
@@ -60,27 +50,30 @@ export default function DroneLights() {
   );
 }
 
-function Drone() {
+function DroneFlyer({ colors }) {
+  const cut = useCutoutSrc(DRONE_IMG);
   return (
-    <div className="relative" style={{ width: 64, height: 28 }}>
-      {/* Cuerpo */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md"
-        style={{ width: 22, height: 12, background: 'linear-gradient(#3a3a44,#15151c)', border: '1px solid rgba(255,255,255,.4)', boxShadow: '0 0 8px rgba(0,0,0,.6)' }} />
-      {/* Luz frontal parpadeante */}
-      <motion.div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{ width: 5, height: 5 }}
-        animate={{ background: ['#ff3b3b', '#ff7a7a', '#ff3b3b'], boxShadow: ['0 0 6px #ff3b3b', '0 0 14px #ff5a5a', '0 0 6px #ff3b3b'] }}
-        transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }} />
-      {/* Brazos + rotores */}
-      {[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([dx, dy], i) => (
-        <div key={i} className="absolute" style={{ left: '50%', top: '50%', transform: `translate(${dx * 24 - 6}px, ${dy * 12 - 6}px)` }}>
-          <div className="absolute rounded-full" style={{ width: 12, height: 12, border: '1.5px solid rgba(255,255,255,.5)', background: 'rgba(0,0,0,.35)' }} />
-          <motion.div className="absolute rounded-full"
-            style={{ width: 16, height: 2.4, background: 'rgba(255,255,255,.55)', left: -2, top: 4.8 }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 0.12 + i * 0.02, repeat: Infinity, ease: 'linear' }} />
-        </div>
-      ))}
-    </div>
+    <motion.div
+      className="absolute top-[7%] left-0"
+      animate={{ x: ['10vw', '78vw', '46vw', '14vw', '10vw'], y: [0, -14, 10, -8, 0], rotate: [-6, 6, -3, 4, -6] }}
+      transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      {cut && (
+        <motion.img
+          src={cut} alt="" draggable={false}
+          className="relative select-none pointer-events-none"
+          style={{ width: 92, height: 'auto', filter: 'drop-shadow(0 6px 10px rgba(0,0,0,.7))' }}
+          animate={{ scale: [1, 1.06, 0.97, 1.04, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+      {/* Halo de color que envuelve al dron */}
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        style={{ width: 110, height: 110, filter: 'blur(12px)', mixBlendMode: 'screen' }}
+        animate={{ background: colors.map((c) => `radial-gradient(circle, ${c}88, transparent 70%)`) }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </motion.div>
   );
 }
