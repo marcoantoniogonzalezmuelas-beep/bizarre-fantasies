@@ -1,36 +1,57 @@
-// Parche inyectado en el iframe: marcador de partidas múltiples (series).
-// Cuando dos jugadores juegan varias partidas seguidas (online o local),
-// lleva un conteo de victorias que se muestra en la UI con animación al
-// cambiar. El marcador se resetea automáticamente cuando cambian los
-// jugadores o el código de sala.
+// Parche inyectado en el iframe: MARCADOR GENERAL ÚNICO entre dos jugadores.
+//
+// Hay un solo marcador en todo el juego: acumula TODAS las victorias y derrotas
+// históricas entre los dos mismos jugadores (por nick, no por sala), suma
+// exactamente +1 por partida ganada y se muestra tanto en la barra superior
+// como en la pantalla final (matchModePatch lee este mismo dato).
+//
+// API expuesta para el resto de parches:
+//   window.bfSeriesScore.get()            -> {self, opp, selfNick, oppNick}
+//   window.bfSeriesScore.addWin(nick)     -> suma 1 victoria a ese nick
+//   window.bfSeriesScore.render()         -> repinta la barra
 export const MATCH_SCORE_PATCH = `
 <script>
 (function(){
   if(window.__bfMatchScore)return;
   window.__bfMatchScore=true;
 
-  // --- Identificador del emparejamiento (para resetear al cambiar) ---
-  function matchupId(){
-    if(typeof G==='undefined'||!G)return 'bf:none';
-    var isOnline=(typeof online==='function')?online():false;
-    if(isOnline&&typeof NET!=='undefined'&&NET.code)return 'bf:online:'+NET.code;
-    if(G.oppHuman&&G.names)return 'bf:local:'+(G.names.p||'')+'_'+(G.names.o||'');
-    return 'bf:none';
-  }
-
-  function getStored(){
+  // ---- Nicks de los dos jugadores ----
+  function nicks(){
+    var self='Tú',opp='Rival';
     try{
-      var d=JSON.parse(localStorage.getItem('bfSeriesScore')||'null');
-      if(d&&d.m===matchupId())return d.s;
+      if(typeof online==='function'&&online()&&typeof NET!=='undefined'){
+        self=NET.names_self||'Tú'; opp=NET.names_opp||'Rival';
+      }else if(typeof G!=='undefined'&&G.names){
+        self=G.names.p||'Tú'; opp=G.names.o||'Rival';
+      }
     }catch(e){}
-    return null;
+    return {self:String(self),opp:String(opp)};
   }
-  function setStored(s){
-    try{localStorage.setItem('bfSeriesScore',JSON.stringify({m:matchupId(),s:s}));}catch(e){}
+  function pairKey(n){
+    var a=[n.self,n.opp].map(function(s){return s.toLowerCase();}).sort();
+    return a[0]+'||'+a[1];
   }
-  function curScore(){return getStored()||{p:0,o:0};}
 
-  // --- CSS del marcador ---
+  // ---- Almacén persistente por pareja de nicks ----
+  function readAll(){
+    try{ return JSON.parse(localStorage.getItem('bfScoreByNick')||'{}')||{}; }catch(e){ return {}; }
+  }
+  function writeAll(d){ try{ localStorage.setItem('bfScoreByNick',JSON.stringify(d)); }catch(e){} }
+
+  function get(){
+    var n=nicks(),all=readAll(),rec=all[pairKey(n)]||{};
+    return {self:rec[n.self.toLowerCase()]||0,opp:rec[n.opp.toLowerCase()]||0,selfNick:n.self,oppNick:n.opp};
+  }
+  function addWin(winnerNick){
+    if(!winnerNick)return get();
+    var n=nicks(),all=readAll(),k=pairKey(n),rec=all[k]||{};
+    var w=String(winnerNick).toLowerCase();
+    rec[w]=(rec[w]||0)+1;   // una victoria = +1 punto
+    all[k]=rec; writeAll(all);
+    return get();
+  }
+
+  // ---- CSS de la barra ----
   var css=''+
   '#bf-score-bar{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:100040;display:none;align-items:center;gap:8px;padding:5px 14px;border-radius:999px;background:linear-gradient(180deg,#1b1430,#120d22);border:1.5px solid rgba(255,210,74,.5);box-shadow:0 4px 18px rgba(0,0,0,.5),0 0 12px rgba(255,210,74,.15);font-family:Cinzel,serif;font-weight:900;color:#ffe49a;pointer-events:none;transition:box-shadow .3s,transform .3s}'+
   '#bf-score-bar.bf-score-show{display:flex}'+
@@ -54,18 +75,7 @@ export const MATCH_SCORE_PATCH = `
     document.body.appendChild(barEl);
     return barEl;
   }
-
-  function names(){
-    var pName='Tú',oName='Rival';
-    if(typeof online==='function'&&online()&&typeof NET!=='undefined'){
-      pName=(NET.names_self||'Tú');oName=(NET.names_opp||'Rival');
-    }else if(typeof G!=='undefined'&&G.names){
-      pName=G.names.p||'Tú';oName=G.names.o||'Rival';
-    }
-    if(pName.length>10)pName=pName.slice(0,9)+'…';
-    if(oName.length>10)oName=oName.slice(0,9)+'…';
-    return {p:pName,o:oName};
-  }
+  function shortName(s){ s=String(s||''); return s.length>10?s.slice(0,9)+'…':s; }
 
   function sparksAt(el){
     if(!el)return;
@@ -86,40 +96,60 @@ export const MATCH_SCORE_PATCH = `
   }
 
   function render(animateSide){
-    var s=curScore();var bar=ensureBar();var nm=names();
-    bar.querySelector('.bf-score-p-name').textContent=nm.p;
-    bar.querySelector('.bf-score-o-name').textContent=nm.o;
+    var s=get();var bar=ensureBar();
+    bar.querySelector('.bf-score-p-name').textContent=shortName(s.selfNick);
+    bar.querySelector('.bf-score-o-name').textContent=shortName(s.oppNick);
     var pNum=bar.querySelector('.bf-score-p-num'),oNum=bar.querySelector('.bf-score-o-num');
     var pOld=parseInt(pNum.textContent)||0,oOld=parseInt(oNum.textContent)||0;
-    if(s.p===0&&s.o===0){bar.classList.remove('bf-score-show');return;}
-    pNum.textContent=s.p;oNum.textContent=s.o;
+    if(s.self===0&&s.opp===0){bar.classList.remove('bf-score-show');return;}
+    pNum.textContent=s.self;oNum.textContent=s.opp;
     bar.classList.add('bf-score-show');
-    if(animateSide==='p'&&s.p!==pOld){
-      pNum.classList.remove('bf-score-pop');void pNum.offsetWidth;pNum.classList.add('bf-score-pop');
-      sparksAt(pNum);
+    function pop(el,changed){
+      if(!changed)return;
+      el.classList.remove('bf-score-pop');void el.offsetWidth;el.classList.add('bf-score-pop');
+      sparksAt(el);
       bar.classList.remove('bf-score-flash');void bar.offsetWidth;bar.classList.add('bf-score-flash');
       setTimeout(function(){bar.classList.remove('bf-score-flash');},800);
     }
-    if(animateSide==='o'&&s.o!==oOld){
-      oNum.classList.remove('bf-score-pop');void oNum.offsetWidth;oNum.classList.add('bf-score-pop');
-      sparksAt(oNum);
-      bar.classList.remove('bf-score-flash');void bar.offsetWidth;bar.classList.add('bf-score-flash');
-      setTimeout(function(){bar.classList.remove('bf-score-flash');},800);
-    }
+    if(animateSide==='self')pop(pNum,s.self!==pOld);
+    if(animateSide==='opp')pop(oNum,s.opp!==oOld);
   }
 
-  // --- Hook showResult: actualiza el marcador al terminar cada partida ---
+  window.bfSeriesScore={
+    get:get,
+    render:render,
+    addWin:function(nick){
+      var n=nicks(),s=addWin(nick);
+      render(String(nick).toLowerCase()===n.self.toLowerCase()?'self':'opp');
+      return s;
+    },
+    // Suma la victoria de la partida actual una ÚNICA vez (a prueba de
+    // envoltorios múltiples de showResult y de reenvíos por red).
+    scoreOnce:function(winnerNick){
+      try{
+        if(typeof G==='undefined'||!G||G.demo)return;
+        if(G.__bfScoredOnce)return;
+        G.__bfScoredOnce=true;
+        window.bfSeriesScore.addWin(winnerNick);
+      }catch(e){}
+    }
+  };
+
+  // ---- Hook showResult: solo suma el bando local (o el host en online) ----
   function install(){
     if(typeof window.showResult!=='function'||window.showResult.__bfScore)return false;
     var orig=window.showResult;
     window.showResult=function(youWin){
       try{
-        if(typeof G==='undefined'||!G||G.demo){}
-        else{
-          var s=curScore();
-          if(youWin)s.p++;else s.o++;
-          setStored(s);
-          render(youWin?'p':'o');
+        if(typeof G!=='undefined'&&G&&!G.demo){
+          var isOnline=(typeof online==='function')?online():false;
+          var isClient=isOnline&&typeof NET!=='undefined'&&NET.role==='client';
+          // En online, el marcador lo decide el anfitrión y lo replica al
+          // cliente (matchModePatch → bfsync) para que ambos vean lo mismo.
+          if(!isClient){
+            var n=nicks();
+            window.bfSeriesScore.scoreOnce(youWin?n.self:n.opp);
+          }
         }
       }catch(e){}
       return orig.apply(this,arguments);
@@ -128,21 +158,18 @@ export const MATCH_SCORE_PATCH = `
     return true;
   }
 
-  // Render periódico: muestra el marcador al iniciar una partida nueva sin
-  // esperar a que termine (solo si ya hay victorias acumuladas).
+  // Render periódico: muestra el marcador general en cuanto hay victorias.
   var lastRender=0;
   setInterval(function(){
     if(typeof G==='undefined'||!G||G.demo)return;
-    var s=curScore();
-    if(s.p>0||s.o>0){
+    var s=get();
+    if(s.self>0||s.opp>0){
       if(Date.now()-lastRender>2000){render(null);lastRender=Date.now();}
     }
   },1500);
 
-  // Render inicial tras retardo (para que NET/G estén listos).
   setTimeout(function(){try{render(null);}catch(e){}},3000);
-
-  var t=setInterval(function(){install();},200);
+  setInterval(function(){install();},200);
 })();
 </script>
 `;

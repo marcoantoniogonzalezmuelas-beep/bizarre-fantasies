@@ -51,13 +51,21 @@ export const DISCARD_PILE_PATCH = `
   // ---- Diff de objetos consumidos (G.items) ----
   function idCounts(arr){var c={};(arr||[]).forEach(function(it){if(!it)return;var k=it.id||it.name;c[k]=(c[k]||0)+1;});return c;}
   var lastItems={p:null,o:null};
+  var lastItemsRef={p:null,o:null};
   function diffObjects(side){
     var pile=ensurePile(side); if(!pile||!G.items||!G.items[side]) return;
-    var cur=idCounts(G.items[side]);
+    var arr=G.items[side];
+    var cur=idCounts(arr);
+    // Si el ARRAY ha sido sustituido (snapshot de red, reinicio de partida,
+    // paso de equipamiento a batalla), no es un descarte real: solo
+    // rebasamos la referencia. Antes esto contaba decenas de cartas
+    // fantasma en el contador aunque no se hubiera usado ninguna.
+    if(lastItemsRef[side]!==arr){ lastItemsRef[side]=arr; lastItems[side]=cur; return; }
     if(!lastItems[side]){ lastItems[side]=cur; return; }
     var prev=lastItems[side];
     Object.keys(prev).forEach(function(id){
       var n=(prev[id]||0)-(cur[id]||0);
+      if(n>3) n=0; // caída masiva = resincronización, no consumo real
       if(n>0){
         var obj=findInList((typeof OBJECTS!=='undefined'?OBJECTS:[]),id);
         for(var k=0;k<n;k++) pile.push({id:id,kind:'object',name:obj?obj.name:'Objeto',num:(obj&&obj.num)||0});
@@ -75,11 +83,26 @@ export const DISCARD_PILE_PATCH = `
     return snap;
   }
   var lastEq={p:null,o:null};
+  var lastEqRef={p:null,o:null};
+  function heroById(side,hid){
+    var t=(G&&G.team)?(G.team[side]||[]):[];
+    for(var i=0;i<t.length;i++) if(t[i]&&t[i].id===hid) return t[i];
+    return null;
+  }
   function diffEq(side){
     var pile=ensurePile(side); var cur=snapshotEq(side);
+    var teamRef=(G&&G.team)?G.team[side]:null;
+    // Igual que con los objetos: si el array de héroes se ha sustituido
+    // (snapshot de red / nueva partida) no hay descarte real.
+    if(lastEqRef[side]!==teamRef){ lastEqRef[side]=teamRef; lastEq[side]=cur; return; }
     if(!lastEq[side]){ lastEq[side]=cur; return; }
     var prev=lastEq[side]||{};
     Object.keys(prev).forEach(function(hid){
+      var hero=heroById(side,hid);
+      // Solo van a la pila las armas/armaduras de héroes MUERTOS. Si el héroe
+      // sigue vivo, perder un slot es una transformación/reequipamiento y no
+      // cuenta como descarte.
+      if(!hero||hero.alive) return;
       var p=prev[hid]||{}, c=(cur&&cur[hid])||{};
       ['mwep','rwep','armor'].forEach(function(slot){
         if(p[slot]&&!c[slot]){
@@ -166,6 +189,7 @@ export const DISCARD_PILE_PATCH = `
     var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
     if(!inB){
       lastItems={p:null,o:null}; lastEq={p:null,o:null};
+      lastItemsRef={p:null,o:null}; lastEqRef={p:null,o:null};
       var el=document.querySelector('.bf-discard-pile'); if(el)el.remove();
       lastCount={p:-1,o:-1}; return;
     }

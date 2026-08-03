@@ -89,7 +89,13 @@ export const MATCH_MODE_PATCH = `
       n.conn.on('data', function(msg){
         if(!msg || typeof msg!=='object') return;
         if(msg.t==='welcome' && msg.matchMode){ ensureState(); n.matchMode = msg.matchMode; }
-        if(msg.t==='bfsync'){ ensureState(); n.matchMode = msg.matchMode||n.matchMode; n.score = msg.score||n.score; renderResultScreen(msg); }
+        if(msg.t==='bfsync'){
+          ensureState(); n.matchMode = msg.matchMode||n.matchMode; n.score = msg.score||n.score;
+          // El marcador general lo suma también el cliente, con el nick del
+          // ganador que envía el anfitrión (una sola vez por partida).
+          try{ if(msg.winnerNick && window.bfSeriesScore) window.bfSeriesScore.scoreOnce(msg.winnerNick); }catch(e){}
+          renderResultScreen(msg);
+        }
         // bfrematch: el cliente solo espera; el host ya reinicia con initGame.
       });
     }catch(e){}
@@ -142,9 +148,11 @@ export const MATCH_MODE_PATCH = `
   function renderResultScreen(data){
     var n=ensureState(); if(!n) return;
     var meta = modeMeta(data.matchMode||n.matchMode||'free');
-    var names = data.names || (typeof G!=='undefined'?G.names:{p:'Jugador 1',o:'Jugador 2'});
-    var nameP = (names&&names.p)||'Jugador 1', nameO=(names&&names.o)||'Jugador 2';
-    var sp = data.score?data.score.p:0, so = data.score?data.score.o:0;
+    // Marcador de la pantalla final = EL MISMO marcador general (por nicks)
+    // que se ve en la barra superior: tus victorias · las del rival.
+    var gen = (window.bfSeriesScore&&window.bfSeriesScore.get)?window.bfSeriesScore.get():null;
+    var nameP = gen?gen.selfNick:(n.names_self||'Tú'), nameO = gen?gen.oppNick:(n.names_opp||'Rival');
+    var sp = gen?gen.self:0, so = gen?gen.opp:0;
     var myWin = !!data.myWin;
     var champSide = data.champSide || null;
 
