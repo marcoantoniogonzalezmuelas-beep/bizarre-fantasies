@@ -55,9 +55,8 @@ export default function HeroCardFace({ hero, elite }) {
       <div className="absolute inset-[7px] rounded-[14px] border border-[#ffd24a55] shadow-[inset_0_0_18px_rgba(0,0,0,0.72)]" />
 
       <div data-bf-marker="cost" className="absolute top-2 left-2 z-10 w-11 h-11 rounded-full flex items-center justify-center font-black text-[#4a2e03] text-lg shadow-lg" style={{ background: 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)', border: '2px solid #6f4809' }}>{hero.cost}</div>
-      <div className="absolute top-2.5 right-2 z-10 w-11 h-12 rounded-full bg-[radial-gradient(circle_at_40%_30%,#1a0a00,#0a0500)] border border-[#ffd24a88] flex flex-col items-center justify-center shadow-lg overflow-hidden">
-        {TYPE_ICON_IMG[hero.type] ? <img src={TYPE_ICON_IMG[hero.type]} alt={hero.type} className="w-7 h-7 object-contain" /> : <span className="text-xl text-[#ead49a]">★</span>}
-        <span className="text-[7px] font-black leading-none text-[#ead49a] mt-0.5">{hero.type}</span>
+      <div className="absolute top-2.5 right-2 z-10 w-11 h-11 rounded-full overflow-hidden shadow-lg">
+        {TYPE_ICON_IMG[hero.type] ? <img src={TYPE_ICON_IMG[hero.type]} alt={hero.type} className="w-full h-full object-cover" style={{ transform: 'scale(1.85)' }} /> : <span className="flex items-center justify-center w-full h-full text-xl text-[#ead49a] bg-black/60">★</span>}
       </div>
       {/* Sello de velocidad ⚡ — dorado y brillante para los héroes más veloces */}
       <div data-bf-marker="speed" className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-black leading-none whitespace-nowrap" style={{ fontFamily: 'Rubik, sans-serif', background: velFast ? 'radial-gradient(circle at 34% 28%,#fff0ae,#FFD24A 45%,#b77614)' : 'rgba(8,5,16,.82)', color: velFast ? '#4a2e03' : '#ffd24a', border: velFast ? '2px solid #6f4809' : '1.5px solid rgba(255,210,74,.55)', boxShadow: velFast ? '0 0 14px rgba(255,210,74,.8),0 2px 6px rgba(0,0,0,.5)' : '0 2px 6px rgba(0,0,0,.5)', animation: velFast ? 'bfVelPulse 1.8s ease-in-out infinite' : undefined }}>
