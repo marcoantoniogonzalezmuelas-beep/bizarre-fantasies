@@ -52,6 +52,12 @@ export const MOBILE_PINCH_PATCH = `
     e.preventDefault();
     e.stopPropagation();
     document.body.style.transition = 'none';
+    // will-change SOLO durante el gesto: si lo dejamos siempre, el body entero
+    // se convierte en una capa de composición GPU y cualquier cambio de
+    // contenido (re-render del juego, parches) fuerza un repintado completo
+    // de la capa → parpadeo en móvil/tablet. En PC no hay will-change y los
+    // cambios solo repintan el área afectada.
+    document.body.style.willChange = 'transform';
     pinch = { d0: dist(e.touches), c0: mid(e.touches), z0: z, tx0: tx, ty0: ty };
   }
 
@@ -78,7 +84,7 @@ export const MOBILE_PINCH_PATCH = `
       var b = document.body;
       b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
       if (z < 1.05) { z = 1; tx = 0; ty = 0; applyNow(); }
-      setTimeout(function(){ b.style.transition = ''; }, 300);
+      setTimeout(function(){ b.style.transition = ''; b.style.willChange = ''; }, 300);
     }
   }
 
@@ -89,8 +95,9 @@ export const MOBILE_PINCH_PATCH = `
     if (z === 1 && !tx && !ty) return;
     var b = document.body;
     b.style.transition = 'transform .22s ease';
+    b.style.willChange = 'transform';
     z = 1; tx = 0; ty = 0; applyNow();
-    setTimeout(function(){ b.style.transition = ''; }, 260);
+    setTimeout(function(){ b.style.transition = ''; b.style.willChange = ''; }, 260);
   }
   // Otros parches (enfoque de la acción en batalla) pueden pedir el reencuadre.
   window.__bfPinchReset = resetZoom;
@@ -105,9 +112,10 @@ export const MOBILE_PINCH_PATCH = `
     }
   }).observe(document.documentElement, { childList: true, subtree: true });
 
-  // will-change promueve el body a su propia capa de composición GPU para que
-  // el transform del pellizco sea fluido (sin repintar todo el DOM del juego).
-  try { document.body.style.willChange = 'transform'; } catch (e) {}
+  // will-change se activa SOLO durante el gesto (onStart) y se quita al
+  // terminarlo (onEnd/resetZoom). Mantenerlo siempre provocaba parpadeo en
+  // móvil/tablet: el body entero era una capa GPU y cada cambio de contenido
+  // del juego forzaba un repintado completo de esa capa.
 
   // capture:true + passive:false para adelantarnos a los handlers del juego
   // y poder hacer preventDefault del gesto de 2 dedos.
