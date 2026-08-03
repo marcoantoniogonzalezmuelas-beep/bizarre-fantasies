@@ -124,7 +124,7 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     computePos();
     if (isMobile) {
       let n = 0;
-      const poll = setInterval(() => { computePos(); if (++n > 14) clearInterval(poll); }, 800);
+      const poll = setInterval(() => { computePos(); if (++n > 3) clearInterval(poll); }, 600);
       return () => clearInterval(poll);
     }
     const onResize = () => computePos();

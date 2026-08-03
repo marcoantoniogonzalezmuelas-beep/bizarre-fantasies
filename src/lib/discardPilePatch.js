@@ -88,7 +88,6 @@ export const DISCARD_PILE_PATCH = `
 
   // ---- Render fijo (idempotente: repecta al cambiar el conteo O el tamaño) ----
   var lastCount={p:-1,o:-1};
-  var lastSize={p:0,o:0};
   // Las cartas de la mano se encogen cuando no es tu turno: la pila de
   // descartes ha de verse SIEMPRE al tamaño completo de carta de mano, así
   // que cacheamos el tamaño más grande medido y no dejamos que encoja.
@@ -96,16 +95,18 @@ export const DISCARD_PILE_PATCH = `
   function renderPile(side){
     var inB=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
     var hand=document.getElementById('hand_'+side);
-    if(!inB||!hand){ var e0=document.querySelector('.bf-discard-pile'); if(e0)e0.remove(); lastCount[side]=-1; lastSize[side]=0; return; }
+    if(!inB||!hand){ var e0=document.querySelector('.bf-discard-pile'); if(e0)e0.remove(); lastCount[side]=-1; return; }
     var count=ensurePile(side)?G.itemDescarte[side].length:0;
     var cw=0,ch=0;
     var refChip=hand.querySelector('.chip.bf-chip-card')||hand.querySelector('.chip');
-    if(refChip){ var r=refChip.getBoundingClientRect(); if(r.width) cw=Math.round(r.width); if(r.height) ch=Math.round(r.height); }
+    // offsetWidth/offsetHeight = tamaño CSS SIN transform. getBoundingClientRect
+    // incluye el scale del body en móvil/tablet y causaba que la pila saliera
+    // enorme: medía el tamaño ya escalado y el body lo volvía a escalar.
+    if(refChip){ if(refChip.offsetWidth) cw=refChip.offsetWidth; if(refChip.offsetHeight) ch=refChip.offsetHeight; }
     if(cw>maxW)maxW=cw; if(ch>maxH)maxH=ch;
     cw=maxW||cw||80; ch=maxH||ch||110;
-    var sizeKey=cw*1000+ch;
-    if(count===lastCount[side] && sizeKey===lastSize[side]) { var ex=hand.querySelector('.bf-discard-pile'); if(ex) return; }
-    lastCount[side]=count; lastSize[side]=sizeKey;
+    if(count===lastCount[side]) { var ex=hand.querySelector('.bf-discard-pile'); if(ex) return; }
+    lastCount[side]=count;
     var ex=hand.querySelector('.bf-discard-pile'); if(ex)ex.remove();
     var pile=document.createElement('div'); pile.className='bf-discard-pile';
     pile.title='Pila de descartes · '+count+(count===1?' carta':' cartas');
@@ -119,6 +120,7 @@ export const DISCARD_PILE_PATCH = `
     var chips=hand.querySelectorAll('.hand-chips'); var ref=chips[chips.length-1];
     if(ref&&ref.parentNode===hand) hand.insertBefore(pile,ref.nextSibling); else hand.appendChild(pile);
     if(just) window.__bfDiscardJust=null;
+    forceDiscardBack();
   }
 
   // ---- Guardián: fuerza el reverso en la pila de descartes ----
@@ -153,7 +155,6 @@ export const DISCARD_PILE_PATCH = `
       img.style.setProperty('pointer-events','none','important');
     });
   }
-  setInterval(forceDiscardBack,500);
 
   // ---- API para Reanimación Arcana: saca una carta aleatoria del descarte ----
   // (objetos, armas o armaduras — cualquier tipo de carta descartada).
@@ -169,11 +170,12 @@ export const DISCARD_PILE_PATCH = `
     if(!inB){
       lastItems={p:null,o:null}; lastEq={p:null,o:null};
       var el=document.querySelector('.bf-discard-pile'); if(el)el.remove();
-      lastCount={p:-1,o:-1}; lastSize={p:0,o:0}; return;
+      lastCount={p:-1,o:-1}; maxW=0; maxH=0; return;
     }
     var side=mySide();
     try{ diffObjects(side); diffEq(side); }catch(e){}
     renderPile(side);
+    forceDiscardBack();
   }
 
   setInterval(tick,1000);
