@@ -191,7 +191,12 @@ export const DEMO_FLOW_PATCH = `
       btn.id = 'bf-demo-guide-btn';
       btn.style.cssText = 'position:fixed;z-index:99999;display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 13px;border-radius:11px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:12px;letter-spacing:.3px;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 12px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;white-space:nowrap;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
       btn.innerHTML = '<span style="font-size:16px">🃏</span> Conocer las Cartas';
-      btn.onclick = function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas'},'*'); }catch(e){} };
+      // Abrimos la guía en una PESTAÑA NUEVA: así la partida demo se queda
+      // viva en el iframe de la pestaña actual y al cerrar la guía se reanuda
+      // exactamente donde estaba (subasta/equipamiento/combate). Si la
+      // abriéramos en la misma pestaña, Home se desmontaría y el iframe del
+      // juego se recargaría desde la portada al volver — perdiendo la demo.
+      btn.onclick = function(){ try{ window.parent.postMessage({bfOpenGuideTab:true},'*'); }catch(e){} };
       document.body.appendChild(btn);
     }
     // Coloca el botón a la izquierda del badge, centrado en vertical.

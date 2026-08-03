@@ -74,6 +74,7 @@ export default function CardGuide() {
     <div className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/4c66c24cd_generated_image.png")' }}>
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#06040acc]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0a0812dd] via-[#070512bb] to-[#050308ee]" />
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_30%,rgba(80,40,120,.14),transparent_65%)]" />
       <div className="relative z-10 max-w-5xl mx-auto px-4 pb-20">
         <div className="sticky top-0 z-20 -mx-4 mb-6 px-4 py-3 flex items-center gap-3 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg,#1a1430ee,#120e1cee)', backdropFilter: 'blur(12px)' }}>
           <Link to="/cards" className="-ml-1 p-2 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-white/5"><ArrowLeft size={22} /></Link>

@@ -406,6 +406,11 @@ export default function Home() {
         base44.entities.GameLog.create(e.data.bfGameLog).catch(() => {});
       }
       if (e.data && typeof e.data.bfNavigate === 'string') navigate(e.data.bfNavigate);
+      // Botón "Conocer las Cartas" desde la partida demo: abre la guía en una
+      // pestaña nueva para que la demo se quede viva en el iframe actual.
+      if (e.data && e.data.bfOpenGuideTab) {
+        try { window.open('/guiacartas', '_blank', 'noopener'); } catch (e) {}
+      }
       if (e.data && typeof e.data.bfSetLang === 'string') setLang(e.data.bfSetLang);
       // El juego pide el arte de hechizos/objetos para la carta revelada al
       // jugarse: se responde con un mapa nombre → imagen desde la base de datos.
