@@ -76,7 +76,7 @@ export const DEMO_TIPS_PATCH = `
       nodes.push({tip:tip,halo:halo});
     }
   }
-  function hideAll(){nodes.forEach(function(n){n.tip.style.display='none';n.halo.style.display='none';});}
+  function hideAll(){nodes.forEach(function(n){n.tip.style.display='none';n.halo.style.display='none';n.tip.__bfLocked=false;n.tip.__bfX=null;n.tip.__bfY=null;});}
 
   function visible(el){
     if(!el)return false;
@@ -155,6 +155,16 @@ export const DEMO_TIPS_PATCH = `
       // dejamos en su última posición. Solo se ocultan al cambiar de pantalla
       // o al terminar la demo (hideAll). Esto elimina el parpadeo.
       if(!el)return;
+      // Tip ya colocado (mismo ID): posición FIJA. No se recoloca aunque el
+      // elemento se mueva por scroll o re-render. Solo actualiza texto
+      // dinámico y aporta su zona al solape de tips nuevos.
+      if(n.tip.__bfLocked){
+        var ltxt=t.dyn?t.dyn(el):t.txt;
+        if(n.tip.__bfTxt!==ltxt){n.tip.__bfTxt=ltxt;n.tip.querySelector('.bf-tip-txt').innerHTML=ltxt;}
+        if(n.tip.style.display!=='flex')n.tip.style.display='flex';
+        placed.push({x:n.tip.__bfX,y:n.tip.__bfY,w:n.tip.offsetWidth||190,h:n.tip.offsetHeight||62});
+        return;
+      }
       var r=el.getBoundingClientRect();
       // El halo solo se actualiza si cambió de posición (evita reflow).
       var hl=Math.round(r.left-5),ht=Math.round(r.top-5),hw=Math.round(r.width+10),hh=Math.round(r.height+10);
@@ -167,6 +177,7 @@ export const DEMO_TIPS_PATCH = `
       // El texto solo se escribe si cambió (evita parpadeos con el traductor).
       var txt=t.dyn?t.dyn(el):t.txt;
       if(n.tip.__bfId!==t.id||n.tip.__bfTxt!==txt){
+        if(n.tip.__bfId!==t.id){n.tip.__bfLocked=false;}
         n.tip.__bfId=t.id;n.tip.__bfTxt=txt;
         n.tip.querySelector('.bf-tip-txt').innerHTML=txt;
         n.tip.querySelector('.bf-tip-finger').style.display='';
@@ -221,12 +232,10 @@ export const DEMO_TIPS_PATCH = `
       y=Math.round(Math.max(6,y));
       y=resolveOverlap(x,y,w,h,placed);
       placed.push({x:x,y:y,w:w,h:h});
-      // Solo escribe left/top si cambió (evita reflow y parpadeo sub-pixel).
-      if(n.tip.__bfX!==x||n.tip.__bfY!==y){
-        n.tip.__bfX=x;n.tip.__bfY=y;
-        n.tip.style.left=x+'px';
-        n.tip.style.top=y+'px';
-      }
+      n.tip.__bfX=x;n.tip.__bfY=y;
+      n.tip.style.left=x+'px';
+      n.tip.style.top=y+'px';
+      n.tip.__bfLocked=true;
     });
     // Oculta los nodos sobrantes de la pantalla anterior (evita tips huérfanos).
     for(var k=list.length;k<nodes.length;k++){nodes[k].tip.style.display='none';nodes[k].halo.style.display='none';}
