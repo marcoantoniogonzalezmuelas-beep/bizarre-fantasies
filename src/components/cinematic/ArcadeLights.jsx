@@ -60,7 +60,7 @@ export default function ArcadeLights() {
         className="absolute bottom-[6%] left-1/2 -translate-x-1/2 font-mono font-black tracking-[0.3em] text-sm"
         style={{ color: '#ffd24a', textShadow: '0 0 8px #ffd24a, 0 0 16px #ff7a18, 2px 2px 0 #ff2a6d' }}
         animate={{ opacity: [0.4, 1, 0.4, 1, 0.4] }}
-        transition={{ duration: 0.9, repeat: Infinity, ease: 'steps' }}
+        transition={{ duration: 0.9, repeat: Infinity, ease: [0.1, 0, 0.1, 1] }}
       >
         INSERT COIN
       </motion.div>
