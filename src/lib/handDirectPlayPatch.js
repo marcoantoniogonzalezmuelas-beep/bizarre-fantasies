@@ -20,17 +20,10 @@ export const HAND_DIRECT_PLAY_PATCH = `
   var css = ''+
   '.bf-fly-card{position:fixed;z-index:10050;border-radius:12px;background-size:cover;background-position:center;background-color:#07050b;border:2px solid rgba(255,210,74,.85);box-shadow:0 14px 34px rgba(0,0,0,.7),0 0 26px rgba(255,210,74,.5);pointer-events:none;transition:left .72s cubic-bezier(.2,.7,.3,1),top .72s cubic-bezier(.2,.7,.3,1),transform .72s ease,opacity .72s ease;will-change:left,top,transform,opacity}'+
   '.chip.bf-chip-card.bf-chip-no-mana{filter:grayscale(.9) brightness(.5);opacity:.55}'+
-  '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-art-layer,.chip.bf-chip-card.bf-chip-no-mana .bf-chip-fill{filter:grayscale(1) brightness(.45)!important}'+
   '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-play{display:none!important}'+
-  // Oculta el número de carta nativo ("F###") y cualquier texto del chip cuando
-  // no hay maná: solo queda el arte en gris + el candado.
-  '.chip.bf-chip-card.bf-chip-no-mana,.chip.bf-chip-card.bf-chip-no-mana *{font-size:0!important}'+
-  '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-name{display:none!important}'+
-  '.chip.bf-chip-card.bf-chip-no-mana::after{content:"\\1F512";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:26px;z-index:6;filter:drop-shadow(0 2px 5px #000);pointer-events:none}'+
   '.chip.bf-chip-card .bf-chip-play.bf-chip-play-new{background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f)!important;border:2px solid #7c5410!important;color:#3a2600!important;box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)!important;width:40px!important;height:40px!important;font-weight:1000;animation:bfHandPlayPulse 1.8s ease-in-out infinite}'+
   '.chip.bf-chip-card.bf-chip-equip{border:2px solid #5fa8ff!important;box-shadow:0 0 14px rgba(95,168,255,.5),0 4px 12px rgba(0,0,0,.5)!important}'+
   '.chip.bf-chip-card .bf-chip-play.bf-chip-play-new .bf-chip-play-ico{font-size:18px;line-height:1;text-shadow:0 1px 1px rgba(255,255,255,.4)}'+
-  '.chip.bf-chip-card.bf-chip-no-mana .bf-chip-play.bf-chip-play-new{animation:none}'+
   '@keyframes bfHandPlayPulse{0%,100%{box-shadow:0 4px 14px rgba(255,210,74,.55),inset 0 1px 2px rgba(255,255,255,.5)}50%{box-shadow:0 4px 22px rgba(255,210,74,.95),inset 0 1px 2px rgba(255,255,255,.6),0 0 20px rgba(255,210,74,.65)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
