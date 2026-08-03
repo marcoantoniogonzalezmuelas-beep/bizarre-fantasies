@@ -343,6 +343,7 @@ export default function Home() {
   const battleArtRef = useRef(null);
   const abilityAnimRef = useRef(null);
   const avatarListRef = useRef(null);
+  const avatarCatalogRef = useRef(null);
   // Cuando la cinemática de intro se abrió desde "Aprender a jugar" (demo),
   // al cerrarla/saltarla arrancamos automáticamente la demo en el iframe.
   const introAutoDemoRef = useRef(false);
@@ -443,6 +444,9 @@ export default function Home() {
         if (avatarListRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfAvatarMap: avatarListRef.current }, '*');
         }
+        if (avatarCatalogRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*');
+        }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
         if (autoDemoRef.current && e.data.bfScreen === 's-title') {
@@ -498,18 +502,7 @@ export default function Home() {
         if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
         if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
       }
-      // Subida de foto de avatar: el iframe envía un dataURL recortado a
-      // círculo; lo subimos a almacenamiento y devolvemos la URL al iframe.
-      if (e.data && e.data.bfAvatarUpload) {
-        const dataUrl = e.data.bfAvatarUpload;
-        fetch(dataUrl).then(r => r.blob()).then(blob =>
-          base44.integrations.Core.UploadFile({ file: blob })
-        ).then(res => {
-          if (res?.file_url) {
-            iframeRef.current?.contentWindow?.postMessage({ bfAvatarUrl: res.file_url }, '*');
-          }
-        }).catch(() => {});
-      }
+
       if (e.data && e.data.bfGameLog) {
         base44.entities.GameLog.create(e.data.bfGameLog).catch(() => {});
       }
@@ -598,6 +591,11 @@ export default function Home() {
         }
       });
       avatarListRef.current = avatars;
+      // Catálogo de avatares generados por IA para el selector del jugador.
+      base44.entities.AvatarCatalog.list('name', 300).then(cat => {
+        avatarCatalogRef.current = (cat || []).map(a => ({ name: a.name, url: a.url }));
+        try { iframeRef.current?.contentWindow?.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*'); } catch (e) {}
+      }).catch(() => {});
       // Envía los mapas al iframe inmediatamente tras cargar los datos de la
       // BD, sin esperar al siguiente cambio de pantalla del juego. Así los
       // héroes que usen su habilidad justo al empezar la batalla ya tienen
@@ -608,6 +606,7 @@ export default function Home() {
           if (battleArtRef.current) iw.postMessage({ bfBattleArt: battleArtRef.current }, '*');
           if (abilityAnimRef.current) iw.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
           if (avatarListRef.current) iw.postMessage({ bfAvatarMap: avatarListRef.current }, '*');
+          if (avatarCatalogRef.current) iw.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*');
         }
       } catch (e) {}
     }).catch(() => {});

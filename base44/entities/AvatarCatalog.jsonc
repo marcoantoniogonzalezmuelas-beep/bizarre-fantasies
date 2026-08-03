@@ -1,0 +1,18 @@
+{
+  "name": "AvatarCatalog",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del avatar"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL de la imagen del avatar generada por IA"
+    }
+  },
+  "required": [
+    "name",
+    "url"
+  ]
+}
