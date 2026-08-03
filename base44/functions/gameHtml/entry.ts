@@ -606,7 +606,6 @@ function buildArtScript(dbCards) {
         '<div class="bf-bonus-art" style="background-image:url(\\'' + url + '\\')"></div>' +
         '<div class="bf-hero-frame" style="border-radius:11px; z-index:2"></div>' +
         '<div class="bf-bonus-shade"></div>' +
-        '<button class="bf-zoom-btn" onclick="event.stopPropagation();bfZoomBonus(\\'' + safeName + '\\',\\'' + url + '\\')" aria-label="Ampliar">🔍</button>' +
         '<div class="bf-bonus-name">' + name + '</div>';
       chip.parentNode.insertBefore(card, chip.nextSibling);
     });
