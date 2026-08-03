@@ -11,6 +11,7 @@ import Cards from './pages/Cards';
 import CardGuide from './pages/CardGuide';
 import RacesPage from './pages/RacesPage';
 import Ranking from './pages/Ranking';
+import Reglas from './pages/Reglas';
 import EnglishEntry from './pages/EnglishEntry';
 import AdminCards from './pages/AdminCards';
 import FlashNewsAdmin from './pages/FlashNewsAdmin';
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
       <Route path="/guiacartas" element={<CardGuide />} />
       <Route path="/races" element={<RacesPage />} />
       <Route path="/ranking" element={<Ranking />} />
+      <Route path="/reglas" element={<Reglas />} />
       <Route path="/en" element={<EnglishEntry />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
