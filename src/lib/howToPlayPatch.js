@@ -114,6 +114,7 @@ export const HOW_TO_PLAY_PATCH = `
     '<p style="margin:8px 0"><b>⚡ Maná:</b> es una reserva fija para toda la batalla que <b>no se regenera</b>. Recupéralo con el Cristal o el Orbe de Maná.</p>'+
     '<p style="margin:8px 0"><b>🛡️ Armaduras:</b> reducen el daño de golpes, disparos y hechizos. Las <b>elementales</b> anulan por completo su elemento contrario (agua↔fuego, rayo↔agua, hielo↔rayo, fuego↔hielo). La <b>Barrera Arcana</b> protege del daño mágico.</p>'+
     '<p style="margin:8px 0"><b style="color:#ffaa00">⭐ Forma Élite:</b> cuando un héroe cae por primera vez, <b>renace en Élite</b> con parte de su vida y stats mejorados según su raza (los No-muertos renacen con más). Si vuelve a caer, muere de verdad — salvo que uses <b>Pluma Fénix</b> (revive a un héroe) o <b>Ave Fénix</b> (cura a dos héroes a vida completa).</p>'+
+    '<p style="margin:8px 0"><b style="color:#a06bff">♻️ Pila de descartes:</b> cuando un héroe cae, su <b>arma y armadura</b> van a tu pila de descartes (mazo de usados); los <b>objetos consumidos</b> también. La pila se ve junto a tu mano. Con el hechizo <b>Reanimación Arcana</b> recuperas una carta aleatoria de la pila: los objetos vuelven a ser jugables y las armas/armaduras se <b>equipan gratis</b> (sin oro) al jugarlas desde la mano.</p>'+
 
     '<div style="margin:12px 0;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(28,16,46,.8),rgba(12,7,20,.9));border:1px solid rgba(255,210,74,.35)">'+
     '<div class="rb-step-t">✨ Estados de combate</div>'+

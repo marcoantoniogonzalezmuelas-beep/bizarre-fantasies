@@ -50,6 +50,21 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     try { sessionStorage.setItem('bfSignClosed', '1'); } catch (e) {}
   }
 
+  // Oculta el cartel cuando hay un modal abierto en el juego (reglas, razas,
+  // info de héroe…): no debe impedir la lectura del contenido del modal.
+  const [modalOpen, setModalOpen] = useState(false);
+  useEffect(() => {
+    const check = () => {
+      const iframe = document.querySelector('iframe');
+      if (!iframe || !iframe.contentDocument) { setModalOpen(false); return; }
+      const root = iframe.contentDocument.getElementById('modalRoot');
+      if (!root) { setModalOpen(false); return; }
+      setModalOpen(root.children.length > 0);
+    };
+    const iv = setInterval(check, 400);
+    return () => clearInterval(iv);
+  }, []);
+
   // Calcula la posición: debajo del icono "Contacta" del juego (dentro del
   // iframe), salvo que el usuario la haya arrastrado antes (sessionStorage).
   const computePos = useCallback(() => {
@@ -149,7 +164,7 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     e.stopPropagation();
   }
 
-  if (!items.length || closed || !enabled) return null;
+  if (!items.length || closed || !enabled || modalOpen) return null;
   const isEn = getLang() === 'en';
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
