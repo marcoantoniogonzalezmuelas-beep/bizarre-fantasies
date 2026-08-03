@@ -81,6 +81,49 @@ function DecepticonJetTrail({ colors }) {
         animate={{ background: colors.map((c) => `radial-gradient(circle, ${c}88, transparent 70%)`) }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
       />
+
+      {/* Láseres: chorros finos y brillantes que dispara el mecha hacia abajo,
+          con núcleo blanco y halo de color, pulsando como ráfagas. */}
+      {[
+        { dx: -42, tilt: -16, hue: '#ff2a4a', dur: 0.7, delay: 0 },
+        { dx: 0, tilt: 6, hue: '#3cd0ff', dur: 0.9, delay: 0.25 },
+        { dx: 46, tilt: 22, hue: '#9d5bff', dur: 0.8, delay: 0.5 },
+      ].map((l, k) => (
+        <div key={k} className="absolute left-1/2 top-[55%] pointer-events-none" style={{ transform: `translateX(${l.dx}px) rotate(${l.tilt}deg)`, transformOrigin: '50% 0%' }}>
+          {/* Haz principal del láser */}
+          <motion.div
+            className="pointer-events-none rounded-full"
+            style={{ width: 5, height: '90vh', marginLeft: -2.5,
+              background: `linear-gradient(to bottom, #fff 0%, ${l.hue} 18%, ${l.hue} 70%, transparent 100%)`,
+              boxShadow: `0 0 10px ${l.hue}, 0 0 22px ${l.hue}` }}
+            animate={{ opacity: [0, 1, 0.25, 1, 0.15, 0], scaleY: [0.6, 1, 0.9, 1, 0.7, 0.5] }}
+            transition={{ duration: l.dur, repeat: Infinity, ease: 'easeOut', delay: l.delay }}
+          />
+          {/* Halo difuso alrededor del haz */}
+          <motion.div
+            className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-none rounded-full"
+            style={{ width: 26, height: '90vh', filter: 'blur(8px)', mixBlendMode: 'screen',
+              background: `linear-gradient(to bottom, ${l.hue}cc, ${l.hue}55 50%, transparent 100%)` }}
+            animate={{ opacity: [0, 0.8, 0.3, 0.8, 0.2, 0] }}
+            transition={{ duration: l.dur, repeat: Infinity, ease: 'easeOut', delay: l.delay }}
+          />
+          {/* Fogonazo en la boca del cañón (origen) */}
+          <motion.div
+            className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+            style={{ width: 22, height: 22, background: `radial-gradient(circle, #fff, ${l.hue} 55%, transparent 75%)`, filter: 'blur(2px)' }}
+            animate={{ opacity: [0, 1, 0.2, 1, 0.1, 0], scale: [0.5, 1.4, 0.8, 1.3, 0.6, 0.4] }}
+            transition={{ duration: l.dur, repeat: Infinity, ease: 'easeOut', delay: l.delay }}
+          />
+          {/* Impacto en el suelo */}
+          <motion.div
+            className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
+            style={{ bottom: '-2vh', width: 90, height: 46, filter: 'blur(8px)', mixBlendMode: 'screen',
+              background: `radial-gradient(ellipse 60% 80% at 50% 50%, ${l.hue}cc, ${l.hue}33 55%, transparent 75%)` }}
+            animate={{ opacity: [0, 0.9, 0.2, 0.85, 0.1, 0], scale: [0.5, 1.15, 0.8, 1.1, 0.6, 0.4] }}
+            transition={{ duration: l.dur, repeat: Infinity, ease: 'easeOut', delay: l.delay }}
+          />
+        </div>
+      ))}
     </motion.div>
   );
 }
