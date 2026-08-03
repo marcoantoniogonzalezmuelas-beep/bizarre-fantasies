@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useCutoutSrc } from '@/lib/useCutoutSrc';
+import { preloadCutout } from '@/lib/useCutoutSrc';
 
 const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/97f6581ac_generated_image.png';
 
@@ -53,7 +53,8 @@ export default function MetalLights() {
 
 // Punkito volando soltando grandes chorros de luz coloreados hacia abajo.
 function PunkitoJets() {
-  const cut = useCutoutSrc(PUNKITO_IMG);
+  const cut = PUNKITO_IMG;
+  preloadCutout(PUNKITO_IMG);
   const jets = useMemo(
     () => Array.from({ length: 5 }, (_, i) => ({
       hue: ['#ffd27a', '#ff9a6a', '#8fb6ff', '#c08bff', '#7ad9c0'][i % 5],
