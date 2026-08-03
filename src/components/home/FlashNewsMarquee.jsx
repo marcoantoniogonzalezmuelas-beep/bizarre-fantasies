@@ -119,18 +119,26 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
 
   // Recoloca al montar/cambiar noticias y al rotar; repite unas veces hasta
   // que el icono "Contacta" del juego aparezca (carga asíncrona del iframe).
+  // En móvil/tablet: calcula la posición UNA vez y la congela (cartel fijo).
   useEffect(() => {
     computePos();
+    if (isMobile) {
+      let n = 0;
+      const poll = setInterval(() => { computePos(); if (++n > 14) clearInterval(poll); }, 800);
+      return () => clearInterval(poll);
+    }
     const onResize = () => computePos();
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', () => setTimeout(computePos, 300));
     let n = 0;
     const poll = setInterval(() => { computePos(); if (++n > 14) clearInterval(poll); }, 800);
     return () => { window.removeEventListener('resize', onResize); clearInterval(poll); };
-  }, [computePos, items]);
+  }, [computePos, items, isMobile]);
 
-  // Arrastrar (mouse + tactil)
+  // Arrastrar (mouse + tactil) — solo en escritorio. En móvil/tablet el
+  // cartel es FIJO: no se arrastra, solo adapta su tamaño con el pellizco.
   useEffect(() => {
+    if (isMobile) return;
     function point(e) { return e.touches && e.touches[0] ? e.touches[0] : e; }
     function onMove(e) {
       if (!drag.current || !signRef.current) return;
@@ -179,13 +187,17 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   // Transform base (sin zoom de pellizco): escala igual que el iframe del juego.
   // Con pellizco (pz>1): translada y escala igual que el body del juego, de
   // modo que el cartel crece desde su ancla a la vez que el contenido del iframe.
+  // Móvil/tablet: el cartel es FIJO — solo escala su tamaño con el pellizco
+  // (sin translación, la posición top-left no se mueve). Escritorio: arrastre
+  // + zoom con translación como antes.
   const baseTransform = `scale(${scale})`;
+  const mobileTransform = `scale(${scale * pz})`;
   const zoomedTransform = pos
     ? `translate(${(pinchTx || 0) * scale + (pz - 1) * pos.left}px, ${(pinchTy || 0) * scale + (pz - 1) * pos.top}px) scale(${pz * scale})`
     : baseTransform;
   const baseStyle = {
     ...(isMobile ? {} : { touchAction: 'none', cursor: 'grab' }),
-    transform: isMobile ? baseTransform : (pz !== 1 ? zoomedTransform : baseTransform),
+    transform: isMobile ? mobileTransform : (pz !== 1 ? zoomedTransform : baseTransform),
     transformOrigin: 'top left',
     ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}),
   };
