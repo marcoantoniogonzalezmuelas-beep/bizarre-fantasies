@@ -1,13 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useCutoutSrc } from '@/lib/useCutoutSrc';
 
-const PUNKITO_IMG = 'https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/28702748f_punkito_student.png';
+const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/97f6581ac_generated_image.png';
 
 // Luces del dron, pero con Punkito (la mascota del juego) volando en su lugar:
 // Punkito recorre la escena en arco dentro de su burbuja circular dorada
 // dejando estelas de luz mientras dos focos lo siguen y proyectan pools.
 export default function PunkitoLights() {
   const colors = ['#ffd24a', '#ffe27a', '#ff9a6a', '#b13bff', '#05d9ff'];
+  const cut = useCutoutSrc(PUNKITO_IMG);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
@@ -40,25 +42,21 @@ export default function PunkitoLights() {
         ))}
       </div>
 
-      {/* Punkito volando en burbuja circular dorada */}
+      {/* Punkito volando (imagen recortada sobre fondo negro) */}
       <motion.div
-        className="absolute top-[8%] left-0"
-        animate={{ x: ['12vw', '72vw', '42vw', '18vw', '12vw'], y: [0, -22, 16, -12, 0], rotate: [-6, 6, -3, 5, -6] }}
+        className="absolute top-[10%] left-0"
+        animate={{ x: ['10vw', '72vw', '40vw', '16vw', '10vw'], y: [0, -24, 14, -10, 0], rotate: [-7, 7, -3, 5, -7] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       >
-        <div className="relative" style={{ width: 96, height: 96 }}>
-          <div className="absolute inset-0 rounded-full overflow-hidden"
-            style={{ background: 'radial-gradient(circle at 42% 32%, rgba(48,34,84,.95), rgba(14,9,28,.98))', border: '3px solid rgba(255,210,74,.8)', boxShadow: '0 8px 18px rgba(0,0,0,.6), 0 0 18px rgba(255,210,74,.5)' }}>
-            <img src={PUNKITO_IMG} alt="Punkito" draggable={false}
-              className="w-full h-full object-contain" style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,.5))' }} />
-          </div>
-          {/* Chispa decorativa */}
-          <motion.span className="absolute -top-1 -right-1 rounded-full"
-            style={{ width: 12, height: 12, background: 'radial-gradient(circle, #fff6c8 0%, #ffd24a 45%, transparent 70%)' }}
-            animate={{ opacity: [0.4, 1, 0.4], scale: [0.7, 1.3, 0.7] }}
-            transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+        {cut && (
+          <motion.img
+            src={cut} alt="Punkito" draggable={false}
+            className="relative select-none pointer-events-none"
+            style={{ width: 110, height: 'auto', filter: 'drop-shadow(0 8px 14px rgba(0,0,0,.7))' }}
+            animate={{ scale: [1, 1.06, 0.97, 1.04, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
-        </div>
+        )}
         {/* Estela de brasas mágicas */}
         {Array.from({ length: 7 }).map((_, i) => (
           <motion.span key={i}
