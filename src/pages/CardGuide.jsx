@@ -42,6 +42,7 @@ const fade = (delay = 0) => ({
 export default function CardGuide() {
   useDesktopZoom();
   const [cards, setCards] = useState([]);
+  const [showBackMenu, setShowBackMenu] = useState(false);
   useEffect(() => { base44.entities.Card.list('number', 300).then(c => setCards(c || [])).catch(() => setCards([])); }, []);
   const isToken = (c) => String(c.card_id || '').startsWith('tk_');
   const hasDb = cards.length > 0;
@@ -77,7 +78,24 @@ export default function CardGuide() {
       <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_30%,rgba(80,40,120,.14),transparent_65%)]" />
       <div className="relative z-10 max-w-5xl mx-auto px-4 pb-20">
         <div className="sticky top-0 z-20 -mx-4 mb-6 px-4 py-3 flex items-center gap-3 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg,#1a1430ee,#120e1cee)', backdropFilter: 'blur(12px)' }}>
-          <Link to="/cards" className="-ml-1 p-2 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-white/5"><ArrowLeft size={22} /></Link>
+          <div className="relative">
+            <button type="button" onClick={() => setShowBackMenu(v => !v)} className="-ml-1 p-2 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-white/5 flex items-center" aria-label={t('Volver')}>
+              <ArrowLeft size={22} />
+            </button>
+            {showBackMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowBackMenu(false)} />
+                <div className="absolute top-full mt-2 left-0 z-50 w-48 rounded-xl border border-[#3c3158] bg-[#15102aee] backdrop-blur-md shadow-xl py-1">
+                  <Link to="/" onClick={() => setShowBackMenu(false)} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-[#e6dff2] hover:bg-white/5 hover:text-[#FFD24A]">
+                    <ArrowLeft size={16} /> {t('Al Oráculo')}
+                  </Link>
+                  <Link to="/?demo=1" onClick={() => setShowBackMenu(false)} className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold text-[#e6dff2] hover:bg-white/5 hover:text-[#FFD24A]">
+                    <ArrowLeft size={16} /> {t('Partida demo')}
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
           <BookOpen className="text-[#FFD24A]" size={22} />
           <h1 className="font-heading font-extrabold text-xl md:text-2xl text-[#FFD24A] tracking-wider">{t('Conocer las Cartas')}</h1>
         </div>

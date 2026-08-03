@@ -317,6 +317,15 @@ export default function Home() {
         autoDemoRef.current = true;
       }
     } catch (e) {}
+    // También acepta ?demo=1 desde la URL (más fiable que sessionStorage:
+    // lo usa el menú "Volver a la partida demo" de la guía de cartas).
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('demo') === '1') {
+        autoDemoRef.current = true;
+        window.history.replaceState({}, '', '/');
+      }
+    } catch (e) {}
   }, []);
 
   const iframeRef = useRef(null);

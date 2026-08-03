@@ -117,6 +117,9 @@ export const DEMO_TIPS_PATCH = `
     // transform computado es 'none' (body sin transformar).
     var bt=getComputedStyle(document.body).transform;
     if(bt&&bt!=='none')return;
+    // Durante la resolución de la fase de subasta (coach mostrando el resultado)
+    // el flujo de demo activa esta pausa: los tips no cuadran en esa pantalla.
+    if(window.__bfDemoTipsPause){hideAll();return;}
     var active=document.querySelector('.screen.active');
     if(active&&active.id==='s-title') window.__bfDemoOn=false;
     var demo=false;

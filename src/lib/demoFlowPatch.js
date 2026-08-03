@@ -49,6 +49,8 @@ export const DEMO_FLOW_PATCH = `
 
   // ---- Paso a paso de la subasta ----
   function demoBidStep(){
+    // Resolución de la puja: pausa los tips (no cuadran sobre el resultado).
+    window.__bfDemoTipsPause=true;
     try{ aiDecision('p'); aiDecision('o'); tryResolveRound(); }catch(e){}
     var r=explainBidResult();
     coach('PUJA RESUELTA · '+r+'  ➜  Pulsa "Seguir" para avanzar.');
@@ -56,6 +58,8 @@ export const DEMO_FLOW_PATCH = `
   }
 
   function demoAdvanceStep(){
+    // Nueva fase de puja: reanuda los tips.
+    window.__bfDemoTipsPause=false;
     try{ advancePhase(); }catch(e){}
     if(curScreen()==='s-equip'){ window.__bfDemoEquipShow(); return; }
     var msg;
@@ -71,6 +75,8 @@ export const DEMO_FLOW_PATCH = `
   // ---- Equipamiento: la IA Azul ('p') también se equipa (finishAuction solo
   // equipa a 'o' cuando !oppHuman). Mostramos el resumen de ambos lados. ----
   function demoEquipShow(){
+    // Pantalla de equipamiento: reanuda los tips (tips de s-equip).
+    window.__bfDemoTipsPause=false;
     try{
       var pUnequipped=(G.team.p||[]).every(function(h){ return h&&!h.mwep&&!h.rwep&&!h.armor; });
       if(pUnequipped && G.team.p && G.team.p.length) aiEquip('p');
@@ -113,7 +119,7 @@ export const DEMO_FLOW_PATCH = `
 
   // ---- Reescribe demoAuction: arranca la subasta de verdad ----
   window.demoAuction=function(){
-    G.demo=true; G.demoExample=true; G.oppHuman=false; G.online=false; NET.role='local';
+    G.demo=true; G.demoExample=true; G.oppHuman=false; G.online=false; NET.role='local'; window.__bfDemoTipsPause=false;
     // Tips SOLO en la demo: activamos el flag dedicado y reseteamos los tips
     // cerrados en la demo anterior para que vuelvan a aparecer.
     window.__bfDemoOn=true;
@@ -181,37 +187,18 @@ export const DEMO_FLOW_PATCH = `
     if (!show){ if(btn) btn.remove(); return; }
     var badge = document.querySelector('#s-recruit .phase-badge');
     if(!badge){ if(btn) btn.remove(); return; }
-    // Mientras haya zoom de pellizco, no reposita (se mueve con el body).
-    var bt = getComputedStyle(document.body).transform;
-    if (bt && bt !== 'none') return;
-    var br = badge.getBoundingClientRect();
-    if (br.width < 4) { if(btn) btn.remove(); return; }
-    if (!btn){
+    // El botón va DENTRO del DOM, junto al badge de fase — no como un overlay
+    // flotante. Así se mueve con la página naturalmente (scroll, zoom, re-
+    // render) sin tener que recalcular su posición. Es un botón más.
+    if (!btn || !badge.parentNode || badge.parentNode !== btn.parentNode){
+      if(btn) btn.remove();
       btn = document.createElement('div');
       btn.id = 'bf-demo-guide-btn';
-      btn.style.cssText = 'position:fixed;z-index:99999;display:flex;align-items:center;gap:7px;cursor:pointer;padding:8px 13px;border-radius:11px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:12px;letter-spacing:.3px;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 12px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;white-space:nowrap;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
-      btn.innerHTML = '<span style="font-size:16px">🃏</span> Conocer las Cartas';
-      btn.onclick = function(){ try{ window.parent.postMessage({bfNavigate:'/guiacartas',fromDemo:true},'*'); }catch(e){} };
-      document.body.appendChild(btn);
+      btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:9px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:11px;letter-spacing:.3px;box-shadow:0 4px 14px rgba(0,0,0,.5),0 0 10px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;white-space:nowrap;flex-shrink:0;margin-left:10px;vertical-align:middle;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
+      btn.innerHTML = '<span style="font-size:14px">🃏</span> Conocer las Cartas';
+      btn.onclick = function(e){ e.preventDefault(); e.stopPropagation(); try{ window.parent.postMessage({bfNavigate:'/guiacartas',fromDemo:true},'*'); }catch(err){} };
+      badge.parentNode.insertBefore(btn, badge.nextSibling);
     }
-    // Espera unos ticks a que el badge se asiente (el juego re-renderiza
-    // constantemente) antes de la PRIMERA colocación. Después queda FIJO.
-    if (btn.dataset.bfPlaced !== '1') {
-      btn.dataset.bfTicks = String(Number(btn.dataset.bfTicks || 0) + 1);
-      if (Number(btn.dataset.bfTicks) < 3) return;
-    }
-    if (btn.dataset.bfPlaced === '1') return;
-    var bw = btn.offsetWidth || 160, bh = btn.offsetHeight || 40;
-    // Altura: centro vertical del badge (Cuerpo a Cuerpo / tipo de subasta).
-    var cy = br.top + br.height / 2;
-    var y = Math.max(6, Math.min(window.innerHeight - bh - 6, cy - bh / 2));
-    // Horizontal: a la izquierda del badge si cabe; si no, a la derecha.
-    var x = br.left - bw - 10;
-    if (x < 6) x = br.right + 10;
-    x = Math.max(6, Math.min(window.innerWidth - bw - 6, x));
-    btn.style.left = x + 'px';
-    btn.style.top = y + 'px';
-    btn.dataset.bfPlaced = '1';
   }
   if(!window.__bfDemoGuideSty){
     window.__bfDemoGuideSty=true;
