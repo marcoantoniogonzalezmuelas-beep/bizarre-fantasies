@@ -457,7 +457,7 @@ export default function Home() {
   // iframe para que el rectángulo de batalla muestre el arte de combate en vez
   // del retrato, cambiando a la versión élite cuando el héroe entra en modo élite.
   useEffect(() => {
-    base44.entities.Card.filter({ category: { $in: ['hero', 'bizarro'] } }, 'number', 300).then(cards => {
+    base44.entities.Card.list('number', 300).then(cards => {
       const map = {};
       (cards || []).forEach(c => {
         if (c.card_id && c.battle_art_url) {

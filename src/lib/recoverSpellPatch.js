@@ -16,6 +16,43 @@ export const RECOVER_SPELL_PATCH = `
 
   var CINE_ART = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/41f320812_generated_image.png';
 
+  // Recorta el fondo negro de la imagen (lo vuelve transparente con canvas)
+  // para que solo quede la criatura — mismo tratamiento que Transformer/Fénix.
+  var CUT={};
+  function cutout(url){
+    if(!url)return;
+    if(CUT[url])return CUT[url];
+    if(CUT[url]===false)return;
+    CUT[url]=false;
+    var img=new Image();img.crossOrigin='anonymous';
+    img.onload=function(){
+      try{
+        var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+        var x=c.getContext('2d');x.drawImage(img,0,0);
+        var d=x.getImageData(0,0,c.width,c.height),p=d.data;
+        for(var i=0;i<p.length;i+=4){
+          var m=Math.max(p[i],p[i+1],p[i+2]);
+          if(m<32)p[i+3]=0;
+          else if(m<90)p[i+3]=Math.round(p[i+3]*(m-32)/58);
+        }
+        x.putImageData(d,0,0);
+        CUT[url]=c.toDataURL('image/png');
+      }catch(e){CUT[url]=false;}
+    };
+    img.onerror=function(){CUT[url]=false;};
+    img.src=url;
+  }
+  cutout(CINE_ART);
+  // El arte se actualiza desde la BD (Oráculo) via postMessage: si el admin
+  // cambia la ability_anim_url de la carta sp_recover, se usa esa URL con
+  // recorte automático del fondo negro.
+  window.addEventListener('message',function(e){
+    if(e.data&&e.data.bfAbilityAnim&&typeof e.data.bfAbilityAnim==='object'){
+      var ent=e.data.bfAbilityAnim['sp_recover'];
+      if(ent&&ent.base){ CINE_ART=ent.base; cutout(CINE_ART); }
+    }
+  });
+
   var css = ''+
   '#bf-rec-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfRcIn .3s ease-out}'+
   '#bf-rec-cine.bf-rc-out{transition:opacity .4s;opacity:0}'+
@@ -51,7 +88,7 @@ export const RECOVER_SPELL_PATCH = `
     for (var i=0;i<20;i++) html+='<span class="bf-rc-ember" style="left:'+(4+Math.random()*92)+'%;--dx:'+((Math.random()*120-60).toFixed(0))+'px;animation-delay:'+(Math.random()*1.4).toFixed(2)+'s;width:'+(5+Math.random()*7)+'px;height:'+(5+Math.random()*7)+'px"></span>';
     for (var c=0;c<10;c++) html+='<span class="bf-rc-chain" style="left:'+(8+Math.random()*84)+'%;top:'+(5+Math.random()*45)+'%;animation-delay:'+(Math.random()*1).toFixed(2)+'s">⛓</span>';
     for (var s=0;s<14;s++) html+='<span class="bf-rc-spark" style="left:'+(4+Math.random()*92)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
-    html+='<img class="bf-rc-img" src="'+CINE_ART+'" alt="">';
+    html+='<img class="bf-rc-img" src="'+(CUT[CINE_ART]||CINE_ART)+'" alt="">';
     html+='<div class="bf-rc-ttl">¡REANIMACIÓN ARCANA!</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
