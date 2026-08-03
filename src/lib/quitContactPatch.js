@@ -37,14 +37,44 @@ export function buildQuitContactPatch(texts) {
     '.bf-contact a{color:#ff7ad9;font-weight:900;text-decoration:none;text-shadow:0 0 8px rgba(255,122,217,.6);}',
     '.bf-contact a:hover{color:#ffd24a;}',
     '.bf-contact-body{background:linear-gradient(135deg,#1a0f2e,#2a1040)!important;}',
-    // Modal de "Salir" en móvil/tablet: sin fondo negro (solo el cuadro),
-    // y posicionado junto al botón Salir (arriba a la derecha) en vez de
-    // centrado en pantalla.
-    '@media (max-width:1024px){#modalRoot .mo{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;padding:0!important}#modalRoot .mo>.mb{position:fixed!important;top:74px!important;right:10px!important;left:auto!important;max-width:min(340px,calc(100vw - 20px))!important;width:auto!important;max-height:72vh!important;margin:0!important;transform:none!important}.bf-confirm-overlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}.bf-confirm-box{position:relative!important;top:64px!important;right:10px!important;margin:0!important;max-width:min(320px,calc(100vw - 20px))!important}}'
+    // Modal de "Salir" en móvil/tablet: fondo con gradiente radial sutil
+    // (oscuro junto al cuadro, casi transparente lejos) para dar contraste
+    // sin negro pesado; cuadro posicionado junto al botón Salir (arriba dcha).
+    '@media (max-width:1024px){#modalRoot .mo{background:radial-gradient(circle at 88% 12%,rgba(10,7,20,.5),rgba(8,5,14,.12) 70%)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;padding:0!important}#modalRoot .mo>.mb{position:fixed!important;top:74px!important;right:10px!important;left:auto!important;max-width:min(340px,calc(100vw - 20px))!important;width:auto!important;max-height:72vh!important;margin:0!important;transform:none!important}.bf-confirm-overlay{background:radial-gradient(circle at 88% 12%,rgba(10,7,20,.5),rgba(8,5,14,.12) 70%)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}.bf-confirm-box{position:relative!important;top:64px!important;right:10px!important;margin:0!important;max-width:min(320px,calc(100vw - 20px))!important}}'
   ].join('');
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
   if (isTouch) style.textContent += '#homeBtn{font-size:28px!important;padding:16px 28px!important;min-height:54px!important;line-height:1!important;}';
   document.head.appendChild(style);
+
+  // Scroll automático visual al modal de salir: cuando aparece el overlay
+  // (o el modal nativo), desplaza la vista suavemente hacia arriba para
+  // que el cuadro quede visible junto al botón Salir.
+  function scrollToModal(el){
+    try{
+      var r=el.getBoundingClientRect();
+      // Lleva el borde superior del cuadro a ~8px del top del viewport.
+      var dy=r.top-8;
+      if(Math.abs(dy)>4){
+        window.scrollTo({top:Math.max(0,window.scrollY+dy),behavior:'smooth'});
+        try{window.parent.scrollTo({top:Math.max(0,window.parent.scrollY+dy),behavior:'smooth'});}catch(e){}
+      }
+    }catch(e){}
+  }
+  function watchModal(){
+    var last=null;
+    setInterval(function(){
+      var ov=document.querySelector('.bf-confirm-overlay');
+      if(!ov){ov=document.querySelector('#modalRoot .mo');}
+      if(ov&&ov!==last){
+        last=ov;
+        var box=ov.querySelector('.bf-confirm-box')||ov.querySelector('.mb')||ov;
+        // Pequeño retardo para que el CSS de posicionamiento aplique.
+        setTimeout(function(){scrollToModal(box);},60);
+      }else if(!ov){last=null;}
+    },250);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchModal);
+  else watchModal();
 
   function inject(){
     var title = document.getElementById('s-title');
