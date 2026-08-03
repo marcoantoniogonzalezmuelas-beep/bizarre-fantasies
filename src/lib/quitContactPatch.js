@@ -83,9 +83,10 @@ export function buildQuitContactPatch(texts) {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchModal);
   else watchModal();
 
-  // Móvil/tablet: zona táctil invisible ampliada (~22px) alrededor del botón
-  // "Salir" para que sea más fácil acertar sin aumentar su tamaño visual. La
-  // zona es transparente, sigue al botón al reposicionarse y reenvía el toque.
+  // Móvil/tablet: zona táctil invisible muy ampliada (~48px) alrededor del
+  // botón "Salir" para que sea muy fácil acertar al pulsar sin apuntar con
+  // precisión. La zona es transparente, sigue al botón al reposicionarse y
+  // reenvía el toque.
   function patchHomeHit(){
     if (!isTouch) return;
     var btn = document.getElementById('homeBtn');
@@ -97,7 +98,10 @@ export function buildQuitContactPatch(texts) {
     function sync(){
       var r = btn.getBoundingClientRect();
       if (!r.width) return;
-      var pad = 22;
+      // Zona táctil muy ampliada (~48px) alrededor del botón: bastante mayor
+      // que el botón visible para que acertar al pulsar "Salir" sea muy fácil
+      // en móvil sin need de apuntar con precisión.
+      var pad = 48;
       var s = hit.style;
       s.position = 'fixed';
       s.width = (r.width + pad*2) + 'px';
@@ -114,7 +118,7 @@ export function buildQuitContactPatch(texts) {
     window.addEventListener('resize', sync);
     window.addEventListener('orientationchange', function(){ setTimeout(sync, 300); });
     window.addEventListener('scroll', sync, true);
-    setInterval(sync, 700);
+    setInterval(sync, 400);
   }
   var hitEl = null;
   var hitStyle = document.createElement('style');
