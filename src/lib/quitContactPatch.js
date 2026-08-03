@@ -44,8 +44,11 @@ export function buildQuitContactPatch(texts) {
     '@keyframes bfQuitZoom{from{opacity:0;transform:scale(.9) translateY(-6px);}to{opacity:1;transform:scale(1) translateY(0);}}',
     '.bf-confirm-overlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}',
     '.bf-confirm-box{pointer-events:auto!important;position:relative!important;top:70px!important;right:12px!important;margin:0!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;animation:bfQuitZoom .18s ease-out!important;}',
-    '#modalRoot .mo{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important;}',
-    '#modalRoot .mo>.mb{pointer-events:auto!important;position:fixed!important;top:74px!important;right:12px!important;left:auto!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;margin:0!important;transform:none!important;animation:bfQuitZoom .18s ease-out!important;}'
+    // Solo el modal de "Salir" (marcado con .bf-quit) se reencuadra como
+    // ventanita compacta junto al botón. Los demás modales del juego
+    // (Aprende a jugar, Razas, info de héroe…) siguen abriéndose centrados.
+    '#modalRoot .mo.bf-quit{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important;}',
+    '#modalRoot .mo.bf-quit>.mb{pointer-events:auto!important;position:fixed!important;top:74px!important;right:12px!important;left:auto!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;margin:0!important;transform:none!important;animation:bfQuitZoom .18s ease-out!important;}'
   ].join('');
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
   if (isTouch) style.textContent += '#homeBtn{font-size:28px!important;padding:16px 28px!important;min-height:54px!important;line-height:1!important;}';
@@ -65,15 +68,41 @@ export function buildQuitContactPatch(texts) {
       }
     }catch(e){}
   }
+  // Marca el modal de "Salir" (abierto por quitToHome) con la clase bf-quit,
+  // para que el reencuadre compacto solo le afecte a él. Los demás modales
+  // del juego no llevan la clase y se abren centrados como siempre. El
+  // observer se dispara como microtask antes de pintar → sin parpadeo.
+  function markQuitModal(){
+    var root=document.getElementById('modalRoot'); if(!root)return;
+    var mo=root.querySelector('.mo');
+    if(mo && !mo.classList.contains('bf-quit')){
+      if(/Salir de la partida|Salir al inicio/i.test(mo.textContent||'')){
+        mo.classList.add('bf-quit');
+      }
+    }
+  }
+  function setupQuitMark(){
+    var root=document.getElementById('modalRoot'); if(!root)return false;
+    new MutationObserver(markQuitModal).observe(root,{childList:true,subtree:true});
+    return true;
+  }
+  function whenRoot(){
+    if(setupQuitMark()) return;
+    new MutationObserver(function(){ if(setupQuitMark()) this.disconnect(); }).observe(document.documentElement,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',whenRoot);
+  else whenRoot();
+
   function watchModal(){
     var last=null;
     setInterval(function(){
-      var ov=document.querySelector('.bf-confirm-overlay');
-      if(!ov){ov=document.querySelector('#modalRoot .mo');}
+      // Solo el modal de Salir (.bf-quit) dispara el scroll y oculta la zona
+      // táctil del botón. Los demás modales no se ven afectados.
+      var ov=document.querySelector('#modalRoot .mo.bf-quit');
       if(ov&&ov!==last){
         last=ov;
         if(hitEl) hitEl.style.display='none';
-        var box=ov.querySelector('.bf-confirm-box')||ov.querySelector('.mb')||ov;
+        var box=ov.querySelector('.mb')||ov;
         // Pequeño retardo para que el CSS de posicionamiento aplique.
         setTimeout(function(){scrollToModal(box);},60);
       }else if(!ov){last=null; if(hitEl) hitEl.style.display='';}
