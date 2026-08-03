@@ -8,6 +8,7 @@ import ExpansionSlide from '@/components/cinematic/ExpansionSlide';
 import MetalLights from '@/components/cinematic/MetalLights';
 import DrunkLights from '@/components/cinematic/DrunkLights';
 import ComedyLights from '@/components/cinematic/ComedyLights';
+import DroneLights from '@/components/cinematic/DroneLights';
 import { INTRO_MUSIC_URL } from '@/lib/introMusicUrl';
 import { t } from '@/lib/i18n';
 import useStageZoom from '@/lib/useStageZoom';
@@ -68,6 +69,8 @@ const BATU = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e2
 const NIX = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/16ec909b5_generated_image.png';   // Nixara
 const REV_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/114c5e05f_generated_image.png'; // Reverendo Sapis (élite)
 const ELD_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/15cedc23d_generated_image.png';  // Elderbar (élite)
+const PATRON_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/b27a3b9dd_generated_image.png'; // Patrón (Flecha Infalible · élite)
+const BUTIFARRA_ELITE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d556c5ef7_generated_image.png'; // La Butifarra (Gases Tóxicos · élite)
 
 function buildScenes() {
   return [
@@ -80,7 +83,7 @@ function buildScenes() {
     { clash: { left: PLUMA, right: SOL_ELITE, accent: '#ffb347', kind: 'fire', swap: true, motion: 'spin' }, kicker: t('Renacimiento'), title: t('Pluma Fénix renace'), text: t('De una sola pluma ardiente renace un fénix joven: pequeño, veloz, envuelto en brasas. Se cuela entre los pliegues del manto de Solenna y le picotea los tobillos con picotazos de fuego. Solenna sonríe, invoca su Resurrección y lo envuelve todo en una luz dorada — pero el fénix ya está en otro lado, y ríe con voz de cría.'), dur: 12 },
     { expansion: { ducks: [KIL, KIL_ELITE], others: [ZAR, COF], accent: '#b13bff' }, kicker: t('Expansiones'), title: t('Expansiones temáticas'), text: t('Nuevas eras y cartas que decidirá la comunidad. Cada expansión trae su temática, sus razas y sus héroes nuevos — y tú decides qué mundo llega después.'), dur: 12 },
     { versus: { left: [CLINT, FUTBOLISTA, GAMER], right: [ALFREDINHO, AJEDRECISTA, NAR], accent: '#ffd24a' }, kicker: t('Equipos'), title: t('Tres contra tres'), text: t('Cada equipo se compone de tres héroes: uno cuerpo a cuerpo, uno a distancia y uno mágico. Reúne al tuyo, enfréntalo al rival y que el bizarro caiga del lado contrario.'), dur: 11 },
-    { clash: { left: CHIVO, right: UND, accent: '#ffd24a', kind: 'clash', swap: false, motion: 'float' }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 9 },
+    { clash: { left: PATRON_ELITE, right: BUTIFARRA_ELITE, accent: '#ffd24a', kind: 'clash', swap: false, motion: 'float', fx: 'drone' }, kicker: t('Bizarre Fantasies'), title: t('¿Te atreves a entrar?'), text: '', isEnd: true, dur: 9 },
   ];
 }
 
@@ -141,6 +144,7 @@ export default function IntroCinematic({ onClose }) {
       {cur.clash && cur.clash.fx === 'metal' && <MetalLights />}
       {cur.clash && cur.clash.fx === 'drunk' && <DrunkLights />}
       {cur.clash && cur.clash.fx === 'comedy' && <ComedyLights />}
+      {cur.clash && cur.clash.fx === 'drone' && <DroneLights />}
       {cur.versus && <TeamVersus left={cur.versus.left} right={cur.versus.right} accent={cur.versus.accent} />}
       {cur.expansion && <ExpansionSlide ducks={cur.expansion.ducks} others={cur.expansion.others} accent={cur.expansion.accent} />}
 
