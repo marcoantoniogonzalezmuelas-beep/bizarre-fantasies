@@ -89,9 +89,13 @@ export const DEMO_TIPS_PATCH = `
   var curScreen='';
   var curIdx=0;
   var autoTimer=null;
-  var DURATION=5000;
+  var DURATION=10000;
   var lastTxt='';
   var lastDots='';
+  // Registro de tips ya mostrados: cada tip se ve UNA sola vez por sesión.
+  // Al volver de la resolución de subasta a la pantalla de subastas no se
+  // vuelven a enseñar los tips ya vistos.
+  var seenTips={};
 
   function visible(el){
     if(!el)return false;
@@ -150,10 +154,20 @@ export const DEMO_TIPS_PATCH = `
     tipEl.style.top=Math.round(y)+'px';
   }
 
+  // Avanza hasta el primer tip no visto de la pantalla actual (o lo deja
+  // donde está si ya está sobre uno no visto).
+  function firstUnseenIdx(list,from){
+    if(!list)return -1;
+    for(var i=from;i<list.length;i++){ if(!seenTips[list[i].id]) return i; }
+    return -1;
+  }
+
   function showTip(animate){
     var list=TIPS[curScreen];
     if(!list||curIdx>=list.length){hideTip();return;}
     var t=list[curIdx];
+    // Marca este tip como visto para que no se repita tras la resolución.
+    seenTips[t.id]=true;
     var el=findEl(t);
     var txt=t.dyn&&el?t.dyn(el):(t.txt||'');
 
@@ -221,14 +235,17 @@ export const DEMO_TIPS_PATCH = `
     if(!active)return;
     var sid=active.id;
     if(sid!==curScreen){
-      curScreen=sid;curIdx=0;lastTxt='';lastDots='';
-      if(TIPS[sid]&&TIPS[sid].length)showTip(true);else hideTip();
+      curScreen=sid;lastTxt='';lastDots='';
+      // Empieza en el primer tip de la pantalla que no se haya mostrado aún.
+      var start=firstUnseenIdx(TIPS[sid]||[],0);
+      curIdx=start<0?(TIPS[sid]&&TIPS[sid].length?TIPS[sid].length:0):start;
+      if(TIPS[sid]&&TIPS[sid].length&&start>=0)showTip(true);else hideTip();
     }else{
       repositionTip();
     }
   }
 
-  window.__bfResetDemoTips=function(){curScreen='';curIdx=0;lastTxt='';lastDots='';hideTip();};
+  window.__bfResetDemoTips=function(){curScreen='';curIdx=0;lastTxt='';lastDots='';seenTips={};hideTip();};
   setInterval(tick,350);
 })();
 </script>
