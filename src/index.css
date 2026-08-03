@@ -105,15 +105,7 @@
   html.bf-dz .grid.grid-cols-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Podio del Top Ranking: efectos siempre visibles (aura, brillo barrido, flote) */
-@keyframes bfPodiumFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes bfPodiumGlow { 0%,100% { box-shadow: 0 8px 22px rgba(0,0,0,.55), 0 0 12px var(--pod-glow); } 50% { box-shadow: 0 8px 22px rgba(0,0,0,.55), 0 0 30px var(--pod-glow), 0 0 52px var(--pod-glow); } }
-@keyframes bfPodiumShine { 0%, 55% { transform: translateX(-130%) skewX(-18deg); } 85%, 100% { transform: translateX(230%) skewX(-18deg); } }
-@keyframes bfPodiumSpark { 0% { opacity: 0; transform: translateY(0) scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-46px) scale(1); } }
-.bf-podium-card { animation: bfPodiumGlow 2.6s ease-in-out infinite; }
-.bf-podium-first { animation: bfPodiumFloat 3.2s ease-in-out infinite; }
-.bf-podium-shine { position: absolute; top: -12%; bottom: -12%; width: 42%; left: 0; background: linear-gradient(105deg, transparent, rgba(255,255,255,.38), transparent); animation: bfPodiumShine 3.4s ease-in-out infinite; pointer-events: none; }
-.bf-podium-spark { position: absolute; bottom: 18%; width: 5px; height: 5px; border-radius: 50%; background: var(--pod-glow); box-shadow: 0 0 8px var(--pod-glow); animation: bfPodiumSpark 2.4s ease-out infinite; pointer-events: none; }
+/* Podio del Top Ranking: brillo de borde por medalla (oro/plata/bronce) — ver RankPodium.jsx */
 
 @keyframes bfFoilShift { 0% { background-position: 0% 0%; } 100% { background-position: 300% 300%; } }
 @keyframes bfFoilShine { 0% { background-position: 120% 0%; } 100% { background-position: -40% 0%; } }

@@ -491,7 +491,24 @@ export default function Home() {
   useEffect(() => {
     const onResult = (e) => {
       if (e.data && e.data.bfMatchResult) {
-        base44.entities.MatchResult.create(e.data.bfMatchResult).catch(() => {});
+        const r = e.data.bfMatchResult;
+        base44.entities.MatchResult.create(r).catch(() => {});
+        // Asocia el avatar al nick en la BD (PlayerAvatar) para que el ranking
+        // lo muestre siempre, independientemente del dispositivo o partida.
+        if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
+        if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
+      }
+      // Subida de foto de avatar: el iframe envía un dataURL recortado a
+      // círculo; lo subimos a almacenamiento y devolvemos la URL al iframe.
+      if (e.data && e.data.bfAvatarUpload) {
+        const dataUrl = e.data.bfAvatarUpload;
+        fetch(dataUrl).then(r => r.blob()).then(blob =>
+          base44.integrations.Core.UploadFile({ file: blob })
+        ).then(res => {
+          if (res?.file_url) {
+            iframeRef.current?.contentWindow?.postMessage({ bfAvatarUrl: res.file_url }, '*');
+          }
+        }).catch(() => {});
       }
       if (e.data && e.data.bfGameLog) {
         base44.entities.GameLog.create(e.data.bfGameLog).catch(() => {});

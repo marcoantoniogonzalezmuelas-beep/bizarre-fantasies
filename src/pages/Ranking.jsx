@@ -28,9 +28,18 @@ function top(map, n = 10, extraMap) {
 export default function Ranking() {
   const [results, setResults] = useState(null);
   const [artMap, setArtMap] = useState({});
+  const [playerAvatars, setPlayerAvatars] = useState({});
 
   useEffect(() => {
     base44.entities.MatchResult.list('-created_date', 500).then(setResults);
+    // Avatares de jugadores asociados al nick en la BD: el más reciente por nick.
+    base44.entities.PlayerAvatar.list('-created_date', 500).then(avatars => {
+      const m = {};
+      (avatars || []).forEach(a => {
+        if (a.nick && a.avatar_url && !m[a.nick]) m[a.nick] = { art: a.avatar_url };
+      });
+      setPlayerAvatars(m);
+    }).catch(() => {});
     // Arte de cada héroe (por nombre) para el podio ilustrado de los tops.
     base44.entities.Card.list('number', 300).then(cards => {
       const m = {};
@@ -51,7 +60,9 @@ export default function Ranking() {
   // Mapa nick → avatar: se construye con el avatar MÁS RECIENTE de cada nick
   // (results viene ordenado por -created_date). Así, aunque un jugador cambie
   // de avatar entre partidas, el ranking muestra siempre el último que usó.
-  const playerArtMap = {};
+  // PlayerAvatar (BD) tiene prioridad; luego el avatar guardado en el propio
+  // MatchResult; y por último el fallback de IAs para partidas antiguas.
+  const playerArtMap = { ...(playerAvatars || {}) };
   (results || []).forEach(r => {
     wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
     losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;

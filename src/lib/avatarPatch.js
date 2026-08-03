@@ -1,10 +1,10 @@
-// Parche inyectado en el iframe: selector de AVATAR de héroe junto al nick.
+// Parche inyectado en el iframe: selector de AVATAR por foto subida por el jugador.
 //
-// El jugador elige un avatar de héroe de la BD (el arte de carta se envía desde
-// Home.jsx via postMessage). El avatar se guarda en localStorage y se muestra:
-//  - Junto al nick en la barra de marcador (matchScorePatch)
-//  - En la pantalla de resultado (matchModePatch)
-//  - Se sincroniza al rival en multijugador (welcome + mensaje propio)
+// El jugador sube cualquier foto; se recorta a círculo (256×256) en canvas y se
+// envía al padre (Home.jsx), que la sube a almacenamiento y devuelve la URL.
+// El avatar se guarda en localStorage (sesión actual) y se asocia al nick en la
+// BD (PlayerAvatar) al terminar la partida, para que el Top Ranking lo muestre
+// siempre — independientemente del dispositivo o de que el jugador lo cambie.
 export const AVATAR_PATCH = `
 <script>
 (function(){
@@ -14,17 +14,7 @@ export const AVATAR_PATCH = `
   var isEn = function(){ try { return localStorage.getItem('bfLang') === 'en'; } catch(e) { return false; } };
   var L = function(es, en){ return isEn() ? en : es; };
 
-  // ---- Lista de héroes recibida del padre (arte de la BD) ----
-  var HEROES = [];
-  window.addEventListener('message', function(e){
-    if (e.data && Array.isArray(e.data.bfAvatarMap)) {
-      HEROES = e.data.bfAvatarMap;
-      window.__bfAvatarHeroes = HEROES;
-      renderPickers();
-    }
-  });
-
-  // ---- Avatar guardado ----
+  // ---- Avatar guardado (sesión actual) ----
   var KEY = 'bfMyAvatar';
   function loadAv(){ try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e) {} return null; }
   function saveAv(av){ try { localStorage.setItem(KEY, JSON.stringify(av)); } catch(e) {} window.bfMyAvatar = av; }
@@ -38,58 +28,63 @@ export const AVATAR_PATCH = `
     '.bf-av-pick:hover{transform:scale(1.1);border-color:#ffd24a}',
     '.bf-av-pick img{width:100%;height:100%;object-fit:cover}',
     '.bf-av-pick .bf-av-ph{color:#8a7ca0;font-size:16px;line-height:1}',
-    '.bf-av-modal{position:fixed;inset:0;z-index:100060;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.8)}',
-    '.bf-av-modal-inner{background:linear-gradient(180deg,#1b1430,#0a0712);border:2px solid rgba(255,210,74,.4);border-radius:16px;padding:18px;max-width:min(90vw,460px);max-height:80vh;overflow-y:auto}',
-    '.bf-av-modal-title{font-family:"Cinzel",serif;font-weight:800;font-size:17px;color:#ffd24a;text-align:center;margin-bottom:14px}',
-    '.bf-av-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:10px}',
-    '.bf-av-opt{cursor:pointer;border-radius:50%;overflow:hidden;border:2px solid transparent;width:52px;height:52px;margin:0 auto;transition:transform .12s ease,border-color .12s ease}',
-    '.bf-av-opt:hover{transform:scale(1.12)}',
-    '.bf-av-opt.active{border-color:#ffd24a;box-shadow:0 0 12px rgba(255,210,74,.5)}',
-    '.bf-av-opt img{width:100%;height:100%;object-fit:cover}',
-    '.bf-av-opt-name{font-size:8px;color:#cfc6dd;text-align:center;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px;margin:0 auto}',
-    '.bf-av-opt-wrap{display:flex;flex-direction:column;align-items:center}',
     '.bf-av-score{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,210,74,.5);overflow:hidden;flex-shrink:0;object-fit:cover}',
     '@media(max-width:600px){.bf-av-score{width:17px;height:17px}}',
     '.bf-av-result{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,210,74,.5);overflow:hidden;margin:0 auto 6px;object-fit:cover;display:block}',
   ].join('');
   document.head.appendChild(st);
 
-  function defaultAv(){ return HEROES.length ? HEROES[Math.floor(Math.random()*HEROES.length)] : null; }
-
-  // ---- Modal selector de avatar ----
-  function openPicker(onSelect) {
-    if (!HEROES.length) return;
-    var modal = document.createElement('div');
-    modal.className = 'bf-av-modal';
-    var cur = window.bfMyAvatar;
-    modal.innerHTML = '<div class="bf-av-modal-inner"><div class="bf-av-modal-title">' + L('Elige tu avatar','Choose your avatar') + '</div><div class="bf-av-grid"></div></div>';
-    var grid = modal.querySelector('.bf-av-grid');
-    HEROES.forEach(function(h){
-      var wrap = document.createElement('div');
-      wrap.className = 'bf-av-opt-wrap';
-      var opt = document.createElement('div');
-      opt.className = 'bf-av-opt' + (cur && cur.id === h.id ? ' active' : '');
-      opt.innerHTML = '<img src="' + h.url + '" loading="lazy">';
-      var nm = document.createElement('div');
-      nm.className = 'bf-av-opt-name';
-      nm.textContent = h.name;
-      opt.onclick = function(){
-        grid.querySelectorAll('.bf-av-opt').forEach(function(o){ o.classList.remove('active'); });
-        opt.classList.add('active');
-        onSelect(h);
-        setTimeout(function(){ if (modal.parentNode) modal.parentNode.removeChild(modal); }, 120);
+  // ---- Subida de foto: recorta a círculo en canvas y la envía al padre ----
+  function uploadPhoto() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var img = new Image();
+        img.onload = function() {
+          // Recorta a cuadrado centrado (cover) y escala a 256×256
+          var canvas = document.createElement('canvas');
+          canvas.width = 256; canvas.height = 256;
+          var ctx = canvas.getContext('2d');
+          var minDim = Math.min(img.width, img.height);
+          var sx = (img.width - minDim) / 2;
+          var sy = (img.height - minDim) / 2;
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, 256, 256);
+          canvas.toBlob(function(blob) {
+            if (!blob) return;
+            var r2 = new FileReader();
+            r2.onload = function(ev2) {
+              // Estado de carga: muestra "…" mientras se sube
+              document.querySelectorAll('.bf-av-pick').forEach(function(b){ b.innerHTML = '<span class="bf-av-ph">…</span>'; });
+              window.parent.postMessage({ bfAvatarUpload: ev2.target.result }, '*');
+            };
+            r2.readAsDataURL(blob);
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = ev.target.result;
       };
-      wrap.appendChild(opt);
-      wrap.appendChild(nm);
-      grid.appendChild(wrap);
-    });
-    modal.addEventListener('click', function(e){ if (e.target === modal) { modal.parentNode.removeChild(modal); } });
-    document.body.appendChild(modal);
+      reader.readAsDataURL(file);
+    };
+    input.click();
   }
+
+  // ---- Recibe la URL del avatar subido desde el padre ----
+  window.addEventListener('message', function(e){
+    if (e.data && typeof e.data.bfAvatarUrl === 'string') {
+      var url = e.data.bfAvatarUrl;
+      saveAv({ url: url });
+      document.querySelectorAll('.bf-av-pick').forEach(function(btn){ btn.innerHTML = '<img src="' + url + '">'; });
+      injectScoreAvatars();
+      injectResultAvatars();
+    }
+  });
 
   // ---- Botón de avatar junto a los campos de nick ----
   function renderPickers() {
-    if (!HEROES.length) return;
     ['p1name','hname','jname'].forEach(function(id){
       var input = document.getElementById(id);
       if (!input || input.dataset.bfAv === '1') return;
@@ -100,17 +95,15 @@ export const AVATAR_PATCH = `
       var btn = document.createElement('div');
       btn.className = 'bf-av-pick';
       function refresh(){
-        var av = window.bfMyAvatar || defaultAv();
-        if (av) btn.innerHTML = '<img src="' + av.url + '">';
+        var av = window.bfMyAvatar;
+        if (av && av.url) btn.innerHTML = '<img src="' + av.url + '">';
         else btn.innerHTML = '<span class="bf-av-ph">?</span>';
       }
       refresh();
-      btn.onclick = function(){
-        openPicker(function(av){
-          saveAv(av);
-          refresh();
-          injectScoreAvatars();
-        });
+      btn.title = L('Sube tu foto de avatar', 'Upload your avatar photo');
+      btn.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        uploadPhoto();
       };
       row.insertBefore(btn, row.firstChild);
     });
