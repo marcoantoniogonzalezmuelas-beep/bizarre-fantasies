@@ -147,11 +147,20 @@ export const DEMO_TIPS_PATCH = `
           el=cands[c];break;
         }
       }
-      if(!el){n.tip.style.display='none';n.halo.style.display='none';return;}
+      // Si el elemento no se encuentra en este tick (el juego re-renderiza
+      // el DOM constantemente durante la demo), NO ocultamos el tip: lo
+      // dejamos en su última posición. Solo se ocultan al cambiar de pantalla
+      // o al terminar la demo (hideAll). Esto elimina el parpadeo.
+      if(!el)return;
       var r=el.getBoundingClientRect();
-      n.halo.style.display='block';
-      n.halo.style.left=(r.left-5)+'px';n.halo.style.top=(r.top-5)+'px';
-      n.halo.style.width=(r.width+10)+'px';n.halo.style.height=(r.height+10)+'px';
+      // El halo solo se actualiza si cambió de posición (evita reflow).
+      var hl=Math.round(r.left-5),ht=Math.round(r.top-5),hw=Math.round(r.width+10),hh=Math.round(r.height+10);
+      if(n.halo.__bfL!==hl||n.halo.__bfT!==ht||n.halo.__bfW!==hw||n.halo.__bfH!==hh){
+        n.halo.__bfL=hl;n.halo.__bfT=ht;n.halo.__bfW=hw;n.halo.__bfH=hh;
+        n.halo.style.display='block';
+        n.halo.style.left=hl+'px';n.halo.style.top=ht+'px';
+        n.halo.style.width=hw+'px';n.halo.style.height=hh+'px';
+      }
       // El texto solo se escribe si cambió (evita parpadeos con el traductor).
       var txt=t.dyn?t.dyn(el):t.txt;
       if(n.tip.__bfId!==t.id||n.tip.__bfTxt!==txt){
@@ -159,18 +168,20 @@ export const DEMO_TIPS_PATCH = `
         n.tip.querySelector('.bf-tip-txt').innerHTML=txt;
         n.tip.querySelector('.bf-tip-finger').style.display='';
       }
-      n.tip.style.display='flex';
+      if(n.tip.style.display!=='flex')n.tip.style.display='flex';
       var finger=n.tip.querySelector('.bf-tip-finger');
       var w=n.tip.offsetWidth||190,h=n.tip.offsetHeight||62,x,y;
-      n.tip.className='bf-tip';
+      // Evita resetear className cada tick: solo cambia la clase de orientación
+      // si es distinta a la anterior (elimina reflujo y parpadeo).
+      var placeCls='bf-tip-col';
       if(t.place==='over'){
         // Centrado SOBRE el elemento (cartas grandes): no tapa nada de alrededor.
-        n.tip.classList.add('bf-tip-col');finger.textContent='';finger.style.display='none';
+        placeCls='bf-tip-col';finger.textContent='';finger.style.display='none';
         x=r.left+r.width/2-w/2;
         y=Math.max(6,Math.min(window.innerHeight-h-6,r.top+r.height/2-h/2));
       }else if(t.place==='left'){
         // A la izquierda del elemento, centrado en vertical.
-        n.tip.classList.add('bf-tip-row');
+        placeCls='bf-tip-row';
         finger.textContent='👉';
         finger.style.setProperty('--px','6px');finger.style.setProperty('--py','0px');
         x=r.left-w-10;
@@ -178,7 +189,7 @@ export const DEMO_TIPS_PATCH = `
       }else if(t.place==='side'){
         // A un lado del elemento, centrado en vertical: nunca lo tapa.
         var right=r.right+10+w<window.innerWidth-6;
-        n.tip.classList.add(right?'bf-tip-rowr':'bf-tip-row');
+        placeCls=right?'bf-tip-rowr':'bf-tip-row';
         finger.textContent=right?'👈':'👉';
         finger.style.setProperty('--px',right?'-6px':'6px');finger.style.setProperty('--py','0px');
         x=right?r.right+10:r.left-w-10;
@@ -186,24 +197,33 @@ export const DEMO_TIPS_PATCH = `
       }else if(t.place==='below'){
         // SIEMPRE debajo del elemento: no tapa lo que hay encima (p. ej. el
         // bonificador de la ronda).
-        n.tip.classList.add('bf-tip-colr');finger.textContent='👆';
+        placeCls='bf-tip-colr';finger.textContent='👆';
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','-7px');
         x=r.left+r.width/2-w/2;y=r.bottom+8;
       }else if(r.top-h-10>4){
-        n.tip.classList.add('bf-tip-col');finger.textContent='👇';
+        placeCls='bf-tip-col';finger.textContent='👇';
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','7px');
         x=r.left+r.width/2-w/2;y=r.top-h-8;
       }else{
-        n.tip.classList.add('bf-tip-colr');finger.textContent='👆';
+        placeCls='bf-tip-colr';finger.textContent='👆';
         finger.style.setProperty('--px','0px');finger.style.setProperty('--py','-7px');
         x=r.left+r.width/2-w/2;y=r.bottom+8;
       }
-      x=Math.max(6,Math.min(window.innerWidth-w-6,x));
-      y=Math.max(6,y);
+      // Solo actualiza la clase de orientación si cambió (evita reflujo).
+      if(n.tip.__bfPlaceCls!==placeCls){
+        n.tip.__bfPlaceCls=placeCls;
+        n.tip.className='bf-tip '+placeCls;
+      }
+      x=Math.round(Math.max(6,Math.min(window.innerWidth-w-6,x)));
+      y=Math.round(Math.max(6,y));
       y=resolveOverlap(x,y,w,h,placed);
       placed.push({x:x,y:y,w:w,h:h});
-      n.tip.style.left=x+'px';
-      n.tip.style.top=y+'px';
+      // Solo escribe left/top si cambió (evita reflow y parpadeo sub-pixel).
+      if(n.tip.__bfX!==x||n.tip.__bfY!==y){
+        n.tip.__bfX=x;n.tip.__bfY=y;
+        n.tip.style.left=x+'px';
+        n.tip.style.top=y+'px';
+      }
     });
     // Oculta los nodos sobrantes de la pantalla anterior (evita tips huérfanos).
     for(var k=list.length;k<nodes.length;k++){nodes[k].tip.style.display='none';nodes[k].halo.style.display='none';}
