@@ -55,7 +55,7 @@ function DecepticonJetTrail({ colors }) {
   return (
     <motion.div
       className="absolute top-[6%] left-0"
-      animate={{ x: ['12vw', '74vw', '40vw', '16vw', '12vw'], y: [0, -18, 12, -10, 0], rotate: [-8, 8, -4, 5, -8] }}
+      animate={{ left: ['12%', '74%', '40%', '16%', '12%'], y: [0, -18, 12, -10, 0], rotate: [-8, 8, -4, 5, -8] }}
       transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
     >
       {/* Estela de propulsores magenta/cian */}

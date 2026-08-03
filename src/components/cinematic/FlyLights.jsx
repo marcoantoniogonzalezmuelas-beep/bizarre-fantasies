@@ -12,8 +12,8 @@ export default function FlyLights() {
   const colors = useMemo(() => ['#7cff5a', '#ffd24a', '#05d9ff', '#b13bff'], []);
 
   // Posiciones aproximadas de los rostros de los dos héroes en BattleClash.
-  const leftFace = { x: '26vw', y: '30vh' };
-  const rightFace = { x: '68vw', y: '30vh' };
+  const leftFace = { x: '26%', y: '30%' };
+  const rightFace = { x: '68%', y: '30%' };
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[3]">
@@ -55,8 +55,8 @@ export default function FlyLights() {
         className="absolute pointer-events-none"
         style={{ x: 0, y: 0 }}
         animate={{
-          x: [leftFace.x, '46vw', rightFace.x, '52vw', leftFace.x],
-          y: [leftFace.y, '22vh', rightFace.y, '26vh', leftFace.y],
+          left: [leftFace.x, '46%', rightFace.x, '52%', leftFace.x],
+          top: [leftFace.y, '22%', rightFace.y, '26%', leftFace.y],
           rotate: [-12, 8, -6, 10, -12],
         }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}

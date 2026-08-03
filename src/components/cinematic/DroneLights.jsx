@@ -55,7 +55,7 @@ function DroneFlyer({ colors }) {
   return (
     <motion.div
       className="absolute top-[7%] left-0"
-      animate={{ x: ['10vw', '78vw', '46vw', '14vw', '10vw'], y: [0, -14, 10, -8, 0], rotate: [-6, 6, -3, 4, -6] }}
+      animate={{ left: ['10%', '78%', '46%', '14%', '10%'], y: [0, -14, 10, -8, 0], rotate: [-6, 6, -3, 4, -6] }}
       transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
     >
       {cut && (

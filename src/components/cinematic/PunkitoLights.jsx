@@ -45,7 +45,7 @@ export default function PunkitoLights() {
       {/* Pollito volando desde abajo con vuelo muy irregular (zigzag caótico) */}
       <motion.div
         className="absolute bottom-[8%] left-0"
-        animate={{ x: ['12vw', '64vw', '22vw', '50vw', '8vw', '58vw', '12vw'], y: [0, -120, 40, -180, 20, -90, 0], rotate: [-12, 14, -6, 18, -8, 9, -12] }}
+        animate={{ left: ['12%', '64%', '22%', '50%', '8%', '58%', '12%'], y: [0, -120, 40, -180, 20, -90, 0], rotate: [-12, 14, -6, 18, -8, 9, -12] }}
         transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
       >
         {cut && (

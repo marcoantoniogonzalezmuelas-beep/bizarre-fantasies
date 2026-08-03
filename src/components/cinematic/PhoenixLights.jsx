@@ -45,7 +45,7 @@ export default function PhoenixLights() {
       {/* Ave fénix volando en arco con halo ardiente */}
       <motion.div
         className="absolute top-[8%] left-0"
-        animate={{ x: ['12vw', '74vw', '40vw', '18vw', '12vw'], y: [0, -22, 16, -12, 0], rotate: [-8, 6, -4, 5, -8] }}
+        animate={{ left: ['12%', '74%', '40%', '18%', '12%'], y: [0, -22, 16, -12, 0], rotate: [-8, 6, -4, 5, -8] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       >
         {cut && (

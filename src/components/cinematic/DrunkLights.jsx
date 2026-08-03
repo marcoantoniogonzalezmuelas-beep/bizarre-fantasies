@@ -107,7 +107,7 @@ function BeerJugFlyer() {
   })), []);
   return (
     <motion.div className="absolute top-[8%] left-0 z-[2]"
-      animate={{ x: ['12vw', '66vw', '34vw', '58vw', '20vw', '48vw', '12vw'], y: [0, -90, 60, -30, 80, -50, 0], rotate: [-8, 10, -4, 7, -6, 5, -8] }}
+      animate={{ left: ['12%', '66%', '34%', '58%', '20%', '48%', '12%'], y: [0, -90, 60, -30, 80, -50, 0], rotate: [-8, 10, -4, 7, -6, 5, -8] }}
       transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}>
       {/* Chorros de luz dorada que caen desde la jarra */}
       {jets.map((j, k) => (

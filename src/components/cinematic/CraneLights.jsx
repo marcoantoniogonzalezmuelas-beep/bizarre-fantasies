@@ -64,7 +64,7 @@ export default function CraneLights() {
       {/* Samurái volando desde abajo con su katana brillante, vuelo irregular */}
       <motion.div
         className="absolute bottom-[6%] left-0"
-        animate={{ x: ['14vw', '58vw', '24vw', '48vw', '16vw', '40vw', '14vw'], y: [0, -140, 30, -90, 20, -60, 0], rotate: [-6, 9, -3, 12, -5, 6, -6] }}
+        animate={{ left: ['14%', '58%', '24%', '48%', '16%', '40%', '14%'], y: [0, -140, 30, -90, 20, -60, 0], rotate: [-6, 9, -3, 12, -5, 6, -6] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       >
         {cut && (

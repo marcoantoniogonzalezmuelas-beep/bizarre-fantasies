@@ -159,7 +159,7 @@ function DonutFlyer({ accent }) {
   return (
     <motion.div
       className="absolute top-[10%] left-0 pointer-events-none z-[2]"
-      animate={{ x: ['14vw', '70vw', '38vw', '20vw', '14vw'], y: [0, -28, 18, -14, 0], rotate: [-10, 10, -5, 7, -10] }}
+      animate={{ left: ['14%', '70%', '38%', '20%', '14%'], y: [0, -28, 18, -14, 0], rotate: [-10, 10, -5, 7, -10] }}
       transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
     >
       {/* Conos de luz que caen del donut */}
