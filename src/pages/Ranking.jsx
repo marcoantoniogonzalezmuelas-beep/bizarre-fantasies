@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Crown, Swords, Skull, Cross, Flame } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
 import { t } from '@/lib/i18n';
@@ -114,12 +115,12 @@ export default function Ranking() {
         ) : (
           <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <RankList title={t('Mejores jugadores')} icon="👑" rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
+              <RankList title={t('Mejores jugadores')} icon={Crown} rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
             </div>
-            <RankList title={t('Héroes más victoriosos')} icon="⚔️" rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
-            <RankList title={t('Héroes más derrotados')} icon="💀" rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
-            <RankList title={t('Héroes más veces caídos')} icon="⚰️" rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" artMap={artMap} />
-            <RankList title={t('Renaceres Élite')} icon="🔥" rows={top(heroElites, 8)} valueLabel={t('renaceres')} accent="#ffa94a" empty={t('Ningún héroe ha renacido en su forma Élite aún.')} artMap={artMap} />
+            <RankList title={t('Héroes más victoriosos')} icon={Swords} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
+            <RankList title={t('Héroes más derrotados')} icon={Skull} rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
+            <RankList title={t('Héroes más veces caídos')} icon={Cross} rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" artMap={artMap} />
+            <RankList title={t('Renaceres Élite')} icon={Flame} rows={top(heroElites, 8)} valueLabel={t('renaceres')} accent="#ffa94a" empty={t('Ningún héroe ha renacido en su forma Élite aún.')} artMap={artMap} />
           </div>
         )}
       </div>
