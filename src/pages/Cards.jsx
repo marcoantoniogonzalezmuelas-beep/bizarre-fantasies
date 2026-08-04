@@ -54,6 +54,7 @@ const normalizeHero = (card) => {
     ...card,
     id: card.card_id,
     num: card.number,
+    name: en.name || card.name,
     title: en.title || card.title,
     eCc: card.elite_cc,
     eAd: card.elite_ad,
