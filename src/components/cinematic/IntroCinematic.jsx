@@ -144,7 +144,7 @@ export default function IntroCinematic({ onClose }) {
     <div className="fixed inset-0 z-[200000] bg-black overflow-hidden select-none">
       {/* Escenario de escritorio (1200px) escalado en móvil con zoom de pellizco.
           En escritorio rellena el overlay (absolute inset-0). */}
-      <div ref={IS_MOBILE ? stageRef : null} className={IS_MOBILE ? 'absolute left-0 top-0 bg-black' : 'absolute inset-0'}>
+      <div ref={IS_MOBILE ? stageRef : null} className={IS_MOBILE ? 'absolute left-0 top-0 bg-black overflow-hidden' : 'absolute inset-0'} style={IS_MOBILE ? { willChange: 'transform', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' } : undefined}>
       {/* Choque bizarro entre animaciones 3D reales del juego (todas las escenas) */}
       {cur.clash && <BattleClash left={cur.clash.left} right={cur.clash.right} accent={cur.clash.accent} kind={cur.clash.kind} swap={cur.clash.swap} motion={cur.clash.motion} />}
       {cur.clash && cur.clash.fx === 'metal' && <MetalLights />}

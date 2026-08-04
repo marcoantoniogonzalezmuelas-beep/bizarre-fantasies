@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 // Escala un "escenario" de ancho/alto fijos (desktop) para que QUEPE ENTERO en
 // el viewport (contain), con letterboxing y centrado. El usuario puede pellizcar
@@ -46,7 +46,7 @@ export default function useStageZoom(stageWidth = 1200, stageHeight) {
     pan.current.y = Math.max(-maxY, Math.min(maxY, pan.current.y));
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.style.width = stageWidth + 'px';
