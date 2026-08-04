@@ -1,0 +1,24 @@
+{
+  "name": "PlayerAiProgress",
+  "type": "object",
+  "properties": {
+    "nick": {
+      "type": "string",
+      "description": "Nick del jugador"
+    },
+    "level_id": {
+      "type": "string",
+      "description": "ID del nivel de IA derrotado (novice, berserker, strategist, nemesis)"
+    },
+    "wins": {
+      "type": "number",
+      "description": "Victorias del jugador contra este nivel de IA",
+      "default": 0
+    }
+  },
+  "required": [
+    "nick",
+    "level_id",
+    "wins"
+  ]
+}

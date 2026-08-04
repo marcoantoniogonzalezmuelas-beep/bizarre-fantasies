@@ -30,8 +30,30 @@ export const AI_LEVEL_PATCH = `
   var KEY = 'bfAiLevel';
   function getLevelId(){ try { return localStorage.getItem(KEY) || 'novice'; } catch(e) { return 'novice'; } }
   function getMeta(){ var id = getLevelId(); return LEVELS.find(function(l){ return l.id === id; }) || LEVELS[0]; }
-  function getWins(levelId){ try { return parseInt(localStorage.getItem('bfAiWins_' + levelId) || '0', 10); } catch(e) { return 0; } }
-  function addWin(levelId){ var w = getWins(levelId) + 1; try { localStorage.setItem('bfAiWins_' + levelId, String(w)); } catch(e) {} return w; }
+  // Victorias guardadas en la BD por nick (recibidas del padre): persistentes
+  // entre dispositivos. localStorage sirve de caché inmediata y fallback.
+  window.__bfAiWinsDb = {};
+  function getCurrentNick(){
+    try {
+      var ids = ['p1name','hname','jname'];
+      for (var k = 0; k < ids.length; k++) { var el = document.getElementById(ids[k]); if (el && el.value && el.value.trim()) return el.value.trim(); }
+      var n = localStorage.getItem('bfMyNick'); if (n) return n;
+    } catch(e) {}
+    return '';
+  }
+  function getWins(levelId){
+    var lsW = 0; try { lsW = parseInt(localStorage.getItem('bfAiWins_' + levelId) || '0', 10); } catch(e) {}
+    var nick = getCurrentNick(); var dbW = 0;
+    if (nick && window.__bfAiWinsDb[nick]) dbW = window.__bfAiWinsDb[nick][levelId] || 0;
+    return Math.max(lsW, dbW);
+  }
+  function addWin(levelId){
+    var w = getWins(levelId) + 1;
+    try { localStorage.setItem('bfAiWins_' + levelId, String(w)); } catch(e) {}
+    var nick = getCurrentNick();
+    if (nick) { window.__bfAiWinsDb[nick] = window.__bfAiWinsDb[nick] || {}; window.__bfAiWinsDb[nick][levelId] = w; }
+    return w;
+  }
   function isUnlocked(lvl){ if (!lvl || lvl.unlockReq === 0) return true; return getWins(lvl.prevId) >= lvl.unlockReq; }
 
   function setLevel(id){
@@ -62,6 +84,12 @@ export const AI_LEVEL_PATCH = `
   window.__bfAiLevels = LEVELS;
   window.__bfAiGetWins = getWins;
   window.__bfAiIsUnlocked = isUnlocked;
+
+  // Recibe del padre el mapa de victorias por nick (desde la BD) para que los
+  // desbloqueos de niveles funcionen entre dispositivos, no solo en este.
+  window.addEventListener('message', function(e){
+    if (e.data && e.data.bfAiWins && typeof e.data.bfAiWins === 'object') window.__bfAiWinsDb = e.data.bfAiWins;
+  });
 
   // ---- CSS ----
   var st = document.createElement('style');

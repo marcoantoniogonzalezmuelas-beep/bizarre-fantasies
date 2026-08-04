@@ -42,7 +42,8 @@ export const MATCH_RESULT_PATCH = `
         winner_avatar:winnerSide==='p'?pAv:oAv,
         loser_avatar:loserSide==='p'?pAv:oAv,
         winner_heroes:heroList(G.team&&G.team[winnerSide]),
-        loser_heroes:heroList(G.team&&G.team[loserSide])
+        loser_heroes:heroList(G.team&&G.team[loserSide]),
+        ai_level:(window.__bfAiLevelMeta&&window.__bfAiLevelMeta.id)||''
       }},'*');
     }catch(e){}
   }

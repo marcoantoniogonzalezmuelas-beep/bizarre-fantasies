@@ -16,6 +16,10 @@
         "ia"
       ]
     },
+    "ai_level": {
+      "type": "string",
+      "description": "ID del nivel de IA derrotado (novice, berserker, strategist, nemesis) cuando mode=ia"
+    },
     "winner_is_ai": {
       "type": "boolean",
       "default": false

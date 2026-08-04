@@ -345,6 +345,7 @@ export default function Home() {
   const avatarListRef = useRef(null);
   const avatarCatalogRef = useRef(null);
   const playerAvatarsRef = useRef(null);
+  const aiWinsRef = useRef({});
   // Cuando la cinemática de intro se abrió desde "Aprender a jugar" (demo),
   // al cerrarla/saltarla arrancamos automáticamente la demo en el iframe.
   const introAutoDemoRef = useRef(false);
@@ -451,6 +452,9 @@ export default function Home() {
         if (playerAvatarsRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfPlayerAvatars: playerAvatarsRef.current }, '*');
         }
+        if (aiWinsRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfAiWins: aiWinsRef.current }, '*');
+        }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
         if (autoDemoRef.current && e.data.bfScreen === 's-title') {
@@ -497,6 +501,23 @@ export default function Home() {
   // Guarda el resultado de cada partida y atiende la navegación pedida por el
   // botón "Top Ranking" del menú del juego.
   useEffect(() => {
+    // Persiste en la BD las victorias del jugador contra cada nivel de IA,
+    // asociadas a su nick (para subir de nivel entre dispositivos).
+    const upsertAiWin = async (nick, levelId) => {
+      if (!base44.entities || !base44.entities.PlayerAiProgress) return;
+      try {
+        const existing = await base44.entities.PlayerAiProgress.filter({ nick, level_id: levelId }, '-created_date', 1);
+        if (existing && existing.length) {
+          await base44.entities.PlayerAiProgress.update(existing[0].id, { wins: (existing[0].wins || 0) + 1 });
+        } else {
+          await base44.entities.PlayerAiProgress.create({ nick, level_id: levelId, wins: 1 });
+        }
+        const m = { ...(aiWinsRef.current || {}) };
+        (m[nick] = m[nick] || {})[levelId] = ((m[nick] && m[nick][levelId]) || 0) + 1;
+        aiWinsRef.current = m;
+        try { iframeRef.current?.contentWindow?.postMessage({ bfAiWins: m }, '*'); } catch (e) {}
+      } catch (e) {}
+    };
     const onResult = (e) => {
       if (e.data && e.data.bfMatchResult) {
         const r = e.data.bfMatchResult;
@@ -505,6 +526,7 @@ export default function Home() {
         // lo muestre siempre, independientemente del dispositivo o partida.
         if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
         if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
+        if (r.mode === 'ia' && !r.winner_is_ai && r.ai_level && r.winner_nick) upsertAiWin(r.winner_nick, r.ai_level);
       }
 
       if (e.data && e.data.bfGameLog) {
@@ -608,6 +630,18 @@ export default function Home() {
         playerAvatarsRef.current = m;
         try { iframeRef.current?.contentWindow?.postMessage({ bfPlayerAvatars: m }, '*'); } catch (e) {}
       }).catch(() => {});
+      // Progreso de niveles de IA por nick (BD): victorias contra cada nivel,
+      // para que los desbloqueos funcionen entre dispositivos.
+      try {
+        if (base44.entities.PlayerAiProgress) {
+          base44.entities.PlayerAiProgress.list('nick', 500).then(progs => {
+            const m = {};
+            (progs || []).forEach(p => { if (p.nick && p.level_id) { (m[p.nick] = m[p.nick] || {})[p.level_id] = p.wins || 0; } });
+            aiWinsRef.current = m;
+            try { iframeRef.current?.contentWindow?.postMessage({ bfAiWins: m }, '*'); } catch (e) {}
+          }).catch(() => {});
+        }
+      } catch (e) {}
       // Envía los mapas al iframe inmediatamente tras cargar los datos de la
       // BD, sin esperar al siguiente cambio de pantalla del juego. Así los
       // héroes que usen su habilidad justo al empezar la batalla ya tienen
