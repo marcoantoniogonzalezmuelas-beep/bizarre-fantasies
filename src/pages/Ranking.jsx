@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
+import RankingPrizeBanner from '@/components/ranking/RankingPrizeBanner';
 import { t } from '@/lib/i18n';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
@@ -131,6 +132,10 @@ export default function Ranking() {
           <img src={ICON_IMG} alt="Top Ranking" className="w-24 h-24 mx-auto rounded-full border-2 border-[#FFD24A] shadow-[0_0_30px_rgba(255,210,74,.5)] object-cover mb-4" />
           <h1 className="font-heading font-black text-4xl md:text-5xl text-[#FFD24A] drop-shadow-[0_2px_12px_rgba(255,210,74,.35)] tracking-wide">Top Ranking</h1>
           <p className="text-[#cfc6dd] mt-2 text-sm">{t('El salón de la fama de Bizarre Fantasies')} · {results ? results.length : '…'} {t('partidas registradas')}</p>
+        </div>
+
+        <div className="mb-8">
+          <RankingPrizeBanner />
         </div>
 
         {!results ? (

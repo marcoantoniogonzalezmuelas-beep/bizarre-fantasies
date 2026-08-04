@@ -131,6 +131,11 @@ const UI_EN = {
   'El Transformer despliega sus engranajes, robot gigante tipo Optimus, y carga arcos eléctricos azules contra el Tanque. El Tanque planta las orugas, atrapa los golpes con el blindaje humeante y responde con una andanada de acero que hace tembrar el suelo. Mecánico contra blindaje — y el asfalto empieza a fundirse.': 'Transformer unfolds its gears, a giant Optimus-style robot, and charges blue electric arcs against the Tank. The Tank digs in its treads, catches the blows with its smoking armor and answers with a steel volley that shakes the ground. Mechanical against armor — and the asphalt begins to melt.',
   'Ave Fénix contra Hannai Boa': 'Phoenix vs Hannai Boa',
   'El Ave Fénix arde desde las cenizas y se lanza en picado envuelta en llamas vivas. Hannai Boa despliega su Sigilo Cuántico y se funde con las sombras: el fuego pasa de largo, las llamas lamien el vacío. Fuego contra sombra — y el fénix, desconcertado, remonta.': 'The Phoenix blazes from the ashes and dives down wrapped in living flames. Hannai Boa unfurls her Quantum Sigil and melts into the shadows: the fire passes through, the flames lick the void. Fire against shadow — and the phoenix, bewildered, pulls up.',
+  // --- Aviso del premio de temporada (Ranking) ---
+  'Premio de temporada': 'Seasonal prize',
+  'El campeón de': 'The champion of',
+  'creará la próxima carta': 'will create the next card',
+  'El primer clasificado del ranking mensual diseñará una carta nueva que se añadirá al juego en': 'The top-ranked player of the monthly leaderboard will design a new card that will be added to the game in',
 };
 
 export const t = (es) => (getLang() === 'en' ? (UI_EN[es] ?? es) : es);
