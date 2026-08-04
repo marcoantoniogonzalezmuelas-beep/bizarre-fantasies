@@ -53,7 +53,7 @@ export const DEMO_TIPS_PATCH = `
     's-recruit':[
       {id:'speed',sel:['.bf-vel-auc'],has:'RÁPIDO|⚡',txt:T('⚡ <b>Marcador de velocidad</b>: cada héroe lleva <b>⚡ + su velocidad</b>. Desempata turnos del mismo tipo: el más rápido va antes. Los más veloces brillan en <b>dorado con RÁPIDO</b> — ¡fíchalos!','⚡ <b>Speed marker</b>: each hero shows <b>⚡ + their speed</b>. Breaks same-type turn ties: the faster goes first. The fastest glow <b>gold with RÁPIDO</b> — draft them!')},
       {id:'bid',sel:['.hcard-bid-zone'],txt:T('💰 Así se puja: ajusta con − / + y pulsa <b>Pujar</b>. ¡Es secreta!','💰 Bidding: adjust with − / + and press <b>Bid</b>. It\\'s secret!')},
-      {id:'bidcalc',sel:['div[id^="bidcalc_"]'],has:'bonificador|resta',txt:T('📊 Debajo de las monedas: el <b>bonificador</b> (verde) y el <b>restador</b> del rival (rojo). Abajo, en amarillo, el <b>coste real</b>.','📊 Below the coins: your <b>booster</b> (green) and rival <b>penalty</b> (red). Below in yellow, the <b>real cost</b>.')},
+      {id:'bidcalc',sel:['div[id^="bidcalc_"]'],has:'bonificador|resta|booster|penalty',txt:T('📊 Debajo de las monedas: el <b>bonificador</b> (verde) y el <b>restador</b> del rival (rojo). Abajo, en amarillo, el <b>coste real</b>.','📊 Below the coins: your <b>booster</b> (green) and rival <b>penalty</b> (red). Below in yellow, the <b>real cost</b>.')},
       {id:'bonus',sel:['.bf-bonus-card'],dyn:function(el){
         var x=(el.textContent||'').replace(/\\s+/g,' ').trim();
         x=x.replace(/^.*?(bonificador de esta ronda|this round.s booster)[:\\s·-]*/i,'');
