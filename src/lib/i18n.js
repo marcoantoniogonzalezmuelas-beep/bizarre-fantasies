@@ -45,6 +45,7 @@ const UI_EN = {
   'El salón de la fama de Bizarre Fantasies': 'The Bizarre Fantasies hall of fame',
   'partidas registradas': 'battles recorded',
   'Mejores jugadores': 'Greatest Players',
+  'Mejores de ': 'Best of ',
   'Héroes más victoriosos': 'Most Victorious Heroes',
   'Héroes más derrotados': 'Most Defeated Heroes',
   'Héroes más veces caídos': 'Most Fallen Heroes',

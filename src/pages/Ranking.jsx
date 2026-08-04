@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
 import RankingPrizeBanner from '@/components/ranking/RankingPrizeBanner';
-import { t } from '@/lib/i18n';
+import { t, getLang } from '@/lib/i18n';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
@@ -16,6 +16,8 @@ const ICON_DEFEAT = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6
 const ICON_FALLEN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/89adeedea_generated_image.png';
 const ICON_REBIRTH = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/19a275621_generated_image.png';
 const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MONTH_NAMES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_NAMES = () => (getLang() === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ES);
 const M = (h) => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + h;
 const AI_AVATARS = {
   'IA Novata': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a' },
@@ -104,7 +106,7 @@ export default function Ranking() {
   const now = new Date();
   const curMonth = now.getMonth();
   const curYear = now.getFullYear();
-  const monthLabel = MONTH_NAMES_ES[curMonth];
+  const monthLabel = MONTH_NAMES()[curMonth];
   const monthWins = {}, monthLosses = {};
   (results || []).forEach(r => {
     const d = new Date(r.created_date);

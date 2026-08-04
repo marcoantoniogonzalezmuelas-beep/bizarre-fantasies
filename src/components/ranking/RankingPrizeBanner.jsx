@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
-import { t } from '@/lib/i18n';
+import { t, getLang } from '@/lib/i18n';
 
 const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MONTH_NAMES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS = () => (getLang() === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ES);
 // Corona de golosinas generada por IA (temática del juego Bizarre Fantasies).
 const CANDY_CROWN_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/511b0ec78_generated_image.png';
 
@@ -13,7 +15,8 @@ export default function RankingPrizeBanner() {
   const { curMonth, nextMonth } = useMemo(() => {
     const now = new Date();
     const m = now.getMonth();
-    return { curMonth: MONTH_NAMES_ES[m], nextMonth: MONTH_NAMES_ES[(m + 1) % 12] };
+    const M = MONTHS();
+    return { curMonth: M[m], nextMonth: M[(m + 1) % 12] };
   }, []);
 
   return (
