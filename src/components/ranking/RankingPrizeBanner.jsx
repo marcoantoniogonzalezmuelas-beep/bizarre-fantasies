@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
 const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+// Corona de golosinas generada por IA (temática del juego Bizarre Fantasies).
+const CANDY_CROWN_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/511b0ec78_generated_image.png';
 
 // Aviso épico en la cabecera del Ranking: el #1 del mes ganará el derecho de
 // crear una carta nueva para el mes siguiente. Estilo fantasía oscura dorado.
@@ -47,14 +49,14 @@ export default function RankingPrizeBanner() {
             transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
           />
           <div
-            className="relative flex h-16 w-16 items-center justify-center rounded-full sm:h-20 sm:w-20"
+            className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full sm:h-20 sm:w-20"
             style={{
               background: 'linear-gradient(160deg, #ffe49a, #FFD24A 55%, #c89a2e)',
               border: '2px solid #ffe9a8',
               boxShadow: '0 6px 22px rgba(255,180,40,0.55)',
             }}
           >
-            <Crown className="h-8 w-8 text-[#3a2600] sm:h-10 sm:w-10" strokeWidth={2.2} fill="#3a2600" />
+            <img src={CANDY_CROWN_IMG} alt={t('Corona de campeón')} className="h-full w-full object-cover" />
           </div>
         </div>
 

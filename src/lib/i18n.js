@@ -136,6 +136,9 @@ const UI_EN = {
   'El campeón de': 'The champion of',
   'creará la próxima carta': 'will create the next card',
   'El primer clasificado del ranking mensual diseñará una carta nueva que se añadirá al juego en': 'The top-ranked player of the monthly leaderboard will design a new card that will be added to the game in',
+  'Héroes más renacidos': 'Most Reborn Heroes',
+  'renacidos': 'rebirths',
+  'Corona de campeón': 'Champion crown',
 };
 
 export const t = (es) => (getLang() === 'en' ? (UI_EN[es] ?? es) : es);

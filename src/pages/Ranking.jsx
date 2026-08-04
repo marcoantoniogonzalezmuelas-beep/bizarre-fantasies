@@ -14,6 +14,7 @@ const ICON_MONTHLY = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d
 const ICON_VICTORY = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d34a0365b_generated_image.png';
 const ICON_DEFEAT = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/33e4e22fd_generated_image.png';
 const ICON_FALLEN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/89adeedea_generated_image.png';
+const ICON_REBIRTH = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/19a275621_generated_image.png';
 const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const M = (h) => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + h;
 const AI_AVATARS = {
@@ -153,6 +154,7 @@ export default function Ranking() {
             <RankList title={t('Héroes más victoriosos')} iconImg={ICON_VICTORY} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
             <RankList title={t('Héroes más derrotados')} iconImg={ICON_DEFEAT} rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
             <RankList title={t('Héroes más veces caídos')} iconImg={ICON_FALLEN} rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" artMap={artMap} />
+            <RankList title={t('Héroes más renacidos')} iconImg={ICON_REBIRTH} rows={top(heroElites, 8)} valueLabel={t('renacidos')} accent="#ffd24a" artMap={artMap} />
           </div>
         )}
       </div>
