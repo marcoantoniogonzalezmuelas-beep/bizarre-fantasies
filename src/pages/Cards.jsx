@@ -75,6 +75,7 @@ const normalizeItem = (card) => {
     ...card,
     id: card.card_id,
     num: card.number,
+    name: en.name || card.name,
     txt: en.description || card.description,
     tag_en: en.tag,
     art: freshArt(card, card.art_url) || gameArtFor(card.category, card.number),

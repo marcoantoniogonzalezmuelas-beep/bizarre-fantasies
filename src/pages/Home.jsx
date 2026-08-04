@@ -685,11 +685,11 @@ export default function Home() {
         if (!data || data.length < 1000) throw new Error('empty');
 
         const textList = await base44.entities.HomeText.list('key', 50).catch(() => []);
-        const homeTexts = { punkitoEs: '', punkitoEn: '', contactLabel: '', contactBody: '' };
+        const homeTexts = { punkitoEs: '', punkitoEn: '', contactLabel: '', contactLabelEn: '', contactBody: '', contactBodyEn: '' };
         (textList || []).forEach((t) => {
           if (t.key === 'punkito') { homeTexts.punkitoEs = t.value || ''; homeTexts.punkitoEn = t.value_en || ''; }
-          if (t.key === 'contact_label') homeTexts.contactLabel = t.value || '';
-          if (t.key === 'contact_body') homeTexts.contactBody = t.value || '';
+          if (t.key === 'contact_label') { homeTexts.contactLabel = t.value || ''; homeTexts.contactLabelEn = t.value_en || ''; }
+          if (t.key === 'contact_body') { homeTexts.contactBody = t.value || ''; homeTexts.contactBodyEn = t.value_en || ''; }
         });
 
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML

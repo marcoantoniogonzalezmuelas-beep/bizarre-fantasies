@@ -105,6 +105,10 @@
       "type": "object",
       "description": "English translations of the card texts",
       "properties": {
+        "name": {
+          "type": "string",
+          "description": "English name (equipment/booster cards; heroes keep their proper name)"
+        },
         "title": {
           "type": "string"
         },

@@ -5,11 +5,15 @@
 // defecto. Va elevado para no chocar en móvil con Punkito ni con el Oráculo.
 const CONTACT_ICON = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/448e1c85d_generated_image.png';
 const DEFAULT_LABEL = '¡Contacta Con Los Bizarros!';
+const DEFAULT_LABEL_EN = 'Contact The Bizarros!';
 const DEFAULT_BODY = 'Escríbenos a retrolandbcn@gmail.com y cuéntanos tus ideas: cartas que quieras crear, mejorar, empeorar, subir de nivel… lo que sea. Además lo iremos haciendo por los rankings.';
+const DEFAULT_BODY_EN = 'Write to us at retrolandbcn@gmail.com and share your ideas: cards you’d like to create, improve, weaken, level up… anything goes. We’ll roll them out through the rankings too.';
 
 export function buildQuitContactPatch(texts) {
   const label = (texts && texts.contactLabel) || DEFAULT_LABEL;
+  const labelEn = (texts && texts.contactLabelEn) || DEFAULT_LABEL_EN;
   const body = (texts && texts.contactBody) || DEFAULT_BODY;
+  const bodyEn = (texts && texts.contactBodyEn) || DEFAULT_BODY_EN;
   return `
 <script>
 (function(){
@@ -17,8 +21,13 @@ export function buildQuitContactPatch(texts) {
   window.__bfQuitContactPatch = true;
 
   var CONTACT_ICON = ${JSON.stringify(CONTACT_ICON)};
-  var LABEL = ${JSON.stringify(label)};
-  var BODY = ${JSON.stringify(body)};
+  var LABEL_ES = ${JSON.stringify(label)};
+  var LABEL_EN = ${JSON.stringify(labelEn)};
+  var BODY_ES = ${JSON.stringify(body)};
+  var BODY_EN = ${JSON.stringify(bodyEn)};
+  function pick(es,en){ return (window.__bfLangEn ? en : es); }
+  var LABEL = pick(LABEL_ES, LABEL_EN);
+  var BODY = pick(BODY_ES, BODY_EN);
   function linkify(s){ return String(s).replace(/([^\\s@]+@[^\\s@]+\\.[^\\s@]+)/g, '<a href="mailto:$1">$1</a>'); }
 
   var style = document.createElement('style');

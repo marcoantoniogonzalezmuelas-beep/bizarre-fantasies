@@ -16,7 +16,11 @@ Deno.serve(async (req) => {
     const card = await base44.asServiceRole.entities.Card.get(card_id);
     if (!card) return Response.json({ error: 'Card not found' }, { status: 404 });
 
+    // Equipment/booster cards also translate their name; heroes/bizarros keep
+    // their proper name (the LLM is instructed to leave proper names untouched).
+    const EQUIP_CATS = ['spell', 'ranged_weapon', 'melee_weapon', 'armor', 'object', 'bonus'];
     const FIELDS = ['title', 'ability_name', 'ability_text', 'elite_ability_name', 'elite_ability_text', 'description', 'tag'];
+    if (EQUIP_CATS.includes(card.category) && card.name) FIELDS.unshift('name');
     const source = {};
     for (const f of FIELDS) if (card[f]) source[f] = card[f];
     if (Object.keys(source).length === 0) {
@@ -27,9 +31,9 @@ Deno.serve(async (req) => {
     for (const f of Object.keys(source)) props[f] = { type: 'string' };
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `You are the official localizer of "Bizarre Fantasies", a humorous dark-fantasy card game. Translate the following Spanish card texts to English. Keep the tone: epic, punchy and slightly absurd. Keep game terms consistent: CC = Melee, AD = Ranged, HE = Sorcery, maná = mana, Élite = Elite, héroe = hero, escudo = shield, daño = damage, renacer = rebirth. Do NOT translate proper names of characters. Keep numbers, symbols and formatting intact. Return ONLY the translations.
+      prompt: `You are the official localizer of "Bizarre Fantasies", a humorous dark-fantasy card game. Translate the following Spanish card texts to English. Keep the tone: epic, punchy and slightly absurd. Keep game terms consistent: CC = Melee, AD = Ranged, HE = Sorcery, maná = mana, Élite = Elite, héroe = hero, escudo = shield, daño = damage, renacer = rebirth. Translate the card NAME into natural English only when it is a generic equipment/booster name (a weapon, armor, spell, item or booster); if the name is a proper character name, copy it verbatim. Keep numbers, symbols and formatting intact. Return ONLY the translations.
 
-Card name (do not translate, context only): ${card.name}
+Card category: ${card.category}
 
 Texts to translate (JSON):
 ${JSON.stringify(source, null, 2)}`,

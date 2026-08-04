@@ -11,6 +11,9 @@ export const DEMO_FLOW_PATCH = `
   if(window.__bfDemoFlowPatch)return;
   window.__bfDemoFlowPatch=true;
 
+  var EN=!!window.__bfLangEn;
+  function T(es,en){return EN?en:es;}
+
   function curScreen(){ var a=document.querySelector('.screen.active'); return a?a.id:''; }
 
   // ---- Explicación de la ronda de puja (después de resolver) ----
@@ -20,12 +23,12 @@ export const DEMO_FLOW_PATCH = `
     if(pr.contested){
       var w=pr.winner==='p'?G.names.p:G.names.o;
       var amt=pr.winner==='p'?pr.bpAmt:pr.boAmt;
-      lines.push('¡Pugna reñida! Las dos IAs querían a '+(pr.contestName||'el mismo héroe')+'. Gana '+w+' con '+amt+'🪙; la otra IA repite puja con una tanda nueva.');
+      lines.push(T('¡Pugna reñida! Las dos IAs querían a ','Close bid! Both AIs wanted ')+(pr.contestName||T('el mismo héroe','the same hero'))+T('. Gana ','. Won by ')+w+T(' con ',' with ')+amt+'🪙'+T('; la otra IA repite puja con una tanda nueva.','; the other AI rebids with a fresh round.'));
     } else {
-      if(pr.gotP) lines.push('IA Azul → '+pr.gotP+' ('+pr.bpAmt+'🪙).');
-      if(pr.gotO) lines.push('IA Roja → '+pr.gotO+' ('+pr.boAmt+'🪙).');
-      if(pr.pPass) lines.push('IA Azul pasó.');
-      if(pr.oPass) lines.push('IA Roja pasó.');
+      if(pr.gotP) lines.push(T('IA Azul → ','Blue AI → ')+pr.gotP+' ('+pr.bpAmt+'🪙).');
+      if(pr.gotO) lines.push(T('IA Roja → ','Red AI → ')+pr.gotO+' ('+pr.boAmt+'🪙).');
+      if(pr.pPass) lines.push(T('IA Azul pasó.','Blue AI passed.'));
+      if(pr.oPass) lines.push(T('IA Roja pasó.','Red AI passed.'));
     }
     return lines.join(' ');
   }
@@ -37,14 +40,14 @@ export const DEMO_FLOW_PATCH = `
       if(h.mwep) bits.push('⚔️'+h.mwep.name);
       if(h.rwep) bits.push('🏹'+h.rwep.name);
       if(h.armor) bits.push('🛡️'+h.armor.name);
-      return h.name+': '+(bits.length?bits.join(' '):'sin equipo');
+      return h.name+': '+(bits.length?bits.join(' '):T('sin equipo','no gear'));
     });
     var sb=(G.spellbook[side]||[]).length, ib=(G.items[side]||[]).length;
     var extra=[];
-    if(sb) extra.push(sb+' hechizo'+(sb>1?'s':''));
-    if(ib) extra.push(ib+' objeto'+(ib>1?'s':''));
+    if(sb) extra.push(sb+' '+T('hechizo','spell')+(sb>1?'s':''));
+    if(ib) extra.push(ib+' '+T('objeto','item')+(ib>1?'s':''));
     var tail = extra.length ? ' · +' + extra.join(', ') : '';
-    return parts.join(' · ')+tail+' · sobran '+G.equipCoins[side]+'🪙';
+    return parts.join(' · ')+tail+T(' · sobran ',' · leftover ')+G.equipCoins[side]+'🪙';
   }
 
   // ---- Paso a paso de la subasta ----
@@ -53,8 +56,8 @@ export const DEMO_FLOW_PATCH = `
     window.__bfDemoTipsPause=true;
     try{ aiDecision('p'); aiDecision('o'); tryResolveRound(); }catch(e){}
     var r=explainBidResult();
-    coach('PUJA RESUELTA · '+r+'  ➜  Pulsa "Seguir" para avanzar.');
-    coachBtn('Seguir ▶', window.__bfDemoAdvanceStep);
+    coach(T('PUJA RESUELTA · ','BID RESOLVED · ')+r+T('  ➜  Pulsa "Seguir" para avanzar.','  ➜  Press "Follow" to advance.'));
+    coachBtn(T('Seguir ▶','Follow ▶'), window.__bfDemoAdvanceStep);
   }
 
   function demoAdvanceStep(){
@@ -64,12 +67,12 @@ export const DEMO_FLOW_PATCH = `
     if(curScreen()==='s-equip'){ window.__bfDemoEquipShow(); return; }
     var msg;
     if(G.subRound>0){
-      msg='REPITE PUJA · La IA que se quedó sin héroe elige de una tanda nueva. Pulsa "Seguir" para ver la puja.';
+      msg=T('REPITE PUJA · La IA que se quedó sin héroe elige de una tanda nueva. Pulsa "Seguir" para ver la puja.','REBID · The AI left without a hero picks from a fresh round. Press "Follow" to see the bid.');
     } else {
-      msg='FASE '+(G.aIndex+1)+'/3 · '+roleIcon(G.curType)+' '+typeLong(G.curType)+'. Nueva tanda de 6 héroes (uno por raza). Las dos IAs pujan en secreto. Pulsa "Seguir".';
+      msg=T('FASE ','PHASE ')+(G.aIndex+1)+'/3 · '+roleIcon(G.curType)+' '+typeLong(G.curType)+T('. Nueva tanda de 6 héroes (uno por raza). Las dos IAs pujan en secreto. Pulsa "Seguir".','. A fresh batch of 6 heroes (one per race). Both AIs bid in secret. Press "Follow".');
     }
     coach(msg);
-    coachBtn('Seguir ▶', window.__bfDemoBidStep);
+    coachBtn(T('Seguir ▶','Follow ▶'), window.__bfDemoBidStep);
   }
 
   // ---- Equipamiento: la IA Azul ('p') también se equipa (finishAuction solo
@@ -91,7 +94,7 @@ export const DEMO_FLOW_PATCH = `
       try{
         if(typeof window.demoBattle==='function') window.demoBattle();
         else if(typeof startBattle==='function') startBattle();
-      }catch(e){ if(window.console)console.error('bfDemoBattle',e); if(typeof notif==='function')notif('No se pudo iniciar el combate: '+(e&&e.message||e)); }
+        }catch(e){ if(window.console)console.error('bfDemoBattle',e); if(typeof notif==='function')notif(T('No se pudo iniciar el combate: ','Could not start the battle: ')+(e&&e.message||e)); }
     };
     // En la demo el botón nativo "Listo — a la batalla" (eqDone) está desactivado
     // por G.demoExample (tanto el wrapper como el original hacen return). Lo
@@ -110,11 +113,11 @@ export const DEMO_FLOW_PATCH = `
         });
       },500);
     }
-    coach('PASO 2 · EQUIPAMIENTO. Cada IA gastó su presupuesto en armas, armaduras, hechizos y objetos (van a la mano).'+
-          '  🔵 IA Azul: '+explainEquip('p')+
-          '  🔴 IA Roja: '+explainEquip('o')+
-          '  ➜  Pulsa "Seguir" para empezar el combate.');
-    coachBtn('Seguir ▶', startDemoBattle);
+    coach(T('PASO 2 · EQUIPAMIENTO. Cada IA gastó su presupuesto en armas, armaduras, hechizos y objetos (van a la mano).','STEP 2 · GEAR. Each AI spent its budget on weapons, armor, spells and items (they go to the hand).')+
+          T('  🔵 IA Azul: ','  🔵 Blue AI: ')+explainEquip('p')+
+          T('  🔴 IA Roja: ','  🔴 Red AI: ')+explainEquip('o')+
+          T('  ➜  Pulsa "Seguir" para empezar el combate.','  ➜  Press "Follow" to start the battle.'));
+    coachBtn(T('Seguir ▶','Follow ▶'), startDemoBattle);
   }
 
   // ---- Reescribe demoAuction: arranca la subasta de verdad ----
@@ -154,8 +157,8 @@ export const DEMO_FLOW_PATCH = `
     try{ if(typeof window.closeModal==='function') window.closeModal(); }catch(e){}
     try{ if(typeof window.show==='function') window.show('s-recruit'); }catch(e){}
     try{ if(typeof window.renderRecruit==='function') window.renderRecruit('p'); }catch(e){}
-    coach('PASO 1 · SUBASTA — Fase 1/3 ⚔️ Cuerpo a Cuerpo. Salen 6 héroes, uno por raza (cada raza con su color y símbolo). Las dos IAs pujan en SECRETO: gana quien más ofrece. Si pujan por el mismo, se repite. Pulsa "Seguir" para ver la puja.');
-    coachBtn('Seguir ▶', window.__bfDemoBidStep);
+    coach(T('PASO 1 · SUBASTA — Fase 1/3 ⚔️ Cuerpo a Cuerpo. Salen 6 héroes, uno por raza (cada raza con su color y símbolo). Las dos IAs pujan en SECRETO: gana quien más ofrece. Si pujan por el mismo, se repite. Pulsa "Seguir" para ver la puja.','STEP 1 · AUCTION — Phase 1/3 ⚔️ Melee. 6 heroes appear, one per race (each race with its color and symbol). Both AIs bid in SECRET: the highest offer wins. If they bid on the same one, it rebids. Press "Follow" to see the bid.'));
+    coachBtn(T('Seguir ▶','Follow ▶'), window.__bfDemoBidStep);
   };
 
   // Actualizar el texto del modal "Aprender a jugar": el nativo dice "salta
@@ -166,7 +169,7 @@ export const DEMO_FLOW_PATCH = `
       if(el.children.length) return;
       var t=el.textContent||'';
       if(/salta directa al combate/i.test(t)){
-        el.textContent='Esta demo juega la SUBASTA COMPLETA (3 fases, IA vs IA) y luego el combate, para que veas una partida real de principio a fin.';
+        el.textContent=T('Esta demo juega la SUBASTA COMPLETA (3 fases, IA vs IA) y luego el combate, para que veas una partida real de principio a fin.','This demo plays the FULL AUCTION (3 phases, AI vs AI) and then the battle, so you can watch a real match from start to finish.');
       }
     });
   }
@@ -211,7 +214,7 @@ export const DEMO_FLOW_PATCH = `
       btn = document.createElement('div');
       btn.id = 'bf-demo-guide-btn';
       btn.style.cssText = 'display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:9px;background:linear-gradient(135deg,rgba(192,107,255,.92),rgba(120,60,180,.92));border:2px solid rgba(255,210,74,.8);color:#fff5dc;font-family:Cinzel,serif;font-weight:900;font-size:11px;letter-spacing:.3px;box-shadow:0 4px 14px rgba(0,0,0,.5),0 0 10px rgba(192,107,255,.5);text-shadow:0 1px 3px #000;white-space:nowrap;flex-shrink:0;margin-left:10px;vertical-align:middle;animation:bfDemoGuidePulse 2.4s ease-in-out infinite';
-      btn.innerHTML = '<span style="font-size:14px">🃏</span> Conocer las Cartas';
+      btn.innerHTML = '<span style="font-size:14px">🃏</span> ' + T('Conocer las Cartas','Know the Cards');
       btn.onclick = function(e){ e.preventDefault(); e.stopPropagation(); try{ window.parent.postMessage({bfNavigate:'/guiacartas',fromDemo:true},'*'); }catch(err){} };
       badge.parentNode.insertBefore(btn, badge.nextSibling);
     }
@@ -249,7 +252,7 @@ export const DEMO_FLOW_PATCH = `
       btn.id='bf-demo-intro-btn';
       btn.type='button';
       btn.style.cssText='display:block;width:100%;margin-top:10px;padding:11px 16px;border-radius:12px;cursor:pointer;font-family:Cinzel,serif;font-weight:900;font-size:14px;letter-spacing:.04em;border:2px solid rgba(192,91,255,.8);background:linear-gradient(135deg,#1e0c32,#3c145a);color:#e8c0ff;box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(192,91,255,.4);text-shadow:0 1px 4px #000;';
-      btn.innerHTML='🎬 Ver cinemática de intro';
+      btn.innerHTML=T('🎬 Ver cinemática de intro','🎬 Watch the intro cinematic');
       btn.onclick=function(e){ e.preventDefault(); e.stopPropagation(); try{ window.parent.postMessage({bfOpenIntro:true,bfAutoDemo:true},'*'); }catch(err){} };
       startBtn.parentNode.insertBefore(btn, startBtn);
     } else if(!isDemo && btn){ btn.remove(); }
