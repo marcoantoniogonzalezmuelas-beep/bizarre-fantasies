@@ -344,6 +344,7 @@ export default function Home() {
   const abilityAnimRef = useRef(null);
   const avatarListRef = useRef(null);
   const avatarCatalogRef = useRef(null);
+  const playerAvatarsRef = useRef(null);
   // Cuando la cinemática de intro se abrió desde "Aprender a jugar" (demo),
   // al cerrarla/saltarla arrancamos automáticamente la demo en el iframe.
   const introAutoDemoRef = useRef(false);
@@ -446,6 +447,9 @@ export default function Home() {
         }
         if (avatarCatalogRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*');
+        }
+        if (playerAvatarsRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfPlayerAvatars: playerAvatarsRef.current }, '*');
         }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
@@ -596,6 +600,14 @@ export default function Home() {
         avatarCatalogRef.current = (cat || []).map(a => ({ name: a.name, url: a.url }));
         try { iframeRef.current?.contentWindow?.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*'); } catch (e) {}
       }).catch(() => {});
+      // Avatares asociados a nicks (PlayerAvatar): el más reciente por nick,
+      // para que el selector auto-muestre el avatar al escribir el nick.
+      base44.entities.PlayerAvatar.list('-created_date', 500).then(pas => {
+        const m = {};
+        (pas || []).forEach(a => { if (a.nick && a.avatar_url && !m[a.nick]) m[a.nick] = a.avatar_url; });
+        playerAvatarsRef.current = m;
+        try { iframeRef.current?.contentWindow?.postMessage({ bfPlayerAvatars: m }, '*'); } catch (e) {}
+      }).catch(() => {});
       // Envía los mapas al iframe inmediatamente tras cargar los datos de la
       // BD, sin esperar al siguiente cambio de pantalla del juego. Así los
       // héroes que usen su habilidad justo al empezar la batalla ya tienen
@@ -607,6 +619,7 @@ export default function Home() {
           if (abilityAnimRef.current) iw.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
           if (avatarListRef.current) iw.postMessage({ bfAvatarMap: avatarListRef.current }, '*');
           if (avatarCatalogRef.current) iw.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*');
+          if (playerAvatarsRef.current) iw.postMessage({ bfPlayerAvatars: playerAvatarsRef.current }, '*');
         }
       } catch (e) {}
     }).catch(() => {});

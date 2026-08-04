@@ -22,6 +22,11 @@ export const AVATAR_PATCH = `
   window.bfMyAvatar = loadAv();
   window.bfOppAvatar = null;
 
+  // Avatares asociados a nicks en la BD (PlayerAvatar) y mapa de héroes,
+  // recibidos del padre para auto-rellenar el avatar según el nick.
+  window.__bfPlayerAvatars = window.__bfPlayerAvatars || {};
+  window.__bfHeroAvatars = window.__bfHeroAvatars || [];
+
   // ---- CSS ----
   var st = document.createElement('style');
   st.textContent = [
@@ -43,28 +48,21 @@ export const AVATAR_PATCH = `
     '.bf-av-item-name{font-size:9px;color:#cfc6dd;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.bf-av-close{position:fixed;top:14px;right:14px;cursor:pointer;color:#FFD24A;font-size:22px;background:rgba(20,14,38,.85);border:1.5px solid rgba(255,210,74,.4);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;z-index:1000000;line-height:1;user-select:none}',
     '.bf-av-close:hover{background:rgba(255,210,74,.15)}',
+    '.bf-av-tabs{display:flex;gap:6px;margin-bottom:12px;justify-content:center}',
+    '.bf-av-tab{padding:7px 18px;border-radius:20px;border:1.5px solid rgba(255,210,74,.35);background:rgba(20,14,38,.6);color:#cfc6dd;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s ease;letter-spacing:.3px}',
+    '.bf-av-tab:hover{border-color:rgba(255,210,74,.6);color:#FFD24A}',
+    '.bf-av-tab.active{background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;border-color:#FFD24A}',
+    '.bf-av-pane{display:none;max-width:560px;width:100%}',
+    '.bf-av-pane.active{display:block}',
   ].join('');
   document.head.appendChild(st);
 
   // ---- Modal del selector ----
-  function openModal() {
-    closeModal();
-    var catalog = window.__bfAvatarCatalog || [];
-    if (!catalog.length) {
-      if (typeof notif === 'function') notif(L('Cargando avatares…', 'Loading avatars…'));
-      return;
-    }
-    var overlay = document.createElement('div');
-    overlay.className = 'bf-av-modal';
-    overlay.id = 'bf-av-modal';
-    var title = document.createElement('div');
-    title.className = 'bf-av-modal-title';
-    title.textContent = L('Elige tu avatar', 'Choose your avatar');
-    overlay.appendChild(title);
+  function buildAvatarGrid(items, cur) {
     var grid = document.createElement('div');
     grid.className = 'bf-av-grid';
-    var cur = window.bfMyAvatar;
-    catalog.forEach(function(av) {
+    items.forEach(function(av) {
+      if (!av || !av.url) return;
       var item = document.createElement('div');
       item.className = 'bf-av-item' + (cur && cur.url === av.url ? ' selected' : '');
       var img = document.createElement('img');
@@ -79,13 +77,70 @@ export const AVATAR_PATCH = `
       item.onclick = function() {
         saveAv({ url: av.url, name: av.name || '' });
         closeModal();
-        renderPickers();
+        document.querySelectorAll('.bf-av-pick').forEach(function(b){
+          var a = window.bfMyAvatar;
+          if (a && a.url) b.innerHTML = '<img src="' + a.url + '">';
+          else b.innerHTML = '<span class="bf-av-ph">?</span>';
+        });
         injectScoreAvatars();
         injectResultAvatars();
       };
       grid.appendChild(item);
     });
-    overlay.appendChild(grid);
+    return grid;
+  }
+
+  function openModal() {
+    closeModal();
+    var catalog = window.__bfAvatarCatalog || [];
+    var heroes = window.__bfHeroAvatars || [];
+    if (!catalog.length && !heroes.length) {
+      if (typeof notif === 'function') notif(L('Cargando avatares…', 'Loading avatars…'));
+      return;
+    }
+    var cur = window.bfMyAvatar;
+    var overlay = document.createElement('div');
+    overlay.className = 'bf-av-modal';
+    overlay.id = 'bf-av-modal';
+
+    var title = document.createElement('div');
+    title.className = 'bf-av-modal-title';
+    title.textContent = L('Elige tu avatar', 'Choose your avatar');
+    overlay.appendChild(title);
+
+    // Pestañas: Catálogo / Héroes
+    var tabsWrap = document.createElement('div');
+    tabsWrap.className = 'bf-av-tabs';
+    var tabCat = document.createElement('div');
+    tabCat.className = 'bf-av-tab active';
+    tabCat.textContent = L('Catálogo', 'Catalog');
+    var tabHero = document.createElement('div');
+    tabHero.className = 'bf-av-tab';
+    tabHero.textContent = L('Héroes', 'Heroes');
+    tabsWrap.appendChild(tabCat);
+    tabsWrap.appendChild(tabHero);
+    overlay.appendChild(tabsWrap);
+
+    var paneCat = document.createElement('div');
+    paneCat.className = 'bf-av-pane active';
+    paneCat.appendChild(buildAvatarGrid(catalog, cur));
+
+    var paneHero = document.createElement('div');
+    paneHero.className = 'bf-av-pane';
+    paneHero.appendChild(buildAvatarGrid(heroes, cur));
+
+    overlay.appendChild(paneCat);
+    overlay.appendChild(paneHero);
+
+    tabCat.onclick = function() {
+      tabCat.classList.add('active'); tabHero.classList.remove('active');
+      paneCat.classList.add('active'); paneHero.classList.remove('active');
+    };
+    tabHero.onclick = function() {
+      tabHero.classList.add('active'); tabCat.classList.remove('active');
+      paneHero.classList.add('active'); paneCat.classList.remove('active');
+    };
+
     var closeBtn = document.createElement('div');
     closeBtn.className = 'bf-av-close';
     closeBtn.textContent = '×';
@@ -98,19 +153,49 @@ export const AVATAR_PATCH = `
     if (ex) ex.remove();
   }
 
-  // ---- Recibe el catálogo del padre ----
+  // ---- Recibe catálogo, héroes y avatares-por-nick del padre ----
   window.addEventListener('message', function(e){
-    if (e.data && Array.isArray(e.data.bfAvatarCatalog)) {
-      window.__bfAvatarCatalog = e.data.bfAvatarCatalog;
+    if (!e.data) return;
+    if (Array.isArray(e.data.bfAvatarCatalog)) window.__bfAvatarCatalog = e.data.bfAvatarCatalog;
+    if (Array.isArray(e.data.bfAvatarMap)) window.__bfHeroAvatars = e.data.bfAvatarMap;
+    if (e.data.bfPlayerAvatars && typeof e.data.bfPlayerAvatars === 'object') {
+      window.__bfPlayerAvatars = e.data.bfPlayerAvatars;
+      // Re-comprueba los nicks ya escritos para auto-rellenar el avatar.
+      ['p1name','hname','jname'].forEach(function(id){
+        var input = document.getElementById(id);
+        if (input) { input.dataset.bfLastNick = ''; checkNickAvatar(input); }
+      });
     }
   });
+
+  // ---- Auto-rellena el avatar según el nick escrito ----
+  function checkNickAvatar(input) {
+    var nick = (input.value || '').trim();
+    if (!nick) { input.dataset.bfLastNick = ''; return; }
+    if (nick === input.dataset.bfLastNick) return;
+    input.dataset.bfLastNick = nick;
+    var pa = window.__bfPlayerAvatars || {};
+    if (pa[nick]) {
+      saveAv({ url: pa[nick], name: '' });
+      document.querySelectorAll('.bf-av-pick').forEach(function(b){
+        var av = window.bfMyAvatar;
+        if (av && av.url) b.innerHTML = '<img src="' + av.url + '">';
+        else b.innerHTML = '<span class="bf-av-ph">?</span>';
+      });
+      injectScoreAvatars();
+      injectResultAvatars();
+    }
+  }
 
   // ---- Botón de avatar junto a los campos de nick ----
   function renderPickers() {
     ['p1name','hname','jname'].forEach(function(id){
       var input = document.getElementById(id);
-      if (!input || input.dataset.bfAv === '1') return;
+      if (!input) return;
+      checkNickAvatar(input);
+      if (input.dataset.bfAv === '1') return;
       input.dataset.bfAv = '1';
+      input.addEventListener('input', function(){ checkNickAvatar(input); });
       var row = input.closest('.ig') || input.parentElement;
       if (!row || row.dataset.bfAvRow === '1') return;
       row.dataset.bfAvRow = '1';
