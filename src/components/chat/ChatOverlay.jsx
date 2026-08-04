@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { EMOJI_CATEGORIES } from '@/lib/heroEmojis';
 import { MessageCircle, X, Send, Smile, GripHorizontal } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   const [emojiCat, setEmojiCat] = useState(0);
   const [unread, setUnread] = useState(0);
   const [sending, setSending] = useState(false);
+  const [avatarEmojis, setAvatarEmojis] = useState([]);
   const messagesEndRef = useRef(null);
   const unsubRef = useRef(null);
   const myNickRef = useRef('');
@@ -27,6 +28,28 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   // El icono y la ventana se pueden mover libremente por la pantalla.
   const iconDrag = useDragOffset();
   const panelDrag = useDragOffset();
+
+  // Carga los ~100 avatares del catálogo (AvatarCatalog) para la pestaña
+  // "Avatares" del selector de emojis del chat.
+  useEffect(() => {
+    base44.entities.AvatarCatalog.list('name', 200).then((cats) => {
+      const emojis = (cats || []).map((a, i) => ({
+        id: `av_${a.name || ('av' + i)}`,
+        name: a.name || '',
+        url: a.url,
+      }));
+      setAvatarEmojis(emojis);
+    }).catch(() => {});
+  }, []);
+
+  // Categorías dinámicas: las estáticas + la pestaña de Avatares si hay datos.
+  const categories = useMemo(() => {
+    const base = EMOJI_CATEGORIES;
+    if (avatarEmojis.length > 0) {
+      return [...base, { id: 'avatars', label: 'Avatares', emojis: avatarEmojis }];
+    }
+    return base;
+  }, [avatarEmojis]);
 
   useEffect(() => { openRef.current = open; }, [open]);
 
@@ -121,7 +144,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   if (!status?.connOpen || !status?.roomCode) return null;
 
   const emojiMap = {};
-  EMOJI_CATEGORIES.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
+  categories.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
 
   const fmtTime = (d) => {
     try { return new Date(d).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
@@ -248,7 +271,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
             <div style={{ borderTop: '1px solid rgba(255,210,74,0.15)', background: 'rgba(0,0,0,0.25)' }}>
               {/* Pestañas */}
               <div className="flex gap-1 px-2 pt-1.5 overflow-x-auto no-scrollbar">
-                {EMOJI_CATEGORIES.map((cat, i) => (
+                {categories.map((cat, i) => (
                   <button
                     key={cat.id}
                     onClick={() => setEmojiCat(i)}
@@ -265,7 +288,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
               </div>
               {/* Grid de emojis */}
               <div className="px-2 py-2 grid grid-cols-4 gap-1.5 overflow-y-auto no-scrollbar" style={{ maxHeight: '200px' }}>
-                {EMOJI_CATEGORIES[emojiCat]?.emojis.map((em) => (
+                {categories[emojiCat]?.emojis.map((em) => (
                   <button
                     key={em.id}
                     onClick={() => { send(input, em.id); setShowEmojis(false); }}
