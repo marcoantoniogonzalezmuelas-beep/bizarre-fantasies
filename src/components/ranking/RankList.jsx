@@ -3,7 +3,7 @@ import RankPodium from '@/components/ranking/RankPodium';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-export default function RankList({ title, icon: Icon, rows, valueLabel, accent = '#FFD24A', empty, artMap }) {
+export default function RankList({ title, icon: Icon, iconImg, rows, valueLabel, accent = '#FFD24A', empty, artMap }) {
   // Con arte de héroes: los 3 primeros se muestran como podio ilustrado.
   const listRows = artMap ? rows.slice(3) : rows;
   const offset = artMap ? 3 : 0;
@@ -11,14 +11,18 @@ export default function RankList({ title, icon: Icon, rows, valueLabel, accent =
     <div className="rounded-2xl border border-[#3c3158] bg-[#161028]/85 backdrop-blur-sm p-5 shadow-[0_10px_30px_rgba(0,0,0,.5)]">
       <div className="flex items-center gap-3 mb-5 pb-4 border-b" style={{ borderColor: accent + '22' }}>
         <div
-          className="flex items-center justify-center w-12 h-12 rounded-xl border-2 flex-shrink-0"
+          className="flex items-center justify-center w-14 h-14 rounded-xl border-2 flex-shrink-0 overflow-hidden"
           style={{
             borderColor: accent + '99',
             background: `linear-gradient(135deg, ${accent}28, ${accent}06)`,
             boxShadow: `0 0 18px ${accent}55, inset 0 0 12px ${accent}15`,
           }}
         >
-          {Icon && <Icon size={24} strokeWidth={2.5} style={{ color: accent, filter: `drop-shadow(0 0 6px ${accent}aa)` }} />}
+          {iconImg ? (
+            <img src={iconImg} alt={title} className="w-full h-full object-cover" style={{ filter: `drop-shadow(0 0 6px ${accent}aa)` }} />
+          ) : Icon ? (
+            <Icon size={24} strokeWidth={2.5} style={{ color: accent, filter: `drop-shadow(0 0 6px ${accent}aa)` }} />
+          ) : null}
         </div>
         <h2
           className="font-heading font-black text-xl md:text-2xl tracking-wide uppercase leading-tight"

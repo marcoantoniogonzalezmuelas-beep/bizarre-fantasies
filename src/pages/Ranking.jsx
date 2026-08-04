@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Crown, Swords, Skull, Cross, Flame } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
 import { t } from '@/lib/i18n';
@@ -8,6 +7,13 @@ import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5f6dbe23d_generated_image.png';
+// Iconos de ranking generados por IA (emblemas de fantasía oscura del juego).
+const ICON_CHAMPIONS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/647526d8d_generated_image.png';
+const ICON_MONTHLY = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/bc9991940_generated_image.png';
+const ICON_VICTORY = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/d34a0365b_generated_image.png';
+const ICON_DEFEAT = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/33e4e22fd_generated_image.png';
+const ICON_FALLEN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/89adeedea_generated_image.png';
+const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const M = (h) => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + h;
 const AI_AVATARS = {
   'IA Novata': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a' },
@@ -92,6 +98,25 @@ export default function Ranking() {
     return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
   };
 
+  // Ranking mensual: solo partidas del mes en curso (mes a mes, ahora Agosto).
+  const now = new Date();
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
+  const monthLabel = MONTH_NAMES_ES[curMonth];
+  const monthWins = {}, monthLosses = {};
+  (results || []).forEach(r => {
+    const d = new Date(r.created_date);
+    if (isNaN(d.getTime()) || d.getMonth() !== curMonth || d.getFullYear() !== curYear) return;
+    monthWins[r.winner_nick] = (monthWins[r.winner_nick] || 0) + 1;
+    monthLosses[r.loser_nick] = (monthLosses[r.loser_nick] || 0) + 1;
+    if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
+    if (r.loser_avatar && !playerArtMap[r.loser_nick]) playerArtMap[r.loser_nick] = { art: r.loser_avatar };
+  });
+  const monthExtra = (nick) => {
+    const w = monthWins[nick] || 0, l = monthLosses[nick] || 0;
+    return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
+  };
+
   return (
     <div className="min-h-screen relative text-[#efe9dc]" style={{ background: '#0e0a16' }}>
       <div className="fixed inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BG_IMG})` }} />
@@ -115,12 +140,14 @@ export default function Ranking() {
         ) : (
           <div className="grid md:grid-cols-2 gap-5">
             <div className="md:col-span-2">
-              <RankList title={t('Mejores jugadores')} icon={Crown} rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
+              <RankList title={t('Mejores jugadores')} iconImg={ICON_CHAMPIONS} rows={top(wins, 10, playerExtra)} valueLabel={t('victorias')} accent="#FFD24A" empty={t('Nadie ha ganado todavía. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
             </div>
-            <RankList title={t('Héroes más victoriosos')} icon={Swords} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
-            <RankList title={t('Héroes más derrotados')} icon={Skull} rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
-            <RankList title={t('Héroes más veces caídos')} icon={Cross} rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" artMap={artMap} />
-            <RankList title={t('Renaceres Élite')} icon={Flame} rows={top(heroElites, 8)} valueLabel={t('renaceres')} accent="#ffa94a" empty={t('Ningún héroe ha renacido en su forma Élite aún.')} artMap={artMap} />
+            <div className="md:col-span-2">
+              <RankList title={t('Mejores de ') + monthLabel} iconImg={ICON_MONTHLY} rows={top(monthWins, 10, monthExtra)} valueLabel={t('victorias')} accent="#ff9a3c" empty={t('Nadie ha ganado todavía este mes. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
+            </div>
+            <RankList title={t('Héroes más victoriosos')} iconImg={ICON_VICTORY} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
+            <RankList title={t('Héroes más derrotados')} iconImg={ICON_DEFEAT} rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
+            <RankList title={t('Héroes más veces caídos')} iconImg={ICON_FALLEN} rows={top(heroDeaths, 8)} valueLabel={t('caídas')} accent="#c06bff" artMap={artMap} />
           </div>
         )}
       </div>
