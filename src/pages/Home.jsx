@@ -11,6 +11,7 @@ import { ATTACK_FX_PATCH } from '@/lib/attackFxPatch';
 import { SHIELD_FX_PATCH } from '@/lib/shieldFxPatch';
 import { MOBILE_PINCH_PATCH } from '@/lib/mobilePinchZoomPatch';
 import { MOBILE_ANTIFLICKER_PATCH } from '@/lib/mobileAntiFlickerPatch';
+import { CRITICAL_HEAD_CSS } from '@/lib/criticalHeadCss';
 import { MP_EQUIP_PATCH } from '@/lib/mpEquipPatch';
 import { AUCTION_NODUP_PATCH } from '@/lib/auctionNoDupPatch';
 import { AI_AUCTION_PATCH } from '@/lib/aiAuctionPatch';
@@ -722,6 +723,12 @@ export default function Home() {
         let patchedData = baseData.includes('</body>')
           ? baseData.replace('</body>', INJECT + '</body>')
           : baseData + INJECT;
+        // CSS crítico en el <head>: se aplica en el primer pintado y evita ver
+        // la portada a medio estilar (emojis + imágenes gigantes) mientras el
+        // navegador termina de leer los 566 KB del documento.
+        if (patchedData.includes('</head>')) {
+          patchedData = patchedData.replace('</head>', CRITICAL_HEAD_CSS + '</head>');
+        }
         if (IS_MOBILE) {
           // En móvil los iframes con blob: URL grandes a veces no renderizan.
           // srcDoc carga el HTML de forma fiable en navegadores móviles.
