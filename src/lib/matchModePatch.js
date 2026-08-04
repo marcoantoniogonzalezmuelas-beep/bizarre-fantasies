@@ -232,8 +232,13 @@ export const MATCH_MODE_PATCH = `
       // El host gana si winnerSide==='p' (host siempre es 'p').
       try{ netSend({ t:'bfsync', matchMode:n.matchMode||'free', score:{p:n.score.p||0,o:n.score.o||0}, names:names, champSide:champSide, winnerNick:winnerNick, myWin:(winnerSide==='o') }); }catch(e){}
       renderResultScreen({ myWin: (winnerSide===mySide), score:{p:n.score.p||0,o:n.score.o||0}, matchMode:n.matchMode, names:names, champSide:champSide });
+    } else if(n.role==='client'){
+      // El cliente renderiza SU pantalla de resultado inmediatamente con los
+      // datos que tiene (youWin llega vía el mensaje 'end' del juego). Así el
+      // jugador siempre puede salir aunque el bfsync del host se pierda o
+      // tarde en llegar. Cuando bfsync llegue, actualizará el marcador.
+      renderResultScreen({ myWin: !!youWin, score: n.score||{p:0,o:0}, matchMode: n.matchMode||'free' });
     }
-    // El cliente no hace nada aquí: su pantalla la pinta el bfsync del host.
   };
 })();
 </script>

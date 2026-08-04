@@ -284,6 +284,10 @@ export const ABILITY_FX_PATCH = `
     try{play(side,hero);}catch(e){}
   }
 
+  // Expone el play para que mpAbilityCinePatch pueda disparar los FX genéricos
+  // en el cliente cuando recibe el mensaje de sincronización del host.
+  window.__bfPlayAbilityFx=function(side,hero){ if(hero)try{tryPlay(side,hero);}catch(e){} };
+
   // Escaneo periódico: detecta cuando abilityUsed pasa de false a true.
   // Funciona en AMBOS jugadores (host y cliente) — el cliente no recibe
   // la llamada a useAbility, solo la actualización de estado con abilityUsed.
