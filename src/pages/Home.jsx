@@ -539,6 +539,22 @@ export default function Home() {
         if (e.data.fromDemo) { try { sessionStorage.setItem('bfDemoReturn', '1'); } catch (e) {} }
         navigate(e.data.bfNavigate);
       }
+      if (e.data && e.data.bfSaveAvatar) {
+        const { nick, avatar_url } = e.data.bfSaveAvatar;
+        if (nick && avatar_url && base44.entities?.PlayerAvatar) {
+          base44.entities.PlayerAvatar.filter({ nick }, '-created_date', 1).then(existing => {
+            if (existing && existing.length) {
+              base44.entities.PlayerAvatar.update(existing[0].id, { avatar_url }).catch(() => {});
+            } else {
+              base44.entities.PlayerAvatar.create({ nick, avatar_url }).catch(() => {});
+            }
+          }).catch(() => {});
+          // Actualiza el caché en memoria para que el auto-relleno funcione al instante.
+          const m = { ...(playerAvatarsRef.current || {}) };
+          m[nick] = avatar_url;
+          playerAvatarsRef.current = m;
+        }
+      }
       if (e.data && typeof e.data.bfSetLang === 'string') setLang(e.data.bfSetLang);
       // El juego pide el arte de hechizos/objetos para la carta revelada al
       // jugarse: se responde con un mapa nombre → imagen desde la base de datos.

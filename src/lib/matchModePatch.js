@@ -22,12 +22,15 @@ export const MATCH_MODE_PATCH = `
     '.bf-mode-opt.active{border-color:#ffd24a;box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 22px rgba(255,210,74,.4);background:linear-gradient(180deg,rgba(48,34,84,.78),rgba(20,13,38,.86))}',
     '.bf-mode-t{font-family:"Cinzel",serif;font-weight:1000;font-size:15px;color:#fff5dc;text-shadow:0 2px 4px #000}',
     '.bf-mode-s{margin-top:3px;font-size:11px;color:#cfc6dd;line-height:1.25}',
-    '.bf-score-box{margin:14px auto 4px;max-width:340px;display:flex;justify-content:center;gap:18px;align-items:center;padding:12px 16px;border-radius:14px;background:rgba(8,5,14,.55);border:1px solid rgba(255,210,74,.3)}',
+    '.bf-score-box{margin:20px auto 8px;max-width:460px;display:flex;justify-content:center;gap:32px;align-items:center;padding:24px 32px;border-radius:20px;background:linear-gradient(180deg,rgba(28,18,50,.85),rgba(10,6,20,.92));border:2px solid rgba(255,210,74,.45);box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 36px rgba(255,210,74,.18),inset 0 0 0 1px rgba(255,210,74,.12)}',
     '.bf-score-col{text-align:center}',
-    '.bf-score-name{font-size:12px;font-weight:800;color:#cfc6dd;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-    '.bf-score-num{font-family:"Cinzel",serif;font-weight:1000;font-size:40px;color:#ffd24a;line-height:1;text-shadow:0 2px 8px #000,0 0 16px rgba(255,210,74,.4)}',
-    '.bf-score-sep{font-family:"Cinzel",serif;font-weight:1000;font-size:26px;color:#8a8099}',
-    '.bf-mode-lbl{font-size:13px;color:#a89fbb;margin-top:8px}',
+    '.bf-score-name{font-size:15px;font-weight:800;color:#cfc6dd;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.3px}',
+    '.bf-score-num{font-family:"Cinzel",serif;font-weight:1000;font-size:clamp(52px,11vw,84px);color:#ffd24a;line-height:1;text-shadow:0 3px 10px #000,0 0 28px rgba(255,210,74,.55)}',
+    '.bf-score-sep{font-family:"Cinzel",serif;font-weight:1000;font-size:clamp(30px,7vw,52px);color:#8a8099;align-self:center}',
+    '.bf-mode-lbl{font-size:14px;color:#a89fbb;margin-top:12px}',
+    '.bf-match-target{font-size:13px;color:#ffe49a;font-weight:700;margin-top:6px;letter-spacing:.3px}',
+    '.bf-match-point{display:inline-block;margin-top:8px;padding:4px 14px;border-radius:20px;background:linear-gradient(180deg,#ff4d4d,#c01e1e);color:#fff;font-size:12px;font-weight:800;letter-spacing:.5px;box-shadow:0 0 16px rgba(255,77,77,.5);animation:bfMatchPulse 1.2s ease-in-out infinite}',
+    '@keyframes bfMatchPulse{0%,100%{transform:scale(1);box-shadow:0 0 16px rgba(255,77,77,.5)}50%{transform:scale(1.06);box-shadow:0 0 26px rgba(255,77,77,.8)}}',
     '.bf-champ-wrap{position:fixed;inset:0;z-index:100050;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,rgba(40,28,70,.9),rgba(6,4,12,.96));animation:bfFadeIn .4s ease;overflow:hidden}',
     '.bf-champ-crown{font-size:96px;animation:bfChampCrown 2.4s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(255,210,74,.8))}',
     '.bf-champ-ttl{font-family:"Cinzel",serif;font-weight:1000;font-size:clamp(30px,8vw,64px);color:#ffd24a;text-shadow:0 0 30px rgba(255,210,74,.7),0 4px 10px #000;letter-spacing:2px;animation:bfChampTtl 1s cubic-bezier(.2,.8,.3,1)}',
@@ -131,6 +134,8 @@ export const MATCH_MODE_PATCH = `
     if(btn) btn.onclick = function(){ try{ location.reload(); }catch(e){} };
   }
 
+  function L(es,en){ try { return (localStorage.getItem('bfLang')==='en') ? en : es; } catch(e){ return es; } }
+
   // ---- volver a jugar sin recargar (reusa la conexión P2P) ----
   function rematch(){
     var n=ns(); if(!n){ location.reload(); return; }
@@ -185,17 +190,32 @@ export const MATCH_MODE_PATCH = `
     }
     var rs = document.getElementById('s-result');
     if(rs){
+      // Etiqueta de modalidad: en libre es "Marcador general", en match muestra
+      // el objetivo (primero en llegar a X) y si hay match point.
+      var modeBadge='';
+      if(isMatch){
+        modeBadge='<div class="bf-match-target">'+L('Primero en llegar a '+meta.target, 'First to '+meta.target)+'</div>';
+        var mpSide='';
+        if((ms.p||0)===meta.target-1)mpSide='p';
+        if((ms.o||0)===meta.target-1)mpSide=(mpSide?'p,o':'o');
+        if(mpSide){
+          var isMine=(mpSide.indexOf(mySideR)!==-1);
+          modeBadge+='<div class="bf-match-point">'+(isMine?L('⚔ PUNTO DE MATCH','⚔ MATCH POINT'):L('⚠ El rival tiene punto de match','⚠ Opponent has match point'))+'</div>';
+        }
+      } else {
+        modeBadge='<div class="bf-match-target">'+L('Marcador general (histórico)','General score (all-time)')+'</div>';
+      }
       rs.innerHTML = '<div style="text-align:center">'+
-        '<div style="font-size:64px;margin-bottom:6px">'+(myWin?'🏆':'💀')+'</div>'+
-        '<div class="gtitle" style="font-size:clamp(30px,6vw,56px)">'+title+'</div>'+
-        '<div style="font-size:17px;color:var(--gold);margin:6px 0 4px">'+sub+'</div>'+
+        '<div style="font-size:72px;margin-bottom:4px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.6))">'+(myWin?'🏆':'💀')+'</div>'+
+        '<div class="gtitle" style="font-size:clamp(34px,7vw,64px);letter-spacing:1px">'+title+'</div>'+
+        '<div style="font-size:18px;color:var(--gold);margin:8px 0 2px;font-weight:700">'+sub+'</div>'+
         '<div class="bf-score-box">'+
           '<div class="bf-score-col"><div class="bf-score-name">'+nameP+'</div><div class="bf-score-num">'+sp+'</div></div>'+
           '<div class="bf-score-sep">—</div>'+
           '<div class="bf-score-col"><div class="bf-score-name">'+nameO+'</div><div class="bf-score-num">'+so+'</div></div>'+
         '</div>'+
-        '<div class="bf-mode-lbl">'+meta.label+'</div>'+ genLine +
-        '<div style="margin-top:22px">'+btns+'</div>'+
+        modeBadge + genLine +
+        '<div style="margin-top:24px">'+btns+'</div>'+
       '</div>';
     }
     setTimeout(function(){ if(typeof window.bfEndCinematic==='function') window.bfEndCinematic(myWin); }, 80);

@@ -18,7 +18,20 @@ export const AVATAR_PATCH = `
   // ---- Avatar guardado (sesión actual) ----
   var KEY = 'bfMyAvatar';
   function loadAv(){ try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e) {} return null; }
-  function saveAv(av){ try { localStorage.setItem(KEY, JSON.stringify(av)); } catch(e) {} window.bfMyAvatar = av; }
+  function saveAv(av){
+    try { localStorage.setItem(KEY, JSON.stringify(av)); } catch(e) {}
+    window.bfMyAvatar = av;
+    // Si hay un nick escrito en cualquiera de los campos, avisa al padre para
+    // que guarde/actualice el avatar en la BD (PlayerAvatar) inmediatamente.
+    var nick = '';
+    ['p1name','hname','jname','p2name'].forEach(function(id){
+      var i = document.getElementById(id);
+      if (i && i.value && String(i.value).trim() && !/^jugador\s*\d*$/i.test(String(i.value).trim())) nick = String(i.value).trim();
+    });
+    if (nick && av && av.url) {
+      try { parent.postMessage({ bfSaveAvatar: { nick: nick, avatar_url: av.url } }, '*'); } catch(e) {}
+    }
+  }
   window.bfMyAvatar = loadAv();
   window.bfOppAvatar = null;
 
@@ -30,10 +43,13 @@ export const AVATAR_PATCH = `
   // ---- CSS ----
   var st = document.createElement('style');
   st.textContent = [
-    '.bf-av-pick{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,210,74,.5);background:rgba(20,14,38,.7);cursor:pointer;overflow:hidden;flex-shrink:0;margin-right:6px;transition:transform .15s ease,border-color .15s ease}',
+    '.bf-av-pick{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;width:42px;height:42px;border-radius:50%;border:2.5px solid rgba(255,210,74,.5);background:rgba(20,14,38,.7);cursor:pointer;overflow:hidden;flex-shrink:0;margin-right:8px;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}',
     '.bf-av-pick:hover{transform:scale(1.1);border-color:#ffd24a}',
     '.bf-av-pick img{width:100%;height:100%;object-fit:cover}',
-    '.bf-av-pick .bf-av-ph{color:#8a7ca0;font-size:16px;line-height:1}',
+    '.bf-av-pick .bf-av-ph{color:#8a7ca0;font-size:18px;line-height:1}',
+    // Móvil/tablet: avatar GRANDE y resaltado para que se vea claro.
+    '@media(max-width:1024px){.bf-av-pick{width:64px;height:64px;border-width:3px;margin-right:10px;box-shadow:0 0 16px rgba(255,210,74,.35)}.bf-av-pick .bf-av-ph{font-size:28px}.bf-av-pick.bf-av-empty{border-color:#FFD24A;animation:bfAvPulse 1.4s ease-in-out infinite}}',
+    '@keyframes bfAvPulse{0%,100%{box-shadow:0 0 12px rgba(255,210,74,.3);border-color:rgba(255,210,74,.6)}50%{box-shadow:0 0 26px rgba(255,210,74,.7);border-color:#FFD24A}}',
     '.bf-av-score{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(255,210,74,.5);overflow:hidden;flex-shrink:0;object-fit:cover}',
     '@media(max-width:600px){.bf-av-score{width:17px;height:17px}}',
     '.bf-av-result{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,210,74,.5);overflow:hidden;margin:0 auto 6px;object-fit:cover;display:block}',
@@ -79,8 +95,8 @@ export const AVATAR_PATCH = `
         closeModal();
         document.querySelectorAll('.bf-av-pick').forEach(function(b){
           var a = window.bfMyAvatar;
-          if (a && a.url) b.innerHTML = '<img src="' + a.url + '">';
-          else b.innerHTML = '<span class="bf-av-ph">?</span>';
+          if (a && a.url) { b.innerHTML = '<img src="' + a.url + '">'; b.classList.remove('bf-av-empty'); }
+          else { b.innerHTML = '<span class="bf-av-ph">?</span>'; b.classList.add('bf-av-empty'); }
         });
         injectScoreAvatars();
         injectResultAvatars();
@@ -179,8 +195,8 @@ export const AVATAR_PATCH = `
       saveAv({ url: pa[nick], name: '' });
       document.querySelectorAll('.bf-av-pick').forEach(function(b){
         var av = window.bfMyAvatar;
-        if (av && av.url) b.innerHTML = '<img src="' + av.url + '">';
-        else b.innerHTML = '<span class="bf-av-ph">?</span>';
+        if (av && av.url) { b.innerHTML = '<img src="' + av.url + '">'; b.classList.remove('bf-av-empty'); }
+        else { b.innerHTML = '<span class="bf-av-ph">?</span>'; b.classList.add('bf-av-empty'); }
       });
       injectScoreAvatars();
       injectResultAvatars();
@@ -203,17 +219,50 @@ export const AVATAR_PATCH = `
       btn.className = 'bf-av-pick';
       function refresh(){
         var av = window.bfMyAvatar;
-        if (av && av.url) btn.innerHTML = '<img src="' + av.url + '">';
-        else btn.innerHTML = '<span class="bf-av-ph">?</span>';
+        if (av && av.url) { btn.innerHTML = '<img src="' + av.url + '">'; btn.classList.remove('bf-av-empty'); }
+        else { btn.innerHTML = '<span class="bf-av-ph">?</span>'; btn.classList.add('bf-av-empty'); }
       }
       refresh();
       btn.title = L('Elige tu avatar', 'Choose your avatar');
       btn.onclick = function(e){ e.preventDefault(); e.stopPropagation(); openModal(); };
       row.insertBefore(btn, row.firstChild);
+      // Resalta el botón con pulso dorado cuando no hay avatar elegido.
+      if (!window.bfMyAvatar || !window.bfMyAvatar.url) btn.classList.add('bf-av-empty');
+      else btn.classList.remove('bf-av-empty');
     });
   }
   new MutationObserver(renderPickers).observe(document.documentElement, { childList:true, subtree:true });
   setInterval(renderPickers, 600);
+
+  // ---- Avatar OBLIGATORIO: bloquea startVsAI, localStart, hostCreate,
+  // clientJoin si no hay avatar elegido. Se instala después de nickRequired
+  // (que envuelve las mismas funciones con su flag __bfNick), así ambos
+  // chequeos (nick + avatar) deben pasar para continuar.
+  function hookRequired(){
+    function wrap(name, getInput){
+      if(typeof window[name]!=='function'||window[name].__bfAvReq)return false;
+      var orig=window[name];
+      window[name]=function(){
+        if(!window.bfMyAvatar||!window.bfMyAvatar.url){
+          var msg=L('Elige tu avatar para continuar','Choose your avatar to continue');
+          try{if(typeof notif==='function')notif(msg);else alert(msg);}catch(e){}
+          var input=getInput();
+          if(input){try{input.focus();}catch(e){}}
+          openModal();
+          return;
+        }
+        return orig.apply(this,arguments);
+      };
+      window[name].__bfAvReq=1;
+      return true;
+    }
+    wrap('startVsAI',function(){return document.getElementById('p1name');});
+    wrap('localStart',function(){return document.getElementById('p1name');});
+    wrap('hostCreate',function(){return document.getElementById('hname')||document.querySelector('#s-lobby input[id*="name" i]');});
+    wrap('clientJoin',function(){return document.getElementById('jname')||document.querySelector('#s-lobby input[id*="name" i]');});
+  }
+  hookRequired();
+  var _bfAvReqTries=0,_bfAvReqIv=setInterval(function(){hookRequired();if(_bfAvReqTries++>100)clearInterval(_bfAvReqIv);},200);
 
   // ---- Avatares en la barra de marcador ----
   function injectScoreAvatars() {
