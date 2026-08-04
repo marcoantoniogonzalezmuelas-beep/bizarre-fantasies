@@ -72,7 +72,6 @@ import { ABILITY_ANIM_PATCH } from '@/lib/abilityAnimPatch';
 import { CHAT_STATUS_PATCH } from '@/lib/chatStatusPatch';
 import { GAME_LOG_PATCH } from '@/lib/gameLogPatch';
 import { SPEED_GAUGE_PATCH } from '@/lib/speedGaugePatch';
-import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 import ChatOverlay from '@/components/chat/ChatOverlay';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
@@ -746,7 +745,6 @@ export default function Home() {
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
-      {!IS_MOBILE && showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={1} isMobile={false} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
@@ -789,7 +787,6 @@ export default function Home() {
                   <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} {t('cartas · Base Set')}</div>
                 </div>
               </Link>
-              {!demoModalOpen && <FlashNewsMarquee inGameSpace mobScale={1} isMobile pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
             </div>
           </div>
         </div>
