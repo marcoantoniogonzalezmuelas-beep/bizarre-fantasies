@@ -4,8 +4,10 @@ import { ArrowLeft } from 'lucide-react';
 import RaceCard from '@/components/cards/RaceCard';
 import { RACES } from '@/lib/cardData';
 import { t } from '@/lib/i18n';
+import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 export default function RacesPage() {
+  useDesktopZoom();
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0d0a14, #0a0810)' }}>
       <div className="max-w-4xl mx-auto px-4 py-6">

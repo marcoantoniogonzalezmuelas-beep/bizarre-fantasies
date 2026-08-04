@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Target } from 'lucide-react';
 import { t } from '@/lib/i18n';
+import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png';
@@ -103,6 +104,7 @@ function Step({ n, title, body }) {
 }
 
 export default function Reglas() {
+  useDesktopZoom();
   return (
     <div className="min-h-screen relative text-[#efe9dc]" style={{ background: '#0e0a16' }}>
       <div className="fixed inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BG_IMG})` }} />

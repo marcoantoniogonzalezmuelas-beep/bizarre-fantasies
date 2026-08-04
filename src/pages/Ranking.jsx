@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
 import { t } from '@/lib/i18n';
+import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5f6dbe23d_generated_image.png';
@@ -26,6 +27,7 @@ function top(map, n = 10, extraMap) {
 }
 
 export default function Ranking() {
+  useDesktopZoom();
   const [results, setResults] = useState(null);
   const [artMap, setArtMap] = useState({});
   const [playerAvatars, setPlayerAvatars] = useState({});
