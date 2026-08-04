@@ -48,14 +48,30 @@ export default function FlashNewsAdmin() {
 
   function reset() { setText(''); setTextEn(''); setActive(true); setOrder(0); setEditingId(null); }
 
+  // Autotraduce el texto en castellano al inglés con la IA antes de guardar,
+  // para que el cartel se muestre siempre en el idioma activo del juego.
+  // El admin sólo escribe en castellano; la versión inglesa se genera sola.
+  async function autoTranslateEn(esText) {
+    const res = await base44.integrations.Core.InvokeLLM({
+      prompt: `You are a professional English translator for the dark-fantasy card game "Bizarre Fantasies".
+Translate the following Spanish news headline into natural, punchy English game-marketing copy.
+Preserve proper nouns (hero/card names stay as-is). Return ONLY the English translation, nothing else.
+
+${esText}`,
+    });
+    return (typeof res === 'string' ? res : (res?.translation || res?.text || '')).trim();
+  }
+
   async function save() {
     if (!text.trim()) return;
     setSaving(true);
     try {
+      let en = '';
+      try { en = await autoTranslateEn(text.trim()); } catch (e) { en = ''; }
       if (editingId) {
-        await base44.entities.FlashNews.update(editingId, { text: text.trim(), text_en: textEn.trim(), active, order: Number(order) || 0 });
+        await base44.entities.FlashNews.update(editingId, { text: text.trim(), text_en: en, active, order: Number(order) || 0 });
       } else {
-        await base44.entities.FlashNews.create({ text: text.trim(), text_en: textEn.trim(), active, order: Number(order) || 0 });
+        await base44.entities.FlashNews.create({ text: text.trim(), text_en: en, active, order: Number(order) || 0 });
       }
       await load();
       reset();
@@ -221,14 +237,7 @@ export default function FlashNewsAdmin() {
               rows={3}
               className="w-full resize-none rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"
             />
-            <label className="mt-1 block text-[11px] font-black uppercase tracking-wider text-[#b06cff]">Traducción al inglés (opcional)</label>
-            <textarea
-              value={textEn}
-              onChange={(e) => setTextEn(e.target.value)}
-              placeholder="English version of the news (optional)..."
-              rows={3}
-              className="w-full resize-none rounded-xl border border-[#c06bff33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#c06bff]"
-            />
+            <p className="mt-1 text-[11px] text-[#8a7faa]">La versión en inglés se traduce automáticamente al guardar.</p>
             <div className="flex flex-wrap items-center gap-4">
               <label className="flex items-center gap-2 text-sm text-[#cfc6dd]">
                 <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="h-4 w-4 accent-[#ffd24a]" />
