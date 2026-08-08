@@ -108,34 +108,30 @@ export const AI_STRATEGY_PATCH = `
   }
 
   // ---- 2) Uso de habilidades más frecuente ----
-  // Envuelve useAbility (si la IA la usa) para que use habilidades según el
-  // umbral abilityUsage. Si abilityUsage > 0.7, la IA casi siempre usa su
-  // habilidad cuando puede; si < 0.4, la guarda para momentos clave.
+  // La IA del juego decide internamente cuándo usar habilidades. Como no
+  // podemos enganchar su decisión directamente, usamos dos vías:
+  //  A) Envolver las funciones de decisión de la IA si existen.
+  //  B) Hook sobre stepTurn: cuando empieza el turno de un héroe IA, si
+  //     abilityUsage es alto y el héroe tiene habilidad disponible, la
+  //     forzamos ANTES de que la IA tome su decisión conservadora.
   function installAbilityStrategy(){
-    // El juego decide internamente cuándo la IA usa habilidades. No podemos
-    // enganchar la decisión interna, pero podemos hacer que la IA sea más
-    // propensa a usar su habilidad afectando el flujo de turnos.
-    // Nota: esto es heurístico — si el juego expone una función de decisión
-    // de la IA para habilidades, la envolvemos; si no, almacenamos la estrategia
-    // para que otros parches la usen.
-    var fns = ['aiUseAbility', 'aiAct', 'aiTurn', 'aiDecide'];
+    // A) Envolver funciones de decisión de la IA (si existen).
+    var fns = ['aiUseAbility', 'aiAct', 'aiTurn', 'aiDecide', 'aiChooseAction', 'aiCombat', 'doAiTurn'];
     for (var i = 0; i < fns.length; i++) {
       var name = fns[i];
       if (typeof window[name] === 'function' && !window[name].__bfStrat) {
         (function(n){
           var inner = window[n];
           window[n] = function(){
-            // Si la IA tiene habilidad disponible y abilityUsage es alto,
-            // forzamos su uso saltándonos la lógica conservadora del juego.
             try {
               if (typeof G !== 'undefined' && G && isAiGame() && STRAT.abilityUsage > 0.7) {
                 var side = aiSide();
                 if (side && G.team && G.team[side]) {
                   var hero = (G.team[side] || []).find(function(h){
-                    return h && !h.abilityUsed && h.mana >= (h.maxMana || 1);
+                    return h && h.alive && !h.abilityUsed && h.mana >= (h.maxMana || 1);
                   });
                   if (hero && typeof window.useAbility === 'function' && Math.random() < STRAT.abilityUsage) {
-                    return window.useAbility(hero);
+                    return window.useAbility(side, hero);
                   }
                 }
               }
@@ -146,6 +142,41 @@ export const AI_STRATEGY_PATCH = `
         })(name);
       }
     }
+  }
+
+  // B) Hook sobre stepTurn: cuando empieza el turno de un héroe de la IA,
+  //    si tiene habilidad disponible y abilityUsage es alto, la usa.
+  function installStepTurnAbilityHook(){
+    if (typeof window.stepTurn !== 'function' || window.stepTurn.__bfStratAbility) return;
+    var inner = window.stepTurn;
+    window.stepTurn = function(){
+      try {
+        if (typeof G !== 'undefined' && G && isAiGame() && STRAT.abilityUsage > 0.6) {
+          var side = aiSide();
+          var BB = (typeof B !== 'undefined') ? B : null;
+          if (side && BB && BB.current && BB.current.side === side) {
+            var hero = (G.team[side] || []).find(function(h){
+              return h && h.alive && h.id === BB.current.id;
+            });
+            // Si el héroe IA tiene habilidad disponible y maná suficiente,
+            // y el azar supera el umbral de abilityUsage, fuerza la habilidad.
+            if (hero && !hero.abilityUsed && hero.mana >= (hero.maxMana || 1) &&
+                typeof window.useAbility === 'function' && Math.random() < STRAT.abilityUsage) {
+              setTimeout(function(){
+                try {
+                  if (typeof B !== 'undefined' && B && B.current && B.current.side === side &&
+                      B.current.id === hero.id && !B.over && !B.pending) {
+                    window.useAbility(side, hero);
+                  }
+                } catch(e) {}
+              }, 300);
+            }
+          }
+        }
+      } catch(e) {}
+      return inner.apply(this, arguments);
+    };
+    window.stepTurn.__bfStratAbility = 1;
   }
 
   // ---- 3) Timing de compras ----
@@ -183,6 +214,7 @@ export const AI_STRATEGY_PATCH = `
   var t = setInterval(function(){
     installBidStrategy();
     installAbilityStrategy();
+    installStepTurnAbilityHook();
     installPurchaseStrategy();
     if (tries++ > 120) clearInterval(t);
   }, 300);

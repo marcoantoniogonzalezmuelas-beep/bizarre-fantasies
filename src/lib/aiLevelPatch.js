@@ -236,15 +236,40 @@ export const AI_LEVEL_PATCH = `
   }
   setInterval(installAiName, 300);
 
-  // Mantiene el nombre del nivel durante la partida.
+  // Avatares de respaldo para nombres de IA que no son de nivel (p. ej.
+  // "Farola Enfadada" — un nombre aleatorio del juego base que aparece a
+  // veces antes de que el parche de nivel lo sobreescriba, o en modos sin
+  // selector de nivel). Se asignan aleatoriamente del catálogo del padre.
+  var FALLBACK_AI_AVATARS = [
+    'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/a043f976a_generated_image.png'
+  ];
+  window.__bfFallbackAiAvatars = FALLBACK_AI_AVATARS;
+  window.addEventListener('message', function(e){
+    if (e.data && Array.isArray(e.data.bfAvatarCatalog)) {
+      var urls = (e.data.bfAvatarCatalog || []).map(function(a){ return a && a.url; }).filter(Boolean);
+      if (urls.length) { FALLBACK_AI_AVATARS = urls; window.__bfFallbackAiAvatars = urls; }
+    }
+  });
+
+  // Mantiene el nombre del nivel y el avatar durante la partida.
   setInterval(function(){
     if (!isAiGame()) return;
     if (typeof G === 'undefined' || !G || !G.names) return;
     var lvl = window.__bfAiLevelMeta;
-    if (!lvl) return;
-    var expected = isEn() ? lvl.name_en : lvl.name;
-    if (G.names.o && G.names.o !== expected && G.names.o !== (isEn() ? lvl.name : lvl.name_en)) {
+    var expected = lvl ? (isEn() ? lvl.name_en : lvl.name) : '';
+    // Si el nivel está activo, fuerza su nombre Y su avatar.
+    if (lvl && expected && G.names.o && G.names.o !== expected && G.names.o !== (isEn() ? lvl.name : lvl.name_en)) {
       G.names.o = expected;
+      if (lvl.avatar) window.bfOppAvatar = { id: 'ai_' + lvl.id, name: expected, url: lvl.avatar };
+    }
+    // Si NO hay nivel activo (nombre tipo "Farola Enfadada" u otro aleatorio),
+    // asigna un avatar de respaldo para que el rival tenga cara.
+    if (!lvl && G.names.o && !window.bfOppAvatar) {
+      var pool = FALLBACK_AI_AVATARS;
+      if (pool.length) {
+        var av = pool[Math.floor(Math.random() * pool.length)];
+        window.bfOppAvatar = { id: 'ai_fallback', name: G.names.o, url: av };
+      }
     }
   }, 2000);
 

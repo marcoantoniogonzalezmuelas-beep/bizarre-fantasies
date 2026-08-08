@@ -18,15 +18,21 @@ export default async function (req: Request): Promise<Response> {
     const logs = await base44.asServiceRole.entities.GameLog.list('-created_date', 200);
 
     if (!logs || logs.length === 0) {
+      // Sin logs: usamos heurísticas basadas en el meta del juego.
+      // Héroes fuertes que la IA debería priorizar robar en la subasta
+      // (héroes con buenas stats/habilidades que suelen ganar partidas).
       return Response.json({
         strategy: {
-          bidAggression: 0.55,
-          abilityUsage: 0.6,
+          bidAggression: 0.65,
+          abilityUsage: 0.75,
           targetPriority: 'balanced',
           purchaseTiming: 'balanced',
-          preferHeroes: [],
+          preferHeroes: [
+            'Batu', 'Serafis', 'Morthex', 'Vorn', 'Gorvak',
+            'Narbon', 'Hildra', 'Alfredinho', 'Sylvara', 'Aelion'
+          ],
           avoidHeroes: [],
-          notes: 'Sin datos aún — estrategia por defecto.',
+          notes: 'Sin partidas registradas aún. Estrategia heurística: la IA prioriza robar héroes fuertes del meta (Batu, Serafis, Morthex…) y usa habilidades con frecuencia. Se ajustará automáticamente cuando haya partidas registradas.',
         },
         stats: { total: 0, aiGames: 0, aiWinRate: 0 },
       });
