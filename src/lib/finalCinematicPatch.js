@@ -56,26 +56,49 @@ export const FINAL_CINEMATIC_PATCH = `
     if(window.flushFx.__bfFinalKill)return true;
     var original=window.flushFx;
     window.flushFx=function(events){
-      var result=original.apply(this,arguments);
+      var hasDeath=false;
       (events||[]).forEach(function(ev){
         if(!ev||ev.k!=='death')return;
+        hasDeath=true;
         setTimeout(function(){
           var card=document.getElementById('b_'+ev.side+'_'+ev.id);
-          if(card&&typeof window.bfKillCinematic==='function')window.bfKillCinematic(card);
+          if(card){
+            if(typeof window.bfKillCinematic==='function')window.bfKillCinematic(card);
+            card.classList.add('bf-truedead');
+          }
         },60);
       });
-      return result;
+      // Si hubo una muerte, el siguiente endTurn espera a que termine la
+      // cinemática de muerte (1.7s) para no solaparse con la siguiente acción.
+      if(hasDeath) window.__bfDeathDelayUntil=Date.now()+1700;
+      return original.apply(this,arguments);
     };
     window.flushFx.__bfFinalKill=1;
     return true;
   }
 
+  function installDeathDelay(){
+    if(typeof window.endTurn!=='function'||window.endTurn.__bfDeathDelay)return false;
+    var orig=window.endTurn;
+    window.endTurn=function(){
+      var args=arguments,self=this;
+      var until=window.__bfDeathDelayUntil||0,now=Date.now();
+      if(until>now){
+        setTimeout(function(){orig.apply(self,args);},until-now);
+      }else{
+        return orig.apply(self,args);
+      }
+    };
+    window.endTurn.__bfDeathDelay=1;
+    return true;
+  }
+
   var attempts=0, timer=setInterval(function(){
     attempts++;
-    var a=installResult(), b=installCheckWin(), c=installDeath();
-    if((a&&c)||attempts>300)clearInterval(timer);
+    var a=installResult(), b=installCheckWin(), c=installDeath(), d=installDeathDelay();
+    if((a&&c&&d)||attempts>300)clearInterval(timer);
   },200);
-  installResult(); installCheckWin(); installDeath();
+  installResult(); installCheckWin(); installDeath(); installDeathDelay();
 })();
 </script>
 `;

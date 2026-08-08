@@ -13,13 +13,17 @@
 export const MOBILE_ANTIFLICKER_PATCH = `
 <style id="bf-antiflicker">
 *,*::before,*::after{will-change:auto!important}
-[class^="bf-"],[class*=" bf-"],
-[class^="bf-"]::before,[class*=" bf-"]::before,
-[class^="bf-"]::after,[class*=" bf-"]::after{
+/* Excluye .bhero: los héroes caídos (bf-truedead) necesitan su filter
+   grayscale, y los retratos de batalla no son capas FX temporales. */
+[class^="bf-"]:not(.bhero),[class*=" bf-"]:not(.bhero),
+[class^="bf-"]:not(.bhero)::before,[class*=" bf-"]:not(.bhero)::before,
+[class^="bf-"]:not(.bhero)::after,[class*=" bf-"]:not(.bhero)::after{
   mix-blend-mode:normal!important;
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
   filter:none!important;
+  box-shadow:none!important;
+  clip-path:none!important;
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
 }

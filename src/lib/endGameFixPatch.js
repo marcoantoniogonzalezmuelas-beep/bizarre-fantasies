@@ -345,6 +345,25 @@ export const END_GAME_FIX_PATCH = `
     } catch(e) {}
   }, 500);
 
+  // ---- 1b) MARCA LOS HÉROES CAÍDOS con bf-truedead (lapida 💀 RIP) ----
+  // La CSS del parche ya define el estilo (grayscale + lapida), pero nada
+  // aplicaba la clase. Este monitor revisa los héroes de cada bando y
+  // añade/quita bf-truedead según estén vivos o muertos.
+  setInterval(function(){
+    try {
+      if(typeof G === 'undefined' || !G || !G.team) return;
+      ['p','o'].forEach(function(side){
+        (G.team[side] || []).forEach(function(h){
+          if(!h || h._token || h._bfDuck) return;
+          var card = document.getElementById('b_' + side + '_' + (h.id || ''));
+          if(!card) return;
+          if(!h.alive) card.classList.add('bf-truedead');
+          else card.classList.remove('bf-truedead');
+        });
+      });
+    } catch(e) {}
+  }, 400);
+
   // ---- 2) CINEMÁTICA DE MUERTE en batalla ----
   // Animación que se reproduce sobre la carta del héroe cuando cae en combate.
   window.bfKillCinematic = function(card) {
