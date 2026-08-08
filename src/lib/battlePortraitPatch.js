@@ -26,7 +26,13 @@ export const BATTLE_PORTRAIT_PATCH = `
     '.bf-battle-art{position:absolute!important;left:-22px!important;top:-18px!important;bottom:-18px!important;width:216px!important;height:auto!important;aspect-ratio:auto!important;border:0!important;border-radius:0!important;overflow:hidden!important;background-size:cover!important;background-position:center 10%!important;background-repeat:no-repeat!important;background-color:#0a0710!important;box-shadow:none!important;filter:saturate(1.14) contrast(1.1)!important;transform:none!important;opacity:1!important;z-index:1!important}',
     '.bf-battle-art::before{display:none!important}',
     '.bf-battle-art::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(21,16,31,.95) 100%)!important;mix-blend-mode:normal!important}',
-    '.bhero>*:not(.bf-battle-art){position:relative;z-index:2}',
+    '.bhero>*:not(.bf-battle-art):not(.bf-battle-zoom){position:relative;z-index:2}',
+    // Lupa (zoom) sobre el retrato del héroe en batalla: se mantiene visible y
+    // clickeable, igual que en la fase de equipamiento. Sin esta regla, el
+    // selector genérico .bhero>*:not(.bf-battle-art) le robaría la posición
+    // absoluta y la lupa desaparecería del recuadro del héroe.
+    '.bhero .bf-battle-zoom{position:absolute!important;left:6px!important;top:6px!important;z-index:12!important;width:30px!important;height:30px!important;font-size:14px!important;background:rgba(8,5,14,.82)!important;border:1.5px solid rgba(255,210,74,.7)!important;color:#ffe49a!important;box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 12px rgba(255,210,74,.25)!important;backdrop-filter:blur(4px)!important;transition:all .15s ease!important}',
+    '.bhero .bf-battle-zoom:hover{background:rgba(255,210,74,.35)!important;transform:scale(1.18)!important;box-shadow:0 3px 12px rgba(0,0,0,.7),0 0 20px rgba(255,210,74,.6)!important}',
     '.bhero.active-turn .bf-battle-art{filter:saturate(1.3) contrast(1.16) brightness(1.07)!important}',
     // ---- Campo de batalla épico ----
     '.bhero{position:relative!important;overflow:hidden!important;border-radius:14px!important;padding-left:172px!important;min-height:188px!important;background:linear-gradient(135deg,rgba(34,24,58,.96),rgba(14,9,26,.98))!important;border:1.5px solid rgba(255,210,74,.22)!important;box-shadow:0 6px 16px rgba(0,0,0,.5)!important}',
