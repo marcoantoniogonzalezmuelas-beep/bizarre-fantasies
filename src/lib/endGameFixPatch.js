@@ -105,40 +105,67 @@ export const END_GAME_FIX_PATCH = `
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Héroe VIVO (ganador): brillo dorado, vibrante */
+/* Héroe VENCEDOR: aura de color giratoria + corona + chispas */
 #bf-end-cine .bf-cine-team-winner .bf-cine-portrait {
   border-color: #ffd24a;
   box-shadow: 0 8px 24px rgba(0,0,0,.6), 0 0 20px rgba(255,210,74,.4), inset 0 0 0 1px rgba(255,240,180,.3);
   animation: bfCinePortIn .6s cubic-bezier(.2,.8,.3,1) both, bfCineWinnerGlow 2.4s ease-in-out infinite calc(var(--bf-delay, 0s) + .6s);
 }
+/* Aura de color (conic-gradient arcoíris) girando detrás del héroe */
 #bf-end-cine .bf-cine-team-winner .bf-cine-portrait::after {
-  content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,210,74,.08) 0%, transparent 30%, transparent 60%, rgba(0,0,0,.3) 100%);
+  content: ''; position: absolute; inset: -50%; z-index: 2; pointer-events: none;
+  background: conic-gradient(from 0deg, rgba(255,210,74,.22), rgba(255,120,60,.16), rgba(180,90,255,.16), rgba(90,180,255,.16), rgba(120,255,160,.16), rgba(255,210,74,.22));
+  animation: bfAuraSpin 6s linear infinite;
+}
+/* Corona flotando sobre el vencedor */
+#bf-end-cine .bf-cine-team-winner .bf-cine-portrait::before {
+  content: "👑"; position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+  z-index: 3; font-size: clamp(22px, 4.5vw, 34px); line-height: 1;
+  filter: drop-shadow(0 3px 6px #000) drop-shadow(0 0 12px rgba(255,210,74,.7)) !important;
+  animation: bfCrownFloat 2.5s ease-in-out infinite;
+}
+/* Chispas brillantes sobre el vencedor */
+#bf-end-cine .bf-cine-team-winner .bf-cine-portrait .bf-cine-spark {
+  position: absolute; left: var(--sx,50%); top: var(--sy,50%); z-index: 4;
+  width: 6px; height: 6px; pointer-events: none;
+  background: radial-gradient(circle, #fff 0%, rgba(255,210,74,.85) 40%, transparent 70%);
+  border-radius: 50%;
+  animation: bfSparkle 2.2s ease-in-out infinite var(--sd,0s);
 }
 @keyframes bfCineWinnerGlow {
   0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,.6), 0 0 16px rgba(255,210,74,.35), inset 0 0 0 1px rgba(255,240,180,.3); }
   50% { box-shadow: 0 8px 24px rgba(0,0,0,.6), 0 0 32px rgba(255,210,74,.7), 0 0 50px rgba(255,180,40,.4), inset 0 0 0 1px rgba(255,245,200,.5); }
 }
+@keyframes bfAuraSpin { to { transform: rotate(360deg); } }
+@keyframes bfCrownFloat { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-4px); } }
+@keyframes bfSparkle { 0%,100% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1.6); } }
 
-/* Héroe CAÍDO (perdedor): grayscale + velo oscuro + lápida */
+/* Héroe CAÍDO: luz tenue rojiza + zarzas entrelazadas + tumba con gusanos */
 #bf-end-cine .bf-cine-fallen .bf-cine-portrait {
-  filter: grayscale(.9) brightness(.4) contrast(1.1) !important;
-  border-color: #5a4a72 !important;
-  box-shadow: 0 8px 20px rgba(0,0,0,.85), inset 0 0 30px rgba(0,0,0,.7) !important;
-  opacity: .88 !important;
+  filter: brightness(.5) contrast(1.25) sepia(.55) hue-rotate(-25deg) saturate(1.5) !important;
+  border-color: #7a2424 !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.85), 0 0 28px rgba(140,30,30,.45), inset 0 0 35px rgba(50,8,8,.7) !important;
+  opacity: .92 !important;
 }
+/* Velo rojizo + enredadera de espinas (SVG de zarzas entrelazadas) */
 #bf-end-cine .bf-cine-fallen .bf-cine-portrait::after {
   content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  background: linear-gradient(180deg, rgba(20,10,30,.5), rgba(0,0,0,.65));
+  background:
+    linear-gradient(180deg, rgba(90,15,15,.3) 0%, rgba(30,5,5,.5) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg stroke='%232a1010' stroke-width='1.4' fill='none' opacity='0.55'%3E%3Cpath d='M0,40 Q20,20 40,40 T80,40'/%3E%3Cpath d='M0,60 Q20,45 40,60 T80,60'/%3E%3Cpath d='M0,20 Q20,5 40,20 T80,20'/%3E%3Cpath d='M12,28 l-4,-6 M28,48 l4,6 M44,28 l-4,-6 M60,48 l4,6 M8,55 l-4,-6 M24,15 l4,6 M40,55 l-4,-6 M56,15 l4,6'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover, 80px 80px;
   border-radius: inherit;
 }
-/* Lápida sobre el retrato caído */
+/* Tumba en la tierra con gusanos en la base del retrato caído */
 #bf-end-cine .bf-cine-fallen .bf-cine-portrait::before {
-  content: "🪦"; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
-  z-index: 3; font-size: clamp(26px, 5vw, 42px); line-height: 1;
-  filter: drop-shadow(0 3px 6px #000) drop-shadow(0 0 10px rgba(120,100,150,.6)) !important;
-  animation: bfTombAppear .6s ease-out calc(.8s + var(--bf-delay)) both;
+  content: "🪱 🪦 🪱";
+  position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+  z-index: 3; font-size: clamp(13px, 2.8vw, 18px); line-height: 1;
+  filter: drop-shadow(0 2px 4px #000) drop-shadow(0 0 8px rgba(140,30,30,.5)) !important;
+  white-space: nowrap;
+  animation: bfTombAppear .6s ease-out calc(.8s + var(--bf-delay)) both, bfWormCrawl 3s ease-in-out infinite calc(1.4s + var(--bf-delay));
 }
+@keyframes bfWormCrawl { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-3px); } }
 @keyframes bfTombAppear {
   0% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(.5); }
   60% { opacity: 1; transform: translateX(-50%) translateY(4px) scale(1.1); }
@@ -208,13 +235,23 @@ export const END_GAME_FIX_PATCH = `
 .bhero.bf-truedead .bf-battle-art {
   filter: grayscale(1) brightness(.45) !important;
 }
+/* Marcador de muerte bizarro: lápida de piedra con calavera y RIP esculpido */
 .bhero.bf-truedead::after {
-  content: "🪦"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-  z-index: 12; font-size: clamp(20px, 4vw, 32px); line-height: 1;
-  filter: drop-shadow(0 3px 6px #000) drop-shadow(0 0 10px rgba(120,100,150,.6)) !important;
+  content: "💀\A RIP"; white-space: pre; text-align: center;
+  position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
+  z-index: 12; font-family: 'Cinzel', serif; font-weight: 1000;
+  font-size: clamp(8px, 1.8vw, 11px); letter-spacing: 1.5px; line-height: 1.2;
+  color: #d4c5a0;
+  background: linear-gradient(180deg, #3a2e48 0%, #2a2038 45%, #181028 100%);
+  border: 2px solid #6a5a82;
+  border-radius: 11px 11px 5px 5px;
+  padding: 3px 8px 5px;
+  box-shadow: 0 4px 10px #000, 0 0 12px rgba(120,100,150,.45), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -2px 4px rgba(0,0,0,.5) !important;
+  text-shadow: 0 0 8px rgba(180,160,200,.6), 0 1px 2px #000;
   pointer-events: none;
-  animation: bfTombAppear .5s ease-out;
+  animation: bfTombAppear .5s ease-out, bfTombWobble 4s ease-in-out infinite 1.5s;
 }
+@keyframes bfTombWobble { 0%,100% { transform: translateX(-50%) rotate(-1.5deg); } 50% { transform: translateX(-50%) rotate(2deg); } }
 </style>
 <script>
 (function(){
@@ -366,8 +403,11 @@ export const END_GAME_FIX_PATCH = `
           var pc = fall ? 'bf-cine-fallen' : '';
           var nm = (hh && hh.name) ? hh.name : 'Héroe';
           var el = (hh && (hh.eliteMode || hh._bfElite)) ? ' ★' : '';
+          var sparkles = isWinner
+            ? '<span class="bf-cine-spark" style="--sx:18%;--sy:25%;--sd:0s"></span><span class="bf-cine-spark" style="--sx:72%;--sy:45%;--sd:.7s"></span><span class="bf-cine-spark" style="--sx:38%;--sy:68%;--sd:1.4s"></span><span class="bf-cine-spark" style="--sx:82%;--sy:75%;--sd:2.1s"></span>'
+            : '';
           return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px">' +
-            '<div class="bf-cine-portrait ' + pc + '" style="background-image:url(\\'' + u + '\\');--bf-delay:' + dl + '"></div>' +
+            '<div class="bf-cine-portrait ' + pc + '" style="background-image:url(\\'' + u + '\\');--bf-delay:' + dl + '">' + sparkles + '</div>' +
             '<div class="bf-cine-name" style="--bf-delay:' + dl + '">' + nm + el + '</div>' +
           '</div>';
         }).join('');
