@@ -377,6 +377,39 @@ export const END_GAME_FIX_PATCH = `
     var existing = document.getElementById('bf-end-cine');
     if(existing) existing.remove();
 
+    // Limpia la pantalla de resultado estática: SOLO marcador, sin héroes.
+    // (Online ya la limpia matchModePatch; esto es para IA/local.)
+    var bfIsOnline = (typeof online === 'function') && online();
+    if(!bfIsOnline) {
+      try {
+        var rs = document.getElementById('s-result');
+        if(rs) {
+          var gen = (window.bfSeriesScore && window.bfSeriesScore.get) ? window.bfSeriesScore.get() : null;
+          var nameP = (gen && gen.selfNick) || (typeof G !== 'undefined' && G.names && G.names.p) || 'Tú';
+          var nameO = (gen && gen.oppNick) || (typeof G !== 'undefined' && G.names && G.names.o) || 'Rival';
+          var sp = gen ? gen.self : 0, so = gen ? gen.opp : 0;
+          var L2 = function(es, en) { try { return localStorage.getItem('bfLang') === 'en' ? en : es; } catch(e) { return es; } };
+          var rTitle = youWin ? L2('¡VICTORIA!', 'VICTORY!') : L2('DERROTA', 'DEFEAT');
+          var rSub = youWin ? L2('Has ganado la partida', 'You won the match') : L2('Tu rival ha ganado', 'Your rival won');
+          rs.innerHTML = '<div style="text-align:center;padding:20px">' +
+            '<div style="font-size:72px;margin-bottom:4px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.6))">' + (youWin ? '🏆' : '💀') + '</div>' +
+            '<div class="gtitle" style="font-size:clamp(34px,7vw,64px);letter-spacing:1px">' + rTitle + '</div>' +
+            '<div style="font-size:18px;color:#ffd24a;margin:8px 0 2px;font-weight:700">' + rSub + '</div>' +
+            '<div style="margin:20px auto 8px;max-width:460px;display:flex;justify-content:center;gap:32px;align-items:center;padding:24px 32px;border-radius:20px;background:linear-gradient(180deg,rgba(28,18,50,.85),rgba(10,6,20,.92));border:2px solid rgba(255,210,74,.45);box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 36px rgba(255,210,74,.18)">' +
+              '<div style="text-align:center"><div style="font-size:15px;font-weight:800;color:#cfc6dd;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nameP + '</div><div style="font-family:Cinzel,serif;font-weight:1000;font-size:clamp(52px,11vw,84px);color:#ffd24a;line-height:1;text-shadow:0 3px 10px #000,0 0 28px rgba(255,210,74,.55)">' + sp + '</div></div>' +
+              '<div style="font-family:Cinzel,serif;font-weight:1000;font-size:clamp(30px,7vw,52px);color:#8a8099">—</div>' +
+              '<div style="text-align:center"><div style="font-size:15px;font-weight:800;color:#cfc6dd;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nameO + '</div><div style="font-family:Cinzel,serif;font-weight:1000;font-size:clamp(52px,11vw,84px);color:#ffd24a;line-height:1;text-shadow:0 3px 10px #000,0 0 28px rgba(255,210,74,.55)">' + so + '</div></div>' +
+            '</div>' +
+            '<div style="font-size:13px;color:#ffe49a;font-weight:700;margin-top:6px;letter-spacing:.3px">' + L2('Marcador general (histórico)', 'General score (all-time)') + '</div>' +
+            '<div style="margin-top:24px">' +
+              '<button class="btn primary big" onclick="goSetup()">' + L2('Jugar de nuevo', 'Play again') + '</button>' +
+              '<button class="btn big" style="margin-left:10px" onclick="show(\'s-title\')">' + L2('Volver al inicio', 'Back to title') + '</button>' +
+            '</div>' +
+          '</div>';
+        }
+      } catch(e) {}
+    }
+
     try {
       if(typeof G === 'undefined' || !G || !G.team) return;
 
