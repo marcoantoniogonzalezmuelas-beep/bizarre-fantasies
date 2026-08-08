@@ -14,10 +14,10 @@ export const NARBON_ELITE_PATCH = `
     var originalUseAbility = window.useAbility;
     window.useAbility = function(side, hero, done){
       if(hero && hero.id === 'nar' && hero.eliteMode && !hero.abilityUsed){
-        // La cinemática de Narbón la gestiona epicAbilityFxPatch vía escaneo
-        // de abilityUsed, pero también la disparamos aquí para feedback
-        // inmediato en el host (igual que los demás héroes épicos).
-        try{ if(typeof window.__bfPlayEpicCine==='function') window.__bfPlayEpicCine(side,hero); }catch(e){}
+        // La cinemática de Narbón la gestiona abilityAnimPatch (animación 3D
+        // desde la BD: ability_anim_url / elite_ability_anim_url). La disparamos
+        // aquí para feedback inmediato en el host.
+        try{ if(typeof window.__bfPlayAbilityAnim==='function') window.__bfPlayAbilityAnim(side,hero); }catch(e){}
         var foeSide = side === 'p' ? 'o' : 'p';
         var foes = typeof living === 'function' ? living(foeSide) : (G.team[foeSide] || []).filter(function(h){return h&&h.alive;});
         foes.forEach(function(t){
