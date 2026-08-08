@@ -6,9 +6,19 @@
 // 2) CINEMÁTICA FINAL (bfEndCinematic): crea un overlay a pantalla completa que
 //    muestra ambos equipos — los ganadores con brillo dorado y los caídos en
 //    gris con lápida 🪦. Es el remate visual épico de cada partida.
+//    Solo se lanza cuando se llama con un argumento booleano explícito (true =
+//    victoria, false = derrota). El IIFE del juego llama bfEndCinematic() sin
+//    argumentos cada 400ms (línea 2426 del entry.ts) — esas llamadas se ignoran
+//    para no mostrar la cinemática durante la batalla.
 //
 // 3) CINEMÁTICA DE MUERTE (bfKillCinematic): animación de muerte cuando un
 //    héroe cae en batalla — humo oscuro, calavera y lápida.
+//
+// ARTE DE LOS HÉROES: ART_BY_ID / ART_BY_NAME / ELITE_BY_ID son variables
+// LOCALES del IIFE del juego (no están en window). Este parche recibe el mapa
+// de arte desde la página padre por postMessage (bfBattleArt y bfAvatarMap) y
+// lo guarda en window.__bfBattleArtMap / window.__bfAvatarMap para que la
+// cinemática pueda mostrar el retrato de cada héroe.
 export const END_GAME_FIX_PATCH = `
 <style id="bf-end-game-fix">
 /* ---- CINEMÁTICA FINAL: overlay a pantalla completa ---- */
@@ -111,11 +121,8 @@ export const END_GAME_FIX_PATCH = `
 }
 
 /* Héroe CAÍDO (perdedor): grayscale + velo oscuro + lápida */
-#bf-end-cine .bf-cine-fallen .bf-cine-portrait,
-#bf-end-cine .bf-cine-fallen .bf-cine-portrait img {
-  filter: grayscale(.9) brightness(.4) contrast(1.1) !important;
-}
 #bf-end-cine .bf-cine-fallen .bf-cine-portrait {
+  filter: grayscale(.9) brightness(.4) contrast(1.1) !important;
   border-color: #5a4a72 !important;
   box-shadow: 0 8px 20px rgba(0,0,0,.85), inset 0 0 30px rgba(0,0,0,.7) !important;
   opacity: .88 !important;
@@ -214,6 +221,76 @@ export const END_GAME_FIX_PATCH = `
   if(window.__bfEndGameFix) return;
   window.__bfEndGameFix = true;
 
+  // ---- Mapas de arte recibidos del padre por postMessage ----
+  // ART_BY_ID / ART_BY_NAME / ELITE_BY_ID son LOCALES del IIFE del juego y no
+  // se pueden acceder desde este script. El padre (Home.jsx) envía el arte de
+  // batalla (bfBattleArt) y el catálogo de retratos (bfAvatarMap) por
+  // postMessage; los guardamos aquí para que la cinemática los use.
+  var battleArtMap = {};
+  var avatarMap = {};
+  window.__bfBattleArtMap = battleArtMap;
+  window.__bfAvatarMap = avatarMap;
+
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.bfBattleArt && typeof e.data.bfBattleArt === 'object'){
+      battleArtMap = e.data.bfBattleArt;
+      window.__bfBattleArtMap = battleArtMap;
+    }
+    if(e.data && e.data.bfAvatarMap && typeof e.data.bfAvatarMap === 'object'){
+      // bfAvatarMap es un array de {id, name, url, clan} — lo convertimos a
+      // un diccionario id -> url y name -> url para búsqueda rápida.
+      var m = {};
+      (e.data.bfAvatarMap || []).forEach(function(a){
+        if(a && a.id) m[a.id] = a.url || '';
+        if(a && a.name) m[a.name] = a.url || '';
+      });
+      avatarMap = m;
+      window.__bfAvatarMap = avatarMap;
+    }
+  });
+
+  // ---- Resuelve la URL del retrato de un héroe ----
+  // Busca en: mapa de avatares (bfAvatarMap, arte de carta), mapa de arte de
+  // batalla (bfBattleArt, arte de combate), y el DOM (cartas de batalla).
+  function heroArtUrl(hh) {
+    if(!hh) return '';
+    var aid = (hh._token) ? hh._token : (hh.id || '');
+    var nm = hh.name || '';
+    var isElite = !!(hh.eliteMode || hh._bfElite || hh.eliteUsed);
+
+    // 1) Mapa de avatares (retrato de carta) — el más adecuado para la cinemática
+    if(aid && avatarMap[aid]) return avatarMap[aid];
+    if(nm && avatarMap[nm]) return avatarMap[nm];
+
+    // 2) Mapa de arte de batalla (escena de combate)
+    if(aid && battleArtMap[aid]) {
+      var ent = battleArtMap[aid];
+      return isElite ? (ent.elite || ent.base) : ent.base;
+    }
+
+    // 3) DOM: leer el background-image de la carta de batalla si aún existe
+    try {
+      var side = (typeof tSide === 'function') ? tSide(hh) : '';
+      if(!side && typeof G !== 'undefined' && G.team) {
+        if(G.team.p && G.team.p.indexOf(hh) >= 0) side = 'p';
+        else if(G.team.o && G.team.o.indexOf(hh) >= 0) side = 'o';
+      }
+      if(side) {
+        var card = document.getElementById('b_' + side + '_' + aid);
+        if(card) {
+          var art = card.querySelector('.bf-battle-art');
+          if(art) {
+            var bg = art.style.backgroundImage || '';
+            var m = bg.match(/url\\(['"]?(.*?)['"]?\\)/);
+            if(m && m[1]) return m[1];
+          }
+        }
+      }
+    } catch(e) {}
+
+    return '';
+  }
+
   // ---- 1) RED DE SEGURIDAD: fuerza el fin de partida si un bando está extinto ----
   setInterval(function(){
     try {
@@ -252,7 +329,13 @@ export const END_GAME_FIX_PATCH = `
   // ---- 3) CINEMÁTICA FINAL de fin de partida ----
   // Crea un overlay a pantalla completa mostrando ambos equipos: los ganadores
   // con brillo dorado y los caídos en gris con lápida.
+  // Solo se muestra cuando youWin es booleano (true/false). Si es undefined
+  // (llamada desde el intervalo de 400ms del IIFE del juego), se ignora.
   window.bfEndCinematic = function(youWin) {
+    // Evita que el intervalo de 400ms del juego (que llama bfEndCinematic()
+    // sin argumentos) dispare la cinemática durante la batalla.
+    if(youWin !== true && youWin !== false) return;
+
     // Evita duplicar la cinemática si ya existe
     var existing = document.getElementById('bf-end-cine');
     if(existing) existing.remove();
@@ -277,11 +360,7 @@ export const END_GAME_FIX_PATCH = `
           : (typeof L === 'function' ? L('Caídos', 'Fallen') : 'Caídos');
         var cls = isWinner ? 'bf-cine-team-winner' : 'bf-cine-team-loser';
         var heroes = team.map(function(hh, j) {
-          var aid = (hh && hh._token) ? hh._token : (hh && hh.id);
-          var u = '';
-          if(typeof ART_BY_ID !== 'undefined' && aid) u = ART_BY_ID[aid] || '';
-          if(!u && typeof ART_BY_NAME !== 'undefined' && hh && hh.name) u = ART_BY_NAME[hh.name] || '';
-          if(!u && typeof ELITE_BY_ID !== 'undefined' && aid) u = ELITE_BY_ID[aid] || '';
+          var u = heroArtUrl(hh);
           var fall = !hh.alive;
           var dl = (j * 0.12) + 's';
           var pc = fall ? 'bf-cine-fallen' : '';
