@@ -42,19 +42,19 @@ export const GAME_LOG_PATCH = `
       var turns=0;try{turns=G.round||G.turn||G.turns||0;}catch(e){}
       var log={
         mode:mode,
-        roomCode:(typeof NET!=='undefined'&&NET.code)||'',
-        playerNick:playerNick,
-        opponentNick:opponentNick,
-        playerClan:(pH[0]&&pH[0].clan)||'',
-        opponentClan:(oH[0]&&oH[0].clan)||'',
-        playerHeroes:pH,
-        opponentHeroes:oH,
-        turnsPlayed:turns,
+        room_code:(typeof NET!=='undefined'&&NET.code)||'',
+        player_nick:playerNick,
+        opponent_nick:opponentNick,
+        player_clan:(pH[0]&&pH[0].clan)||'',
+        opponent_clan:(oH[0]&&oH[0].clan)||'',
+        player_heroes:pH,
+        opponent_heroes:oH,
+        turns_played:turns,
         winner:youWin?'player':'opponent',
-        playerWon:!!youWin,
+        player_won:!!youWin,
         events:[],
-        itemsBought:itemsBought.slice(0,60),
-        durationSeconds:duration
+        items_bought:itemsBought.slice(0,60),
+        duration_seconds:duration
       };
       window.parent.postMessage({bfGameLog:log},'*');
     }catch(e){}
