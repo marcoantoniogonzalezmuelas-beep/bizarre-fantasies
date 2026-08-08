@@ -141,3 +141,12 @@
 
 /* Sello de velocidad ⚡ (Oráculo / carta): pulso dorado para los más veloces */
 @keyframes bfVelPulse { 0%,100% { filter: drop-shadow(0 0 4px rgba(255,210,74,.5)); } 50% { filter: drop-shadow(0 0 10px rgba(255,210,74,.95)); } }
+
+/* Intro cinemática en móvil/tablet: elimina el parpadeo GPU que provoca la
+   combinación de filter:blur() + mix-blend-mode:screen dentro de un escenario
+   escalado con transform. Aislando el contexto de composición (isolation:
+   isolate en el stage) y desactivando el blend mode en táctil, las luces
+   siguen coloreadas pero sin forzar recomposición de capas cada frame. */
+@media (max-width: 1024px) {
+  .bf-intro-stage [style*="mix-blend-mode"] { mix-blend-mode: normal !important; }
+}
