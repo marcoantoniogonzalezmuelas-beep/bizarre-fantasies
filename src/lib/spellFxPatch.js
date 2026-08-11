@@ -24,14 +24,14 @@ export const SPELL_FX_PATCH = `
     '.bf-splash{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,#cfeaff,rgba(90,180,255,.2) 60%,transparent 70%);animation:bfSplash 2s ease-out forwards}',
     '@keyframes bfSplash{0%{opacity:0;transform:scale(.2)}30%{opacity:1}100%{opacity:0;transform:scale(1.6) translateY(-22px)}}',
     // ---- Fuego: bola de fuego + anillo + brasas ----
-    '.bf-fireball{position:fixed;pointer-events:none;z-index:90022;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fff 0%,#ffe27a 22%,#ff8a2a 48%,#ff3a14 70%,transparent 78%);animation:bfFireball 2s ease-out forwards;filter:drop-shadow(0 0 18px rgba(255,120,30,.95))}',
-    '@keyframes bfFireball{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}18%{opacity:1}55%{transform:translate(-50%,-50%) scale(9)}72%{transform:translate(-50%,-50%) scale(11.5);opacity:.9}100%{transform:translate(-50%,-50%) scale(14);opacity:0}}',
+    '.bf-fireball{position:fixed;pointer-events:none;z-index:90022;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#ffe27a 0%,#ff8a2a 42%,#ff3a14 68%,transparent 78%);animation:bfFireball 2s ease-out forwards;filter:drop-shadow(0 0 18px rgba(255,120,30,.95))}',
+    '@keyframes bfFireball{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}18%{opacity:1}55%{transform:translate(-50%,-50%) scale(5)}72%{transform:translate(-50%,-50%) scale(6.2);opacity:.9}100%{transform:translate(-50%,-50%) scale(7);opacity:0}}',
     '.bf-fire-ring{position:fixed;pointer-events:none;z-index:90021;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);border:4px solid rgba(255,140,40,.9);animation:bfFireRing 1.9s ease-out forwards}',
     '@keyframes bfFireRing{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(12);opacity:0;border-width:1px}}',
     '.bf-ember{position:fixed;pointer-events:none;z-index:90023;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,#ffe27a,#ff6a14 60%,transparent 70%);animation:bfEmber 1.9s ease-out forwards}',
     '@keyframes bfEmber{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,0))) scale(.2);opacity:0}}',
     // ---- Hielo: escarcha + cristales + niebla ----
-    '.bf-frost-overlay{position:fixed;pointer-events:none;z-index:90021;border-radius:12px;background:linear-gradient(180deg,rgba(185,232,255,.45),rgba(120,200,255,.24));box-shadow:inset 0 0 60px rgba(150,220,255,.5),inset 0 0 0 3px rgba(200,240,255,.6);animation:bfFrost 2.3s ease-out forwards}',
+    '.bf-frost-overlay{position:fixed;pointer-events:none;z-index:90021;border-radius:12px;background:linear-gradient(180deg,rgba(185,232,255,.22),rgba(120,200,255,.12));box-shadow:inset 0 0 40px rgba(150,220,255,.3),inset 0 0 0 3px rgba(200,240,255,.4);animation:bfFrost 2.3s ease-out forwards}',
     '@keyframes bfFrost{0%{opacity:0}25%{opacity:1}70%{opacity:1}100%{opacity:0}}',
     '.bf-frost-mist{position:fixed;pointer-events:none;z-index:90022;width:200px;height:200px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(205,238,255,.72),rgba(150,210,255,.2) 55%,transparent 72%);animation:bfFrostMist 2.2s ease-out forwards;filter:blur(3px)}',
     '@keyframes bfFrostMist{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}30%{opacity:.9}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}',
@@ -40,8 +40,8 @@ export const SPELL_FX_PATCH = `
     // ---- Rayo: relámpago zigzag + destello ----
     '.bf-bolt{position:fixed;pointer-events:none;z-index:90025;width:80px;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#ffe14a 30%,#fff 60%,#bfe0ff);filter:drop-shadow(0 0 8px rgba(255,225,74,1)) drop-shadow(0 0 20px rgba(120,200,255,.85));clip-path:polygon(55% 0,78% 16%,45% 30%,70% 48%,38% 64%,62% 80%,38% 100%,28% 80%,52% 64%,28% 48%,55% 30%,28% 16%);animation:bfBolt 1.7s ease-out forwards}',
     '@keyframes bfBolt{0%{opacity:0}8%{opacity:1}18%{opacity:.3}28%{opacity:1}42%{opacity:.5}100%{opacity:0}}',
-    '.bf-flash{position:fixed;pointer-events:none;z-index:90020;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.85),rgba(180,220,255,.3) 50%,transparent 75%);animation:bfFlash 1.5s ease-out forwards}',
-    '@keyframes bfFlash{0%{opacity:0}15%{opacity:.8}100%{opacity:0}}'
+    '.bf-flash{position:fixed;pointer-events:none;z-index:90020;border-radius:50%;background:radial-gradient(circle,rgba(255,225,120,.55),rgba(180,220,255,.22) 50%,transparent 75%);animation:bfFlash 1.5s ease-out forwards}',
+    '@keyframes bfFlash{0%{opacity:0}15%{opacity:.55}100%{opacity:0}}'
   ].join('');
   document.head.appendChild(st);
 
