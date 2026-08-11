@@ -16,7 +16,7 @@ export const FINAL_CINEMATIC_PATCH = `
       var result=original.apply(this,arguments);
       setTimeout(function(){
         if(typeof window.bfEndCinematic==='function')window.bfEndCinematic(!!youWin);
-      },120);
+      },60);
       return result;
     };
     window.showResult.__bfFinalCine=1;
@@ -44,7 +44,7 @@ export const FINAL_CINEMATIC_PATCH = `
             window.bfEndCinematic(youWin);
           }
         }catch(e){}
-      },200);
+      },80);
       return r;
     };
     window.checkWin.__bfFinalCine=1;

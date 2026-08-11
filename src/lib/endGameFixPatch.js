@@ -25,8 +25,8 @@ export const END_GAME_FIX_PATCH = `
 #bf-end-cine {
   position: fixed; inset: 0; z-index: 100060; display: flex; flex-direction: column;
   align-items: center; justify-content: center; padding: 20px;
-  background: radial-gradient(ellipse at 50% 40%, rgba(20,12,40,.82), rgba(4,2,10,.96));
-  backdrop-filter: blur(6px); animation: bfCineFadeIn .5s ease;
+  background: radial-gradient(ellipse at 50% 35%, rgba(34,24,58,.9), rgba(16,11,30,.95));
+  backdrop-filter: blur(5px); animation: bfCineFadeIn .4s ease;
   overflow: hidden;
 }
 @keyframes bfCineFadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -142,16 +142,16 @@ export const END_GAME_FIX_PATCH = `
 
 /* Héroe CAÍDO: luz tenue rojiza + zarzas entrelazadas + tumba con gusanos */
 #bf-end-cine .bf-cine-fallen .bf-cine-portrait {
-  filter: brightness(.5) contrast(1.25) sepia(.55) hue-rotate(-25deg) saturate(1.5) !important;
-  border-color: #7a2424 !important;
-  box-shadow: 0 8px 20px rgba(0,0,0,.85), 0 0 28px rgba(140,30,30,.45), inset 0 0 35px rgba(50,8,8,.7) !important;
-  opacity: .92 !important;
+  filter: brightness(.8) contrast(1.12) sepia(.35) hue-rotate(-18deg) saturate(1.25) !important;
+  border-color: #8a3030 !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.55), 0 0 24px rgba(140,40,40,.4), inset 0 0 18px rgba(60,12,12,.35) !important;
+  opacity: 1 !important;
 }
 /* Velo rojizo + enredadera de espinas (SVG de zarzas entrelazadas) */
 #bf-end-cine .bf-cine-fallen .bf-cine-portrait::after {
   content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(90,15,15,.3) 0%, rgba(30,5,5,.5) 100%),
+    linear-gradient(180deg, rgba(90,15,15,.12) 0%, rgba(30,5,5,.2) 100%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg stroke='%232a1010' stroke-width='1.4' fill='none' opacity='0.55'%3E%3Cpath d='M0,40 Q20,20 40,40 T80,40'/%3E%3Cpath d='M0,60 Q20,45 40,60 T80,60'/%3E%3Cpath d='M0,20 Q20,5 40,20 T80,20'/%3E%3Cpath d='M12,28 l-4,-6 M28,48 l4,6 M44,28 l-4,-6 M60,48 l4,6 M8,55 l-4,-6 M24,15 l4,6 M40,55 l-4,-6 M56,15 l4,6'/%3E%3C/g%3E%3C/svg%3E");
   background-size: cover, 80px 80px;
   border-radius: inherit;
@@ -413,8 +413,11 @@ export const END_GAME_FIX_PATCH = `
     // sin argumentos) dispare la cinemática durante la batalla.
     if(youWin !== true && youWin !== false) return;
 
-    // Evita duplicar la cinemática si ya existe
+    // Evita duplicar la cinemática si ya existe y se creó hace menos de 1.5s
+    // (showResult y checkWin pueden disparar ambos; sin este guardia, el
+    // segundo reemplaza al primero y provoca un parpadeo).
     var existing = document.getElementById('bf-end-cine');
+    if(existing && existing.dataset.bfCreated && (Date.now() - Number(existing.dataset.bfCreated)) < 1500) return;
     if(existing) existing.remove();
 
     // Limpia la pantalla de resultado estática: SOLO marcador, sin héroes.
@@ -515,6 +518,7 @@ export const END_GAME_FIX_PATCH = `
       var overlay = document.createElement('div');
       overlay.id = 'bf-end-cine';
       overlay.className = isWin ? 'bf-cine-win' : 'bf-cine-lose';
+      overlay.dataset.bfCreated = String(Date.now());
       overlay.innerHTML =
         '<div class="bf-cine-bg">' + embers + '</div>' +
         '<div class="bf-cine-title">' + title + '</div>' +
