@@ -238,9 +238,9 @@ export const END_GAME_FIX_PATCH = `
 /* Marcador de muerte bizarro: lápida de piedra con calavera y RIP esculpido */
 .bhero.bf-truedead::after {
   content: "💀\A RIP"; white-space: pre; text-align: center;
-  position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
-  z-index: 12; font-family: 'Cinzel', serif; font-weight: 1000;
-  font-size: clamp(8px, 1.8vw, 11px); letter-spacing: 1.5px; line-height: 1.2;
+  position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+  z-index: 20; font-family: 'Cinzel', serif; font-weight: 1000;
+  font-size: clamp(9px, 2vw, 13px); letter-spacing: 1.5px; line-height: 1.2;
   color: #d4c5a0;
   background: linear-gradient(180deg, #3a2e48 0%, #2a2038 45%, #181028 100%);
   border: 2px solid #6a5a82;
@@ -249,8 +249,9 @@ export const END_GAME_FIX_PATCH = `
   box-shadow: 0 4px 10px #000, 0 0 12px rgba(120,100,150,.45), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -2px 4px rgba(0,0,0,.5) !important;
   text-shadow: 0 0 8px rgba(180,160,200,.6), 0 1px 2px #000;
   pointer-events: none;
-  animation: bfTombAppear .5s ease-out, bfTombWobble 4s ease-in-out infinite 1.5s;
+  animation: bfTombFadeIn .4s ease-out, bfTombWobble 4s ease-in-out infinite 1.5s;
 }
+@keyframes bfTombFadeIn { 0% { opacity: 0; transform: translateX(-50%) scale(.3); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
 @keyframes bfTombWobble { 0%,100% { transform: translateX(-50%) rotate(-1.5deg); } 50% { transform: translateX(-50%) rotate(2deg); } }
 </style>
 <script>
@@ -346,23 +347,43 @@ export const END_GAME_FIX_PATCH = `
   }, 500);
 
   // ---- 1b) MARCA LOS HÉROES CAÍDOS con bf-truedead (lapida 💀 RIP) ----
-  // La CSS del parche ya define el estilo (grayscale + lapida), pero nada
-  // aplicaba la clase. Este monitor revisa los héroes de cada bando y
-  // añade/quita bf-truedead según estén vivos o muertos.
-  setInterval(function(){
+  // Recorre las cartas de batalla del DOM (más fiable que iterar G.team:
+  // solo procesa cartas que existen) y añade/quita bf-truedead según el
+  // héroe esté vivo o muerto. También engancha renderBattle para reaplicar
+  // la clase inmediatamente tras cada repintado (el juego recrea las cartas
+  // y perderían la clase hasta el siguiente ciclo de 400ms).
+  function applyDeadMarkers(){
     try {
       if(typeof G === 'undefined' || !G || !G.team) return;
-      ['p','o'].forEach(function(side){
-        (G.team[side] || []).forEach(function(h){
-          if(!h || h._token || h._bfDuck) return;
-          var card = document.getElementById('b_' + side + '_' + (h.id || ''));
-          if(!card) return;
-          if(!h.alive) card.classList.add('bf-truedead');
-          else card.classList.remove('bf-truedead');
-        });
+      document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
+        var m = String(card.id||'').match(/^b_([po])_(.+)$/);
+        if(!m) return;
+        var side = m[1], hid = m[2];
+        var h = (G.team[side]||[]).find(function(hh){ return hh && hh.id === hid; });
+        if(!h || h._token || h._bfDuck) return;
+        if(!h.alive) card.classList.add('bf-truedead');
+        else card.classList.remove('bf-truedead');
       });
     } catch(e) {}
-  }, 400);
+  }
+  setInterval(applyDeadMarkers, 400);
+  // Hook renderBattle: reaplica bf-truedead justo después de que el juego
+  // repinte el tablero (sin esto, la clase se pierde hasta el próximo ciclo).
+  function hookRenderForDead(){
+    if(typeof window.renderBattle !== 'function' || window.renderBattle.__bfTrueDead) return false;
+    var o = window.renderBattle;
+    window.renderBattle = function(){
+      var r = o.apply(this, arguments);
+      setTimeout(applyDeadMarkers, 0);
+      return r;
+    };
+    window.renderBattle.__bfTrueDead = 1;
+    return true;
+  }
+  var _bfDh = 0, _bfDhTimer = setInterval(function(){
+    if(hookRenderForDead() || ++_bfDh > 60) clearInterval(_bfDhTimer);
+  }, 300);
+  hookRenderForDead();
 
   // ---- 2) CINEMÁTICA DE MUERTE en batalla ----
   // Animación que se reproduce sobre la carta del héroe cuando cae en combate.
