@@ -88,7 +88,11 @@ export const AI_LEVEL_PATCH = `
   // Recibe del padre el mapa de victorias por nick (desde la BD) para que los
   // desbloqueos de niveles funcionen entre dispositivos, no solo en este.
   window.addEventListener('message', function(e){
-    if (e.data && e.data.bfAiWins && typeof e.data.bfAiWins === 'object') window.__bfAiWinsDb = e.data.bfAiWins;
+    if (e.data && e.data.bfAiWins && typeof e.data.bfAiWins === 'object') {
+      window.__bfAiWinsDb = e.data.bfAiWins;
+      lastRenderKey = ''; // fuerza re-render del selector con las victorias de la BD
+      injectLevelPicker();
+    }
   });
 
   // ---- CSS ----
@@ -115,23 +119,41 @@ export const AI_LEVEL_PATCH = `
   document.head.appendChild(st);
 
   // ---- Inyecta el selector en la pantalla de "vs IA" ----
+  // Es idempotente: crea la estructura una vez y re-renderiza el contenido
+  // (victorias, candados) cuando cambian los datos — así refleja el progreso
+  // de la BD cuando llega por postMessage o cuando el jugador escribe su nick.
+  var lastRenderKey = '';
   function injectLevelPicker() {
     var input = document.getElementById('p1name');
     if (!input) return;
     var box = input.closest('.setup-box') || input.closest('.screen') || input.parentElement;
-    if (!box || box.dataset.bfLevel === '1') return;
+    if (!box) return;
     if (box.querySelector('#p2name')) return; // No en local
-    box.dataset.bfLevel = '1';
 
-    var ig = input.closest('.ig') || input.parentElement;
-    if (!ig) return;
+    var grid = box.querySelector('.bf-level-pick');
+    if (!grid) {
+      // Primera vez: crea el contenedor con el grid.
+      var ig = input.closest('.ig') || input.parentElement;
+      if (!ig) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'ig';
+      var label = isEn() ? 'AI Difficulty' : 'Nivel de la IA';
+      wrap.innerHTML = '<label>' + label + '</label><div class="bf-level-pick"></div>';
+      ig.parentNode.insertBefore(wrap, ig.nextSibling);
+      grid = wrap.querySelector('.bf-level-pick');
+      // Re-renderiza cuando el jugador escribe su nick (las victorias son
+      // por nick, así que al cambiar el nick cambian los desbloqueos).
+      input.addEventListener('input', function(){ lastRenderKey = ''; injectLevelPicker(); });
+    }
 
-    var wrap = document.createElement('div');
-    wrap.className = 'ig';
-    var label = isEn() ? 'AI Difficulty' : 'Nivel de la IA';
-    wrap.innerHTML = '<label>' + label + '</label><div class="bf-level-pick"></div>';
-    var grid = wrap.querySelector('.bf-level-pick');
+    // Solo re-renderiza si cambió el nick o las victorias (evita parpadeo).
+    var nick = getCurrentNick();
+    var renderKey = nick + '|' + LEVELS.map(function(l){ return l.id + ':' + getWins(l.id) + (isUnlocked(l) ? 'u' : 'l'); }).join(',');
+    if (renderKey === lastRenderKey) return;
+    lastRenderKey = renderKey;
+
     var cur = getLevelId();
+    grid.innerHTML = '';
 
     LEVELS.forEach(function(lvl){
       var unlocked = isUnlocked(lvl);
@@ -172,8 +194,6 @@ export const AI_LEVEL_PATCH = `
       };
       grid.appendChild(opt);
     });
-
-    ig.parentNode.insertBefore(wrap, ig.nextSibling);
   }
 
   new MutationObserver(injectLevelPicker).observe(document.documentElement, { childList:true, subtree:true });
