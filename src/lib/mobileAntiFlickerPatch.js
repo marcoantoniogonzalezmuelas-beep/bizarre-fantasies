@@ -27,20 +27,8 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
 }
-/* CAUSA DEL "CUADRADO BLANCO": estas capas de impacto se diseñaron con
-   mix-blend-mode:screen (el blanco se funde con la carta). Al desactivar el
-   blend aquí para evitar el parpadeo, su núcleo blanco se pinta opaco y se ve
-   como un recuadro blanco sobre el héroe. Solución: sustituir el blanco por
-   el color temático con poca opacidad (el background no lo animan los
-   keyframes, así que el fundido de entrada/salida se conserva). */
-.bf-fx-bigblast{background:radial-gradient(circle at 50% 45%,rgba(255,150,60,.5),rgba(255,77,60,.28) 26%,transparent 62%)!important}
-.bf-fx-frost-burst{background:radial-gradient(circle at 50% 45%,rgba(150,225,255,.45),rgba(120,195,255,.2) 28%,transparent 62%)!important}
-.bf-fx-bless-burst{background:radial-gradient(circle at 50% 45%,rgba(255,224,121,.45),rgba(255,200,80,.2) 28%,transparent 62%)!important}
-.bf-fx-tank-burst{background:radial-gradient(circle at 50% 50%,rgba(255,190,90,.45),rgba(255,130,30,.2) 28%,transparent 64%)!important}
-.bf-fx-elite-flip,.bf-fx-elite-aura{background:radial-gradient(circle at 50% 45%,rgba(255,210,74,.35),rgba(176,108,255,.15) 40%,transparent 70%)!important}
-.bf-cast-flash{background:radial-gradient(circle at 50% 45%,rgba(199,155,255,.28),rgba(176,108,255,.14) 32%,transparent 62%)!important}
-.bf-fx-magic-orb{background:radial-gradient(circle,currentColor,transparent 72%)!important}
-.bf-frost-sheet,.bf-frost-crack,.bf-fx-shock,.bf-shock-fx::before,.bf-shock-fx::after{opacity:.45!important}
+/* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
+   (se aplica en todo el juego, móvil y escritorio). */
 </style>
 <script>
 (function(){
