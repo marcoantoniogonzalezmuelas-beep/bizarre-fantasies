@@ -194,6 +194,88 @@ export const END_GAME_FIX_PATCH = `
   filter: blur(20px);
 }
 
+/* ---- CINEMÁTICA FINAL · Variante B (rayos de luz / lluvia oscura) ---- */
+#bf-end-cine.bf-cine-b { padding: 0; }
+#bf-end-cine.bf-cine-b .bf-cine-teams { display: none; }
+#bf-end-cine.bf-cine-b .bf-cine-sub { display: none; }
+
+/* Variante B VICTORIA: rayos dorados giratorios + estallido central */
+#bf-end-cine.bf-cine-win.bf-cine-b {
+  background: radial-gradient(ellipse at 50% 50%, rgba(80,50,10,.85), rgba(10,6,18,.97));
+}
+#bf-end-cine.bf-cine-win.bf-cine-b .bf-cine-title {
+  font-size: clamp(48px, 13vw, 110px); margin: 0; padding: 0 20px;
+  background: linear-gradient(180deg, #fff5dc, #ffd24a 50%, #c8901f);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 0 40px rgba(255,210,74,.9)) drop-shadow(0 6px 18px #000);
+  animation: bfCineTitleIn .8s cubic-bezier(.2,.8,.3,1), bfCineVBWinPulse 2s ease-in-out infinite 1s;
+}
+@keyframes bfCineVBWinPulse { 0%,100% { filter: drop-shadow(0 0 40px rgba(255,210,74,.9)) drop-shadow(0 6px 18px #000); } 50% { filter: drop-shadow(0 0 70px rgba(255,210,74,1)) drop-shadow(0 6px 18px #000); } }
+#bf-end-cine.bf-cine-win.bf-cine-b::before {
+  content: ''; position: absolute; inset: -20%; z-index: 0; pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,210,74,.14) 18deg, transparent 36deg, rgba(255,180,40,.1) 54deg, transparent 72deg, rgba(255,210,74,.14) 90deg, transparent 108deg, rgba(255,180,40,.1) 126deg, transparent 144deg, rgba(255,210,74,.14) 162deg, transparent 180deg, rgba(255,180,40,.1) 198deg, transparent 216deg, rgba(255,210,74,.14) 234deg, transparent 252deg, rgba(255,180,40,.1) 270deg, transparent 288deg, rgba(255,210,74,.14) 306deg, transparent 324deg, rgba(255,180,40,.1) 342deg, transparent 360deg);
+  animation: bfCineVBRays 12s linear infinite;
+}
+@keyframes bfCineVBRays { to { transform: rotate(360deg); } }
+#bf-end-cine.bf-cine-win.bf-cine-b .bf-cine-vb-icon {
+  position: relative; z-index: 2; font-size: clamp(72px, 18vw, 140px); line-height: 1;
+  filter: drop-shadow(0 0 30px rgba(255,210,74,.9)) drop-shadow(0 8px 20px #000);
+  animation: bfCineVBIconFloat 2.5s ease-in-out infinite;
+}
+@keyframes bfCineVBIconFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-10px) scale(1.06); } }
+#bf-end-cine.bf-cine-win.bf-cine-b .bf-cine-vb-sub {
+  position: relative; z-index: 2; font-family: 'Cinzel', serif; font-weight: 800;
+  font-size: clamp(15px, 3.5vw, 24px); color: #fff5dc; letter-spacing: 3px; text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(255,210,74,.6), 0 3px 8px #000; margin-top: 10px;
+  animation: bfCineFadeIn .8s ease .4s both;
+}
+
+/* Variante B DERROTA: lluvia oscura + grietas + calavera */
+#bf-end-cine.bf-cine-lose.bf-cine-b {
+  background: radial-gradient(ellipse at 50% 50%, rgba(40,10,10,.88), rgba(6,4,10,.98));
+}
+#bf-end-cine.bf-cine-lose.bf-cine-b .bf-cine-title {
+  font-size: clamp(48px, 13vw, 110px); margin: 0; padding: 0 20px;
+  background: linear-gradient(180deg, #d4a0a0, #c44 50%, #6a1a1a);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 0 30px rgba(200,60,60,.7)) drop-shadow(0 6px 18px #000);
+  animation: bfCineTitleIn .8s cubic-bezier(.2,.8,.3,1), bfCineVBLosePulse 2.5s ease-in-out infinite 1s;
+}
+@keyframes bfCineVBLosePulse { 0%,100% { filter: drop-shadow(0 0 30px rgba(200,60,60,.7)) drop-shadow(0 6px 18px #000); } 50% { filter: drop-shadow(0 0 50px rgba(200,60,60,.9)) drop-shadow(0 6px 18px #000); } }
+#bf-end-cine.bf-cine-lose.bf-cine-b::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(95deg, transparent 49.6%, rgba(180,60,60,.12) 49.8%, transparent 50.2%),
+    linear-gradient(85deg, transparent 49.6%, rgba(180,60,60,.1) 49.8%, transparent 50.2%),
+    linear-gradient(78deg, transparent 49.6%, rgba(180,60,60,.08) 49.8%, transparent 50.2%);
+  background-size: 100% 70%, 100% 55%, 100% 85%;
+  background-position: 0 30%, 0 45%, 0 15%;
+  background-repeat: no-repeat;
+  animation: bfCineVBCracks 4s ease-in-out infinite;
+}
+@keyframes bfCineVBCracks { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+#bf-end-cine.bf-cine-lose.bf-cine-b .bf-cine-vb-icon {
+  position: relative; z-index: 2; font-size: clamp(72px, 18vw, 140px); line-height: 1;
+  filter: drop-shadow(0 0 30px rgba(200,60,60,.8)) drop-shadow(0 8px 20px #000);
+  animation: bfCineVBIconFloat 3s ease-in-out infinite;
+}
+#bf-end-cine.bf-cine-lose.bf-cine-b .bf-cine-vb-sub {
+  position: relative; z-index: 2; font-family: 'Cinzel', serif; font-weight: 800;
+  font-size: clamp(15px, 3.5vw, 24px); color: #c4a0a0; letter-spacing: 3px; text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(200,60,60,.5), 0 3px 8px #000; margin-top: 10px;
+  animation: bfCineFadeIn .8s ease .4s both;
+}
+/* Lluvia oscura para la variante B de derrota */
+#bf-end-cine.bf-cine-lose.bf-cine-b .bf-cine-vb-rain {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+}
+#bf-end-cine.bf-cine-lose.bf-cine-b .bf-cine-vb-drop {
+  position: absolute; top: -20px; width: 2px; height: 18px;
+  background: linear-gradient(180deg, transparent, rgba(180,140,160,.5));
+  animation: bfCineVBRain linear infinite;
+}
+@keyframes bfCineVBRain { 0% { transform: translateY(0); } 100% { transform: translateY(110vh); } }
+
 /* ---- CINEMÁTICA DE MUERTE en batalla (bfKillCinematic) ---- */
 .bf-kill-fx {
   position: absolute; inset: 0; z-index: 8; pointer-events: none; border-radius: inherit; overflow: hidden;
@@ -515,15 +597,39 @@ export const END_GAME_FIX_PATCH = `
         embers += '<div class="bf-cine-ember" style="left:' + left + '%;width:' + size + 'px;height:' + size + 'px;animation-duration:' + dur + 's;animation-delay:' + delay + 's"></div>';
       }
 
+      // Variante aleatoria: A (equipos con retratos) o B (destello dramático).
+      // 50% de probabilidad para cada una — da variedad sin repetir siempre lo mismo.
+      var variant = Math.random() < 0.5 ? 'A' : 'B';
       var overlay = document.createElement('div');
       overlay.id = 'bf-end-cine';
-      overlay.className = isWin ? 'bf-cine-win' : 'bf-cine-lose';
+      overlay.className = (isWin ? 'bf-cine-win' : 'bf-cine-lose') + (variant === 'B' ? ' bf-cine-b' : '');
       overlay.dataset.bfCreated = String(Date.now());
-      overlay.innerHTML =
-        '<div class="bf-cine-bg">' + embers + '</div>' +
-        '<div class="bf-cine-title">' + title + '</div>' +
-        '<div class="bf-cine-sub">' + sub + '</div>' +
-        '<div class="bf-cine-teams">' + winTeam + loseTeam + '</div>';
+      if(variant === 'A') {
+        overlay.innerHTML =
+          '<div class="bf-cine-bg">' + embers + '</div>' +
+          '<div class="bf-cine-title">' + title + '</div>' +
+          '<div class="bf-cine-sub">' + sub + '</div>' +
+          '<div class="bf-cine-teams">' + winTeam + loseTeam + '</div>';
+      } else {
+        // Variante B: destello dramático — icono gigante + título + subtítulo.
+        // Victoria → corona dorada con rayos; Derrota → calavera con lluvia.
+        var vIcon = isWin ? '👑' : '💀';
+        var vSub = isWin
+          ? (typeof L === 'function' ? L('GLORIA ETERNA', 'ETERNAL GLORY') : 'GLORIA ETERNA')
+          : (typeof L === 'function' ? L('LA BATALLA TERMINA', 'THE BATTLE ENDS') : 'LA BATALLA TERMINA');
+        var rainHtml = '';
+        if(!isWin) {
+          for(var r = 0; r < 40; r++) {
+            var rl = Math.random() * 100, rdur = 0.6 + Math.random() * 0.8, rdel = Math.random() * 2;
+            rainHtml += '<div class="bf-cine-vb-drop" style="left:' + rl + '%;animation-duration:' + rdur + 's;animation-delay:' + rdel + 's"></div>';
+          }
+        }
+        overlay.innerHTML =
+          (isWin ? '<div class="bf-cine-bg">' + embers + '</div>' : '<div class="bf-cine-vb-rain">' + rainHtml + '</div>') +
+          '<div class="bf-cine-vb-icon">' + vIcon + '</div>' +
+          '<div class="bf-cine-title">' + title + '</div>' +
+          '<div class="bf-cine-vb-sub">' + vSub + '</div>';
+      }
 
       document.body.appendChild(overlay);
 
