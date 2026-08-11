@@ -23,7 +23,6 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   -webkit-backdrop-filter:none!important;
   filter:none!important;
   box-shadow:none!important;
-  clip-path:none!important;
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
 }

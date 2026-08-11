@@ -23,5 +23,10 @@ export const WHITE_FLASH_FIX_PATCH = `
 .bf-frost-sheet,.bf-frost-crack,.bf-fx-shock{opacity:.45!important}
 .bf-shock-fx::before,.bf-shock-fx::after{opacity:.45!important}
 .bf-fireball{background:radial-gradient(circle,#ffe27a 0%,#ff8a2a 42%,#ff3a14 68%,transparent 78%)!important}
+/* Rayo: el relámpago era una barra blanca gigante cuando el navegador no
+   aplicaba su recorte. Se estrecha y se colorea para que no tape las cartas. */
+.bf-bolt{width:34px!important;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,225,74,.5) 35%,rgba(120,200,255,.45))!important;opacity:.85!important}
+.bf-flash{background:radial-gradient(circle,rgba(255,225,120,.3),rgba(180,220,255,.12) 50%,transparent 72%)!important}
+
 </style>
 `;
