@@ -40,7 +40,6 @@ export const OBJECT_FX_PATCH = `
     layer.className='bf-abx';
     layer.style.color=theme.color;
     var html='';
-    if(theme.flash)html+='<div class="bf-abx-flash"></div>';
     if(theme.ring)html+='<div class="bf-sfx-ring"></div>';
     if(theme.swirl)html+='<div class="bf-ofx-swirl"></div>';
     for(var i=0;i<8;i++){

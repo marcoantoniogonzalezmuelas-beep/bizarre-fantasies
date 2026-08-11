@@ -25,8 +25,7 @@ export const ABILITY_FX_PATCH = `
   '@keyframes bfAbxFall{0%{opacity:0;transform:translateY(-18px) scale(.6)}22%{opacity:1}100%{opacity:0;transform:translateY(46px) scale(1.15) rotate(-14deg)}}'+
   '.bf-abx-shake{animation:bfAbxShake .45s ease}'+
   '@keyframes bfAbxShake{0%,100%{translate:0 0}15%{translate:-4px 2px}30%{translate:4px -3px}45%{translate:-3px -2px}60%{translate:3px 2px}75%{translate:-2px 1px}}'+
-  '.bf-abx-glow{animation:bfAbxGlow .95s ease}'+
-  '@keyframes bfAbxGlow{0%{filter:none}30%{filter:brightness(1.55) saturate(1.5)}100%{filter:none}}'+
+  '.bf-abx-glow{}'+
   '.bf-sfx-pop{animation:bfSfxPop .85s cubic-bezier(.2,1.5,.4,1) both}'+
   '@keyframes bfSfxPop{0%{transform:scale(0) rotate(-14deg);opacity:0}55%{transform:scale(1.14) rotate(4deg);opacity:1}75%{transform:scale(.96) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}'+
   '.bf-sfx-ring{position:absolute;left:50%;top:50%;width:96%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;border:4px solid currentColor;box-shadow:0 0 22px currentColor,inset 0 0 22px currentColor;opacity:0;animation:bfSfxRing 2.1s ease-out forwards}'+
@@ -190,6 +189,7 @@ export const ABILITY_FX_PATCH = `
     var name=hero.eliteMode?(hero.eAbility||hero.ability||'Habilidad'):(hero.ability||'Habilidad');
     var html='';
     if(theme.ring)html+='<div class="bf-abx-ring"></div>';
+    // (flash de destello eliminado: se veía como un recuadro blanco sobre la carta)
     for(var i=0;i<8;i++){
       var g=theme.glyphs[i%theme.glyphs.length];
       var cls=theme.fall?'bf-abx-fall':'bf-abx-rise';
@@ -227,7 +227,7 @@ export const ABILITY_FX_PATCH = `
     var layer=document.createElement('div');
     layer.className='bf-abx';
     layer.style.color=color;
-    var html='<div class="bf-abx-flash"></div><div class="bf-sfx-ring"></div><div class="bf-sfx-ring" style="animation-delay:.18s"></div>';
+    var html='<div class="bf-sfx-ring"></div><div class="bf-sfx-ring" style="animation-delay:.18s"></div>';
     for(var i=0;i<10;i++){
       html+='<span class="bf-abx-p bf-abx-rise" style="left:'+(6+Math.random()*82)+'%;top:'+(45+Math.random()*42)+'%;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s;font-size:'+(19+Math.random()*16)+'px">'+glyphs[i%glyphs.length]+'</span>';
     }

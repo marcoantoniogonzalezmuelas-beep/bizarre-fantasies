@@ -176,7 +176,6 @@ export const ATTACK_FX_PATCH = `
   function shake(side,id){
     var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
     el.animate([{transform:'translate(0,0)'},{transform:'translate(-7px,3px)'},{transform:'translate(6px,-4px)'},{transform:'translate(-4px,2px)'},{transform:'translate(3px,-1px)'},{transform:'translate(0,0)'}],{duration:340,easing:'ease-out'});
-    el.animate([{filter:'brightness(1)'},{filter:'brightness(2.1) saturate(1.4)'},{filter:'brightness(1)'}],{duration:260});
   }
   function lunge(side,id,to){
     var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
