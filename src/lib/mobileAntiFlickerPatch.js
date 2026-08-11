@@ -20,8 +20,6 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 [class^="bf-"]:not(.bhero)::after,[class*=" bf-"]:not(.bhero)::after{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
-  filter:none!important;
-  box-shadow:none!important;
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
 }
@@ -38,19 +36,9 @@ export const MOBILE_ANTIFLICKER_PATCH = `
     var s=document.getElementById('bf-antiflicker');
     if(s&&document.head.lastElementChild!==s)document.head.appendChild(s);
   },800);
-  // Refuerzo: los parches FX también ponen filtros por estilo inline
-  // (el.style.filter='brightness…'). El CSS !important ya los anula, pero
-  // algunos scripts los reponen en cada frame; aquí los limpiamos al vuelo.
-  new MutationObserver(function(muts){
-    for(var i=0;i<muts.length;i++){
-      var el=muts[i].target;
-      if(!el||el.nodeType!==1)continue;
-      var cls=typeof el.className==='string'?el.className:'';
-      if(cls.indexOf('bf-')===-1)continue;
-      var st=el.style;
-      if(st.filter&&st.filter!=='none')st.setProperty('filter','none','important');
-    }
-  }).observe(document.documentElement,{attributes:true,attributeFilter:['style'],subtree:true});
+  // Los brillos por filtro (glow, drop-shadow) se conservan: sin ellos los
+  // hechizos (rayo en cadena, tormenta ígnea, maremoto…) se veían apagados o
+  // directamente invisibles en móvil.
 })();
 </script>
 `;

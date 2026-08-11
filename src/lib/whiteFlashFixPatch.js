@@ -28,8 +28,8 @@ export const WHITE_FLASH_FIX_PATCH = `
 .bf-cast-flash{background:radial-gradient(circle at 50% 45%,rgba(199,155,255,.28),rgba(176,108,255,.14) 32%,transparent 62%)!important}
 .bf-fx-magic-orb{background:radial-gradient(circle,currentColor,transparent 72%)!important}
 .bf-fx-slash{background:linear-gradient(90deg,transparent,#ff8a6a,#ff3b35,transparent)!important}
-.bf-frost-sheet,.bf-frost-crack,.bf-fx-shock{opacity:.45!important}
-.bf-shock-fx::before,.bf-shock-fx::after{opacity:.45!important}
+.bf-frost-sheet,.bf-frost-crack,.bf-fx-shock{opacity:.7!important}
+.bf-shock-fx::before,.bf-shock-fx::after{opacity:.7!important}
 /* Estrella de impacto (sale en TODAS las acciones: golpes, disparos, hechizos,
    objetos y habilidades). Era un cuadrado blanco de 190px recortado en forma de
    estrella; si el recorte no se aplicaba, se veía el cuadrado entero. */
@@ -38,7 +38,7 @@ export const WHITE_FLASH_FIX_PATCH = `
 .bf-fireball{background:radial-gradient(circle,#ffe27a 0%,#ff8a2a 42%,#ff3a14 68%,transparent 78%)!important}
 /* Rayo: el relámpago era una barra blanca gigante cuando el navegador no
    aplicaba su recorte. Se estrecha y se colorea para que no tape las cartas. */
-.bf-bolt{width:34px!important;background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,225,74,.5) 35%,rgba(120,200,255,.45))!important;opacity:.85!important}
+.bf-bolt{width:56px!important;background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,225,74,.9) 35%,rgba(150,215,255,.8))!important;opacity:1!important}
 .bf-flash{background:radial-gradient(circle,rgba(255,225,120,.3),rgba(180,220,255,.12) 50%,transparent 72%)!important}
 
 </style>
