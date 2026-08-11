@@ -12,6 +12,14 @@
 // de entrada y salida de cada efecto se conserva intacto.
 export const WHITE_FLASH_FIX_PATCH = `
 <style id="bf-noflash">
+/* Efectos nativos del juego (todas las acciones: cuerpo a cuerpo, distancia,
+   hechizos, objetos). Su núcleo era blanco casi opaco y en algunos navegadores
+   se pinta como un recuadro blanco sobre la carta. Se vuelven translúcidos y
+   se funden con la escena (screen), conservando forma y animación. */
+.fx-slash{background:linear-gradient(115deg,transparent 42%,rgba(255,236,190,.55) 50%,transparent 58%)!important;mix-blend-mode:screen!important}
+.fx-burst{mix-blend-mode:screen!important;opacity:.6!important}
+.fx-ring{border-color:rgba(255,240,210,.7)!important;mix-blend-mode:screen!important}
+
 .bf-fx-bigblast{background:radial-gradient(circle at 50% 45%,rgba(255,150,60,.5),rgba(255,77,60,.28) 26%,transparent 62%)!important}
 .bf-fx-frost-burst{background:radial-gradient(circle at 50% 45%,rgba(150,225,255,.45),rgba(120,195,255,.2) 28%,transparent 62%)!important}
 .bf-fx-bless-burst{background:radial-gradient(circle at 50% 45%,rgba(255,224,121,.45),rgba(255,200,80,.2) 28%,transparent 62%)!important}
@@ -22,6 +30,11 @@ export const WHITE_FLASH_FIX_PATCH = `
 .bf-fx-slash{background:linear-gradient(90deg,transparent,#ff8a6a,#ff3b35,transparent)!important}
 .bf-frost-sheet,.bf-frost-crack,.bf-fx-shock{opacity:.45!important}
 .bf-shock-fx::before,.bf-shock-fx::after{opacity:.45!important}
+/* Estrella de impacto (sale en TODAS las acciones: golpes, disparos, hechizos,
+   objetos y habilidades). Era un cuadrado blanco de 190px recortado en forma de
+   estrella; si el recorte no se aplicaba, se veía el cuadrado entero. */
+.bf-hitstar{background:radial-gradient(circle,rgba(255,248,225,.85),rgba(255,225,150,.5) 60%,transparent 72%)!important;mix-blend-mode:screen!important}
+.bf-streak,.bf-lines,.bf-crack,.bf-slash-arc{mix-blend-mode:screen!important;opacity:.7!important}
 .bf-fireball{background:radial-gradient(circle,#ffe27a 0%,#ff8a2a 42%,#ff3a14 68%,transparent 78%)!important}
 /* Rayo: el relámpago era una barra blanca gigante cuando el navegador no
    aplicaba su recorte. Se estrecha y se colorea para que no tape las cartas. */

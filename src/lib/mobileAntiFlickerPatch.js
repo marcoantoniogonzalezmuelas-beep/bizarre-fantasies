@@ -18,7 +18,6 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 [class^="bf-"]:not(.bhero),[class*=" bf-"]:not(.bhero),
 [class^="bf-"]:not(.bhero)::before,[class*=" bf-"]:not(.bhero)::before,
 [class^="bf-"]:not(.bhero)::after,[class*=" bf-"]:not(.bhero)::after{
-  mix-blend-mode:normal!important;
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
   filter:none!important;
@@ -50,7 +49,6 @@ export const MOBILE_ANTIFLICKER_PATCH = `
       if(cls.indexOf('bf-')===-1)continue;
       var st=el.style;
       if(st.filter&&st.filter!=='none')st.setProperty('filter','none','important');
-      if(st.mixBlendMode&&st.mixBlendMode!=='normal')st.setProperty('mix-blend-mode','normal','important');
     }
   }).observe(document.documentElement,{attributes:true,attributeFilter:['style'],subtree:true});
 })();
