@@ -189,9 +189,7 @@ export const ABILITY_FX_PATCH = `
     layer.style.color=theme.color;
     var name=hero.eliteMode?(hero.eAbility||hero.ability||'Habilidad'):(hero.ability||'Habilidad');
     var html='';
-    if(theme.flash)html+='<div class="bf-abx-flash"></div>';
     if(theme.ring)html+='<div class="bf-abx-ring"></div>';
-    if(theme.slashes)html+='<div class="bf-abx-slash" style="--rot:45deg"></div><div class="bf-abx-slash" style="--rot:-45deg;animation-delay:.13s"></div>';
     for(var i=0;i<8;i++){
       var g=theme.glyphs[i%theme.glyphs.length];
       var cls=theme.fall?'bf-abx-fall':'bf-abx-rise';
