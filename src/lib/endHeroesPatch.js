@@ -16,6 +16,10 @@
 // solo al borde inferior. Se elimina sola a los pocos segundos.
 export const END_HEROES_PATCH = `
 <style id="bf-end-heroes-css">
+/* El juego ya pinta su propia alineación VERTICAL de los 6 héroes dentro de la
+   cinemática final (#bf-end-cine .bf-cine-team). Se oculta para no duplicarlos:
+   los héroes se muestran solo en la franja horizontal de este parche. */
+#bf-end-cine .bf-cine-team, #bf-end-cine .bf-cine-vs { display: none !important; }
 @keyframes bfEhRise { from { transform: translateY(40%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes bfEhPop { 0% { opacity: 0; transform: translateY(14px) scale(.7); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes bfEhGoldShine { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
@@ -54,7 +58,7 @@ export const END_HEROES_PATCH = `
     return n;
   }
 
-  var PORT_W = 'width:clamp(42px,11vw,64px);aspect-ratio:3/4;';
+  var PORT_W = 'width:clamp(62px,16vw,104px);aspect-ratio:3/4;';
 
   function buildPort(hh, isWin, delay){
     var art = heroArt(hh);
@@ -122,7 +126,7 @@ export const END_HEROES_PATCH = `
         '<span style="font-size:.85em;filter:hue-rotate(-15deg)">🪱</span>'));
     }
 
-    col.appendChild(el('div', 'font-size:clamp(7px,1.6vw,10px);font-weight:700;max-width:72px;text-align:center;' +
+    col.appendChild(el('div', 'font-size:clamp(9px,2.2vw,13px);font-weight:700;max-width:110px;text-align:center;' +
       'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #000;' +
       'color:' + (isWin ? '#fff5dc' : '#7c7c88'), nm));
     return col;
