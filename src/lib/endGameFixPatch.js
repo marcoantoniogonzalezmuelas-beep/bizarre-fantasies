@@ -497,15 +497,11 @@ export const END_GAME_FIX_PATCH = `
   // con castillos, caballeros, etc.). No creamos un overlay extra encima.
   // Mantenemos bfKillCinematic (muerte en batalla) y los marcadores de muerte.
 
-  // ---- Reinyecta el CSS si el anti-parpadeo lo anula ----
-  setInterval(function(){
-    var s = document.getElementById('bf-end-game-fix');
-    if(!s) return;
-    var anti = document.getElementById('bf-antiflicker');
-    if(anti && anti.parentNode === s.parentNode && anti.previousSibling === s) {
-      document.head.appendChild(s);
-    }
-  }, 1000);
+  // NOTA: antes se reinyectaba este <style> cada segundo para ganar al parche
+  // anti-parpadeo. Los dos se movían el uno detrás del otro sin parar y ese
+  // vaivén forzaba un recálculo de estilos completo cada segundo → parpadeo en
+  // móvil/tablet durante la batalla. Ya no se reinyecta: las reglas de aquí
+  // usan !important y selectores más específicos, así que prevalecen igual.
 })();
 </script>
 `;

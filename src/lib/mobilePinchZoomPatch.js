@@ -62,10 +62,18 @@ export const MOBILE_PINCH_PATCH = `
   function enableWC(){
     if (wcTimer) { clearTimeout(wcTimer); wcTimer = null; }
     document.body.style.willChange = 'transform';
+    // bf-pinching pausa todas las animaciones/transiciones mientras el body
+    // está escalado: es lo que provocaba el parpadeo al pellizcar (ver
+    // noFlickerPatch.js).
+    try { document.documentElement.classList.add('bf-pinching'); } catch (e) {}
   }
   function disableWC(delay){
     if (wcTimer) clearTimeout(wcTimer);
-    wcTimer = setTimeout(function(){ wcTimer = null; document.body.style.willChange = ''; }, delay || 380);
+    wcTimer = setTimeout(function(){
+      wcTimer = null;
+      document.body.style.willChange = '';
+      try { document.documentElement.classList.remove('bf-pinching'); } catch (e) {}
+    }, delay || 380);
   }
 
   function onStart(e){
