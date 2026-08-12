@@ -319,17 +319,17 @@ export const END_GAME_FIX_PATCH = `
 }
 /* Marcador de muerte bizarro: lápida de piedra con calavera y RIP esculpido */
 .bhero.bf-truedead::after {
-  content: "💀\A RIP"; white-space: pre; text-align: center;
+  content: "☠\\FE0E\\A RIP"; white-space: pre; text-align: center;
   position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
   z-index: 20; font-family: 'Cinzel', serif; font-weight: 1000;
   font-size: clamp(9px, 2vw, 13px); letter-spacing: 1.5px; line-height: 1.2;
-  color: #d4c5a0;
+  color: #ff2a2a;
   background: linear-gradient(180deg, #3a2e48 0%, #2a2038 45%, #181028 100%);
-  border: 2px solid #6a5a82;
+  border: 2px solid #b32020;
   border-radius: 11px 11px 5px 5px;
   padding: 3px 8px 5px;
-  box-shadow: 0 4px 10px #000, 0 0 12px rgba(120,100,150,.45), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -2px 4px rgba(0,0,0,.5) !important;
-  text-shadow: 0 0 8px rgba(180,160,200,.6), 0 1px 2px #000;
+  box-shadow: 0 4px 10px #000, 0 0 14px rgba(220,40,40,.8), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -2px 4px rgba(0,0,0,.5) !important;
+  text-shadow: 0 0 10px rgba(255,50,50,.95), 0 1px 2px #000;
   pointer-events: none;
   animation: bfTombFadeIn .4s ease-out, bfTombWobble 4s ease-in-out infinite 1.5s;
 }
