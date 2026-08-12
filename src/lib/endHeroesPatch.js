@@ -20,6 +20,10 @@ export const END_HEROES_PATCH = `
 @keyframes bfEhPop { 0% { opacity: 0; transform: translateY(14px) scale(.7); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes bfEhGoldShine { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
 @keyframes bfEhBloodPulse { 0%,100% { opacity: .55; } 50% { opacity: .95; } }
+@keyframes bfEhMist { 0% { transform: translateX(-12%) translateY(4%); opacity: .35; } 50% { transform: translateX(10%) translateY(-3%); opacity: .7; } 100% { transform: translateX(-12%) translateY(4%); opacity: .35; } }
+@keyframes bfEhCrown { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.1); } }
+@keyframes bfEhSweep { 0% { transform: translateX(-120%) rotate(12deg); } 60%,100% { transform: translateX(160%) rotate(12deg); } }
+@keyframes bfEhRing { 0%,100% { box-shadow: 0 0 0 0 rgba(255,210,74,.55), 0 6px 16px rgba(0,0,0,.55); } 50% { box-shadow: 0 0 22px 5px rgba(255,196,40,.75), 0 6px 16px rgba(0,0,0,.55); } }
 </style>
 <script>
 (function(){
@@ -57,45 +61,70 @@ export const END_HEROES_PATCH = `
     var nm = (hh && hh.name) ? hh.name : 'Héroe';
     if(hh && (hh.eliteMode || hh._bfElite)) nm += ' ★';
 
-    var col = el('div', 'display:flex;flex-direction:column;align-items:center;gap:3px');
-    var port = el('div', PORT_W + 'position:relative;border-radius:9px;overflow:hidden;background-color:#0a0710;' +
-      'border:2px solid ' + (isWin ? '#ffd24a' : '#8a2020') + ';' +
-      'box-shadow:' + (isWin
-        ? '0 4px 12px rgba(0,0,0,.5),0 0 14px rgba(255,210,74,.5)'
-        : '0 4px 12px rgba(0,0,0,.55),0 0 18px rgba(170,30,30,.75),inset 0 0 10px rgba(60,6,6,.5)') + ';' +
-      'animation:bfEhPop .5s cubic-bezier(.2,.8,.3,1) both;animation-delay:' + delay + 's');
+    var col = el('div', 'display:flex;flex-direction:column;align-items:center;gap:3px;position:relative');
+    var port = el('div', PORT_W + 'position:relative;border-radius:9px;overflow:hidden;background-color:#07050c;' +
+      'border:2px solid ' + (isWin ? '#ffd24a' : '#2b2b33') + ';' +
+      (isWin
+        ? 'transform:scale(1.06);animation:bfEhPop .5s cubic-bezier(.2,.8,.3,1) both,bfEhRing 1.6s ease-in-out infinite;'
+        : 'box-shadow:0 4px 14px rgba(0,0,0,.7),inset 0 0 18px rgba(0,0,0,.9);animation:bfEhPop .5s cubic-bezier(.2,.8,.3,1) both;') +
+      'animation-delay:' + delay + 's');
 
-    // Arte del héroe (los caídos en gris y oscurecidos)
-    port.appendChild(el('div', 'position:absolute;inset:0;background-size:cover;background-position:center 18%;' +
-      'background-image:url(\\'' + art + '\\');' +
-      (isWin ? '' : 'filter:grayscale(1) brightness(.5) contrast(1.05);')));
+    // Arte del héroe: los caídos, en gris real (el filtro va en la propia <img>,
+    // así ningún estilo del juego ni parche anti-parpadeo puede anularlo).
+    var img = document.createElement('img');
+    img.src = art;
+    img.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' +
+      'object-position:center 18%;' +
+      (isWin ? '' : '-webkit-filter:grayscale(100%) brightness(.42) contrast(1.15);' +
+                    'filter:grayscale(100%) brightness(.42) contrast(1.15);'));
+    port.appendChild(img);
 
     if(isWin){
-      // Brillo dorado pulsante sobre la imagen del vencedor
+      // Vencedor: halo dorado + destello que barre el retrato
       port.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;' +
-        'background:radial-gradient(circle at 50% 30%,rgba(255,228,140,.55),rgba(255,210,74,.2) 45%,rgba(255,190,40,0) 74%);' +
+        'background:radial-gradient(circle at 50% 28%,rgba(255,232,150,.5),rgba(255,205,70,.18) 48%,rgba(255,190,40,0) 76%);' +
         'animation:bfEhGoldShine 1.8s ease-in-out infinite'));
+      var sweepBox = el('div', 'position:absolute;inset:0;overflow:hidden;pointer-events:none');
+      sweepBox.appendChild(el('div', 'position:absolute;top:-30%;bottom:-30%;width:38%;' +
+        'background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,246,214,.75),rgba(255,255,255,0));' +
+        'animation:bfEhSweep 2.6s ease-in-out infinite'));
+      port.appendChild(sweepBox);
     } else {
-      // Velo de sangre pulsante
+      // Caído: tinieblas — viñeta negra profunda + niebla que se arrastra
       port.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;' +
-        'background:linear-gradient(180deg,rgba(150,12,12,.45),rgba(70,4,4,.65));' +
-        'animation:bfEhBloodPulse 2.2s ease-in-out infinite'));
-      // Gusanos de fondo
-      port.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;' +
-        'justify-content:center;text-align:center;line-height:1.7;opacity:.55;' +
-        'font-size:clamp(9px,2.2vw,13px);white-space:pre',
-        '🪱 🪱\\n🪱  🪱\\n 🪱 🪱'));
-      // Lápida grabada
-      port.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;' +
-        'justify-content:center;font-family:\\'Cinzel\\',serif;font-weight:1000;letter-spacing:2px;' +
-        'font-size:clamp(11px,2.8vw,16px);color:#ffdada;' +
-        'text-shadow:0 0 9px rgba(210,30,30,.95),0 2px 3px #000', 'RIP'));
+        'background:radial-gradient(ellipse at 50% 30%,rgba(0,0,0,0) 20%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.95) 100%)'));
+      port.appendChild(el('div', 'position:absolute;left:-20%;right:-20%;bottom:-10%;height:70%;pointer-events:none;' +
+        'background:radial-gradient(ellipse at 50% 100%,rgba(150,160,180,.35),rgba(90,95,120,.12) 45%,transparent 75%);' +
+        'animation:bfEhMist 5s ease-in-out infinite'));
+      // Tenue velo de sangre (sin tapar la escala de grises)
+      port.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;' +
+        'background:linear-gradient(180deg,rgba(120,10,10,.18),rgba(50,3,3,.4));' +
+        'animation:bfEhBloodPulse 2.6s ease-in-out infinite'));
+    }
+
+    if(isWin){
+      // Corona flotando sobre el retrato del vencedor
+      col.appendChild(el('div', 'position:absolute;top:-13px;left:50%;transform:translateX(-50%);z-index:3;' +
+        'font-size:clamp(12px,3vw,17px);filter:drop-shadow(0 0 7px rgba(255,210,74,.95));' +
+        'animation:bfEhCrown 1.8s ease-in-out infinite', '👑'));
     }
 
     col.appendChild(port);
+
+    if(!isWin){
+      // Lápida bajo el retrato (fuera de la imagen): ☠ RIP + gusanos
+      col.appendChild(el('div', 'display:flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px 4px 2px 2px;' +
+        'background:linear-gradient(180deg,#2a2a30,#15151a);border:1px solid #3d3d46;' +
+        'font-family:\\'Cinzel\\',serif;font-weight:1000;letter-spacing:1.5px;' +
+        'font-size:clamp(7px,1.8vw,10px);color:#ff5a5a;' +
+        'text-shadow:0 0 8px rgba(220,30,30,.9),0 1px 2px #000',
+        '<span style="color:#ff4444">\\u2620\\uFE0E</span> RIP ' +
+        '<span style="font-size:.85em;filter:hue-rotate(-15deg)">🪱</span>'));
+    }
+
     col.appendChild(el('div', 'font-size:clamp(7px,1.6vw,10px);font-weight:700;max-width:72px;text-align:center;' +
       'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #000;' +
-      'color:' + (isWin ? '#fff5dc' : '#bb8888'), nm));
+      'color:' + (isWin ? '#fff5dc' : '#7c7c88'), nm));
     return col;
   }
 
