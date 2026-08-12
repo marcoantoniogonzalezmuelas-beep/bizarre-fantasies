@@ -38,13 +38,16 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 <script>
 (function(){
   if(window.__bfAntiFlicker)return;window.__bfAntiFlicker=true;
-  // Mantiene el estilo anti-parpadeo como ÚLTIMO del <head>: otros parches
-  // añaden sus <style> en tiempo de ejecución y, a igual especificidad e
-  // !important, gana el que va después. Así este siempre prevalece.
-  setInterval(function(){
+  // Antes se movía este <style> al final del <head> cada 800 ms para ganar a
+  // otros parches. Mover un <style> invalida TODOS los estilos del documento:
+  // era un recálculo completo cada 800 ms → parpadeo constante en móvil/tablet.
+  // Se hace UNA sola vez, cuando la página ha terminado de cargar.
+  function toEnd(){
     var s=document.getElementById('bf-antiflicker');
     if(s&&document.head.lastElementChild!==s)document.head.appendChild(s);
-  },800);
+  }
+  if(document.readyState==='complete')setTimeout(toEnd,1500);
+  else window.addEventListener('load',function(){setTimeout(toEnd,1500)});
   // Los brillos por filtro (glow, drop-shadow) se conservan: sin ellos los
   // hechizos (rayo en cadena, tormenta ígnea, maremoto…) se veían apagados o
   // directamente invisibles en móvil.

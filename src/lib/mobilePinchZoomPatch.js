@@ -56,20 +56,12 @@ export const MOBILE_PINCH_PATCH = `
   function dist(t){ var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.hypot(dx, dy); }
   function mid(t){ return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 }; }
 
-  // will-change SOLO durante el gesto/animación: si lo dejamos siempre, el
-  // body entero se convierte en una capa de composición GPU y cualquier cambio
-  // de contenido (re-render del juego, parches) fuerza un repintado completo
-  // de la capa → parpadeo en móvil/tablet. Se activa al empezar el pellizco y
-  // se quita un poco DESPUÉS de terminar la animación de reencuadre, para que
-  // la capa no se desmonte a mitad de la transición (eso también parpadeaba).
-  function enableWC(){
-    if (wcTimer) { clearTimeout(wcTimer); wcTimer = null; }
-    document.body.style.willChange = 'transform';
-  }
-  function disableWC(delay){
-    if (wcTimer) clearTimeout(wcTimer);
-    wcTimer = setTimeout(function(){ wcTimer = null; document.body.style.willChange = ''; }, delay || 380);
-  }
+  // will-change YA NO se activa/desactiva por gesto: encender y apagarlo creaba
+  // y destruía la capa GPU del body en cada pellizco, y ese montaje/desmontaje
+  // era justo lo que provocaba los destellos. El body ya es una capa estable
+  // (translate3d permanente, ver noFlickerPatch.js), así que no hace falta.
+  function enableWC(){}
+  function disableWC(){}
 
   function onStart(e){
     if (e.touches.length !== 2) return;
