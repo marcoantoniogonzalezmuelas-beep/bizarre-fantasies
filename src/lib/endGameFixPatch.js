@@ -311,8 +311,14 @@ export const END_GAME_FIX_PATCH = `
 
 /* Refuerzo del grayscale en batalla (el anti-parpadeo lo anula en móvil) */
 .bhero.bf-truedead {
-  filter: grayscale(.85) brightness(.5) !important;
+  /* OJO: el filtro NO va en la carta entera — un filter en el padre también
+     desatura el ::after (la lápida ☠ RIP), que debe verse ROJA. Se aplica a
+     los hijos reales; el ::after queda fuera y conserva su color. */
+  filter: none !important;
   opacity: .85 !important;
+}
+.bhero.bf-truedead > * {
+  filter: grayscale(.85) brightness(.5) !important;
 }
 .bhero.bf-truedead .bf-battle-art {
   filter: grayscale(1) brightness(.45) !important;
