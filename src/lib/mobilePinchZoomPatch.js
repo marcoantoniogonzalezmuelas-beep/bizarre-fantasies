@@ -27,7 +27,10 @@ export const MOBILE_PINCH_PATCH = `
     // durante el gesto; cuando volvemos a x1 sin desplazamiento, quitamos el
     // transform para que el body deje de ser una capa compuesta (así los
     // re-renders del juego solo repintan el área cambiada, no todo el body).
-    b.style.transform = (z === 1 && !tx && !ty) ? '' : 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(' + z + ')';
+    // Se mantiene SIEMPRE un translate3d (aunque sea 0,0 a escala 1): así la
+    // capa compuesta del body no se crea ni se destruye al pellizcar, que es lo
+    // que provocaba los destellos.
+    b.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(' + z + ')';
     // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
     // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
     if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
@@ -62,18 +65,10 @@ export const MOBILE_PINCH_PATCH = `
   function enableWC(){
     if (wcTimer) { clearTimeout(wcTimer); wcTimer = null; }
     document.body.style.willChange = 'transform';
-    // bf-pinching pausa todas las animaciones/transiciones mientras el body
-    // está escalado: es lo que provocaba el parpadeo al pellizcar (ver
-    // noFlickerPatch.js).
-    try { document.documentElement.classList.add('bf-pinching'); } catch (e) {}
   }
   function disableWC(delay){
     if (wcTimer) clearTimeout(wcTimer);
-    wcTimer = setTimeout(function(){
-      wcTimer = null;
-      document.body.style.willChange = '';
-      try { document.documentElement.classList.remove('bf-pinching'); } catch (e) {}
-    }, delay || 380);
+    wcTimer = setTimeout(function(){ wcTimer = null; document.body.style.willChange = ''; }, delay || 380);
   }
 
   function onStart(e){

@@ -1,25 +1,18 @@
-// Parche SOLO móvil/tablet: elimina el parpadeo durante el zoom de pellizco y
-// en los momentos de mucha animación de la batalla.
+// Parche SOLO móvil/tablet contra el parpadeo del zoom de pellizco.
 //
-// Causas del parpadeo y cómo se corrigen:
-// 1) Mientras se pellizca, el body está escalado con transform: cada animación
-//    CSS en curso (auras, brillos, sombras animadas) obliga al compositor a
-//    rehacer la capa escalada en cada frame. Al pellizcar se pausan TODAS las
-//    animaciones y transiciones (clase bf-pinching en <html>) y se recuperan al
-//    soltar: el gesto va fluido y sin destellos.
-// 2) Capas compuestas inestables: se fija backface-visibility en el body para
-//    que la capa del zoom no se recree.
+// La causa real: la capa GPU del body se crea al empezar el gesto y se destruye
+// al soltar (transform/will-change entran y salen). Cada promoción/degradación
+// de capa provoca un destello. La solución es que el body sea SIEMPRE la misma
+// capa compuesta y estable: translate3d permanente y backface-visibility fija.
+// Nada se pausa ni se desactiva durante el gesto (eso forzaba un recálculo de
+// estilos completo al entrar y salir del pellizco, y parpadeaba aún más).
 export const NO_FLICKER_PATCH = `
 <style id="bf-no-flicker">
-body { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-/* Durante el pellizco: nada se anima ni transiciona → cero recomposiciones */
-html.bf-pinching *, html.bf-pinching *::before, html.bf-pinching *::after {
-  animation-play-state: paused !important;
-  transition: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+body {
+  transform: translate3d(0,0,0);
+  transform-origin: 0 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
-/* El body sí conserva su transición de reencuadre al soltar */
-html.bf-pinching body { transition: transform .26s cubic-bezier(.2,.8,.3,1) !important; }
 </style>
 `;
