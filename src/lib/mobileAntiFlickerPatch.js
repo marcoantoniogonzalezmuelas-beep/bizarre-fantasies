@@ -22,7 +22,16 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   -webkit-backdrop-filter:none!important;
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
+  mix-blend-mode:normal!important;
 }
+/* Capas de impacto nativas del juego: sin blend en táctil (parpadean sobre el
+   iframe escalado). Sus fondos ya son translúcidos (whiteFlashFixPatch), así
+   que en modo normal se ven bien y sin cuadros blancos. */
+.fx-slash,.fx-burst,.fx-ring{mix-blend-mode:normal!important}
+/* El blur animado dentro del escenario escalado fuerza recomposición GPU por
+   frame (parpadeo). Se elimina SOLO el blur; los drop-shadow se conservan. */
+.bf-wave{filter:none!important}
+.bf-frost-mist{filter:none!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>

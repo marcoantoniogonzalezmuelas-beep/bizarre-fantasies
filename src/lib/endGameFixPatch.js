@@ -279,29 +279,29 @@ export const END_GAME_FIX_PATCH = `
 /* ---- CINEMÁTICA DE MUERTE en batalla (bfKillCinematic) ---- */
 .bf-kill-fx {
   position: absolute; inset: 0; z-index: 8; pointer-events: none; border-radius: inherit; overflow: hidden;
-  animation: bfKillFade 1.6s ease-out forwards;
+  animation: bfKillFade 2.6s ease-out forwards;
 }
 .bf-kill-fx .bf-kill-smoke {
   position: absolute; left: 0; right: 0; bottom: -20px; height: 120px;
   background: radial-gradient(circle at 45% 70%, rgba(15,15,18,.9), rgba(90,38,120,.4) 38%, transparent 72%);
-  animation: bfKillSmoke 1.4s ease-out forwards;
+  animation: bfKillSmoke 2.4s ease-out forwards;
 }
 .bf-kill-fx .bf-kill-skull {
   position: absolute; left: 50%; top: 38%; transform: translate(-50%,-50%);
   font-size: 48px; filter: drop-shadow(0 0 15px #000);
-  animation: bfKillSkull 1.1s ease-out forwards;
+  animation: bfKillSkull 2s ease-out forwards;
 }
 .bf-kill-fx .bf-kill-grave {
   position: absolute; left: 50%; top: 46%; transform: translate(-50%,-50%);
   font-size: 52px; filter: drop-shadow(0 4px 8px #000);
-  animation: bfKillGrave 1.3s cubic-bezier(.2,.8,.3,1) forwards;
-  animation-delay: .3s; opacity: 0;
+  animation: bfKillGrave 2.2s cubic-bezier(.2,.8,.3,1) forwards;
+  animation-delay: .5s; opacity: 0;
 }
 .bf-kill-fx .bf-kill-rip {
   position: absolute; left: 50%; top: 30%; transform: translate(-50%,-50%);
   font-family: 'Cinzel', serif; font-weight: 1000; font-size: 22px; color: #cbb9ee;
   text-shadow: 0 0 12px rgba(120,100,150,.8), 0 3px 6px #000; letter-spacing: 2px;
-  animation: bfKillRip 1.2s ease-out forwards; animation-delay: .5s; opacity: 0;
+  animation: bfKillRip 2.1s ease-out forwards; animation-delay: .9s; opacity: 0;
 }
 @keyframes bfKillFade { 0% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes bfKillSmoke { 0% { opacity: 0; transform: translateY(22px) scale(.8); } 35% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px) scale(1.22); } }
@@ -482,7 +482,7 @@ export const END_GAME_FIX_PATCH = `
       '<div class="bf-kill-grave">🪦</div>' +
       '<div class="bf-kill-rip">R.I.P.</div>';
     card.appendChild(fx);
-    setTimeout(function() { if(fx.parentNode) fx.parentNode.removeChild(fx); }, 1700);
+    setTimeout(function() { if(fx.parentNode) fx.parentNode.removeChild(fx); }, 2700);
   };
 
   // ---- 3) CINEMÁTICA FINAL de fin de partida ----

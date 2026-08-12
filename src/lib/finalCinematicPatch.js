@@ -29,8 +29,9 @@ export const FINAL_CINEMATIC_PATCH = `
         },60);
       });
       // Si hubo una muerte, el siguiente endTurn espera a que termine la
-      // cinemática de muerte (1.7s) para no solaparse con la siguiente acción.
-      if(hasDeath) window.__bfDeathDelayUntil=Date.now()+1700;
+      // cinemática de muerte (2.7s, ralentizada para ver bien quién mata a
+      // quién) para no solaparse con la siguiente acción.
+      if(hasDeath) window.__bfDeathDelayUntil=Date.now()+2700;
       return original.apply(this,arguments);
     };
     window.flushFx.__bfFinalKill=1;
