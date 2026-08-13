@@ -179,6 +179,15 @@ export default function AdminCards() {
     startNew();
   }
 
+  // Seguro anti-bloqueo: si la IA o la subida se quedan colgadas, el botón se
+  // desbloquea con un error en vez de quedarse en "Creando…" para siempre.
+  function withTimeout(promise, ms, label) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de espera agotado en ' + label)), ms)),
+    ]);
+  }
+
   // Genera con imágenes de referencia y, si la IA falla por culpa de alguna
   // referencia (URL que no puede leer), reintenta sin ellas para no dejar al
   // admin con el botón "Generando…" colgado para siempre.
@@ -234,19 +243,22 @@ export default function AdminCards() {
     // Élite: si existe el arte normal, se usa como referencia obligatoria para
     // que sea EXACTAMENTE el mismo personaje, solo que más frenético y épico.
     const isElite = target === 'elite_art_url' && !!form.art_url;
-    const eliteRule = isElite ? ` VERSIÓN ÉLITE — REGLA CRÍTICA: la imagen de referencia adjunta es la versión normal de este personaje. Debes representar EXACTAMENTE AL MISMO PERSONAJE: misma cara, mismo cuerpo, misma especie, mismos colores, misma ropa/armadura base y mismos rasgos reconocibles. PROHIBIDO cambiarlo por otro personaje o alterar su identidad. Solo evoluciona su aspecto: pose más frenética y dinámica, expresión más intensa, aura/energía épica, detalles más bizarros y espectaculares (grietas de poder, brillos, mejoras en su equipo), iluminación más dramática.` : '';
+    const eliteRule = isElite ? ` VERSIÓN ÉLITE — REGLA CRÍTICA: la imagen de referencia adjunta es la versión NORMAL de este personaje y sirve SOLO para mantener su identidad: misma cara, misma especie, mismos colores base, misma ropa/armadura reconocible. PROHIBIDO cambiarlo por otro personaje. PROHIBIDO TAMBIÉN copiar o reproducir la referencia: la imagen élite debe ser CLARAMENTE DIFERENTE de ella, una EVOLUCIÓN mucho más poderosa. Cambia OBLIGATORIAMENTE: pose y encuadre nuevos y más frenéticos, expresión mucho más intensa y feroz, aura y energía épica desbordante, armadura/equipo mejorados y ornamentados, efectos de poder (grietas luminosas, chispas, partículas), iluminación mucho más dramática y contrastada. Si la imagen resultante se parece a la referencia, es incorrecta.` : '';
     const prompt = `Ilustración que RELLENA POR COMPLETO el lienzo entero de borde a borde y esquina a esquina, con cero relleno, cero márgenes y cero espacio de fondo visible en cualquier lado, ni siquiera una franja de 1 píxel. Prohibido absolutamente: marco, borde blanco/gris/de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro decorativo dentro de la imagen, texto o logos. ENCUADRE CON ZONA SEGURA: el personaje/objeto y todos los elementos importantes deben quedar cómodamente dentro de la zona central del lienzo, con amplio aire respecto a los cuatro bordes (nada importante pegado a los bordes), de forma que ningún recorte posterior corte cabeza, pies, manos ni la montura; la cara en el tercio superior-medio del lienzo. El fondo (paisaje, textura o ambiente) pintado hasta el último borde y las cuatro esquinas, sin ninguna zona vacía. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable.${clanBg}${eliteRule} Indicaciones del admin: ${form.image_prompt}`;
-    const refs = refImages(isElite ? [form.art_url] : []);
+    // En la versión élite la ÚNICA referencia es el arte normal (identidad del
+    // personaje). La foto de referencia del admin solo se usa en la normal:
+    // mezclarlas hacía que la élite saliera casi idéntica a la normal.
+    const refs = isElite ? [form.art_url] : refImages([]);
     try {
-      const result = await genImageWithFallback(prompt, refs);
+      const result = await withTimeout(genImageWithFallback(prompt, refs), 120000, 'la generación de la imagen');
       const rawUrl = result?.url;
       if (rawUrl) {
-        const croppedUrl = await cropAndUpload(rawUrl);
+        const croppedUrl = await withTimeout(cropAndUpload(rawUrl), 60000, 'el recorte y subida de la imagen').catch(() => rawUrl);
         setForm(prev => ({ ...prev, [target]: croppedUrl }));
       }
     } catch (err) {
       console.error(err);
-      alert('No se pudo generar la imagen. Inténtalo de nuevo (si usas foto de referencia, prueba a subirla otra vez).');
+      alert('No se pudo generar la imagen: ' + (err?.message || 'error desconocido') + '. Inténtalo de nuevo.');
     } finally {
       setGenerating(false);
     }
@@ -263,7 +275,7 @@ export default function AdminCards() {
         ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
         : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
       const refs = refImages(refUrl);
-      const result = await genImageWithFallback(prompt, refs);
+      const result = await withTimeout(genImageWithFallback(prompt, refs), 120000, 'la generación de la imagen');
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
@@ -334,7 +346,7 @@ export default function AdminCards() {
         ? `${BG_RULE} Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''} Spectacular magical energy, glowing aura (NOT a bright/golden background, only the aura glows against pure black), enhanced ornate armor, fierce powerful combat pose, dramatic cinematic lighting, anime-inspired dark fantasy art, premium legendary trading card game ability artwork. The background stays pure black even with the elite glow.${hint}${BG_TAIL}`
         : `${BG_RULE} 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ability "${abilityName || ''}". ${abilityDesc || ''} Dynamic full-body action pose, mid-action, dramatic cinematic lighting, dark fantasy anime art style, epic trading card game ability artwork.${hint}${BG_TAIL}`;
       const refs = refImages(refUrl);
-      const result = await genImageWithFallback(prompt, refs);
+      const result = await withTimeout(genImageWithFallback(prompt, refs), 120000, 'la generación de la imagen');
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
