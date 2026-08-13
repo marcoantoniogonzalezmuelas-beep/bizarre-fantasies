@@ -20,7 +20,7 @@ export default function AiLevelAvatar({ src, alt, color, size = 52 }) {
         src={src}
         alt={alt}
         className="absolute left-1/2 top-0 h-auto w-full max-w-none"
-        style={{ transform: 'translateX(-50%) scale(1.55)', transformOrigin: 'top center' }}
+        style={{ transform: 'translateX(-50%) scale(2.15)', transformOrigin: 'top center' }}
       />
       <div
         className="pointer-events-none absolute inset-0 rounded-full"

@@ -19,15 +19,17 @@ const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio'
 const MONTH_NAMES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTH_NAMES = () => (getLang() === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ES);
 const M = (h) => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + h;
+// zoom: el arte de las IAs es un emblema circular con marco claro dentro de la
+// imagen; se amplía para que el rostro llene el hueco y no se vea ese borde.
 const AI_AVATARS = {
-  'IA Novata': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a' },
-  'AI Novice': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a' },
-  'IA Bersérker': { art: M('274f7a3e2_generated_image.png'), color: '#ff5a3c' },
-  'AI Berserker': { art: M('274f7a3e2_generated_image.png'), color: '#ff5a3c' },
-  'IA Estratega': { art: M('88ab0dd62_generated_image.png'), color: '#7c9cff' },
-  'AI Strategist': { art: M('88ab0dd62_generated_image.png'), color: '#7c9cff' },
-  'IA Némesis': { art: M('fd6b3a75e_generated_image.png'), color: '#c06bff' },
-  'AI Nemesis': { art: M('fd6b3a75e_generated_image.png'), color: '#c06bff' },
+  'IA Novata': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a', zoom: 2.1 },
+  'AI Novice': { art: M('ac6f97a53_generated_image.png'), color: '#7cff5a', zoom: 2.1 },
+  'IA Bersérker': { art: M('274f7a3e2_generated_image.png'), color: '#ff5a3c', zoom: 2.1 },
+  'AI Berserker': { art: M('274f7a3e2_generated_image.png'), color: '#ff5a3c', zoom: 2.1 },
+  'IA Estratega': { art: M('88ab0dd62_generated_image.png'), color: '#7c9cff', zoom: 2.1 },
+  'AI Strategist': { art: M('88ab0dd62_generated_image.png'), color: '#7c9cff', zoom: 2.1 },
+  'IA Némesis': { art: M('fd6b3a75e_generated_image.png'), color: '#c06bff', zoom: 2.1 },
+  'AI Nemesis': { art: M('fd6b3a75e_generated_image.png'), color: '#c06bff', zoom: 2.1 },
 };
 
 function top(map, n = 10, extraMap) {
@@ -96,7 +98,12 @@ export default function Ranking() {
   });
   // Fallback de avatares para IAs cuyas partidas se registraron antes de que
   // se guardara el avatar en el resultado.
-  Object.keys(AI_AVATARS).forEach(k => { if (!playerArtMap[k]) playerArtMap[k] = AI_AVATARS[k]; });
+  Object.keys(AI_AVATARS).forEach(k => {
+    if (!playerArtMap[k]) playerArtMap[k] = AI_AVATARS[k];
+    // Aunque el avatar venga del resultado de la partida, las IAs se amplían
+    // igual para que su emblema llene el círculo sin marco claro alrededor.
+    else playerArtMap[k] = { ...playerArtMap[k], zoom: AI_AVATARS[k].zoom };
+  });
   const playerExtra = (nick) => {
     const w = wins[nick] || 0, l = losses[nick] || 0;
     return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;

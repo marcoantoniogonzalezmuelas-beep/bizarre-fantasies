@@ -23,7 +23,12 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
               style={{ borderColor: color, background: '#09070d', boxShadow: `0 0 18px ${RANK_GLOWS[h.rank]}` }}
             >
               {info?.art ? (
-                <img src={info.art} alt={h.name} className="absolute inset-0 w-full h-full object-cover object-[center_15%]" />
+                <img
+                  src={info.art}
+                  alt={h.name}
+                  className="absolute inset-0 w-full h-full object-cover object-[center_15%]"
+                  style={info.zoom ? { transform: `scale(${info.zoom})`, transformOrigin: 'center 20%' } : undefined}
+                />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center font-heading font-black text-4xl" style={{ color: accent }}>{h.name.charAt(0)}</div>
               )}
