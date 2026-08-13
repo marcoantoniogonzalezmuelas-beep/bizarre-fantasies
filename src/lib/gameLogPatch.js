@@ -9,6 +9,24 @@ export const GAME_LOG_PATCH = `
   window.__bfGameLog=true;
   var battleStart=null;
   var itemsBought=[];
+  var events=[];
+
+  // Captura los eventos de la partida enganchando pushLog: cada línea del log
+  // de batalla (ataques, habilidades, muertes, compras) se guarda como evento.
+  function hookPushLog(){
+    if(typeof window.pushLog!=='function'||window.pushLog.__bfEvLog)return;
+    var orig=window.pushLog;
+    window.pushLog=function(type,text){
+      try{
+        if(battleStart&&events.length<180){
+          var turn=0;try{turn=(typeof G!=='undefined'&&G&&(G.round||G.turn))||0;}catch(e){}
+          events.push({turn:Number(turn)||0,type:String(type||''),detail:String(text||'').replace(/<[^>]*>/g,'').slice(0,180)});
+        }
+      }catch(e){}
+      return orig.apply(this,arguments);
+    };
+    window.pushLog.__bfEvLog=1;
+  }
 
   function clanOf(h){try{return h.clan||h.race||'';}catch(e){return '';}}
   function heroList(arr){
@@ -16,7 +34,7 @@ export const GAME_LOG_PATCH = `
       .map(function(h){return {name:h.name||'',clan:clanOf(h),elite:!!h.eliteUsed,died:!h.alive};});
   }
 
-  function startLog(){battleStart=Date.now();itemsBought=[];}
+  function startLog(){battleStart=Date.now();itemsBought=[];events=[];window.__bfLogSent=false;}
 
   function endLog(youWin){
     if(!battleStart)return;
@@ -40,8 +58,11 @@ export const GAME_LOG_PATCH = `
       var oH=heroList(G.team&&G.team.o);
       var duration=Math.round((Date.now()-battleStart)/1000);
       var turns=0;try{turns=G.round||G.turn||G.turns||0;}catch(e){}
+      var aiLevel='';
+      try{if(mode==='ia'&&window.__bfAiLevelMeta)aiLevel=window.__bfAiLevelMeta.id||'';}catch(e){}
       var log={
         mode:mode,
+        ai_level:aiLevel,
         room_code:(typeof NET!=='undefined'&&NET.code)||'',
         player_nick:playerNick,
         opponent_nick:opponentNick,
@@ -52,7 +73,7 @@ export const GAME_LOG_PATCH = `
         turns_played:turns,
         winner:youWin?'player':'opponent',
         player_won:!!youWin,
-        events:[],
+        events:events.slice(0,180),
         items_bought:itemsBought.slice(0,60),
         duration_seconds:duration
       };
@@ -64,7 +85,10 @@ export const GAME_LOG_PATCH = `
   function tick(){
     var inBattle=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
     if(inBattle&&!battleStart)startLog();
-    if(!inBattle&&battleStart&&!window.__bfLogSent){battleStart=null;window.__bfLogSent=false;}
+    // Al salir de la batalla se resetea todo para que la SIGUIENTE partida de
+    // la misma sesión también se registre (antes __bfLogSent quedaba en true
+    // y solo se guardaba la primera partida).
+    if(!inBattle&&(battleStart||window.__bfLogSent)){battleStart=null;window.__bfLogSent=false;}
   }
   setInterval(tick,1000);
 
@@ -78,7 +102,7 @@ export const GAME_LOG_PATCH = `
     window.showResult.__bfLog=1;
     return true;
   }
-  var tries=0,t=setInterval(function(){if(install()||tries++>100)clearInterval(t);},200);
+  var tries=0,t=setInterval(function(){hookPushLog();if(install()&&window.pushLog&&window.pushLog.__bfEvLog)clearInterval(t);if(tries++>200)clearInterval(t);},200);
 
   // Rastrear compras enganchando funciones de compra del juego
   function wrapBuy(name){

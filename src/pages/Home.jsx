@@ -379,6 +379,7 @@ export default function Home() {
   const pinchRafRef = useRef(null);
   const [pinch, setPinch] = useState({ z: 1, tx: 0, ty: 0 });
   const aiStrategyRef = useRef(null);
+  const aiLevelStratRef = useRef(null);
 
   useEffect(() => bindGameLobbyBridge(iframeRef), []);
 
@@ -394,6 +395,18 @@ export default function Home() {
     const sendToStrat = (strat) => {
       try { iframeRef.current?.contentWindow?.postMessage({ bfAiStrategy: strat }, '*'); } catch (e) {}
     };
+
+    // Estrategias APRENDIDAS por nivel de IA (gestión de aprendizaje del admin):
+    // se cargan de la BD y se envían al iframe para que cada nivel juegue con
+    // lo que ha aprendido de las partidas leídas.
+    try {
+      base44.entities.AiLevelStrategy.list('-updated_date', 20).then(list => {
+        const m = {};
+        (list || []).forEach(r => { if (r.level_id && r.strategy) m[r.level_id] = r.strategy; });
+        aiLevelStratRef.current = m;
+        try { iframeRef.current?.contentWindow?.postMessage({ bfAiLevelStrategies: m }, '*'); } catch (e) {}
+      }).catch(() => {});
+    } catch (e) {}
 
     const fetchAndCache = async () => {
       try {
@@ -478,6 +491,9 @@ export default function Home() {
         // listo, por si el primer envío llegó antes de que el patch estuviera instalado.
         if (aiStrategyRef.current) {
           try { iframeRef.current?.contentWindow?.postMessage({ bfAiStrategy: aiStrategyRef.current }, '*'); } catch (e) {}
+        }
+        if (aiLevelStratRef.current) {
+          try { iframeRef.current?.contentWindow?.postMessage({ bfAiLevelStrategies: aiLevelStratRef.current }, '*'); } catch (e) {}
         }
       }
       if (e.data && e.data.bfReloading) {

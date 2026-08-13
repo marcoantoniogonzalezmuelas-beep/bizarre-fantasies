@@ -31,6 +31,17 @@
       "type": "string",
       "description": "Clan del rival"
     },
+    "ai_level": {
+      "type": "string",
+      "description": "Nivel de la IA rival cuando mode=ia (novice, berserker, strategist, nemesis)"
+    },
+    "analyzed_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Niveles de IA que ya han aprendido de esta partida (novice, berserker, strategist, nemesis)"
+    },
     "player_heroes": {
       "type": "array",
       "items": {

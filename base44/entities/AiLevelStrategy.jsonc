@@ -1,0 +1,67 @@
+{
+  "name": "AiLevelStrategy",
+  "type": "object",
+  "properties": {
+    "level_id": {
+      "type": "string",
+      "enum": [
+        "novice",
+        "berserker",
+        "strategist",
+        "nemesis"
+      ],
+      "description": "Nivel de IA al que pertenece esta estrategia aprendida"
+    },
+    "strategy": {
+      "type": "object",
+      "description": "Par\u00e1metros de juego aprendidos (bidAggression, abilityUsage, targetPriority, purchaseTiming, preferHeroes, avoidHeroes, notes)",
+      "properties": {
+        "bidAggression": {
+          "type": "number"
+        },
+        "abilityUsage": {
+          "type": "number"
+        },
+        "targetPriority": {
+          "type": "string"
+        },
+        "purchaseTiming": {
+          "type": "string"
+        },
+        "preferHeroes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "avoidHeroes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "learned_log_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs de los GameLog de los que este nivel ha aprendido"
+    },
+    "games_learned": {
+      "type": "number",
+      "description": "N\u00famero de partidas aprendidas"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Resumen en espa\u00f1ol de lo aprendido"
+    }
+  },
+  "required": [
+    "level_id"
+  ]
+}

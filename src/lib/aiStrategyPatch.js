@@ -42,10 +42,29 @@ export const AI_STRATEGY_PATCH = `
       STRAT.abilityUsage = lvl.abilityUsage;
       STRAT.targetPriority = lvl.targetPriority;
       STRAT.purchaseTiming = lvl.purchaseTiming;
+      // Estrategia APRENDIDA por este nivel concreto (gestión de aprendizaje
+      // del admin: aiLearnFromLog → AiLevelStrategy). Si el nivel ha aprendido
+      // de partidas, sus parámetros aprendidos sustituyen a los de fábrica.
+      var learned = (window.__bfAiLevelStrategies || {})[lvl.id];
+      if (learned) {
+        if (typeof learned.bidAggression === 'number') STRAT.bidAggression = learned.bidAggression;
+        if (typeof learned.abilityUsage === 'number') STRAT.abilityUsage = learned.abilityUsage;
+        if (learned.targetPriority) STRAT.targetPriority = learned.targetPriority;
+        if (learned.purchaseTiming) STRAT.purchaseTiming = learned.purchaseTiming;
+        if (Array.isArray(learned.preferHeroes) && learned.preferHeroes.length) STRAT.preferHeroes = learned.preferHeroes;
+        if (Array.isArray(learned.avoidHeroes) && learned.avoidHeroes.length) STRAT.avoidHeroes = learned.avoidHeroes;
+      }
     }
   }
+  // Reaplica periódicamente: el selector de nivel (aiLevelPatch) sobreescribe
+  // STRAT al cambiar de nivel, y así el aprendizaje del nivel vuelve a aplicarse.
+  setInterval(applyLevel, 2000);
 
   window.addEventListener('message', function(e){
+    if (e.data && e.data.bfAiLevelStrategies && typeof e.data.bfAiLevelStrategies === 'object') {
+      window.__bfAiLevelStrategies = e.data.bfAiLevelStrategies;
+      applyLevel();
+    }
     if (!e.data || !e.data.bfAiStrategy) return;
     try {
       var s = e.data.bfAiStrategy;
