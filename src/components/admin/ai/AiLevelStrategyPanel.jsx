@@ -1,5 +1,6 @@
 import React from 'react';
 import { AI_LEVELS } from '@/components/admin/ai/aiLevels';
+import AiLevelAvatar from '@/components/admin/ai/AiLevelAvatar';
 
 // Panel con la estrategia aprendida por cada nivel de IA.
 export default function AiLevelStrategyPanel({ strategies }) {
@@ -10,8 +11,8 @@ export default function AiLevelStrategyPanel({ strategies }) {
         const s = rec?.strategy || {};
         return (
           <div key={lvl.id} className="rounded-2xl border p-3" style={{ borderColor: lvl.color + '66', background: '#140d24e6' }}>
-            <div className="flex items-center gap-2">
-              <img src={lvl.avatar} alt={lvl.name} className="h-9 w-9 rounded-full border object-cover" style={{ borderColor: lvl.color }} />
+            <div className="flex items-center gap-2.5">
+              <AiLevelAvatar src={lvl.avatar} alt={lvl.name} color={lvl.color} size={52} />
               <div>
                 <div className="font-heading text-sm font-black" style={{ color: lvl.color }}>{lvl.name}</div>
                 <div className="text-[11px] text-[#cfc6dd]">{rec ? `${rec.games_learned || 0} partida(s) aprendida(s)` : 'Sin aprendizaje aún'}</div>
