@@ -179,6 +179,19 @@ export default function AdminCards() {
     startNew();
   }
 
+  // Genera con imágenes de referencia y, si la IA falla por culpa de alguna
+  // referencia (URL que no puede leer), reintenta sin ellas para no dejar al
+  // admin con el botón "Generando…" colgado para siempre.
+  async function genImageWithFallback(prompt, refs) {
+    if (!refs.length) return base44.integrations.Core.GenerateImage({ prompt });
+    try {
+      return await base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: refs });
+    } catch (err) {
+      console.error('Generación con referencia fallida, reintento sin referencia', err);
+      return base44.integrations.Core.GenerateImage({ prompt });
+    }
+  }
+
   async function cropAndUpload(url) {
     // La imagen RELLENA todo el marco 7:10 de la carta (modo cover): se escala
     // hasta cubrir el lienzo completo y se recorta el sobrante centrado, de
@@ -186,7 +199,10 @@ export default function AdminCards() {
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
+      // Seguro anti-cuelgue: si la imagen no carga (CORS/red), se usa la URL original.
+      const guard = setTimeout(() => resolve(url), 20000);
       img.onload = async () => {
+        clearTimeout(guard);
         const TARGET_W = 700;
         const TARGET_H = 1000;
         const srcRatio = img.width / img.height;
@@ -205,14 +221,14 @@ export default function AdminCards() {
           resolve(uploaded?.file_url || url);
         }, 'image/jpeg', 0.92);
       };
-      img.onerror = () => resolve(url);
+      img.onerror = () => { clearTimeout(guard); resolve(url); };
       img.src = url;
     });
   }
 
   async function generateImage(target = 'art_url') {
     if (!form.image_prompt) return;
-    setGenerating(true);
+    setGenerating(target);
     const clanColor = CLAN_COLORS[form.clan];
     const clanBg = clanColor ? ` FONDO OBLIGATORIO: el fondo debe ser un degradado atmosférico basado en el color ${clanColor} (color distintivo de la raza ${form.clan}), desde tonos oscuros de ese color en los bordes hacia tonos más luminosos y vibrantes del mismo color detrás del personaje, con ambiente y luz ambiental de ese color.` : '';
     // Élite: si existe el arte normal, se usa como referencia obligatoria para
@@ -221,13 +237,19 @@ export default function AdminCards() {
     const eliteRule = isElite ? ` VERSIÓN ÉLITE — REGLA CRÍTICA: la imagen de referencia adjunta es la versión normal de este personaje. Debes representar EXACTAMENTE AL MISMO PERSONAJE: misma cara, mismo cuerpo, misma especie, mismos colores, misma ropa/armadura base y mismos rasgos reconocibles. PROHIBIDO cambiarlo por otro personaje o alterar su identidad. Solo evoluciona su aspecto: pose más frenética y dinámica, expresión más intensa, aura/energía épica, detalles más bizarros y espectaculares (grietas de poder, brillos, mejoras en su equipo), iluminación más dramática.` : '';
     const prompt = `Ilustración que RELLENA POR COMPLETO el lienzo entero de borde a borde y esquina a esquina, con cero relleno, cero márgenes y cero espacio de fondo visible en cualquier lado, ni siquiera una franja de 1 píxel. Prohibido absolutamente: marco, borde blanco/gris/de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro decorativo dentro de la imagen, texto o logos. ENCUADRE CON ZONA SEGURA: el personaje/objeto y todos los elementos importantes deben quedar cómodamente dentro de la zona central del lienzo, con amplio aire respecto a los cuatro bordes (nada importante pegado a los bordes), de forma que ningún recorte posterior corte cabeza, pies, manos ni la montura; la cara en el tercio superior-medio del lienzo. El fondo (paisaje, textura o ambiente) pintado hasta el último borde y las cuatro esquinas, sin ninguna zona vacía. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable.${clanBg}${eliteRule} Indicaciones del admin: ${form.image_prompt}`;
     const refs = refImages(isElite ? [form.art_url] : []);
-    const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
-    const rawUrl = result?.url;
-    if (rawUrl) {
-      const croppedUrl = await cropAndUpload(rawUrl);
-      setForm(prev => ({ ...prev, [target]: croppedUrl }));
+    try {
+      const result = await genImageWithFallback(prompt, refs);
+      const rawUrl = result?.url;
+      if (rawUrl) {
+        const croppedUrl = await cropAndUpload(rawUrl);
+        setForm(prev => ({ ...prev, [target]: croppedUrl }));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('No se pudo generar la imagen. Inténtalo de nuevo (si usas foto de referencia, prueba a subirla otra vez).');
+    } finally {
+      setGenerating(false);
     }
-    setGenerating(false);
   }
 
   async function generateBattleArt(target = 'battle_art_url', customPrompt = '') {
@@ -241,7 +263,7 @@ export default function AdminCards() {
         ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
         : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
       const refs = refImages(refUrl);
-      const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
+      const result = await genImageWithFallback(prompt, refs);
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
@@ -312,7 +334,7 @@ export default function AdminCards() {
         ? `${BG_RULE} Epic 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ELITE ability "${abilityName || ''}". ${abilityDesc || ''} Spectacular magical energy, glowing aura (NOT a bright/golden background, only the aura glows against pure black), enhanced ornate armor, fierce powerful combat pose, dramatic cinematic lighting, anime-inspired dark fantasy art, premium legendary trading card game ability artwork. The background stays pure black even with the elite glow.${hint}${BG_TAIL}`
         : `${BG_RULE} 3D cinematic illustration of ${form.name}${form.title ? ', ' + form.title : ''} casting their ability "${abilityName || ''}". ${abilityDesc || ''} Dynamic full-body action pose, mid-action, dramatic cinematic lighting, dark fantasy anime art style, epic trading card game ability artwork.${hint}${BG_TAIL}`;
       const refs = refImages(refUrl);
-      const result = await base44.integrations.Core.GenerateImage(refs.length ? { prompt, existing_image_urls: refs } : { prompt });
+      const result = await genImageWithFallback(prompt, refs);
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
