@@ -19,6 +19,9 @@ export const MOBILE_PINCH_PATCH = `
   var lastZ = 1, lastTx = 0, lastTy = 0;  // evita postMessage redundantes
   var rafId = null;
   var wcTimer = null;          // retardo para quitar will-change sin flicker
+  var msgTimer = null;         // throttle del aviso de zoom al padre
+  var MSG_MS = 120;            // el padre re-renderiza sus overlays: avisar por
+                               // frame durante el gesto provocaba parpadeo
 
   function apply(){
     var b = document.body;
@@ -33,10 +36,23 @@ export const MOBILE_PINCH_PATCH = `
     b.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(' + z + ')';
     // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
     // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
+    // THROTTLE: el padre (React) re-renderiza sus overlays con cada aviso; si
+    // se avisa en cada frame del gesto, esos re-renders compiten con el
+    // compositor y la pantalla parpadea. Se avisa como mucho cada 120 ms y
+    // siempre una última vez con el valor final.
     if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
       lastZ = z; lastTx = tx; lastTy = ty;
-      try { window.parent.postMessage({ bfPinch: { z: z, tx: tx, ty: ty } }, '*'); } catch (e) {}
+      if (!msgTimer) {
+        msgTimer = setTimeout(function(){
+          msgTimer = null;
+          try { window.parent.postMessage({ bfPinch: { z: lastZ, tx: lastTx, ty: lastTy } }, '*'); } catch (e) {}
+        }, MSG_MS);
+      }
     }
+  }
+  function flushMsg(){
+    if (msgTimer) { clearTimeout(msgTimer); msgTimer = null; }
+    try { window.parent.postMessage({ bfPinch: { z: z, tx: tx, ty: ty } }, '*'); } catch (e) {}
   }
   function scheduleApply(){
     if (rafId) return;
@@ -63,20 +79,36 @@ export const MOBILE_PINCH_PATCH = `
   function enableWC(){}
   function disableWC(){}
 
+  // Rebaselina el gesto con los 2 primeros dedos actuales. Guardar los ids de
+  // los dedos permite detectar cuándo cambia la pareja (levantar/volver a
+  // apoyar un dedo, o un tercer dedo): sin rebaselinar, la fórmula usaba la
+  // referencia del gesto anterior con dedos distintos y la pantalla saltaba
+  // y quedaba totalmente descentrada.
+  function startPinch(t){
+    pinch = { d0: dist(t), c0: mid(t), z0: z, tx0: tx, ty0: ty, id0: t[0].identifier, id1: t[1].identifier };
+  }
+  function samePair(t){
+    return pinch && t[0].identifier === pinch.id0 && t[1].identifier === pinch.id1;
+  }
+
   function onStart(e){
-    if (e.touches.length !== 2) return;
+    if (e.touches.length < 2) return;
     e.preventDefault();
     e.stopPropagation();
     document.body.style.transition = 'none';
     enableWC();
-    pinch = { d0: dist(e.touches), c0: mid(e.touches), z0: z, tx0: tx, ty0: ty };
+    startPinch(e.touches);
   }
 
   function onMove(e){
-    if (!pinch || e.touches.length !== 2) return;
+    if (!pinch || e.touches.length < 2) return;
     e.preventDefault();
     e.stopPropagation();
+    // Si la pareja de dedos cambió (dedo levantado/reapoyado o tercer dedo),
+    // rebaselina desde la posición actual en vez de saltar.
+    if (!samePair(e.touches)) { startPinch(e.touches); return; }
     var d = dist(e.touches), c = mid(e.touches);
+    if (!pinch.d0) return;
     var nz = Math.min(4, Math.max(1, pinch.z0 * (d / pinch.d0)));
     var px = (pinch.c0.x - pinch.tx0) / pinch.z0;
     var py = (pinch.c0.y - pinch.ty0) / pinch.z0;
@@ -89,15 +121,21 @@ export const MOBILE_PINCH_PATCH = `
 
   function onEnd(e){
     if (!pinch) return;
-    if (e.touches.length < 2) {
-      pinch = null;
-      var b = document.body;
-      b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
-      if (z < 1.05) { z = 1; tx = 0; ty = 0; applyNow(); }
-      // will-change se quita tras la transición (con margen) para evitar el
-      // parpadeo de desmontar la capa a mitad de la animación.
-      disableWC(360);
+    if (e.touches.length >= 2) {
+      // Quedan 2+ dedos: sigue el gesto con la nueva pareja, sin saltos.
+      startPinch(e.touches);
+      return;
     }
+    pinch = null;
+    var b = document.body;
+    b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
+    if (z < 1.05) { z = 1; tx = 0; ty = 0; }
+    clampT();
+    applyNow();
+    flushMsg();
+    // will-change se quita tras la transición (con margen) para evitar el
+    // parpadeo de desmontar la capa a mitad de la animación.
+    disableWC(360);
   }
 
   // Reencuadre a x1 (sin desplazamiento). usado al abrir modales y al saltar a
@@ -108,6 +146,7 @@ export const MOBILE_PINCH_PATCH = `
     b.style.transition = 'transform .22s ease';
     enableWC();
     z = 1; tx = 0; ty = 0; applyNow();
+    flushMsg();
     disableWC(360);
   }
 
