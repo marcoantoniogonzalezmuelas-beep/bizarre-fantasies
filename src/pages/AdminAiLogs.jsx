@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import AiLevelStrategyPanel from '@/components/admin/ai/AiLevelStrategyPanel';
 import GameLogRow from '@/components/admin/ai/GameLogRow';
+import { AI_LEVELS } from '@/components/admin/ai/aiLevels';
 
 // Backoffice: gestión del aprendizaje de las IAs. Lista todos los logs de
 // partidas, muestra qué niveles de IA ya los han analizado y permite forzar
@@ -45,6 +46,28 @@ export default function AdminAiLogs() {
     setLearningKey('');
   }
 
+  // "Analizar con las 4 IAs": lanza el aprendizaje de los cuatro niveles sobre
+  // la misma partida, uno detrás de otro. Cada nivel mantiene su techo de
+  // dificultad, así que la escalera Novata → Némesis se conserva.
+  async function learnAll(logId) {
+    setMessage('');
+    for (const lvl of AI_LEVELS) {
+      setLearningKey(`${logId}:${lvl.id}`);
+      try {
+        const res = await base44.functions.invoke('aiLearnFromLog', { log_id: logId, level_id: lvl.id });
+        if (res.data?.error) throw new Error(res.data.error);
+      } catch (e) {
+        setLearningKey('');
+        setMessage(`⚠ ${lvl.name} no pudo aprender: ${e.message}`);
+        await loadAll();
+        return;
+      }
+    }
+    setLearningKey('');
+    setMessage('✓ Las 4 IAs han analizado esta partida, cada una dentro de su nivel de dificultad.');
+    await loadAll();
+  }
+
   if (checking) return <div className="min-h-screen bg-[#0e0a16] p-8 text-[#efe9dc]">Cargando...</div>;
   if (!user || user.role !== 'admin') {
     return (
@@ -64,7 +87,8 @@ export default function AdminAiLogs() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-heading text-3xl font-black text-[#fff5dc]">Aprendizaje de las IAs</h1>
-            <p className="mt-1 text-sm text-[#cfc6dd]">Logs de partidas y estrategia aprendida por cada nivel. Pulsa un nivel en una partida para que la lea y aprenda.</p>
+            <p className="mt-1 text-sm text-[#cfc6dd]">Logs de partidas y estrategia aprendida por cada nivel. Pulsa un nivel en una partida para que la lea y aprenda, o «Las 4 IAs» para que la analicen todas.</p>
+            <p className="mt-1 text-[11px] text-[#9a8ba8]">Cada análisis consume 1 crédito de integración (analizar con las 4 IAs = 4 créditos).</p>
           </div>
           <Link to="/admin" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">← Backoffice</Link>
         </div>
@@ -85,7 +109,7 @@ export default function AdminAiLogs() {
 
         <div className="mt-3 space-y-2">
           {filtered.length === 0 && <div className="rounded-2xl border border-[#ffd24a26] bg-black/30 p-6 text-center text-sm text-[#9a8ba8]">Aún no hay partidas registradas. Juega una partida completa (no demo) y aparecerá aquí.</div>}
-          {filtered.map(log => <GameLogRow key={log.id} log={log} learningKey={learningKey} onLearn={learn} />)}
+          {filtered.map(log => <GameLogRow key={log.id} log={log} learningKey={learningKey} onLearn={learn} onLearnAll={learnAll} />)}
         </div>
       </div>
     </div>

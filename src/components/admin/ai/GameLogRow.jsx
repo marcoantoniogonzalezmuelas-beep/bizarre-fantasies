@@ -3,9 +3,10 @@ import { AI_LEVELS } from '@/components/admin/ai/aiLevels';
 
 // Fila de una partida (GameLog) en el panel de aprendizaje: resumen, insignias
 // de qué IAs ya la han analizado y botones para forzar que un nivel la aprenda.
-export default function GameLogRow({ log, learningKey, onLearn }) {
+export default function GameLogRow({ log, learningKey, onLearn, onLearnAll }) {
   const [open, setOpen] = useState(false);
   const analyzed = log.analyzed_by || [];
+  const busyAny = String(learningKey || '').startsWith(`${log.id}:`);
   const date = log.created_date ? new Date(log.created_date).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
   const modeLabel = log.mode === 'ia' ? `vs IA${log.ai_level ? ` (${(AI_LEVELS.find(l => l.id === log.ai_level) || {}).name || log.ai_level})` : ''}` : log.mode === 'online' ? 'Online' : 'Local';
 
@@ -24,6 +25,15 @@ export default function GameLogRow({ log, learningKey, onLearn }) {
           </div>
         </button>
         <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            disabled={busyAny}
+            onClick={() => onLearnAll(log.id)}
+            title="Que las 4 IAs analicen esta partida (4 créditos de integración)"
+            className="flex items-center gap-1 rounded-lg border border-[#ffd24a] bg-[#ffd24a] px-2.5 py-1 text-[10px] font-black text-[#3a2600] transition-opacity hover:brightness-110 disabled:opacity-60"
+          >
+            {busyAny ? '⏳' : '⚡'} Las 4 IAs
+          </button>
+          <span className="text-[#ffd24a33]">|</span>
           {AI_LEVELS.map((lvl) => {
             const done = analyzed.includes(lvl.id);
             const busy = learningKey === `${log.id}:${lvl.id}`;
