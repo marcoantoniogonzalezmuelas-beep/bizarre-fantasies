@@ -44,7 +44,7 @@ export default function AdminAuctions() {
   }).length;
 
   const summary = useMemo(() => {
-    if (cfg.mode === 'direct') return `${(cfg.hero_ids || []).length} héroes seleccionados`;
+    if (cfg.mode === 'direct') return `${(cfg.hero_ids || []).length} héroes garantizados en subasta (el resto, aleatorio)`;
     const inAny = heroes.filter(h => (cfg.rules || []).some(r => matchCount(r) && [h].every(() => true) && (!r.clan || r.clan === h.clan) && (!r.type || r.type === h.type) && (r.cost_min === '' || r.cost_min == null || Number(h.cost || 0) >= Number(r.cost_min)) && (r.cost_max === '' || r.cost_max == null || Number(h.cost || 0) <= Number(r.cost_max)) && (Number(r.percent) || 0) > 0));
     return `${inAny.length} héroes pueden salir con estos grupos`;
   }, [cfg, heroes]);
@@ -79,7 +79,7 @@ export default function AdminAuctions() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-heading text-3xl font-black text-[#fff5dc]">Control de subastas</h1>
-            <p className="mt-1 text-sm text-[#cfc6dd]">Decide qué héroes salen en las subastas: eligiéndolos a mano o por porcentajes de probabilidad (raza, rol o rango de coste).</p>
+            <p className="mt-1 text-sm text-[#cfc6dd]">En elección directa, los héroes que marques saldrán seguro en la subasta y el resto se sortea con normalidad. En probabilidades, mandan los porcentajes por raza, rol o coste.</p>
           </div>
           <div className="flex gap-2">
             <Link to="/admin" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a]">Cartas</Link>

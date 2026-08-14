@@ -59,14 +59,25 @@ export const AUCTION_CONTROL_PATCH = `
   function buildPools(){
     if(!CFG || !CFG.active) return null;
     var list = pool();
-    var sel;
-    if(CFG.mode === 'weights') sel = weighted(list, CFG.rules);
-    else {
-      var ids = CFG.hero_ids || [];
-      sel = shuf(list.filter(function(h){ return ids.indexOf(h.id) >= 0; }));
-    }
-    if(!sel.length) return null;
     var by = { CC: [], AD: [], HE: [] };
+
+    // ELECCIÓN DIRECTA: los héroes marcados salen SIEMPRE (van primeros en su
+    // rol) y el resto de la subasta se sortea con normalidad detrás de ellos.
+    // Así se puede probar una carta concreta sin limitar la subasta entera.
+    if(CFG.mode !== 'weights'){
+      var ids = CFG.hero_ids || [];
+      if(!ids.length) return null;
+      ['CC','AD','HE'].forEach(function(t){
+        var role = list.filter(function(h){ return h.type === t; });
+        var forced = shuf(role.filter(function(h){ return ids.indexOf(h.id) >= 0; }));
+        var rest = shuf(role.filter(function(h){ return ids.indexOf(h.id) < 0; }));
+        by[t] = forced.concat(rest);
+      });
+      return by;
+    }
+
+    var sel = weighted(list, CFG.rules);
+    if(!sel.length) return null;
     sel.forEach(function(h){ if(by[h.type]) by[h.type].push(h); });
     // Si un rol se queda sin candidatos, se rellena con el reparto normal para
     // que la subasta no se quede bloqueada.
