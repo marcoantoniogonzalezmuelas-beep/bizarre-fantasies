@@ -18,11 +18,12 @@ export const CRANE_SUMMON_PATCH = `
     return (typeof TOKENS !== 'undefined' ? TOKENS : []).find(function(t){ return t && t.id === 'tk_grulla'; });
   }
 
-  var HEAL = 7;
+  // La Grulla normal cura 5; su versión élite cura 7.
+  function healAmount(crane){ return crane && crane.eliteMode ? 7 : 5; }
 
   // Efecto visual de curación: destello verde mágico a pantalla completa y un
   // "+7" flotante sobre cada aliado curado.
-  function healFx(side, targets){
+  function healFx(side){
     try{
       if(!document.getElementById('bf-crane-heal-css')){
         var st = document.createElement('style'); st.id = 'bf-crane-heal-css';
@@ -41,21 +42,20 @@ export const CRANE_SUMMON_PATCH = `
       document.body.appendChild(ov);
       setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 1400);
     }catch(e){}
-    // Número de puntos curados sobre cada aliado (usa el FX nativo del juego).
-    if(typeof pushFx === 'function') targets.forEach(function(a){ try{ pushFx({k:'status', side:side, id:a.id, txt:'\\u{1F49A}+' + HEAL}); }catch(e){} });
+    // El número de puntos curados lo muestra el FX nativo de heal() del juego.
   }
 
   function healAllies(side, crane){
     var team = (typeof G !== 'undefined' && G.team && G.team[side]) || [];
-    var healedList = [];
+    var amount = healAmount(crane);
+    var healed = 0;
     team.forEach(function(a){
       if(!a || !a.alive) return;
-      var g = (typeof heal === 'function') ? heal(a, HEAL) : 0;
-      if(g > 0) healedList.push(a);
+      if((typeof heal === 'function' ? heal(a, amount) : 0) > 0) healed++;
     });
-    if(healedList.length){
-      if(typeof pushLog === 'function') pushLog('lg', '\\u{1F426} ' + crane.name + ' extiende su c\\u00edrculo de protecci\\u00f3n: +' + HEAL + ' de vida a todos los aliados.');
-      healFx(side, healedList);
+    if(healed){
+      if(typeof pushLog === 'function') pushLog('lg', '\\u{1F426} ' + crane.name + ' extiende su c\\u00edrculo de protecci\\u00f3n: +' + amount + ' de vida a todos los aliados.');
+      healFx(side);
     }
   }
 
@@ -89,12 +89,13 @@ export const CRANE_SUMMON_PATCH = `
       var inst = typeof makeInstance === 'function' ? makeInstance(token) : Object.assign({}, token);
       inst.id = 'crane_' + Date.now();
       inst._token = token.id; inst._bfCrane = true;
-      inst.eliteUsed = true; inst.eliteMode = false; inst.abilityUsed = false;
+      // Daidoji élite invoca la Grulla en su versión ÉLITE (cura 7 por turno).
+      inst.eliteUsed = true; inst.eliteMode = true; inst.abilityUsed = false;
       inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
       inst.maxHp = Number(token.hp) || 41; inst.hp = inst.maxHp; inst.alive = true;
       (G.team[side] || (G.team[side] = [])).push(inst);
       hero.abilityUsed = true;
-      if(typeof pushLog === 'function') pushLog('lg', hero.name + ' invoca a la ' + inst.name + ': mientras viva, cura ' + HEAL + ' de vida por turno a todos los aliados.');
+      if(typeof pushLog === 'function') pushLog('lg', hero.name + ' invoca a la ' + inst.name + ': mientras viva, cura ' + healAmount(inst) + ' de vida por turno a todos los aliados.');
       if(typeof pushFx === 'function') pushFx({k:'status', side:side, id:hero.id, txt:'\\u{1F426}'});
       // Cinemática 3D del descenso de la Grulla (usa el arte de animación de
       // la carta tk_grulla, igual que el resto de habilidades).
@@ -103,6 +104,7 @@ export const CRANE_SUMMON_PATCH = `
         // así que la disparamos aquí) y después el descenso de la Grulla.
         try{ window.__bfPlayAbilityAnim(side, hero); }catch(e){}
         setTimeout(function(){ try{ window.__bfPlayAbilityAnim(side, { id:'tk_grulla', ability: inst.ability || inst.name, eliteMode:false }); }catch(e){} }, 3400);
+        // (eliteMode:false en la cinemática: solo hay un arte de animación)
       }
       if(typeof renderBattle === 'function') renderBattle();
       if(typeof netSync === 'function') netSync('s-battle');
