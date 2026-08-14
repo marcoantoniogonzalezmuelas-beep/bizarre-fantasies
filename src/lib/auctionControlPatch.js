@@ -94,7 +94,11 @@ export const AUCTION_CONTROL_PATCH = `
     window.startAuctionPhase = function(){
       var host = (typeof NET === 'undefined' || NET.role !== 'client');
       try{
-        if(host && typeof G !== 'undefined' && !(G.pools && G.pools.__bfCfg)){
+        // Los pools se reconstruyen al empezar CADA partida (primera fase de
+        // subasta), no solo una vez: así la configuración del backoffice sigue
+        // aplicándose en todas las partidas siguientes hasta que se cambie.
+        var fresh = (typeof G !== 'undefined') && (!(G.pools && G.pools.__bfCfg) || !G.aIndex);
+        if(host && typeof G !== 'undefined' && fresh){
           var p = buildPools();
           if(p){ p.__bfCfg = true; G.pools = p; }
         }
