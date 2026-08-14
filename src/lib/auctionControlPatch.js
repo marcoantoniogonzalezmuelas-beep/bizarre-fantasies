@@ -87,7 +87,40 @@ export const AUCTION_CONTROL_PATCH = `
     return by;
   }
 
+  // El juego elige los candidatos de cada subasta con drawRaceSlate(): un héroe
+  // AL AZAR de cada raza del pool, por lo que ordenar el pool no bastaba (los
+  // héroes marcados salían solo por suerte). Aquí forzamos que los héroes
+  // marcados en "elección directa" entren SIEMPRE en la tanda de candidatos,
+  // sustituyendo al héroe elegido de su misma raza. El resto sigue igual.
+  function hookSlate(){
+    if(window.__bfSlateHooked || typeof window.drawRaceSlate !== 'function') return;
+    window.__bfSlateHooked = true;
+    var origSlate = window.drawRaceSlate;
+    window.drawRaceSlate = function(p){
+      var out = origSlate.apply(this, arguments) || [];
+      try{
+        if(CFG && CFG.active && CFG.mode !== 'weights'){
+          var ids = CFG.hero_ids || [];
+          (p || []).forEach(function(h){
+            if(ids.indexOf(h.id) < 0) return;
+            for(var k = 0; k < out.length; k++){ if(out[k] && out[k].id === h.id) return; }
+            var same = -1, free = -1;
+            for(var i = 0; i < out.length; i++){
+              if(same < 0 && out[i] && out[i].clan === h.clan) same = i;
+              if(free < 0 && out[i] && ids.indexOf(out[i].id) < 0) free = i;
+            }
+            if(same >= 0) out[same] = h;
+            else if(free >= 0) out[free] = h;
+            else out.push(h);
+          });
+        }
+      }catch(e){}
+      return out;
+    };
+  }
+
   function install(){
+    hookSlate();
     if(window.__bfAuctionHooked || typeof window.startAuctionPhase !== 'function') return false;
     window.__bfAuctionHooked = true;
     var orig = window.startAuctionPhase;
