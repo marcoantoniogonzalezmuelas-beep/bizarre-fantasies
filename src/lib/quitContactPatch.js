@@ -51,8 +51,10 @@ export function buildQuitContactPatch(texts) {
     // detrás (pointer-events:none); solo el cuadro es interactivo. Ventanita
     // estándar: borde dorado, fondo oscuro, compacta, flotando junto al botón.
     '@keyframes bfQuitZoom{from{opacity:0;transform:scale(.9) translateY(-6px);}to{opacity:1;transform:scale(1) translateY(0);}}',
-    '.bf-confirm-overlay{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;padding:0!important;align-items:flex-start!important;justify-content:flex-end!important}',
-    '.bf-confirm-box{pointer-events:auto!important;position:relative!important;top:70px!important;right:12px!important;margin:0!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;animation:bfQuitZoom .18s ease-out!important;}',
+    // Ojo: .bf-confirm-overlay es el modal genérico de confirmación (también el
+    // de COMPRA de equipamiento), así que no se reencuadra aquí: debe quedar
+    // centrado en pantalla. La ventanita de "Salir" se reencuadra abajo con
+    // #modalRoot .mo.bf-quit.
     // Solo el modal de "Salir" (marcado con .bf-quit) se reencuadra como
     // ventanita compacta junto al botón. Los demás modales del juego
     // (Aprende a jugar, Razas, info de héroe…) siguen abriéndose centrados.

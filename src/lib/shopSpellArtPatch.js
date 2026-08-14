@@ -204,6 +204,26 @@ export const SHOP_SPELL_ART_PATCH = `
   // Re-renderiza la tienda de equipo tras sincronizar, para que el botón
   // "Comprar" y el arte aparezcan aunque la tienda ya se hubiera renderizado
   // antes de llegar los datos de la BD (Oráculo).
+  // Modal de COMPRA: el juego resuelve el arte por índice de sus arrays nativos
+  // (SPELL_ART/OBJECT_ART), que no siempre coincide con la carta —salían fotos
+  // cruzadas. La BD (por nombre) es la fuente de verdad.
+  function fixConfirmArt(){
+    var box = document.querySelector('#bf-confirm-overlay .bf-confirm-box');
+    if (!box || box.dataset.bfArtFix === '1') return;
+    var nmEl = box.querySelector('.bf-confirm-name');
+    var nm = nmEl ? nmEl.textContent.trim() : '';
+    var url = nm && ART_BY_NAME[nm];
+    if (!url) return;
+    var art = box.querySelector('.bf-confirm-art');
+    if (art) {
+      art.style.setProperty('--bf-cart', 'url("' + url + '")');
+      art.querySelectorAll('.bf-confirm-art-fill,.bf-confirm-art-sharp').forEach(function(l){
+        l.style.setProperty('background-image', 'url("' + url + '")', 'important');
+      });
+    }
+    box.dataset.bfArtFix = '1';
+  }
+
   function rerenderShop(){ if (typeof window.renderEquip === 'function' && typeof G !== 'undefined' && G && G.eqSide) { try { window.renderEquip(G.eqSide); } catch (e) {} } }
   function wrap() {
     if (typeof window.eqShopGrid !== 'function' || window.eqShopGrid.__bfNameArt) return;
@@ -230,9 +250,9 @@ export const SHOP_SPELL_ART_PATCH = `
   }
   wrap();
   hookRender();
-  setInterval(function () { if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); if (typeof window.renderBattle === 'function' && !window.renderBattle.__bfShopArt) hookRender(); syncAllEquip(); scan(); }, 1000);
+  setInterval(function () { fixConfirmArt(); if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); if (typeof window.renderBattle === 'function' && !window.renderBattle.__bfShopArt) hookRender(); syncAllEquip(); scan(); }, 1000);
   var _bfSt=0;
-  new MutationObserver(function(){ var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
+  new MutationObserver(function(){ fixConfirmArt(); var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
 })();
 </script>
 `;
