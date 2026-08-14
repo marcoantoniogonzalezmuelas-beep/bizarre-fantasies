@@ -2,8 +2,8 @@
 //  1. Agrupa las llamadas repetidas a renderBattle/renderHand en un único
 //     repintado por frame (muchos parches las llaman varias veces seguidas).
 //  2. Congela los temporizadores de sondeo cuando la pestaña no está visible.
-//  3. Evita repintados costosos de sombras/filtros durante el scroll/animación
-//     limitando las capas compuestas del tablero.
+// No toca el CSS ni la portada: solo afecta al bucle de repintado del juego
+// (equipamiento y batalla).
 export const PERF_BOOST_PATCH = `
 <script>
 (function(){
@@ -46,13 +46,8 @@ export const PERF_BOOST_PATCH = `
     }, ms);
   };
 
-  // 3) Menos repintados en Chrome: el tablero y las cartas se pintan en su
-  //    propia capa y no propagan invalidaciones al resto del documento.
-  var st = document.createElement('style');
-  st.textContent = '#battle-wrap,.hand-zone,.jrpg-actions{transform:translateZ(0)}'
-    + '.hero-card,.hcard{backface-visibility:hidden}'
-    + '@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}';
-  document.head.appendChild(st);
+  // (Sin cambios de CSS: las capas compuestas hacían parpadear los iconos de
+  //  la portada, así que la portada se deja exactamente como estaba.)
 })();
 </script>
 `;
