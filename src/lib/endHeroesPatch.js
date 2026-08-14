@@ -39,10 +39,14 @@ export const END_HEROES_PATCH = `
     var aid = hh._token ? hh._token : (hh.id || '');
     var nm = hh.name || '';
     var isElite = !!(hh.eliteMode || hh._bfElite || hh.eliteUsed);
-    var av = window.__bfAvatarMap || {}, ba = window.__bfBattleArtMap || {};
+    var av = window.__bfAvatarMap || {}, ba = window.__bfBattleArtMap || {}, ca = window.__bfCardArtMap || {};
     if(aid && av[aid]) return av[aid];
     if(nm && av[nm]) return av[nm];
     if(aid && ba[aid]){ var e=ba[aid]; return isElite ? (e.elite||e.base) : e.base; }
+    // Arte de la carta (tokens y bizarros como la Grulla, que no están en el
+    // mapa de avatares ni tienen escena de batalla).
+    if(aid && ca[aid]){ var k=ca[aid]; return isElite ? (k.elite||k.base) : k.base; }
+    if(nm && ca[nm]){ var k2=ca[nm]; return isElite ? (k2.elite||k2.base) : k2.base; }
     try {
       var side = '';
       if(typeof G!=='undefined' && G.team){ if(G.team.p&&G.team.p.indexOf(hh)>=0)side='p'; else if(G.team.o&&G.team.o.indexOf(hh)>=0)side='o'; }

@@ -10,6 +10,7 @@ import { SPELL_FX_PATCH } from '@/lib/spellFxPatch';
 import { ATTACK_FX_PATCH } from '@/lib/attackFxPatch';
 import { SHIELD_FX_PATCH } from '@/lib/shieldFxPatch';
 import { HEAL_NUMBER_PATCH } from '@/lib/healNumberPatch';
+import { CARD_ART_MAP_PATCH } from '@/lib/cardArtMapPatch';
 import { MOBILE_PINCH_PATCH } from '@/lib/mobilePinchZoomPatch';
 import { MOBILE_ANTIFLICKER_PATCH } from '@/lib/mobileAntiFlickerPatch';
 import { NO_FLICKER_PATCH } from '@/lib/noFlickerPatch';
@@ -359,6 +360,7 @@ export default function Home() {
   const battleArtRef = useRef(null);
   const abilityAnimRef = useRef(null);
   const avatarListRef = useRef(null);
+  const cardArtRef = useRef(null);
   const avatarCatalogRef = useRef(null);
   const playerAvatarsRef = useRef(null);
   const aiWinsRef = useRef({});
@@ -530,6 +532,9 @@ export default function Home() {
         }
         if (scoreDbRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfScoreDb: scoreDbRef.current }, '*');
+        }
+        if (cardArtRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfCardArt: cardArtRef.current }, '*');
         }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
@@ -733,6 +738,17 @@ export default function Home() {
         }
       });
       avatarListRef.current = avatars;
+      // Arte de carta por card_id y por nombre (héroes, bizarros y tokens como
+      // la Grulla) para la franja de vencedores/caídos del final de partida.
+      const cardArt = {};
+      (cards || []).forEach(c => {
+        if (!c.art_url || !['hero', 'bizarro'].includes(c.category)) return;
+        const entry = { base: c.art_url, elite: c.elite_art_url || c.art_url };
+        if (c.card_id) cardArt[c.card_id] = entry;
+        if (c.name) cardArt[c.name] = entry;
+      });
+      cardArtRef.current = cardArt;
+      try { iframeRef.current?.contentWindow?.postMessage({ bfCardArt: cardArt }, '*'); } catch (e) {}
       // Catálogo de avatares generados por IA para el selector del jugador.
       base44.entities.AvatarCatalog.list('name', 300).then(cat => {
         avatarCatalogRef.current = (cat || []).map(a => ({ name: a.name, url: a.url }));
@@ -811,7 +827,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + CRANE_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + ABILITY_ANIM_PATCH + MP_ABILITY_CINE_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_LEVEL_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_HEROES_PATCH + VS_TEXT_PATCH + AI_TURN_DELAY_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH : '');
+        const INJECT = CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + CRANE_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + ABILITY_ANIM_PATCH + MP_ABILITY_CINE_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_LEVEL_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_HEROES_PATCH + VS_TEXT_PATCH + AI_TURN_DELAY_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus').replace(/Despertar/g, 'Sanar').replace(/despertar/g, 'sanar');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,

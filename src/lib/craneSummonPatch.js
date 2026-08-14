@@ -96,11 +96,20 @@ export const CRANE_SUMMON_PATCH = `
       btn.removeAttribute('onclick');
       btn.onclick = null;
       btn.style.pointerEvents = 'none';
+      var name = h.ability || 'C\\u00edrculo de Protecci\\u00f3n';
+      var text = 'Mientras la Grulla siga viva, cura ' + healAmount(h) + ' de vida por turno a cada aliado.';
       var lab = btn.querySelector('.jrpg-btn-label');
       var val = btn.querySelector('.jrpg-btn-val');
-      if(lab) lab.textContent = 'EN JUEGO';
+      if(lab) lab.innerHTML = '<span style="display:block;font-size:11px;color:#9dffcf;letter-spacing:.6px">EN JUEGO</span><span style="display:block">' + name + '</span>';
       if(val){ val.textContent = '\\u267B\\ufe0f +' + healAmount(h); val.style.color = '#9dffcf'; }
-      btn.title = 'Habilidad pasiva en juego: cura ' + healAmount(h) + ' de vida a cada aliado vivo en su turno.';
+      if(!btn.querySelector('.bf-crane-text')){
+        var d = document.createElement('div');
+        d.className = 'bf-crane-text';
+        d.setAttribute('style', 'margin-top:3px;font-size:10.5px;line-height:1.25;color:#cfeee0;white-space:normal;text-align:left');
+        d.textContent = text;
+        btn.appendChild(d);
+      }
+      btn.title = name + ': ' + text;
     }catch(e){}
   }
 
