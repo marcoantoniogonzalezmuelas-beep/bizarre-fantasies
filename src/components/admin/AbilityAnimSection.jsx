@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import AbilityAnimPreview from './AbilityAnimPreview';
+import MotionSelect from './MotionSelect';
 
 // Sección del editor de backoffice para crear animaciones 3D cinemáticas.
 // Para héroes/bizarros se generan DOS versiones (normal y élite); para cartas
@@ -73,6 +74,11 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
             rows={2}
             className="w-full resize-none rounded-lg border border-[#3c9eff22] bg-black/45 px-2 py-1.5 text-[10px] text-[#cfc6dd] outline-none placeholder:text-[#4a6a8a] focus:border-[#3c9eff55]"
           />
+          <MotionSelect
+            label="🎞️ Movimiento en pantalla"
+            value={form.ability_anim_motion}
+            onChange={(v) => onChange('ability_anim_motion', v)}
+          />
           <button
             type="button"
             onClick={() => onGenerate('ability_anim_url', form.ability_anim_desc || '')}
@@ -109,6 +115,12 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
               placeholder="Versión épica de la cinemática: aura dorada, poder máximo, pose frenética, efectos espectaculares…"
               rows={2}
               className="w-full resize-none rounded-lg border border-[#c05bff22] bg-black/45 px-2 py-1.5 text-[10px] text-[#cfc6dd] outline-none placeholder:text-[#6b4a8a] focus:border-[#c05bff55]"
+            />
+            <MotionSelect
+              label="🎞️ Movimiento en pantalla (élite)"
+              accent="#c05bff"
+              value={form.elite_ability_anim_motion}
+              onChange={(v) => onChange('elite_ability_anim_motion', v)}
             />
             <button
               type="button"
@@ -157,6 +169,7 @@ export default function AbilityAnimSection({ form, onChange, onGenerate, generat
           clanColor={form.clan_color}
           elite={previewElite}
           desc={previewDesc}
+          motionId={previewElite ? (form.elite_ability_anim_motion || form.ability_anim_motion) : form.ability_anim_motion}
           onClose={() => setShowPreview(false)}
         />
       )}

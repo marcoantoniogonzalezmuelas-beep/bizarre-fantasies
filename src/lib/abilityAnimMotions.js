@@ -380,8 +380,143 @@ export const MOTIONS = [
       '<span class="bf-aa-dust2" style="left:42%;--dx:-80px;animation-delay:.2s"></span><span class="bf-aa-dust2" style="left:50%;--dx:90px;animation-delay:.25s"></span><span class="bf-aa-dust2" style="left:46%;--dx:-110px;animation-delay:.35s"></span><span class="bf-aa-dust2" style="left:54%;--dx:120px;animation-delay:.4s"></span>' +
       '<span class="bf-aa-debris" style="left:44%;--dx:-60px;--dy:-80px;animation-delay:.3s"></span><span class="bf-aa-debris" style="left:56%;--dx:70px;--dy:-90px;animation-delay:.35s"></span><span class="bf-aa-debris" style="left:50%;--dx:-40px;--dy:-100px;animation-delay:.4s"></span><span class="bf-aa-debris" style="left:48%;--dx:50px;--dy:-70px;animation-delay:.45s"></span><span class="bf-aa-debris" style="left:52%;--dx:30px;--dy:-110px;animation-delay:.5s"></span>',
   },
+  // VOLAR: cruza toda la pantalla de lado a lado planeando, con estelas de
+  // viento y plumas/motas de velocidad.
+  {
+    id: 'fly',
+    keywords: ['volar', 'volando', 'vuelo', 'alas', 'aletear', 'planear', 'fly', 'flying', 'ave', 'pájaro', 'pajaro', 'dragón', 'dragon', 'murciélago', 'murcielago'],
+    anim: 'bfAaFly',
+    keyframes:
+      '@keyframes bfAaFly{0%{transform:translate(-70vw,18vh) rotate(-14deg) scale(.5);opacity:0}12%{opacity:1}30%{transform:translate(-20vw,-10vh) rotate(8deg) scale(.85)}50%{transform:translate(25vw,10vh) rotate(-10deg) scale(1.05)}70%{transform:translate(-10vw,-6vh) rotate(6deg) scale(1.15)}88%{transform:translate(6vw,2vh) rotate(-3deg) scale(1.2)}100%{transform:translate(0,-8vh) rotate(0) scale(1.25);opacity:1}}',
+    fxCss:
+      '.bf-aa-wind{position:absolute;height:4px;width:34vw;background:linear-gradient(90deg,transparent,var(--aa-color,#fff),transparent);border-radius:4px;filter:drop-shadow(0 0 10px var(--aa-glow,#fff));opacity:0;animation:bfAaWind 1.4s ease-out forwards}' +
+      '@keyframes bfAaWind{0%{opacity:0;transform:translateX(-40vw) scaleX(.3)}30%{opacity:.9}100%{opacity:0;transform:translateX(60vw) scaleX(1.3)}}' +
+      '.bf-aa-feather{position:absolute;width:9px;height:16px;border-radius:60% 40% 60% 40%;background:linear-gradient(180deg,#fff,var(--aa-color,#fff));box-shadow:0 0 10px var(--aa-glow,#fff);opacity:0;animation:bfAaFeather 2.2s ease-in-out forwards}' +
+      '@keyframes bfAaFeather{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx,40px),52vh) rotate(320deg) scale(1)}}',
+    fxTag:
+      '<div class="bf-aa-wind" style="top:32%;animation-delay:.1s"></div><div class="bf-aa-wind" style="top:48%;animation-delay:.45s"></div><div class="bf-aa-wind" style="top:62%;animation-delay:.8s"></div><div class="bf-aa-wind" style="top:40%;animation-delay:1.15s"></div>' +
+      '<span class="bf-aa-feather" style="left:30%;top:34%;--dx:-60px;animation-delay:.3s"></span><span class="bf-aa-feather" style="left:52%;top:30%;--dx:70px;animation-delay:.6s"></span><span class="bf-aa-feather" style="left:66%;top:38%;--dx:-40px;animation-delay:.9s"></span><span class="bf-aa-feather" style="left:44%;top:42%;--dx:55px;animation-delay:1.2s"></span>',
+  },
+  // GIRAR / pirueta: vueltas completas sobre sí mismo con estelas circulares.
+  {
+    id: 'spin',
+    keywords: ['girar', 'giro', 'rotar', 'rotación', 'rotacion', 'vueltas', 'dar vueltas', 'pirueta', 'spin', 'twirl', 'remolino', 'torbellino corto', 'voltereta'],
+    anim: 'bfAaSpin',
+    keyframes:
+      '@keyframes bfAaSpin{0%{transform:scale(.2) rotate(0) rotateY(0);opacity:0}14%{opacity:1;transform:scale(1) rotate(180deg) rotateY(180deg)}40%{transform:scale(1.12) rotate(540deg) rotateY(360deg)}66%{transform:scale(1.15) rotate(900deg) rotateY(540deg)}86%{transform:scale(1.2) rotate(1080deg) rotateY(720deg)}100%{transform:scale(1.25) rotate(1080deg) rotateY(720deg) translateY(-8vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-swirl{position:absolute;top:50%;left:50%;width:56vmin;height:56vmin;margin:-28vmin 0 0 -28vmin;border-radius:50%;border:3px dashed var(--aa-color,#fff);box-shadow:0 0 20px var(--aa-glow,#fff);opacity:0;animation:bfAaSwirl 2.4s linear forwards}' +
+      '@keyframes bfAaSwirl{0%{opacity:0;transform:scale(.3) rotate(0)}25%{opacity:.8}100%{opacity:0;transform:scale(1.5) rotate(720deg)}}' +
+      '.bf-aa-trailmote{position:absolute;top:50%;left:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--aa-color,#fff);box-shadow:0 0 14px var(--aa-glow,#fff);opacity:0;animation:bfAaTrailMote 2.2s linear forwards}' +
+      '@keyframes bfAaTrailMote{0%{opacity:0;transform:rotate(var(--a,0deg)) translateX(10vmin) scale(.4)}25%{opacity:1}100%{opacity:0;transform:rotate(calc(var(--a,0deg) + 720deg)) translateX(38vmin) scale(1.2)}}',
+    fxTag:
+      '<div class="bf-aa-swirl"></div><div class="bf-aa-swirl" style="width:34vmin;height:34vmin;margin:-17vmin 0 0 -17vmin;animation-delay:.4s"></div>' +
+      '<span class="bf-aa-trailmote" style="--a:0deg;animation-delay:.1s"></span><span class="bf-aa-trailmote" style="--a:60deg;animation-delay:.3s"></span><span class="bf-aa-trailmote" style="--a:120deg;animation-delay:.5s"></span><span class="bf-aa-trailmote" style="--a:180deg;animation-delay:.7s"></span><span class="bf-aa-trailmote" style="--a:240deg;animation-delay:.9s"></span><span class="bf-aa-trailmote" style="--a:300deg;animation-delay:1.1s"></span>',
+  },
+  // CABEZAZO / embestida: carga contra la cámara dando dos testarazos secos.
+  {
+    id: 'headbutt',
+    keywords: ['cabezazo', 'cabezazos', 'testarazo', 'topetazo', 'embestida', 'embestir', 'cornada', 'cornear', 'placaje', 'headbutt', 'charge', 'arremeter', 'topar'],
+    anim: 'bfAaHeadbutt',
+    keyframes:
+      '@keyframes bfAaHeadbutt{0%{transform:translateZ(-800px) scale(.3) rotate(-6deg);opacity:0}14%{opacity:1;transform:translateZ(-200px) scale(.8) rotate(4deg)}28%{transform:translateZ(120px) scale(1.45) rotate(-8deg) translateY(3vh)}38%{transform:translateZ(-80px) scale(1) rotate(6deg) translateY(-2vh)}52%{transform:translateZ(140px) scale(1.5) rotate(-10deg) translateY(4vh)}62%{transform:translateZ(-60px) scale(1.05) rotate(5deg)}76%{transform:translateZ(0) scale(1.2) rotate(-2deg)}100%{transform:translateZ(0) scale(1.25) translateY(-8vh) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-thud{position:absolute;top:46%;left:50%;width:44vmin;height:44vmin;margin:-22vmin 0 0 -22vmin;border-radius:50%;border:6px solid var(--aa-color,#fff);box-shadow:0 0 26px var(--aa-glow,#fff);opacity:0;animation:bfAaThud .6s ease-out forwards}' +
+      '@keyframes bfAaThud{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}' +
+      '.bf-aa-star{position:absolute;font-size:clamp(22px,5vw,44px);opacity:0;animation:bfAaStar 1.1s ease-out forwards;filter:drop-shadow(0 0 12px var(--aa-glow,#fff))}' +
+      '@keyframes bfAaStar{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}30%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,-40px)) scale(1.2) rotate(220deg)}}',
+    fxTag:
+      '<div class="bf-aa-thud" style="animation-delay:.26s"></div><div class="bf-aa-thud" style="animation-delay:.5s"></div>' +
+      '<span class="bf-aa-star" style="left:40%;top:38%;--dx:-60px;--dy:-50px;animation-delay:.3s">✦</span><span class="bf-aa-star" style="left:56%;top:36%;--dx:70px;--dy:-40px;animation-delay:.36s">✦</span><span class="bf-aa-star" style="left:48%;top:34%;--dx:-20px;--dy:-70px;animation-delay:.54s">✦</span><span class="bf-aa-star" style="left:52%;top:40%;--dx:50px;--dy:-60px;animation-delay:.6s">✦</span>',
+  },
+  // RECORRER TODA LA PANTALLA: rebota por las cuatro esquinas antes de plantarse.
+  {
+    id: 'roam',
+    keywords: ['recorrer', 'toda la pantalla', 'cruzar la pantalla', 'de lado a lado', 'rebotar', 'rebote', 'caos', 'frenético por la pantalla', 'zigzag'],
+    anim: 'bfAaRoam',
+    keyframes:
+      '@keyframes bfAaRoam{0%{transform:translate(-60vw,-30vh) scale(.35) rotate(-20deg);opacity:0}10%{opacity:1}24%{transform:translate(30vw,-26vh) scale(.6) rotate(18deg)}40%{transform:translate(34vw,24vh) scale(.8) rotate(-14deg)}56%{transform:translate(-32vw,26vh) scale(.95) rotate(12deg)}72%{transform:translate(-28vw,-18vh) scale(1.05) rotate(-8deg)}86%{transform:translate(6vw,4vh) scale(1.18) rotate(4deg)}100%{transform:translate(0,-8vh) scale(1.25) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-dash{position:absolute;height:5px;width:26vw;background:linear-gradient(90deg,transparent,#fff,var(--aa-color,#fff),transparent);border-radius:5px;filter:drop-shadow(0 0 12px var(--aa-glow,#fff));opacity:0;animation:bfAaDash 1s ease-out forwards}' +
+      '@keyframes bfAaDash{0%{opacity:0;transform:translateX(var(--from,-30vw)) scaleX(.2)}35%{opacity:1}100%{opacity:0;transform:translateX(var(--to,30vw)) scaleX(1.3)}}' +
+      '.bf-aa-ghost{position:absolute;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#fff,var(--aa-color,#fff));box-shadow:0 0 18px var(--aa-glow,#fff);opacity:0;animation:bfAaGhost 1.2s ease-out forwards}' +
+      '@keyframes bfAaGhost{0%{opacity:0;transform:scale(.3)}25%{opacity:.9;transform:scale(1.1)}100%{opacity:0;transform:scale(1.9)}}',
+    fxTag:
+      '<div class="bf-aa-dash" style="top:24%;--from:-40vw;--to:40vw;animation-delay:.15s"></div><div class="bf-aa-dash" style="top:70%;--from:40vw;--to:-40vw;animation-delay:.55s"></div><div class="bf-aa-dash" style="top:44%;--from:-30vw;--to:34vw;animation-delay:.95s"></div>' +
+      '<span class="bf-aa-ghost" style="left:22%;top:26%;animation-delay:.2s"></span><span class="bf-aa-ghost" style="left:74%;top:28%;animation-delay:.45s"></span><span class="bf-aa-ghost" style="left:76%;top:70%;animation-delay:.7s"></span><span class="bf-aa-ghost" style="left:22%;top:72%;animation-delay:.95s"></span>',
+  },
+  // TORNADO: sube girando como un torbellino con conos de viento y escombros.
+  {
+    id: 'tornado',
+    keywords: ['tornado', 'torbellino', 'ciclón', 'ciclon', 'huracán', 'huracan', 'vórtice', 'vortice', 'tromba', 'viento'],
+    anim: 'bfAaTornado',
+    keyframes:
+      '@keyframes bfAaTornado{0%{transform:translateY(30vh) scale(.2) rotate(0);opacity:0}12%{opacity:1}34%{transform:translateY(8vh) scale(.8) rotate(540deg)}56%{transform:translateY(-2vh) scale(1.05) rotate(1080deg)}78%{transform:translateY(-5vh) scale(1.18) rotate(1440deg)}100%{transform:translateY(-8vh) scale(1.25) rotate(1440deg);opacity:1}}',
+    fxCss:
+      '.bf-aa-vortex{position:absolute;top:50%;left:50%;border-radius:50%;border:3px solid var(--aa-color,#fff);box-shadow:0 0 18px var(--aa-glow,#fff);opacity:0;animation:bfAaVortex 2.4s linear forwards}' +
+      '@keyframes bfAaVortex{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(0)}25%{opacity:.75}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(900deg)}}' +
+      '.bf-aa-debris2{position:absolute;width:9px;height:9px;border-radius:2px;background:var(--aa-color,#fff);box-shadow:0 0 12px var(--aa-glow,#fff);opacity:0;animation:bfAaDebris2 2s linear forwards}' +
+      '@keyframes bfAaDebris2{0%{opacity:0;transform:translateY(0) rotate(var(--a,0deg)) translateX(14vmin) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translateY(-60vh) rotate(calc(var(--a,0deg) + 900deg)) translateX(26vmin) scale(1.1)}}',
+    fxTag:
+      '<div class="bf-aa-vortex" style="width:30vmin;height:30vmin;animation-delay:.1s"></div><div class="bf-aa-vortex" style="width:46vmin;height:46vmin;animation-delay:.4s"></div><div class="bf-aa-vortex" style="width:62vmin;height:62vmin;animation-delay:.7s"></div>' +
+      '<span class="bf-aa-debris2" style="left:46%;bottom:16%;--a:0deg;animation-delay:.2s"></span><span class="bf-aa-debris2" style="left:52%;bottom:14%;--a:90deg;animation-delay:.45s"></span><span class="bf-aa-debris2" style="left:48%;bottom:18%;--a:180deg;animation-delay:.7s"></span><span class="bf-aa-debris2" style="left:54%;bottom:12%;--a:270deg;animation-delay:.95s"></span><span class="bf-aa-debris2" style="left:44%;bottom:20%;--a:45deg;animation-delay:1.2s"></span>',
+  },
+  // TELEPORT: aparece y desaparece a saltos por la pantalla hasta materializarse.
+  {
+    id: 'teleport',
+    keywords: ['teleport', 'teletransport', 'parpadeo', 'desvanecer', 'aparecer', 'sombra', 'blink', 'fantasma', 'espectro', 'invisible'],
+    anim: 'bfAaTeleport',
+    keyframes:
+      '@keyframes bfAaTeleport{0%{transform:translate(-30vw,-16vh) scale(.5);opacity:0;filter:blur(10px)}8%{opacity:1;filter:blur(0)}16%{opacity:1}20%{opacity:0;transform:translate(-30vw,-16vh) scale(.6)}24%{opacity:0;transform:translate(28vw,12vh) scale(.7)}30%{opacity:1;transform:translate(28vw,12vh) scale(.8)}42%{opacity:1}46%{opacity:0;transform:translate(28vw,12vh) scale(.9)}50%{opacity:0;transform:translate(-18vw,14vh) scale(1)}58%{opacity:1;transform:translate(-18vw,14vh) scale(1.05)}70%{opacity:1}74%{opacity:0;transform:translate(-18vw,14vh) scale(1.1)}80%{opacity:0;transform:translate(0,0) scale(1.15)}88%{opacity:1;transform:translate(0,-4vh) scale(1.22)}100%{opacity:1;transform:translate(0,-8vh) scale(1.25)}}',
+    fxCss:
+      '.bf-aa-blink{position:absolute;width:26vmin;height:26vmin;margin:-13vmin 0 0 -13vmin;border-radius:50%;background:radial-gradient(circle,var(--aa-glow,rgba(255,255,255,.6)),transparent 62%);opacity:0;animation:bfAaBlink .8s ease-out forwards;filter:blur(3px)}' +
+      '@keyframes bfAaBlink{0%{opacity:0;transform:scale(.2)}35%{opacity:.9;transform:scale(1.1)}100%{opacity:0;transform:scale(1.7)}}' +
+      '.bf-aa-glitch{position:absolute;height:3px;width:30vw;background:linear-gradient(90deg,transparent,var(--aa-color,#fff),transparent);opacity:0;animation:bfAaGlitch .5s steps(3) forwards;filter:drop-shadow(0 0 10px var(--aa-glow,#fff))}' +
+      '@keyframes bfAaGlitch{0%,100%{opacity:0}50%{opacity:1}}',
+    fxTag:
+      '<div class="bf-aa-blink" style="left:20%;top:34%;animation-delay:.1s"></div><div class="bf-aa-blink" style="left:78%;top:62%;animation-delay:.75s"></div><div class="bf-aa-blink" style="left:32%;top:64%;animation-delay:1.5s"></div><div class="bf-aa-blink" style="left:50%;top:50%;animation-delay:2.3s"></div>' +
+      '<div class="bf-aa-glitch" style="left:14%;top:40%;animation-delay:.3s"></div><div class="bf-aa-glitch" style="left:52%;top:56%;animation-delay:1.1s"></div><div class="bf-aa-glitch" style="left:26%;top:48%;animation-delay:1.9s"></div>',
+  },
   DEFAULT_MOTION,
 ];
+
+// Etiquetas en español para el selector del editor (backoffice).
+export const MOTION_LABELS = {
+  auto: '🎲 Automático (según la descripción)',
+  default: '✨ Entrada 3D clásica',
+  fly: '🕊️ Volar cruzando la pantalla',
+  spin: '🌀 Girar / dar vueltas',
+  headbutt: '🐏 Cabezazos / embestida',
+  roam: '💨 Recorrer toda la pantalla',
+  tornado: '🌪️ Tornado ascendente',
+  teleport: '👻 Teletransporte / parpadeo',
+  heroic: '💥 Salto y aterrizaje épico',
+  bicycle: '⚽ Chilena / remate',
+  slash: '⚔️ Tajo de espada',
+  shoot: '🔫 Disparo con fogonazo',
+  shotgun: '💣 Escopetazo',
+  rapid: '🔥 Ráfaga automática',
+  slingshot: '🎯 Tirachinas',
+  sweep: '🧹 Barrido de escoba',
+  headbang: '🤘 Headbanging metalero',
+  drink: '🍺 Beber / brindar',
+  serve: '☕ Servir bebida',
+  eat: '🍪 Comer / masticar',
+  smoke: '🚬 Fumar',
+  magic: '🔮 Magia arcana',
+  fire: '🔥 Fuego',
+  ice: '❄️ Hielo',
+  lightning: '⚡ Rayo',
+  dance: '🕺 Bailar',
+};
+
+// Orden en el que se muestran en el selector.
+export const MOTION_OPTIONS = ['auto', ...Object.keys(MOTION_LABELS).filter((k) => k !== 'auto')];
+
+export function getMotionById(id) {
+  if (!id || id === 'auto') return null;
+  return MOTIONS.find((m) => m.id === id) || null;
+}
 
 // CSS completo (keyframes + clases de FX) de todas las variantes, para inyectar
 // en un <style> tanto en el juego como en la vista previa.
@@ -393,7 +528,9 @@ export const MOTIONS_MIN_JSON = JSON.stringify(
   MOTIONS.map((m) => ({ id: m.id, keywords: m.keywords, anim: m.anim, fxTag: m.fxTag }))
 );
 
-export function pickMotion(desc) {
+export function pickMotion(desc, motionId) {
+  const forced = getMotionById(motionId);
+  if (forced) return forced;
   const d = String(desc || '').toLowerCase();
   if (!d) return DEFAULT_MOTION;
   for (const m of MOTIONS) {

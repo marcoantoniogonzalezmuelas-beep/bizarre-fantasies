@@ -101,7 +101,10 @@ export const ABILITY_ANIM_PATCH = `
   // palabras clave en la descripción de la animación. Inyectado desde el módulo
   // compartido abilityAnimMotions para que juego y vista previa coincidan.
   var MOTIONS_MIN = ${MOTIONS_MIN_JSON};
-  function pickMotionDesc(desc){
+  function pickMotionDesc(desc,forcedId){
+    if(forcedId&&forcedId!=='auto'){
+      for(var j=0;j<MOTIONS_MIN.length;j++){if(MOTIONS_MIN[j].id===forcedId)return MOTIONS_MIN[j];}
+    }
     var d=String(desc||'').toLowerCase();
     if(!d)return MOTIONS_MIN[MOTIONS_MIN.length-1];
     for(var i=0;i<MOTIONS_MIN.length-1;i++){
@@ -152,7 +155,8 @@ export const ABILITY_ANIM_PATCH = `
     ov.style.setProperty('--aa-flash',hexToRgba(cc,0.7)||'rgba(255,255,255,0.7)');
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
     var descSrc=isElite?(entry.eliteDesc||entry.desc):entry.desc;
-    var motion=pickMotionDesc(descSrc||ability);
+    var motionId=isElite?(entry.eliteMotion||entry.motion):entry.motion;
+    var motion=pickMotionDesc(descSrc||ability,motionId);
     var html='<div class="bf-aa-dim"></div><div class="bf-aa-glowdisc"></div><div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
     // Sin anillos de halo del color de clan: parpadeaban al expandirse.
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';

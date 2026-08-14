@@ -156,6 +156,10 @@
       "type": "string",
       "description": "Description/prompt used to generate the 3D cinematic animation of the normal ability"
     },
+    "ability_anim_motion": {
+      "type": "string",
+      "description": "Movimiento en pantalla de la cinem\u00e1tica 3D normal (auto, fly, spin, headbutt, roam, tornado, teleport, heroic, slash\u2026). 'auto' = elegido por palabras clave de la descripci\u00f3n."
+    },
     "elite_ability_anim_url": {
       "type": "string",
       "description": "URL of the AI-generated 3D cinematic art for the elite ability animation"
@@ -163,6 +167,10 @@
     "elite_ability_anim_desc": {
       "type": "string",
       "description": "Description/prompt used to generate the 3D cinematic animation of the elite ability"
+    },
+    "elite_ability_anim_motion": {
+      "type": "string",
+      "description": "Movimiento en pantalla de la cinem\u00e1tica 3D \u00e9lite. 'auto' = elegido por palabras clave de la descripci\u00f3n."
     },
     "in_auction": {
       "type": "boolean",

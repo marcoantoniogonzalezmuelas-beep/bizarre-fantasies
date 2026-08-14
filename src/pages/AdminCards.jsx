@@ -11,7 +11,7 @@ import ReferencePhotoSection from '@/components/admin/ReferencePhotoSection';
 import ImageRetouchSection from '@/components/admin/ImageRetouchSection';
 import { CLAN_COLORS } from '@/lib/cardData';
 
-const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', velocidad: '', elite_velocidad: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', elite_ability_anim_url: '', elite_ability_anim_desc: '', in_auction: true };
+const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', velocidad: '', elite_velocidad: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', ability_anim_motion: 'auto', elite_ability_anim_url: '', elite_ability_anim_desc: '', elite_ability_anim_motion: 'auto', in_auction: true };
 const numericFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'velocidad', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp', 'elite_velocidad'];
 
 function cleanPayload(form) {
