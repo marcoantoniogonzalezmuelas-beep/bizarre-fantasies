@@ -46,7 +46,11 @@ export const MATCH_SCORE_PATCH = `
   window.addEventListener('message',function(e){
     if(!e.data||!e.data.bfScoreDb)return;
     var db=e.data.bfScoreDb,all=readAll();
-    Object.keys(db).forEach(function(k){ all[k]=db[k]; });
+    Object.keys(db).forEach(function(k){
+      var rec=all[k]||{},src=db[k]||{};
+      Object.keys(src).forEach(function(n){ rec[n]=Math.max(rec[n]||0,src[n]||0); });
+      all[k]=rec;
+    });
     writeAll(all);
     try{ render(null); }catch(err){}
   });

@@ -399,7 +399,8 @@ export default function Home() {
       const map = {};
       (rows || []).forEach(r => {
         if (!r.pair_key || !r.nick) return;
-        (map[r.pair_key] = map[r.pair_key] || {})[r.nick] = r.wins || 0;
+        const pair = (map[r.pair_key] = map[r.pair_key] || {});
+        pair[r.nick] = Math.max(pair[r.nick] || 0, r.wins || 0);
       });
       scoreDbRef.current = map;
       try { iframeRef.current?.contentWindow?.postMessage({ bfScoreDb: map }, '*'); } catch (e) {}
@@ -612,11 +613,18 @@ export default function Home() {
       if (e.data && e.data.bfScoreWin && base44.entities?.HeadToHead) {
         const { pair_key, nick, wins } = e.data.bfScoreWin;
         base44.entities.HeadToHead.filter({ pair_key, nick }, '-created_date', 1).then(rows => {
-          if (rows && rows.length) return base44.entities.HeadToHead.update(rows[0].id, { wins });
+          // Los dos jugadores guardan la misma victoria: se queda el valor más
+          // alto para que ninguno de los dos dispositivos pise al otro.
+          if (rows && rows.length) {
+            const best = Math.max(rows[0].wins || 0, wins);
+            return best === (rows[0].wins || 0) ? null : base44.entities.HeadToHead.update(rows[0].id, { wins: best });
+          }
           return base44.entities.HeadToHead.create({ pair_key, nick, wins });
         }).then(() => {
           const m = { ...(scoreDbRef.current || {}) };
-          m[pair_key] = { ...(m[pair_key] || {}), [nick]: wins };
+          const pair = { ...(m[pair_key] || {}) };
+          pair[nick] = Math.max(pair[nick] || 0, wins);
+          m[pair_key] = pair;
           scoreDbRef.current = m;
         }).catch(() => {});
       }
