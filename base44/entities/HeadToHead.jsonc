@@ -1,0 +1,24 @@
+{
+  "name": "HeadToHead",
+  "type": "object",
+  "properties": {
+    "pair_key": {
+      "type": "string",
+      "description": "Clave de la pareja de nicks en min\u00fasculas y ordenados (nickA||nickB)"
+    },
+    "nick": {
+      "type": "string",
+      "description": "Nick del jugador (en min\u00fasculas) al que pertenecen estas victorias"
+    },
+    "wins": {
+      "type": "number",
+      "default": 0,
+      "description": "Victorias hist\u00f3ricas de ese nick frente al otro nick de la pareja"
+    }
+  },
+  "required": [
+    "pair_key",
+    "nick",
+    "wins"
+  ]
+}

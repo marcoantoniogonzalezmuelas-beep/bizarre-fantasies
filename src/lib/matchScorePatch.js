@@ -38,6 +38,19 @@ export const MATCH_SCORE_PATCH = `
   }
   function writeAll(d){ try{ localStorage.setItem('bfScoreByNick',JSON.stringify(d)); }catch(e){} }
 
+  // El marcador general vive en la BASE DE DATOS (entidad HeadToHead): la
+  // página padre nos envía el histórico por parejas de nicks al cargar, de modo
+  // que al usar el mismo nick el marcador nunca se resetea, en cualquier
+  // dispositivo. (El marcador de series al mejor de 3/5 sigue reseteándose:
+  // eso lo gestiona matchModePatch, aquí no se toca.)
+  window.addEventListener('message',function(e){
+    if(!e.data||!e.data.bfScoreDb)return;
+    var db=e.data.bfScoreDb,all=readAll();
+    Object.keys(db).forEach(function(k){ all[k]=db[k]; });
+    writeAll(all);
+    try{ render(null); }catch(err){}
+  });
+
   // Reset general único: pone a cero todos los marcadores históricos.
   try{
     if(localStorage.getItem('bfScoreReset')!=='v1'){
@@ -56,6 +69,9 @@ export const MATCH_SCORE_PATCH = `
     var w=String(winnerNick).toLowerCase();
     rec[w]=(rec[w]||0)+1;   // una victoria = +1 punto
     all[k]=rec; writeAll(all);
+    // Persiste la victoria en la base de datos para que el marcador general
+    // asociado a ese nick se recuerde siempre.
+    try{ parent.postMessage({bfScoreWin:{pair_key:k,nick:w,wins:rec[w]}},'*'); }catch(e){}
     return get();
   }
 

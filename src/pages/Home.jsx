@@ -390,6 +390,21 @@ export default function Home() {
   const abilitySpecsRef = useRef(null);
   // Control de subastas (backoffice /admin/subastas): qué héroes pueden salir.
   const auctionCfgRef = useRef(null);
+  // Marcador general histórico entre parejas de nicks (entidad HeadToHead).
+  const scoreDbRef = useRef(null);
+
+  useEffect(() => {
+    if (!base44.entities?.HeadToHead) return;
+    base44.entities.HeadToHead.list('-updated_date', 1000).then(rows => {
+      const map = {};
+      (rows || []).forEach(r => {
+        if (!r.pair_key || !r.nick) return;
+        (map[r.pair_key] = map[r.pair_key] || {})[r.nick] = r.wins || 0;
+      });
+      scoreDbRef.current = map;
+      try { iframeRef.current?.contentWindow?.postMessage({ bfScoreDb: map }, '*'); } catch (e) {}
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!base44.entities?.AuctionConfig) return;
@@ -512,6 +527,9 @@ export default function Home() {
         if (auctionCfgRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfAuctionConfig: auctionCfgRef.current }, '*');
         }
+        if (scoreDbRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfScoreDb: scoreDbRef.current }, '*');
+        }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
         if (autoDemoRef.current && e.data.bfScreen === 's-title') {
@@ -587,6 +605,20 @@ export default function Home() {
         if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
         if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
         if (r.mode === 'ia' && !r.winner_is_ai && r.ai_level && r.winner_nick) upsertAiWin(r.winner_nick, r.ai_level);
+      }
+
+      // Marcador general: guarda la victoria en la BD asociada a la pareja de
+      // nicks para que nunca se resetee al volver con el mismo nick.
+      if (e.data && e.data.bfScoreWin && base44.entities?.HeadToHead) {
+        const { pair_key, nick, wins } = e.data.bfScoreWin;
+        base44.entities.HeadToHead.filter({ pair_key, nick }, '-created_date', 1).then(rows => {
+          if (rows && rows.length) return base44.entities.HeadToHead.update(rows[0].id, { wins });
+          return base44.entities.HeadToHead.create({ pair_key, nick, wins });
+        }).then(() => {
+          const m = { ...(scoreDbRef.current || {}) };
+          m[pair_key] = { ...(m[pair_key] || {}), [nick]: wins };
+          scoreDbRef.current = m;
+        }).catch(() => {});
       }
 
       if (e.data && e.data.bfGameLog) {
