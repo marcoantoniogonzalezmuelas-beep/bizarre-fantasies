@@ -62,7 +62,7 @@ export const END_HEROES_PATCH = `
     return n;
   }
 
-  var PORT_W = 'width:clamp(62px,16vw,104px);aspect-ratio:3/4;';
+  var PORT_W = 'width:clamp(74px,16vw,190px);aspect-ratio:3/4;';
 
   function buildPort(hh, isWin, delay){
     var art = heroArt(hh);
@@ -113,7 +113,7 @@ export const END_HEROES_PATCH = `
     if(isWin){
       // Corona flotando sobre el retrato del vencedor
       col.appendChild(el('div', 'position:absolute;top:-13px;left:50%;transform:translateX(-50%);z-index:3;' +
-        'font-size:clamp(12px,3vw,17px);filter:drop-shadow(0 0 7px rgba(255,210,74,.95));' +
+        'font-size:clamp(15px,3vw,26px);filter:drop-shadow(0 0 7px rgba(255,210,74,.95));' +
         'animation:bfEhCrown 1.8s ease-in-out infinite', '👑'));
     }
 
@@ -130,7 +130,7 @@ export const END_HEROES_PATCH = `
         '<span style="font-size:.85em;filter:hue-rotate(-15deg)">🪱</span>'));
     }
 
-    col.appendChild(el('div', 'font-size:clamp(9px,2.2vw,13px);font-weight:700;max-width:110px;text-align:center;' +
+    col.appendChild(el('div', 'font-size:clamp(11px,2.2vw,16px);font-weight:800;max-width:190px;text-align:center;' +
       'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #000;' +
       'color:' + (isWin ? '#fff5dc' : '#7c7c88'), nm));
     return col;
@@ -148,7 +148,7 @@ export const END_HEROES_PATCH = `
       (isWin
         ? 'color:#3a2600;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);box-shadow:0 2px 8px rgba(255,210,74,.4)'
         : 'color:#e0b0b0;background:rgba(40,12,16,.75);border:1px solid rgba(180,60,60,.45)'), lbl));
-    var row = el('div', 'display:flex;gap:clamp(5px,1.4vw,10px);justify-content:center');
+    var row = el('div', 'display:flex;gap:clamp(6px,1.4vw,16px);justify-content:center;align-items:flex-start');
     arr.forEach(function(hh, j){ row.appendChild(buildPort(hh, isWin, j * 0.08)); });
     wrap.appendChild(row);
     return wrap;
@@ -171,7 +171,7 @@ export const END_HEROES_PATCH = `
       if(!win && !lose) return;
 
       var wrap = el('div', 'position:fixed;left:0;right:0;bottom:0;z-index:100055;display:flex;' +
-        'justify-content:center;align-items:flex-end;gap:clamp(8px,2.5vw,22px);padding:14px 12px 12px;' +
+        'justify-content:center;align-items:flex-start;gap:clamp(12px,3vw,44px);padding:18px 12px 14px;' +
         'background:linear-gradient(180deg,rgba(8,5,16,0) 0%,rgba(8,5,16,.55) 35%,rgba(8,5,16,.92) 100%);' +
         'pointer-events:none;animation:bfEhRise .6s cubic-bezier(.2,.8,.3,1)');
       wrap.id = 'bf-end-heroes';
