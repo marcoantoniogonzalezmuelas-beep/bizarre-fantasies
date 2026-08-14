@@ -56,8 +56,17 @@ export const AUCTION_CONTROL_PATCH = `
     return out;
   }
 
+  // La configuración se aplica si está activada o si simplemente hay héroes
+  // marcados en elección directa (evita que el control parezca no funcionar
+  // por tener el interruptor apagado).
+  function isOn(){
+    if(!CFG) return false;
+    if(CFG.active) return true;
+    return CFG.mode !== 'weights' && (CFG.hero_ids || []).length > 0;
+  }
+
   function buildPools(){
-    if(!CFG || !CFG.active) return null;
+    if(!isOn()) return null;
     var list = pool();
     var by = { CC: [], AD: [], HE: [] };
 
@@ -99,7 +108,7 @@ export const AUCTION_CONTROL_PATCH = `
     window.drawRaceSlate = function(p){
       var out = origSlate.apply(this, arguments) || [];
       try{
-        if(CFG && CFG.active && CFG.mode !== 'weights'){
+        if(isOn() && CFG.mode !== 'weights'){
           var ids = CFG.hero_ids || [];
           (p || []).forEach(function(h){
             if(ids.indexOf(h.id) < 0) return;
@@ -139,7 +148,7 @@ export const AUCTION_CONTROL_PATCH = `
       var res = orig.apply(this, arguments);
       // Rol elegido para esta fase desde el backoffice (fase 1, 2 y 3).
       try{
-        if(host && CFG && CFG.active && CFG.phase_types){
+        if(host && isOn() && CFG.phase_types){
           var want = CFG.phase_types[G.aIndex];
           if(want && ['CC','AD','HE'].indexOf(want) >= 0 && want !== G.curType){
             G.curType = want;
