@@ -18,11 +18,24 @@ function Field({ label, name, value, onChange, type = 'text', textarea = false }
 export default function CardFields({ form, onChange, onGenerate, generating, onUpload, uploading, onConvertEpic, onLevelUp, saving }) {
   return <div className="grid gap-4"><div className="grid gap-3 md:grid-cols-3"><Field label="Número" name="number" type="number" value={form.number} onChange={onChange} /><Field label="ID carta" name="card_id" value={form.card_id} onChange={onChange} /><label className="block"><span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#ffe49a]">Tipo de carta</span><select className="w-full rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" value={form.category || 'hero'} onChange={(e) => onChange('category', e.target.value)}>{CARD_CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label></div><div className="grid gap-3 md:grid-cols-3"><Field label="Nombre" name="name" value={form.name} onChange={onChange} /><Field label="Título / subtítulo" name="title" value={form.title} onChange={onChange} /><label className="block"><span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#ffe49a]">Raza / clan</span><select className="w-full rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" value={form.clan || ''} onChange={(e) => onChange('clan', e.target.value)}><option value="">Sin raza</option>{CARD_RACES.map(r => <option key={r} value={r}>{r}</option>)}</select></label></div><div className="grid gap-3 md:grid-cols-3">{['hero', 'bizarro'].includes(form.category) ? <label className="block"><span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#ffe49a]">Rol</span><select className="w-full rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" value={form.type || ''} onChange={(e) => onChange('type', e.target.value)}><option value="">Sin rol</option><option value="CC">CC (Cuerpo a cuerpo)</option><option value="AD">AD (A distancia)</option><option value="HE">HE (Hechizos)</option></select></label> : form.category === 'spell' ? <label className="block"><span className="mb-1 block text-[11px] font-black uppercase tracking-wider text-[#ffe49a]">Elemento</span><select className="w-full rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" value={form.type || ''} onChange={(e) => onChange('type', e.target.value)}><option value="">Sin elemento</option><option value="fuego">Fuego</option><option value="hielo">Hielo</option><option value="rayo">Rayo</option><option value="agua">Agua</option><option value="curacion">Curación</option><option value="proteccion">Protección</option><option value="arcano">Arcano</option><option value="estado">Estado</option></select></label> : <Field label="Rol / elemento" name="type" value={form.type} onChange={onChange} />}<Field label="Etiqueta" name="tag" value={form.tag} onChange={onChange} /><Field label="Color raza" name="clan_color" value={form.clan_color} onChange={onChange} /></div>
   
-  <div className="my-2 flex items-center justify-between border-y border-[#ffd24a22] py-3">
+  <div className="my-2 flex flex-wrap items-center justify-between gap-2 border-y border-[#ffd24a22] py-3">
     <div className="text-xs text-[#cfc6dd]">Rellena Nombre y Raza primero para generar todos los stats automáticamente:</div>
-    <button type="button" onClick={form.onGenerateStats} disabled={form.generatingStats || !form.name || !form.clan} className="rounded-xl bg-gradient-to-b from-[#7ad6ff] to-[#3a8bff] px-5 py-2 text-xs font-black text-white shadow-lg disabled:opacity-50">
-      {form.generatingStats ? 'Generando Stats...' : '✨ Autocompletar Stats IA'}
-    </button>
+    <div className="flex items-center gap-2">
+      <label className="flex items-center gap-1.5">
+        <span className="text-[10px] font-black uppercase tracking-wider text-[#7ad6ff]">Motor IA</span>
+        <select value={form.aiModel || 'automatic'} onChange={(e) => form.onAiModelChange?.(e.target.value)} className="rounded-xl border border-[#7ad6ff44] bg-black/45 px-2 py-2 text-xs text-[#fff5dc] outline-none focus:border-[#7ad6ff]">
+          <option value="automatic">Automático</option>
+          <option value="gpt_5_mini">GPT 5 Mini (rápido)</option>
+          <option value="gemini_3_flash">Gemini 3 Flash</option>
+          <option value="gemini_3_1_pro">Gemini 3.1 Pro</option>
+          <option value="claude_sonnet_4_6">Claude Sonnet 4.6</option>
+          <option value="claude_opus_4_6">Claude Opus 4.6 (máx. calidad)</option>
+        </select>
+      </label>
+      <button type="button" onClick={form.onGenerateStats} disabled={form.generatingStats || !form.name || !form.clan} className="rounded-xl bg-gradient-to-b from-[#7ad6ff] to-[#3a8bff] px-5 py-2 text-xs font-black text-white shadow-lg disabled:opacity-50">
+        {form.generatingStats ? 'Generando Stats...' : '✨ Autocompletar Stats IA'}
+      </button>
+    </div>
   </div>
 
   {['hero', 'bizarro'].includes(form.category) && (

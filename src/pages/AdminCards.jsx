@@ -8,6 +8,7 @@ import BackupCardsButton from '@/components/admin/BackupCardsButton';
 import BattleArtSection from '@/components/admin/BattleArtSection';
 import AbilityAnimSection from '@/components/admin/AbilityAnimSection';
 import ReferencePhotoSection from '@/components/admin/ReferencePhotoSection';
+import ImageRetouchSection from '@/components/admin/ImageRetouchSection';
 import { CLAN_COLORS } from '@/lib/cardData';
 
 const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', velocidad: '', elite_velocidad: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', elite_ability_anim_url: '', elite_ability_anim_desc: '', in_auction: true };
@@ -42,6 +43,9 @@ export default function AdminCards() {
   const [referencePhoto, setReferencePhoto] = useState('');
   const [useReferencePhoto, setUseReferencePhoto] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  // Motor de IA para la generación de textos/stats (los modelos no estándar
+  // consumen más créditos de integración).
+  const [aiModel, setAiModel] = useState('automatic');
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false)); }, []);
   useEffect(() => { if (user?.role === 'admin') loadCards(); }, [user]);
@@ -83,6 +87,7 @@ export default function AdminCards() {
       
       const response = await base44.integrations.Core.InvokeLLM({ 
         prompt, 
+        ...(aiModel !== 'automatic' ? { model: aiModel } : {}),
         response_json_schema: { 
           type: "object", 
           properties: {
@@ -215,6 +220,10 @@ export default function AdminCards() {
         const TARGET_W = 700;
         const TARGET_H = 1000;
         const srcRatio = img.width / img.height;
+        // Si la imagen ya viene en el formato 7:10 de la carta (retoques sobre
+        // una imagen ya recortada), no se recorta nada: así no se pierden
+        // elementos por los bordes.
+        if (Math.abs(srcRatio - 0.7) < 0.02) { resolve(url); return; }
         const dstRatio = TARGET_W / TARGET_H;
         const canvas = document.createElement('canvas');
         canvas.width = TARGET_W;
@@ -244,7 +253,7 @@ export default function AdminCards() {
     // que sea EXACTAMENTE el mismo personaje, solo que más frenético y épico.
     const isElite = target === 'elite_art_url' && !!form.art_url;
     const eliteRule = isElite ? ` VERSIÓN ÉLITE — REGLA CRÍTICA: la imagen de referencia adjunta es la versión NORMAL de este personaje y sirve SOLO para mantener su identidad: misma cara, misma especie, mismos colores base, misma ropa/armadura reconocible. PROHIBIDO cambiarlo por otro personaje. PROHIBIDO TAMBIÉN copiar o reproducir la referencia: la imagen élite debe ser CLARAMENTE DIFERENTE de ella, una EVOLUCIÓN mucho más poderosa. Cambia OBLIGATORIAMENTE: pose y encuadre nuevos y más frenéticos, expresión mucho más intensa y feroz, aura y energía épica desbordante, armadura/equipo mejorados y ornamentados, efectos de poder (grietas luminosas, chispas, partículas), iluminación mucho más dramática y contrastada. Si la imagen resultante se parece a la referencia, es incorrecta.` : '';
-    const prompt = `Ilustración que RELLENA POR COMPLETO el lienzo entero de borde a borde y esquina a esquina, con cero relleno, cero márgenes y cero espacio de fondo visible en cualquier lado, ni siquiera una franja de 1 píxel. Prohibido absolutamente: marco, borde blanco/gris/de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro decorativo dentro de la imagen, texto o logos. ENCUADRE CON ZONA SEGURA: el personaje/objeto y todos los elementos importantes deben quedar cómodamente dentro de la zona central del lienzo, con amplio aire respecto a los cuatro bordes (nada importante pegado a los bordes), de forma que ningún recorte posterior corte cabeza, pies, manos ni la montura; la cara en el tercio superior-medio del lienzo. El fondo (paisaje, textura o ambiente) pintado hasta el último borde y las cuatro esquinas, sin ninguna zona vacía. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable.${clanBg}${eliteRule} Indicaciones del admin: ${form.image_prompt}`;
+    const prompt = `Ilustración que RELLENA POR COMPLETO el lienzo entero de borde a borde y esquina a esquina, con cero relleno, cero márgenes y cero espacio de fondo visible en cualquier lado, ni siquiera una franja de 1 píxel. Prohibido absolutamente: marco, borde blanco/gris/de cualquier color, margen, passepartout, viñeta, fondo transparente, tarjeta o recuadro decorativo dentro de la imagen, texto o logos. ENCUADRE CON ZONA SEGURA: el personaje/objeto y todos los elementos importantes deben quedar cómodamente dentro de la zona central del lienzo, con amplio aire respecto a los cuatro bordes (nada importante pegado a los bordes), de forma que ningún recorte posterior corte cabeza, pies, manos ni la montura; la cara en el tercio superior-medio del lienzo. FORMATO FINAL VERTICAL 7:10 — MUY IMPORTANTE: la imagen se recortará después a un rectángulo VERTICAL centrado (proporción 7 de ancho por 10 de alto). Por tanto TODOS los elementos importantes (personaje completo, armas, accesorios, mascotas) deben caber dentro de la FRANJA VERTICAL CENTRAL del lienzo (el 60% central del ancho): nada importante en los laterales izquierdo o derecho, porque se perderán en el recorte. Composición vertical tipo retrato de cuerpo entero. El fondo (paisaje, textura o ambiente) pintado hasta el último borde y las cuatro esquinas, sin ninguna zona vacía. Nombre: ${form.name || 'Carta nueva'}. Tipo: ${form.category}. Raza o clan: ${form.clan || 'sin raza'}. Estilo: arte digital épico, oscuro, colorido, carta coleccionable.${clanBg}${eliteRule} Indicaciones del admin: ${form.image_prompt}`;
     // En la versión élite la ÚNICA referencia es el arte normal (identidad del
     // personaje). La foto de referencia del admin solo se usa en la normal:
     // mezclarlas hacía que la élite saliera casi idéntica a la normal.
@@ -310,6 +319,35 @@ export default function AdminCards() {
       await base44.entities.Card.update(editingId, { ...stats, cost: newCost });
       await loadCards();
       setSaving(false);
+    }
+  }
+
+  // RETOQUE: parte de la imagen actual y pide a la IA que la reproduzca
+  // idéntica cambiando SOLO lo indicado por el admin. La imagen actual es la
+  // ÚNICA referencia (sin foto de referencia extra) para que no se reinvente.
+  async function generateRetouch(target, instructions) {
+    const src = form[target];
+    if (!src || !instructions?.trim()) return;
+    setGenerating('__retouch_' + target);
+    try {
+      const prompt = `TAREA DE EDICIÓN DE IMAGEN (no es una creación nueva): la imagen de referencia adjunta es la versión ACTUAL y DEFINITIVA de esta carta. Debes reproducirla de forma EXACTA: mismo personaje con la misma cara y expresión, misma pose, mismo encuadre y composición, mismos colores, misma iluminación, mismo fondo, mismo estilo artístico. PROHIBIDO regenerar, reinterpretar, cambiar la pose, el encuadre o el fondo. EL ÚNICO CAMBIO PERMITIDO es este: ${instructions.trim()}. Todo lo demás debe permanecer idéntico a la referencia. El cambio añadido debe integrarse con el mismo estilo e iluminación de la imagen y quedar COMPLETAMENTE dentro del encuadre, sin tocar los bordes. Mantén exactamente la misma relación de aspecto y el mismo encuadre que la referencia. Sin texto, sin logos, sin marcos.`;
+      const result = await withTimeout(
+        base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: [src] }),
+        120000,
+        'el retoque de la imagen'
+      );
+      if (result?.url) {
+        const isCardArt = target === 'art_url' || target === 'elite_art_url';
+        const finalUrl = isCardArt
+          ? await withTimeout(cropAndUpload(result.url), 60000, 'el recorte de la imagen').catch(() => result.url)
+          : result.url;
+        setForm(prev => ({ ...prev, [target]: finalUrl }));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('No se pudo retocar la imagen: ' + (err?.message || 'error desconocido') + '. Inténtalo de nuevo.');
+    } finally {
+      setGenerating(false);
     }
   }
 
@@ -422,5 +460,5 @@ export default function AdminCards() {
   return <div className="min-h-screen bg-[#0e0a16] px-4 py-6 text-[#efe9dc] md:px-8"><div className="mx-auto max-w-7xl"><div className="mb-6 flex flex-wrap items-center justify-between gap-3"><div><h1 className="font-heading text-3xl font-black text-[#fff5dc]">Backoffice de cartas</h1><p className="mt-1 text-sm text-[#cfc6dd]">Crea cartas por tipo y raza, genera imágenes con IA y edita la base de datos actual.</p></div><Link to="/admin/ia" className="rounded-xl border border-[#7ab8ff66] px-4 py-2 text-sm font-black text-[#a8d0ff] hover:bg-[#7ab8ff] hover:text-[#0e1a2a]">Aprendizaje IA</Link><Link to="/admin/news" className="rounded-xl border border-[#c06bff66] px-4 py-2 text-sm font-black text-[#e2b0ff] hover:bg-[#c06bff] hover:text-white">Cartel Actualidad</Link><Link to="/" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Volver al juego</Link></div><div className="grid gap-6 lg:grid-cols-[1.08fr_.92fr]"><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">{editingId ? 'Editar carta' : 'Crear carta nueva'}</h2>{editingId && <button onClick={startNew} className="rounded-lg border border-[#ffd24a44] px-3 py-1.5 text-xs font-black text-[#ffe49a]">Nueva carta</button>}</div><div className="mb-4 flex gap-4">
   {form.art_url && <div className="flex-1 max-w-[210px] aspect-[7/10] overflow-hidden rounded-2xl border border-[#ffd24a44] bg-black/45"><img src={form.art_url} alt="Principal" className="h-full w-full object-cover" /></div>}
   {form.elite_art_url && <div className="flex-1 max-w-[210px] aspect-[7/10] overflow-hidden rounded-2xl border border-[#c05bff44] bg-black/45"><img src={form.elite_art_url} alt="Élite" className="h-full w-full object-cover" /></div>}
-</div><ReferencePhotoSection referencePhoto={referencePhoto} useReferencePhoto={useReferencePhoto} onToggleUse={setUseReferencePhoto} onUpload={uploadReferencePhoto} onClear={() => { setReferencePhoto(''); setUseReferencePhoto(false); }} uploading={uploading} /><CardFields form={{ ...form, onGenerateStats: generateStats, generatingStats }} onChange={onChange} onGenerate={generateImage} generating={generating} onUpload={uploadImage} uploading={uploading} onConvertEpic={convertToEpic} onLevelUp={levelUpHero} saving={saving} /><BattleArtSection form={form} onGenerate={handleBattleArtAction} generating={generating} /><AbilityAnimSection form={form} onChange={onChange} onGenerate={handleAbilityAnimAction} generating={generating} /><div className="mt-5 flex gap-3"><button onClick={() => setPreviewOpen(true)} disabled={!form.name} className="flex-1 rounded-2xl border-2 border-[#ffd24a] px-5 py-3 font-heading font-black text-[#ffe49a] disabled:opacity-50">Vista previa</button><button onClick={saveCard} disabled={saving || !form.name} className="flex-1 rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></div>{canDelete && editingId && <button onClick={deleteCard} disabled={deleting} className="mt-3 w-full rounded-2xl border-2 border-[#cc3333] bg-[#cc333318] px-5 py-3 font-heading font-black text-[#ff9d9d] hover:bg-[#cc3333] hover:text-white disabled:opacity-50 transition-colors">{deleting ? 'Borrando...' : 'Borrar carta'}</button>}{previewOpen && <CardPreviewModal form={form} onClose={() => setPreviewOpen(false)} />}</section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><BackupCardsButton cards={cards} /></div><div className="my-4 grid gap-3 md:grid-cols-[1fr_160px_160px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todos los tipos</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="bizarro">Héroes bizarros</option><option value="race">Razas</option></select><select value={clanFilter} onChange={(e) => setClanFilter(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas las razas</option>{clans.map(clan => <option key={clan} value={clan}>{clan}</option>)}</select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
+</div><ReferencePhotoSection referencePhoto={referencePhoto} useReferencePhoto={useReferencePhoto} onToggleUse={setUseReferencePhoto} onUpload={uploadReferencePhoto} onClear={() => { setReferencePhoto(''); setUseReferencePhoto(false); }} uploading={uploading} /><CardFields form={{ ...form, onGenerateStats: generateStats, generatingStats, aiModel, onAiModelChange: setAiModel }} onChange={onChange} onGenerate={generateImage} generating={generating} onUpload={uploadImage} uploading={uploading} onConvertEpic={convertToEpic} onLevelUp={levelUpHero} saving={saving} /><ImageRetouchSection form={form} onGenerate={generateRetouch} generating={generating} /><BattleArtSection form={form} onGenerate={handleBattleArtAction} generating={generating} /><AbilityAnimSection form={form} onChange={onChange} onGenerate={handleAbilityAnimAction} generating={generating} /><div className="mt-5 flex gap-3"><button onClick={() => setPreviewOpen(true)} disabled={!form.name} className="flex-1 rounded-2xl border-2 border-[#ffd24a] px-5 py-3 font-heading font-black text-[#ffe49a] disabled:opacity-50">Vista previa</button><button onClick={saveCard} disabled={saving || !form.name} className="flex-1 rounded-2xl bg-[#ffd24a] px-5 py-3 font-heading font-black text-[#3a2600] disabled:opacity-50">{saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear carta'}</button></div>{canDelete && editingId && <button onClick={deleteCard} disabled={deleting} className="mt-3 w-full rounded-2xl border-2 border-[#cc3333] bg-[#cc333318] px-5 py-3 font-heading font-black text-[#ff9d9d] hover:bg-[#cc3333] hover:text-white disabled:opacity-50 transition-colors">{deleting ? 'Borrando...' : 'Borrar carta'}</button>}{previewOpen && <CardPreviewModal form={form} onClose={() => setPreviewOpen(false)} />}</section><section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 shadow-2xl md:p-6"><div className="flex items-center justify-between gap-3"><h2 className="font-heading text-xl font-black text-[#ffe49a]">BD actual · {filteredCards.length} cartas</h2><BackupCardsButton cards={cards} /></div><div className="my-4 grid gap-3 md:grid-cols-[1fr_160px_160px]"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, raza, tipo..." className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" /><select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todos los tipos</option><option value="hero">Héroes</option><option value="spell">Hechizos</option><option value="melee_weapon">Armas CC</option><option value="ranged_weapon">Armas AD</option><option value="armor">Armaduras</option><option value="object">Objetos</option><option value="bonus">Bonus</option><option value="bizarro">Héroes bizarros</option><option value="race">Razas</option></select><select value={clanFilter} onChange={(e) => setClanFilter(e.target.value)} className="rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]"><option value="all">Todas las razas</option>{clans.map(clan => <option key={clan} value={clan}>{clan}</option>)}</select></div><CardList cards={filteredCards} onEdit={startEdit} /></section></div></div></div>;
 }
