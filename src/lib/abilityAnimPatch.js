@@ -37,11 +37,37 @@ export const ABILITY_ANIM_PATCH = `
       try{
         var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
         var x=c.getContext('2d');x.drawImage(img,0,0);
-        var d=x.getImageData(0,0,c.width,c.height),p=d.data;
-        for(var i=0;i<p.length;i+=4){
-          var m=Math.max(p[i],p[i+1],p[i+2]);
-          if(m<32)p[i+3]=0;
-          else if(m<90)p[i+3]=Math.round(p[i+3]*(m-32)/58);
+        var d=x.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
+        // Recorte por RELLENO DESDE LOS BORDES: solo se vuelve transparente el
+        // fondo oscuro conectado al marco de la imagen. Así las ropas, sombras
+        // y zonas negras del personaje conservan su color y opacidad completos
+        // (antes cualquier píxel oscuro se volvía translúcido).
+        var BG=42,SOFT=78;
+        var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
+        function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
+        function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
+        for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
+        for(var yy=0;yy<H;yy++){push(yy*W);push(yy*W+W-1);}
+        while(qs<qe){
+          var i0=q[qs++],cx=i0%W,cy=(i0-cx)/W;
+          p[i0*4+3]=0;
+          if(cx>0)push(i0-1);
+          if(cx<W-1)push(i0+1);
+          if(cy>0)push(i0-W);
+          if(cy<H-1)push(i0+W);
+        }
+        // Suaviza el contorno: los píxelos oscuros pegados al fondo recortado
+        // se difuminan un poco para que no quede un borde duro.
+        for(var yz=1;yz<H-1;yz++){
+          for(var xz=1;xz<W-1;xz++){
+            var ii=yz*W+xz;
+            if(seen[ii])continue;
+            var lm=lum(ii);
+            if(lm>=SOFT)continue;
+            if(seen[ii-1]||seen[ii+1]||seen[ii-W]||seen[ii+W]){
+              p[ii*4+3]=Math.round(p[ii*4+3]*Math.max(0,(lm-BG))/(SOFT-BG));
+            }
+          }
         }
         x.putImageData(d,0,0);
         CUT[url]=c.toDataURL('image/png');
@@ -82,7 +108,7 @@ export const ABILITY_ANIM_PATCH = `
   '@keyframes bfAaDim{from{opacity:0}to{opacity:1}}'+
   '#bf-abil-anim .bf-aa-glowdisc{position:absolute;top:50%;left:50%;width:min(80vmin,700px);height:min(80vmin,700px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--aa-glow,rgba(255,210,74,.4)) 0%,transparent 68%);opacity:0;animation:bfAaGlowIn .6s ease-out .05s both}'+
   '@keyframes bfAaGlowIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}'+
-  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);filter:saturate(1.35) contrast(1.18) brightness(1.12) drop-shadow(0 14px 34px rgba(0,0,0,.75)) drop-shadow(0 0 26px var(--aa-color,#fff)) drop-shadow(0 0 46px var(--aa-glow,rgba(255,210,74,.5)))}'+
+  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);filter:saturate(1.1) contrast(1.04) brightness(1.02) drop-shadow(0 14px 34px rgba(0,0,0,.75)) drop-shadow(0 0 26px var(--aa-color,#fff)) drop-shadow(0 0 46px var(--aa-glow,rgba(255,210,74,.5)))}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
   '#bf-abil-anim .bf-aa-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
