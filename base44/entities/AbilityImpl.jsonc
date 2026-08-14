@@ -1,0 +1,46 @@
+{
+  "name": "AbilityImpl",
+  "type": "object",
+  "properties": {
+    "card_id": {
+      "type": "string",
+      "description": "card_id de la carta a la que pertenece la habilidad"
+    },
+    "elite": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si true, es la habilidad \u00e9lite"
+    },
+    "ability_name": {
+      "type": "string"
+    },
+    "ability_text": {
+      "type": "string",
+      "description": "Texto de la habilidad tal y como est\u00e1 en la carta"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "implemented",
+        "manual"
+      ],
+      "description": "implemented = la mec\u00e1nica se aplica en el juego; manual = no es posible automatizarla"
+    },
+    "effect_type": {
+      "type": "string",
+      "description": "Tipo de efecto soportado por el motor (attack_bonus_per_ally, heal_allies_per_turn, heal_allies_now, damage_enemy, buff_self, shield_self, summon_token, unsupported)"
+    },
+    "params": {
+      "type": "object",
+      "description": "Par\u00e1metros del efecto (amount, bonus, clan, stat, all, token_id...)"
+    },
+    "note": {
+      "type": "string",
+      "description": "Explicaci\u00f3n en espa\u00f1ol de lo que se ha implementado o del motivo por el que no es posible"
+    }
+  },
+  "required": [
+    "card_id",
+    "status"
+  ]
+}

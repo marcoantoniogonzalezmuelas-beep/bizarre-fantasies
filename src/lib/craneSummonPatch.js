@@ -89,8 +89,9 @@ export const CRANE_SUMMON_PATCH = `
       var inst = typeof makeInstance === 'function' ? makeInstance(token) : Object.assign({}, token);
       inst.id = 'crane_' + Date.now();
       inst._token = token.id; inst._bfCrane = true;
-      // Daidoji élite invoca la Grulla en su versión ÉLITE (cura 7 por turno).
-      inst.eliteUsed = true; inst.eliteMode = true; inst.abilityUsed = false;
+      // La Grulla entra en su versión normal: su propia habilidad (cura 5 por
+      // turno mientras viva) es la que hace el efecto.
+      inst.eliteUsed = true; inst.eliteMode = false; inst.abilityUsed = false;
       inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
       inst.maxHp = Number(token.hp) || 41; inst.hp = inst.maxHp; inst.alive = true;
       (G.team[side] || (G.team[side] = [])).push(inst);
