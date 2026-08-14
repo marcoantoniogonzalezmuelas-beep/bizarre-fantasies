@@ -61,6 +61,7 @@ export default function CardFields({ form, onChange, onGenerate, generating, onU
     <select value={form.imageEngine || 'base44'} onChange={(e) => form.onImageEngineChange?.(e.target.value)} className="rounded-xl border border-[#ff9d5c44] bg-black/45 px-2 py-2 text-xs text-[#fff5dc] outline-none focus:border-[#ff9d5c]">
       <option value="base44">Integrado (créditos de la plataforma)</option>
       <option value="openai">ChatGPT · gpt-image-1 (tu clave OpenAI)</option>
+      <option value="gemini">🍌 Nano Banana · Gemini (tu clave Google)</option>
     </select>
     <span className="text-[11px] text-[#cfc6dd]">Se aplica al arte de carta, escenas de batalla, animaciones 3D y retoques.</span>
   </label>

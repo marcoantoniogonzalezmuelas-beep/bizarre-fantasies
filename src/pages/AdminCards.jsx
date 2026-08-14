@@ -200,6 +200,11 @@ export default function AdminCards() {
   // referencia (URL que no puede leer), reintenta sin ellas para no dejar al
   // admin con el botón "Generando…" colgado para siempre.
   async function genImageWithFallback(prompt, refs) {
+    if (imageEngine === 'gemini') {
+      const res = await base44.functions.invoke('generateImageGemini', { prompt, reference_urls: refs });
+      if (res?.data?.error) throw new Error(res.data.error);
+      return res?.data;
+    }
     if (imageEngine === 'openai') {
       const res = await base44.functions.invoke('generateImageOpenAI', { prompt, reference_urls: refs, size: '1024x1536' });
       if (res?.data?.error) throw new Error(res.data.error);
