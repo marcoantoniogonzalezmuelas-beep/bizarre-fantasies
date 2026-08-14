@@ -10,7 +10,11 @@ export const CRANE_SUMMON_PATCH = `
   if(window.__bfCranePatch) return;
   window.__bfCranePatch = true;
 
+  // El token de la Grulla vive en la lista de héroes del juego (los tokens de
+  // la BD se registran ahí al iniciar la partida).
   function craneToken(){
+    var fromHeroes = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(h){ return h && h.id === 'tk_grulla'; });
+    if(fromHeroes) return fromHeroes;
     return (typeof TOKENS !== 'undefined' ? TOKENS : []).find(function(t){ return t && t.id === 'tk_grulla'; });
   }
 
