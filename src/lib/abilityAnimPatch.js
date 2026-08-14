@@ -42,7 +42,7 @@ export const ABILITY_ANIM_PATCH = `
         // fondo oscuro conectado al marco de la imagen. Así las ropas, sombras
         // y zonas negras del personaje conservan su color y opacidad completos
         // (antes cualquier píxel oscuro se volvía translúcido).
-        var BG=42,SOFT=78;
+        var BG=30,SOFT=64;
         var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
         function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
         function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
@@ -69,6 +69,14 @@ export const ABILITY_ANIM_PATCH = `
             }
           }
         }
+        // Salvaguarda anti-translúcido: si el relleno ha borrado demasiados
+        // píxeles del CENTRO de la imagen (donde vive el personaje), es que la
+        // criatura es oscura y el recorte la atraviesa (Surucho, Coffetath…).
+        // En ese caso se descarta el recorte y se usa la imagen ORIGINAL a
+        // todo color, con un desvanecido de bordes aplicado por CSS.
+        var cx0=Math.floor(W*0.3),cx1=Math.floor(W*0.7),cy0=Math.floor(H*0.22),cy1=Math.floor(H*0.82),rem=0,tot=0;
+        for(var yc=cy0;yc<cy1;yc++){for(var xc=cx0;xc<cx1;xc++){tot++;if(seen[yc*W+xc])rem++;}}
+        if(tot&&rem/tot>0.10){CUT[url]='orig';return;}
         x.putImageData(d,0,0);
         CUT[url]=c.toDataURL('image/png');
       }catch(e){CUT[url]=false;}
@@ -187,7 +195,12 @@ export const ABILITY_ANIM_PATCH = `
     // Sin anillos de halo del color de clan: parpadeaban al expandirse.
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
-    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(CUT[url]||url)+'" alt="">';
+    var cu=CUT[url];
+    var useOrig=(!cu||cu==='orig');
+    // Imagen original (sin recorte): colores intactos y un desvanecido suave
+    // en los bordes para que el rectángulo no se note sobre la escena.
+    var mask=useOrig?';-webkit-mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%);mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%)':'';
+    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards'+mask+'" src="'+(useOrig?url:cu)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(ability).toUpperCase()+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
