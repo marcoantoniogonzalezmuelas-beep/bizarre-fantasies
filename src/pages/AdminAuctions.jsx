@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import HeroPickGrid from '@/components/admin/auction/HeroPickGrid';
 import AuctionRules from '@/components/admin/auction/AuctionRules';
+import AuctionDirectFilters from '@/components/admin/auction/AuctionDirectFilters';
+import AuctionPhaseTypes from '@/components/admin/auction/AuctionPhaseTypes';
 
-const emptyCfg = { active: false, mode: 'direct', hero_ids: [], rules: [], note: '' };
+const emptyCfg = { active: false, mode: 'direct', hero_ids: [], phase_types: ['', '', ''], rules: [], note: '' };
 
 export default function AdminAuctions() {
   const [user, setUser] = useState(null);
@@ -25,7 +27,7 @@ export default function AdminAuctions() {
     base44.entities.AuctionConfig.list('-updated_date', 1).then(rows => {
       if (rows && rows.length) {
         setRecordId(rows[0].id);
-        setCfg({ ...emptyCfg, ...rows[0], hero_ids: rows[0].hero_ids || [], rules: rows[0].rules || [] });
+        setCfg({ ...emptyCfg, ...rows[0], hero_ids: rows[0].hero_ids || [], phase_types: rows[0].phase_types || ['', '', ''], rules: rows[0].rules || [] });
       }
     }).catch(() => {});
   }, [user]);
@@ -53,6 +55,7 @@ export default function AdminAuctions() {
       active: !!cfg.active,
       mode: cfg.mode,
       hero_ids: cfg.hero_ids || [],
+      phase_types: cfg.phase_types || ['', '', ''],
       rules: (cfg.rules || []).map(r => ({
         label: r.label || '', clan: r.clan || '', type: r.type || '',
         ...(r.cost_min === '' || r.cost_min == null ? {} : { cost_min: Number(r.cost_min) }),
@@ -100,8 +103,13 @@ export default function AdminAuctions() {
             <span className="self-center text-[11px] text-[#9dffcf]">{summary}</span>
           </div>
 
+          <AuctionPhaseTypes value={cfg.phase_types} onChange={phase_types => upd({ phase_types })} />
+
           {cfg.mode === 'direct'
-            ? <HeroPickGrid heroes={heroes} selected={cfg.hero_ids || []} onToggle={id => upd({ hero_ids: (cfg.hero_ids || []).includes(id) ? cfg.hero_ids.filter(x => x !== id) : [...(cfg.hero_ids || []), id] })} onBulk={(ids, on) => upd({ hero_ids: on ? [...new Set([...(cfg.hero_ids || []), ...ids])] : (cfg.hero_ids || []).filter(x => !ids.includes(x)) })} />
+            ? <>
+              <AuctionDirectFilters heroes={heroes} onApply={(ids, on) => upd({ hero_ids: on ? [...new Set([...(cfg.hero_ids || []), ...ids])] : (cfg.hero_ids || []).filter(x => !ids.includes(x)) })} />
+              <HeroPickGrid heroes={heroes} selected={cfg.hero_ids || []} onToggle={id => upd({ hero_ids: (cfg.hero_ids || []).includes(id) ? cfg.hero_ids.filter(x => x !== id) : [...(cfg.hero_ids || []), id] })} onBulk={(ids, on) => upd({ hero_ids: on ? [...new Set([...(cfg.hero_ids || []), ...ids])] : (cfg.hero_ids || []).filter(x => !ids.includes(x)) })} />
+            </>
             : <AuctionRules rules={cfg.rules || []} onChange={rules => upd({ rules })} matchCount={matchCount} />}
 
           <textarea value={cfg.note || ''} onChange={e => upd({ note: e.target.value })} placeholder="Notas: para qué sirve esta configuración (ej. misión de héroes de coste menor a 20)" className="min-h-[70px] rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" />

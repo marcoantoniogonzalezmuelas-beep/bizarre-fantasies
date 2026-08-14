@@ -23,6 +23,13 @@
       },
       "description": "IDs (card_id) de los h\u00e9roes que pueden salir en subasta (modo direct)"
     },
+    "phase_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Rol subastado en cada fase (3 valores: CC, AD, HE o vac\u00edo para el reparto por defecto)"
+    },
     "rules": {
       "type": "array",
       "description": "Grupos de probabilidad (modo weights)",

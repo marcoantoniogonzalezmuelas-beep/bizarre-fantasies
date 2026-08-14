@@ -81,13 +81,25 @@ export const AUCTION_CONTROL_PATCH = `
     window.__bfAuctionHooked = true;
     var orig = window.startAuctionPhase;
     window.startAuctionPhase = function(){
+      var host = (typeof NET === 'undefined' || NET.role !== 'client');
       try{
-        if((typeof NET === 'undefined' || NET.role !== 'client') && typeof G !== 'undefined' && !(G.pools && G.pools.__bfCfg)){
+        if(host && typeof G !== 'undefined' && !(G.pools && G.pools.__bfCfg)){
           var p = buildPools();
           if(p){ p.__bfCfg = true; G.pools = p; }
         }
       }catch(e){}
-      return orig.apply(this, arguments);
+      var res = orig.apply(this, arguments);
+      // Rol elegido para esta fase desde el backoffice (fase 1, 2 y 3).
+      try{
+        if(host && CFG && CFG.active && CFG.phase_types){
+          var want = CFG.phase_types[G.aIndex];
+          if(want && ['CC','AD','HE'].indexOf(want) >= 0 && want !== G.curType){
+            G.curType = want;
+            if(typeof beginBidRound === 'function') beginBidRound();
+          }
+        }
+      }catch(e){}
+      return res;
     };
     return true;
   }
