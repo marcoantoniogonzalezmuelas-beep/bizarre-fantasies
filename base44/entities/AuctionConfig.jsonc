@@ -1,0 +1,59 @@
+{
+  "name": "AuctionConfig",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si true, el control de subastas se aplica en las partidas"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "direct",
+        "weights"
+      ],
+      "default": "direct",
+      "description": "direct = h\u00e9roes elegidos a mano; weights = grupos con probabilidad"
+    },
+    "hero_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs (card_id) de los h\u00e9roes que pueden salir en subasta (modo direct)"
+    },
+    "rules": {
+      "type": "array",
+      "description": "Grupos de probabilidad (modo weights)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "clan": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "cost_min": {
+            "type": "number"
+          },
+          "cost_max": {
+            "type": "number"
+          },
+          "percent": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "description": "Notas del admin (para qu\u00e9 sirve esta configuraci\u00f3n)"
+    }
+  },
+  "required": []
+}

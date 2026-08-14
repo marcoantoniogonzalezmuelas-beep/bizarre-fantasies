@@ -16,6 +16,7 @@ import EnglishEntry from './pages/EnglishEntry';
 import AdminCards from './pages/AdminCards';
 import FlashNewsAdmin from './pages/FlashNewsAdmin';
 import AdminAiLogs from './pages/AdminAiLogs';
+import AdminAuctions from './pages/AdminAuctions';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -55,6 +56,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin" element={<AdminCards />} />
       <Route path="/admin/news" element={<FlashNewsAdmin />} />
       <Route path="/admin/ia" element={<AdminAiLogs />} />
+      <Route path="/admin/subastas" element={<AdminAuctions />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/guiacartas" element={<CardGuide />} />
       <Route path="/races" element={<RacesPage />} />
