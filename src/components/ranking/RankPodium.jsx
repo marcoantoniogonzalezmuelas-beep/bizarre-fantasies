@@ -18,6 +18,9 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
         const color = RANK_COLORS[h.rank];
         return (
           <div key={h.name} className={`flex flex-col items-center text-center ${first ? 'w-[34%]' : 'w-[28%]'}`}>
+            <div className="mb-1.5">
+              <RankMedal rank={h.rank} size={first ? 52 : 40} />
+            </div>
             <div
               className={`relative w-full overflow-hidden rounded-2xl border-2 ${first ? 'aspect-[3/3.4]' : 'aspect-[3/3.1]'}`}
               style={{ borderColor: color, background: '#09070d', boxShadow: `0 0 18px ${RANK_GLOWS[h.rank]}` }}
@@ -33,9 +36,6 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
                 <div className="absolute inset-0 flex items-center justify-center font-heading font-black text-4xl" style={{ color: accent }}>{h.name.charAt(0)}</div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 pointer-events-none" />
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10">
-                <RankMedal rank={h.rank} size={first ? 62 : 48} />
-              </div>
               <div className="absolute left-1.5 right-1.5 bottom-2.5">
                 <div
                   className={`font-heading font-black leading-tight text-[#fff8e2] truncate uppercase tracking-wide ${first ? 'text-xl md:text-2xl' : 'text-base md:text-lg'}`}
