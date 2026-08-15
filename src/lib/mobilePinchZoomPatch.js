@@ -26,45 +26,18 @@ export const MOBILE_PINCH_PATCH = `
   function apply(){
     var b = document.body;
     b.style.transformOrigin = '0 0';
-    // A x1 sin desplazamiento se QUITA el transform: así el body deja de ser
-    // una capa GPU gigante y las animaciones de batalla no repintan toda la
-    // pantalla (era la causa del parpadeo en tablet). Con zoom o gesto activo
-    // se mantiene la capa estable (clase bf-zooming).
-    // Con un modal abierto (p. ej. la ventanita de "Salir") se MANTIENE el
-    // translate3d aunque estemos a x1: los position:fixed del modal se sitúan
-    // respecto al body transformado, que es lo que hace que la ventanita salga
-    // justo al lado del botón "Salir" y no pegada al borde del viewport.
-    var modalOpen = !!document.querySelector('#modalRoot .mo');
-    var idle = (z === 1 && !tx && !ty && !pinch && !modalOpen);
-    if (idle) {
-      b.classList.remove('bf-zooming');
-      b.style.transform = '';
-      if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
-        lastZ = z; lastTx = tx; lastTy = ty;
-        flushMsgNow();
-      }
-      return;
-    }
-    b.classList.add('bf-zooming');
-    // translate3d mantiente el transform en el compositor GPU de forma estable
-    // durante el gesto; cuando volvemos a x1 sin desplazamiento, quitamos el
-    // transform para que el body deje de ser una capa compuesta (así los
-    // re-renders del juego solo repintan el área cambiada, no todo el body).
-    // Se mantiene SIEMPRE un translate3d (aunque sea 0,0 a escala 1): así la
-    // capa compuesta del body no se crea ni se destruye al pellizcar, que es lo
-    // que provocaba los destellos.
+    // El body lleva SIEMPRE translate3d (ver noFlickerPatch.js): la capa GPU
+    // existe siempre y no se crea ni se destruye al pellizcar. Antes se quitaba
+    // el transform a x1 y ese montaje/desmontaje de capa era el destello.
+    // Los FX viven en #bf-fx-layer (aislada), así que el body no se repinta
+    // durante las animaciones de batalla aunque sea una capa GPU permanente.
     b.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(' + z + ')';
     // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
     // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
-    // THROTTLE: el padre (React) re-renderiza sus overlays con cada aviso; si
-    // se avisa en cada frame del gesto, esos re-renders compiten con el
-    // compositor y la pantalla parpadea. Se avisa como mucho cada 120 ms y
-    // siempre una última vez con el valor final.
+    // Solo al soltar (sin pinch): durante el gesto el padre re-renderizaría
+    // sus overlays y ese repintado compite con el compositor → destello.
     if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
       lastZ = z; lastTx = tx; lastTy = ty;
-      // Durante el gesto no re-renderizamos el contenedor exterior: en tablet
-      // ese repintado se suma a la transformación del juego y provoca destellos.
-      // Los elementos flotantes se sincronizan una única vez al soltar (flushMsg).
       if (!msgTimer && !pinch && !(z === 1 && !tx && !ty)) {
         msgTimer = setTimeout(function(){
           msgTimer = null;

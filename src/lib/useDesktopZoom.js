@@ -29,8 +29,11 @@ export function useDesktopZoom(minWidth = 1024) {
     function apply() {
       const b = document.body;
       b.style.transformOrigin = '0 0';
-      b.style.transform = (z === 1 && !tx && !ty) ? '' : `translate(${tx}px,${ty}px) scale(${z})`;
-      try { window.parent.postMessage({ bfPinch: { z, tx, ty } }, '*'); } catch (e) {}
+      b.style.backfaceVisibility = 'hidden';
+      // translate3d (no translate 2D) para que el body sea una capa GPU estable
+      // durante todo el gesto. Sin esto, cada frame repinta el body entero en
+      // CPU y la tablet parpadea.
+      b.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${z})`;
     }
     function clampT() {
       const W = window.innerWidth, H = window.innerHeight;
@@ -44,6 +47,10 @@ export function useDesktopZoom(minWidth = 1024) {
       if (e.touches.length !== 2) return;
       e.preventDefault(); e.stopPropagation();
       document.body.style.transition = 'none';
+      // will-change DURANTE el gesto: la capa GPU del body ya existe y no se
+      // crea/destruye al entrar/salir (eso era el destello). Se quita al soltar
+      // con retardo para no degradar la capa a mitad de la transición final.
+      document.body.style.willChange = 'transform';
       pinch = { d0: dist(e.touches), c0: mid(e.touches), z0: z, tx0: tx, ty0: ty };
     }
     function onMove(e) {
@@ -63,7 +70,9 @@ export function useDesktopZoom(minWidth = 1024) {
         const b = document.body;
         b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
         if (z < zMin + 0.02) { z = zMin; tx = 0; ty = 0; apply(); }
-        setTimeout(() => { b.style.transition = ''; }, 300);
+        // Se quita will-change tras la transición para degradar la capa GPU
+        // fuera del gesto sin destello.
+        setTimeout(() => { b.style.transition = ''; b.style.willChange = ''; }, 360);
       }
     }
     function resetZoom() {
