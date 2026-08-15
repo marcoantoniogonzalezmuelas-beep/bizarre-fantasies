@@ -39,6 +39,16 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 #bf-abil-anim .bf-aa-img,#bf-spec-cine .bf-sc-img{filter:none!important}
 /* Overlays de cinemática aislados: sus capas no invalidan el resto del juego. */
 #bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout paint!important}
+/* Hechizos (tormenta ígnea, bola de fuego, hielo…): estas capas animan
+   transform Y llevan drop-shadow. Un filtro sobre un elemento que se mueve
+   obliga al navegador a repintar el campo de batalla entero cada frame
+   (parpadeo). Se cambia el brillo por box-shadow, que sí se compone en GPU. */
+.bf-fireball{filter:none!important;box-shadow:0 0 30px 12px rgba(255,120,30,.8)!important}
+.bf-ember{filter:none!important;box-shadow:0 0 12px 4px rgba(255,120,30,.7)!important}
+.bf-ice-shard{filter:none!important;box-shadow:0 0 10px 2px rgba(150,220,255,.7)!important}
+.bf-sc-img,.bf-aa-img,.bf-sc-ember,.bf-aa-spark,.bf-sc-feather,.bf-sc-flame,.bf-sc-shell,.bf-sc-smoke{filter:none!important}
+/* Capas FX y overlays: se aíslan para que su pintado no invalide el tablero. */
+.bf-wave-overlay,.bf-frost-overlay,.bf-fireball,.bf-fire-ring,.bf-ember,.bf-ice-shard,.bf-frost-mist,.bf-bolt,.bf-flash{contain:paint!important;isolation:isolate!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
