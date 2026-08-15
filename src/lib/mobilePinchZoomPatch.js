@@ -26,6 +26,21 @@ export const MOBILE_PINCH_PATCH = `
   function apply(){
     var b = document.body;
     b.style.transformOrigin = '0 0';
+    // A x1 sin desplazamiento se QUITA el transform: así el body deja de ser
+    // una capa GPU gigante y las animaciones de batalla no repintan toda la
+    // pantalla (era la causa del parpadeo en tablet). Con zoom o gesto activo
+    // se mantiene la capa estable (clase bf-zooming).
+    var idle = (z === 1 && !tx && !ty && !pinch);
+    if (idle) {
+      b.classList.remove('bf-zooming');
+      b.style.transform = '';
+      if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
+        lastZ = z; lastTx = tx; lastTy = ty;
+        flushMsgNow();
+      }
+      return;
+    }
+    b.classList.add('bf-zooming');
     // translate3d mantiente el transform en el compositor GPU de forma estable
     // durante el gesto; cuando volvemos a x1 sin desplazamiento, quitamos el
     // transform para que el body deje de ser una capa compuesta (así los
@@ -54,6 +69,7 @@ export const MOBILE_PINCH_PATCH = `
     if (msgTimer) { clearTimeout(msgTimer); msgTimer = null; }
     try { window.parent.postMessage({ bfPinch: { z: z, tx: tx, ty: ty } }, '*'); } catch (e) {}
   }
+  function flushMsgNow(){ flushMsg(); }
   function scheduleApply(){
     if (rafId) return;
     rafId = requestAnimationFrame(function(){ rafId = null; apply(); });
@@ -160,6 +176,26 @@ export const MOBILE_PINCH_PATCH = `
   }
   window.__bfPinchReset = resetZoom;
   window.__bfTopReset = topReset;
+
+  // API para el enfoque automático de batalla (battleFocusZoomPatch): centra un
+  // punto de la pantalla actual con la escala pedida, con transición suave.
+  // Se ignora si el jugador está pellizcando en ese momento.
+  window.__bfPinchFocus = function(clientX, clientY, zoom, ms){
+    if (pinch) return;
+    var W = window.innerWidth, H = window.innerHeight;
+    var nz = Math.min(4, Math.max(1, zoom || 1));
+    // Punto en coordenadas sin transformar del body.
+    var ux = (clientX - tx) / z, uy = (clientY - ty) / z;
+    z = nz;
+    tx = W / 2 - ux * nz;
+    ty = H / 2 - uy * nz;
+    clampT();
+    document.body.style.transition = 'transform ' + ((ms || 420) / 1000) + 's cubic-bezier(.25,.8,.3,1)';
+    applyNow();
+    flushMsg();
+  };
+  window.__bfPinchZ = function(){ return z; };
+  window.__bfPinchBusy = function(){ return !!pinch; };
 
   // Reencuadra al abrir cualquier modal (.mo): con el body transformado, los
   // position:fixed se posicionan respecto al body escalado y quedan fuera.
