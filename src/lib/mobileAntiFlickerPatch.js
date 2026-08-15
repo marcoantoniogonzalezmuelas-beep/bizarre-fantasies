@@ -96,13 +96,14 @@ export const MOBILE_ANTIFLICKER_PATCH = `
     return layer;
   }
 
-  // Efectos temporales que deben vivir en la capa aislada. Antes solo se
-  // detectaban algunos nombres de hechizo: los sprites anime (.bf-afx) y los
-  // impactos nativos (.fx-*) seguían entrando directamente al body, que es lo
-  // que mantenía el parpadeo de Tormenta Ígnea y Rayo en Cadena en tablet.
-  // Todo nodo efímero bf-* o fx-* añadido DIRECTAMENTE al body se redirige.
-  // Las piezas persistentes del tablero se insertan dentro de sus cartas, así
-  // que no pasan por aquí.
+  // Solo los proyectiles e impactos creados por los parches visuales se mueven
+  // a la capa aislada. La regla anterior aceptaba cualquier clase "bf-*" y
+  // podía capturar elementos reales de la interfaz, como el modal de compra.
+  var FX_CLASSES={
+    'bf-afx':1,'bf-wave-overlay':1,'bf-fireball':1,'bf-fire-ring':1,
+    'bf-ember':1,'bf-frost-overlay':1,'bf-frost-mist':1,'bf-ice-shard':1,
+    'bf-bolt':1,'bf-flash':1
+  };
   function isFx(n){
     if(!n||n.nodeType!==1)return false;
     if(n.id==='bf-fx-layer'||n.id==='bf-abil-anim'||n.id==='bf-spec-cine')return false;
@@ -110,7 +111,7 @@ export const MOBILE_ANTIFLICKER_PATCH = `
     if(!cn)return false;
     var parts=cn.split(/\\s+/);
     for(var i=0;i<parts.length;i++){
-      if(parts[i]==='bf-afx'||/^bf-/.test(parts[i])||/^fx-/.test(parts[i]))return true;
+      if(FX_CLASSES[parts[i]]||/^fx-(slash|burst|ring)$/.test(parts[i]))return true;
     }
     return false;
   }

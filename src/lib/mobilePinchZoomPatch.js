@@ -62,9 +62,10 @@ export const MOBILE_PINCH_PATCH = `
     // siempre una última vez con el valor final.
     if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
       lastZ = z; lastTx = tx; lastTy = ty;
-      // En reposo (x1) NO se avisa al padre: cada aviso re-renderiza los
-      // overlays de React sobre el iframe y eso repinta la pantalla del juego.
-      if (!msgTimer && !(z === 1 && !tx && !ty && !pinch)) {
+      // Durante el gesto no re-renderizamos el contenedor exterior: en tablet
+      // ese repintado se suma a la transformación del juego y provoca destellos.
+      // Los elementos flotantes se sincronizan una única vez al soltar (flushMsg).
+      if (!msgTimer && !pinch && !(z === 1 && !tx && !ty)) {
         msgTimer = setTimeout(function(){
           msgTimer = null;
           try { window.parent.postMessage({ bfPinch: { z: lastZ, tx: lastTx, ty: lastTy } }, '*'); } catch (e) {}
