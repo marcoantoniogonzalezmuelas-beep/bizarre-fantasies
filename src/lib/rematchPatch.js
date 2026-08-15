@@ -28,11 +28,73 @@ export const REMATCH_PATCH = `
     window.__bfResultSent = false;
   }
 
+  // Vacia TODA la caché de estado del juego para que la nueva partida empiece
+  // virgen. Sin esto, datos de la partida anterior (héroes transformados en
+  // tokens, pujas sin resolver, bonificadores usados, mapas de arte mutados
+  // por Transformer…) se filtran a la siguiente partida.
+  function bfFullReset(){
+    try{
+      // Estado de partida
+      G._gameOver=false; G._result=null; G._coachMsg='';
+      G.team={p:[],o:[]};
+      G.coins={p:0,o:0};
+      G.equipCoins={p:0,o:0};
+      G.equipReserve={p:0,o:0};
+      G.bfEquipXfer={p:0,o:0};
+      G.bids={}; G.bidsIn={};
+      G.phaseNeeds={p:false,o:false};
+      G.bonus={}; G.forceEpic={}; G.epicCands={};
+      G.cands=[]; G.acq={p:[],o:[]};
+      G.spellbook={p:[],o:[]}; G.items={p:[],o:[]};
+      G.pendDebt={p:0,o:0};
+      G.phaseResult=null;
+      G.aIndex=0; G.subRound=0;
+      G.__bfUsedBonus={};
+      G.__bfAdWarnAck=false;
+      G.pools=undefined;
+      G.assign=null;
+      G.eqSide='p';
+      // Limpia también el estado de batalla residual
+      G.turn=0; G.round=0; G.log=[];
+      G.fxQueue=[]; G._fxPending=null;
+    }catch(e){}
+
+    // Reconstruye los mapas de arte desde los arrays originales. bfMorph
+    // (hechizo Transformer) mutata ART_BY_ID[heroId] y ELITE_BY_ID[heroId]
+    // para apuntar al arte del token. Sin esta reconstrucción, el héroe
+    // original muestra el arte del token (p. ej. "Pez Espada") en la
+    // siguiente partida.
+    try{
+      if(typeof HERO_ART!=='undefined' && typeof HERO_IDS!=='undefined'){
+        HERO_IDS.forEach(function(id,i){
+          if(HERO_ART[i]) ART_BY_ID[id]=HERO_ART[i];
+          if(HERO_ELITE_ART && HERO_ELITE_ART[i]) ELITE_BY_ID[id]=HERO_ELITE_ART[i];
+          else if(HERO_ART[i]) ELITE_BY_ID[id]=HERO_ART[i];
+        });
+      }
+      if(typeof TOKENS!=='undefined' && typeof TOKEN_ART!=='undefined'){
+        TOKENS.forEach(function(t,i){
+          var u=TOKEN_ART[i], eu=(TOKEN_ELITE_ART && TOKEN_ELITE_ART[i])||u;
+          if(u){ ART_BY_ID[t.id]=u; ELITE_BY_ID[t.id]=eu; }
+        });
+      }
+    }catch(e){}
+
+    // Limpia solo los flags de efecto/animación de la partida anterior (NO
+    // los flags de parche: si se borran, los parches se re-aplican y
+    // duplicarían héroes en HEROES o sumarían el coste épico dos veces).
+    try{
+      if(window.__bfEndCine) window.__bfEndCine=0;
+      if(window.__bfKillAnim) window.__bfKillAnim=0;
+      window.__bfResultSent=false;
+    }catch(e){}
+  }
+
   // Arranca una partida nueva con los MISMOS jugadores y el mismo modo.
   function startRematch(){
     if(typeof G==='undefined' || typeof initGame!=='function') return;
     cleanupEndFx();
-    G._gameOver=false; G._result=null;
+    bfFullReset();
     var p1, p2;
     if(isOnline() && typeof NET!=='undefined'){
       p1 = NET.names_self || G.names.p; p2 = NET.names_opp || G.names.o;
