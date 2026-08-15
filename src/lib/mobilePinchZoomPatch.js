@@ -177,22 +177,18 @@ export const MOBILE_PINCH_PATCH = `
   window.__bfPinchReset = resetZoom;
   window.__bfTopReset = topReset;
 
-  // API para el enfoque automático de batalla (battleFocusZoomPatch): centra un
-  // punto de la pantalla actual con la escala pedida, con transición suave.
-  // Se ignora si el jugador está pellizcando en ese momento.
-  window.__bfPinchFocus = function(clientX, clientY, zoom, ms){
+  // API para la batalla (battleFocusZoomPatch): sube la vista al borde SUPERIOR
+  // manteniendo EXACTAMENTE el mismo nivel de zoom y el desplazamiento
+  // horizontal actual. No acerca ni aleja nada.
+  window.__bfPinchTop = function(ms){
     if (pinch) return;
-    var W = window.innerWidth, H = window.innerHeight;
-    var nz = Math.min(4, Math.max(1, zoom || 1));
-    // Punto en coordenadas sin transformar del body.
-    var ux = (clientX - tx) / z, uy = (clientY - ty) / z;
-    z = nz;
-    tx = W / 2 - ux * nz;
-    ty = H / 2 - uy * nz;
+    if (ty === 0) { try { window.scrollTo(0, 0); } catch (e) {} return; }
+    ty = 0;
     clampT();
-    document.body.style.transition = 'transform ' + ((ms || 420) / 1000) + 's cubic-bezier(.25,.8,.3,1)';
+    document.body.style.transition = 'transform ' + ((ms || 380) / 1000) + 's cubic-bezier(.25,.8,.3,1)';
     applyNow();
     flushMsg();
+    try { window.scrollTo(0, 0); } catch (e) {}
   };
   window.__bfPinchZ = function(){ return z; };
   window.__bfPinchBusy = function(){ return !!pinch; };
