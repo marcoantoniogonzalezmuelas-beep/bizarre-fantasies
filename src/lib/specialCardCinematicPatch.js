@@ -47,11 +47,15 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
           var ii=yz*W+xz;if(seen[ii])continue;var lm=lum(ii);if(lm>=SOFT)continue;
           if(seen[ii-1]||seen[ii+1]||seen[ii-W]||seen[ii+W])p[ii*4+3]=Math.round(p[ii*4+3]*Math.max(0,(lm-BG))/(SOFT-BG));
         }}
-        var cx0=Math.floor(W*0.3),cx1=Math.floor(W*0.7),cy0=Math.floor(H*0.22),cy1=Math.floor(H*0.82),rem=0,tot=0;
-        for(var yc=cy0;yc<cy1;yc++){for(var xc=cx0;xc<cx1;xc++){tot++;if(seen[yc*W+xc])rem++;}}
-        if(tot&&rem/tot>0.10){CUT[url]='orig';return;}
+        // Encaja el lienzo a la silueta: recorte limpio, sin máscara ni efecto.
+        var minX=W,minY=H,maxX=-1,maxY=-1;
+        for(var ay=0;ay<H;ay++){for(var ax=0;ax<W;ax++){if(p[(ay*W+ax)*4+3]>8){minX=Math.min(minX,ax);minY=Math.min(minY,ay);maxX=Math.max(maxX,ax);maxY=Math.max(maxY,ay);}}}
+        if(maxX<0){CUT[url]='orig';return;}
+        var pad=3,l=Math.max(0,minX-pad),t=Math.max(0,minY-pad),r=Math.min(W,maxX+pad+1),b=Math.min(H,maxY+pad+1);
         x.putImageData(d,0,0);
-        CUT[url]=c.toDataURL('image/png');
+        var out=document.createElement('canvas');out.width=r-l;out.height=b-t;
+        out.getContext('2d').drawImage(c,l,t,r-l,b-t,0,0,r-l,b-t);
+        CUT[url]=out.toDataURL('image/png');
       }catch(e){CUT[url]='orig';}
     };
     img.onerror=function(){CUT[url]='orig';};
@@ -147,9 +151,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
     var src=kind==='phoenix_ave'?PHOENIX_AVE_IMG:(kind==='phoenix'?BABY_PHOENIX_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG)));
-    var cu=CUT[src],useOrig=(!cu||cu==='orig');
-    var mask=useOrig?';-webkit-mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%);mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%)':'';
-    html+='<img class="bf-sc-img" style="opacity:1'+mask+'" src="'+(useOrig?src:cu)+'" alt="">';
+    var cu=CUT[src];
+    html+='<img class="bf-sc-img" src="'+(cu&&cu!=='orig'?cu:src)+'" alt="">';
     html+='<div class="bf-sc-ttl">'+(kind==='phoenix_ave'?'¡EL AVE FÉNIX RESUCITA!':(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!'))))+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);

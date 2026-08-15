@@ -69,16 +69,16 @@ export const ABILITY_ANIM_PATCH = `
             }
           }
         }
-        // Salvaguarda anti-translúcido: si el relleno ha borrado demasiados
-        // píxeles del CENTRO de la imagen (donde vive el personaje), es que la
-        // criatura es oscura y el recorte la atraviesa (Surucho, Coffetath…).
-        // En ese caso se descarta el recorte y se usa la imagen ORIGINAL a
-        // todo color, con un desvanecido de bordes aplicado por CSS.
-        var cx0=Math.floor(W*0.3),cx1=Math.floor(W*0.7),cy0=Math.floor(H*0.22),cy1=Math.floor(H*0.82),rem=0,tot=0;
-        for(var yc=cy0;yc<cy1;yc++){for(var xc=cx0;xc<cx1;xc++){tot++;if(seen[yc*W+xc])rem++;}}
-        if(tot&&rem/tot>0.10){CUT[url]='orig';return;}
+        // Encaja el lienzo exactamente a la figura ya recortada. No se aplica
+        // máscara, halo ni ningún efecto: solo se elimina el negro exterior.
+        var minX=W,minY=H,maxX=-1,maxY=-1;
+        for(var ay=0;ay<H;ay++){for(var ax=0;ax<W;ax++){if(p[(ay*W+ax)*4+3]>8){minX=Math.min(minX,ax);minY=Math.min(minY,ay);maxX=Math.max(maxX,ax);maxY=Math.max(maxY,ay);}}}
+        if(maxX<0){CUT[url]=false;return;}
+        var pad=3,l=Math.max(0,minX-pad),t=Math.max(0,minY-pad),r=Math.min(W,maxX+pad+1),b=Math.min(H,maxY+pad+1);
         x.putImageData(d,0,0);
-        CUT[url]=c.toDataURL('image/png');
+        var out=document.createElement('canvas');out.width=r-l;out.height=b-t;
+        out.getContext('2d').drawImage(c,l,t,r-l,b-t,0,0,r-l,b-t);
+        CUT[url]=out.toDataURL('image/png');
       }catch(e){CUT[url]=false;}
     };
     img.onerror=function(){CUT[url]=false;};
@@ -196,11 +196,9 @@ export const ABILITY_ANIM_PATCH = `
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
     var cu=CUT[url];
-    var useOrig=(!cu||cu==='orig');
-    // Imagen original (sin recorte): colores intactos y un desvanecido suave
-    // en los bordes para que el rectángulo no se note sobre la escena.
-    var mask=useOrig?';-webkit-mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%);mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%)':'';
-    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards'+mask+'" src="'+(useOrig?url:cu)+'" alt="">';
+    // El recorte se prepara al recibir las imágenes; si aún está procesándose,
+    // se muestra la original únicamente en ese primer instante.
+    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(ability).toUpperCase()+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
