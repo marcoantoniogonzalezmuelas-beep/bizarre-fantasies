@@ -27,11 +27,26 @@ export const ABILITY_ANIM_PATCH = `
   // transparente con un canvas) para que solo quede la criatura, igual que las
   // cinemáticas del Tanque/Transformer/Patitos. Se cachea por URL.
   var CUT={};
+  // Cola de recortes: se procesa UNA imagen a la vez y solo cuando el navegador
+  // está libre. Antes se recortaban todas de golpe (bucle de píxeles + PNG en
+  // base64 de cada héroe): eso bloqueaba frames y llenaba memoria, y el tablet
+  // perdía capas GPU → parpadeo al abrir cualquier cinemática.
+  var QUEUE=[],BUSY=false;
+  var idle=window.requestIdleCallback||function(f){return setTimeout(f,300);};
+  function pump(){
+    if(BUSY||!QUEUE.length)return;
+    BUSY=true;
+    var url=QUEUE.shift();
+    idle(function(){ build(url); });
+  }
+  function done(){ BUSY=false; idle(pump); }
   function cutout(url){
-    if(!url)return;
-    if(CUT[url])return CUT[url];
-    if(CUT[url]===false)return; // ya intentado (fallo/CORS): se usa la URL original
+    if(!url||CUT.hasOwnProperty(url))return;
     CUT[url]=false; // pendiente: mientras llega, se usa la URL original
+    QUEUE.push(url);
+    pump();
+  }
+  function build(url){
     var img=new Image();img.crossOrigin='anonymous';
     img.onload=function(){
       try{
@@ -73,15 +88,25 @@ export const ABILITY_ANIM_PATCH = `
         // máscara, halo ni ningún efecto: solo se elimina el negro exterior.
         var minX=W,minY=H,maxX=-1,maxY=-1;
         for(var ay=0;ay<H;ay++){for(var ax=0;ax<W;ax++){if(p[(ay*W+ax)*4+3]>8){minX=Math.min(minX,ax);minY=Math.min(minY,ay);maxX=Math.max(maxX,ax);maxY=Math.max(maxY,ay);}}}
-        if(maxX<0){CUT[url]=false;return;}
+        if(maxX<0){CUT[url]=false;done();return;}
         var pad=3,l=Math.max(0,minX-pad),t=Math.max(0,minY-pad),r=Math.min(W,maxX+pad+1),b=Math.min(H,maxY+pad+1);
         x.putImageData(d,0,0);
         var out=document.createElement('canvas');out.width=r-l;out.height=b-t;
         out.getContext('2d').drawImage(c,l,t,r-l,b-t,0,0,r-l,b-t);
-        CUT[url]=out.toDataURL('image/png');
-      }catch(e){CUT[url]=false;}
+        // Blob URL (no base64): mucho menos memoria que un data URL, y se
+        // pre-decodifica antes de cachearla para que al abrir la cinemática la
+        // imagen ya esté lista y no haya un frame en blanco.
+        out.toBlob(function(bl){
+          if(!bl){CUT[url]=false;done();return;}
+          var bu=URL.createObjectURL(bl);
+          var pre=new Image();
+          pre.onload=function(){CUT[url]=bu;done();};
+          pre.onerror=function(){CUT[url]=false;done();};
+          pre.src=bu;
+        },'image/png');
+      }catch(e){CUT[url]=false;done();}
     };
-    img.onerror=function(){CUT[url]=false;};
+    img.onerror=function(){CUT[url]=false;done();};
     img.src=url;
   }
   window.addEventListener('message',function(e){

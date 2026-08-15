@@ -32,6 +32,13 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    frame (parpadeo). Se elimina SOLO el blur; los drop-shadow se conservan. */
 .bf-wave{filter:none!important}
 .bf-frost-mist{filter:none!important}
+/* Cinemáticas 3D (habilidades y cartas especiales): la figura ya viene
+   recortada, así que los tres drop-shadow apilados sobre una imagen enorme en
+   movimiento solo servían de brillo y forzaban recomposición GPU cada frame
+   (parpadeo de toda la ventana en tablet). Se dejan sin filtro. */
+#bf-abil-anim .bf-aa-img,#bf-spec-cine .bf-sc-img{filter:none!important}
+/* Overlays de cinemática aislados: sus capas no invalidan el resto del juego. */
+#bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout paint!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>

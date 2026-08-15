@@ -55,7 +55,16 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
         x.putImageData(d,0,0);
         var out=document.createElement('canvas');out.width=r-l;out.height=b-t;
         out.getContext('2d').drawImage(c,l,t,r-l,b-t,0,0,r-l,b-t);
-        CUT[url]=out.toDataURL('image/png');
+        // Blob URL pre-decodificada: menos memoria que base64 y sin frame en
+        // blanco al abrir la cinemática (evita parpadeos en tablet).
+        out.toBlob(function(bl){
+          if(!bl){CUT[url]='orig';return;}
+          var bu=URL.createObjectURL(bl);
+          var pre=new Image();
+          pre.onload=function(){CUT[url]=bu;};
+          pre.onerror=function(){CUT[url]='orig';};
+          pre.src=bu;
+        },'image/png');
       }catch(e){CUT[url]='orig';}
     };
     img.onerror=function(){CUT[url]='orig';};
