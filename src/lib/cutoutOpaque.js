@@ -15,7 +15,9 @@ function run(url, done) {
       x.drawImage(img, 0, 0);
       const W = c.width, H = c.height;
       const d = x.getImageData(0, 0, W, H), p = d.data;
-      const BG = 30;
+      // Umbral bajo: solo el negro puro del fondo, para no comerse las ropas
+      // oscuras del personaje (dejaba huecos y parecía translúcido).
+      const BG = 14;
       const seen = new Uint8Array(W * H), q = new Int32Array(W * H);
       let qs = 0, qe = 0;
       const lum = (i) => { const o = i * 4; return Math.max(p[o], p[o + 1], p[o + 2]); };

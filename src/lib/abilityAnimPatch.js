@@ -57,7 +57,10 @@ export const ABILITY_ANIM_PATCH = `
         // fondo oscuro conectado al marco de la imagen. Así las ropas, sombras
         // y zonas negras del personaje conservan su color y opacidad completos
         // (antes cualquier píxel oscuro se volvía translúcido).
-        var BG=30;
+        // Umbral bajo (14): solo el negro puro del fondo se recorta. Con 30 se
+        // comía las ropas y sombras oscuras del personaje conectadas al fondo y
+        // dejaba huecos por los que se veía el escenario → aspecto translúcido.
+        var BG=14;
         var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
         function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
         function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
@@ -133,7 +136,11 @@ export const ABILITY_ANIM_PATCH = `
   '@keyframes bfAaDim{from{opacity:0}to{opacity:1}}'+
   '#bf-abil-anim .bf-aa-glowdisc{position:absolute;top:50%;left:50%;width:min(80vmin,700px);height:min(80vmin,700px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--aa-glow,rgba(255,210,74,.4)) 0%,transparent 68%);opacity:0;animation:bfAaGlowIn .6s ease-out .05s both}'+
   '@keyframes bfAaGlowIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}'+
-  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);filter:saturate(1.1) contrast(1.04) brightness(1.02) drop-shadow(0 14px 34px rgba(0,0,0,.75)) drop-shadow(0 0 26px var(--aa-color,#fff)) drop-shadow(0 0 46px var(--aa-glow,rgba(255,210,74,.5)))}'+
+  // COLORES ORIGINALES: sin brillos de color pegados a la figura (los dos
+  // drop-shadow del color de clan la teñían y la hacían parecer translúcida) y
+  // sin brightness. Solo una sombra negra de apoyo, saturación/contraste leves
+  // para que las ropas se vean vivas, y opacidad forzada al 100%.
+  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;mix-blend-mode:normal;filter:saturate(1.18) contrast(1.08) drop-shadow(0 16px 38px rgba(0,0,0,.8))}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
   '#bf-abil-anim .bf-aa-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
