@@ -95,7 +95,8 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
           width: 'min(74vmin,640px)', height: 'min(78vmin,680px)', objectFit: 'contain',
           transformStyle: 'preserve-3d',
           margin: 'calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2)',
-          filter: `saturate(1.25) brightness(1.1) drop-shadow(0 14px 34px rgba(0,0,0,.65))`,
+          opacity: 1,
+          filter: 'drop-shadow(0 14px 34px rgba(0,0,0,.65))',
           animation: `${motion.anim} 3.2s cubic-bezier(.2,.85,.3,1) forwards`,
         }}
       />
