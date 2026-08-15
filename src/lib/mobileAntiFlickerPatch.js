@@ -57,13 +57,20 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    pequeñas que cambian (el héroe que pulsa, el FX), no todo el tablero.
    isolation:isolate basta para que los FX de #bf-fx-layer no afecten al body. */
 #s-battle,.army-panel,.action-panel{isolation:isolate!important}
-/* CADA retrato de héroe (.bhero) sí se promueve a su propia capa GPU pequeña.
-   Las animaciones de box-shadow/filter/opacity del estado (statusAuraPatch:
-   bfStateEdge, bfStateBanner, bfAuraPulse) repintan SOLO la capa de ese
-   retrato, no el iframe entero. Sin esto, en tablet cada pulso de un héroe
-   repinta toda la textura del iframe → parpadeo constante. El retrato es
-   pequeño, así que su capa es barata de repintar. */
-.bhero{transform:translateZ(0)!important;isolation:isolate!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important}
+/* Los retratos (.bhero) NO se promueven a capa GPU: promoverlos en tablet
+   obligaba a re-rasterizar su textura a la escala fraccionaria del juego en
+   cada fotograma de las auras/pulsos → parpadeo. Solo se aíslan para que sus
+   mezclas no salpiquen al resto. */
+.bhero{isolation:isolate!important}
+/* El arte de la escena de batalla del héroe llevaba filter:blur(). Un blur
+   dentro de un documento escalado se re-rasteriza en CADA repintado, y en
+   tablet (escala ~0,7) esa textura es enorme: era la causa del parpadeo del
+   campo de batalla durante animaciones y cinemáticas. Se quita el blur y se
+   mantiene el look oscurecido con opacidad (el degradado ::after ya difumina
+   visualmente el borde). */
+.bf-bhero-bgart{filter:none!important;opacity:.72!important}
+/* Sacudida del héroe agonizante: sin filtros animados encima del arte. */
+.bhero.bf-agonizing .bf-battle-art{filter:none!important}
 /* Overlays de cinemática: capa propia y aislada. */
 #bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js

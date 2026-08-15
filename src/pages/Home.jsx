@@ -949,7 +949,42 @@ export default function Home() {
         </div>
       )}
 
-      {(blobUrl || srcDoc) && (
+      {/* Móvil/tablet: la escala del juego se aplica en un CONTENEDOR aparte,
+        nunca en el propio iframe. Con el transform en el iframe, cualquier
+        repintado interno (animaciones de batalla) obliga al navegador a
+        re-rasterizar el documento entero a escala fraccionaria — en tablet
+        (escala ~0,7) eso es una textura enorme y se ve como parpadeo. Con el
+        transform en el contenedor promovido a capa (will-change), el iframe se
+        rasteriza a su tamaño real y el compositor solo reescala esa textura. */}
+      {(blobUrl || srcDoc) && IS_MOBILE ? (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 1200,
+            height: iframeH,
+            transform: `scale(${mobScale})`,
+            transformOrigin: 'top left',
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+          }}
+        >
+          <iframe
+            ref={iframeRef}
+            title="Bizarre Fantasies v5"
+            {...(srcDoc ? { srcDoc } : { src: blobUrl })}
+            onLoad={() => {
+              if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+              loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
+            }}
+            className="border-0"
+            style={{ width: 1200, height: iframeH, display: 'block' }}
+            allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+          />
+        </div>
+      ) : null}
+      {(blobUrl || srcDoc) && !IS_MOBILE && (
         <iframe
           ref={iframeRef}
           title="Bizarre Fantasies v5"
@@ -962,13 +997,7 @@ export default function Home() {
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
-          className={IS_MOBILE ? 'border-0' : 'w-full h-full border-0'}
-          style={IS_MOBILE ? {
-            width: 1200,
-            height: iframeH,
-            transform: `scale(${mobScale})`,
-            transformOrigin: 'top left',
-          } : undefined}
+          className="w-full h-full border-0"
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
