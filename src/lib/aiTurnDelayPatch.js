@@ -35,32 +35,14 @@ export const AI_TURN_DELAY_PATCH = `
   st.textContent = '#s-battle.bf-acting .active-hero-panel{visibility:hidden!important}';
   (document.head || document.documentElement).appendChild(st);
 
-  var acted = false, backT = null;
   function battleEl() { return document.getElementById('s-battle'); }
   function hidePanel() { var b = battleEl(); if (b) b.classList.add('bf-acting'); }
-  function showPanel() { acted = false; var b = battleEl(); if (b) b.classList.remove('bf-acting'); }
-
-  // El panel se recoge en el MISMO instante en que se pulsa la acción, no al
-  // terminarla: así no se queda visible durante la animación.
-  document.addEventListener('click', function(e) {
-    try {
-      var t = e.target;
-      if (t && t.closest && t.closest('.active-hero-panel')) {
-        hidePanel();
-        // Si el clic no era una acción (elegir objetivo, cancelar…), el panel
-        // vuelve enseguida: solo se queda oculto si la acción se ejecuta.
-        clearTimeout(backT);
-        backT = setTimeout(function() { if (!acted) showPanel(); }, 900);
-      }
-    } catch(err) {}
-  }, true);
+  function showPanel() { var b = battleEl(); if (b) b.classList.remove('bf-acting'); }
 
   function installActHide() {
     if (typeof window.finishAct !== 'function' || window.finishAct.__bfHidePanel) return;
     var inner = window.finishAct;
     window.finishAct = function() {
-      acted = true;
-      clearTimeout(backT);
       hidePanel();
       // Seguro: si por cualquier motivo el turno no avanza, el panel vuelve.
       setTimeout(showPanel, 6000);
