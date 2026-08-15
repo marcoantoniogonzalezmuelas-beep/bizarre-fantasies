@@ -22,10 +22,12 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    un stacking context barato (isolation); cada efecto es SU PROPIA capa GPU
    pequeña (will-change/translateZ) y repinta solo su área. */
 #bf-fx-layer{position:fixed!important;inset:0!important;pointer-events:none!important;z-index:90030!important;isolation:isolate!important}
-#bf-fx-layer>*{will-change:transform,opacity!important}
+/* Cada efecto temporal se compone de forma independiente. Es importante que
+   la promoción esté en el hijo, nunca en el contenedor a pantalla completa. */
+#bf-fx-layer>*{will-change:transform,opacity,left,top!important;transform:translateZ(0)!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important}
 /* Efectos anidados (olas/salpicaduras dentro de .bf-wave-overlay): cada uno
    promueve a su propia capa para no repintar el overlay entero. */
-.bf-wave,.bf-splash{will-change:transform,opacity!important}
+.bf-wave,.bf-splash{will-change:transform,opacity!important;transform:translateZ(0)!important}
 /* Excluye .bhero: los héroes caídos (bf-truedead) necesitan su filter
    grayscale, y los retratos de batalla no son capas FX temporales. */
 [class^="bf-"]:not(.bhero),[class*=" bf-"]:not(.bhero),
@@ -94,17 +96,22 @@ export const MOBILE_ANTIFLICKER_PATCH = `
     return layer;
   }
 
-  // Clases/ids de efectos temporales que deben vivir en la capa aislada.
-  var FX_RE=/^bf-(wave-overlay|wave|splash|fireball|fire-ring|ember|frost-overlay|frost-mist|ice-shard|bolt|flash|hit|star|slash|burst|ring|shock|aura|blood|heal|kill|shield|dmg|num|spark|glow|obj|abil|epic)/;
-  // Las cinemáticas a pantalla completa NO se redirigen: ya están aisladas por
-  // CSS y necesitan su z-index propio por encima de todo.
+  // Efectos temporales que deben vivir en la capa aislada. Antes solo se
+  // detectaban algunos nombres de hechizo: los sprites anime (.bf-afx) y los
+  // impactos nativos (.fx-*) seguían entrando directamente al body, que es lo
+  // que mantenía el parpadeo de Tormenta Ígnea y Rayo en Cadena en tablet.
+  // Todo nodo efímero bf-* o fx-* añadido DIRECTAMENTE al body se redirige.
+  // Las piezas persistentes del tablero se insertan dentro de sus cartas, así
+  // que no pasan por aquí.
   function isFx(n){
     if(!n||n.nodeType!==1)return false;
     if(n.id==='bf-fx-layer'||n.id==='bf-abil-anim'||n.id==='bf-spec-cine')return false;
     var cn=typeof n.className==='string'?n.className:'';
     if(!cn)return false;
     var parts=cn.split(/\\s+/);
-    for(var i=0;i<parts.length;i++){ if(FX_RE.test(parts[i]))return true; }
+    for(var i=0;i<parts.length;i++){
+      if(parts[i]==='bf-afx'||/^bf-/.test(parts[i])||/^fx-/.test(parts[i]))return true;
+    }
     return false;
   }
 
