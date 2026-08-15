@@ -57,7 +57,7 @@ export const ABILITY_ANIM_PATCH = `
         // fondo oscuro conectado al marco de la imagen. Así las ropas, sombras
         // y zonas negras del personaje conservan su color y opacidad completos
         // (antes cualquier píxel oscuro se volvía translúcido).
-        var BG=30,SOFT=64;
+        var BG=30;
         var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
         function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
         function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
@@ -71,19 +71,11 @@ export const ABILITY_ANIM_PATCH = `
           if(cy>0)push(i0-W);
           if(cy<H-1)push(i0+W);
         }
-        // Suaviza el contorno: los píxelos oscuros pegados al fondo recortado
-        // se difuminan un poco para que no quede un borde duro.
-        for(var yz=1;yz<H-1;yz++){
-          for(var xz=1;xz<W-1;xz++){
-            var ii=yz*W+xz;
-            if(seen[ii])continue;
-            var lm=lum(ii);
-            if(lm>=SOFT)continue;
-            if(seen[ii-1]||seen[ii+1]||seen[ii-W]||seen[ii+W]){
-              p[ii*4+3]=Math.round(p[ii*4+3]*Math.max(0,(lm-BG))/(SOFT-BG));
-            }
-          }
-        }
+        // NADA de alfa parcial: el personaje queda 100% opaco. Antes se
+        // difuminaba el contorno bajando el alfa de los píxeles oscuros
+        // pegados al fondo, y eso hacía que la figura (Patrón, Surucho…)
+        // se viera translúcida. Solo se recorta el negro exterior, a fondo
+        // completo o nada.
         // Encaja el lienzo exactamente a la figura ya recortada. No se aplica
         // máscara, halo ni ningún efecto: solo se elimina el negro exterior.
         var minX=W,minY=H,maxX=-1,maxY=-1;
