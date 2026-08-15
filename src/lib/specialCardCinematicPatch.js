@@ -256,7 +256,11 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     });
     tankReady=true;
   }
-  var _bfSc=0; new MutationObserver(function(){var n=Date.now();if(n-_bfSc<500)return;_bfSc=n;scanDucks();scanTanks();}).observe(document.documentElement,{childList:true,subtree:true});
+  // No observamos todo el documento: cada partícula, overlay y actualización
+  // del combate disparaba este observador global y obligaba al navegador de
+  // tablet a recalcular el campo durante las cinemáticas. El estado G.team es
+  // la fuente real para invocaciones y tanque, así que basta un sondeo ligero.
+  setInterval(function(){scanDucks();scanTanks();},650);
 
   var tries=0,iv=setInterval(function(){var a=hook(),b=hookFlush();if((a||window.__bfShowCardReveal&&window.__bfShowCardReveal.__bfSpec)&&(b||window.flushFx&&window.flushFx.__bfSpecCineFx)||tries++>120)clearInterval(iv);},200);
 })();

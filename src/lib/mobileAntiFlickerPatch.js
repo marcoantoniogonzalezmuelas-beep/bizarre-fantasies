@@ -125,6 +125,35 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   // del primer efecto y no haya un salto al crearla en mitad de una animación.
   if(document.body)fxLayer();
   else window.addEventListener('DOMContentLoaded',fxLayer);
+
+  // Durante una cinemática 3D o la pausa de muerte, el motor puede pedir varios
+  // renderBattle aunque el estado jugable no cambie. Reconstruir los retratos y
+  // sus escenas de fondo bajo un overlay compuesto es el destello que quedaba
+  // en tablet. Guardamos solo el último repintado y lo aplicamos al terminar la
+  // capa visual; la lógica de combate no se toca.
+  function installBattleFreeze(){
+    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfFxFreeze)return false;
+    var original=window.renderBattle, pending=false;
+    function frozen(){
+      return !!document.getElementById('bf-abil-anim')||!!document.getElementById('bf-spec-cine')||Date.now()<(window.__bfDeathDelayUntil||0);
+    }
+    function flush(){
+      if(!pending||frozen())return;
+      pending=false;
+      original.call(window);
+    }
+    function wrapped(){
+      if(frozen()){pending=true;return;}
+      return original.apply(this,arguments);
+    }
+    wrapped.__bfFxFreeze=1;
+    window.renderBattle=wrapped;
+    setInterval(flush,180);
+    return true;
+  }
+  var freezeTries=0,freezeTimer=setInterval(function(){
+    if(installBattleFreeze()||freezeTries++>160)clearInterval(freezeTimer);
+  },150);
 })();
 </script>
 `;

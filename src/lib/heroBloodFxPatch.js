@@ -73,10 +73,18 @@ export const HERO_BLOOD_FX_PATCH = `
     document.querySelectorAll('.bhero[id^="b_"]').forEach(injectBloodVeil);
   }
 
-  var t=0, timer=setInterval(function(){t++;update();if(t>100)clearInterval(timer);},150);
+  // El estado de agonía solo puede cambiar cuando se redibuja la batalla.
+  // Evitamos observar todo el documento, porque los nodos de cada efecto visual
+  // hacían recorrer los retratos repetidamente durante las cinemáticas.
+  function hookRender(){
+    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfBlood)return false;
+    var original=window.renderBattle;
+    window.renderBattle=function(){var result=original.apply(this,arguments);update();return result;};
+    window.renderBattle.__bfBlood=1;
+    return true;
+  }
+  var tries=0,timer=setInterval(function(){if(hookRender()||tries++>120)clearInterval(timer);},200);
   update();
-  var _bfBf=0; new MutationObserver(function(){var n=Date.now();if(n-_bfBf<500)return;_bfBf=n;update();}).observe(document.documentElement,{childList:true,subtree:true});
-  setInterval(update, 1500);
 })();
 </script>
 `;
