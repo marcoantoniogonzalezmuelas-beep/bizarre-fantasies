@@ -35,10 +35,13 @@ export const AI_TURN_DELAY_PATCH = `
       // Si el humano acaba de terminar su turno en una partida contra la IA,
       // añadimos 500ms extra para que el jugador vea las animaciones antes
       // de que la IA empiece a actuar.
+      // Humano → IA: 1500ms extra. Entre turnos consecutivos de la propia IA:
+      // 1000ms extra, para poder seguir qué hace cuando actúa varias veces
+      // seguidas y para que no se solapen sus animaciones.
       var extraDelay = 0;
       try {
-        if (isAiGame() && typeof B !== 'undefined' && B && B.current && B.current.side === 'p') {
-          extraDelay = 500;
+        if (isAiGame() && typeof B !== 'undefined' && B && B.current) {
+          extraDelay = B.current.side === 'p' ? 1500 : 1000;
         }
       } catch(e) {}
       if (extraDelay > 0) {
