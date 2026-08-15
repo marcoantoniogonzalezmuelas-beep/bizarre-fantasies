@@ -30,7 +30,12 @@ export const MOBILE_PINCH_PATCH = `
     // una capa GPU gigante y las animaciones de batalla no repintan toda la
     // pantalla (era la causa del parpadeo en tablet). Con zoom o gesto activo
     // se mantiene la capa estable (clase bf-zooming).
-    var idle = (z === 1 && !tx && !ty && !pinch);
+    // Con un modal abierto (p. ej. la ventanita de "Salir") se MANTIENE el
+    // translate3d aunque estemos a x1: los position:fixed del modal se sitúan
+    // respecto al body transformado, que es lo que hace que la ventanita salga
+    // justo al lado del botón "Salir" y no pegada al borde del viewport.
+    var modalOpen = !!document.querySelector('#modalRoot .mo');
+    var idle = (z === 1 && !tx && !ty && !pinch && !modalOpen);
     if (idle) {
       b.classList.remove('bf-zooming');
       b.style.transform = '';
@@ -157,7 +162,7 @@ export const MOBILE_PINCH_PATCH = `
   // Reencuadre a x1 (sin desplazamiento). usado al abrir modales y al saltar a
   // las pantallas que deben verse desde arriba (setup / resolución de puja).
   function resetZoom(){
-    if (z === 1 && !tx && !ty) return;
+    if (z === 1 && !tx && !ty) { applyNow(); return; }
     var b = document.body;
     b.style.transition = 'transform .22s ease';
     enableWC();
@@ -203,6 +208,9 @@ export const MOBILE_PINCH_PATCH = `
       for (var j = 0; j < added.length; j++) {
         if (isModalNode(added[j])) { resetZoom(); return; }
       }
+      // Al cerrarse el modal se vuelve a evaluar el estado (así el body deja de
+      // ser capa compuesta cuando ya no hace falta).
+      if (muts[i].removedNodes && muts[i].removedNodes.length) scheduleApply();
     }
   }).observe(document.documentElement, { childList: true, subtree: true });
 

@@ -28,6 +28,7 @@ export const BATTLE_FOCUS_ZOOM_PATCH = `
     var now=Date.now();
     if(now-lastManual<MANUAL_PAUSE)return;
     if(window.__bfPinchBusy&&window.__bfPinchBusy())return;
+    if(document.querySelector('#modalRoot .mo'))return; // no mover con un modal abierto
     if(now-lastTop<800)return;
     lastTop=now;
     window.__bfPinchTop(380);
