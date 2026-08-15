@@ -58,6 +58,8 @@ export function buildQuitContactPatch(texts) {
     // Solo el modal de "Salir" (marcado con .bf-quit) se reencuadra como
     // ventanita compacta junto al botón. Los demás modales del juego
     // (Aprende a jugar, Razas, info de héroe…) siguen abriéndose centrados.
+    '#bf-confirm-overlay.bf-quit{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important;}',
+    '#bf-confirm-overlay.bf-quit>.bf-confirm-box{pointer-events:auto!important;position:absolute!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;margin:0!important;transform:none!important;animation:bfQuitZoom .18s ease-out!important;}',
     '#modalRoot .mo.bf-quit{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important;}',
     // La ventanita se coloca por JS justo debajo/al lado del botón "Salir"
     // (coordenadas de documento), así queda siempre pegada al botón.
@@ -85,23 +87,22 @@ export function buildQuitContactPatch(texts) {
   // para que el reencuadre compacto solo le afecte a él. Los demás modales
   // del juego no llevan la clase y se abren centrados como siempre. El
   // observer se dispara como microtask antes de pintar → sin parpadeo.
+  var QUIT_RE=/Salir de la partida|Salir al inicio|Quit the match/i;
   function markQuitModal(){
-    var root=document.getElementById('modalRoot'); if(!root)return;
-    var mo=root.querySelector('.mo');
-    if(mo && !mo.classList.contains('bf-quit')){
-      if(/Salir de la partida|Salir al inicio/i.test(mo.textContent||'')){
-        mo.classList.add('bf-quit');
-      }
-    }
-  }
-  function setupQuitMark(){
-    var root=document.getElementById('modalRoot'); if(!root)return false;
-    new MutationObserver(markQuitModal).observe(root,{childList:true,subtree:true});
-    return true;
+    var root=document.getElementById('modalRoot');
+    var mo=root&&root.querySelector('.mo');
+    if(mo && !mo.classList.contains('bf-quit') && QUIT_RE.test(mo.textContent||'')) mo.classList.add('bf-quit');
+    // El juego también usa su propio overlay de confirmación (#bf-confirm-overlay)
+    // para "¿Salir de la partida?": ahí también se marca para que la ventanita
+    // salga junto al botón (las confirmaciones de COMPRA siguen centradas).
+    var cf=document.getElementById('bf-confirm-overlay');
+    if(cf && !cf.classList.contains('bf-quit') && QUIT_RE.test(cf.textContent||'')) cf.classList.add('bf-quit');
+    var q=document.querySelector('#modalRoot .mo.bf-quit,#bf-confirm-overlay.bf-quit');
+    if(q) placeNextToBtn(q.querySelector('.mb')||q.querySelector('.bf-confirm-box'));
   }
   function whenRoot(){
-    if(setupQuitMark()) return;
-    new MutationObserver(function(){ if(setupQuitMark()) this.disconnect(); }).observe(document.documentElement,{childList:true,subtree:true});
+    new MutationObserver(markQuitModal).observe(document.documentElement,{childList:true,subtree:true});
+    markQuitModal();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',whenRoot);
   else whenRoot();
@@ -125,11 +126,11 @@ export function buildQuitContactPatch(texts) {
     setInterval(function(){
       // Solo el modal de Salir (.bf-quit) dispara el scroll y oculta la zona
       // táctil del botón. Los demás modales no se ven afectados.
-      var ov=document.querySelector('#modalRoot .mo.bf-quit');
+      var ov=document.querySelector('#modalRoot .mo.bf-quit')||document.querySelector('#bf-confirm-overlay.bf-quit');
       if(ov&&ov!==last){
         last=ov;
         if(hitEl) hitEl.style.display='none';
-        var box=ov.querySelector('.mb')||ov;
+        var box=ov.querySelector('.mb')||ov.querySelector('.bf-confirm-box')||ov;
         placeNextToBtn(box);
         setTimeout(function(){placeNextToBtn(box);},60);
       }else if(!ov){last=null; if(hitEl) hitEl.style.display='';}
