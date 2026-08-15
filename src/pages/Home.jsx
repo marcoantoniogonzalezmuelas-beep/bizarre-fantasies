@@ -965,10 +965,8 @@ export default function Home() {
           style={IS_MOBILE ? {
             width: 1200,
             height: iframeH,
-            transform: `translateZ(0) scale(${mobScale})`,
+            transform: `scale(${mobScale})`,
             transformOrigin: 'top left',
-            backfaceVisibility: 'hidden',
-            willChange: 'transform',
           } : undefined}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
