@@ -46,7 +46,7 @@ export default function RankList({ title, icon: Icon, iconImg, rows, valueLabel,
                     src={artMap[r.name].art}
                     alt=""
                     className="w-full h-full object-cover"
-                    style={artMap[r.name].zoom ? { transform: `scale(${artMap[r.name].zoom})`, transformOrigin: 'center 22%' } : undefined}
+                    style={artMap[r.name].zoom ? { transform: `scale(${artMap[r.name].zoom})`, transformOrigin: 'center center' } : undefined}
                   />
                 </span>
               )}

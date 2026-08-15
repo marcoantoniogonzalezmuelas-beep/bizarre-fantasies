@@ -27,7 +27,7 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
                   src={info.art}
                   alt={h.name}
                   className="absolute inset-0 w-full h-full object-cover object-[center_15%]"
-                  style={info.zoom ? { transform: `scale(${info.zoom})`, transformOrigin: 'center 20%' } : undefined}
+                  style={info.zoom ? { transform: `scale(${info.zoom})`, transformOrigin: 'center center' } : undefined}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center font-heading font-black text-4xl" style={{ color: accent }}>{h.name.charAt(0)}</div>
@@ -36,10 +36,16 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
               <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10">
                 <RankMedal rank={h.rank} size={first ? 62 : 48} />
               </div>
-              <div className="absolute left-1 right-1 bottom-1.5">
-                <div className="font-heading font-black text-[11px] leading-tight text-[#fff5dc] truncate drop-shadow-[0_2px_3px_#000]">{h.name}</div>
-                <div className="font-black text-[11px]" style={{ color: accent }}>
-                  {h.value} <span className="font-body font-semibold text-[9px] text-[#cfc6dd]">{valueLabel}</span>
+              <div className="absolute left-1.5 right-1.5 bottom-2.5">
+                <div
+                  className={`font-heading font-black leading-tight text-[#fff8e2] truncate uppercase tracking-wide ${first ? 'text-xl md:text-2xl' : 'text-base md:text-lg'}`}
+                  style={{ textShadow: `0 2px 6px #000, 0 0 16px ${color}88` }}
+                >
+                  {h.name}
+                </div>
+                <div className={`font-heading font-black leading-none mt-0.5 ${first ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl'}`} style={{ color, textShadow: `0 2px 5px #000, 0 0 14px ${color}99` }}>
+                  {h.value}{' '}
+                  <span className={`font-body font-bold text-[#e5dcf2] uppercase tracking-wider ${first ? 'text-[11px]' : 'text-[10px]'}`}>{valueLabel}</span>
                 </div>
               </div>
             </div>
