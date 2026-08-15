@@ -488,15 +488,22 @@ export default function Home() {
   // (document.documentElement.clientWidth), no window.innerWidth: al pellizcar,
   // el navegador móvil reduce innerWidth y el juego se quedaba encogido y
   // descuadrado en una esquina. clientWidth no cambia con el zoom.
+  // TABLET: el juego se pintaba casi a tamaño real (escala ~0.7-0.9), así que
+  // la textura de la pantalla es enorme y cada animación de batalla obliga a la
+  // GPU a repintarla → parpadeo. En el móvil no pasa porque la escala es ~0.3 y
+  // el área pintada es pequeña. Se limita la escala del tablet al mismo
+  // presupuesto de pintado del móvil (el jugador amplía con el pellizco, igual
+  // que en móvil), y así el parpadeo desaparece.
+  const MAX_SCALE = IS_TABLET ? 0.5 : 1;
   const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
   const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
   const [mobScale, setMobScale] = useState(() =>
-    IS_MOBILE && typeof window !== 'undefined' ? Math.min(1, layoutW() / 1200) : 1
+    IS_MOBILE && typeof window !== 'undefined' ? Math.min(MAX_SCALE, layoutW() / 1200) : 1
   );
 
   useEffect(() => {
     if (!IS_MOBILE) return;
-    const update = () => setMobScale(Math.min(1, layoutW() / 1200));
+    const update = () => setMobScale(Math.min(MAX_SCALE, layoutW() / 1200));
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', () => setTimeout(update, 300));
     return () => window.removeEventListener('resize', update);
