@@ -494,7 +494,7 @@ export default function Home() {
   // el área pintada es pequeña. Se limita la escala del tablet al mismo
   // presupuesto de pintado del móvil (el jugador amplía con el pellizco, igual
   // que en móvil), y así el parpadeo desaparece.
-  const MAX_SCALE = IS_TABLET ? 0.5 : 1;
+  const MAX_SCALE = 1;
   const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
   const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
   const [mobScale, setMobScale] = useState(() =>
@@ -965,8 +965,10 @@ export default function Home() {
           style={IS_MOBILE ? {
             width: 1200,
             height: iframeH,
-            transform: `scale(${mobScale})`,
+            transform: `translateZ(0) scale(${mobScale})`,
             transformOrigin: 'top left',
+            backfaceVisibility: 'hidden',
+            willChange: 'transform',
           } : undefined}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
