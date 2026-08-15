@@ -1,6 +1,6 @@
 import React from 'react';
+import RankMedal from './RankMedal';
 
-const MEDALS = ['🥇', '🥈', '🥉'];
 // Orden visual de podio: 2º · 1º · 3º (el campeón en el centro, más grande).
 const ORDER = [1, 0, 2];
 // Brillo de borde por medalla: oro · plata brillante · bronce brillante.
@@ -33,7 +33,9 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
                 <div className="absolute inset-0 flex items-center justify-center font-heading font-black text-4xl" style={{ color: accent }}>{h.name.charAt(0)}</div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 pointer-events-none" />
-              <span className="absolute top-1.5 left-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,.8)] text-xl">{MEDALS[h.rank]}</span>
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10">
+                <RankMedal rank={h.rank} size={first ? 62 : 48} />
+              </div>
               <div className="absolute left-1 right-1 bottom-1.5">
                 <div className="font-heading font-black text-[11px] leading-tight text-[#fff5dc] truncate drop-shadow-[0_2px_3px_#000]">{h.name}</div>
                 <div className="font-black text-[11px]" style={{ color: accent }}>
