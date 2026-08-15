@@ -483,13 +483,19 @@ export default function Home() {
   // Móvil: el juego se renderiza a ancho de escritorio (1200px) dentro del
   // iframe y se escala para caber en la pantalla. El zoom táctil (pellizcar)
   // lo gestiona el navegador sobre la página, habilitado en el viewport.
+  // IMPORTANTE: se usa el ancho del VIEWPORT DE MAQUETACIÓN
+  // (document.documentElement.clientWidth), no window.innerWidth: al pellizcar,
+  // el navegador móvil reduce innerWidth y el juego se quedaba encogido y
+  // descuadrado en una esquina. clientWidth no cambia con el zoom.
+  const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
+  const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
   const [mobScale, setMobScale] = useState(() =>
-    IS_MOBILE && typeof window !== 'undefined' ? Math.min(1, window.innerWidth / 1200) : 1
+    IS_MOBILE && typeof window !== 'undefined' ? Math.min(1, layoutW() / 1200) : 1
   );
 
   useEffect(() => {
     if (!IS_MOBILE) return;
-    const update = () => setMobScale(Math.min(1, window.innerWidth / 1200));
+    const update = () => setMobScale(Math.min(1, layoutW() / 1200));
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', () => setTimeout(update, 300));
     return () => window.removeEventListener('resize', update);
@@ -881,7 +887,7 @@ export default function Home() {
     );
   }
 
-  const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? window.innerHeight : 800) / mobScale) : 800;
+  const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
@@ -950,7 +956,7 @@ export default function Home() {
           className={IS_MOBILE ? 'border-0' : 'w-full h-full border-0'}
           style={IS_MOBILE ? {
             width: 1200,
-            height: Math.ceil(window.innerHeight / mobScale),
+            height: iframeH,
             transform: `scale(${mobScale})`,
             transformOrigin: 'top left',
           } : undefined}
