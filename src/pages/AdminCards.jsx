@@ -10,6 +10,7 @@ import AbilityAnimSection from '@/components/admin/AbilityAnimSection';
 import ReferencePhotoSection from '@/components/admin/ReferencePhotoSection';
 import ImageRetouchSection from '@/components/admin/ImageRetouchSection';
 import { CLAN_COLORS } from '@/lib/cardData';
+import { calcHeroMana } from '@/lib/heroMana';
 
 const emptyCard = { category: 'hero', card_id: '', number: '', name: '', title: '', clan: '', type: '', cost: '', cc: '', ad: '', he: '', hp: '', mana: '', power: '', velocidad: '', elite_velocidad: '', ability_name: '', ability_text: '', elite_ability_name: '', elite_ability_text: '', elite_cc: '', elite_ad: '', elite_he: '', elite_hp: '', tag: '', description: '', art_url: '', elite_art_url: '', image_prompt: '', ability_anim_url: '', ability_anim_desc: '', ability_anim_motion: 'auto', elite_ability_anim_url: '', elite_ability_anim_desc: '', elite_ability_anim_motion: 'auto', in_auction: true };
 const numericFields = ['number', 'cost', 'cc', 'ad', 'he', 'hp', 'mana', 'power', 'velocidad', 'elite_cc', 'elite_ad', 'elite_he', 'elite_hp', 'elite_velocidad'];
@@ -145,9 +146,13 @@ export default function AdminCards() {
       // Velocidad: refleja el stat primario (CC/AD/HE) generado por la IA.
       const _v = resData.type === 'CC' ? resData.cc : resData.type === 'AD' ? resData.ad : resData.he;
       const _ev = resData.type === 'CC' ? resData.elite_cc : resData.type === 'AD' ? resData.elite_ad : resData.elite_he;
+      // Maná: se calcula con la fórmula (MANA_BASE[tipo] + clan.manaBonus), no
+      // lo genera la IA. Así la BD siempre es la fuente de verdad del maná.
+      const _mana = calcHeroMana(resData.type || form.type, form.clan);
       setForm(prev => ({
         ...prev,
         ...resData,
+        mana: _mana,
         velocidad: (_v != null && _v !== '' && !isNaN(Number(_v))) ? Number(_v) : prev.velocidad,
         elite_velocidad: (_ev != null && _ev !== '' && !isNaN(Number(_ev))) ? Number(_ev) : prev.elite_velocidad,
       }));
@@ -191,6 +196,12 @@ export default function AdminCards() {
       if (['hero', 'bizarro'].includes(next.category) && ['elite_cc', 'elite_ad', 'elite_he', 'type'].includes(name)) {
         const ePrimary = next.type === 'CC' ? next.elite_cc : next.type === 'AD' ? next.elite_ad : next.elite_he;
         if (ePrimary != null && ePrimary !== '' && !isNaN(Number(ePrimary))) next.elite_velocidad = Number(ePrimary);
+      }
+      // Maná: se recalcula con la fórmula al cambiar el tipo o el clan (igual
+      // que la velocidad con el stat primario). Si el admin edita el maná
+      // directamente (name === 'mana'), se respeta su valor.
+      if (['hero', 'bizarro'].includes(next.category) && ['type', 'clan'].includes(name)) {
+        next.mana = calcHeroMana(next.type, next.clan);
       }
       return next;
     });
