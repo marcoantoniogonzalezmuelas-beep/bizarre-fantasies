@@ -48,6 +48,13 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    pequeñas que cambian (el héroe que pulsa, el FX), no todo el tablero.
    isolation:isolate basta para que los FX de #bf-fx-layer no afecten al body. */
 #s-battle,.army-panel,.action-panel{isolation:isolate!important}
+/* CADA retrato de héroe (.bhero) sí se promueve a su propia capa GPU pequeña.
+   Las animaciones de box-shadow/filter/opacity del estado (statusAuraPatch:
+   bfStateEdge, bfStateBanner, bfAuraPulse) repintan SOLO la capa de ese
+   retrato, no el iframe entero. Sin esto, en tablet cada pulso de un héroe
+   repinta toda la textura del iframe → parpadeo constante. El retrato es
+   pequeño, así que su capa es barata de repintar. */
+.bhero{transform:translateZ(0)!important;isolation:isolate!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important}
 /* Overlays de cinemática: capa propia y aislada. */
 #bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
