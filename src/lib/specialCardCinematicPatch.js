@@ -30,7 +30,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
         var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
         var x=c.getContext('2d');x.drawImage(img,0,0);
         var d=x.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
-        var BG=30,SOFT=64,seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
+        var BG=30,seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
         function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
         function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
         for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
@@ -43,10 +43,8 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
           if(cy>0)push(i0-W);
           if(cy<H-1)push(i0+W);
         }
-        for(var yz=1;yz<H-1;yz++){for(var xz=1;xz<W-1;xz++){
-          var ii=yz*W+xz;if(seen[ii])continue;var lm=lum(ii);if(lm>=SOFT)continue;
-          if(seen[ii-1]||seen[ii+1]||seen[ii-W]||seen[ii+W])p[ii*4+3]=Math.round(p[ii*4+3]*Math.max(0,(lm-BG))/(SOFT-BG));
-        }}
+        // Sin difuminado de contorno: nada de alfa parcial, la figura queda
+        // 100% opaca (el difuminado hacía que se viera translúcida).
         // Encaja el lienzo a la silueta: recorte limpio, sin máscara ni efecto.
         var minX=W,minY=H,maxX=-1,maxY=-1;
         for(var ay=0;ay<H;ay++){for(var ax=0;ax<W;ax++){if(p[(ay*W+ax)*4+3]>8){minX=Math.min(minX,ax);minY=Math.min(minY,ay);maxX=Math.max(maxX,ax);maxY=Math.max(maxY,ay);}}}

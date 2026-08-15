@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { pickMotion, ALL_MOTION_CSS } from '@/lib/abilityAnimMotions';
+import { cutoutOpaque } from '@/lib/cutoutOpaque';
 
 // Vista previa de la cinemática 3D de una habilidad, idéntica a la que se ve
 // en el juego al usar la habilidad: overlay a pantalla completa, criatura
@@ -26,34 +27,16 @@ function hexToRgba(hex, a) {
   return `rgba(${r},${g},${b},${a})`;
 }
 
-// Recorta el fondo oscuro/negro de la imagen (lo vuelve transparente con un
-// canvas) para que solo quede la criatura — mismo tratamiento que en el juego.
+// Recorta el fondo negro exterior con el recorte OPACO compartido: la figura
+// nunca queda translúcida — mismo tratamiento exacto que en el juego, así lo
+// que se ve en la vista previa es lo que se verá en batalla.
 function useCutout(url) {
   const [out, setOut] = useState('');
   useEffect(() => {
     let cancelled = false;
-    if (!url) { setOut(''); return; }
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      if (cancelled) return;
-      try {
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth; c.height = img.naturalHeight;
-        const x = c.getContext('2d');
-        x.drawImage(img, 0, 0);
-        const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
-        for (let i = 0; i < p.length; i += 4) {
-          const m2 = Math.max(p[i], p[i + 1], p[i + 2]);
-          if (m2 < 32) p[i + 3] = 0;
-          else if (m2 < 90) p[i + 3] = Math.round(p[i + 3] * (m2 - 32) / 58);
-        }
-        x.putImageData(d, 0, 0);
-        setOut(c.toDataURL('image/png'));
-      } catch (e) { setOut(url); }
-    };
-    img.onerror = () => { if (!cancelled) setOut(url); };
-    img.src = url;
+    setOut('');
+    if (!url) return;
+    cutoutOpaque(url, (res) => { if (!cancelled) setOut(res); });
     return () => { cancelled = true; };
   }, [url]);
   return out || url;

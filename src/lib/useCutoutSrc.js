@@ -17,10 +17,11 @@ function process(url, done) {
       c.width = img.naturalWidth; c.height = img.naturalHeight;
       const x = c.getContext('2d'); x.drawImage(img, 0, 0);
       const d = x.getImageData(0, 0, c.width, c.height); const p = d.data;
+      // Alfa binario: fondo negro fuera o figura 100% opaca. Nada de valores
+      // intermedios (eso hacía que los personajes se vieran translúcidos).
       for (let i = 0; i < p.length; i += 4) {
         const m = Math.max(p[i], p[i + 1], p[i + 2]);
         if (m < 44) p[i + 3] = 0;
-        else if (m < 115) p[i + 3] = Math.round(p[i + 3] * (m - 44) / 71);
       }
       x.putImageData(d, 0, 0);
       const out = c.toDataURL('image/png');
@@ -47,7 +48,6 @@ function processLight(url, done) {
       for (let i = 0; i < p.length; i += 4) {
         const mn = Math.min(p[i], p[i + 1], p[i + 2]);
         if (mn > 232) p[i + 3] = 0;
-        else if (mn > 180) p[i + 3] = Math.round(p[i + 3] * (232 - mn) / 52);
       }
       x.putImageData(d, 0, 0);
       const out = c.toDataURL('image/png');
