@@ -1,18 +1,24 @@
-// Parche SOLO móvil/tablet: elimina de raíz las propiedades que provocan
-// parpadeos de pantalla en los FX del juego (golpes mortales, tormenta ígnea,
-// bolas de fuego, maremoto…). En estos dispositivos el iframe va escalado con
-// transform, y las capas FX que usan mix-blend-mode, backdrop-filter, filter
-// animado (blur/brightness/drop-shadow) o will-change fuerzan re-composiciones
-// GPU que hacen parpadear toda la pantalla. Este CSS con !important gana
-// incluso a los valores de los @keyframes (las animaciones CSS no pueden
-// sobreescribir declaraciones !important), así que neutraliza los filtros
-// animados de TODOS los parches FX (clases con prefijo bf-) sin tocarlos.
-// Los efectos siguen viéndose (opacidad, transform, box-shadow y text-shadow
-// no se tocan): solo se pierden los brillos por filtro, que son los que
-// parpadean.
+// Parche SOLO móvil/tablet contra el parpadeo de la pantalla durante los FX.
+//
+// CAUSA REAL (revisada a fondo): en móvil/tablet el body del juego lleva un
+// translate3d permanente (noFlickerPatch) para que el pellizco sea estable.
+// Eso convierte al body en UNA capa GPU gigantesca (1200 × alto del juego).
+// Los efectos de hechizo, las cinemáticas y las partículas se añaden
+// directamente a document.body, así que cada frame de su animación repinta esa
+// textura enorme: en tablet la GPU no da y se ve parpadear todo el campo de
+// batalla.
+//
+// SOLUCIÓN: todos los FX se redirigen a UNA capa propia (#bf-fx-layer) que es
+// su propia capa compuesta y está aislada (isolation + contain). Sus repintados
+// ya no tocan la textura del body. Además se quitan los filtros animados
+// (drop-shadow/blur sobre elementos que se mueven), que obligan a repintar por
+// frame, sustituyéndolos por box-shadow, que sí se compone en GPU.
 export const MOBILE_ANTIFLICKER_PATCH = `
 <style id="bf-antiflicker">
 *,*::before,*::after{will-change:auto!important}
+/* Capa única de efectos: propia capa GPU, aislada del resto del documento. */
+#bf-fx-layer{position:fixed!important;inset:0!important;pointer-events:none!important;z-index:90030!important;transform:translateZ(0)!important;isolation:isolate!important;contain:layout style paint!important;overflow:hidden!important}
+#bf-fx-layer>*{will-change:transform,opacity!important}
 /* Excluye .bhero: los héroes caídos (bf-truedead) necesitan su filter
    grayscale, y los retratos de batalla no son capas FX temporales. */
 [class^="bf-"]:not(.bhero),[class*=" bf-"]:not(.bhero),
@@ -28,46 +34,70 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    iframe escalado). Sus fondos ya son translúcidos (whiteFlashFixPatch), así
    que en modo normal se ven bien y sin cuadros blancos. */
 .fx-slash,.fx-burst,.fx-ring{mix-blend-mode:normal!important}
-/* El blur animado dentro del escenario escalado fuerza recomposición GPU por
-   frame (parpadeo). Se elimina SOLO el blur; los drop-shadow se conservan. */
-.bf-wave{filter:none!important}
-.bf-frost-mist{filter:none!important}
-/* Cinemáticas 3D (habilidades y cartas especiales): la figura ya viene
-   recortada, así que los tres drop-shadow apilados sobre una imagen enorme en
-   movimiento solo servían de brillo y forzaban recomposición GPU cada frame
-   (parpadeo de toda la ventana en tablet). Se dejan sin filtro. */
-#bf-abil-anim .bf-aa-img,#bf-spec-cine .bf-sc-img{filter:none!important}
-/* Overlays de cinemática aislados: sus capas no invalidan el resto del juego. */
-#bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout paint!important}
-/* Hechizos (tormenta ígnea, bola de fuego, hielo…): estas capas animan
-   transform Y llevan drop-shadow. Un filtro sobre un elemento que se mueve
-   obliga al navegador a repintar el campo de batalla entero cada frame
-   (parpadeo). Se cambia el brillo por box-shadow, que sí se compone en GPU. */
+/* Filtros animados: un filter sobre un elemento que se mueve fuerza repintado
+   por frame. Se eliminan y, donde el brillo importa, se pasa a box-shadow. */
+.bf-wave,.bf-frost-mist,.bf-sc-img,.bf-aa-img,.bf-sc-ember,.bf-aa-spark,
+.bf-sc-feather,.bf-sc-flame,.bf-sc-shell,.bf-sc-smoke,.bf-sc-cannon,
+.bf-sc-boom,.bf-sc-arc,.bf-aa-ring{filter:none!important}
 .bf-fireball{filter:none!important;box-shadow:0 0 30px 12px rgba(255,120,30,.8)!important}
 .bf-ember{filter:none!important;box-shadow:0 0 12px 4px rgba(255,120,30,.7)!important}
 .bf-ice-shard{filter:none!important;box-shadow:0 0 10px 2px rgba(150,220,255,.7)!important}
-.bf-sc-img,.bf-aa-img,.bf-sc-ember,.bf-aa-spark,.bf-sc-feather,.bf-sc-flame,.bf-sc-shell,.bf-sc-smoke{filter:none!important}
-/* Capas FX y overlays: se aíslan para que su pintado no invalide el tablero. */
-.bf-wave-overlay,.bf-frost-overlay,.bf-fireball,.bf-fire-ring,.bf-ember,.bf-ice-shard,.bf-frost-mist,.bf-bolt,.bf-flash{contain:paint!important;isolation:isolate!important}
+/* Overlays de cinemática: capa propia y aislada. */
+#bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
 <script>
 (function(){
   if(window.__bfAntiFlicker)return;window.__bfAntiFlicker=true;
-  // Antes se movía este <style> al final del <head> cada 800 ms para ganar a
-  // otros parches. Mover un <style> invalida TODOS los estilos del documento:
-  // era un recálculo completo cada 800 ms → parpadeo constante en móvil/tablet.
-  // Se hace UNA sola vez, cuando la página ha terminado de cargar.
+
+  // Una sola reubicación del <style> al final del head (mover un <style>
+  // invalida todos los estilos: hacerlo en bucle era parpadeo constante).
   function toEnd(){
     var s=document.getElementById('bf-antiflicker');
     if(s&&document.head.lastElementChild!==s)document.head.appendChild(s);
   }
   if(document.readyState==='complete')setTimeout(toEnd,1500);
   else window.addEventListener('load',function(){setTimeout(toEnd,1500)});
-  // Los brillos por filtro (glow, drop-shadow) se conservan: sin ellos los
-  // hechizos (rayo en cadena, tormenta ígnea, maremoto…) se veían apagados o
-  // directamente invisibles en móvil.
+
+  // ---- Capa única de FX ----
+  // Todo lo que los parches añaden al body y es un efecto temporal (clases
+  // bf-* de hechizos/partículas y los overlays de cinemática) se redirige aquí.
+  // Las coordenadas no cambian: la capa es position:fixed inset:0 dentro del
+  // mismo bloque contenedor (el body transformado) que usaban los FX.
+  var layer=null;
+  function fxLayer(){
+    if(layer&&layer.parentNode)return layer;
+    layer=document.createElement('div');
+    layer.id='bf-fx-layer';
+    document.body.appendChild(layer);
+    return layer;
+  }
+
+  // Clases/ids de efectos temporales que deben vivir en la capa aislada.
+  var FX_RE=/^bf-(wave-overlay|wave|splash|fireball|fire-ring|ember|frost-overlay|frost-mist|ice-shard|bolt|flash|hit|star|slash|burst|ring|shock|aura|blood|heal|kill|shield|dmg|num|spark|glow|obj|abil|epic)/;
+  // Las cinemáticas a pantalla completa NO se redirigen: ya están aisladas por
+  // CSS y necesitan su z-index propio por encima de todo.
+  function isFx(n){
+    if(!n||n.nodeType!==1)return false;
+    if(n.id==='bf-fx-layer'||n.id==='bf-abil-anim'||n.id==='bf-spec-cine')return false;
+    var cn=typeof n.className==='string'?n.className:'';
+    if(!cn)return false;
+    var parts=cn.split(/\\s+/);
+    for(var i=0;i<parts.length;i++){ if(FX_RE.test(parts[i]))return true; }
+    return false;
+  }
+
+  var origAppend=document.body.appendChild.bind(document.body);
+  document.body.appendChild=function(node){
+    try{ if(isFx(node))return fxLayer().appendChild(node); }catch(e){}
+    return origAppend(node);
+  };
+
+  // La capa se crea ya (vacía no cuesta nada) para que su textura exista antes
+  // del primer efecto y no haya un salto al crearla en mitad de una animación.
+  if(document.body)fxLayer();
+  else window.addEventListener('DOMContentLoaded',fxLayer);
 })();
 </script>
 `;
