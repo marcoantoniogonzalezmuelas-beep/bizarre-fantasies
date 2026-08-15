@@ -24,7 +24,7 @@ export const AVATAR_PATCH = `
     // Si hay un nick escrito en cualquiera de los campos, avisa al padre para
     // que guarde/actualice el avatar en la BD (PlayerAvatar) inmediatamente.
     var nick = '';
-    ['p1name','hname','jname','p2name'].forEach(function(id){
+    ['p1name','hname','jname','jlname','p2name'].forEach(function(id){
       var i = document.getElementById(id);
       if (i && i.value && String(i.value).trim() && !/^jugador\s*\d*$/i.test(String(i.value).trim())) nick = String(i.value).trim();
     });
@@ -176,23 +176,43 @@ export const AVATAR_PATCH = `
     if (Array.isArray(e.data.bfAvatarMap)) window.__bfHeroAvatars = e.data.bfAvatarMap;
     if (e.data.bfPlayerAvatars && typeof e.data.bfPlayerAvatars === 'object') {
       window.__bfPlayerAvatars = e.data.bfPlayerAvatars;
+      window.__bfPlayerAvatarsLoaded = true;
       // Re-comprueba los nicks ya escritos para auto-rellenar el avatar.
-      ['p1name','hname','jname'].forEach(function(id){
+      ['p1name','hname','jname','jlname'].forEach(function(id){
         var input = document.getElementById(id);
         if (input) { input.dataset.bfLastNick = ''; checkNickAvatar(input); }
       });
     }
   });
 
+  // ---- Limpia el avatar guardado (forzar elección de uno nuevo) ----
+  function clearAv(){
+    try { localStorage.removeItem(KEY); } catch(e) {}
+    window.bfMyAvatar = null;
+    document.querySelectorAll('.bf-av-pick').forEach(function(b){
+      b.innerHTML = '<span class="bf-av-ph">?</span>';
+      b.classList.add('bf-av-empty');
+    });
+  }
+
   // ---- Auto-rellena el avatar según el nick escrito ----
+  // Si el nick tiene avatar en la BD → lo auto-rellena. Si NO lo tiene (y la
+  // BD ya se cargó) → limpia el avatar anterior para que el jugador elija uno
+  // nuevo: no puede entrar a la sala con el avatar de otro nick.
   function checkNickAvatar(input) {
     var nick = (input.value || '').trim();
     if (!nick) { input.dataset.bfLastNick = ''; return; }
     if (nick === input.dataset.bfLastNick) return;
     input.dataset.bfLastNick = nick;
     var pa = window.__bfPlayerAvatars || {};
-    if (pa[nick]) {
-      saveAv({ url: pa[nick], name: '' });
+    // Búsqueda case-insensitive: la BD puede tener "Congresito" y el jugador
+    // escribir "congresito".
+    var avUrl = pa[nick] || pa[nick.toLowerCase()] || pa[nick.toUpperCase()];
+    if (!avUrl) {
+      for (var k in pa) { if (k.toLowerCase() === nick.toLowerCase()) { avUrl = pa[k]; break; } }
+    }
+    if (avUrl) {
+      saveAv({ url: avUrl, name: '' });
       document.querySelectorAll('.bf-av-pick').forEach(function(b){
         var av = window.bfMyAvatar;
         if (av && av.url) { b.innerHTML = '<img src="' + av.url + '">'; b.classList.remove('bf-av-empty'); }
@@ -200,12 +220,16 @@ export const AVATAR_PATCH = `
       });
       injectScoreAvatars();
       injectResultAvatars();
+    } else if (window.__bfPlayerAvatarsLoaded) {
+      // El nick no tiene avatar en la BD: limpia el avatar anterior para que
+      // el jugador elija uno nuevo (no puede entrar con el avatar de otro nick).
+      clearAv();
     }
   }
 
   // ---- Botón de avatar junto a los campos de nick ----
   function renderPickers() {
-    ['p1name','hname','jname'].forEach(function(id){
+    ['p1name','hname','jname','jlname'].forEach(function(id){
       var input = document.getElementById(id);
       if (!input) return;
       checkNickAvatar(input);
@@ -259,7 +283,12 @@ export const AVATAR_PATCH = `
     wrap('startVsAI',function(){return document.getElementById('p1name');});
     wrap('localStart',function(){return document.getElementById('p1name');});
     wrap('hostCreate',function(){return document.getElementById('hname')||document.querySelector('#s-lobby input[id*="name" i]');});
-    wrap('clientJoin',function(){return document.getElementById('jname')||document.querySelector('#s-lobby input[id*="name" i]');});
+    wrap('clientJoin',function(){return document.getElementById('jname')||document.getElementById('jlname')||document.querySelector('#s-lobby input[id*="name" i]');});
+    // doJoinFromList es el botón "Entrar" del modal al unirse desde la lista
+    // de salas. Lo envolvemos para que NO cierre el modal antes de que el
+    // jugador elija avatar: sin esto, el modal se cierra y abre el de avatar
+    // encima, perdiendo el contexto de la sala.
+    wrap('doJoinFromList',function(){return document.getElementById('jlname');});
   }
   hookRequired();
   var _bfAvReqTries=0,_bfAvReqIv=setInterval(function(){hookRequired();if(_bfAvReqTries++>100)clearInterval(_bfAvReqIv);},200);
