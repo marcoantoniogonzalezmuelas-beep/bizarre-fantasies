@@ -70,21 +70,63 @@ export default function AdminCards() {
     if (!form.name || !form.clan) return;
     setGeneratingStats(true);
     try {
+      const role = form.type || '';
+      const roleLine = role ? `Rol asignado por el admin: ${role === 'CC' ? 'Cuerpo a cuerpo' : role === 'AD' ? 'A distancia' : role === 'HE' ? 'Hechicero' : role}.` : 'Sin rol asignado. Decide el rol más coherente con el nombre y la raza y rellena "type" con CC, AD o HE.';
+      const isBizarro = form.category === 'bizarro';
+      const bizarroLine = isBizarro ? 'ES UN HÉROE BIZARRO: la habilidad debe ser RARA, absurda o surrealista, con humor negro o situaciones disparatadas, pero SIEMPRE encajando en una mecánica implementable del catálogo.' : '';
+      const artLine = form.art_url ? `Imagen de referencia disponible (ya generada): mírala en el contexto y haz que la habilidad y el título reflejen lo que se ve en la ilustración.` : '';
       const prompt = `Actúa como diseñador del juego de cartas Bizarre Fantasies.
       Genera estadísticas y habilidades para esta carta:
       Nombre: ${form.name}
+      Título/subtítulo actual: ${form.title || '(vacío — inventa uno corto y épico)'}
       Raza/Clan: ${form.clan}
       Categoría: ${form.category}
-      
-      Reglas de balance:
-      - Media de stats (cc, ad, he, power) debe rondar de 1 a 10.
-      - Hp de un héroe debe rondar entre 15 a 45.
-      - Cost debe ser un valor de 10 a 30 (salvo tokens o similares).
-      - Mana suele rondar entre 8 a 15 (si es héroe, el max mana).
-      - Escribe habilidades originales y locas que tengan sinergia con su raza, con un nombre corto (ability_name) y la descripción (ability_text).
-      - Si es Héroe, genera su versión Élite (elite_cc, elite_ad, elite_he, elite_hp, elite_ability_name, elite_ability_text) aumentando stats y mejorando su habilidad ligeramente.
-      - El campo 'type' en héroes suele ser CC, AD o HE.
-      
+      ${roleLine}
+      ${bizarroLine}
+      ${artLine}
+
+      REGLAS DE STATS — el stat PRIMARIO del rol debe ser el MÁS ALTO:
+      - CC (Cuerpo a cuerpo): el stat "cc" debe ser el más alto de los tres (cc > ad, cc > he). Refleja fuerza bruta.
+      - AD (A distancia): el stat "ad" debe ser el más alto (ad > cc, ad > he). Refleja puntería y disparos.
+      - HE (Hechicero): el stat "he" debe ser el más alto (he > cc, he > ad). Refleja poder mágico.
+      - Los otros dos stats secundarios deben ser claramente más bajos (1-2 puntos por debajo del primario).
+
+      INFLUENCIA DE LA RAZA en los stats (ajusta dentro del rol):
+      - Guerreros: cc alto, hp alto (tanques), velocidad media-baja. Coste alto.
+      - Vaqueros: ad alto, velocidad alta (rápidos disparando), hp medio-bajo. Coste medio.
+      - Elfos: ad o he alto, velocidad alta (ágiles), hp bajo. Coste medio.
+      - Magos: he muy alto, hp bajo, velocidad baja (frágiles). Mana alto. Coste medio-alto.
+      - Druidas: he medio-alto, hp medio, habilidades de curación/naturaleza. Coste medio.
+      - No-muertos: stats equilibrados, hp medio-alto, habilidades siniestras. Coste medio.
+      - Épicas: todos los stats más altos de lo normal, coste alto (suelen rondar 25-30).
+      - Cotidianos: stats bajos (1-5), coste bajo (10-15), habilidades sencillas.
+      - Bizarros: stats impredecibles y desequilibrados (puede tener un stat rarísimo), habilidades absurdas.
+
+      Rangos de balance:
+      - Stats (cc, ad, he, power): 1 a 10 (Épicas pueden llegar a 12).
+      - Hp: 15 a 45 (tanques hasta 45, frágiles desde 15).
+      - Cost: 10 a 30 (tokens o cotidianos pueden bajar a 8).
+      - Mana: 8 a 15 (hechiceros alto, CC/AD bajo).
+
+      HABILIDADES — DEBEN ser implementables por el motor del juego.
+      Solo puedes usar UNA de estas mecánicas (elige la que mejor encaje con el nombre, raza, tipo e imagen):
+      - attack_bonus_per_ally: al atacar inflige daño extra por cada aliado vivo. (Guerreros, líderes).
+      - heal_allies_per_turn: cura X de vida a todo su equipo al inicio de cada ronda. (Druidas, sacerdotes).
+      - heal_allies_now: al usar la habilidad cura X de vida a todo su equipo. (Druidas, No-muertos necromantes).
+      - damage_enemy: inflige X de daño directo a un rival (o a todos si es área). (Magos, Vaqueros, No-muertos).
+      - buff_self: sube un stat propio (cc, ad o he) al usar la habilidad. (Guerreros berserker, duelistas).
+      - shield_self: se otorga un escudo de X puntos. (Tanques, protectores).
+      - summon_token: invoca un token/criatura aliada. (Nigromantes, invocadores bizarros).
+
+      La habilidad (ability_name corto + ability_text descriptivo) debe tener SINERGIA con:
+      - El NOMBRE del héroe (si se llama "Piromaníaco", la habilidad va de fuego → damage_enemy).
+      - La RAZA (un druida cura o invoca; un guerrero golpea o se buffa; un no-muerto daña o invoca).
+      - El TIPO/rol (un CC suele buff_self o shield_self; un AD suele damage_enemy; un HE suele damage_enemy o heal).
+      - La IMAGEN si está disponible (describe lo que ves y haz que la habilidad lo refleje).
+      ${isBizarro ? 'Al ser BIZARRO, la habilidad debe ser RARA/absurda PERO usando una de las mecánicas de arriba (ej: "Lanza gatos" = summon_token, "Risa contagiosa" = heal_allies_now, "Tirita un ojo" = damage_enemy).' : ''}
+
+      Si es Héroe, genera su versión Élite (elite_cc, elite_ad, elite_he, elite_hp, elite_ability_name, elite_ability_text) aumentando stats (+1 a +3) y mejorando su habilidad (mismo efecto, más potente).
+
       IMPORTANTE: No devuelvas ningún texto extra, solo un JSON estricto con las siguientes claves (si no aplican usa null o vacío):
       "cost", "cc", "ad", "he", "hp", "mana", "power", "type", "ability_name", "ability_text", "elite_cc", "elite_ad", "elite_he", "elite_hp", "elite_ability_name", "elite_ability_text", "description", "title"`;
       
