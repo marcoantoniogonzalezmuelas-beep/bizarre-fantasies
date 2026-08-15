@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
         status: 'resuming' as const,
         host_name: nicks[0] || code,
         guest_name: nicks[1] || '',
-        state: { room_name: 'Partida en curso', has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks },
+        state: { room_name: 'Partida en curso', has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks, resume_token: String(body.resume_token || '').slice(0, 40) },
       };
       if (existing && !ownsRoom && !isStaleResume) return Response.json({ error: 'Room code already active' }, { status: 409 });
       const resumeRoom = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, resumeData) : await base44.asServiceRole.entities.GameRoom.create(resumeData);

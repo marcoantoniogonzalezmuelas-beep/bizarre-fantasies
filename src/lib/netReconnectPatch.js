@@ -21,7 +21,7 @@ export const NET_RECONNECT_PATCH = `
   // botón "Reconectar" y retomar la partida donde estaba.
   var RESUME_KEY='bfResumeMatch';
   function saveResume(){
-    try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:(NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'',name:NET.names_self||'',side:NET.mySide||'g',ts:Date.now()}));}catch(e){}
+    try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:(NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'',name:NET.names_self||'',side:NET.mySide||'g',ts:Date.now(),token:window.__bfResumeToken||''}));}catch(e){}
   }
   function clearResume(){try{localStorage.removeItem(RESUME_KEY);localStorage.removeItem('bfSavedMatch');}catch(e){}}
   window.__bfGetResume=function(){
@@ -45,6 +45,7 @@ export const NET_RECONNECT_PATCH = `
   '#bf-reconnect .bf-rec-btns{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}'+
   '#bf-reconnect .bf-rec-exit{padding:10px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
   '#bf-reconnect .bf-rec-lobby{padding:10px 20px;border-radius:11px;border:1px solid rgba(255,210,74,.6);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
+  '#bf-reconnect .bf-rec-rejoin{padding:12px 26px;border-radius:12px;border:1px solid rgba(255,240,180,.9);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 0 18px rgba(255,210,74,.45);animation:bfRecPulse 1.6s ease-in-out infinite}@keyframes bfRecPulse{0%,100%{box-shadow:0 0 14px rgba(255,210,74,.35)}50%{box-shadow:0 0 26px rgba(255,210,74,.7)}}'+
   '#bf-reconnect .bf-rec-wait{padding:10px 20px;border-radius:11px;border:1px solid rgba(125,223,125,.6);background:rgba(90,200,120,.15);color:#9be26b;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
   // Modal de "rival ha abandonado" (salida intencional)
   '#bf-quit-notify{position:fixed;inset:0;z-index:100600;display:none;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(34,12,12,.85),rgba(14,5,8,.95));backdrop-filter:blur(4px)}'+
@@ -65,8 +66,15 @@ export const NET_RECONNECT_PATCH = `
     var el=document.getElementById('bf-reconnect');
     if(!el){
       el=document.createElement('div');el.id='bf-reconnect';
-      el.innerHTML='<div class="bf-rec-box"><div class="bf-rec-spin"></div><div class="bf-rec-msg"></div><div class="bf-rec-sub"></div><div class="bf-rec-timer"></div><div class="bf-rec-btns"><button class="bf-rec-wait">Esperar 5 minutos</button><button class="bf-rec-lobby">Ir a Salas online</button><button class="bf-rec-exit">Volver al inicio</button></div></div>';
+      el.innerHTML='<div class="bf-rec-box"><div class="bf-rec-spin"></div><div class="bf-rec-msg"></div><div class="bf-rec-sub"></div><div class="bf-rec-timer"></div><div class="bf-rec-btns"><button class="bf-rec-rejoin">Reanudar partida</button><button class="bf-rec-wait">Esperar 5 minutos</button><button class="bf-rec-lobby">Ir a Salas online</button><button class="bf-rec-exit">Volver al inicio</button></div></div>';
       document.body.appendChild(el);
+      el.querySelector('.bf-rec-rejoin').onclick=function(){
+        rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
+        el.querySelector('.bf-rec-wait').style.display='';
+        el.querySelector('.bf-rec-timer').style.display='none';
+        if(typeof NET!=='undefined'&&NET.role==='host'){hostWait();}
+        else{clientRetry();}
+      };
       el.querySelector('.bf-rec-lobby').onclick=function(){
         rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);
         hideOverlay();
@@ -202,7 +210,7 @@ export const NET_RECONNECT_PATCH = `
         conn.on('open',function(){
           if(!rec.active){try{conn.close();}catch(e){}return;}
           bindClientConn(conn);
-          try{conn.send({t:'hello',resume:true,name:NET.names_self,pass:info.pass||''});}catch(e){}
+          try{conn.send({t:'hello',resume:true,name:NET.names_self,pass:info.pass||'',resume_token:window.__bfResumeToken||''});}catch(e){}
         });
         conn.on('error',function(){});
       }
@@ -241,7 +249,7 @@ export const NET_RECONNECT_PATCH = `
     try{
       if(typeof NET==='undefined'||NET.role!=='host'||!NET.code||!window.bfLobbyRequest)return;
       var nicks=[NET.names_self||'Jugador 1',(typeof G!=='undefined'&&G.names&&G.names.o)||'Jugador 2'];
-      window.bfLobbyRequest('register_resume',{code:NET.code,nicks:nicks,hasPass:!!NET.pass}).catch(function(){});
+      window.bfLobbyRequest('register_resume',{code:NET.code,nicks:nicks,hasPass:!!NET.pass,resume_token:window.__bfResumeToken||''}).catch(function(){});
       if(!window.__bfResumeTouchIv){
         window.__bfResumeTouchIv=setInterval(function(){
           if(typeof NET==='undefined'||NET.role!=='host'||!NET.code){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;return;}
@@ -296,6 +304,8 @@ export const NET_RECONNECT_PATCH = `
   window.bfResumeMatch=function(){
     var info=window.__bfGetResume();
     if(!info)return;
+    window.__bfResumeToken=info.token||'';
+    if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+info.code)||'';}catch(e){}}
     NET.role='client';NET.mySide=info.side||'g';NET.code=info.code;
     NET.names_self=info.name||'Jugador 2';NET.pass=info.pass||'';
     NET._bfJoin={code:info.code,pass:info.pass||'',name:info.name||''};
@@ -309,6 +319,7 @@ export const NET_RECONNECT_PATCH = `
   // código (hostWait recrea el peer) y espera a que el rival se reconecte.
   window.bfAwaitRival=function(){
     if(rec.active)return;
+    if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}}
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=true;
     reopenRoomResume();
     overlay('Esperando al otro jugador','La sala se ha reabierto. La partida se reanudará cuando tu rival vuelva a conectarse.');
@@ -333,6 +344,7 @@ export const NET_RECONNECT_PATCH = `
         if(msg&&msg.t==='bye'){rivalQuit();return;}
         if(msg&&msg.t==='hello'){
           if(NET.pass&&msg.pass!==NET.pass){try{conn.send({t:'reject',reason:'Contraseña incorrecta.'});}catch(e){}return;}
+          if(window.__bfResumeToken&&msg.resume_token!==window.__bfResumeToken){try{conn.send({t:'reject',reason:'No eres un jugador de esta partida.'});}catch(e){}return;}
           try{if(NET.conn&&NET.conn!==conn)NET.conn.close();}catch(e){}
           NET.conn=conn;
           resumed();
@@ -389,6 +401,30 @@ export const NET_RECONNECT_PATCH = `
     if(NET.peer&&NET.peer.disconnected&&!NET.peer.destroyed){try{NET.peer.reconnect();}catch(e){}}
     if(G.online&&!G._gameOver&&!rec.active&&!(NET.conn&&NET.conn.open))connLost();
   });
+
+  // ---- Token de reanudación: identifica a los jugadores originales ----
+  // El host lo genera al iniciar la partida online y lo reenvía al cliente.
+  // Ambos lo guardan en localStorage. Solo los jugadores con el token correcto
+  // pueden reanudar la partida (el host rechaza 'hello' sin token válido).
+  setInterval(function(){
+    if(typeof NET==='undefined'||typeof G==='undefined')return;
+    if(!G.online||G._gameOver||NET.role!=='host'||!NET.conn||!NET.conn.open)return;
+    if(!window.__bfResumeToken){
+      window.__bfResumeToken='rt-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
+      try{localStorage.setItem('bfResumeToken_'+NET.code,window.__bfResumeToken);}catch(e){}
+    }
+    try{NET.conn.send({t:'bfResumeToken',token:window.__bfResumeToken});}catch(e){}
+  },3000);
+  setInterval(function(){
+    if(typeof NET==='undefined'||!NET.conn||NET.conn.__bfRtL)return;
+    NET.conn.__bfRtL=1;
+    try{NET.conn.on('data',function(msg){
+      if(msg&&msg.t==='bfResumeToken'&&msg.token){
+        window.__bfResumeToken=msg.token;
+        try{localStorage.setItem('bfResumeToken_'+NET.code,msg.token);}catch(e){}
+      }
+    });}catch(e){}
+  },500);
 
   // Vigilante: detecta conexiones "zombi" (abiertas pero mudas >90s, margen
   // amplio para pestañas en segundo plano) y las cierra para forzar la

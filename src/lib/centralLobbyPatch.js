@@ -82,6 +82,17 @@ export const CENTRAL_LOBBY_PATCH = `
     });
   }
   window.bfRejoinResumeRoom=function(code,hasPass){
+    // Solo los jugadores originales pueden reanudar: verifican con el token
+    // guardado en localStorage. Un jugador que no estaba en la partida no
+    // tiene el token y no puede unirse a la sala "Partida en curso".
+    var token='';
+    try{token=localStorage.getItem('bfResumeToken_'+code)||'';}catch(e){}
+    var ri=window.__bfGetResume&&window.__bfGetResume();
+    if(ri&&ri.token)token=token||ri.token;
+    if(!token){
+      try{if(typeof notif==='function')notif('No puedes unirte: no eres un jugador de esta partida.');else alert('No puedes unirte: no eres un jugador de esta partida.');}catch(e){}
+      return;
+    }
     var savedHost=null;
     try{savedHost=JSON.parse(localStorage.getItem('bfSavedMatch')||'null');}catch(e){}
     if(savedHost&&savedHost.code===code&&window.__bfRestoreHost){window.__bfRestoreHost(savedHost);return;}
