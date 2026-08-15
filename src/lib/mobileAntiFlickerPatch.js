@@ -16,9 +16,16 @@
 export const MOBILE_ANTIFLICKER_PATCH = `
 <style id="bf-antiflicker">
 *,*::before,*::after{will-change:auto!important}
-/* Capa única de efectos: propia capa GPU, aislada del resto del documento. */
-#bf-fx-layer{position:fixed!important;inset:0!important;pointer-events:none!important;z-index:90030!important;transform:translateZ(0)!important;isolation:isolate!important;contain:layout style paint!important;overflow:hidden!important}
+/* Capa de efectos: contenedor ligero (NO capa GPU propia). Si #bf-fx-layer fuera
+   una capa compuesta translateZ(0)+contain:paint, en tablet su textura ocupa
+   toda la pantalla y cada hechizo la repinta entera → parpadeo. Ahora es solo
+   un stacking context barato (isolation); cada efecto es SU PROPIA capa GPU
+   pequeña (will-change/translateZ) y repinta solo su área. */
+#bf-fx-layer{position:fixed!important;inset:0!important;pointer-events:none!important;z-index:90030!important;isolation:isolate!important}
 #bf-fx-layer>*{will-change:transform,opacity!important}
+/* Efectos anidados (olas/salpicaduras dentro de .bf-wave-overlay): cada uno
+   promueve a su propia capa para no repintar el overlay entero. */
+.bf-wave,.bf-splash{will-change:transform,opacity!important}
 /* Excluye .bhero: los héroes caídos (bf-truedead) necesitan su filter
    grayscale, y los retratos de batalla no son capas FX temporales. */
 [class^="bf-"]:not(.bhero),[class*=" bf-"]:not(.bhero),
