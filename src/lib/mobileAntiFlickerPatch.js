@@ -57,11 +57,22 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    pequeñas que cambian (el héroe que pulsa, el FX), no todo el tablero.
    isolation:isolate basta para que los FX de #bf-fx-layer no afecten al body. */
 #s-battle,.army-panel,.action-panel{isolation:isolate!important}
-/* Los retratos (.bhero) NO se promueven a capa GPU: promoverlos en tablet
-   obligaba a re-rasterizar su textura a la escala fraccionaria del juego en
-   cada fotograma de las auras/pulsos → parpadeo. Solo se aíslan para que sus
-   mezclas no salpiquen al resto. */
-.bhero{isolation:isolate!important}
+/* Cada retrato (.bhero) es su propia capa GPU pequeña: las auras y pulsos de
+   estado repintan solo ese recuadro, no el tablero entero. */
+.bhero{transform:translateZ(0)!important;isolation:isolate!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important}
+/* CAUSA REAL DEL PARPADEO EN BATALLA (móvil y tablet): los estados de los
+   héroes animan propiedades que NO se pueden componer en GPU y obligan a
+   repintar el tablero en cada fotograma:
+     · bfStateEdge  → box-shadow con 64px de halo alrededor del retrato
+     · bfAuraPulse  → opacidad del degradado ::before
+     · bfScanMove   → background-position de 6 capas SVG (.bf-pat)
+     · bfStateBanner→ box-shadow + filter brightness de la etiqueta ::after
+     · bfAgonPulse  → filter brightness sobre el arte de batalla
+   Se congelan en táctil: el halo, el degradado, el patrón y la etiqueta se
+   siguen viendo exactamente igual, pero fijos, sin latido. Las decoraciones
+   (arañas, copos, Zzz…) se conservan porque solo animan transform. */
+.bhero,.bhero::before,.bhero::after,
+.bhero .bf-pat,.bhero .bf-battle-art,.bhero .bf-agonize-badge{animation:none!important}
 /* El arte de la escena de batalla del héroe llevaba filter:blur(). Un blur
    dentro de un documento escalado se re-rasteriza en CADA repintado, y en
    tablet (escala ~0,7) esa textura es enorme: era la causa del parpadeo del

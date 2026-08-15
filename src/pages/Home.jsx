@@ -966,8 +966,6 @@ export default function Home() {
             height: iframeH,
             transform: `scale(${mobScale})`,
             transformOrigin: 'top left',
-            willChange: 'transform',
-            backfaceVisibility: 'hidden',
           }}
         >
           <iframe
