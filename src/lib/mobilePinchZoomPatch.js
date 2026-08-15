@@ -62,7 +62,9 @@ export const MOBILE_PINCH_PATCH = `
     // siempre una última vez con el valor final.
     if (z !== lastZ || tx !== lastTx || ty !== lastTy) {
       lastZ = z; lastTx = tx; lastTy = ty;
-      if (!msgTimer) {
+      // En reposo (x1) NO se avisa al padre: cada aviso re-renderiza los
+      // overlays de React sobre el iframe y eso repinta la pantalla del juego.
+      if (!msgTimer && !(z === 1 && !tx && !ty && !pinch)) {
         msgTimer = setTimeout(function(){
           msgTimer = null;
           try { window.parent.postMessage({ bfPinch: { z: lastZ, tx: lastTx, ty: lastTy } }, '*'); } catch (e) {}

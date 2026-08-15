@@ -42,6 +42,12 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 .bf-fireball{filter:none!important;box-shadow:0 0 30px 12px rgba(255,120,30,.8)!important}
 .bf-ember{filter:none!important;box-shadow:0 0 12px 4px rgba(255,120,30,.7)!important}
 .bf-ice-shard{filter:none!important;box-shadow:0 0 10px 2px rgba(150,220,255,.7)!important}
+/* TABLET: el tablero de batalla se promociona a SUS PROPIAS capas GPU. Sin
+   esto, cada pulso/aura/animación de una carta de héroe repinta la textura
+   gigante del body (1200 × alto del juego) y en tablet se ve parpadear todo.
+   Se usa solo translateZ + isolation (sin contain:paint) para no recortar los
+   brillos que sobresalen de los paneles. */
+#s-battle,.army-panel,.action-panel{transform:translateZ(0)!important;isolation:isolate!important}
 /* Overlays de cinemática: capa propia y aislada. */
 #bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
