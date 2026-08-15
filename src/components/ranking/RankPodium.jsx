@@ -38,7 +38,7 @@ export default function RankPodium({ rows, artMap, accent, valueLabel }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 pointer-events-none" />
               <div className="absolute left-1.5 right-1.5 bottom-2.5">
                 <div
-                  className={`font-heading font-black leading-tight text-[#fff8e2] truncate uppercase tracking-wide ${first ? 'text-xl md:text-2xl' : 'text-base md:text-lg'}`}
+                  className={`font-heading font-black leading-tight text-[#fff8e2] truncate uppercase tracking-wide ${first ? 'text-sm md:text-base' : 'text-xs md:text-sm'}`}
                   style={{ textShadow: `0 2px 6px #000, 0 0 16px ${color}88` }}
                 >
                   {h.name}
