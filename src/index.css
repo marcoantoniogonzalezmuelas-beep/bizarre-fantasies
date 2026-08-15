@@ -141,6 +141,7 @@
 
 /* Medallas del podio del Top Ranking (RankMedal.jsx) */
 @keyframes bfMedalSweep { 0% { transform: translateX(-140%) rotate(14deg); } 55%, 100% { transform: translateX(300%) rotate(14deg); } }
+@keyframes bfMedalSvgSweep { 0% { transform: translateX(0) rotate(14deg); } 60%, 100% { transform: translateX(150px) rotate(14deg); } }
 @keyframes bfMedalGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.16); } }
 @keyframes bfMedalFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
