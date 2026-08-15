@@ -59,7 +59,9 @@ export function buildQuitContactPatch(texts) {
     // ventanita compacta junto al botón. Los demás modales del juego
     // (Aprende a jugar, Razas, info de héroe…) siguen abriéndose centrados.
     '#modalRoot .mo.bf-quit{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none!important;animation:none!important;padding:0!important;}',
-    '#modalRoot .mo.bf-quit>.mb{pointer-events:auto!important;position:fixed!important;top:74px!important;right:12px!important;left:auto!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;margin:0!important;transform:none!important;animation:bfQuitZoom .18s ease-out!important;}'
+    // La ventanita se coloca por JS justo debajo/al lado del botón "Salir"
+    // (coordenadas de documento), así queda siempre pegada al botón.
+    '#modalRoot .mo.bf-quit>.mb{pointer-events:auto!important;position:absolute!important;width:min(320px,calc(100vw - 24px))!important;max-width:min(320px,calc(100vw - 24px))!important;margin:0!important;transform:none!important;animation:bfQuitZoom .18s ease-out!important;}'
   ].join('');
   var isTouch = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') || navigator.maxTouchPoints > 1;
   if (isTouch) style.textContent += '#homeBtn{font-size:28px!important;padding:16px 28px!important;min-height:54px!important;line-height:1!important;}';
@@ -104,6 +106,20 @@ export function buildQuitContactPatch(texts) {
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',whenRoot);
   else whenRoot();
 
+  // Coloca la ventanita justo debajo del botón "Salir", alineada a su borde
+  // derecho. Se mide el botón en coordenadas de viewport, que son las mismas
+  // que usa el overlay (.mo, fixed inset:0) para sus hijos absolutos.
+  function placeNextToBtn(box){
+    var btn=document.getElementById('homeBtn'); if(!btn||!box)return;
+    var r=btn.getBoundingClientRect(); if(!r.width)return;
+    var w=box.offsetWidth||320;
+    var vw=document.documentElement.clientWidth||window.innerWidth;
+    var left=Math.max(8,Math.min(vw-w-8,r.right-w));
+    box.style.top=(r.bottom+10)+'px';
+    box.style.left=left+'px';
+    box.style.right='auto';
+  }
+
   function watchModal(){
     var last=null;
     setInterval(function(){
@@ -114,8 +130,8 @@ export function buildQuitContactPatch(texts) {
         last=ov;
         if(hitEl) hitEl.style.display='none';
         var box=ov.querySelector('.mb')||ov;
-        // Pequeño retardo para que el CSS de posicionamiento aplique.
-        setTimeout(function(){scrollToModal(box);},60);
+        placeNextToBtn(box);
+        setTimeout(function(){placeNextToBtn(box);},60);
       }else if(!ov){last=null; if(hitEl) hitEl.style.display='';}
     },250);
   }
