@@ -87,6 +87,10 @@ export const REMATCH_PATCH = `
       if(window.__bfEndCine) window.__bfEndCine=0;
       if(window.__bfKillAnim) window.__bfKillAnim=0;
       window.__bfResultSent=false;
+      // Resetea los guardias de marcador para que la nueva partida sume la
+      // victoria exactamente una vez. Sin esto, la revancha no actualizaba
+      // el marcador porque los flags de "ya sumado" seguían a true.
+      if(typeof G!=='undefined'){ G.__bfScoredOnce=false; G.__bfScored=false; }
     }catch(e){}
   }
 

@@ -57,9 +57,9 @@ export const MATCH_SCORE_PATCH = `
 
   // Reset general único: pone a cero todos los marcadores históricos.
   try{
-    if(localStorage.getItem('bfScoreReset')!=='v1'){
+    if(localStorage.getItem('bfScoreReset')!=='v2'){
       localStorage.removeItem('bfScoreByNick');
-      localStorage.setItem('bfScoreReset','v1');
+      localStorage.setItem('bfScoreReset','v2');
     }
   }catch(e){}
 
@@ -73,9 +73,17 @@ export const MATCH_SCORE_PATCH = `
     var w=String(winnerNick).toLowerCase();
     rec[w]=(rec[w]||0)+1;   // una victoria = +1 punto
     all[k]=rec; writeAll(all);
-    // Persiste la victoria en la base de datos para que el marcador general
-    // asociado a ese nick se recuerde siempre.
-    try{ parent.postMessage({bfScoreWin:{pair_key:k,nick:w,wins:rec[w]}},'*'); }catch(e){}
+    // Persiste la victoria en la base de datos solo si NO somos cliente
+    // online: el anfitrión es la fuente autoritativa y escribe en la BD; el
+    // cliente solo actualiza su localStorage local. Así evitamos registros
+    // duplicados cuando ambos dispositivos enviaban bfScoreWin a la vez
+    // (condición de carrera que creaba filas repetidas para la misma
+    // pareja+nick y desincronizaba el marcador entre los dos jugadores).
+    var isOnlineClient=false;
+    try{ isOnlineClient=(typeof online==='function'&&online()&&typeof NET!=='undefined'&&NET.role==='client'); }catch(e){}
+    if(!isOnlineClient){
+      try{ parent.postMessage({bfScoreWin:{pair_key:k,nick:w,wins:rec[w]}},'*'); }catch(e){}
+    }
     return get();
   }
 
@@ -171,10 +179,12 @@ export const MATCH_SCORE_PATCH = `
       try{
         if(typeof G!=='undefined'&&G&&!G.demo){
           var isOnline=(typeof online==='function')?online():false;
-          var isClient=isOnline&&typeof NET!=='undefined'&&NET.role==='client';
-          // En online, el marcador lo decide el anfitrión y lo replica al
-          // cliente (matchModePatch → bfsync) para que ambos vean lo mismo.
-          if(!isClient){
+          // En online, el marcador general lo gestiona matchModePatch: el
+          // anfitrión suma la victoria (scoreOnce) y la replica al cliente
+          // vía bfsync. Aquí NO sumamos en online para evitar un doble
+          // scoring con un youWin que, en ciertas condiciones de red, llegaba
+          // invertido y sumaba la victoria al jugador equivocado.
+          if(!isOnline){
             var n=nicks();
             window.bfSeriesScore.scoreOnce(youWin?n.self:n.opp);
           }
