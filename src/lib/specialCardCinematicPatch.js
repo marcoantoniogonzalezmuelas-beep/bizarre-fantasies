@@ -16,8 +16,11 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   var DUCK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c40fc88dd_generated_image.png';
   var TANK_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/76149d71f_generated_image.png';
   var BABY_PHOENIX_IMG='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/cc96fe904_generated_image.png';
-  // Recorte del fondo: las imágenes vienen sobre negro puro; se convierte el
-  // negro en transparente con un canvas para que solo quede la criatura.
+  // Recorte del fondo por RELLENO DESDE LOS BORDES (mismo método que las
+  // cinemáticas 3D del editor): solo se vuelve transparente el fondo oscuro
+  // conectado al marco, así el vehículo/criatura conserva sus zonas negras a
+  // todo color y nunca se ve translúcido. Si el relleno se come el centro
+  // (imagen muy oscura), se descarta y se usa la original con máscara suave.
   var CUT={};
   function cutout(url){
     if(CUT[url])return;
@@ -26,17 +29,32 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       try{
         var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
         var x=c.getContext('2d');x.drawImage(img,0,0);
-        var d=x.getImageData(0,0,c.width,c.height),p=d.data;
-        for(var i=0;i<p.length;i+=4){
-          var m=Math.max(p[i],p[i+1],p[i+2]);
-          if(m<32)p[i+3]=0;
-          else if(m<90)p[i+3]=Math.round(p[i+3]*(m-32)/58);
+        var d=x.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
+        var BG=30,SOFT=64,seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
+        function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
+        function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
+        for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
+        for(var yy=0;yy<H;yy++){push(yy*W);push(yy*W+W-1);}
+        while(qs<qe){
+          var i0=q[qs++],cx=i0%W,cy=(i0-cx)/W;
+          p[i0*4+3]=0;
+          if(cx>0)push(i0-1);
+          if(cx<W-1)push(i0+1);
+          if(cy>0)push(i0-W);
+          if(cy<H-1)push(i0+W);
         }
+        for(var yz=1;yz<H-1;yz++){for(var xz=1;xz<W-1;xz++){
+          var ii=yz*W+xz;if(seen[ii])continue;var lm=lum(ii);if(lm>=SOFT)continue;
+          if(seen[ii-1]||seen[ii+1]||seen[ii-W]||seen[ii+W])p[ii*4+3]=Math.round(p[ii*4+3]*Math.max(0,(lm-BG))/(SOFT-BG));
+        }}
+        var cx0=Math.floor(W*0.3),cx1=Math.floor(W*0.7),cy0=Math.floor(H*0.22),cy1=Math.floor(H*0.82),rem=0,tot=0;
+        for(var yc=cy0;yc<cy1;yc++){for(var xc=cx0;xc<cx1;xc++){tot++;if(seen[yc*W+xc])rem++;}}
+        if(tot&&rem/tot>0.10){CUT[url]='orig';return;}
         x.putImageData(d,0,0);
         CUT[url]=c.toDataURL('image/png');
-      }catch(e){CUT[url]=url;}
+      }catch(e){CUT[url]='orig';}
     };
-    img.onerror=function(){CUT[url]=url;};
+    img.onerror=function(){CUT[url]='orig';};
     img.src=url;
   }
   [PHOENIX_PLUMA_IMG,PHOENIX_AVE_IMG,ROBOT_IMG,DUCK_IMG,TANK_IMG,BABY_PHOENIX_IMG].forEach(cutout);
@@ -129,7 +147,9 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       for(var j=0;j<8;j++)html+='<span class="bf-sc-arc" style="left:'+(12+Math.random()*76)+'%;top:'+(15+Math.random()*60)+'%;height:'+(50+Math.random()*90)+'px;animation-delay:'+(Math.random()*0.5).toFixed(2)+'s"></span>';
     }
     var src=kind==='phoenix_ave'?PHOENIX_AVE_IMG:(kind==='phoenix'?BABY_PHOENIX_IMG:(kind==='duck'?DUCK_IMG:(kind==='tank'?TANK_IMG:ROBOT_IMG)));
-    html+='<img class="bf-sc-img" src="'+(CUT[src]||src)+'" alt="">';
+    var cu=CUT[src],useOrig=(!cu||cu==='orig');
+    var mask=useOrig?';-webkit-mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%);mask-image:radial-gradient(ellipse 52% 52% at 50% 50%,#000 62%,transparent 97%)':'';
+    html+='<img class="bf-sc-img" style="opacity:1'+mask+'" src="'+(useOrig?src:cu)+'" alt="">';
     html+='<div class="bf-sc-ttl">'+(kind==='phoenix_ave'?'¡EL AVE FÉNIX RESUCITA!':(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!'))))+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
