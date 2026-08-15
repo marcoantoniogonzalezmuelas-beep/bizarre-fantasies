@@ -27,6 +27,30 @@ export const AI_TURN_DELAY_PATCH = `
     } catch(e) { return false; }
   }
 
+  // Al ejecutar una acción, el panel del héroe se OCULTA hasta que el turno
+  // pasa de verdad. Así la animación y los efectos visuales se ven limpios y
+  // el panel no reaparece un instante antes de cambiar de héroe.
+  // Se usa visibility (no display) para que el tablero no se mueva.
+  var st = document.createElement('style');
+  st.textContent = '#s-battle.bf-acting .active-hero-panel{visibility:hidden!important}';
+  (document.head || document.documentElement).appendChild(st);
+
+  function battleEl() { return document.getElementById('s-battle'); }
+  function hidePanel() { var b = battleEl(); if (b) b.classList.add('bf-acting'); }
+  function showPanel() { var b = battleEl(); if (b) b.classList.remove('bf-acting'); }
+
+  function installActHide() {
+    if (typeof window.finishAct !== 'function' || window.finishAct.__bfHidePanel) return;
+    var inner = window.finishAct;
+    window.finishAct = function() {
+      hidePanel();
+      // Seguro: si por cualquier motivo el turno no avanza, el panel vuelve.
+      setTimeout(showPanel, 6000);
+      return inner.apply(this, arguments);
+    };
+    window.finishAct.__bfHidePanel = 1;
+  }
+
   function installDelay() {
     if (typeof window.endTurn !== 'function' || window.endTurn.__bfAiDelay) return;
     var inner = window.endTurn;
@@ -41,12 +65,13 @@ export const AI_TURN_DELAY_PATCH = `
       var extraDelay = 0;
       try {
         if (isAiGame() && typeof B !== 'undefined' && B && B.current) {
-          extraDelay = B.current.side === 'p' ? 1500 : 1000;
+          extraDelay = B.current.side === 'p' ? 1500 : 2400;
         }
       } catch(e) {}
       if (extraDelay > 0) {
-        setTimeout(function() { inner.apply(self, args); }, extraDelay);
+        setTimeout(function() { showPanel(); inner.apply(self, args); }, extraDelay);
       } else {
+        showPanel();
         return inner.apply(self, args);
       }
     };
@@ -57,6 +82,7 @@ export const AI_TURN_DELAY_PATCH = `
   var tries = 0;
   var t = setInterval(function() {
     installDelay();
+    installActHide();
     if (tries++ > 200) clearInterval(t);
   }, 100);
 })();
