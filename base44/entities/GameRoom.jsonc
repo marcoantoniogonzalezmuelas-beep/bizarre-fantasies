@@ -10,7 +10,8 @@
       "enum": [
         "waiting",
         "playing",
-        "finished"
+        "finished",
+        "resuming"
       ],
       "default": "waiting"
     },

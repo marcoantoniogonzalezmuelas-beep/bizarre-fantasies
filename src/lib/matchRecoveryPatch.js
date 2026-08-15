@@ -77,6 +77,7 @@ export const MATCH_RECOVERY_PATCH = `
       },800);
     }catch(e){}
   }
+  window.__bfRestoreHost=restoreHost;
 
   // ---- Aviso "Reanudar partida" en la portada ----
   // El jugador que salió por error (recarga, cierre accidental) ve SOLO la

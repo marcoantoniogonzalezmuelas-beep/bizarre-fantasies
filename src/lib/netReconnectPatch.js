@@ -44,6 +44,7 @@ export const NET_RECONNECT_PATCH = `
   '#bf-reconnect .bf-rec-timer{margin-top:14px;font-family:Cinzel,serif;font-weight:900;font-size:34px;color:#FFD24A;text-shadow:0 0 18px rgba(255,210,74,.5);display:none}'+
   '#bf-reconnect .bf-rec-btns{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}'+
   '#bf-reconnect .bf-rec-exit{padding:10px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
+  '#bf-reconnect .bf-rec-lobby{padding:10px 20px;border-radius:11px;border:1px solid rgba(255,210,74,.6);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
   '#bf-reconnect .bf-rec-wait{padding:10px 20px;border-radius:11px;border:1px solid rgba(125,223,125,.6);background:rgba(90,200,120,.15);color:#9be26b;font-family:Cinzel,serif;font-weight:900;font-size:13px;cursor:pointer}'+
   // Modal de "rival ha abandonado" (salida intencional)
   '#bf-quit-notify{position:fixed;inset:0;z-index:100600;display:none;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(34,12,12,.85),rgba(14,5,8,.95));backdrop-filter:blur(4px)}'+
@@ -64,8 +65,14 @@ export const NET_RECONNECT_PATCH = `
     var el=document.getElementById('bf-reconnect');
     if(!el){
       el=document.createElement('div');el.id='bf-reconnect';
-      el.innerHTML='<div class="bf-rec-box"><div class="bf-rec-spin"></div><div class="bf-rec-msg"></div><div class="bf-rec-sub"></div><div class="bf-rec-timer"></div><div class="bf-rec-btns"><button class="bf-rec-wait">Esperar 5 minutos</button><button class="bf-rec-exit">Volver al inicio</button></div></div>';
+      el.innerHTML='<div class="bf-rec-box"><div class="bf-rec-spin"></div><div class="bf-rec-msg"></div><div class="bf-rec-sub"></div><div class="bf-rec-timer"></div><div class="bf-rec-btns"><button class="bf-rec-wait">Esperar 5 minutos</button><button class="bf-rec-lobby">Ir a Salas online</button><button class="bf-rec-exit">Volver al inicio</button></div></div>';
       document.body.appendChild(el);
+      el.querySelector('.bf-rec-lobby').onclick=function(){
+        rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);
+        hideOverlay();
+        try{if(typeof show==='function')show('s-lobby');}catch(e){}
+        try{if(typeof lobbyConnect==='function')lobbyConnect();}catch(e){}
+      };
       el.querySelector('.bf-rec-exit').onclick=function(){
         quitting=true;clearResume();clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);
         try{if(NET.conn)NET.conn.close();}catch(e){}
@@ -101,6 +108,8 @@ export const NET_RECONNECT_PATCH = `
   function rivalQuit(){
     if(typeof G!=='undefined')G._gameOver=true;
     clearResume();if(window.__bfClearSave)window.__bfClearSave();
+    if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
+    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
     hideOverlay();
     var el=document.getElementById('bf-quit-notify');
     if(!el){
@@ -123,10 +132,14 @@ export const NET_RECONNECT_PATCH = `
   function resumed(){
     var was=rec.active;
     rec.active=false;rec.pendConn=null;rec.waiting=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();
+    if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
+    if(was&&typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
     if(was&&typeof notif==='function')notif('✔ Conexión restablecida. ¡La partida continúa!');
   }
   function giveUp(msg){
     rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
+    if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
+    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
     if(typeof modal==='function')modal('<h3>Tiempo de espera agotado</h3><div class="modal-note" style="font-size:15px">'+(msg||'Tu rival no ha vuelto en 5 minutos. La partida no se puede reanudar.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
 
@@ -224,11 +237,27 @@ export const NET_RECONNECT_PATCH = `
     rec.timer=setTimeout(hostWait,RETRY_MS);
   }
 
+  function reopenRoomResume(){
+    try{
+      if(typeof NET==='undefined'||NET.role!=='host'||!NET.code||!window.bfLobbyRequest)return;
+      var nicks=[NET.names_self||'Jugador 1',(typeof G!=='undefined'&&G.names&&G.names.o)||'Jugador 2'];
+      window.bfLobbyRequest('register_resume',{code:NET.code,nicks:nicks,hasPass:!!NET.pass}).catch(function(){});
+      if(!window.__bfResumeTouchIv){
+        window.__bfResumeTouchIv=setInterval(function(){
+          if(typeof NET==='undefined'||NET.role!=='host'||!NET.code){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;return;}
+          if(window.bfLobbyRequest)window.bfLobbyRequest('touch',{code:NET.code}).catch(function(){});
+        },20000);
+      }
+    }catch(e){}
+  }
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
-    if(NET.role==='client'){overlay('Tu rival se ha desconectado','Puedes volver al inicio o esperar 5 minutos a que vuelva para reanudar la partida.');clientRetry();}
-    else{overlay('Tu rival se ha desconectado','Puedes volver al inicio o esperar 5 minutos a que vuelva para reanudar la partida.');hostWait();}
+    reopenRoomResume();
+    try{if(typeof notif==='function')notif('🔄 Sala reabierta como "Partida en curso". Ve a Salas online para reanudar.');}catch(e){}
+    var sub='La sala se ha reabierto como "Partida en curso". Ve a Salas online para reanudar, o espera aquí 5 minutos a que tu rival vuelva.';
+    if(NET.role==='client'){overlay('Tu rival se ha desconectado',sub);clientRetry();}
+    else{overlay('Tu rival se ha desconectado',sub);hostWait();}
   }
   window.__bfConnLost=connLost;
 
@@ -281,6 +310,7 @@ export const NET_RECONNECT_PATCH = `
   window.bfAwaitRival=function(){
     if(rec.active)return;
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=true;
+    reopenRoomResume();
     overlay('Esperando al otro jugador','La sala se ha reabierto. La partida se reanudará cuando tu rival vuelva a conectarse.');
     var el=document.getElementById('bf-reconnect');
     if(el){

@@ -10,13 +10,34 @@ Deno.serve(async (req) => {
     const cutoff = Date.now() - 90000;
 
     if (action === 'list') {
-      const records = await base44.asServiceRole.entities.GameRoom.filter({ status: 'waiting' }, '-updated_date', 100);
-      const rooms = records.filter((room) => Date.parse(room.updated_date || room.created_date || 0) >= cutoff).map((room) => ({
-        id: room.room_code,
-        name: room.state?.room_name || room.host_name || room.room_code,
-        hasPass: room.state?.has_pass === true,
-        ts: Date.parse(room.updated_date || room.created_date || 0),
-      }));
+      const resumeCutoff = Date.now() - 300000;
+      const [waitingRecords, resumingRecords] = await Promise.all([
+        base44.asServiceRole.entities.GameRoom.filter({ status: 'waiting' }, '-updated_date', 100),
+        base44.asServiceRole.entities.GameRoom.filter({ status: 'resuming' }, '-updated_date', 100),
+      ]);
+      const rooms: any[] = [];
+      waitingRecords
+        .filter((room) => Date.parse(room.updated_date || room.created_date || 0) >= cutoff)
+        .forEach((room) => {
+          rooms.push({
+            id: room.room_code,
+            name: room.state?.room_name || room.host_name || room.room_code,
+            hasPass: room.state?.has_pass === true,
+            ts: Date.parse(room.updated_date || room.created_date || 0),
+          });
+        });
+      resumingRecords
+        .filter((room) => Date.parse(room.updated_date || room.created_date || 0) >= resumeCutoff)
+        .forEach((room) => {
+          rooms.push({
+            id: room.room_code,
+            name: 'Partida en curso',
+            hasPass: room.state?.has_pass === true,
+            isResume: true,
+            nicks: room.state?.resume_nicks || [room.host_name, room.guest_name].filter(Boolean),
+            ts: Date.parse(room.updated_date || room.created_date || 0),
+          });
+        });
       return Response.json({ rooms });
     }
 
@@ -41,9 +62,25 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, id: room.id });
     }
 
+    if (action === 'register_resume') {
+      const nicks = Array.isArray(body.nicks) ? body.nicks.slice(0, 2).map((n: any) => String(n || '').slice(0, 28)) : [];
+      const resumeCutoff = Date.now() - 300000;
+      const isStaleResume = existing && Date.parse(existing.updated_date || existing.created_date || 0) < resumeCutoff;
+      const resumeData = {
+        room_code: code,
+        status: 'resuming' as const,
+        host_name: nicks[0] || code,
+        guest_name: nicks[1] || '',
+        state: { room_name: 'Partida en curso', has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks },
+      };
+      if (existing && !ownsRoom && !isStaleResume) return Response.json({ error: 'Room code already active' }, { status: 409 });
+      const resumeRoom = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, resumeData) : await base44.asServiceRole.entities.GameRoom.create(resumeData);
+      return Response.json({ ok: true, id: resumeRoom.id });
+    }
+
     if (!existing || !ownsRoom) return Response.json({ ok: true });
     if (action === 'touch') {
-      await base44.asServiceRole.entities.GameRoom.update(existing.id, { status: 'waiting' });
+      await base44.asServiceRole.entities.GameRoom.update(existing.id, { status: existing.status === 'resuming' ? 'resuming' : 'waiting' });
       return Response.json({ ok: true });
     }
     if (action === 'unregister') {

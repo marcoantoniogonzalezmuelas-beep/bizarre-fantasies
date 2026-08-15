@@ -18,6 +18,9 @@ export const CENTRAL_LOBBY_PATCH = `
     var task=pending[result.requestId];delete pending[result.requestId];
     if(result.error)task.reject(new Error(result.error));else task.resolve(result.data||{});
   });
+  // Expone la función de petición al lobby para que otros parches (p. ej.
+  // netReconnectPatch) puedan registrar la sala como "partida en curso".
+  window.bfLobbyRequest=request;
 
   function inBrowseView(){
     // Solo se puede redibujar la lista si el lobby muestra la lista de salas.
@@ -59,8 +62,39 @@ export const CENTRAL_LOBBY_PATCH = `
     if(first)first.insertAdjacentHTML('beforebegin',html);
     else box.insertAdjacentHTML('beforeend',html);
   }
+  function decorateResumeRooms(){
+    if(typeof LOBBY==='undefined'||!LOBBY.rooms)return;
+    LOBBY.rooms.forEach(function(r){
+      if(!r.isResume)return;
+      var cards=document.querySelectorAll('.room-card');
+      var card=null;
+      cards.forEach(function(c){var codeEl=c.querySelector('.room-sub b');if(codeEl&&codeEl.textContent.trim()===r.id)card=c;});
+      if(!card||card.dataset.bfResume==='1')return;
+      card.dataset.bfResume='1';
+      card.style.border='2px solid #7ddf7d';
+      card.style.boxShadow='0 0 18px rgba(90,220,120,.35)';
+      var ico=card.querySelector('.room-ico');if(ico)ico.textContent='🔄';
+      var name=card.querySelector('.room-name');if(name)name.textContent='Partida en curso';
+      var sub=card.querySelector('.room-sub');
+      if(sub){var nicks=(r.nicks||[]).join(' vs ');sub.innerHTML='código <b>'+r.id+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':'');}
+      var btn=card.querySelector('button');
+      if(btn){btn.textContent='Reanudar';btn.className='btn primary sm';btn.setAttribute('onclick','bfRejoinResumeRoom(\''+r.id+'\','+(r.hasPass?1:0)+')');}
+    });
+  }
+  window.bfRejoinResumeRoom=function(code,hasPass){
+    var savedHost=null;
+    try{savedHost=JSON.parse(localStorage.getItem('bfSavedMatch')||'null');}catch(e){}
+    if(savedHost&&savedHost.code===code&&window.__bfRestoreHost){window.__bfRestoreHost(savedHost);return;}
+    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code===code&&window.bfAwaitRival){window.bfAwaitRival();return;}
+    var resumeInfo=window.__bfGetResume&&window.__bfGetResume();
+    if(!resumeInfo||resumeInfo.code!==code){
+      try{if(typeof notif==='function')notif('No tienes una partida guardada para reanudar en esta sala.');else alert('No tienes una partida guardada para reanudar en esta sala.');}catch(e){}
+      return;
+    }
+    if(window.bfResumeMatch)window.bfResumeMatch();
+  };
   function renderCentralList(){
-    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();injectResumeCard();}
+    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateResumeRooms();injectResumeCard();}
   }
   function centralList(){
     if(typeof LOBBY==='undefined')return;
