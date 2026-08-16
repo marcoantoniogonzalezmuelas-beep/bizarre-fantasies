@@ -262,9 +262,13 @@ export const AVATAR_PATCH = `
   // clientJoin si no hay avatar elegido. Se instala después de nickRequired
   // (que envuelve las mismas funciones con su flag __bfNick), así ambos
   // chequeos (nick + avatar) deben pasar para continuar.
+  // Registro global: cada función se envuelve UNA sola vez, aunque otros
+  // parches (nick, contraseña) envuelvan por encima y oculten el flag.
+  window.__bfAvReqWrapped=window.__bfAvReqWrapped||{};
   function hookRequired(){
     function wrap(name, getInput){
-      if(typeof window[name]!=='function'||window[name].__bfAvReq)return false;
+      if(typeof window[name]!=='function'||window.__bfAvReqWrapped[name])return false;
+      window.__bfAvReqWrapped[name]=1;
       var orig=window[name];
       window[name]=function(){
         if(!window.bfMyAvatar||!window.bfMyAvatar.url){

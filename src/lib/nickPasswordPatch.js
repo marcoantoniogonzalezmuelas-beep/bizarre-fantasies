@@ -149,8 +149,14 @@ export const NICK_PASSWORD_PATCH = `
   // clientJoin, doJoinFromList). getInputs(args) devuelve la lista de pares
   // {nickInput,passInput} que validar. La validación es asíncrona (consulta a
   // la BD): si todo ok, se llama al original; si no, se avisa y se bloquea.
+  // Registro global: cada función se envuelve UNA sola vez, aunque otros
+  // parches (nick obligatorio, avatar) envuelvan por encima y oculten el flag
+  // de la propia función. Sin esto, los tres parches se re-envolvían entre sí
+  // en bucle (decenas de capas) y el multiplayer no llegaba a arrancar.
+  window.__bfNickPassWrapped=window.__bfNickPassWrapped||{};
   function wrap(name,getInputs){
-    if(typeof window[name]!=='function'||window[name].__bfNickPass)return false;
+    if(typeof window[name]!=='function'||window.__bfNickPassWrapped[name])return false;
+    window.__bfNickPassWrapped[name]=1;
     var orig=window[name];
     window[name]=function(){
       if(window.__bfNickPassChecking)return;

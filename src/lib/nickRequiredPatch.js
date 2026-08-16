@@ -49,8 +49,15 @@ export const NICK_REQUIRED_PATCH = `
   function el(id){return document.getElementById(id);}
 
   // Partida contra la IA y partida local: valida los campos de nombre.
+  // Registro global: cada función se envuelve UNA sola vez. Antes se comprobaba
+  // el flag en la propia función (window[name].__bfNick), pero si otro parche
+  // (contraseña, avatar) envolvía por encima, el flag desaparecía y este parche
+  // volvía a envolver → decenas de capas anidadas que bloqueaban el arranque
+  // de las partidas online ("Verificando nick…" en bucle).
+  window.__bfNickWrapped=window.__bfNickWrapped||{};
   function wrap(name,check){
-    if(typeof window[name]!=='function'||window[name].__bfNick)return false;
+    if(typeof window[name]!=='function'||window.__bfNickWrapped[name])return false;
+    window.__bfNickWrapped[name]=1;
     var orig=window[name];
     window[name]=function(){
       var block=check(arguments);
