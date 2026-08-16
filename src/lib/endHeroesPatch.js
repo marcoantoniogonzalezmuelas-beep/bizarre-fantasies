@@ -62,7 +62,10 @@ export const END_HEROES_PATCH = `
     return n;
   }
 
-  var PORT_W = 'width:clamp(74px,16vw,190px);aspect-ratio:3/4;';
+  // Ancho del retrato: calibrado para que quepan LOS 6 héroes (3 vencedores +
+  // 3 caídos) dentro del iframe de móvil (1200 px) sin desbordar por la derecha.
+  // 6 × 168 + gaps + padding ≈ 1140 px < 1200 px.
+  var PORT_W = 'width:clamp(64px,13vw,168px);aspect-ratio:3/4;';
 
   function buildPort(hh, isWin, delay){
     var art = heroArt(hh);
@@ -148,7 +151,7 @@ export const END_HEROES_PATCH = `
       (isWin
         ? 'color:#3a2600;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);box-shadow:0 2px 8px rgba(255,210,74,.4)'
         : 'color:#e0b0b0;background:rgba(40,12,16,.75);border:1px solid rgba(180,60,60,.45)'), lbl));
-    var row = el('div', 'display:flex;gap:clamp(6px,1.4vw,16px);justify-content:center;align-items:flex-start');
+    var row = el('div', 'display:flex;gap:clamp(5px,1.2vw,12px);justify-content:center;align-items:flex-start');
     arr.forEach(function(hh, j){ row.appendChild(buildPort(hh, isWin, j * 0.08)); });
     wrap.appendChild(row);
     return wrap;
@@ -171,7 +174,7 @@ export const END_HEROES_PATCH = `
       if(!win && !lose) return;
 
       var wrap = el('div', 'position:fixed;left:0;right:0;bottom:0;z-index:100055;display:flex;' +
-        'justify-content:center;align-items:flex-start;gap:clamp(12px,3vw,44px);padding:18px 12px 14px;' +
+        'justify-content:center;align-items:flex-start;gap:clamp(10px,2.5vw,32px);padding:18px 10px 14px;' +
         'background:linear-gradient(180deg,rgba(8,5,16,0) 0%,rgba(8,5,16,.55) 35%,rgba(8,5,16,.92) 100%);' +
         'pointer-events:none;animation:bfEhRise .6s cubic-bezier(.2,.8,.3,1)');
       wrap.id = 'bf-end-heroes';
