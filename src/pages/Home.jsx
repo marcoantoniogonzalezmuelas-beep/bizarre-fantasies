@@ -64,6 +64,7 @@ import { getLang, setLang, t } from '@/lib/i18n';
 import { buildLangSelectorPatch } from '@/lib/langSelectorPatch';
 import { NICK_REQUIRED_PATCH } from '@/lib/nickRequiredPatch';
 import { NICK_MEMORY_PATCH } from '@/lib/nickMemoryPatch';
+import { NICK_PASSWORD_PATCH } from '@/lib/nickPasswordPatch';
 import { buildQuitContactPatch } from '@/lib/quitContactPatch';
 import { HOW_TO_PLAY_PATCH } from '@/lib/howToPlayPatch';
 import { DEMO_TIPS_PATCH } from '@/lib/demoTipsPatch';
@@ -368,6 +369,7 @@ export default function Home() {
   const cardArtRef = useRef(null);
   const avatarCatalogRef = useRef(null);
   const playerAvatarsRef = useRef(null);
+  const nickCredsRef = useRef({});
   const aiWinsRef = useRef({});
   // Cuando la cinemática de intro se abrió desde "Aprender a jugar" (demo),
   // al cerrarla/saltarla arrancamos automáticamente la demo en el iframe.
@@ -539,6 +541,9 @@ export default function Home() {
         if (playerAvatarsRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfPlayerAvatars: playerAvatarsRef.current }, '*');
         }
+        if (nickCredsRef.current && Object.keys(nickCredsRef.current).length) {
+          iframeRef.current?.contentWindow?.postMessage({ bfNickCreds: Object.keys(nickCredsRef.current) }, '*');
+        }
         if (aiWinsRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfAiWins: aiWinsRef.current }, '*');
         }
@@ -620,7 +625,47 @@ export default function Home() {
         try { iframeRef.current?.contentWindow?.postMessage({ bfAiWins: m }, '*'); } catch (e) {}
       } catch (e) {}
     };
+    // Hash SHA-256 de la contraseña (no se guarda en claro en la BD).
+    const sha256Hex = async (text) => {
+      try {
+        const buf = new TextEncoder().encode(String(text || ''));
+        const hash = await crypto.subtle.digest('SHA-256', buf);
+        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) { return String(text || ''); }
+    };
     const onResult = (e) => {
+      if (e.data && e.data.bfCheckNick) {
+        // El iframe pide verificar/crear la contraseña de un nick.
+        const { nick, password, requestId } = e.data.bfCheckNick;
+        const key = String(nick || '').toLowerCase();
+        const respond = (payload) => {
+          try { iframeRef.current?.contentWindow?.postMessage({ bfNickCredentialResult: { ...payload, requestId } }, '*'); } catch (e2) {}
+        };
+        (async () => {
+          if (!base44.entities?.NickCredential) { respond({ ok: false, error: 'db_error' }); return; }
+          const existing = nickCredsRef.current[key];
+          if (existing && existing.password) {
+            // El nick ya está protegido: verificar la contraseña.
+            const hash = await sha256Hex(password);
+            if (hash === existing.password) { respond({ ok: true, mode: 'verified' }); }
+            else { respond({ ok: false, error: 'wrong_password' }); }
+            return;
+          }
+          // Nick nuevo o sin proteger aún: crear la contraseña.
+          if (!password || String(password).length < 3) { respond({ ok: false, error: 'too_short' }); return; }
+          if (!nick || !String(nick).trim()) { respond({ ok: false, error: 'empty' }); return; }
+          const hash = await sha256Hex(password);
+          try {
+            if (existing) {
+              await base44.entities.NickCredential.update(existing.id, { password: hash });
+            } else {
+              const rec = await base44.entities.NickCredential.create({ nick: key, password: hash });
+              nickCredsRef.current[key] = rec;
+            }
+            respond({ ok: true, mode: 'set' });
+          } catch (e2) { respond({ ok: false, error: 'db_error' }); }
+        })();
+      }
       if (e.data && e.data.bfMatchResult) {
         const r = e.data.bfMatchResult;
         base44.entities.MatchResult.create(r).catch(() => {});
@@ -780,6 +825,17 @@ export default function Home() {
         playerAvatarsRef.current = m;
         try { iframeRef.current?.contentWindow?.postMessage({ bfPlayerAvatars: m }, '*'); } catch (e) {}
       }).catch(() => {});
+      // Credenciales de nick (NickCredential): nicks que ya tienen contraseña
+      // guardada. Se envían al iframe para que el campo muestre "escribir" vs
+      // "crear" y para que la verificación se haga contra la BD.
+      if (base44.entities?.NickCredential) {
+        base44.entities.NickCredential.list('nick', 1000).then(rows => {
+          const m = {};
+          (rows || []).forEach(r => { if (r.nick) m[String(r.nick).toLowerCase()] = r; });
+          nickCredsRef.current = m;
+          try { iframeRef.current?.contentWindow?.postMessage({ bfNickCreds: Object.keys(m) }, '*'); } catch (e) {}
+        }).catch(() => {});
+      }
       // Progreso de niveles de IA por nick (BD): victorias contra cada nivel,
       // para que los desbloqueos funcionen entre dispositivos.
       try {
@@ -804,6 +860,7 @@ export default function Home() {
           if (avatarListRef.current) iw.postMessage({ bfAvatarMap: avatarListRef.current }, '*');
           if (avatarCatalogRef.current) iw.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*');
           if (playerAvatarsRef.current) iw.postMessage({ bfPlayerAvatars: playerAvatarsRef.current }, '*');
+          if (nickCredsRef.current && Object.keys(nickCredsRef.current).length) iw.postMessage({ bfNickCreds: Object.keys(nickCredsRef.current) }, '*');
         }
       } catch (e) {}
     }).catch(() => {});
@@ -845,7 +902,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = PERF_BOOST_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + CRANE_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + ABILITY_ANIM_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_LEVEL_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH + PINCH_FREEZE_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + BATTLE_FOCUS_ZOOM_PATCH : '');
+        const INJECT = PERF_BOOST_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + CRANE_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + ABILITY_ANIM_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_LEVEL_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + (IS_MOBILE ? MOBILE_PINCH_PATCH + PINCH_FREEZE_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + BATTLE_FOCUS_ZOOM_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus').replace(/Despertar/g, 'Sanar').replace(/despertar/g, 'sanar');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
