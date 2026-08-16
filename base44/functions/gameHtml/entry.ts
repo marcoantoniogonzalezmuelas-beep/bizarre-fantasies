@@ -1069,21 +1069,20 @@ function buildArtScript(dbCards) {
     }
     if (typeof window.renderSetup === 'function' && !window.renderSetup.__bf) {
       var bfOrigRenderSetup = window.renderSetup;
-      window.renderSetup = function() { var r = bfOrigRenderSetup.apply(this, arguments); var box = document.getElementById('s-setup'); if (box) { var ic = box.querySelectorAll('.mode-icon'); var urls = ['https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/6a8371b6d_generated_image.png','https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/392a70151_generated_image.png']; ic.forEach(function(el,i){if(!urls[i])return;el.textContent='';el.style.cssText='background:none!important;padding:0!important;overflow:hidden!important;';var img=document.createElement('img');img.src=urls[i];img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;';el.appendChild(img);});
-        // Guardar el clic en una tarjeta de modo YA seleccionada: el juego
-        // nativo la deselecciona al volver a picarla (lo que hace desaparecer
-        // los niveles de IA y duplica el icono al re-renderizar). Si la tarjeta
-        // ya tiene .active, tragamos el clic para que no haga nada.
-        box.querySelectorAll('.mode-card').forEach(function(card){
-          if(card.dataset.bfModeGuard==='1')return;
-          card.dataset.bfModeGuard='1';
-          var origOnclick=card.onclick;
-          card.onclick=null;
-          card.addEventListener('click',function(e){
-            if(card.classList.contains('active')){e.preventDefault();e.stopPropagation();return;}
-            if(typeof origOnclick==='function')origOnclick.call(card,e);
-          },true);
-        });
+      window.renderSetup = function() { var r = bfOrigRenderSetup.apply(this, arguments); var box = document.getElementById('s-setup'); if (box) {
+        // Iconos de modo: usamos las MISMAS imágenes que el juego nativo pone al
+        // seleccionar la tarjeta, así al clic no se ve un intercambio de icono
+        // (que era lo que el usuario percibía como "dos iconos distintos").
+        var ic = box.querySelectorAll('.mode-icon'); var urls = ['https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/25bfb76a3_generated_image.png','https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2fee3bba1_generated_image.png']; ic.forEach(function(el,i){if(!urls[i])return;el.textContent='';el.style.cssText='background:none!important;padding:0!important;overflow:hidden!important;font-size:0!important;line-height:0!important;';var img=document.createElement('img');img.src=urls[i];img.alt='';img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;';el.appendChild(img);});
+        // Evitar que volver a picar la tarjeta YA seleccionada la deseleccione
+        // o oculte los niveles de IA: la tarjeta activa ignora cualquier evento
+        // de puntero (pointer-events:none). La tarjeta NO activa sigue siendo
+        // clicable normalmente, así el primer clic (selección) siempre funciona.
+        if(!document.getElementById('bf-mode-active-guard')){
+          var st=document.createElement('style');st.id='bf-mode-active-guard';
+          st.textContent='#s-setup .mode-card.active{pointer-events:none!important}';
+          document.head.appendChild(st);
+        }
       } return r; };
       window.renderSetup.__bf = 1;
     }
