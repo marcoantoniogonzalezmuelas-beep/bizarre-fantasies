@@ -461,6 +461,34 @@ export const MOTIONS = [
       '<div class="bf-aa-vortex" style="width:30vmin;height:30vmin;animation-delay:.1s"></div><div class="bf-aa-vortex" style="width:46vmin;height:46vmin;animation-delay:.4s"></div><div class="bf-aa-vortex" style="width:62vmin;height:62vmin;animation-delay:.7s"></div>' +
       '<span class="bf-aa-debris2" style="left:46%;bottom:16%;--a:0deg;animation-delay:.2s"></span><span class="bf-aa-debris2" style="left:52%;bottom:14%;--a:90deg;animation-delay:.45s"></span><span class="bf-aa-debris2" style="left:48%;bottom:18%;--a:180deg;animation-delay:.7s"></span><span class="bf-aa-debris2" style="left:54%;bottom:12%;--a:270deg;animation-delay:.95s"></span><span class="bf-aa-debris2" style="left:44%;bottom:20%;--a:45deg;animation-delay:1.2s"></span>',
   },
+  // MONTAR VEHÍCULO / montura: entra a toda velocidad desde un lateral,
+  // derrapa al frenar y se planta. Humo, chispas del suelo, estelas de
+  // velocidad y polvo. Cubre cualquier vehículo o montura (caballo, moto,
+  // coche, tren, avión, bicicleta, skate, patines, etc).
+  {
+    id: 'ride',
+    keywords: ['montar', 'caballo', 'caballo', 'yegua', 'potro', 'corcel', 'jinete', 'montura', 'galopar', 'galope', 'correr a caballo', 'llama', 'camello', 'burro', 'asno', 'mula', 'reno', 'corzo', 'unicornio', 'pegaso', 'coche', 'car', 'auto', 'automóvil', 'automovil', 'vehículo', 'vehiculo', 'turismo', 'sedán', 'sedan', 'deportivo', 'moto', 'motocicleta', 'motorbike', 'motorcycle', 'chopper', 'scooter', 'vespa', 'fórmula', 'formula', 'formula uno', 'f1', 'f-1', 'monoplaza', 'tractor', 'camión', 'camion', 'truck', 'lorry', 'furgoneta', 'furgón', 'furgon', 'van', 'carro de caballo', 'caballo de tiro', 'calesa', 'coche de caballos', 'diligencia', 'tren', 'locomotora', 'vagón', 'vagon', 'ferrocarril', 'metro', 'tranvía', 'tranvia', 'avión', 'avion', 'plane', 'aeroplano', 'reactor', 'jet', 'helicóptero', 'helicoptero', 'bicicleta', 'bici', 'bicycle', 'bike', 'ciclomotor', 'ciclomotor', 'patinete', 'monopatín', 'monopatin', 'skate', 'skateboard', 'patines', 'patín', 'patin', 'rollers', 'patineta', 'coche de golf', 'carrito de golf', 'golf cart', 'buggy', 'cuatriciclo', 'quad', 'trineo', 'motosierra', 'carreras', 'competición', 'competicion', 'circuito', 'pista', 'velocidad', 'acelerar', 'arrancar', 'derrapar', 'frenar', 'conducir', 'piloto', 'volante', 'rueda', 'ruedas', 'motor', 'encender el motor'],
+    anim: 'bfAaRide',
+    keyframes:
+      '@keyframes bfAaRide{0%{transform:translate(-75vw,10vh) rotate(-6deg) scale(.4);opacity:0}10%{opacity:1}24%{transform:translate(-28vw,-4vh) rotate(-3deg) scale(.7)}40%{transform:translate(18vw,2vh) rotate(2deg) scale(1)}52%{transform:translate(30vw,-2vh) rotate(-4deg) scale(1.1) translateY(0)}62%{transform:translate(20vw,3vh) rotate(6deg) scale(1.12)}72%{transform:translate(8vw,-1vh) rotate(-3deg) scale(1.15)}82%{transform:translate(2vw,1vh) rotate(1deg) scale(1.18)}100%{transform:translate(0,-6vh) rotate(0) scale(1.25);opacity:1}}',
+    fxCss:
+      '.bf-aa-speedline{position:absolute;height:3px;width:40vw;background:linear-gradient(90deg,transparent,var(--aa-color,#fff),transparent);border-radius:3px;filter:drop-shadow(0 0 10px var(--aa-glow,#fff));opacity:0;animation:bfAaSpeedLine .9s ease-out forwards}' +
+      '@keyframes bfAaSpeedLine{0%{opacity:0;transform:translateX(var(--from,-50vw)) scaleX(.3)}30%{opacity:.9}100%{opacity:0;transform:translateX(var(--to,50vw)) scaleX(1.4)}}' +
+      '.bf-aa-dustpuff{position:absolute;bottom:16%;width:26px;height:12px;border-radius:50%;background:radial-gradient(circle,#d9c9a0,transparent 70%);opacity:0;animation:bfAaDustPuff 1.4s ease-out forwards;filter:blur(3px)}' +
+      '@keyframes bfAaDustPuff{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:.8}100%{opacity:0;transform:translate(var(--dx,0px),-12vh) scale(2.6)}}' +
+      '.bf-aa-spark4{position:absolute;bottom:14%;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 10px #ffd24a,0 0 18px #ff8a14;opacity:0;animation:bfAaSpark4 .8s ease-out forwards}' +
+      '@keyframes bfAaSpark4{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,-20px)) scale(1.4)}}' +
+      '.bf-aa-exhaust{position:absolute;bottom:22%;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,rgba(200,200,210,.7),transparent 70%);opacity:0;animation:bfAaExhaust 1.6s ease-out forwards;filter:blur(4px)}' +
+      '@keyframes bfAaExhaust{0%{opacity:0;transform:translate(0,0) scale(.4)}20%{opacity:.7}100%{opacity:0;transform:translate(var(--dx,-30px),-30vh) scale(2.8)}}' +
+      '.bf-aa-skid{position:absolute;bottom:14%;left:50%;width:50vmin;height:6px;margin:0 0 0 -25vmin;background:linear-gradient(90deg,transparent,#3a3a3a 30%,#1a1a1a 70%,transparent);border-radius:6px;opacity:0;animation:bfAaSkid .7s ease-out .45s forwards;filter:blur(1px)}' +
+      '@keyframes bfAaSkid{0%{opacity:0;transform:scaleX(.2)}40%{opacity:.85;transform:scaleX(1)}100%{opacity:0;transform:scaleX(1.3)}}',
+    fxTag:
+      '<div class="bf-aa-skid"></div>' +
+      '<div class="bf-aa-speedline" style="top:28%;--from:-50vw;--to:50vw;animation-delay:.1s"></div><div class="bf-aa-speedline" style="top:44%;--from:-45vw;--to:45vw;animation-delay:.3s"></div><div class="bf-aa-speedline" style="top:62%;--from:-40vw;--to:40vw;animation-delay:.5s"></div>' +
+      '<span class="bf-aa-dustpuff" style="left:38%;--dx:-40px;animation-delay:.3s"></span><span class="bf-aa-dustpuff" style="left:48%;--dx:50px;animation-delay:.4s"></span><span class="bf-aa-dustpuff" style="left:42%;--dx:-60px;animation-delay:.55s"></span><span class="bf-aa-dustpuff" style="left:54%;--dx:70px;animation-delay:.65s"></span><span class="bf-aa-dustpuff" style="left:46%;--dx:-30px;animation-delay:.8s"></span>' +
+      '<span class="bf-aa-spark4" style="left:40%;--dx:-50px;--dy:-15px;animation-delay:.4s"></span><span class="bf-aa-spark4" style="left:56%;--dx:60px;--dy:-10px;animation-delay:.5s"></span><span class="bf-aa-spark4" style="left:44%;--dx:-70px;--dy:-25px;animation-delay:.6s"></span><span class="bf-aa-spark4" style="left:58%;--dx:45px;--dy:-18px;animation-delay:.7s"></span>' +
+      '<span class="bf-aa-exhaust" style="left:34%;--dx:-40px;animation-delay:.2s"></span><span class="bf-aa-exhaust" style="left:62%;--dx:35px;animation-delay:.5s"></span><span class="bf-aa-exhaust" style="left:48%;--dx:-25px;animation-delay:.8s"></span>',
+  },
   // TELEPORT: aparece y desaparece a saltos por la pantalla hasta materializarse.
   {
     id: 'teleport',
@@ -490,6 +518,7 @@ export const MOTION_LABELS = {
   roam: '💨 Recorrer toda la pantalla',
   tornado: '🌪️ Tornado ascendente',
   teleport: '👻 Teletransporte / parpadeo',
+  ride: '🏁 Montar vehículo / montura',
   heroic: '💥 Salto y aterrizaje épico',
   bicycle: '⚽ Chilena / remate',
   slash: '⚔️ Tajo de espada',
