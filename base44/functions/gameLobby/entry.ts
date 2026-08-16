@@ -10,16 +10,30 @@ Deno.serve(async (req) => {
     const cutoff = Date.now() - 90000;
     const LEFT_TTL = 300000; // 5 minutos tras salir un jugador
 
-    // ---- Auto-limpieza: elimina salas "playing" con left_at caducado ----
+    // Borra una sala y su caché asociada (mensajes de chat de la sala).
+    async function deleteRoomFully(room: any) {
+      try { await base44.asServiceRole.entities.GameRoom.delete(room.id); } catch (e) {}
+      try { await base44.asServiceRole.entities.ChatMessage.deleteMany({ room_code: room.room_code }); } catch (e) {}
+    }
+
+    // ---- Auto-limpieza total de la BD ----
+    // Elimina: salas terminadas, salas con left_at caducado (nadie reanudó en
+    // 5 min), salas en espera abandonadas (>10 min sin latido) y partidas
+    // muertas (>3 h sin actividad). Así la BD queda siempre liberada aunque
+    // algún cliente no llegara a llamar a 'unregister'.
     async function cleanupStaleLeft() {
       try {
-        const playing = await base44.asServiceRole.entities.GameRoom.filter({ status: 'playing' }, '-updated_date', 100);
+        const all = await base44.asServiceRole.entities.GameRoom.list('-updated_date', 200);
         const now = Date.now();
-        for (const room of playing) {
+        for (const room of all) {
+          const upd = Date.parse(room.updated_date || room.created_date || 0);
           const leftAt = room.left_at || room.state?.left_at;
-          if (leftAt && now - leftAt > LEFT_TTL) {
-            await base44.asServiceRole.entities.GameRoom.delete(room.id);
-          }
+          const stale =
+            room.status === 'finished' ||
+            (leftAt && now - leftAt > LEFT_TTL) ||
+            (room.status === 'waiting' && now - upd > 600000) ||
+            ((room.status === 'playing' || room.status === 'resuming') && now - upd > 10800000);
+          if (stale) await deleteRoomFully(room);
         }
       } catch (e) {}
     }
@@ -264,7 +278,7 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true });
     }
     if (action === 'unregister') {
-      await base44.asServiceRole.entities.GameRoom.delete(existing.id);
+      await deleteRoomFully(existing);
       return Response.json({ ok: true });
     }
 

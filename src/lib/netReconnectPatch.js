@@ -24,6 +24,32 @@ export const NET_RECONNECT_PATCH = `
     try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:(NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'',name:NET.names_self||'',side:NET.mySide||'g',role:NET.role||'client',ts:Date.now(),token:window.__bfResumeToken||''}));}catch(e){}
   }
   function clearResume(){try{localStorage.removeItem(RESUME_KEY);localStorage.removeItem('bfSavedMatch');}catch(e){}}
+  // Libera del todo la sala en la BD (y su caché) y borra el token local.
+  // Sirve para host y cliente: 'unregister' acepta token de dueño, token de
+  // reanudación o contraseña de la sala.
+  function releaseRoom(){
+    try{
+      if(typeof NET==='undefined'||!NET.code)return;
+      var code=NET.code;
+      var rt=window.__bfResumeToken||'';try{rt=rt||localStorage.getItem('bfResumeToken_'+code)||'';}catch(e){}
+      if(window.bfLobbyRequest)window.bfLobbyRequest('unregister',{code:code,resume_token:rt,password:NET.pass||''}).catch(function(){});
+      try{localStorage.removeItem('bfResumeToken_'+code);}catch(e){}
+      window.__bfRoomMarkedPlaying=false;
+      window.__bfRoomReleased=true;
+    }catch(e){}
+  }
+  window.__bfReleaseRoom=releaseRoom;
+  // Vigilante de fin de partida: en cuanto la partida online termina (por
+  // cualquier vía: victoria, derrota, rendición…), se libera la sala de la BD
+  // y se borra la caché de reanudación de este dispositivo.
+  setInterval(function(){
+    try{
+      if(typeof G==='undefined'||typeof NET==='undefined')return;
+      if(!G.online||!G._gameOver||!NET.code||window.__bfRoomReleased)return;
+      releaseRoom();clearResume();
+      if(window.__bfClearSave)window.__bfClearSave();
+    }catch(e){}
+  },2000);
   window.__bfGetResume=function(){
     try{
       var i=JSON.parse(localStorage.getItem(RESUME_KEY)||'null');
@@ -124,8 +150,7 @@ export const NET_RECONNECT_PATCH = `
     if(typeof G!=='undefined')G._gameOver=true;
     clearResume();if(window.__bfClearSave)window.__bfClearSave();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
-    window.__bfRoomMarkedPlaying=false;
-    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
+    releaseRoom();
     hideOverlay();
     var el=document.getElementById('bf-quit-notify');
     if(!el){
@@ -222,7 +247,7 @@ export const NET_RECONNECT_PATCH = `
         return;
       }
       if(msg.t==='bfFullSync'){resumed();applyFullSync(msg);return;}
-      if(msg.t==='end'){G._gameOver=true;hideOverlay();clearResume();showResult(msg.pWin===(NET.mySide==='p'));return;}
+      if(msg.t==='end'){G._gameOver=true;hideOverlay();clearResume();releaseRoom();showResult(msg.pWin===(NET.mySide==='p'));return;}
       if(msg.t==='welcome'){resumed();return;}
     });
     conn.on('close',function(){
@@ -378,7 +403,7 @@ export const NET_RECONNECT_PATCH = `
         qc=document.createElement('div');qc.id='bf-quit-confirm';
         qc.innerHTML='<div class="bf-qc-t">Salir de la partida</div><div class="bf-qc-s">Tu rival será notificado y la partida terminará.</div><div class="bf-qc-btns"><button class="bf-qc-yes">Sí, salir</button><button class="bf-qc-no">Cancelar</button></div>';
         document.body.appendChild(qc);
-        qc.querySelector('.bf-qc-yes').onclick=function(){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();qc.style.display='none';setTimeout(function(){location.reload();},200);};
+        qc.querySelector('.bf-qc-yes').onclick=function(){quitting=true;sendBye();clearResume();if(window.__bfClearSave)window.__bfClearSave();releaseRoom();qc.style.display='none';setTimeout(function(){location.reload();},200);};
         qc.querySelector('.bf-qc-no').onclick=function(){btn.dataset.bfConfirming='';qc.style.display='none';};
       }
       qc.style.display='block';
@@ -595,6 +620,7 @@ export const NET_RECONNECT_PATCH = `
     // unirse salvo los dos jugadores originales, que usan su token de reanudación.
     if(!window.__bfRoomMarkedPlaying&&window.bfLobbyRequest){
       window.__bfRoomMarkedPlaying=true;
+      window.__bfRoomReleased=false;
       window.bfLobbyRequest('register_playing',{code:NET.code,nicks:[NET.names_self||'Jugador 1',(G.names&&G.names.o)||'Jugador 2'],hasPass:!!NET.pass,pass:NET.pass||'',resume_token:window.__bfResumeToken||''}).catch(function(){});
     }
   },3000);
