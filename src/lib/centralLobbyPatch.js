@@ -78,7 +78,7 @@ export const CENTRAL_LOBBY_PATCH = `
       var sub=card.querySelector('.room-sub');
       if(sub){var nicks=(r.nicks||[]).join(' vs ');sub.innerHTML='código <b>'+r.id+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':'');}
       var btn=card.querySelector('button');
-      if(btn){btn.textContent='Reanudar';btn.className='btn primary sm';btn.setAttribute('onclick','bfRejoinResumeRoom(\''+r.id+'\','+(r.hasPass?1:0)+')');}
+      if(btn){btn.textContent='Reanudar';btn.className='btn primary sm';btn.setAttribute('onclick','bfRejoinResumeRoom(\\''+r.id+'\\','+(r.hasPass?1:0)+')');}
     });
   }
   window.bfRejoinResumeRoom=function(code,hasPass){
@@ -155,6 +155,11 @@ export const CENTRAL_LOBBY_PATCH = `
     };
     window.dirUnregister=function(){
       var r=LOBBY._reg;if(!r)return Promise.resolve();
+      // Si la partida YA ha empezado (el juego llama a dirUnregister desde
+      // leaveLobbyForGame), NO borramos la sala del backend: debe quedar
+      // registrada como "playing" (netReconnectPatch la marca) para que los
+      // dos jugadores puedan reanudarla si se cae la conexión.
+      if(typeof G!=='undefined'&&G.online)return Promise.resolve();
       LOBBY._reg=null;return request('unregister',{code:r.code}).catch(function(){});
     };
     window.bfCancelHostedRoom=function(){
