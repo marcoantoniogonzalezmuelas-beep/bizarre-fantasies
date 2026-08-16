@@ -168,6 +168,9 @@ export const AVATAR_PATCH = `
     var ex = document.getElementById('bf-av-modal');
     if (ex) ex.remove();
   }
+  // Expone el modal para que otros parches (Habitación Bizarra) abran el mismo
+  // selector de avatares (catálogo + héroes, 100+ avatares).
+  window.__bfOpenAvatarModal = openModal;
 
   // ---- Recibe catálogo, héroes y avatares-por-nick del padre ----
   window.addEventListener('message', function(e){
