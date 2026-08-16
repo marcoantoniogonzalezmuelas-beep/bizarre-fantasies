@@ -104,8 +104,20 @@ export const CENTRAL_LOBBY_PATCH = `
     }
     if(window.bfResumeMatch)window.bfResumeMatch();
   };
+  function injectLobbyInstructions(){
+    var box=document.querySelector('#s-lobby .setup-box');
+    if(!box||document.getElementById('bf-lobby-info'))return;
+    var div=document.createElement('div');
+    div.id='bf-lobby-info';
+    div.style.cssText='margin:10px 0 14px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,rgba(28,16,46,.7),rgba(12,7,20,.85));border:1px solid rgba(255,210,74,.3);font-family:Rubik,sans-serif;font-size:12.5px;line-height:1.5;color:#cfc6dd;box-shadow:0 4px 14px rgba(0,0,0,.3)';
+    div.innerHTML='<div style="font-family:Cinzel,serif;font-weight:900;color:#ffd24a;font-size:13px;margin-bottom:6px;letter-spacing:.3px">ℹ️ Reanudación de partidas</div>'+
+      'Si se cae tu conexión o sales por error, la sala <b style="color:#ffe49a">sigue abierta</b> como "Partida en curso" durante <b style="color:#ffe49a">5 minutos</b>. '+
+      'Solo los dos jugadores originales pueden reanudar: entra en <b style="color:#ffe49a">Salas online</b>, busca tu sala y pulsa <b style="color:#ffe49a">Reanudar</b>. '+
+      'La sala se cierra al terminar la partida o si nadie vuelve en 5 minutos.';
+    box.insertBefore(div,box.firstChild);
+  }
   function renderCentralList(){
-    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateResumeRooms();injectResumeCard();}
+    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateResumeRooms();injectResumeCard();injectLobbyInstructions();}
   }
   function centralList(){
     if(typeof LOBBY==='undefined')return;

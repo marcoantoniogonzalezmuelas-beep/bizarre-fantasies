@@ -8,11 +8,27 @@ Deno.serve(async (req) => {
     const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     const token = String(body.token || '').slice(0, 80);
     const cutoff = Date.now() - 90000;
+    const LEFT_TTL = 300000; // 5 minutos tras salir un jugador
+
+    // ---- Auto-limpieza: elimina salas "playing" con left_at caducado ----
+    async function cleanupStaleLeft() {
+      try {
+        const playing = await base44.asServiceRole.entities.GameRoom.filter({ status: 'playing' }, '-updated_date', 100);
+        const now = Date.now();
+        for (const room of playing) {
+          const leftAt = room.left_at || room.state?.left_at;
+          if (leftAt && now - leftAt > LEFT_TTL) {
+            await base44.asServiceRole.entities.GameRoom.delete(room.id);
+          }
+        }
+      } catch (e) {}
+    }
 
     if (action === 'list') {
-      const resumeCutoff = Date.now() - 300000;
-      const [waitingRecords, resumingRecords] = await Promise.all([
+      await cleanupStaleLeft();
+      const [waitingRecords, playingRecords, resumingRecords] = await Promise.all([
         base44.asServiceRole.entities.GameRoom.filter({ status: 'waiting' }, '-updated_date', 100),
+        base44.asServiceRole.entities.GameRoom.filter({ status: 'playing' }, '-updated_date', 100),
         base44.asServiceRole.entities.GameRoom.filter({ status: 'resuming' }, '-updated_date', 100),
       ]);
       const rooms: any[] = [];
@@ -26,6 +42,23 @@ Deno.serve(async (req) => {
             ts: Date.parse(room.updated_date || room.created_date || 0),
           });
         });
+      // Salas "playing" con left_at: visibles como "Partida en curso" (reanudables).
+      // Salas "playing" sin left_at: partida en juego activo, NO se muestran en la lista
+      // (nadie puede unirse salvo los dos jugadores originales, que usan su token).
+      playingRecords.forEach((room) => {
+        const leftAt = room.left_at || room.state?.left_at;
+        if (!leftAt || Date.now() - leftAt > LEFT_TTL) return;
+        rooms.push({
+          id: room.room_code,
+          name: 'Partida en curso',
+          hasPass: room.state?.has_pass === true,
+          isResume: true,
+          nicks: room.state?.resume_nicks || [room.host_name, room.guest_name].filter(Boolean),
+          ts: Date.parse(room.updated_date || room.created_date || 0),
+        });
+      });
+      // Legacy: salas "resuming" (compatibilidad con partidas antiguas).
+      const resumeCutoff = Date.now() - LEFT_TTL;
       resumingRecords
         .filter((room) => Date.parse(room.updated_date || room.created_date || 0) >= resumeCutoff)
         .forEach((room) => {
@@ -55,6 +88,7 @@ Deno.serve(async (req) => {
         room_code: code,
         status: 'waiting',
         host_name: String(body.name || code).slice(0, 28),
+        left_at: null,
         state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token },
       };
       if (existing && !ownsRoom && !isStale) return Response.json({ error: 'Room code already active' }, { status: 409 });
@@ -62,25 +96,43 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, id: room.id });
     }
 
-    if (action === 'register_resume') {
+    // Marca la sala como "playing" (partida en juego) cuando arranca la partida.
+    // La sala deja de ser visible en la lista pública: nadie puede unirse salvo
+    // los dos jugadores originales, que usan su token de reanudación.
+    if (action === 'register_playing') {
       const nicks = Array.isArray(body.nicks) ? body.nicks.slice(0, 2).map((n: any) => String(n || '').slice(0, 28)) : [];
-      const resumeCutoff = Date.now() - 300000;
-      const isStaleResume = existing && Date.parse(existing.updated_date || existing.created_date || 0) < resumeCutoff;
-      const resumeData = {
+      const data = {
         room_code: code,
-        status: 'resuming' as const,
-        host_name: nicks[0] || code,
+        status: 'playing' as const,
+        host_name: nicks[0] || String(body.name || code).slice(0, 28),
         guest_name: nicks[1] || '',
-        state: { room_name: 'Partida en curso', has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks, resume_token: String(body.resume_token || '').slice(0, 40) },
+        left_at: null,
+        state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks, resume_token: String(body.resume_token || '').slice(0, 40) },
       };
-      if (existing && !ownsRoom && !isStaleResume) return Response.json({ error: 'Room code already active' }, { status: 409 });
-      const resumeRoom = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, resumeData) : await base44.asServiceRole.entities.GameRoom.create(resumeData);
-      return Response.json({ ok: true, id: resumeRoom.id });
+      if (existing && !ownsRoom && !isStale) return Response.json({ error: 'Room code already active' }, { status: 409 });
+      const room = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, data) : await base44.asServiceRole.entities.GameRoom.create(data);
+      return Response.json({ ok: true, id: room.id });
+    }
+
+    // Marca que un jugador ha salido de la partida en curso. Empieza la cuenta
+    // atrás de 5 minutos: si nadie reanuda, la sala se auto-elimina.
+    if (action === 'mark_left') {
+      if (!existing || !ownsRoom) return Response.json({ ok: true });
+      await base44.asServiceRole.entities.GameRoom.update(existing.id, { left_at: Date.now(), status: 'playing' });
+      return Response.json({ ok: true });
+    }
+
+    // Limpia el flag de salida: un jugador ha vuelto a la partida. La sala
+    // vuelve a estar oculta de la lista pública (partida en juego activo).
+    if (action === 'clear_left') {
+      if (!existing || !ownsRoom) return Response.json({ ok: true });
+      await base44.asServiceRole.entities.GameRoom.update(existing.id, { left_at: null, status: 'playing' });
+      return Response.json({ ok: true });
     }
 
     if (!existing || !ownsRoom) return Response.json({ ok: true });
     if (action === 'touch') {
-      await base44.asServiceRole.entities.GameRoom.update(existing.id, { status: existing.status === 'resuming' ? 'resuming' : 'waiting' });
+      await base44.asServiceRole.entities.GameRoom.update(existing.id, { status: existing.status === 'resuming' ? 'resuming' : (existing.status === 'playing' ? 'playing' : 'waiting') });
       return Response.json({ ok: true });
     }
     if (action === 'unregister') {

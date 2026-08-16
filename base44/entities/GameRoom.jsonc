@@ -21,6 +21,10 @@
     "guest_name": {
       "type": "string"
     },
+    "left_at": {
+      "type": "number",
+      "description": "Timestamp (ms) en el que un jugador sali\u00f3 de la partida en curso. La sala se auto-elimina 5 minutos despu\u00e9s de este valor."
+    },
     "state": {
       "type": "object"
     }

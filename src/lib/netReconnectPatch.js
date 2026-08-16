@@ -117,6 +117,7 @@ export const NET_RECONNECT_PATCH = `
     if(typeof G!=='undefined')G._gameOver=true;
     clearResume();if(window.__bfClearSave)window.__bfClearSave();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
+    window.__bfRoomMarkedPlaying=false;
     if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
     hideOverlay();
     var el=document.getElementById('bf-quit-notify');
@@ -141,12 +142,15 @@ export const NET_RECONNECT_PATCH = `
     var was=rec.active;
     rec.active=false;rec.pendConn=null;rec.waiting=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
-    if(was&&typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
+    // El rival ha vuelto: limpiar el flag de salida para que la sala vuelva a
+    // estar oculta del lobby (partida en juego activo). NO se elimina la sala.
+    if(was&&typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('clear_left',{code:NET.code}).catch(function(){});}
     if(was&&typeof notif==='function')notif('✔ Conexión restablecida. ¡La partida continúa!');
   }
   function giveUp(msg){
     rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
+    window.__bfRoomMarkedPlaying=false;
     if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
     if(typeof modal==='function')modal('<h3>Tiempo de espera agotado</h3><div class="modal-note" style="font-size:15px">'+(msg||'Tu rival no ha vuelto en 5 minutos. La partida no se puede reanudar.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
@@ -245,11 +249,14 @@ export const NET_RECONNECT_PATCH = `
     rec.timer=setTimeout(hostWait,RETRY_MS);
   }
 
-  function reopenRoomResume(){
+  // Marca la sala como "left" (un jugador ha salido). La sala YA está marcada
+  // como "playing" desde que arrancó la partida, así que no hace falta
+  // reabriría: solo señalamos que alguien se ha ido y empezamos la cuenta
+  // atrás de 5 minutos para que el rival pueda reanudar desde el lobby.
+  function markLeft(){
     try{
       if(typeof NET==='undefined'||NET.role!=='host'||!NET.code||!window.bfLobbyRequest)return;
-      var nicks=[NET.names_self||'Jugador 1',(typeof G!=='undefined'&&G.names&&G.names.o)||'Jugador 2'];
-      window.bfLobbyRequest('register_resume',{code:NET.code,nicks:nicks,hasPass:!!NET.pass,resume_token:window.__bfResumeToken||''}).catch(function(){});
+      window.bfLobbyRequest('mark_left',{code:NET.code}).catch(function(){});
       if(!window.__bfResumeTouchIv){
         window.__bfResumeTouchIv=setInterval(function(){
           if(typeof NET==='undefined'||NET.role!=='host'||!NET.code){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;return;}
@@ -261,9 +268,9 @@ export const NET_RECONNECT_PATCH = `
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
-    reopenRoomResume();
-    try{if(typeof notif==='function')notif('🔄 Sala reabierta como "Partida en curso". Ve a Salas online para reanudar.');}catch(e){}
-    var sub='La sala se ha reabierto como "Partida en curso". Ve a Salas online para reanudar, o espera aquí 5 minutos a que tu rival vuelva.';
+    markLeft();
+    try{if(typeof notif==='function')notif('🔄 La partida sigue en curso. Tu rival puede reanudar desde Salas online.');}catch(e){}
+    var sub='La partida sigue abierta. Tu rival puede reanudar desde Salas online, o puedes esperar 5 minutos a que vuelva.';
     if(NET.role==='client'){overlay('Tu rival se ha desconectado',sub);clientRetry();}
     else{overlay('Tu rival se ha desconectado',sub);hostWait();}
   }
@@ -321,8 +328,8 @@ export const NET_RECONNECT_PATCH = `
     if(rec.active)return;
     if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}}
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=true;
-    reopenRoomResume();
-    overlay('Esperando al otro jugador','La sala se ha reabierto. La partida se reanudará cuando tu rival vuelva a conectarse.');
+    markLeft();
+    overlay('Esperando al otro jugador','La partida sigue abierta. La partida se reanudará cuando tu rival vuelva a conectarse.');
     var el=document.getElementById('bf-reconnect');
     if(el){
       el.querySelector('.bf-rec-wait').style.display='none';
@@ -414,6 +421,13 @@ export const NET_RECONNECT_PATCH = `
       try{localStorage.setItem('bfResumeToken_'+NET.code,window.__bfResumeToken);}catch(e){}
     }
     try{NET.conn.send({t:'bfResumeToken',token:window.__bfResumeToken});}catch(e){}
+    // Marcar la sala como "playing" (partida en juego) una sola vez al iniciar
+    // la partida. La sala deja de ser visible en la lista pública: nadie puede
+    // unirse salvo los dos jugadores originales, que usan su token de reanudación.
+    if(!window.__bfRoomMarkedPlaying&&window.bfLobbyRequest){
+      window.__bfRoomMarkedPlaying=true;
+      window.bfLobbyRequest('register_playing',{code:NET.code,nicks:[NET.names_self||'Jugador 1',(G.names&&G.names.o)||'Jugador 2'],hasPass:!!NET.pass,resume_token:window.__bfResumeToken||''}).catch(function(){});
+    }
   },3000);
   setInterval(function(){
     if(typeof NET==='undefined'||!NET.conn||NET.conn.__bfRtL)return;
