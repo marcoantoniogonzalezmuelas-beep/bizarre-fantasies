@@ -1,6 +1,7 @@
 // Parche inyectado en el iframe: botón "Desactivar animaciones" solo en batalla.
-// Se coloca justo DEBAJO del botón "Salir" (homeBtn). Al pulsarlo, activa/desactiva
-// el flag global window.__bfNoCinematics (persistente en localStorage).
+// Se coloca fijo en la esquina superior derecha, justo debajo del botón "Salir".
+// Al pulsarlo, activa/desactiva el flag global window.__bfNoCinematics
+// (persistente en localStorage).
 //
 // Cuando el flag está activo, las cinemáticas 3D (abilityAnimPatch para
 // habilidades de héroes, hechizos y objetos; specialCardCinematicPatch para
@@ -16,14 +17,18 @@ export const CINE_TOGGLE_PATCH = `
   try{ window.__bfNoCinematics = localStorage.getItem('bfNoCinematics')==='1'; }catch(e){ window.__bfNoCinematics=false; }
 
   var css=''+
-  '#bf-cine-toggle{position:fixed;z-index:100004;display:none;'+
+  // Posición FIJA en el viewport del juego (no depende del rect del botón
+  // Salir, que se desplaza al hacer zoom de pellizco en móvil).
+  '#bf-cine-toggle{position:fixed;top:62px;right:12px;z-index:2147483000;display:none;'+
     'padding:7px 12px;border-radius:10px;font-family:Cinzel,serif;font-weight:900;'+
     'font-size:12px;letter-spacing:.3px;cursor:pointer;touch-action:manipulation;'+
+    'pointer-events:auto;-webkit-tap-highlight-color:transparent;'+
     'box-shadow:0 4px 14px rgba(0,0,0,.55);transition:transform .12s ease,background .15s ease;'+
     'white-space:nowrap;line-height:1.1}'+
   '#bf-cine-toggle:active{transform:scale(.94)}'+
   '#bf-cine-toggle.bf-on{border:1px solid rgba(255,240,180,.85);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}'+
-  '#bf-cine-toggle.bf-off{border:1px solid rgba(255,120,100,.6);background:linear-gradient(180deg,#3a2030,#241018);color:#ffb0a0}';
+  '#bf-cine-toggle.bf-off{border:1px solid rgba(255,120,100,.6);background:linear-gradient(180deg,#3a2030,#241018);color:#ffb0a0}'+
+  '@media(max-width:1024px){#bf-cine-toggle{top:56px;right:8px;font-size:11px;padding:6px 10px}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function isBattle(){
@@ -33,31 +38,33 @@ export const CINE_TOGGLE_PATCH = `
   function syncButton(){
     var btn=document.getElementById('bf-cine-toggle');
     if(!btn)return;
-    var home=document.getElementById('homeBtn');
-    if(!home||!isBattle()){btn.style.display='none';return;}
-    var r=home.getBoundingClientRect();
-    if(!r||!r.width){btn.style.display='none';return;}
-    btn.style.display='block';
-    // Misma columna que el botón Salir, justo debajo.
-    btn.style.right=Math.max(4,(window.innerWidth-r.right))+'px';
-    btn.style.top=(r.bottom+6)+'px';
+    btn.style.display=isBattle()?'block':'none';
     var on=!window.__bfNoCinematics;
     btn.className='bf-'+(on?'on':'off');
     btn.textContent=on?'🎬 Desactivar animaciones':'🔇 Activar animaciones';
   }
 
+  function toggle(e){
+    if(e){try{e.preventDefault();e.stopPropagation();}catch(x){}}
+    window.__bfNoCinematics=!window.__bfNoCinematics;
+    try{localStorage.setItem('bfNoCinematics',window.__bfNoCinematics?'1':'0');}catch(x){}
+    syncButton();
+    try{if(typeof notif==='function')notif(window.__bfNoCinematics?'🔇 Cinemáticas 3D desactivadas':'🎬 Cinemáticas 3D activadas');}catch(x){}
+  }
+
   function ensureButton(){
     var btn=document.getElementById('bf-cine-toggle');
-    if(!btn){
+    if(!btn||!btn.isConnected){
       btn=document.createElement('button');
       btn.id='bf-cine-toggle';
-      btn.addEventListener('click',function(){
-        window.__bfNoCinematics=!window.__bfNoCinematics;
-        try{localStorage.setItem('bfNoCinematics',window.__bfNoCinematics?'1':'0');}catch(e){}
-        syncButton();
-        try{if(typeof notif==='function')notif(window.__bfNoCinematics?'🔇 Cinemáticas 3D desactivadas':'🎬 Cinemáticas 3D activadas');}catch(e){}
-      });
-      (window.__bfAppend||function(n){document.body.appendChild(n);})(btn);
+      btn.type='button';
+      // pointerdown: respuesta inmediata en táctil (el click puede quedar
+      // absorbido por las capas de FX/pinch superpuestas en batalla).
+      btn.addEventListener('pointerdown',toggle);
+      btn.addEventListener('click',function(e){try{e.preventDefault();e.stopPropagation();}catch(x){}});
+      // Siempre en <body>: __bfAppend lo metía en contenedores transformados
+      // (FX/zoom), donde position:fixed deja de ser fijo y el botón flota.
+      document.body.appendChild(btn);
     }
     syncButton();
   }
