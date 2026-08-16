@@ -388,7 +388,7 @@ export const NET_RECONNECT_PATCH = `
 
   // Diálogo de contraseña para reanudar: identifica al jugador como uno de los
   // dos originales de la sala privada.
-  window.bfAskResumePass=function(code,errMsg){
+  window.bfAskResumePass=function(code,errMsg,nicks){
     var el=document.getElementById('bf-resume-pass');
     if(!el){
       el=document.createElement('div');el.id='bf-resume-pass';
@@ -396,6 +396,7 @@ export const NET_RECONNECT_PATCH = `
       el.innerHTML='<div style="max-width:340px;width:100%;padding:24px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.55);box-shadow:0 18px 50px rgba(0,0,0,.7);text-align:center;font-family:Rubik,sans-serif">'+
         '<div style="font-family:Cinzel,serif;font-weight:900;font-size:18px;color:#ffe49a">Reanudar la partida</div>'+
         '<div style="margin-top:8px;font-size:13px;color:#cfc6dd;line-height:1.45">Escribe la <b>contraseña de la sala</b> para volver a entrar. Solo los dos jugadores originales la conocen.</div>'+
+        '<div class="bf-rp-nicks" style="display:none;margin-top:12px"><div style="font-size:11px;font-weight:800;letter-spacing:.6px;color:#cbb46a;text-transform:uppercase;margin-bottom:6px">¿Quién eres?</div><div class="bf-rp-nlist" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"></div></div>'+
         '<div class="bf-rp-err" style="display:none;margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(120,30,30,.4);border:1px solid rgba(255,120,100,.55);color:#ffb0a0;font-size:12.5px;font-weight:700"></div>'+
         '<input class="bf-rp-in" type="password" autocomplete="off" placeholder="Contraseña de la sala" style="margin-top:14px;width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#efe9dc;font-size:15px;text-align:center">'+
         '<div style="margin-top:16px;display:flex;gap:10px;justify-content:center">'+
@@ -408,13 +409,35 @@ export const NET_RECONNECT_PATCH = `
         var pass=String(input.value||'').trim();
         if(!pass){el.querySelector('.bf-rp-err').style.display='block';el.querySelector('.bf-rp-err').textContent='⚠️ Escribe la contraseña de la sala.';return;}
         el.style.display='none';
-        window.bfResumeWithPass(el.dataset.code||'',pass);
+        window.bfResumeWithPass(el.dataset.code||'',pass,el.dataset.nick||'');
       };
       el.querySelector('.bf-rp-ok').onclick=go;
       input.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
       el.querySelector('.bf-rp-no').onclick=function(){el.style.display='none';location.reload();};
     }
     el.dataset.code=code||'';
+    // Nicks de los dos jugadores de la sala (vienen del backend): el jugador
+    // elige el suyo para que la partida se reanude con su nombre y su bando.
+    var list=(nicks||[]).filter(Boolean);
+    var box=el.querySelector('.bf-rp-nicks'),nl=el.querySelector('.bf-rp-nlist');
+    var saved='';try{var ri=window.__bfGetResume&&window.__bfGetResume();saved=(ri&&ri.code===code&&ri.name)||localStorage.getItem('bfNick')||'';}catch(e){}
+    el.dataset.nick=saved||list[0]||'';
+    if(list.length){
+      box.style.display='block';nl.innerHTML='';
+      list.forEach(function(n){
+        var b=document.createElement('button');
+        b.type='button';b.textContent=n;
+        var on=String(n).toLowerCase()===String(el.dataset.nick||'').toLowerCase();
+        if(on)el.dataset.nick=n;
+        b.style.cssText='padding:8px 14px;border-radius:10px;cursor:pointer;font-family:Rubik,sans-serif;font-weight:800;font-size:13px;border:1px solid '+(on?'#FFD24A':'rgba(255,255,255,.22)')+';background:'+(on?'rgba(255,210,74,.18)':'rgba(255,255,255,.06)')+';color:'+(on?'#ffe49a':'#cfc6dd');
+        b.onclick=function(){
+          el.dataset.nick=n;
+          Array.from(nl.children).forEach(function(c){c.style.border='1px solid rgba(255,255,255,.22)';c.style.background='rgba(255,255,255,.06)';c.style.color='#cfc6dd';});
+          b.style.border='1px solid #FFD24A';b.style.background='rgba(255,210,74,.18)';b.style.color='#ffe49a';
+        };
+        nl.appendChild(b);
+      });
+    }else{box.style.display='none';}
     var err=el.querySelector('.bf-rp-err');
     if(errMsg){err.style.display='block';err.textContent='❌ '+errMsg;}else{err.style.display='none';err.textContent='';}
     el.querySelector('.bf-rp-in').value='';
@@ -425,12 +448,12 @@ export const NET_RECONNECT_PATCH = `
   // Reanudación con código + contraseña: no depende de datos guardados en el
   // dispositivo. Se prueba a entrar como cliente y, si nadie está alojando la
   // sala, se abre como host para que el rival se conecte.
-  window.bfResumeWithPass=function(code,pass){
+  window.bfResumeWithPass=function(code,pass,chosenNick){
     if(typeof NET==='undefined')window.NET={};
     if(typeof G==='undefined')window.G={};
     var info=window.__bfGetResume&&window.__bfGetResume();
-    var nick='';
-    try{nick=(info&&info.name)||localStorage.getItem('bfNick')||'';}catch(e){}
+    var nick=chosenNick||'';
+    try{nick=nick||(info&&info.name)||localStorage.getItem('bfNick')||'';}catch(e){}
     quitting=false;
     NET.code=code;NET.pass=pass;NET.names_self=nick||'Jugador';
     NET.mySide=(info&&info.code===code&&info.side)||NET.mySide||'g';
@@ -448,7 +471,9 @@ export const NET_RECONNECT_PATCH = `
   window.bfResumeMatch=function(){
     var info=window.__bfGetResume&&window.__bfGetResume();
     var code=(info&&info.code)||(typeof NET!=='undefined'&&NET.code)||'';
-    window.bfAskResumePass(code,'');
+    var nicks=[];
+    try{var r=typeof LOBBY!=='undefined'&&LOBBY.rooms&&LOBBY.rooms.find(function(x){return x&&x.id===code;});if(r&&r.nicks)nicks=r.nicks;}catch(e){}
+    window.bfAskResumePass(code,'',nicks);
   };
 
   // Reanudación del anfitrión tras recargar: reabre la sala con el mismo

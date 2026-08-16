@@ -154,16 +154,16 @@ export const CENTRAL_LOBBY_PATCH = `
         var clone=btn.cloneNode(true);
         clone.textContent='Reanudar';
         clone.className='btn primary sm';
-        clone.onclick=function(){if(window.bfRejoinResumeRoom)window.bfRejoinResumeRoom(r.id,r.hasPass);};
+        clone.onclick=function(){if(window.bfRejoinResumeRoom)window.bfRejoinResumeRoom(r.id,r.hasPass,r.nicks||[]);};
         btn.parentNode.replaceChild(clone,btn);
       }
       });
       }
-  window.bfRejoinResumeRoom=function(code,hasPass){
+  window.bfRejoinResumeRoom=function(code,hasPass,nicks){
     // Reanudar = pedir la contraseña de la sala. La contraseña identifica al
     // jugador como uno de los dos originales, sin depender de datos guardados
     // en este dispositivo (puede haberse recargado o cambiado de navegador).
-    if(window.bfAskResumePass){window.bfAskResumePass(code,'');return;}
+    if(window.bfAskResumePass){window.bfAskResumePass(code,'',nicks||[]);return;}
     return window.bfLegacyRejoin&&window.bfLegacyRejoin(code,hasPass);
   };
   window.bfLegacyRejoin=function(code,hasPass){
