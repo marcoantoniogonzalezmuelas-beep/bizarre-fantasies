@@ -148,10 +148,22 @@ export const NET_RECONNECT_PATCH = `
   // ---- Copia completa del estado de la partida ----
   // El jugador que NO se desconectó es la fuente de verdad: envía todo su
   // estado al que vuelve, así los dos siguen exactamente donde estaban.
-  var GF=['names','coins','equipReserve','equipCoins','bfEquipXfer','team','spellbook','items','bonus','eqReady','pendDebt','pools','curType','aIndex','cands','epicCands','bids','bidsIn','eqShop','eqSide','phaseResult','phaseNeeds','subRound'];
+  // Claves de G que NO se copian: son propias de cada dispositivo (rol de red,
+  // flags locales) y pisarlas rompería la sesión del que reanuda.
+  var GSKIP={online:1,_gameOver:1,ai:0};
   function buildFullSync(){
     var snap={t:'bfFullSync',scr:currentScreen(),side:(typeof NET!=='undefined'&&NET.mySide)||'',G:{}};
-    try{GF.forEach(function(k){if(typeof G!=='undefined'&&G[k]!==undefined)snap.G[k]=G[k];});}catch(e){}
+    // Copia TODO el estado serializable de G (no una lista fija): así la
+    // reanudación recupera también las variables de la fase en curso (subasta:
+    // pujas, candidatos, decisiones de conservar/vender, ronda…).
+    try{
+      Object.keys(G||{}).forEach(function(k){
+        if(GSKIP[k]===1)return;
+        var v=G[k];
+        if(typeof v==='function')return;
+        try{JSON.stringify(v);snap.G[k]=v;}catch(e){}
+      });
+    }catch(e){}
     try{if(typeof B!=='undefined'&&B)snap.B={round:B.round,qi:B.qi,queue:B.queue,over:B.over,current:B.current,log:(B.log||[]).slice(-40),seq:B.seq};}catch(e){}
     return snap;
   }
