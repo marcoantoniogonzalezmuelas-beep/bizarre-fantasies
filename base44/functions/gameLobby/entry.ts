@@ -24,6 +24,129 @@ Deno.serve(async (req) => {
       } catch (e) {}
     }
 
+    // ---- Habitación Bizarra: cola de visitantes + botón de pánico ----
+    const BIZARRE_TIMEOUT = 40000; // 40 s sin latido = fuera
+    async function cleanupBizarre() {
+      try {
+        const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
+        const now = Date.now();
+        for (const v of all) {
+          if (now - (v.last_heartbeat || 0) > BIZARRE_TIMEOUT) {
+            await base44.asServiceRole.entities.BizarreVisitor.delete(v.id);
+          }
+        }
+      } catch (e) {}
+    }
+    async function countWins(nick: string): Promise<number> {
+      try {
+        const rows = await base44.asServiceRole.entities.MatchResult.filter({ winner_nick: nick }, '-created_date', 500);
+        return (rows || []).length;
+      } catch (e) { return 0; }
+    }
+
+    if (action === 'bizarre_join') {
+      await cleanupBizarre();
+      const nick = String(body.nick || '').slice(0, 28).trim();
+      const avatar = String(body.avatar || '').slice(0, 600);
+      if (!nick) return Response.json({ error: 'Nick required' }, { status: 400 });
+      // Elimina visitantes existentes con el mismo nick (evita duplicados)
+      const existing = await base44.asServiceRole.entities.BizarreVisitor.filter({ nick }, '-created_date', 10);
+      for (const v of existing) {
+        if (String(v.nick).toLowerCase() === nick.toLowerCase()) {
+          await base44.asServiceRole.entities.BizarreVisitor.delete(v.id);
+        }
+      }
+      const sessionToken = 'bv-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      const wins = await countWins(nick);
+      const visitor = await base44.asServiceRole.entities.BizarreVisitor.create({
+        nick, avatar, total_wins: wins, session_token: sessionToken, last_heartbeat: Date.now(),
+        match_code: '', match_role: '', match_pass: '',
+      });
+      return Response.json({ ok: true, session_token: sessionToken, visitor_id: visitor.id, total_wins: wins });
+    }
+
+    if (action === 'bizarre_list') {
+      await cleanupBizarre();
+      const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
+      const now = Date.now();
+      const visitors = all
+        .filter((v) => now - (v.last_heartbeat || 0) < BIZARRE_TIMEOUT && !v.match_code)
+        .map((v) => ({ nick: v.nick, avatar: v.avatar, total_wins: v.total_wins || 0 }));
+      return Response.json({ visitors });
+    }
+
+    if (action === 'bizarre_heartbeat') {
+      const sessionToken = String(body.session_token || '').slice(0, 80);
+      if (!sessionToken) return Response.json({ error: 'session required' }, { status: 400 });
+      const matches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
+      const v = matches[0];
+      if (!v) return Response.json({ ok: false, error: 'session_expired' });
+      await base44.asServiceRole.entities.BizarreVisitor.update(v.id, { last_heartbeat: Date.now() });
+      const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
+      const now = Date.now();
+      const visitors = all
+        .filter((x) => now - (x.last_heartbeat || 0) < BIZARRE_TIMEOUT && !x.match_code)
+        .map((x) => ({ nick: x.nick, avatar: x.avatar, total_wins: x.total_wins || 0 }));
+      return Response.json({
+        ok: true,
+        visitors,
+        match: v.match_code ? { code: v.match_code, role: v.match_role, pass: v.match_pass } : null,
+      });
+    }
+
+    if (action === 'bizarre_panic') {
+      await cleanupBizarre();
+      const sessionToken = String(body.session_token || '').slice(0, 80);
+      if (!sessionToken) return Response.json({ error: 'session required' }, { status: 400 });
+      const meMatches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
+      const me = meMatches[0];
+      if (!me) return Response.json({ ok: false, error: 'session_expired' });
+      if (me.match_code) return Response.json({ ok: false, error: 'already_matched' });
+      const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
+      const now = Date.now();
+      const eligible = all.filter((v) =>
+        v.id !== me.id && !v.match_code && now - (v.last_heartbeat || 0) < BIZARRE_TIMEOUT
+      );
+      // Mínimo 2 jugadores MÁS aparte del propio (3 en total)
+      if (eligible.length < 2) {
+        return Response.json({ ok: false, error: 'need_3_total' });
+      }
+      const opponent = eligible[Math.floor(Math.random() * eligible.length)];
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let roomCode = '';
+      for (let i = 0; i < 6; i++) roomCode += chars[Math.floor(Math.random() * chars.length)];
+      let roomPass = '';
+      for (let i = 0; i < 8; i++) roomPass += chars[Math.floor(Math.random() * chars.length)];
+      await base44.asServiceRole.entities.BizarreVisitor.update(me.id, { match_code: roomCode, match_role: 'host', match_pass: roomPass });
+      await base44.asServiceRole.entities.BizarreVisitor.update(opponent.id, { match_code: roomCode, match_role: 'client', match_pass: roomPass });
+      return Response.json({ ok: true, match: { code: roomCode, role: 'host', pass: roomPass, opponent: opponent.nick } });
+    }
+
+    // El host (pulsador de pánico) reporta el código real de la sala que el
+    // juego generó al crearla, para que el cliente pueda unirse.
+    if (action === 'bizarre_report_code') {
+      const sessionToken = String(body.session_token || '').slice(0, 80);
+      const realCode = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      if (!sessionToken || !realCode) return Response.json({ ok: false });
+      const matches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
+      const v = matches[0];
+      if (!v || !v.match_code) return Response.json({ ok: false });
+      // Actualiza el código en ambos jugadores de la pareja
+      const pair = await base44.asServiceRole.entities.BizarreVisitor.filter({ match_code: v.match_code }, '-created_date', 10);
+      for (const p of pair) {
+        await base44.asServiceRole.entities.BizarreVisitor.update(p.id, { match_code: realCode });
+      }
+      return Response.json({ ok: true });
+    }
+
+    if (action === 'bizarre_leave') {
+      const sessionToken = String(body.session_token || '').slice(0, 80);
+      if (!sessionToken) return Response.json({ ok: true });
+      const matches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
+      if (matches[0]) await base44.asServiceRole.entities.BizarreVisitor.delete(matches[0].id);
+      return Response.json({ ok: true });
+    }
+
     if (action === 'list') {
       await cleanupStaleLeft();
       const [waitingRecords, playingRecords, resumingRecords] = await Promise.all([

@@ -1,0 +1,47 @@
+{
+  "name": "BizarreVisitor",
+  "type": "object",
+  "properties": {
+    "nick": {
+      "type": "string",
+      "description": "Nick del visitante (en min\u00fasculas)"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "URL del avatar del visitante"
+    },
+    "total_wins": {
+      "type": "number",
+      "default": 0,
+      "description": "Victorias totales del nick (online + local + IA)"
+    },
+    "session_token": {
+      "type": "string",
+      "description": "Token de sesi\u00f3n \u00fanico por visita"
+    },
+    "last_heartbeat": {
+      "type": "number",
+      "description": "Timestamp (ms) del \u00faltimo latido"
+    },
+    "match_code": {
+      "type": "string",
+      "description": "C\u00f3digo de la sala asignada por el bot\u00f3n de p\u00e1nico (vac\u00edo si no emparejado)"
+    },
+    "match_role": {
+      "type": "string",
+      "enum": [
+        "host",
+        "client"
+      ],
+      "description": "Rol asignado en el emparejamiento"
+    },
+    "match_pass": {
+      "type": "string",
+      "description": "Contrase\u00f1a de la sala asignada por el bot\u00f3n de p\u00e1nico"
+    }
+  },
+  "required": [
+    "nick",
+    "session_token"
+  ]
+}
