@@ -23,9 +23,12 @@ function Card({ to, label, sub, icon, narrow }) {
 
 export default function HomeSecondaryLinks({ style }) {
   const [rules, races] = ITEMS;
+  // Reglas se apila encima de Razas (mismo lado derecho), dejando los tres
+  // botones (Reglas · Razas · Oráculo) escalonados en la esquina inferior.
+  const rulesStyle = { bottom: (style?.bottom ?? 88) + 58, right: style?.right ?? 16 };
   return (
     <>
-      <div className="absolute z-20 pointer-events-auto" style={{ top: 46, left: 16 }}>
+      <div className="absolute z-20 pointer-events-auto" style={rulesStyle}>
         <Card {...rules} narrow />
       </div>
       <div className="absolute z-20 pointer-events-auto" style={style}>
