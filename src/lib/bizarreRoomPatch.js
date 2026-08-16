@@ -47,23 +47,32 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-x{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#cfc6dd;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #bf-bizarre-overlay .bf-biz-x:hover{background:rgba(255,255,255,.18);color:#fff}
 #bf-bizarre-overlay .bf-biz-wrap{position:relative}
-.bf-bizarre-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:12px 0 0;padding:13px 16px;border-radius:14px;border:2px solid rgba(199,155,255,.5);background:linear-gradient(135deg,rgba(120,60,200,.3),rgba(192,91,255,.18));color:#e2b0ff;font-family:Cinzel,serif;font-weight:1000;font-size:15px;letter-spacing:.4px;cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;text-shadow:0 2px 4px #000;box-shadow:0 6px 18px rgba(0,0,0,.4)}
-.bf-bizarre-btn:hover{transform:translateY(-2px);border-color:#c06bff;box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 22px rgba(192,91,255,.35)}
-.bf-bizarre-btn .bf-bizarre-ico{font-size:20px;filter:drop-shadow(0 0 8px rgba(192,91,255,.7))}
-
-/* Sección decorada en el lobby */
-.bf-bizarre-section{position:relative;overflow:hidden;margin:18px 0 6px;padding:18px 18px 16px;border-radius:18px;background:linear-gradient(160deg,rgba(28,14,50,.92),rgba(14,8,26,.95));border:2px solid rgba(192,91,255,.45);box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 0 30px rgba(120,40,200,.12)}
-.bf-bizarre-section::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 0%,rgba(192,91,255,.18),transparent 55%),radial-gradient(circle at 85% 100%,rgba(255,42,90,.12),transparent 50%);pointer-events:none}
-.bf-bizarre-deco-left{position:absolute;top:-10px;left:-10px;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(192,91,255,.35),transparent 65%);filter:blur(8px);pointer-events:none;animation:bfBizFloat 4s ease-in-out infinite}
-.bf-bizarre-deco-right{position:absolute;bottom:-12px;right:-8px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,rgba(255,42,90,.3),transparent 65%);filter:blur(8px);pointer-events:none;animation:bfBizFloat 5s ease-in-out infinite reverse}
-@keyframes bfBizFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.08)}}
+.bf-bizarre-room{position:relative;margin:18px 0 6px;padding:0;border-radius:18px;overflow:hidden;border:2px solid rgba(192,91,255,.5);box-shadow:0 12px 34px rgba(0,0,0,.6),inset 0 0 40px rgba(120,40,200,.18);background:linear-gradient(180deg,rgba(20,10,34,0) 0%,rgba(8,4,14,.55) 100%),radial-gradient(ellipse at 50% 120%,rgba(192,91,255,.25),transparent 60%),linear-gradient(160deg,#241438 0%,#160c26 55%,#0c0718 100%)}
+.bf-bizarre-room::before{content:'';position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(180deg,transparent 0%,rgba(60,30,90,.35) 40%,rgba(30,12,50,.6) 100%);transform:perspective(420px) rotateX(48deg);transform-origin:bottom center;pointer-events:none}
+.bf-bizarre-arch{position:absolute;top:0;left:0;right:0;height:46%;background:radial-gradient(ellipse at 50% 100%,rgba(40,20,70,.5),transparent 70%);pointer-events:none}
+.bf-bizarre-torch{position:absolute;top:16%;width:14px;height:60px;pointer-events:none;z-index:1}
+.bf-bizarre-torch.l{left:10px}.bf-bizarre-torch.r{right:10px}
+.bf-bizarre-torch::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:12px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb24a 40%,#ff5a2a 75%,transparent 100%);box-shadow:0 0 16px rgba(255,150,40,.8),0 0 30px rgba(255,90,20,.5);animation:bfTorchFlick .45s ease-in-out infinite alternate}
+.bf-bizarre-torch::after{content:'';position:absolute;left:50%;top:-10px;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,160,60,.35),transparent 70%)}
+@keyframes bfTorchFlick{0%{transform:translateX(-50%) scaleY(1) scaleX(1);opacity:.9}100%{transform:translateX(-50%) scaleY(1.18) scaleX(.85);opacity:1}}
+.bf-bizarre-ember{position:absolute;bottom:20%;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfEmber 4s linear infinite;pointer-events:none;z-index:1}
+@keyframes bfEmber{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.8}100%{transform:translateY(-120px) translateX(8px);opacity:0}}
+.bf-bizarre-rune{position:absolute;font-family:Cinzel,serif;font-size:22px;color:rgba(199,155,255,.28);text-shadow:0 0 10px rgba(192,91,255,.4);pointer-events:none;animation:bfRunePulse 3s ease-in-out infinite;z-index:1}
+@keyframes bfRunePulse{0%,100%{opacity:.2}50%{opacity:.55}}
+.bf-bizarre-content{position:relative;z-index:2;padding:18px 18px 16px}
 .bf-bizarre-header{position:relative;display:flex;align-items:center;gap:12px;margin-bottom:10px}
-.bf-bizarre-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,rgba(192,91,255,.3),rgba(120,40,200,.2));border:2px solid rgba(199,155,255,.5);box-shadow:0 0 18px rgba(192,91,255,.4);flex-shrink:0}
+.bf-bizarre-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,rgba(192,91,255,.35),rgba(120,40,200,.2));border:2px solid rgba(199,155,255,.6);box-shadow:0 0 18px rgba(192,91,255,.45),inset 0 0 12px rgba(192,91,255,.3);flex-shrink:0}
 .bf-bizarre-titles{flex:1;min-width:0}
-.bf-bizarre-name{font-family:Cinzel,serif;font-weight:1000;font-size:18px;color:#e2b0ff;letter-spacing:.5px;text-shadow:0 0 14px rgba(192,91,255,.5),0 1px 3px #000;line-height:1.1}
+.bf-bizarre-name{font-family:Cinzel,serif;font-weight:1000;font-size:18px;color:#e2b0ff;letter-spacing:.5px;text-shadow:0 0 14px rgba(192,91,255,.55),0 1px 3px #000;line-height:1.1}
 .bf-bizarre-tag{font-size:11px;color:#c79bff;font-weight:700;letter-spacing:.3px;margin-top:2px}
-.bf-bizarre-desc{position:relative;font-size:12.5px;line-height:1.5;color:#d4cce4;font-family:Rubik,sans-serif;margin-bottom:4px}
+.bf-bizarre-desc{position:relative;font-size:12.5px;line-height:1.5;color:#d4cce4;font-family:Rubik,sans-serif;margin-bottom:6px}
 .bf-bizarre-desc b{color:#e2b0ff}
+.bf-bizarre-portal{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:14px 0 0;padding:14px 16px;border-radius:14px;border:2px solid rgba(199,155,255,.6);background:linear-gradient(180deg,rgba(120,60,200,.45),rgba(60,20,120,.6));color:#f3e6ff;font-family:Cinzel,serif;font-weight:1000;font-size:15px;letter-spacing:.4px;cursor:pointer;text-shadow:0 2px 4px #000;box-shadow:0 0 22px rgba(192,91,255,.4),inset 0 0 18px rgba(192,91,255,.25);transition:transform .14s ease,box-shadow .14s ease;overflow:hidden}
+.bf-bizarre-portal:hover{transform:translateY(-2px);box-shadow:0 0 34px rgba(192,91,255,.65),inset 0 0 24px rgba(192,91,255,.4)}
+.bf-bizarre-portal::before{content:'';position:absolute;inset:0;background:conic-gradient(from 0deg,rgba(192,91,255,0),rgba(192,91,255,.35),rgba(255,42,90,.25),rgba(192,91,255,0));animation:bfPortalSpin 6s linear infinite;opacity:.6}
+@keyframes bfPortalSpin{to{transform:rotate(360deg)}}
+.bf-bizarre-portal>span{position:relative;z-index:1}
+.bf-bizarre-portal .bf-bizarre-ico{font-size:20px;filter:drop-shadow(0 0 8px rgba(192,91,255,.8))}
 </style>
 <script>
 (function(){
@@ -119,24 +128,34 @@ export const BIZARRE_ROOM_PATCH = `
     if(document.getElementById('bf-bizarre-section'))return;
     var sec=document.createElement('div');
     sec.id='bf-bizarre-section';
-    sec.className='bf-bizarre-section';
+    sec.className='bf-bizarre-room';
     sec.innerHTML=
-      '<div class="bf-bizarre-deco-left"></div>'+
-      '<div class="bf-bizarre-deco-right"></div>'+
-      '<div class="bf-bizarre-header">'+
-        '<div class="bf-bizarre-icon">🃏</div>'+
-        '<div class="bf-bizarre-titles">'+
-          '<div class="bf-bizarre-name">'+L('Habitación Bizarra','Bizarre Room')+'</div>'+
-          '<div class="bf-bizarre-tag">'+L('Partidas públicas al azar','Random public matches')+'</div>'+
+      '<div class="bf-bizarre-arch"></div>'+
+      '<div class="bf-bizarre-torch l"></div>'+
+      '<div class="bf-bizarre-torch r"></div>'+
+      '<div class="bf-bizarre-rune" style="top:28%;left:16%">⛧</div>'+
+      '<div class="bf-bizarre-rune" style="top:22%;right:18%;animation-delay:1s">✦</div>'+
+      '<div class="bf-bizarre-rune" style="bottom:32%;left:22%;animation-delay:.5s">⚜</div>'+
+      '<div class="bf-bizarre-rune" style="bottom:28%;right:24%;animation-delay:1.5s">✧</div>'+
+      '<div class="bf-bizarre-ember" style="left:20%;animation-delay:0s"></div>'+
+      '<div class="bf-bizarre-ember" style="left:48%;animation-delay:1.3s"></div>'+
+      '<div class="bf-bizarre-ember" style="left:74%;animation-delay:2.6s"></div>'+
+      '<div class="bf-bizarre-content">'+
+        '<div class="bf-bizarre-header">'+
+          '<div class="bf-bizarre-icon">🃏</div>'+
+          '<div class="bf-bizarre-titles">'+
+            '<div class="bf-bizarre-name">'+L('Habitación Bizarra','Bizarre Room')+'</div>'+
+            '<div class="bf-bizarre-tag">'+L('Partidas públicas al azar','Random public matches')+'</div>'+
+          '</div>'+
         '</div>'+
-      '</div>'+
-      '<div class="bf-bizarre-desc">'+L(
-        'Entra con tu nick, mira quién hay dentro y pulsa el <b>Botón de Pánico</b>: te empareja al azar con otro visitante y arranca una partida online. Se necesita un mínimo de <b>3 visitantes</b> para activarlo.',
-        'Join with your nick, see who is inside and hit the <b>Panic Button</b>: it matches you randomly with another visitor and starts an online game. A minimum of <b>3 visitors</b> is needed to activate it.'
-      )+'</div>'+
-      '<button class="bf-bizarre-btn" id="bf-bizarre-entry">'+
-        '<span class="bf-bizarre-ico">🚪</span><span>'+L('Entrar en la habitación','Enter the room')+'</span>'+
-      '</button>';
+        '<div class="bf-bizarre-desc">'+L(
+          'Entra con tu nick, mira quién hay dentro y pulsa el <b>Botón de Pánico</b>: te empareja al azar con otro visitante y arranca una partida online. Se necesita un mínimo de <b>3 visitantes</b> para activarlo.',
+          'Join with your nick, see who is inside and hit the <b>Panic Button</b>: it matches you randomly with another visitor and starts an online game. A minimum of <b>3 visitors</b> is needed to activate it.'
+        )+'</div>'+
+        '<button class="bf-bizarre-portal" id="bf-bizarre-entry">'+
+          '<span class="bf-bizarre-ico">🚪</span><span>'+L('Entrar en la habitación','Enter the room')+'</span>'+
+        '</button>'+
+      '</div>';
     sec.querySelector('#bf-bizarre-entry').onclick=function(e){e.preventDefault();e.stopPropagation();openOverlay();};
     // Inserta la sección al PRINCIPIO del setup-box (justo después de la
     // ayuda del lobby si existe), para que sea lo primero que se vea al
@@ -389,9 +408,19 @@ export const BIZARRE_ROOM_PATCH = `
     renderBody();
   }
 
-  // Botón en el lobby
-  setInterval(injectButton,800);
-  injectButton();
+  // Botón en el lobby. El juego re-renderiza el setup-box (renderRoomList)
+  // y borra la sección; sin re-inyección inmediata, "parpadea" hasta el
+  // próximo intervalo. El MutationObserver la reinyecta en la misma microtask
+  // (antes del pintado) para que no se vea ningún parpadeo.
+  function installObserver(){
+    var lobby=document.getElementById('s-lobby');
+    if(!lobby||window.__bfBizarreObs)return;
+    var box=lobby.querySelector('.setup-box')||lobby;
+    window.__bfBizarreObs=true;
+    new MutationObserver(function(){if(!document.getElementById('bf-bizarre-section'))injectButton();}).observe(box,{childList:true,subtree:true});
+  }
+  setInterval(function(){injectButton();installObserver();},800);
+  injectButton();installObserver();
 
   // Reanuda sesión si existe (tras recarga dentro del lobby)
   try{
