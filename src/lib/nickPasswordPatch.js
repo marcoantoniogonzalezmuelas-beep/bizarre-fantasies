@@ -159,6 +159,16 @@ export const NICK_PASSWORD_PATCH = `
   new MutationObserver(injectPass).observe(document.documentElement,{childList:true,subtree:true});
   setInterval(injectPass,600);
   injectPass();
+  // Re-etiqueta los campos cuando el nick se rellena programáticamente
+  // (el juego precarga el último nick desde localStorage sin disparar el
+  // evento 'input', así que sin este polling el autorrelleno de la contraseña
+  // recordada no aparecería hasta que el jugador teclee algo en el nick).
+  setInterval(function(){
+    ['p1name','p2name','hname','jname','jlname'].forEach(function(id){
+      var i=document.getElementById(id);
+      if(i&&i._bfPass)labelPass(i);
+    });
+  },500);
 
   function warn(msg,input){
     try{if(typeof notif==='function')notif(msg);else alert(msg);}catch(e){}
