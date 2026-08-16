@@ -44,10 +44,10 @@ export const CARD_PLAY_REVEAL_PATCH = `
   }
 
   function showReveal(ev){
-    // Si el hechizo tiene cinemática 3D asignada (abilityAnimPatch), se está
-    // reproduciendo a pantalla completa: NO mostrar la carta revelada para
-    // evitar que ambas animaciones se solapen en el centro de la pantalla.
-    if(window.__bfSpellCineName&&window.__bfSpellCineName===ev.name)return;
+    // Si el hechizo/objeto tiene cinemática 3D asignada (abilityAnimPatch), se
+    // está reproduciendo a pantalla completa: NO mostrar la carta revelada
+    // para evitar que ambas animaciones se solapen en el centro de la pantalla.
+    if(window.__bfCardCineName&&window.__bfCardCineName===ev.name)return;
     var old=document.querySelector('.bf-reveal');
     if(old&&old.parentNode)old.parentNode.removeChild(old);
     var who='';

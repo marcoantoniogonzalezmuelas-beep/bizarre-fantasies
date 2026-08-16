@@ -153,8 +153,10 @@ export const ABILITY_ANIM_PATCH = `
   // para que las ropas se vean vivas, y opacidad forzada al 100%.
   '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;mix-blend-mode:normal;filter:saturate(1.18) contrast(1.08) drop-shadow(0 16px 38px rgba(0,0,0,.8))}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
-  '#bf-abil-anim .bf-aa-ttl{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
+  '#bf-abil-anim .bf-aa-ttl{position:absolute;top:7%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
+  '#bf-abil-anim .bf-aa-desc{position:absolute;top:calc(7% + clamp(28px,5vw,56px));left:50%;transform:translateX(-50%);max-width:min(82vw,620px);text-align:center;font-family:Rubik,sans-serif;font-weight:600;font-size:clamp(13px,2.4vw,19px);line-height:1.4;color:#fff7ea;opacity:0;animation:bfAaDesc 3.2s ease-out .6s forwards;text-shadow:0 2px 8px #000,0 0 12px rgba(0,0,0,.85);padding:8px 18px;background:rgba(8,5,14,.6);border-radius:12px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.12)}'+
+  '@keyframes bfAaDesc{0%{opacity:0;transform:translateX(-50%) translateY(10px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-6px)}}'+
   '#bf-abil-anim .bf-aa-flash{position:absolute;inset:0;background:radial-gradient(circle,var(--aa-flash,#fff),transparent 65%);animation:bfAaFlash .7s ease-out .25s both}'+
   '@keyframes bfAaFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}'+
   '#bf-abil-anim .bf-aa-veil{position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.4),transparent);animation:bfAaVeil 2s ease-out forwards}'+
@@ -210,7 +212,7 @@ export const ABILITY_ANIM_PATCH = `
   // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
-  function showCinematic(url,title,cc,desc,motionId){
+  function showCinematic(url,title,cc,desc,motionId,descText){
     var now=Date.now();
     if(document.getElementById('bf-abil-anim')||now-lastCine<3200)return;
     lastCine=now;
@@ -225,6 +227,7 @@ export const ABILITY_ANIM_PATCH = `
     var cu=CUT[url];
     html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
+    if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
     setTimeout(function(){ov.classList.add('bf-aa-out');},2700);
@@ -241,23 +244,24 @@ export const ABILITY_ANIM_PATCH = `
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
     var descSrc=isElite?(entry.eliteDesc||entry.desc):entry.desc;
     var motionId=isElite?(entry.eliteMotion||entry.motion):entry.motion;
-    showCinematic(url,ability,cc,descSrc||ability,motionId);
+    var descText=isElite?(entry.eliteText||entry.text):(entry.text);
+    showCinematic(url,ability,cc,descSrc||ability,motionId,descText);
   }
   window.__bfPlayAbilityAnim=playAnim;
 
-  // Cinemática 3D para HECHIZOS de la mano (Tormenta Ígnea, Bola de Fuego…).
-  // Los hechizos no están en G.team ni tienen flag abilityUsed, así que se
-  // engancha directamente a castSpell / castSpell_AI en vez de usar el escaneo.
-  // Marca window.__bfSpellCineName para que cardPlayRevealPatch NO muestre la
-  // carta revelada al mismo tiempo (sin solapar ambas animaciones).
-  function playSpellCinematic(spell,entry){
+  // Cinemática 3D para HECHIZOS y OBJETOS de la mano. Los hechizos/objetos no
+  // están en G.team ni tienen flag abilityUsed, así que se engancha
+  // directamente a castSpell / useItem (y sus versiones IA) en vez de usar el
+  // escaneo. Marca window.__bfCardCineName para que cardPlayRevealPatch NO
+  // muestre la carta revelada al mismo tiempo (sin solapar ambas animaciones).
+  function playItemCinematic(item,entry){
     var url=entry.base;
     if(!url)return;
-    var cc=(spell&&spell.element&&SPELL_COLORS[spell.element])||'#c79bff';
-    showCinematic(url,spell?spell.name:'Hechizo',cc,entry.desc||(spell?spell.name:''),entry.motion);
-    // Suprime la carta revelada de este hechizo durante la cinemática 3D.
-    window.__bfSpellCineName=spell?spell.name:null;
-    setTimeout(function(){window.__bfSpellCineName=null;},3500);
+    var cc=(item&&item.element&&SPELL_COLORS[item.element])||'#ffd24a';
+    showCinematic(url,item?item.name:'Objeto',cc,entry.desc||(item?item.name:''),entry.motion,entry.text);
+    // Suprime la carta revelada de este hechizo/objeto durante la cinemática 3D.
+    window.__bfCardCineName=item?item.name:null;
+    setTimeout(function(){window.__bfCardCineName=null;},3500);
   }
   function installSpell(){
     if(typeof window.castSpell!=='function'||window.__bfAbilityAnimSpellHooked)return false;
@@ -269,7 +273,7 @@ export const ABILITY_ANIM_PATCH = `
           var spell=typeof byId==='function'?byId(SPELLS,id):null;
           if(spell&&spell.name){
             var entry=spellByName[String(spell.name).toLowerCase()];
-            if(entry&&entry.base)playSpellCinematic(spell,entry);
+            if(entry&&entry.base)playItemCinematic(spell,entry);
           }
         }
       }catch(e){}
@@ -283,7 +287,44 @@ export const ABILITY_ANIM_PATCH = `
         try{
           if(s&&s.name){
             var entry=spellByName[String(s.name).toLowerCase()];
-            if(entry&&entry.base)playSpellCinematic(s,entry);
+            if(entry&&entry.base)playItemCinematic(s,entry);
+          }
+        }catch(e){}
+        return origAi.apply(this,arguments);
+      };
+    }
+    return true;
+  }
+  // Objetos de la mano: useItem(idx) y useItem_AI(side,idx). El objeto se
+  // busca en G.items[side][idx] y se empareja por nombre con el mapa de la BD.
+  function installItem(){
+    if(typeof window.useItem!=='function'||window.__bfAbilityAnimItemHooked)return false;
+    window.__bfAbilityAnimItemHooked=true;
+    var orig=window.useItem;
+    window.useItem=function(idx){
+      try{
+        if(typeof G!=='undefined'&&G.items&&typeof B!=='undefined'&&B.current){
+          var side=B.current.side;
+          var o=G.items[side]&&G.items[side][idx];
+          if(o&&o.name){
+            var entry=spellByName[String(o.name).toLowerCase()];
+            if(entry&&entry.base)playItemCinematic(o,entry);
+          }
+        }
+      }catch(e){}
+      return orig.apply(this,arguments);
+    };
+    if(typeof window.useItem_AI==='function'&&!window.__bfAbilityAnimItemAiHooked){
+      window.__bfAbilityAnimItemAiHooked=true;
+      var origAi=window.useItem_AI;
+      window.useItem_AI=function(side,idx){
+        try{
+          if(typeof G!=='undefined'&&G.items){
+            var o=G.items[side]&&G.items[side][idx];
+            if(o&&o.name){
+              var entry=spellByName[String(o.name).toLowerCase()];
+              if(entry&&entry.base)playItemCinematic(o,entry);
+            }
           }
         }catch(e){}
         return origAi.apply(this,arguments);
@@ -324,9 +365,10 @@ export const ABILITY_ANIM_PATCH = `
   var tries=0,t=setInterval(function(){
     scan();
     if(!window.__bfAbilityAnimHooked){if(install()||tries++>120)clearInterval(t);}
-    // Hook de hechizos: castSpell / castSpell_AI pueden envolverlos otros
+    // Hook de hechizos y objetos: castSpell / useItem pueden envolverlos otros
     // parches (Transformer), así que se reintenta hasta que ambos existan.
     installSpell();
+    installItem();
   },150);
 })();
 </script>
