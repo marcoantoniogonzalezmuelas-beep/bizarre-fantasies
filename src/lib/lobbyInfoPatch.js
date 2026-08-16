@@ -112,9 +112,11 @@ export const LOBBY_INFO_PATCH = `
     };
     window.refreshList.__bfCentral=true;
     // lobbyConnect: el juego nativo lo llama al entrar en "Salas online".
+    // Llamamos a la original (inicializa P2P/PeerJS, necesario para que
+    // dirRegister pueda crear la sala) Y luego refrescamos la lista del backend.
     if(typeof window.lobbyConnect==='function'&&!window.lobbyConnect.__bfCentral){
       var origLC=window.lobbyConnect;
-      window.lobbyConnect=function(){window.refreshList();};
+      window.lobbyConnect=function(){origLC.apply(this,arguments);window.refreshList();};
       window.lobbyConnect.__bfCentral=true;
     }
   }
