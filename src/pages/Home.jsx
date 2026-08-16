@@ -741,7 +741,7 @@ export default function Home() {
       const anim = {};
       (cards || []).forEach(c => {
         if (c.card_id && (c.ability_anim_url || c.elite_ability_anim_url)) {
-          anim[c.card_id] = { base: c.ability_anim_url, elite: c.elite_ability_anim_url || c.ability_anim_url, desc: c.ability_anim_desc, eliteDesc: c.elite_ability_anim_desc, motion: c.ability_anim_motion, eliteMotion: c.elite_ability_anim_motion || c.ability_anim_motion, name: c.name, text: c.ability_text || c.description || '', eliteText: c.elite_ability_text || c.ability_text || c.description || '' };
+          anim[c.card_id] = { base: c.ability_anim_url, elite: c.elite_ability_anim_url || c.ability_anim_url, desc: c.ability_anim_desc, eliteDesc: c.elite_ability_anim_desc, motion: c.ability_anim_motion, eliteMotion: c.elite_ability_anim_motion || c.ability_anim_motion, name: c.name, text: c.ability_text || c.description || '', eliteText: c.elite_ability_text || c.ability_text || c.description || '', textEn: (c.en && (c.en.ability_text || c.en.description)) || c.ability_text || c.description || '', eliteTextEn: (c.en && (c.en.elite_ability_text || c.en.ability_text || c.en.description)) || c.elite_ability_text || c.ability_text || c.description || '' };
         }
       });
       abilityAnimRef.current = anim;

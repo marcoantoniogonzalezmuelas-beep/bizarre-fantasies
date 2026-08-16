@@ -153,9 +153,9 @@ export const ABILITY_ANIM_PATCH = `
   // para que las ropas se vean vivas, y opacidad forzada al 100%.
   '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;mix-blend-mode:normal;filter:saturate(1.18) contrast(1.08) drop-shadow(0 16px 38px rgba(0,0,0,.8))}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
-  '#bf-abil-anim .bf-aa-ttl{position:absolute;top:7%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 2.9s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
+  '#bf-abil-anim .bf-aa-ttl{position:absolute;top:7%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 4.2s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
-  '#bf-abil-anim .bf-aa-desc{position:absolute;top:calc(7% + clamp(28px,5vw,56px));left:50%;transform:translateX(-50%);max-width:min(82vw,620px);text-align:center;font-family:Rubik,sans-serif;font-weight:600;font-size:clamp(13px,2.4vw,19px);line-height:1.4;color:#fff7ea;opacity:0;animation:bfAaDesc 3.2s ease-out .6s forwards;text-shadow:0 2px 8px #000,0 0 12px rgba(0,0,0,.85);padding:8px 18px;background:rgba(8,5,14,.6);border-radius:12px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.12)}'+
+  '#bf-abil-anim .bf-aa-desc{position:absolute;top:calc(7% + clamp(28px,5vw,56px));left:50%;transform:translateX(-50%);max-width:min(82vw,620px);text-align:center;font-family:Rubik,sans-serif;font-weight:600;font-size:clamp(13px,2.4vw,19px);line-height:1.4;color:#fff7ea;opacity:0;animation:bfAaDesc 4.5s ease-out .6s forwards;text-shadow:0 2px 8px #000,0 0 12px rgba(0,0,0,.85);padding:8px 18px;background:rgba(8,5,14,.6);border-radius:12px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.12)}'+
   '@keyframes bfAaDesc{0%{opacity:0;transform:translateX(-50%) translateY(10px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-6px)}}'+
   '#bf-abil-anim .bf-aa-flash{position:absolute;inset:0;background:radial-gradient(circle,var(--aa-flash,#fff),transparent 65%);animation:bfAaFlash .7s ease-out .25s both}'+
   '@keyframes bfAaFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}'+
@@ -214,7 +214,7 @@ export const ABILITY_ANIM_PATCH = `
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
   function showCinematic(url,title,cc,desc,motionId,descText){
     var now=Date.now();
-    if(document.getElementById('bf-abil-anim')||now-lastCine<3200)return;
+    if(document.getElementById('bf-abil-anim')||now-lastCine<5000)return;
     lastCine=now;
     var ov=document.createElement('div');ov.id='bf-abil-anim';
     ov.style.setProperty('--aa-color',cc);
@@ -225,13 +225,13 @@ export const ABILITY_ANIM_PATCH = `
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
     var cu=CUT[url];
-    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
+    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 4.5s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
     document.body.appendChild(ov);
-    setTimeout(function(){ov.classList.add('bf-aa-out');},2700);
-    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},3200);
+    setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
+    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},5000);
   }
   function playAnim(side,hero){
     if(!hero)return;
@@ -244,7 +244,8 @@ export const ABILITY_ANIM_PATCH = `
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
     var descSrc=isElite?(entry.eliteDesc||entry.desc):entry.desc;
     var motionId=isElite?(entry.eliteMotion||entry.motion):entry.motion;
-    var descText=isElite?(entry.eliteText||entry.text):(entry.text);
+    var isEn=!!window.__bfLangEn;
+    var descText=isElite?(isEn?(entry.eliteTextEn||entry.eliteText||entry.text):(entry.eliteText||entry.text)):(isEn?(entry.textEn||entry.text):(entry.text));
     showCinematic(url,ability,cc,descSrc||ability,motionId,descText);
   }
   window.__bfPlayAbilityAnim=playAnim;
@@ -258,10 +259,12 @@ export const ABILITY_ANIM_PATCH = `
     var url=entry.base;
     if(!url)return;
     var cc=(item&&item.element&&SPELL_COLORS[item.element])||'#ffd24a';
-    showCinematic(url,item?item.name:'Objeto',cc,entry.desc||(item?item.name:''),entry.motion,entry.text);
+    var isEn=!!window.__bfLangEn;
+    var descText=isEn?(entry.textEn||entry.text):(entry.text);
+    showCinematic(url,item?item.name:'Objeto',cc,entry.desc||(item?item.name:''),entry.motion,descText);
     // Suprime la carta revelada de este hechizo/objeto durante la cinemática 3D.
     window.__bfCardCineName=item?item.name:null;
-    setTimeout(function(){window.__bfCardCineName=null;},3500);
+    setTimeout(function(){window.__bfCardCineName=null;},5200);
   }
   function installSpell(){
     if(typeof window.castSpell!=='function'||window.__bfAbilityAnimSpellHooked)return false;
