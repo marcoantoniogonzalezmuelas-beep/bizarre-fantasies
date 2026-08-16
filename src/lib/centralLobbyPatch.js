@@ -93,10 +93,8 @@ export const CENTRAL_LOBBY_PATCH = `
       try{if(typeof notif==='function')notif('No puedes unirte: no eres un jugador de esta partida.');else alert('No puedes unirte: no eres un jugador de esta partida.');}catch(e){}
       return;
     }
-    var savedHost=null;
-    try{savedHost=JSON.parse(localStorage.getItem('bfSavedMatch')||'null');}catch(e){}
-    if(savedHost&&savedHost.code===code&&window.__bfRestoreHost){window.__bfRestoreHost(savedHost);return;}
-    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code===code&&window.bfAwaitRival){window.bfAwaitRival();return;}
+    // Reanudación única: se reconecta a la sala (como host o cliente, según el
+    // rol guardado) y el jugador que se quedó le copia el estado de la partida.
     var resumeInfo=window.__bfGetResume&&window.__bfGetResume();
     if(!resumeInfo||resumeInfo.code!==code){
       try{if(typeof notif==='function')notif('No tienes una partida guardada para reanudar en esta sala.');else alert('No tienes una partida guardada para reanudar en esta sala.');}catch(e){}
