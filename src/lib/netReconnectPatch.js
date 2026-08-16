@@ -290,7 +290,7 @@ export const NET_RECONNECT_PATCH = `
       }
     }catch(e){}
   }
-  // Salas LIBRES (sin contraseña): no hay reanudación. Si cualquiera pierde
+  // Salas PÚBLICAS (sin contraseña): no hay reanudación. Si cualquiera pierde
   // la conexión, la partida termina y la sala se cierra inmediatamente.
   function endMatchNoResume(){
     if(typeof G!=='undefined')G._gameOver=true;
@@ -302,7 +302,7 @@ export const NET_RECONNECT_PATCH = `
     if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
     try{if(typeof NET!=='undefined'&&NET.conn)NET.conn.close();}catch(e){}
     try{if(typeof NET!=='undefined'&&NET.peer)NET.peer.destroy();}catch(e){}
-    if(typeof modal==='function')modal('<h3>Conexión perdida</h3><div class="modal-note" style="font-size:15px">Esta es una <b>sala libre</b> (sin reanudación). La partida ha terminado y la sala se ha cerrado.</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
+    if(typeof modal==='function')modal('<h3>Conexión perdida</h3><div class="modal-note" style="font-size:15px">Esta es una <b>sala pública</b> (sin reanudación). La partida ha terminado y la sala se ha cerrado.</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
