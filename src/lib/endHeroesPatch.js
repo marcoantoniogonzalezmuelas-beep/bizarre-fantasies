@@ -34,6 +34,13 @@ export const END_HEROES_PATCH = `
   if(window.__bfEndHeroesPatch) return;
   window.__bfEndHeroesPatch = true;
 
+  // Detecta SOLO teléfono (no tablet ni PC): en tablet/PC la franja ya cabe
+  // bien, así que no se toca. El teléfono usa el iframe de 1200 px escalado y
+  // ahí los 6 héroes desbordaban el margen derecho.
+  var _ua = navigator.userAgent || '';
+  var _isTablet = /iPad/i.test(_ua) || (/Macintosh|Mac OS/i.test(_ua) && navigator.maxTouchPoints > 1) || (/Android/i.test(_ua) && !/Mobile/i.test(_ua));
+  var isPhone = !_isTablet && /Android|iPhone|iPod|Mobile/i.test(_ua);
+
   function heroArt(hh){
     if(!hh) return '';
     var aid = hh._token ? hh._token : (hh.id || '');
@@ -62,10 +69,14 @@ export const END_HEROES_PATCH = `
     return n;
   }
 
-  // Ancho del retrato: calibrado para que quepan LOS 6 héroes (3 vencedores +
-  // 3 caídos) dentro del iframe de móvil (1200 px) sin desbordar por la derecha.
-  // 6 × 168 + gaps + padding ≈ 1140 px < 1200 px.
-  var PORT_W = 'width:clamp(64px,13vw,168px);aspect-ratio:3/4;';
+  // Ancho del retrato. En teléfono se reduce para que quepan los 6 héroes en
+  // el iframe de 1200 px; en tablet/PC se mantiene el tamaño original.
+  var PORT_W = isPhone
+    ? 'width:clamp(64px,13vw,168px);aspect-ratio:3/4;'
+    : 'width:clamp(74px,16vw,190px);aspect-ratio:3/4;';
+  var ROW_GAP = isPhone ? 'clamp(5px,1.2vw,12px)' : 'clamp(6px,1.4vw,16px)';
+  var TEAM_GAP = isPhone ? 'clamp(10px,2.5vw,32px)' : 'clamp(12px,3vw,44px)';
+  var WRAP_PAD = isPhone ? '18px 10px 14px' : '18px 12px 14px';
 
   function buildPort(hh, isWin, delay){
     var art = heroArt(hh);
@@ -151,7 +162,7 @@ export const END_HEROES_PATCH = `
       (isWin
         ? 'color:#3a2600;background:linear-gradient(180deg,#ffe27a,#FFD24A 55%,#c8901f);box-shadow:0 2px 8px rgba(255,210,74,.4)'
         : 'color:#e0b0b0;background:rgba(40,12,16,.75);border:1px solid rgba(180,60,60,.45)'), lbl));
-    var row = el('div', 'display:flex;gap:clamp(5px,1.2vw,12px);justify-content:center;align-items:flex-start');
+    var row = el('div', 'display:flex;gap:' + ROW_GAP + ';justify-content:center;align-items:flex-start');
     arr.forEach(function(hh, j){ row.appendChild(buildPort(hh, isWin, j * 0.08)); });
     wrap.appendChild(row);
     return wrap;
@@ -174,7 +185,7 @@ export const END_HEROES_PATCH = `
       if(!win && !lose) return;
 
       var wrap = el('div', 'position:fixed;left:0;right:0;bottom:0;z-index:100055;display:flex;' +
-        'justify-content:center;align-items:flex-start;gap:clamp(10px,2.5vw,32px);padding:18px 10px 14px;' +
+        'justify-content:center;align-items:flex-start;gap:' + TEAM_GAP + ';padding:' + WRAP_PAD + ';' +
         'background:linear-gradient(180deg,rgba(8,5,16,0) 0%,rgba(8,5,16,.55) 35%,rgba(8,5,16,.92) 100%);' +
         'pointer-events:none;animation:bfEhRise .6s cubic-bezier(.2,.8,.3,1)');
       wrap.id = 'bf-end-heroes';
