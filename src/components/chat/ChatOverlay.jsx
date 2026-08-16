@@ -162,22 +162,14 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
       {!open && (
         <div
           className="fixed z-40"
-          style={
-            isMobile
-              ? {
-                  right: '12px',
-                  bottom: '104px',
-                  transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px)`,
-                  touchAction: 'none',
-                }
-              : {
-                  right: '6px',
-                  top: 'calc(50% - 22px)',
-                  transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px) scale(${mobScale * pinchZ})`,
-                  transformOrigin: 'top right',
-                  touchAction: 'none',
-                }
-          }
+          style={{
+            // Esquina inferior DERECHA en todas las versiones (el botón de
+            // animaciones queda abajo a la izquierda / centrado en móvil).
+            right: isMobile ? '12px' : '16px',
+            bottom: isMobile ? '12px' : '16px',
+            transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px)`,
+            touchAction: 'none',
+          }}
         >
         <button
           {...iconDrag.dragHandlers}

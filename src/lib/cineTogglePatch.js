@@ -19,7 +19,9 @@ export const CINE_TOGGLE_PATCH = `
   var css=''+
   // Posición FIJA en el viewport del juego (no depende del rect del botón
   // Salir, que se desplaza al hacer zoom de pellizco en móvil).
-  '#bf-cine-toggle{position:fixed;top:62px;right:12px;z-index:2147483000;display:none;'+
+  // Escritorio: esquina inferior IZQUIERDA (lejos del botón Salir).
+  // Móvil/tablet: centrado en la parte inferior.
+  '#bf-cine-toggle{position:fixed;bottom:16px;left:16px;z-index:2147483000;display:none;'+
     'padding:7px 12px;border-radius:10px;font-family:Cinzel,serif;font-weight:900;'+
     'font-size:12px;letter-spacing:.3px;cursor:pointer;touch-action:manipulation;'+
     'pointer-events:auto;-webkit-tap-highlight-color:transparent;'+
@@ -28,7 +30,8 @@ export const CINE_TOGGLE_PATCH = `
   '#bf-cine-toggle:active{transform:scale(.94)}'+
   '#bf-cine-toggle.bf-on{border:1px solid rgba(255,240,180,.85);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}'+
   '#bf-cine-toggle.bf-off{border:1px solid rgba(255,120,100,.6);background:linear-gradient(180deg,#3a2030,#241018);color:#ffb0a0}'+
-  '@media(max-width:1024px){#bf-cine-toggle{top:56px;right:8px;font-size:11px;padding:6px 10px}}';
+  '@media(max-width:1024px){#bf-cine-toggle{bottom:12px;left:50%;right:auto;transform:translateX(-50%);font-size:11px;padding:8px 14px}'+
+    '#bf-cine-toggle:active{transform:translateX(-50%) scale(.94)}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function isBattle(){
