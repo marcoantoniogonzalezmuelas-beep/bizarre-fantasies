@@ -22,6 +22,23 @@ export const CENTRAL_LOBBY_PATCH = `
   // netReconnectPatch) puedan registrar la sala como "partida en curso".
   window.bfLobbyRequest=request;
 
+  // Mapa nick → avatar (lo envía la página padre desde la BD). Se usa para
+  // mostrar el avatar del creador en la tarjeta de la sala en vez del icono 🏠.
+  window.__bfAvatarMap=window.__bfAvatarMap||{};
+  window.addEventListener('message',function(event){
+    if(event.data&&event.data.bfPlayerAvatars)window.__bfAvatarMap=event.data.bfPlayerAvatars||{};
+  });
+  function avatarFor(nick){if(!nick)return'';var m=window.__bfAvatarMap||{};return m[nick]||m[String(nick).toLowerCase()]||'';}
+  function setAvatarIcon(iconEl,url){
+    if(!iconEl)return;
+    if(url){
+      iconEl.textContent='';
+      iconEl.innerHTML='<img src="'+url+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    }else{
+      iconEl.textContent='🏠';
+    }
+  }
+
   function inBrowseView(){
     // Solo se puede redibujar la lista si el lobby muestra la lista de salas.
     // Si hay un formulario abierto (crear sala, local, unirse), un re-render
@@ -44,7 +61,7 @@ export const CENTRAL_LOBBY_PATCH = `
     cards.forEach(function(card){var code=card.querySelector('.room-sub b');if(code&&code.textContent.trim()===NET.code)own=card;});
     if(own){
       own.style.border='2px solid #FFD24A';own.style.boxShadow='0 0 20px rgba(255,210,74,.35)';
-      var icon=own.querySelector('.room-ico');if(icon)icon.textContent='🏠';
+      var icon=own.querySelector('.room-ico');if(icon)setAvatarIcon(icon,avatarFor(NET.names_self));
       var join=own.querySelector('button');if(join){join.textContent='Cancelar sala';join.className='btn sm';join.onclick=window.bfCancelHostedRoom;}
       var sub=own.querySelector('.room-sub');if(sub&&!sub.querySelector('.bf-own-room'))sub.insertAdjacentHTML('beforeend',' · <b class="bf-own-room" style="color:#FFD24A">TU SALA</b>');
     }
@@ -62,6 +79,23 @@ export const CENTRAL_LOBBY_PATCH = `
     if(first)first.insertAdjacentHTML('beforebegin',html);
     else box.insertAdjacentHTML('beforeend',html);
   }
+  function decorateRoomAvatars(){
+    // Para cada tarjeta de sala visible, sustituye el icono genérico por el
+    // avatar del creador (si lo conocemos). No toca la sala propia (la pinta
+    // decorateHostedRoom) ni las de reanudación (las pinta decorateResumeRooms).
+    var cards=document.querySelectorAll('.room-card');
+    cards.forEach(function(card){
+      if(card.dataset.bfAvatar==='1')return;
+      if(card.style.border&&card.style.border.indexOf('FFD24A')!==-1)return; // sala propia
+      if(card.dataset.bfResume==='1')return; // reanudación
+      var nameEl=card.querySelector('.room-name');
+      var nick=nameEl?nameEl.textContent.trim():'';
+      var url=avatarFor(nick);
+      if(!url)return;
+      var icon=card.querySelector('.room-ico');
+      if(icon){setAvatarIcon(icon,url);card.dataset.bfAvatar='1';}
+    });
+  }
   function decorateResumeRooms(){
     if(typeof LOBBY==='undefined'||!LOBBY.rooms)return;
     LOBBY.rooms.forEach(function(r){
@@ -78,9 +112,17 @@ export const CENTRAL_LOBBY_PATCH = `
       var sub=card.querySelector('.room-sub');
       if(sub){var nicks=(r.nicks||[]).join(' vs ');sub.innerHTML='código <b>'+r.id+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':'');}
       var btn=card.querySelector('button');
-      if(btn){btn.textContent='Reanudar';btn.className='btn primary sm';btn.setAttribute('onclick','bfRejoinResumeRoom(\\''+r.id+'\\','+(r.hasPass?1:0)+')');}
-    });
-  }
+      if(btn){
+        // Clonar el botón para eliminar cualquier listener nativo del juego que
+        // pudiera interferir (p. ej. clientJoin) y colgarse del Reanudar.
+        var clone=btn.cloneNode(true);
+        clone.textContent='Reanudar';
+        clone.className='btn primary sm';
+        clone.onclick=function(){if(window.bfRejoinResumeRoom)window.bfRejoinResumeRoom(r.id,r.hasPass);};
+        btn.parentNode.replaceChild(clone,btn);
+      }
+      });
+      }
   window.bfRejoinResumeRoom=function(code,hasPass){
     // Solo los jugadores originales pueden reanudar: verifican con el token
     // guardado en localStorage. Un jugador que no estaba en la partida no
@@ -115,7 +157,7 @@ export const CENTRAL_LOBBY_PATCH = `
     box.insertBefore(div,box.firstChild);
   }
   function renderCentralList(){
-    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateResumeRooms();injectResumeCard();injectLobbyInstructions();}
+    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateRoomAvatars();decorateResumeRooms();injectResumeCard();injectLobbyInstructions();}
   }
   function centralList(){
     if(typeof LOBBY==='undefined')return;

@@ -84,7 +84,13 @@ export const NET_RECONNECT_PATCH = `
         if(window.__bfClearSave)window.__bfClearSave();
         if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
         sendBye();
-        if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
+        // Borra la sala del backend para que desaparezca del lobby. Usamos el
+        // token de reanudación además del de dueño: el jugador que espera puede
+        // ser el cliente (no es dueño de la sala), pero tiene el token válido.
+        if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){
+          var rt=window.__bfResumeToken||'';try{rt=rt||localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}
+          window.bfLobbyRequest('unregister',{code:NET.code,resume_token:rt}).catch(function(){});
+        }
         try{if(NET.conn)NET.conn.close();}catch(e){}
         try{if(NET.peer)NET.peer.destroy();}catch(e){}
         setTimeout(function(){location.reload();},250);
@@ -175,7 +181,8 @@ export const NET_RECONNECT_PATCH = `
     rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
     window.__bfRoomMarkedPlaying=false;
-    if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
+    // Al agotarse el tiempo, borra la sala (host o cliente con token de reanudación).
+    if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){var rt=window.__bfResumeToken||'';try{rt=rt||localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}window.bfLobbyRequest('unregister',{code:NET.code,resume_token:rt}).catch(function(){});}
     if(typeof modal==='function')modal('<h3>Tiempo de espera agotado</h3><div class="modal-note" style="font-size:15px">'+(msg||'Tu rival no ha vuelto en 5 minutos. La partida no se puede reanudar.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
 
@@ -219,7 +226,7 @@ export const NET_RECONNECT_PATCH = `
       if(!NET.peer||NET.peer.destroyed){
         // Renovar credenciales TURN antes de crear el peer nuevo: las viejas
         // pueden haber caducado y bloquear la reconexión en redes móviles.
-        var mk=function(){if(rec.active&&(!NET.peer||NET.peer.destroyed)){NET.peer=new Peer({debug:1});NET.peer.on('error',function(){});}};
+        var mk=function(){if(rec.active&&(!NET.peer||NET.peer.destroyed)){NET.peer=new Peer({debug:1});NET.peer.on('error',function(){});NET.peer.on('open',function(){if(rec.timer){clearTimeout(rec.timer);rec.timer=null;}clientRetry();});}};
         if(window.__bfFreshIce)window.__bfFreshIce().catch(function(){}).then(mk);
         else mk();
       }
@@ -329,12 +336,19 @@ export const NET_RECONNECT_PATCH = `
   window.bfResumeMatch=function(){
     var info=window.__bfGetResume();
     if(!info){try{if(typeof notif==='function')notif('No tienes una partida guardada para reanudar.');}catch(e){}return;}
+    // En la pantalla del lobby las globales del juego (G, NET) pueden no estar
+    // definidas aún. Las garantizamos antes de escribir en ellas, si no el
+    // botón Reanudar lanza un ReferenceError silencioso y "no hace nada".
+    if(typeof NET==='undefined')window.NET={};
+    if(typeof G==='undefined')window.G={};
     window.__bfResumeToken=info.token||'';
     if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+info.code)||'';}catch(e){}}
     quitting=false;
     NET.code=info.code;NET.names_self=info.name||'Jugador';NET.pass=info.pass||'';
     G.online=true;G._gameOver=false;
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
+    // Mostrar el overlay ANTES de nada: así el jugador ve feedback inmediato
+    // aunque la reconexión tarde en establecerse.
     overlay('Reanudando la partida','Recuperando el estado de la partida de tu rival…');
     if(info.role==='host'){
       NET.role='host';NET.mySide=info.side||'p';

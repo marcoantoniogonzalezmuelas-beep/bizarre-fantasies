@@ -81,6 +81,9 @@ Deno.serve(async (req) => {
     const matches = await base44.asServiceRole.entities.GameRoom.filter({ room_code: code }, '-updated_date', 1);
     const existing = matches[0];
     const ownsRoom = existing?.state?.owner_token === token;
+    const resumeToken = String(body.resume_token || '').slice(0, 40);
+    const hasResumeToken = !!(resumeToken && existing?.state?.resume_token && resumeToken === existing.state.resume_token);
+    const canModify = ownsRoom || hasResumeToken;
     const isStale = existing && Date.parse(existing.updated_date || existing.created_date || 0) < cutoff;
 
     if (action === 'register') {
@@ -130,7 +133,7 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true });
     }
 
-    if (!existing || !ownsRoom) return Response.json({ ok: true });
+    if (!existing || !canModify) return Response.json({ ok: true });
     if (action === 'touch') {
       await base44.asServiceRole.entities.GameRoom.update(existing.id, { status: existing.status === 'resuming' ? 'resuming' : (existing.status === 'playing' ? 'playing' : 'waiting') });
       return Response.json({ ok: true });
