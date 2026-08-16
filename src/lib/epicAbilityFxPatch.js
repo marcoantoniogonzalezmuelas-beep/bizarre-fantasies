@@ -231,7 +231,7 @@ export const EPIC_ABILITY_FX_PATCH = `
     }
     html+='<div class="bf-ec-ttl">'+String(ability).toUpperCase()+'</div>';
     ov.innerHTML=html;
-    document.body.appendChild(ov);
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
 
     setTimeout(function(){ov.classList.add('bf-ec-out');},2700);
     setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},3200);
