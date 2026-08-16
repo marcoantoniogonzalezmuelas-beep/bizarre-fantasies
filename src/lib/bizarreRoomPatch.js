@@ -11,8 +11,19 @@
 // conexión: el jugador la recibe del emparejamiento, no tiene que escribirla.
 export const BIZARRE_ROOM_PATCH = `
 <style id="bf-bizarre-css">
-#bf-bizarre-overlay{position:fixed;inset:0;z-index:100400;display:none;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 50% 38%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(5px);overflow-y:auto}
-#bf-bizarre-overlay .bf-biz-box{width:min(440px,94vw);max-height:92vh;overflow-y:auto;padding:22px 20px 20px;border-radius:20px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(199,155,255,.55);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(192,91,255,.2)}
+#bf-bizarre-overlay{position:fixed;inset:0;z-index:100400;display:none;align-items:center;justify-content:center;padding:16px;background:linear-gradient(180deg,rgba(8,4,14,.82),rgba(8,4,14,.92)),url('https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/593303393_generated_image.png') center/cover no-repeat;overflow-y:auto}
+#bf-bizarre-overlay .bf-biz-deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#bf-bizarre-overlay .bf-biz-wrap{position:relative;z-index:1;width:100%;display:flex;align-items:center;justify-content:center}
+#bf-bizarre-overlay .bf-biz-box{position:relative;width:min(480px,94vw);max-height:92vh;overflow-y:auto;padding:22px 20px 20px;border-radius:20px;background:linear-gradient(180deg,rgba(27,20,48,.85),rgba(18,13,34,.92));border:2px solid rgba(199,155,255,.55);box-shadow:0 18px 50px rgba(0,0,0,.7),0 0 30px rgba(192,91,255,.3),inset 0 0 30px rgba(120,40,200,.15)}
+#bf-bizarre-overlay .bf-biz-torch{position:absolute;top:10%;width:14px;height:60px;pointer-events:none}
+#bf-bizarre-overlay .bf-biz-torch.l{left:18px}#bf-bizarre-overlay .bf-biz-torch.r{right:18px}
+#bf-bizarre-overlay .bf-biz-torch::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:12px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb24a 40%,#ff5a2a 75%,transparent 100%);box-shadow:0 0 16px rgba(255,150,40,.8),0 0 30px rgba(255,90,20,.5);animation:bfTorchFlick .45s ease-in-out infinite alternate}
+#bf-bizarre-overlay .bf-biz-torch::after{content:'';position:absolute;left:50%;top:-10px;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,160,60,.35),transparent 70%)}
+#bf-bizarre-overlay .bf-biz-rune{position:absolute;font-family:Cinzel,serif;font-size:26px;color:rgba(199,155,255,.3);text-shadow:0 0 12px rgba(192,91,255,.5);pointer-events:none;animation:bfRunePulse 3s ease-in-out infinite}
+#bf-bizarre-overlay .bf-biz-ember{position:absolute;bottom:10%;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfEmber 4s linear infinite;pointer-events:none}
+#bf-bizarre-overlay .bf-biz-duck{position:absolute;font-size:30px;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,210,74,.6));animation:bfDuckFloat 6s ease-in-out infinite}
+#bf-bizarre-overlay .bf-biz-tentacle{position:absolute;font-size:44px;pointer-events:none;opacity:.55}
+#bf-bizarre-overlay .bf-biz-eye{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:22px;pointer-events:none;animation:bfEyeBlink 4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(255,42,90,.8))}
 #bf-bizarre-overlay .bf-biz-title{font-family:Cinzel,serif;font-weight:1000;font-size:22px;color:#e2b0ff;text-align:center;letter-spacing:1px;text-shadow:0 0 18px rgba(192,91,255,.6),0 2px 4px #000;margin-bottom:4px}
 #bf-bizarre-overlay .bf-biz-sub{font-size:12px;color:#cfc6dd;text-align:center;line-height:1.4;margin-bottom:16px}
 #bf-bizarre-overlay .bf-biz-ig{margin-bottom:12px}
@@ -187,7 +198,23 @@ export const BIZARRE_ROOM_PATCH = `
     if(!el){
       el=document.createElement('div');
       el.id='bf-bizarre-overlay';
-      el.innerHTML='<div class="bf-biz-wrap"><div class="bf-biz-box"><div class="bf-biz-x">✕</div><div class="bf-biz-title">🃏 '+L('Habitación Bizarra','Bizarre Room')+'</div><div class="bf-biz-sub">'+L('Entra, mira quién hay y pulsa el botón de pánico para una partida al azar.','Join, see who is here and hit the panic button for a random match.')+'</div><div class="bf-biz-body"></div></div></div>';
+      el.innerHTML='<div class="bf-biz-deco">'+
+        '<div class="bf-biz-torch l"></div><div class="bf-biz-torch r"></div>'+
+        '<div class="bf-biz-eye">👁</div>'+
+        '<div class="bf-biz-rune" style="top:18%;left:12%">⛧</div>'+
+        '<div class="bf-biz-rune" style="top:14%;right:14%;animation-delay:1s">✦</div>'+
+        '<div class="bf-biz-rune" style="bottom:22%;left:16%;animation-delay:.5s">⚜</div>'+
+        '<div class="bf-biz-rune" style="bottom:18%;right:18%;animation-delay:1.5s">✧</div>'+
+        '<div class="bf-biz-ember" style="left:22%;animation-delay:0s"></div>'+
+        '<div class="bf-biz-ember" style="left:52%;animation-delay:1.3s"></div>'+
+        '<div class="bf-biz-ember" style="left:78%;animation-delay:2.6s"></div>'+
+        '<div class="bf-biz-duck" style="top:20%;left:24%;animation-delay:0s">🦆</div>'+
+        '<div class="bf-biz-duck" style="bottom:24%;right:26%;animation-delay:2s;font-size:26px">🦆</div>'+
+        '<div class="bf-biz-duck" style="top:45%;right:16%;animation-delay:4s;font-size:24px">🦆</div>'+
+        '<div class="bf-biz-tentacle" style="bottom:-10px;left:6%;color:#9d5df0;transform:rotate(-15deg);animation:bfTentWave 5s ease-in-out infinite">🐙</div>'+
+        '<div class="bf-biz-tentacle" style="bottom:-10px;right:6%;color:#c06bff;transform:rotate(15deg) scaleX(-1);animation:bfTentWave 5s ease-in-out infinite reverse">🐙</div>'+
+        '</div>'+
+        '<div class="bf-biz-wrap"><div class="bf-biz-box"><div class="bf-biz-x">✕</div><div class="bf-biz-title">🃏 '+L('Habitación Bizarra','Bizarre Room')+'</div><div class="bf-biz-sub">'+L('Entra, mira quién hay y pulsa el botón de pánico para una partida al azar.','Join, see who is here and hit the panic button for a random match.')+'</div><div class="bf-biz-body"></div></div></div>';
       document.body.appendChild(el);
       el.querySelector('.bf-biz-x').onclick=function(){closeOverlay();};
     }
