@@ -205,7 +205,19 @@ export const ABILITY_ANIM_PATCH = `
 
   function lookup(hero){
     if(!hero)return null;
-    return animMap[hero.id]||animMap[hero.cid]||animMap[hero.card_id]||null;
+    // Fallback por nombre: si el card_id cambió en el editor (p.ej. un héroe
+    // editado que antes era otro), el lookup por id falla. El nombre es estable
+    // y permite encontrar la animación aunque el card_id haya cambiado.
+    return animMap[hero.id]||animMap[hero.cid]||animMap[hero.card_id]||(hero.name?spellByName[String(hero.name).toLowerCase()]:null)||null;
+  }
+
+  // Devuelve el lado ('p' u 'o') de un héroe, buscándolo en G.team.
+  function sideOf(hero){
+    try{
+      if(typeof G==='undefined'||!G||!G.team)return null;
+      for(var s=0;s<2;s++){var side=s?'o':'p';var arr=G.team[side]||[];for(var i=0;i<arr.length;i++){if(arr[i]&&arr[i].id===hero.id)return side;}}
+    }catch(e){}
+    return null;
   }
 
   var lastCine=0;
@@ -348,6 +360,25 @@ export const ABILITY_ANIM_PATCH = `
     };
     return true;
   }
+  // Hook sobre dealDamage: detecta cuando una habilidad PASIVA (como
+  // reflect-damage de Juniana) se activa al recibir daño. Estas habilidades
+  // no pasan por useAbility ni marcan abilityUsed, así que sin este hook la
+  // cinemática 3D nunca se dispararía.
+  function installDealDamage(){
+    if(typeof window.dealDamage!=='function'||window.__bfAbilityAnimDealDamageHooked)return false;
+    window.__bfAbilityAnimDealDamageHooked=true;
+    var orig=window.dealDamage;
+    window.dealDamage=function(target,dmg,opts){
+      try{
+        if(target&&target.akind==='reflect-damage'&&Number(dmg)>0&&!(opts&&opts.bfReflect)){
+          var side=sideOf(target);
+          if(side)playAnim(side,target);
+        }
+      }catch(e){}
+      return orig.apply(this,arguments);
+    };
+    return true;
+  }
 
   // Escaneo periódico: detecta abilityUsed false->true. Funciona en AMBOS
   // jugadores online (G.team viaja en el snapshot).
@@ -372,6 +403,10 @@ export const ABILITY_ANIM_PATCH = `
     // parches (Transformer), así que se reintenta hasta que ambos existan.
     installSpell();
     installItem();
+    // Hook de daño: detecta habilidades pasivas (reflect-damage) que no pasan
+    // por useAbility. dealDamage puede ser envuelto por otros parches, así que
+    // se reintenta hasta que exista.
+    installDealDamage();
   },150);
 })();
 </script>
