@@ -184,11 +184,23 @@ export const CENTRAL_LOBBY_PATCH = `
     if(!box||document.getElementById('bf-lobby-info'))return;
     var div=document.createElement('div');
     div.id='bf-lobby-info';
-    div.style.cssText='margin:10px 0 14px;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,rgba(28,16,46,.7),rgba(12,7,20,.85));border:1px solid rgba(255,210,74,.3);font-family:Rubik,sans-serif;font-size:12.5px;line-height:1.5;color:#cfc6dd;box-shadow:0 4px 14px rgba(0,0,0,.3)';
-    div.innerHTML='<div style="font-family:Cinzel,serif;font-weight:900;color:#ffd24a;font-size:13px;margin-bottom:6px;letter-spacing:.3px">ℹ️ Reanudación de partidas</div>'+
-      'Si se cae tu conexión o sales por error, la sala <b style="color:#ffe49a">sigue abierta</b> como "Partida en curso" durante <b style="color:#ffe49a">5 minutos</b>. '+
-      'Solo los dos jugadores originales pueden reanudar: entra en <b style="color:#ffe49a">Salas online</b>, busca tu sala y pulsa <b style="color:#ffe49a">Reanudar</b>. '+
-      'La sala se cierra al terminar la partida o si nadie vuelve en 5 minutos.';
+    div.style.cssText='margin:10px 0 14px;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(28,16,46,.75),rgba(12,7,20,.9));border:1px solid rgba(255,210,74,.32);font-family:Rubik,sans-serif;font-size:12.5px;line-height:1.55;color:#cfc6dd;box-shadow:0 4px 14px rgba(0,0,0,.3)';
+    div.innerHTML=
+      '<div style="font-family:Cinzel,serif;font-weight:900;color:#ffd24a;font-size:14px;margin-bottom:8px;letter-spacing:.3px">🎮 ¿Cómo jugar online?</div>'+
+      '<div style="margin-bottom:10px">'+
+        '<div style="font-weight:800;color:#ffe49a;margin-bottom:3px">🏠 Crear sala privada</div>'+
+        'Tú creas la sala con una <b style="color:#ffe49a">contraseña</b> y compartes el <b style="color:#ffe49a">código</b> con tu rival. Si alguien se desconecta, la partida se puede <b style="color:#ffe49a">reanudar</b> en 5 minutos.</div>'+
+      '<div style="margin-bottom:10px">'+
+        '<div style="font-weight:800;color:#a8c4ff;margin-bottom:3px">🆓 Crear sala pública</div>'+
+        'Sala abierta <b style="color:#a8c4ff">sin contraseña</b>: cualquiera con el código puede entrar. Si alguien se cae, la partida <b style="color:#a8c4ff">termina</b> (sin reanudación).</div>'+
+      '<div style="margin-bottom:10px">'+
+        '<div style="font-weight:800;color:#e2b0ff;margin-bottom:3px">🃏 Habitación Bizarra</div>'+
+        'Entras con tu nick y pulsas el <b style="color:#e2b0ff">Botón de Pánico</b>: te empareja al azar con otro visitante. Mínimo <b style="color:#e2b0ff">3 jugadores</b> dentro.</div>'+
+      '<div style="margin-bottom:10px">'+
+        '<div style="font-weight:800;color:#9adf9a;margin-bottom:3px">🔌 Reanudar una partida</div>'+
+        'Si se cae tu conexión, la sala sigue abierta como "Partida en curso" durante <b style="color:#ffe49a">5 minutos</b>. Busca tu sala y pulsa <b style="color:#ffe49a">Reanudar</b>.</div>'+
+      '<div style="padding-top:8px;border-top:1px solid rgba(255,210,74,.18);font-size:11.5px;color:#b8aacb">'+
+        '💡 También puedes jugar <b style="color:#ffe49a">Local</b> (2 jugadores en este dispositivo) o contra la <b style="color:#ffe49a">IA</b> (4 niveles) desde el menú principal.</div>';
     box.insertBefore(div,box.firstChild);
   }
   function renderCentralList(){

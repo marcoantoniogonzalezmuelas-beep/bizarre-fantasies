@@ -47,9 +47,23 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-x{position:absolute;top:14px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#cfc6dd;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #bf-bizarre-overlay .bf-biz-x:hover{background:rgba(255,255,255,.18);color:#fff}
 #bf-bizarre-overlay .bf-biz-wrap{position:relative}
-.bf-bizarre-btn{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin:10px 0 0;padding:14px 16px;border-radius:14px;border:2px solid rgba(199,155,255,.5);background:linear-gradient(135deg,rgba(120,60,200,.25),rgba(192,91,255,.15));color:#e2b0ff;font-family:Cinzel,serif;font-weight:1000;font-size:15px;letter-spacing:.4px;cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;text-shadow:0 2px 4px #000;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.bf-bizarre-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:12px 0 0;padding:13px 16px;border-radius:14px;border:2px solid rgba(199,155,255,.5);background:linear-gradient(135deg,rgba(120,60,200,.3),rgba(192,91,255,.18));color:#e2b0ff;font-family:Cinzel,serif;font-weight:1000;font-size:15px;letter-spacing:.4px;cursor:pointer;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;text-shadow:0 2px 4px #000;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .bf-bizarre-btn:hover{transform:translateY(-2px);border-color:#c06bff;box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 22px rgba(192,91,255,.35)}
-.bf-bizarre-btn .bf-bizarre-ico{font-size:22px;filter:drop-shadow(0 0 8px rgba(192,91,255,.7))}
+.bf-bizarre-btn .bf-bizarre-ico{font-size:20px;filter:drop-shadow(0 0 8px rgba(192,91,255,.7))}
+
+/* Sección decorada en el lobby */
+.bf-bizarre-section{position:relative;overflow:hidden;margin:18px 0 6px;padding:18px 18px 16px;border-radius:18px;background:linear-gradient(160deg,rgba(28,14,50,.92),rgba(14,8,26,.95));border:2px solid rgba(192,91,255,.45);box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 0 30px rgba(120,40,200,.12)}
+.bf-bizarre-section::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 0%,rgba(192,91,255,.18),transparent 55%),radial-gradient(circle at 85% 100%,rgba(255,42,90,.12),transparent 50%);pointer-events:none}
+.bf-bizarre-deco-left{position:absolute;top:-10px;left:-10px;width:70px;height:70px;border-radius:50%;background:radial-gradient(circle,rgba(192,91,255,.35),transparent 65%);filter:blur(8px);pointer-events:none;animation:bfBizFloat 4s ease-in-out infinite}
+.bf-bizarre-deco-right{position:absolute;bottom:-12px;right:-8px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,rgba(255,42,90,.3),transparent 65%);filter:blur(8px);pointer-events:none;animation:bfBizFloat 5s ease-in-out infinite reverse}
+@keyframes bfBizFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.08)}}
+.bf-bizarre-header{position:relative;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bf-bizarre-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,rgba(192,91,255,.3),rgba(120,40,200,.2));border:2px solid rgba(199,155,255,.5);box-shadow:0 0 18px rgba(192,91,255,.4);flex-shrink:0}
+.bf-bizarre-titles{flex:1;min-width:0}
+.bf-bizarre-name{font-family:Cinzel,serif;font-weight:1000;font-size:18px;color:#e2b0ff;letter-spacing:.5px;text-shadow:0 0 14px rgba(192,91,255,.5),0 1px 3px #000;line-height:1.1}
+.bf-bizarre-tag{font-size:11px;color:#c79bff;font-weight:700;letter-spacing:.3px;margin-top:2px}
+.bf-bizarre-desc{position:relative;font-size:12.5px;line-height:1.5;color:#d4cce4;font-family:Rubik,sans-serif;margin-bottom:4px}
+.bf-bizarre-desc b{color:#e2b0ff}
 </style>
 <script>
 (function(){
@@ -102,13 +116,30 @@ export const BIZARRE_ROOM_PATCH = `
     if(!lobby)return;
     var box=lobby.querySelector('.setup-box');
     if(!box)return;
-    if(document.getElementById('bf-bizarre-entry'))return;
-    var btn=document.createElement('button');
-    btn.id='bf-bizarre-entry';
-    btn.className='bf-bizarre-btn';
-    btn.innerHTML='<span class="bf-bizarre-ico">🃏</span><span>'+L('Habitación Bizarra','Bizarre Room')+'</span>';
-    btn.onclick=function(e){e.preventDefault();e.stopPropagation();openOverlay();};
-    box.appendChild(btn);
+    if(document.getElementById('bf-bizarre-section'))return;
+    var sec=document.createElement('div');
+    sec.id='bf-bizarre-section';
+    sec.className='bf-bizarre-section';
+    sec.innerHTML=
+      '<div class="bf-bizarre-deco-left"></div>'+
+      '<div class="bf-bizarre-deco-right"></div>'+
+      '<div class="bf-bizarre-header">'+
+        '<div class="bf-bizarre-icon">🃏</div>'+
+        '<div class="bf-bizarre-titles">'+
+          '<div class="bf-bizarre-name">'+L('Habitación Bizarra','Bizarre Room')+'</div>'+
+          '<div class="bf-bizarre-tag">'+L('Partidas públicas al azar','Random public matches')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="bf-bizarre-desc">'+L(
+        'Entra con tu nick, mira quién hay dentro y pulsa el <b>Botón de Pánico</b>: te empareja al azar con otro visitante y arranca una partida online. Se necesita un mínimo de <b>3 visitantes</b> para activarlo.',
+        'Join with your nick, see who\'s inside and hit the <b>Panic Button</b>: it matches you randomly with another visitor and starts an online game. A minimum of <b>3 visitors</b> is needed to activate it.'
+      )+'</div>'+
+      '<button class="bf-bizarre-btn" id="bf-bizarre-entry">'+
+        '<span class="bf-bizarre-ico">🚪</span><span>'+L('Entrar en la habitación','Enter the room')+'</span>'+
+      '</button>';
+    sec.querySelector('#bf-bizarre-entry').onclick=function(e){e.preventDefault();e.stopPropagation();openOverlay();};
+    // Inserta la sección al FINAL del setup-box, separada visualmente.
+    box.appendChild(sec);
   }
 
   function overlayEl(){

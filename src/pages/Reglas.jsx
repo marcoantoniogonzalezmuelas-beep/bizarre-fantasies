@@ -100,6 +100,14 @@ export default function Reglas() {
     { img: ACT_TANK, title: L('Tanquear', 'Tank'), text: L('Atraes los ataques rivales para proteger al equipo.', 'Draw the rival\'s attacks to protect the team.') },
   ];
 
+  const MODES = [
+    { icon: '🤖', c: '#9adf9a', title: L('Contra la IA', 'vs AI'), text: L('4 niveles de dificultad: Novato, Berserker, Estratega y Némesis. La IA aprende de cada partida y se vuelve más fuerte. Juega sin conexión y practica estrategias.', '4 difficulty levels: Novice, Berserker, Strategist and Nemesis. The AI learns from each game and gets stronger. Play offline and practice strategies.') },
+    { icon: '📱', c: '#6ec6ff', title: L('Local', 'Local'), text: L('2 jugadores en el mismo dispositivo. Cada uno escribe su nick y contraseña. Ideal para partidas rápidas cara a cara.', '2 players on the same device. Each enters their nick and password. Great for quick face-to-face games.') },
+    { icon: '🏠', c: '#FFD24A', title: L('Sala privada online', 'Private online room'), text: L('Creas una sala con contraseña y compartes el código con tu rival. Solo quien tenga la contraseña puede unirse. Si alguien se desconecta, la partida se puede reanudar en 5 minutos.', 'You create a room with a password and share the code with your rival. Only those with the password can join. If someone disconnects, the game can be resumed within 5 minutes.') },
+    { icon: '🆓', c: '#6aa6ff', title: L('Sala pública online', 'Public online room'), text: L('Sala sin contraseña: cualquiera con el código puede entrar. Si alguien pierde la conexión, la partida termina (sin reanudación).', 'Room without password: anyone with the code can join. If someone loses connection, the game ends (no resume).') },
+    { icon: '🃏', c: '#c06bff', title: L('Habitación Bizarra', 'Bizarre Room'), text: L('Entras con tu nick y pulsas el Botón de Pánico: te empareja al azar con otro visitante y arranca una partida. Mínimo 3 jugadores dentro. La partida lleva contraseña interna para reanudación.', 'You join with your nick and hit the Panic Button: it matches you randomly with another visitor and starts a game. Minimum 3 players inside. The game has an internal password for resuming.') },
+  ];
+
   const STATES = [
     { c: '#9b8cff', i: '💤', n: L('Dormido', 'Asleep'), x: L('Pierde su próximo turno.', 'Loses their next turn.') },
     { c: '#ffe14a', i: '⚡', n: L('Paralizado', 'Paralyzed'), x: L('Pierde su próximo turno.', 'Loses their next turn.') },
@@ -191,6 +199,22 @@ export default function Reglas() {
               <p><b className="text-[#ff5252]">{L('Segunda caída → muerte definitiva:', 'Second fall → permanent death:')}</b> {L('el héroe queda eliminado permanentemente de la batalla… salvo que jugues Pluma Fénix o Ave Fénix, que lo traen de vuelta una vez más.', 'the hero is permanently removed from the battle… unless you play Phoenix Feather or Phoenix Bird, which bring it back once more.')}</p>
               <p><b style={{ color: '#a06bff' }}>♻️ {L('Reanimación Arcana', 'Arcane Reanimation')}:</b> {L('recuperas una carta aleatoria de tu pila de descartes: los objetos vuelven a ser jugables y las armas/armaduras se equipan gratis al jugarlas desde la mano.', 'you recover a random card from your discard pile: items become playable again and weapons/armor equip for free when played from the hand.')}</p>
               <p><b style={{ color: '#ffd24a' }}>🔑 {L('Habilidades:', 'Abilities:')}</b> {L('cada héroe puede usar su habilidad normal y su habilidad élite una sola vez por batalla (se cuentan por separado). Al revivir no recupera una habilidad ya gastada.', "each hero can use its normal ability and its elite ability once per battle (counted separately). On reviving it doesn't recover an already-spent ability.")}</p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
+            <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">🎮 {L('Modos de juego', 'Game modes')}</div>
+            <p className="text-[#d8d0e4] text-base leading-relaxed mb-4">{L('Bizarre Fantasies se puede jugar de varias maneras. Elige la que mejor se adapte a lo que buscas:', 'Bizarre Fantasies can be played in several ways. Choose the one that best fits what you\'re looking for:')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {MODES.map((m) => (
+                <div key={m.title} className="flex items-start gap-3 bg-gradient-to-b from-[#140a23]/85 to-[#0a050f]/95 rounded-xl p-4 border" style={{ borderColor: m.c + '88', boxShadow: `inset 0 0 18px -10px ${m.c}` }}>
+                  <span className="shrink-0 w-10 h-10 rounded-lg border-2 border-white/15 flex items-center justify-center text-xl" style={{ background: m.c, boxShadow: `0 0 14px ${m.c}cc` }} aria-hidden="true">{m.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-black text-base tracking-wide mb-1" style={{ color: m.c }}>{m.title}</div>
+                    <div className="text-[#e6dff2] text-sm leading-snug">{m.text}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

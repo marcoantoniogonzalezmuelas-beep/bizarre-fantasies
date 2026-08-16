@@ -12,7 +12,7 @@
 // porque el iframe no tiene acceso directo a la BD.
 export const NICK_PASSWORD_PATCH = `
 <style id="bf-nick-pass-css">
-.bf-pass-wrap{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+.bf-pass-wrap{margin-top:6px;display:flex;flex-direction:column;gap:2px;width:100%;flex-basis:100%}
 .bf-pass-row{position:relative;display:flex;align-items:center}
 .bf-pass-row input{width:100%;box-sizing:border-box;padding-right:38px}
 .bf-pass-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;color:#cbb46a;font-size:18px;line-height:1;padding:0;opacity:.85}
@@ -100,7 +100,10 @@ export const NICK_PASSWORD_PATCH = `
       hint.className='bf-pass-hint';
       wrap.appendChild(rowEl);
       wrap.appendChild(hint);
-      row.parentNode.insertBefore(wrap,row.nextSibling);
+      // Inserta el campo de contraseña JUSTO DEBAJO del input de nick, no
+      // después de todo el .ig (que puede incluir avatar picker u otros
+      // campos). Así queda pegado al nick en cualquier layout.
+      input.parentNode.insertBefore(wrap,input.nextSibling);
       input._bfPass=pass;
       input._bfPassHint=hint;
       input.addEventListener('input',function(){labelPass(input);});
