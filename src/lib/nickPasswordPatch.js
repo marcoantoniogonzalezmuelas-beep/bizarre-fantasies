@@ -104,8 +104,11 @@ export const NICK_PASSWORD_PATCH = `
       var pass=document.createElement('input');
       pass.type='password';
       pass.className=input.className||'';
-      pass.autocomplete='off';
+      pass.autocomplete='current-password';
+      pass.name='bf-pass-'+id;
       pass.maxLength=60;
+      // Permite que el gestor de contraseñas del navegador asocie nick+password.
+      try{input.setAttribute('autocomplete','username');if(!input.name)input.name='bf-nick-'+id;}catch(e){}
       pass.placeholder=L('Contraseña','Password');
       pass.style.cssText='display:block';
       var eye=document.createElement('button');
