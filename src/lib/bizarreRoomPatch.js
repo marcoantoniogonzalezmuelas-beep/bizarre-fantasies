@@ -132,7 +132,7 @@ export const BIZARRE_ROOM_PATCH = `
       '</div>'+
       '<div class="bf-bizarre-desc">'+L(
         'Entra con tu nick, mira quién hay dentro y pulsa el <b>Botón de Pánico</b>: te empareja al azar con otro visitante y arranca una partida online. Se necesita un mínimo de <b>3 visitantes</b> para activarlo.',
-        'Join with your nick, see who\'s inside and hit the <b>Panic Button</b>: it matches you randomly with another visitor and starts an online game. A minimum of <b>3 visitors</b> is needed to activate it.'
+        'Join with your nick, see who is inside and hit the <b>Panic Button</b>: it matches you randomly with another visitor and starts an online game. A minimum of <b>3 visitors</b> is needed to activate it.'
       )+'</div>'+
       '<button class="bf-bizarre-btn" id="bf-bizarre-entry">'+
         '<span class="bf-bizarre-ico">🚪</span><span>'+L('Entrar en la habitación','Enter the room')+'</span>'+
@@ -151,7 +151,7 @@ export const BIZARRE_ROOM_PATCH = `
     if(!el){
       el=document.createElement('div');
       el.id='bf-bizarre-overlay';
-      el.innerHTML='<div class="bf-biz-wrap"><div class="bf-biz-box"><div class="bf-biz-x">✕</div><div class="bf-biz-title">🃏 '+L('Habitación Bizarra','Bizarre Room')+'</div><div class="bf-biz-sub">'+L('Entra, mira quién hay y pulsa el botón de pánico para una partida al azar.','Join, see who\'s here and hit the panic button for a random match.')+'</div><div class="bf-biz-body"></div></div></div>';
+      el.innerHTML='<div class="bf-biz-wrap"><div class="bf-biz-box"><div class="bf-biz-x">✕</div><div class="bf-biz-title">🃏 '+L('Habitación Bizarra','Bizarre Room')+'</div><div class="bf-biz-sub">'+L('Entra, mira quién hay y pulsa el botón de pánico para una partida al azar.','Join, see who is here and hit the panic button for a random match.')+'</div><div class="bf-biz-body"></div></div></div>';
       document.body.appendChild(el);
       el.querySelector('.bf-biz-x').onclick=function(){closeOverlay();};
     }
@@ -196,7 +196,7 @@ export const BIZARRE_ROOM_PATCH = `
       // Listado de visitantes + botón de pánico
       var listHtml=visitors.map(function(v){
         var isMe=session&&String(v.nick).toLowerCase()===String(session.nick).toLowerCase();
-        return '<div class="bf-biz-visitor'+(isMe?' me':'')+'"><img class="bf-biz-vav" src="'+esc(v.avatar||'')+'" alt="" onerror="this.style.display=\'none\'"><div class="bf-biz-vinfo"><div class="bf-biz-vnick">'+esc(v.nick)+(isMe?' ('+L('tú','you')+')':'')+'</div><div class="bf-biz-vwins">🏆 '+L('Victorias','Wins')+': '+Number(v.total_wins||0)+'</div></div></div>';
+        return '<div class="bf-biz-visitor'+(isMe?' me':'')+'"><img class="bf-biz-vav" src="'+esc(v.avatar||'')+'" alt="" onerror="this.style.display=&quot;none&quot;"><div class="bf-biz-vinfo"><div class="bf-biz-vnick">'+esc(v.nick)+(isMe?' ('+L('tú','you')+')':'')+'</div><div class="bf-biz-vwins">🏆 '+L('Victorias','Wins')+': '+Number(v.total_wins||0)+'</div></div></div>';
       }).join('');
       if(!listHtml)listHtml='<div style="text-align:center;color:#cfc6dd;font-size:13px;padding:14px">'+L('Aún no hay otros visitantes.','No other visitors yet.')+'</div>';
       var canPanic=visitors.length>=3;
