@@ -124,6 +124,9 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
 
   var lastCine=0;
   function playCine(kind){
+    // Cinemáticas 3D desactivadas (botón "Desactivar animaciones"): se salta
+    // el overlay 3D. La carta revelada sigue mostrándose en el centro.
+    if(window.__bfNoCinematics)return;
     // Anti-duplicado: si la cinemática llega dos veces (revelación de carta +
     // efecto sincronizado del rival), solo se reproduce una en ~3s.
     var now=Date.now();

@@ -225,6 +225,10 @@ export const ABILITY_ANIM_PATCH = `
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
   function showCinematic(url,title,cc,desc,motionId,descText){
+    // Si el jugador ha desactivado las cinemáticas 3D (botón "Desactivar
+    // animaciones" en batalla), se salta el overlay 3D. La carta revelada y
+    // los FX 2D (rayo en cadena, tormenta ígnea, banners…) siguen funcionando.
+    if(window.__bfNoCinematics)return;
     var now=Date.now();
     if(document.getElementById('bf-abil-anim')||now-lastCine<5000)return;
     lastCine=now;
@@ -268,6 +272,9 @@ export const ABILITY_ANIM_PATCH = `
   // escaneo. Marca window.__bfCardCineName para que cardPlayRevealPatch NO
   // muestre la carta revelada al mismo tiempo (sin solapar ambas animaciones).
   function playItemCinematic(item,entry){
+    // Cinemáticas 3D desactivadas: se salta el overlay 3D y NO se fija
+    // __bfCardCineName, así la carta revelada sí se muestra en el centro.
+    if(window.__bfNoCinematics)return;
     var url=entry.base;
     if(!url)return;
     var cc=(item&&item.element&&SPELL_COLORS[item.element])||'#ffd24a';
