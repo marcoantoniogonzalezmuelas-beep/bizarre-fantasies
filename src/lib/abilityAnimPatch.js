@@ -23,6 +23,11 @@ export const ABILITY_ANIM_PATCH = `
   // Mapa card_id -> {base, elite} recibido del padre por postMessage.
   var animMap={};
   window.__bfAbilityAnimMap=animMap;
+  // Lookup por nombre para hechizos/objetos de la mano (su id del juego no
+  // coincide con el card_id de la BD, así que se emparejan por nombre).
+  var spellByName={};
+  // Color por elemento del hechizo para el halo/título de la cinemática.
+  var SPELL_COLORS={fuego:'#ff5a2a',hielo:'#5ad0ff',rayo:'#ffe14a',agua:'#3aa0ff',curacion:'#5fffa0',proteccion:'#ffd23a',arcano:'#c79bff',estado:'#c79bff'};
   // Recorta el fondo oscuro/negro de las imágenes de animación (lo vuelve
   // transparente con un canvas) para que solo quede la criatura, igual que las
   // cinemáticas del Tanque/Transformer/Patitos. Se cachea por URL.
@@ -111,6 +116,12 @@ export const ABILITY_ANIM_PATCH = `
       // parches (epicAbilityFxPatch) vean el mapa poblado y NO reproduzcan su
       // cinemática antigua cuando este héroe ya tiene una animación nueva.
       window.__bfAbilityAnimMap=animMap;
+      // Reconstruye el lookup por nombre para hechizos/objetos de la mano.
+      spellByName={};
+      Object.keys(animMap).forEach(function(k){
+        var ent=animMap[k];
+        if(ent&&ent.name)spellByName[String(ent.name).toLowerCase()]=ent;
+      });
       // Pre-recorta todas las imágenes para que el primer disparo ya salga sin fondo.
       Object.keys(animMap).forEach(function(k){
         var ent=animMap[k];if(!ent)return;
@@ -196,6 +207,29 @@ export const ABILITY_ANIM_PATCH = `
   }
 
   var lastCine=0;
+  // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
+  // recortada, el título, las partículas y el movimiento temático. Lo usan
+  // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
+  function showCinematic(url,title,cc,desc,motionId){
+    var now=Date.now();
+    if(document.getElementById('bf-abil-anim')||now-lastCine<3200)return;
+    lastCine=now;
+    var ov=document.createElement('div');ov.id='bf-abil-anim';
+    ov.style.setProperty('--aa-color',cc);
+    ov.style.setProperty('--aa-glow',hexToRgba(cc,0.38)||'rgba(255,210,74,0.38)');
+    ov.style.setProperty('--aa-flash',hexToRgba(cc,0.7)||'rgba(255,255,255,0.7)');
+    var motion=pickMotionDesc(desc||title,motionId);
+    var html='<div class="bf-aa-dim"></div><div class="bf-aa-glowdisc"></div><div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
+    for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
+    if(motion.fxTag)html+=motion.fxTag;
+    var cu=CUT[url];
+    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
+    html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
+    ov.innerHTML=html;
+    document.body.appendChild(ov);
+    setTimeout(function(){ov.classList.add('bf-aa-out');},2700);
+    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},3200);
+  }
   function playAnim(side,hero){
     if(!hero)return;
     var entry=lookup(hero);
@@ -203,33 +237,60 @@ export const ABILITY_ANIM_PATCH = `
     var isElite=!!hero.eliteMode;
     var url=isElite?(entry.elite||entry.base):entry.base;
     if(!url)return;
-    var now=Date.now();
-    if(document.getElementById('bf-abil-anim')||now-lastCine<3200)return;
-    lastCine=now;
     var cc=clanColorOf(hero)||'#ffd24a';
-    var ov=document.createElement('div');ov.id='bf-abil-anim';
-    ov.style.setProperty('--aa-color',cc);
-    ov.style.setProperty('--aa-glow',hexToRgba(cc,0.38)||'rgba(255,210,74,0.38)');
-    ov.style.setProperty('--aa-flash',hexToRgba(cc,0.7)||'rgba(255,255,255,0.7)');
     var ability=isElite?(hero.eAbility||hero.ability||hero.name):(hero.ability||hero.name);
     var descSrc=isElite?(entry.eliteDesc||entry.desc):entry.desc;
     var motionId=isElite?(entry.eliteMotion||entry.motion):entry.motion;
-    var motion=pickMotionDesc(descSrc||ability,motionId);
-    var html='<div class="bf-aa-dim"></div><div class="bf-aa-glowdisc"></div><div class="bf-aa-veil"></div><div class="bf-aa-flash"></div>';
-    // Sin anillos de halo del color de clan: parpadeaban al expandirse.
-    for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
-    if(motion.fxTag)html+=motion.fxTag;
-    var cu=CUT[url];
-    // El recorte se prepara al recibir las imágenes; si aún está procesándose,
-    // se muestra la original únicamente en ese primer instante.
-    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 3.2s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
-    html+='<div class="bf-aa-ttl">'+String(ability).toUpperCase()+'</div>';
-    ov.innerHTML=html;
-    document.body.appendChild(ov);
-    setTimeout(function(){ov.classList.add('bf-aa-out');},2700);
-    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},3200);
+    showCinematic(url,ability,cc,descSrc||ability,motionId);
   }
   window.__bfPlayAbilityAnim=playAnim;
+
+  // Cinemática 3D para HECHIZOS de la mano (Tormenta Ígnea, Bola de Fuego…).
+  // Los hechizos no están en G.team ni tienen flag abilityUsed, así que se
+  // engancha directamente a castSpell / castSpell_AI en vez de usar el escaneo.
+  // Marca window.__bfSpellCineName para que cardPlayRevealPatch NO muestre la
+  // carta revelada al mismo tiempo (sin solapar ambas animaciones).
+  function playSpellCinematic(spell,entry){
+    var url=entry.base;
+    if(!url)return;
+    var cc=(spell&&spell.element&&SPELL_COLORS[spell.element])||'#c79bff';
+    showCinematic(url,spell?spell.name:'Hechizo',cc,entry.desc||(spell?spell.name:''),entry.motion);
+    // Suprime la carta revelada de este hechizo durante la cinemática 3D.
+    window.__bfSpellCineName=spell?spell.name:null;
+    setTimeout(function(){window.__bfSpellCineName=null;},3500);
+  }
+  function installSpell(){
+    if(typeof window.castSpell!=='function'||window.__bfAbilityAnimSpellHooked)return false;
+    window.__bfAbilityAnimSpellHooked=true;
+    var orig=window.castSpell;
+    window.castSpell=function(id){
+      try{
+        if(typeof SPELLS!=='undefined'){
+          var spell=typeof byId==='function'?byId(SPELLS,id):null;
+          if(spell&&spell.name){
+            var entry=spellByName[String(spell.name).toLowerCase()];
+            if(entry&&entry.base)playSpellCinematic(spell,entry);
+          }
+        }
+      }catch(e){}
+      return orig.apply(this,arguments);
+    };
+    // IA: también reproduce la cinemática cuando la IA lanza un hechizo.
+    if(typeof window.castSpell_AI==='function'&&!window.__bfAbilityAnimSpellAiHooked){
+      window.__bfAbilityAnimSpellAiHooked=true;
+      var origAi=window.castSpell_AI;
+      window.castSpell_AI=function(side,h,s,target){
+        try{
+          if(s&&s.name){
+            var entry=spellByName[String(s.name).toLowerCase()];
+            if(entry&&entry.base)playSpellCinematic(s,entry);
+          }
+        }catch(e){}
+        return origAi.apply(this,arguments);
+      };
+    }
+    return true;
+  }
 
   // Hook directo sobre useAbility: feedback inmediato en el host. No
   // intercepta los héroes token (los gestiona tokenAbilitiesPatch).
@@ -263,6 +324,9 @@ export const ABILITY_ANIM_PATCH = `
   var tries=0,t=setInterval(function(){
     scan();
     if(!window.__bfAbilityAnimHooked){if(install()||tries++>120)clearInterval(t);}
+    // Hook de hechizos: castSpell / castSpell_AI pueden envolverlos otros
+    // parches (Transformer), así que se reintenta hasta que ambos existan.
+    installSpell();
   },150);
 })();
 </script>
