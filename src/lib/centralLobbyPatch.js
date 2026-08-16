@@ -130,19 +130,11 @@ export const CENTRAL_LOBBY_PATCH = `
       });
       }
   window.bfRejoinResumeRoom=function(code,hasPass){
-    // Solo los jugadores originales pueden reanudar: verifican con el token
-    // guardado en localStorage. Un jugador que no estaba en la partida no
-    // tiene el token y no puede unirse a la sala "Partida en curso".
-    var token='';
-    try{token=localStorage.getItem('bfResumeToken_'+code)||'';}catch(e){}
-    var ri=window.__bfGetResume&&window.__bfGetResume();
-    if(ri&&ri.token)token=token||ri.token;
-    if(!token){
-      try{if(typeof notif==='function')notif('No puedes unirte: no eres un jugador de esta partida.');else alert('No puedes unirte: no eres un jugador de esta partida.');}catch(e){}
-      return;
-    }
-    // Reanudación única: se reconecta a la sala (como host o cliente, según el
-    // rol guardado) y el jugador que se quedó le copia el estado de la partida.
+    // La contraseña (guardada en el dispositivo al empezar la partida) identifica
+    // a los dos jugadores originales. No hace falta el token de reanudación: la
+    // contraseña es fiable desde el instante 0 (no depende de que se haya
+    // intercambiado el token antes de la desconexión). El host valida la
+    // contraseña al recibir el 'hello'.
     var resumeInfo=window.__bfGetResume&&window.__bfGetResume();
     if(!resumeInfo||resumeInfo.code!==code){
       try{if(typeof notif==='function')notif('No tienes una partida guardada para reanudar en esta sala.');else alert('No tienes una partida guardada para reanudar en esta sala.');}catch(e){}
@@ -181,7 +173,7 @@ export const CENTRAL_LOBBY_PATCH = `
       return new Promise(function(resolve,reject){
         function register(){
           attempts+=1;
-          request('register',{code:code,name:name,hasPass:!!hasPass}).then(function(data){
+          request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||''}).then(function(data){
             if(!data||data.ok!==true)throw new Error('register rejected');
             return request('list');
           }).then(function(data){
@@ -217,8 +209,40 @@ export const CENTRAL_LOBBY_PATCH = `
       });
     };
 
+    // Contraseña obligatoria al crear sala: sin ella la reanudación no puede
+    // identificar a los dos jugadores originales (los nicks no son fiables sin
+    // registro). El juego nativo la hace opcional, así que la exigimos aquí.
+    if(!window.__bfHostCreateWrapped){
+      window.__bfHostCreateWrapped=true;
+      var origHostCreate=window.hostCreate;
+      window.hostCreate=function(name,pass,roomName){
+        if(!pass||!String(pass).trim()){
+          try{if(typeof notif==='function')notif('⚠️ La contraseña es obligatoria para crear una sala (partida privada).');else alert('La contraseña es obligatoria para crear una sala.');}catch(e){alert('La contraseña es obligatoria para crear una sala.');}
+          return;
+        }
+        return origHostCreate.apply(this,arguments);
+      };
+      var origRenderLobby=window.renderLobby;
+      window.renderLobby=function(stage){
+        var r=origRenderLobby.apply(this,arguments);
+        if(stage==='host')setTimeout(bfEnforcePassForm,0);
+        return r;
+      };
+    }
     centralList();
     return true;
+  }
+  function bfEnforcePassForm(){
+    var lp=document.getElementById('hpass');
+    if(!lp||lp.dataset.bfReq==='1')return;
+    lp.dataset.bfReq='1';
+    lp.placeholder='Obligatoria (partida privada)';
+    var ig=lp.closest('.ig');
+    if(ig){var lbl=ig.querySelector('label');if(lbl)lbl.textContent='Contraseña';}
+    var note=document.querySelector('#s-lobby .setup-box .note-box');
+    if(note&&note.innerHTML.indexOf('La <b>contraseña</b> es opcional')!==-1){
+      note.innerHTML=note.innerHTML.replace('La <b>contraseña</b> es opcional (vacía = sala abierta).','La <b>contraseña</b> es <b>obligatoria</b> (partida privada: solo quien la sepa puede unirse y reanudar la partida).');
+    }
   }
 
   var tries=0,timer=setInterval(function(){if(install()||tries++>50)clearInterval(timer);},100);

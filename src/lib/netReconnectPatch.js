@@ -89,7 +89,7 @@ export const NET_RECONNECT_PATCH = `
         // ser el cliente (no es dueño de la sala), pero tiene el token válido.
         if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){
           var rt=window.__bfResumeToken||'';try{rt=rt||localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}
-          window.bfLobbyRequest('unregister',{code:NET.code,resume_token:rt}).catch(function(){});
+          window.bfLobbyRequest('unregister',{code:NET.code,resume_token:rt,password:NET.pass||''}).catch(function(){});
         }
         try{if(NET.conn)NET.conn.close();}catch(e){}
         try{if(NET.peer)NET.peer.destroy();}catch(e){}
@@ -181,8 +181,8 @@ export const NET_RECONNECT_PATCH = `
     rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
     window.__bfRoomMarkedPlaying=false;
-    // Al agotarse el tiempo, borra la sala (host o cliente con token de reanudación).
-    if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){var rt=window.__bfResumeToken||'';try{rt=rt||localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}window.bfLobbyRequest('unregister',{code:NET.code,resume_token:rt}).catch(function(){});}
+    // Al agotarse el tiempo, borra la sala (host, o cliente con token/contraseña).
+    if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){var rt=window.__bfResumeToken||'';try{rt=rt||localStorage.getItem('bfResumeToken_'+NET.code)||'';}catch(e){}window.bfLobbyRequest('unregister',{code:NET.code,resume_token:rt,password:NET.pass||''}).catch(function(){});}
     if(typeof modal==='function')modal('<h3>Tiempo de espera agotado</h3><div class="modal-note" style="font-size:15px">'+(msg||'Tu rival no ha vuelto en 5 minutos. La partida no se puede reanudar.')+'</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
   }
 
@@ -390,7 +390,9 @@ export const NET_RECONNECT_PATCH = `
         }
         if(msg&&msg.t==='hello'){
           if(NET.pass&&msg.pass!==NET.pass){try{conn.send({t:'reject',reason:'Contraseña incorrecta.'});}catch(e){}return;}
-          if(window.__bfResumeToken&&msg.resume_token!==window.__bfResumeToken){try{conn.send({t:'reject',reason:'No eres un jugador de esta partida.'});}catch(e){}return;}
+          // La contraseña válida ya identifica al jugador como uno de los dos
+          // originales (la sala es privada). No exigimos el token de reanudación:
+          // dependía de un intercambio que podía no haber ocurrido aún.
           try{if(NET.conn&&NET.conn!==conn)NET.conn.close();}catch(e){}
           NET.conn=conn;
           resumed();
@@ -465,7 +467,7 @@ export const NET_RECONNECT_PATCH = `
     // unirse salvo los dos jugadores originales, que usan su token de reanudación.
     if(!window.__bfRoomMarkedPlaying&&window.bfLobbyRequest){
       window.__bfRoomMarkedPlaying=true;
-      window.bfLobbyRequest('register_playing',{code:NET.code,nicks:[NET.names_self||'Jugador 1',(G.names&&G.names.o)||'Jugador 2'],hasPass:!!NET.pass,resume_token:window.__bfResumeToken||''}).catch(function(){});
+      window.bfLobbyRequest('register_playing',{code:NET.code,nicks:[NET.names_self||'Jugador 1',(G.names&&G.names.o)||'Jugador 2'],hasPass:!!NET.pass,pass:NET.pass||'',resume_token:window.__bfResumeToken||''}).catch(function(){});
     }
   },3000);
   setInterval(function(){
