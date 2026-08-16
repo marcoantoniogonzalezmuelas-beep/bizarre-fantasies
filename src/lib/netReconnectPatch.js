@@ -150,13 +150,16 @@ export const NET_RECONNECT_PATCH = `
   // estado al que vuelve, así los dos siguen exactamente donde estaban.
   var GF=['names','coins','equipReserve','equipCoins','bfEquipXfer','team','spellbook','items','bonus','eqReady','pendDebt','pools','curType','aIndex','cands','epicCands','bids','bidsIn','eqShop','eqSide','phaseResult','phaseNeeds','subRound'];
   function buildFullSync(){
-    var snap={t:'bfFullSync',scr:currentScreen(),G:{}};
+    var snap={t:'bfFullSync',scr:currentScreen(),side:(typeof NET!=='undefined'&&NET.mySide)||'',G:{}};
     try{GF.forEach(function(k){if(typeof G!=='undefined'&&G[k]!==undefined)snap.G[k]=G[k];});}catch(e){}
     try{if(typeof B!=='undefined'&&B)snap.B={round:B.round,qi:B.qi,queue:B.queue,over:B.over,current:B.current,log:(B.log||[]).slice(-40),seq:B.seq};}catch(e){}
     return snap;
   }
   function applyFullSync(msg){
     try{
+      // El emisor nos dice su bando: el nuestro es el contrario. Así el que
+      // reanuda no necesita recordar si era 'p' o 'g'.
+      if(msg.side==='p'||msg.side==='g')NET.mySide=msg.side==='p'?'g':'p';
       if(msg.G)Object.keys(msg.G).forEach(function(k){if(msg.G[k]!==undefined)G[k]=msg.G[k];});
       if(msg.B)B={round:msg.B.round,qi:msg.B.qi,queue:msg.B.queue||[],over:!!msg.B.over,current:msg.B.current||null,log:msg.B.log||[],wd:null,seq:msg.B.seq||0,pending:null};
       var s=msg.scr||currentScreen();
@@ -196,7 +199,7 @@ export const NET_RECONNECT_PATCH = `
     NET.conn=conn;
     conn.on('data',function(msg){
       if(!msg)return;
-      if(msg.t==='reject'){giveUp(msg.reason||'Conexión rechazada.');return;}
+      if(msg.t==='reject'){resumeFailed(msg.reason||'Conexión rechazada.');return;}
       if(msg.t==='bye'){rivalQuit();return;}
       if(msg.t==='snap'){resumed();applySnapshot(msg);return;}
       if(msg.t==='need_state'){
@@ -249,7 +252,28 @@ export const NET_RECONNECT_PATCH = `
       // primer mensaje.
       if(NET.conn&&NET.conn.open&&rec.active){try{NET.conn.send({t:'hello',resume:true,name:NET.names_self,pass:info.pass||''});}catch(e){}}
     }catch(e){}
+    // Reanudación "a ciegas" (solo código + contraseña): no sabemos si el que
+    // espera es el host o el cliente. Probamos primero como cliente y, si en
+    // ~12 s no hay conexión, pasamos a abrir la sala nosotros como host.
+    rec.tries=(rec.tries||0)+1;
+    if(rec.anyRole&&!rec.hostTried&&rec.tries>=4&&!(NET.conn&&NET.conn.open)){switchToHost();return;}
     rec.timer=setTimeout(clientRetry,RETRY_MS);
+  }
+
+  function switchToHost(){
+    if(!rec.active)return;
+    rec.hostTried=true;clearTimeout(rec.timer);
+    try{if(NET.peer)NET.peer.destroy();}catch(e){}
+    NET.peer=null;NET.role='host';
+    hostWait();
+  }
+  function switchToClient(){
+    if(!rec.active)return;
+    clearTimeout(rec.timer);
+    try{if(NET.peer)NET.peer.destroy();}catch(e){}
+    NET.peer=null;NET.role='client';rec.tries=0;
+    NET._bfJoin={code:NET.code,pass:NET.pass||'',name:NET.names_self||''};
+    clientRetry();
   }
 
   function hostWait(){
@@ -264,7 +288,11 @@ export const NET_RECONNECT_PATCH = `
           var peer=new Peer('bizfan-'+NET.code,{debug:1,host:'0.peerjs.com',port:443,path:'/',secure:true});
           NET.peer=peer;
           peer.on('connection',function(conn){if(typeof onHostConn==='function')onHostConn(conn);});
-          peer.on('error',function(){});
+          peer.on('error',function(err){
+            // El código de sala ya está ocupado: quien espera es el host, así
+            // que nosotros debemos entrar como cliente.
+            if(err&&err.type==='unavailable-id'&&rec.anyRole)switchToClient();
+          });
         };
         if(window.__bfFreshIce)window.__bfFreshIce().catch(function(){}).then(mk);
         else mk();
@@ -308,7 +336,7 @@ export const NET_RECONNECT_PATCH = `
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
     // Sala libre (sin contraseña): sin reanudación. Se acaba la partida.
     if(typeof NET!=='undefined'&&!NET.pass){endMatchNoResume();return;}
-    rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
+    rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;rec.anyRole=false;rec.hostTried=false;rec.tries=0;
     markLeft();
     try{if(typeof notif==='function')notif('🔄 La partida sigue en curso. Tu rival puede reanudar desde Salas online.');}catch(e){}
     var sub='La sala sigue abierta: tu rival tiene 5 minutos para volver y pulsar «Reanudar». Si no vuelve, la partida se cancelará.';
@@ -347,33 +375,80 @@ export const NET_RECONNECT_PATCH = `
   }
   setInterval(function(){if(typeof G!=='undefined'&&G.online)hookQuitButton();},1000);
 
-  // Reconexión manual desde el lobby: reutiliza los datos guardados de la
-  // partida en curso, se conecta a la sala del host y pide el snapshot.
-  window.bfResumeMatch=function(){
-    var info=window.__bfGetResume();
-    if(!info){try{if(typeof notif==='function')notif('No tienes una partida guardada para reanudar.');}catch(e){}return;}
-    // En la pantalla del lobby las globales del juego (G, NET) pueden no estar
-    // definidas aún. Las garantizamos antes de escribir en ellas, si no el
-    // botón Reanudar lanza un ReferenceError silencioso y "no hace nada".
+  // La reanudación falla (contraseña incorrecta, rechazo del host…): se avisa
+  // con un mensaje de error claro y se vuelve a pedir la contraseña.
+  function resumeFailed(reason){
+    rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();
+    try{if(NET.conn)NET.conn.close();}catch(e){}
+    try{if(NET.peer)NET.peer.destroy();}catch(e){}
+    NET.conn=null;NET.peer=null;
+    if(typeof G!=='undefined')G.online=false;
+    window.bfAskResumePass(NET.code,reason||'No se ha podido reanudar la partida.');
+  }
+
+  // Diálogo de contraseña para reanudar: identifica al jugador como uno de los
+  // dos originales de la sala privada.
+  window.bfAskResumePass=function(code,errMsg){
+    var el=document.getElementById('bf-resume-pass');
+    if(!el){
+      el=document.createElement('div');el.id='bf-resume-pass';
+      el.style.cssText='position:fixed;inset:0;z-index:100700;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(4px)';
+      el.innerHTML='<div style="max-width:340px;width:100%;padding:24px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.55);box-shadow:0 18px 50px rgba(0,0,0,.7);text-align:center;font-family:Rubik,sans-serif">'+
+        '<div style="font-family:Cinzel,serif;font-weight:900;font-size:18px;color:#ffe49a">Reanudar la partida</div>'+
+        '<div style="margin-top:8px;font-size:13px;color:#cfc6dd;line-height:1.45">Escribe la <b>contraseña de la sala</b> para volver a entrar. Solo los dos jugadores originales la conocen.</div>'+
+        '<div class="bf-rp-err" style="display:none;margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(120,30,30,.4);border:1px solid rgba(255,120,100,.55);color:#ffb0a0;font-size:12.5px;font-weight:700"></div>'+
+        '<input class="bf-rp-in" type="password" autocomplete="off" placeholder="Contraseña de la sala" style="margin-top:14px;width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#efe9dc;font-size:15px;text-align:center">'+
+        '<div style="margin-top:16px;display:flex;gap:10px;justify-content:center">'+
+        '<button class="bf-rp-ok" style="padding:11px 20px;border-radius:11px;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">Reanudar</button>'+
+        '<button class="bf-rp-no" style="padding:11px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">Cancelar</button>'+
+        '</div></div>';
+      document.body.appendChild(el);
+      var input=el.querySelector('.bf-rp-in');
+      var go=function(){
+        var pass=String(input.value||'').trim();
+        if(!pass){el.querySelector('.bf-rp-err').style.display='block';el.querySelector('.bf-rp-err').textContent='⚠️ Escribe la contraseña de la sala.';return;}
+        el.style.display='none';
+        window.bfResumeWithPass(el.dataset.code||'',pass);
+      };
+      el.querySelector('.bf-rp-ok').onclick=go;
+      input.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+      el.querySelector('.bf-rp-no').onclick=function(){el.style.display='none';location.reload();};
+    }
+    el.dataset.code=code||'';
+    var err=el.querySelector('.bf-rp-err');
+    if(errMsg){err.style.display='block';err.textContent='❌ '+errMsg;}else{err.style.display='none';err.textContent='';}
+    el.querySelector('.bf-rp-in').value='';
+    el.style.display='flex';
+    setTimeout(function(){try{el.querySelector('.bf-rp-in').focus();}catch(e){}},80);
+  };
+
+  // Reanudación con código + contraseña: no depende de datos guardados en el
+  // dispositivo. Se prueba a entrar como cliente y, si nadie está alojando la
+  // sala, se abre como host para que el rival se conecte.
+  window.bfResumeWithPass=function(code,pass){
     if(typeof NET==='undefined')window.NET={};
     if(typeof G==='undefined')window.G={};
-    window.__bfResumeToken=info.token||'';
-    if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+info.code)||'';}catch(e){}}
+    var info=window.__bfGetResume&&window.__bfGetResume();
+    var nick='';
+    try{nick=(info&&info.name)||localStorage.getItem('bfNick')||'';}catch(e){}
     quitting=false;
-    NET.code=info.code;NET.names_self=info.name||'Jugador';NET.pass=info.pass||'';
+    NET.code=code;NET.pass=pass;NET.names_self=nick||'Jugador';
+    NET.mySide=(info&&info.code===code&&info.side)||NET.mySide||'g';
+    NET._bfJoin={code:code,pass:pass,name:NET.names_self};
     G.online=true;G._gameOver=false;
+    if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+code)||'';}catch(e){}}
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
-    // Mostrar el overlay ANTES de nada: así el jugador ve feedback inmediato
-    // aunque la reconexión tarde en establecerse.
-    overlay('Reanudando la partida','Recuperando el estado de la partida de tu rival…');
-    if(info.role==='host'){
-      NET.role='host';NET.mySide=info.side||'p';
-      hostWait();
-    }else{
-      NET.role='client';NET.mySide=info.side||'g';
-      NET._bfJoin={code:info.code,pass:info.pass||'',name:info.name||''};
-      clientRetry();
-    }
+    rec.anyRole=true;rec.hostTried=false;rec.tries=0;
+    overlay('Reanudando la partida','Conectando con tu rival y recuperando el estado de la partida…');
+    if(info&&info.code===code&&info.role==='host'){NET.role='host';rec.hostTried=true;hostWait();}
+    else{NET.role='client';clientRetry();}
+  };
+
+  // Botón "Reconectar" de la tarjeta guardada: pide la contraseña igual.
+  window.bfResumeMatch=function(){
+    var info=window.__bfGetResume&&window.__bfGetResume();
+    var code=(info&&info.code)||(typeof NET!=='undefined'&&NET.code)||'';
+    window.bfAskResumePass(code,'');
   };
 
   // Reanudación del anfitrión tras recargar: reabre la sala con el mismo

@@ -160,6 +160,13 @@ export const CENTRAL_LOBBY_PATCH = `
       });
       }
   window.bfRejoinResumeRoom=function(code,hasPass){
+    // Reanudar = pedir la contraseña de la sala. La contraseña identifica al
+    // jugador como uno de los dos originales, sin depender de datos guardados
+    // en este dispositivo (puede haberse recargado o cambiado de navegador).
+    if(window.bfAskResumePass){window.bfAskResumePass(code,'');return;}
+    return window.bfLegacyRejoin&&window.bfLegacyRejoin(code,hasPass);
+  };
+  window.bfLegacyRejoin=function(code,hasPass){
     // La contraseña (guardada en el dispositivo al empezar la partida) identifica
     // a los dos jugadores originales. No hace falta el token de reanudación: la
     // contraseña es fiable desde el instante 0 (no depende de que se haya
