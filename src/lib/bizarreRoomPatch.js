@@ -138,8 +138,12 @@ export const BIZARRE_ROOM_PATCH = `
         '<span class="bf-bizarre-ico">🚪</span><span>'+L('Entrar en la habitación','Enter the room')+'</span>'+
       '</button>';
     sec.querySelector('#bf-bizarre-entry').onclick=function(e){e.preventDefault();e.stopPropagation();openOverlay();};
-    // Inserta la sección al FINAL del setup-box, separada visualmente.
-    box.appendChild(sec);
+    // Inserta la sección al PRINCIPIO del setup-box (justo después de la
+    // ayuda del lobby si existe), para que sea lo primero que se vea al
+    // entrar al lobby sin necesidad de hacer scroll.
+    var lobbyInfo=box.querySelector('#bf-lobby-info');
+    if(lobbyInfo)lobbyInfo.insertAdjacentElement('afterend',sec);
+    else box.insertBefore(sec,box.firstChild);
   }
 
   function overlayEl(){
