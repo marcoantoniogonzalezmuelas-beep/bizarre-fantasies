@@ -143,6 +143,12 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
 
   if (!status?.connOpen || !status?.roomCode) return null;
 
+  // En móvil/tablet el juego se pinta escalado; el icono NO se escala con él
+  // (quedaba diminuto): se muestra grande y a tamaño real de pantalla, sobre la
+  // esquina inferior derecha (fuera de los retratos y de la mano de cartas).
+  const isMobile = mobScale < 0.95;
+  const iconSize = isMobile ? '64px' : '44px';
+
   const emojiMap = {};
   categories.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
 
@@ -156,32 +162,52 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
       {!open && (
         <div
           className="fixed z-40"
-          style={{
-            right: '6px',
-            top: 'calc(50% - 22px)',
-            transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px) scale(${mobScale * pinchZ})`,
-            transformOrigin: 'top right',
-            touchAction: 'none',
-          }}
+          style={
+            isMobile
+              ? {
+                  right: '12px',
+                  bottom: '104px',
+                  transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px)`,
+                  touchAction: 'none',
+                }
+              : {
+                  right: '6px',
+                  top: 'calc(50% - 22px)',
+                  transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px) scale(${mobScale * pinchZ})`,
+                  transformOrigin: 'top right',
+                  touchAction: 'none',
+                }
+          }
         >
         <button
           {...iconDrag.dragHandlers}
           onClick={() => { if (!iconDrag.didDrag()) setOpen(true); }}
           aria-label="Abrir chat (arrastrable)"
-          className="flex items-center justify-center rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+          className="relative flex items-center justify-center rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95"
           style={{
-            width: '44px',
-            height: '44px',
-            background: 'rgba(14, 10, 22, 0.85)',
-            border: '2px solid rgba(255, 210, 74, 0.5)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.5), 0 0 12px rgba(255,210,74,0.2)',
+            width: iconSize,
+            height: iconSize,
+            background: 'radial-gradient(circle at 50% 30%, rgba(60,40,10,.95), rgba(14,10,22,.95))',
+            border: isMobile ? '3px solid rgba(255, 210, 74, 0.85)' : '2px solid rgba(255, 210, 74, 0.5)',
+            boxShadow: isMobile
+              ? '0 6px 22px rgba(0,0,0,0.6), 0 0 26px rgba(255,210,74,0.55)'
+              : '0 4px 16px rgba(0,0,0,0.5), 0 0 12px rgba(255,210,74,0.2)',
           }}
         >
-          <MessageCircle size={22} style={{ color: '#FFD24A' }} />
+          <MessageCircle size={isMobile ? 36 : 22} style={{ color: '#FFD24A' }} />
           {unread > 0 && (
             <span
-              className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-[10px] font-bold"
-              style={{ minWidth: '18px', height: '18px', background: '#e60b0b', color: '#fff', boxShadow: '0 0 6px rgba(230,11,11,0.7)' }}
+              className="absolute flex items-center justify-center rounded-full font-bold"
+              style={{
+                top: isMobile ? '-4px' : '-4px',
+                right: isMobile ? '-4px' : '-4px',
+                fontSize: isMobile ? '13px' : '10px',
+                minWidth: isMobile ? '24px' : '18px',
+                height: isMobile ? '24px' : '18px',
+                background: '#e60b0b',
+                color: '#fff',
+                boxShadow: '0 0 8px rgba(230,11,11,0.8)',
+              }}
             >
               {unread > 9 ? '9+' : unread}
             </span>

@@ -367,11 +367,10 @@ export const NET_RECONNECT_PATCH = `
     // Botón "Salir" = salida INTENCIONAL: se envía 'bye' para que el rival
     // reciba "ha abandonado" con opción de volver al inicio (sin esperarl.
     // Se borra la copia de reanudación: el que sale a propósito no reanuda.
-    btn.addEventListener('click',function(e){
+    function showQuitConfirm(e){
       if(typeof G==='undefined'||!G.online||G._gameOver)return;
       if(typeof NET==='undefined'||!NET.role)return;
-      if(btn.dataset.bfConfirming==='1'){btn.dataset.bfConfirming='';return;}
-      e.preventDefault();e.stopPropagation();
+      if(e){e.preventDefault();e.stopPropagation();}
       btn.dataset.bfConfirming='1';
       if(typeof window.__bfPinchReset==='function')window.__bfPinchReset();
       var qc=document.getElementById('bf-quit-confirm');
@@ -383,6 +382,18 @@ export const NET_RECONNECT_PATCH = `
         qc.querySelector('.bf-qc-no').onclick=function(){btn.dataset.bfConfirming='';qc.style.display='none';};
       }
       qc.style.display='block';
+    }
+    // En móvil el evento 'click' llega con retardo (~300 ms tras el toque), así
+    // que abrimos el aviso ya en 'pointerdown'/'touchstart' para que la
+    // respuesta sea inmediata, y descartamos el click posterior.
+    btn.addEventListener('touchstart',showQuitConfirm,{capture:true,passive:false});
+    btn.addEventListener('pointerdown',function(e){if(e.pointerType==='touch')return;showQuitConfirm(e);},true);
+    btn.addEventListener('click',function(e){
+      if(typeof G==='undefined'||!G.online||G._gameOver)return;
+      if(typeof NET==='undefined'||!NET.role)return;
+      e.preventDefault();e.stopPropagation();
+      if(btn.dataset.bfConfirming==='1')return;
+      showQuitConfirm(e);
     },true);
   }
   setInterval(function(){if(typeof G!=='undefined'&&G.online)hookQuitButton();},1000);
