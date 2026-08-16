@@ -28,6 +28,12 @@ export const END_HEROES_PATCH = `
 @keyframes bfEhCrown { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.1); } }
 @keyframes bfEhSweep { 0% { transform: translateX(-120%) rotate(12deg); } 60%,100% { transform: translateX(160%) rotate(12deg); } }
 @keyframes bfEhRing { 0%,100% { box-shadow: 0 0 0 0 rgba(255,210,74,.55), 0 6px 16px rgba(0,0,0,.55); } 50% { box-shadow: 0 0 22px 5px rgba(255,196,40,.75), 0 6px 16px rgba(0,0,0,.55); } }
+/* Móvil/tablet: la franja es una capa GPU propia pequeña (solo la tira
+   inferior). Sus animaciones (brillo, barrido, niebla, corona) repintan
+   esta capa y no la textura entera del body → menos parpadeo en tablet. */
+@media (max-width:1024px){
+  #bf-end-heroes{transform:translateZ(0);isolation:isolate;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+}
 </style>
 <script>
 (function(){
@@ -69,14 +75,16 @@ export const END_HEROES_PATCH = `
     return n;
   }
 
-  // Ancho del retrato. En teléfono se reduce para que quepan los 6 héroes en
-  // el iframe de 1200 px; en tablet/PC se mantiene el tamaño original.
-  var PORT_W = isPhone
+  // Ancho del retrato. En teléfono Y tablet se reduce para que quepan los 6
+  // héroes en el iframe de 1200 px (en tablet, con el tamaño anterior de hasta
+  // 190px, los 6 desbordaban el margen derecho). En PC se mantiene el original.
+  var small = isPhone || _isTablet;
+  var PORT_W = small
     ? 'width:clamp(64px,13vw,168px);aspect-ratio:3/4;'
     : 'width:clamp(74px,16vw,190px);aspect-ratio:3/4;';
-  var ROW_GAP = isPhone ? 'clamp(5px,1.2vw,12px)' : 'clamp(6px,1.4vw,16px)';
-  var TEAM_GAP = isPhone ? 'clamp(10px,2.5vw,32px)' : 'clamp(12px,3vw,44px)';
-  var WRAP_PAD = isPhone ? '18px 10px 14px' : '18px 12px 14px';
+  var ROW_GAP = small ? 'clamp(5px,1.2vw,12px)' : 'clamp(6px,1.4vw,16px)';
+  var TEAM_GAP = small ? 'clamp(10px,2.5vw,32px)' : 'clamp(12px,3vw,44px)';
+  var WRAP_PAD = small ? '18px 10px 14px' : '18px 12px 14px';
 
   function buildPort(hh, isWin, delay){
     var art = heroArt(hh);
