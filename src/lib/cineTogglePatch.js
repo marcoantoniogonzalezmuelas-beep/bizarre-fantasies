@@ -1,5 +1,5 @@
 // Parche inyectado en el iframe: botón "Desactivar animaciones" solo en batalla.
-// Se coloca fijo en la esquina superior derecha, justo debajo del botón "Salir".
+// Se coloca fijo en la esquina SUPERIOR IZQUIERDA (igual en todos los dispositivos).
 // Al pulsarlo, activa/desactiva el flag global window.__bfNoCinematics
 // (persistente en localStorage).
 //
@@ -17,21 +17,20 @@ export const CINE_TOGGLE_PATCH = `
   try{ window.__bfNoCinematics = localStorage.getItem('bfNoCinematics')==='1'; }catch(e){ window.__bfNoCinematics=false; }
 
   var css=''+
-  // Posición FIJA en el viewport del juego (no depende del rect del botón
-  // Salir, que se desplaza al hacer zoom de pellizco en móvil).
-  // Escritorio: esquina inferior IZQUIERDA (lejos del botón Salir).
-  // Móvil/tablet: centrado en la parte inferior.
-  '#bf-cine-toggle{position:fixed;bottom:16px;left:16px;z-index:2147483000;display:none;'+
-    'padding:7px 12px;border-radius:10px;font-family:Cinzel,serif;font-weight:900;'+
-    'font-size:12px;letter-spacing:.3px;cursor:pointer;touch-action:manipulation;'+
+  // Botón compacto (solo icono + estado) en la esquina SUPERIOR IZQUIERDA
+  // de la batalla, igual en todos los dispositivos. No se solapa con el
+  // botón Salir (que vive arriba a la derecha) ni con retratos/mano.
+  '#bf-cine-toggle{position:fixed;top:10px;left:10px;z-index:2147483000;display:none;'+
+    'display:inline-flex;align-items:center;gap:5px;'+
+    'padding:5px 9px;border-radius:999px;font-family:Rubik,sans-serif;font-weight:700;'+
+    'font-size:11px;letter-spacing:.2px;cursor:pointer;touch-action:manipulation;'+
     'pointer-events:auto;-webkit-tap-highlight-color:transparent;'+
-    'box-shadow:0 4px 14px rgba(0,0,0,.55);transition:transform .12s ease,background .15s ease;'+
-    'white-space:nowrap;line-height:1.1}'+
-  '#bf-cine-toggle:active{transform:scale(.94)}'+
-  '#bf-cine-toggle.bf-on{border:1px solid rgba(255,240,180,.85);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}'+
-  '#bf-cine-toggle.bf-off{border:1px solid rgba(255,120,100,.6);background:linear-gradient(180deg,#3a2030,#241018);color:#ffb0a0}'+
-  '@media(max-width:1024px){#bf-cine-toggle{bottom:12px;left:50%;right:auto;transform:translateX(-50%);font-size:11px;padding:8px 14px}'+
-    '#bf-cine-toggle:active{transform:translateX(-50%) scale(.94)}}';
+    'box-shadow:0 3px 10px rgba(0,0,0,.5);transition:transform .12s ease,background .15s ease;'+
+    'white-space:nowrap;line-height:1;backdrop-filter:blur(6px)}'+
+  '#bf-cine-toggle:active{transform:scale(.92)}'+
+  '#bf-cine-toggle .bf-cine-ico{font-size:13px;line-height:1}'+
+  '#bf-cine-toggle.bf-on{border:1px solid rgba(255,240,180,.7);background:linear-gradient(180deg,rgba(255,226,122,.92),rgba(200,144,31,.92));color:#3a2600}'+
+  '#bf-cine-toggle.bf-off{border:1px solid rgba(255,120,100,.55);background:linear-gradient(180deg,rgba(58,32,48,.9),rgba(36,16,24,.9));color:#ffb0a0}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   function isBattle(){
@@ -44,7 +43,7 @@ export const CINE_TOGGLE_PATCH = `
     btn.style.display=isBattle()?'block':'none';
     var on=!window.__bfNoCinematics;
     btn.className='bf-'+(on?'on':'off');
-    btn.textContent=on?'🎬 Desactivar animaciones':'🔇 Activar animaciones';
+    btn.innerHTML='<span class="bf-cine-ico">'+(on?'🎬':'🔇')+'</span>'+(on?'Anim ON':'Anim OFF');
   }
 
   function toggle(e){
