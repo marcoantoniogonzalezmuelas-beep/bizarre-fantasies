@@ -18,9 +18,12 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-titlebar{font-family:Cinzel,serif;font-weight:1000;font-size:17px;color:#e2b0ff;letter-spacing:1px;text-shadow:0 0 16px rgba(192,91,255,.8),0 2px 5px #000;text-align:center;flex:1}
 #bf-bizarre-overlay .bf-biz-x{width:38px;height:38px;border-radius:50%;border:1px solid rgba(199,155,255,.45);background:rgba(18,13,34,.72);color:#e2b0ff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);flex-shrink:0}
 #bf-bizarre-overlay .bf-biz-x:hover{background:rgba(40,24,64,.88);color:#fff}
-#bf-bizarre-overlay .bf-biz-panel{position:relative;z-index:3;margin-top:auto;width:100%;max-width:560px;margin-left:auto;margin-right:auto;padding:16px 16px 22px;border-radius:24px 24px 0 0;background:linear-gradient(180deg,rgba(20,12,38,.82),rgba(10,6,20,.95));border-top:2px solid rgba(199,155,255,.5);box-shadow:0 -12px 44px rgba(0,0,0,.6),inset 0 0 30px rgba(120,40,200,.12);backdrop-filter:blur(6px);max-height:60vh;overflow-y:auto}
-#bf-bizarre-overlay .bf-biz-portrait{position:absolute;width:58px;height:74px;border-radius:8px;border:2px solid rgba(199,155,255,.5);box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(192,91,255,.3),inset 0 -18px 28px rgba(8,4,14,.6);background:#1a1428;background-size:cover;background-position:center top;pointer-events:none;animation:bfPortraitGlow 4s ease-in-out infinite}
-@keyframes bfPortraitGlow{0%,100%{box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 12px rgba(192,91,255,.3),inset 0 -18px 28px rgba(8,4,14,.6)}50%{box-shadow:0 6px 18px rgba(0,0,0,.6),0 0 22px rgba(192,91,255,.6),inset 0 -18px 28px rgba(8,4,14,.6)}}
+#bf-bizarre-overlay .bf-biz-panel{position:relative;z-index:3;width:100%;max-width:720px;margin-left:auto;margin-right:auto;padding:18px 18px 24px;border-radius:0 0 26px 26px;background:linear-gradient(180deg,rgba(22,14,40,.9),rgba(10,6,20,.96));border-bottom:2px solid rgba(199,155,255,.5);box-shadow:0 16px 44px rgba(0,0,0,.6),inset 0 0 30px rgba(120,40,200,.12);backdrop-filter:blur(6px);max-height:62vh;overflow-y:auto}
+#bf-bizarre-overlay .bf-biz-portrait{position:absolute;padding:6px;border-radius:7px;background:linear-gradient(135deg,#4a3420,#1f1408 55%,#3a2614);border:3px solid #c9a44a;box-shadow:0 14px 30px rgba(0,0,0,.8),inset 0 0 0 2px rgba(120,76,30,.55),0 0 14px rgba(192,91,255,.18);pointer-events:none;animation:bfPortraitSway 6s ease-in-out infinite;transform-origin:top center}
+#bf-bizarre-overlay .bf-biz-portrait-img{width:56px;height:72px;border-radius:3px;background:#1a1428;background-size:cover;background-position:center top;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 -16px 24px rgba(0,0,0,.55)}
+#bf-bizarre-overlay .bf-biz-portrait::before{content:'';position:absolute;top:-26px;left:50%;width:1.5px;height:26px;background:linear-gradient(180deg,rgba(199,155,255,.55),rgba(199,155,255,.12));transform:translateX(-50%)}
+#bf-bizarre-overlay .bf-biz-portrait::after{content:'';position:absolute;top:-29px;left:50%;width:7px;height:7px;border-radius:50%;background:#e2c46a;transform:translateX(-50%);box-shadow:0 0 8px rgba(226,196,106,.8),0 1px 2px #000}
+@keyframes bfPortraitSway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
 #bf-bizarre-overlay .bf-biz-torch{position:absolute;top:10%;width:14px;height:60px;pointer-events:none}
 #bf-bizarre-overlay .bf-biz-torch.l{left:18px}#bf-bizarre-overlay .bf-biz-torch.r{right:18px}
 #bf-bizarre-overlay .bf-biz-torch::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:12px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb24a 40%,#ff5a2a 75%,transparent 100%);box-shadow:0 0 16px rgba(255,150,40,.8),0 0 30px rgba(255,90,20,.5);animation:bfTorchFlick .45s ease-in-out infinite alternate}
@@ -31,16 +34,16 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-tentacle{position:absolute;font-size:44px;pointer-events:none;opacity:.55}
 #bf-bizarre-overlay .bf-biz-eyeball{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:22px;pointer-events:none;animation:bfEyeBlink 4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(255,42,90,.8))}
 #bf-bizarre-overlay .bf-biz-title{font-family:Cinzel,serif;font-weight:1000;font-size:22px;color:#e2b0ff;text-align:center;letter-spacing:1px;text-shadow:0 0 18px rgba(192,91,255,.6),0 2px 4px #000;margin-bottom:4px}
-#bf-bizarre-overlay .bf-biz-sub{font-size:12px;color:#cfc6dd;text-align:center;line-height:1.4;margin-bottom:16px}
-#bf-bizarre-overlay .bf-biz-ig{margin-bottom:12px}
-#bf-bizarre-overlay .bf-biz-ig label{display:block;margin-bottom:5px;font-family:Cinzel,serif;font-weight:900;font-size:12px;color:#c79bff;letter-spacing:.3px}
-#bf-bizarre-overlay .bf-biz-ig input{width:100%;box-sizing:border-box;padding:11px 13px;border-radius:11px;background:rgba(8,5,14,.6);border:2px solid rgba(199,155,255,.3);color:#fff5dc;font-size:15px;font-weight:600;outline:none;transition:border-color .14s ease}
+#bf-bizarre-overlay .bf-biz-sub{font-size:13px;color:#cfc6dd;text-align:center;line-height:1.4;margin-bottom:18px}
+#bf-bizarre-overlay .bf-biz-ig{margin-bottom:14px}
+#bf-bizarre-overlay .bf-biz-ig label{display:block;margin-bottom:6px;font-family:Cinzel,serif;font-weight:900;font-size:14px;color:#c79bff;letter-spacing:.3px}
+#bf-bizarre-overlay .bf-biz-ig input{width:100%;box-sizing:border-box;padding:14px 16px;border-radius:13px;background:rgba(8,5,14,.6);border:2px solid rgba(199,155,255,.3);color:#fff5dc;font-size:17px;font-weight:600;outline:none;transition:border-color .14s ease}
 #bf-bizarre-overlay .bf-biz-ig input:focus{border-color:#c06bff;box-shadow:0 0 0 3px rgba(192,91,255,.18)}
-#bf-bizarre-overlay .bf-biz-avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;max-height:120px;overflow-y:auto;padding:6px;border-radius:10px;background:rgba(8,5,14,.4);border:1px solid rgba(199,155,255,.2)}
-#bf-bizarre-overlay .bf-biz-av{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);cursor:pointer;transition:transform .12s ease,border-color .12s ease}
+#bf-bizarre-overlay .bf-biz-avgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;max-height:150px;overflow-y:auto;padding:8px;border-radius:12px;background:rgba(8,5,14,.4);border:1px solid rgba(199,155,255,.2)}
+#bf-bizarre-overlay .bf-biz-av{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15);cursor:pointer;transition:transform .12s ease,border-color .12s ease}
 #bf-bizarre-overlay .bf-biz-av:hover{transform:scale(1.1)}
 #bf-bizarre-overlay .bf-biz-av.selected{border-color:#c06bff;box-shadow:0 0 14px rgba(192,91,255,.7)}
-#bf-bizarre-overlay .bf-biz-btn{width:100%;padding:13px;border-radius:13px;border:none;font-family:Cinzel,serif;font-weight:1000;font-size:16px;cursor:pointer;transition:transform .12s ease,filter .12s ease;letter-spacing:.5px}
+#bf-bizarre-overlay .bf-biz-btn{width:100%;padding:16px;border-radius:15px;border:none;font-family:Cinzel,serif;font-weight:1000;font-size:18px;cursor:pointer;transition:transform .12s ease,filter .12s ease;letter-spacing:.5px}
 #bf-bizarre-overlay .bf-biz-btn:active{transform:scale(.96)}
 #bf-bizarre-overlay .bf-biz-join{color:#fff;background:linear-gradient(180deg,#9d5df0,#c06bff 55%,#7a3df0);box-shadow:0 6px 18px rgba(160,80,255,.45)}
 #bf-bizarre-overlay .bf-biz-join:hover{filter:brightness(1.1)}
@@ -48,15 +51,15 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-panic:hover{filter:brightness(1.12)}
 #bf-bizarre-overlay .bf-biz-panic:disabled{opacity:.4;cursor:not-allowed;animation:none;box-shadow:none}
 @keyframes bfPanicPulse{0%,100%{box-shadow:0 8px 26px rgba(255,42,90,.65),inset 0 2px 0 rgba(255,255,255,.25),inset 0 -3px 8px rgba(0,0,0,.4)}50%{box-shadow:0 8px 36px rgba(255,42,90,.95),0 0 40px rgba(255,42,90,.45),inset 0 2px 0 rgba(255,255,255,.3),inset 0 -3px 8px rgba(0,0,0,.4)}}
-#bf-bizarre-overlay .bf-biz-leave{margin-top:10px;color:#cfc6dd;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);font-size:13px;padding:10px}
-#bf-bizarre-overlay .bf-biz-list{margin:14px 0;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-#bf-bizarre-overlay .bf-biz-visitor{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(199,155,255,.08);border:1px solid rgba(199,155,255,.2)}
+#bf-bizarre-overlay .bf-biz-leave{margin-top:12px;color:#cfc6dd;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);font-size:15px;padding:13px}
+#bf-bizarre-overlay .bf-biz-list{margin:16px 0;max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+#bf-bizarre-overlay .bf-biz-visitor{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:rgba(199,155,255,.08);border:1px solid rgba(199,155,255,.2)}
 #bf-bizarre-overlay .bf-biz-visitor.me{border-color:#c06bff;background:rgba(192,91,255,.15)}
-#bf-bizarre-overlay .bf-biz-vav{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(199,155,255,.4);flex-shrink:0;background:#1a1428}
+#bf-bizarre-overlay .bf-biz-vav{width:48px;height:48px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(199,155,255,.4);flex-shrink:0;background:#1a1428}
 #bf-bizarre-overlay .bf-biz-vinfo{flex:1;min-width:0}
-#bf-bizarre-overlay .bf-biz-vnick{font-family:Cinzel,serif;font-weight:900;font-size:14px;color:#fff5dc;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#bf-bizarre-overlay .bf-biz-vwins{font-size:11px;color:#ffe49a;font-weight:700}
-#bf-bizarre-overlay .bf-biz-count{text-align:center;font-size:12px;color:#cfc6dd;margin-bottom:8px}
+#bf-bizarre-overlay .bf-biz-vnick{font-family:Cinzel,serif;font-weight:900;font-size:17px;color:#fff5dc;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bf-bizarre-overlay .bf-biz-vwins{font-size:13px;color:#ffe49a;font-weight:700}
+#bf-bizarre-overlay .bf-biz-count{text-align:center;font-size:14px;color:#cfc6dd;margin-bottom:10px}
 #bf-bizarre-overlay .bf-biz-count b{color:#e2b0ff}
 #bf-bizarre-overlay .bf-biz-wait{margin-top:14px;padding:12px;border-radius:12px;background:rgba(255,42,90,.12);border:1px solid rgba(255,42,90,.4);text-align:center;color:#ffb0c0;font-size:13px;line-height:1.4}
 #bf-bizarre-overlay .bf-biz-spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,42,90,.3);border-top-color:#ff2a5a;border-radius:50%;animation:bfBizSpin .8s linear infinite;vertical-align:middle;margin-right:6px}
@@ -137,7 +140,7 @@ export const BIZARRE_ROOM_PATCH = `
     Object.keys(cardArt).forEach(function(k){var a=cardArt[k];if(a&&a.base)urls.push(a.base);});
     for(var i=urls.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=urls[i];urls[i]=urls[j];urls[j]=t;}
     if(!urls.length)return;
-    frames.forEach(function(f,i){if(urls[i])f.style.backgroundImage="url('"+String(urls[i]).replace(/'/g,'')+"')";});
+    frames.forEach(function(f,i){var img=f.querySelector('.bf-biz-portrait-img');if(img&&urls[i])img.style.backgroundImage="url('"+String(urls[i]).replace(/'/g,'')+"')";});
   }
 
   function req(action,data){
@@ -234,10 +237,10 @@ export const BIZARRE_ROOM_PATCH = `
         '<div class="bf-biz-duck" style="top:16%;left:32%;animation-delay:0s">🦆</div>'+
         '<div class="bf-biz-duck" style="top:22%;right:30%;animation-delay:2s;font-size:26px">🦆</div>'+
         '<div class="bf-biz-duck" style="top:38%;left:20%;animation-delay:4s;font-size:22px">🦆</div>'+
-        '<div class="bf-biz-portrait" style="top:64px;left:8px"></div>'+
-        '<div class="bf-biz-portrait" style="top:64px;right:8px"></div>'+
-        '<div class="bf-biz-portrait" style="top:148px;left:4px;animation-delay:1.5s"></div>'+
-        '<div class="bf-biz-portrait" style="top:148px;right:4px;animation-delay:.8s"></div>'+
+        '<div class="bf-biz-portrait" style="top:73%;left:8px"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-portrait" style="top:77%;left:calc(33% - 16px);animation-delay:1.2s"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-portrait" style="top:73%;right:calc(33% - 16px);animation-delay:.6s"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-portrait" style="top:77%;right:8px;animation-delay:1.8s"><div class="bf-biz-portrait-img"></div></div>'+
         '<div class="bf-biz-tentacle" style="bottom:-10px;left:4%;color:#9d5df0;transform:rotate(-15deg);animation:bfTentWave 5s ease-in-out infinite">🐙</div>'+
         '<div class="bf-biz-tentacle" style="bottom:-10px;right:4%;color:#c06bff;transform:rotate(15deg) scaleX(-1);animation:bfTentWave 5s ease-in-out infinite reverse">🐙</div>'+
         '</div>'+
