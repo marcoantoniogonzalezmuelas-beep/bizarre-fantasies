@@ -32,8 +32,14 @@ export const CENTRAL_LOBBY_PATCH = `
   function setAvatarIcon(iconEl,url){
     if(!iconEl)return;
     if(url){
+      // El icono de la sala (.room-ico) no tiene ancho/alto fijo: se ajusta al
+      // contenido (el emoji 🏠). Si ponemos un <img> con width:100%, el
+      // porcentaje se resuelve contra un padre "auto" y la imagen sale a su
+      // tamaño natural (enorme). Por eso medimos el icono ANTES de vaciarlo
+      // y fijamos ese tamaño en el <img> en píxeles.
+      var w=iconEl.offsetWidth||40,h=iconEl.offsetHeight||40;
       iconEl.textContent='';
-      iconEl.innerHTML='<img src="'+url+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+      iconEl.innerHTML='<img src="'+url+'" alt="" style="display:block;width:'+w+'px;height:'+h+'px;object-fit:cover;border-radius:50%">';
     }else{
       iconEl.textContent='🏠';
     }
