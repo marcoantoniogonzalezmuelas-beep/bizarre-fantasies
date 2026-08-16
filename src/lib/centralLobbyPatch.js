@@ -124,7 +124,7 @@ export const CENTRAL_LOBBY_PATCH = `
         if(!card.querySelector('.bf-free-badge')){
           var badge=document.createElement('span');
           badge.className='bf-free-badge';
-          badge.style.cssText='position:absolute;top:6px;right:8px;font-size:9px;font-weight:900;letter-spacing:.5px;color:#a8c4ff;background:rgba(20,40,80,.7);border:1px solid rgba(90,150,255,.5);border-radius:6px;padding:2px 6px';
+          badge.style.cssText='position:absolute;top:6px;left:6px;font-size:9px;font-weight:900;letter-spacing:.5px;color:#a8c4ff;background:rgba(20,40,80,.7);border:1px solid rgba(90,150,255,.5);border-radius:6px;padding:2px 6px';
           badge.textContent='PÚBLICA';
           card.style.position=card.style.position||'relative';
           card.appendChild(badge);
