@@ -273,12 +273,25 @@ export const BIZARRE_ROOM_PATCH = `
       // Formulario de entrada: nick + contraseña + avatar
       var avHtml='<div class="bf-biz-ig"><label>'+L('Avatar','Avatar')+'</label><div class="bf-biz-avgrid" id="bf-biz-avgrid"></div></div>';
       body.innerHTML='<div class="bf-biz-ig"><label>'+L('Nick','Nick')+'</label><input id="bf-biz-nick" type="text" maxlength="28" placeholder="'+L('Tu nick','Your nick')+'" value="'+esc(localStorage.getItem('bfNick')||'')+'"></div>'+
-        '<div class="bf-biz-ig"><label>'+L('Contraseña','Password')+'</label><input id="bf-biz-pass" type="password" maxlength="60" placeholder="'+L('Contraseña de tu nick','Your nick password')+'"></div>'+
+        '<div class="bf-biz-ig"><label>'+L('Contraseña','Password')+'</label><input id="bf-biz-pass" type="password" maxlength="60" placeholder="'+L('Contraseña de tu nick','Your nick password')+'">'+
+        '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:#cfc6dd;font-family:Rubik,sans-serif;font-weight:600;cursor:pointer;user-select:none"><input id="bf-biz-rem" type="checkbox" style="width:15px;height:15px;accent-color:#c06bff;cursor:pointer;margin:0;flex:0 0 15px"><span>'+L('Recordar contraseña en este equipo','Remember password on this device')+'</span></label></div>'+
         avHtml+
         '<button class="bf-biz-btn bf-biz-join" id="bf-biz-join-btn">'+L('Entrar en la habitación','Enter the room')+'</button>';
       renderAvatarGrid();
       var nickI=body.querySelector('#bf-biz-nick');
       var passI=body.querySelector('#bf-biz-pass');
+      var remI=body.querySelector('#bf-biz-rem');
+      // Contraseña recordada en este equipo: autorrelleno según el nick escrito.
+      function bizFillSaved(){
+        if(!window.__bfGetSavedNickPass)return;
+        var saved=window.__bfGetSavedNickPass(nickI.value);
+        if(saved&&(!passI.value||passI._bfAuto)){passI.value=saved;passI._bfAuto=1;remI.checked=true;}
+        else if(!saved&&passI._bfAuto){passI.value='';passI._bfAuto=0;remI.checked=false;}
+      }
+      nickI.addEventListener('input',bizFillSaved);
+      passI.addEventListener('input',function(){passI._bfAuto=0;});
+      remI.addEventListener('change',function(){if(!remI.checked&&window.__bfForgetNickPass)window.__bfForgetNickPass(nickI.value);});
+      bizFillSaved();
       // Ojo de mostrar/ocultar contraseña
       addEyeToggle(passI);
       // Auto-selecciona avatar guardado
@@ -359,8 +372,13 @@ export const BIZARRE_ROOM_PATCH = `
         passI.focus();
         return;
       }
-      // Guarda nick y avatar
+      // Guarda nick y avatar (y la contraseña si la casilla está marcada)
       try{localStorage.setItem('bfNick',nick);}catch(e){}
+      try{
+        var remCb=overlayEl().querySelector('#bf-biz-rem');
+        if(remCb&&remCb.checked&&window.__bfSaveNickPass)window.__bfSaveNickPass(nick,pass);
+        else if(remCb&&!remCb.checked&&window.__bfForgetNickPass)window.__bfForgetNickPass(nick);
+      }catch(e){}
       if(selectedAvatar){try{localStorage.setItem('bfMyAvatarUrl',selectedAvatar);}catch(e){}if(window.bfMyAvatar)window.bfMyAvatar.url=selectedAvatar;}
       var av=selectedAvatar||(window.__bfAvatarMap&&window.__bfAvatarMap[nick])||'';
       req('bizarre_join',{nick:nick,avatar:av}).then(function(res){

@@ -18,6 +18,8 @@ export const NICK_PASSWORD_PATCH = `
 .bf-pass-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;cursor:pointer;color:#cbb46a;font-size:18px;line-height:1;padding:0;opacity:.85}
 .bf-pass-eye:active{transform:translateY(-50%) scale(.9)}
 .bf-pass-hint{font-size:10px;line-height:1.3;color:#cbb46a;font-family:Rubik,sans-serif;font-weight:600;letter-spacing:.2px}
+.bf-pass-rem{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px;margin:3px 0 0!important;font-size:11px!important;color:#cfc6dd!important;font-family:Rubik,sans-serif!important;font-weight:600!important;letter-spacing:.3px!important;text-transform:none!important;cursor:pointer;user-select:none}
+.bf-pass-rem input{width:15px!important;height:15px!important;accent-color:#FFD24A;cursor:pointer;margin:0!important;flex:0 0 15px}
 .bf-pass-hint.bad{color:#ff8a6a}
 .bf-pass-bad{border-color:#ff5a5a!important;box-shadow:0 0 0 2px rgba(255,90,90,.45)!important;animation:bfPassShake .3s}
 @keyframes bfPassShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
@@ -43,6 +45,18 @@ export const NICK_PASSWORD_PATCH = `
 
   function hasCred(nick){return !!creds[String(nick||'').toLowerCase()];}
 
+  // ---- Recordar contraseña en este equipo ----
+  // Se guarda por nick en localStorage (solo en este dispositivo) para que
+  // el jugador la escriba una sola vez.
+  var REM_KEY='bfNickPassSaved';
+  function loadSaved(){try{return JSON.parse(localStorage.getItem(REM_KEY)||'{}')||{};}catch(e){return{};}}
+  function getSavedPass(nick){return loadSaved()[String(nick||'').toLowerCase().trim()]||'';}
+  function savePass(nick,pass){var k=String(nick||'').toLowerCase().trim();if(!k)return;var m=loadSaved();m[k]=pass;try{localStorage.setItem(REM_KEY,JSON.stringify(m));}catch(e){}}
+  function forgetPass(nick){var k=String(nick||'').toLowerCase().trim();if(!k)return;var m=loadSaved();if(m[k]===undefined)return;delete m[k];try{localStorage.setItem(REM_KEY,JSON.stringify(m));}catch(e){}}
+  window.__bfGetSavedNickPass=getSavedPass;
+  window.__bfSaveNickPass=savePass;
+  window.__bfForgetNickPass=forgetPass;
+
   function labelPass(input){
     var pass=input._bfPass;if(!pass)return;
     var nick=String(input.value||'').trim();
@@ -58,6 +72,19 @@ export const NICK_PASSWORD_PATCH = `
     }else{
       pass.placeholder=L('Crea una contraseña','Create a password');
       if(hint)hint.textContent=L('Elige una contraseña para proteger tu nick','Choose a password to protect your nick');
+    }
+    // Autorrelleno: si la contraseña de este nick está recordada en este
+    // equipo, se rellena sola y se marca la casilla. Si el jugador cambia a
+    // un nick sin contraseña recordada, se limpia el autorrelleno.
+    var saved=getSavedPass(nick);
+    var rem=input._bfPassRem;
+    if(saved&&(!pass.value||pass._bfAuto)){
+      pass.value=saved;pass._bfAuto=1;
+      if(rem)rem.checked=true;
+      if(hint)hint.textContent=L('Contraseña recordada en este equipo','Password remembered on this device');
+    }else if(!saved&&pass._bfAuto){
+      pass.value='';pass._bfAuto=0;
+      if(rem)rem.checked=false;
     }
   }
 
@@ -98,8 +125,27 @@ export const NICK_PASSWORD_PATCH = `
       rowEl.appendChild(eye);
       var hint=document.createElement('div');
       hint.className='bf-pass-hint';
+      // Casilla "Recordar contraseña en este equipo".
+      var remLbl=document.createElement('label');
+      remLbl.className='bf-pass-rem';
+      // Estilos en línea con prioridad: el CSS del juego para "label" dentro
+      // de .ig (dorado, mayúsculas, bloque) tiene más especificidad y partía
+      // la casilla en dos líneas.
+      ['display:flex','flex-direction:row','align-items:center','gap:6px','margin:4px 0 0','font-size:11px','color:#cfc6dd','font-family:Rubik,sans-serif','font-weight:600','letter-spacing:.3px','text-transform:none','cursor:pointer'].forEach(function(s){var p=s.split(':');try{remLbl.style.setProperty(p[0],p[1],'important');}catch(e){}});
+      var remCb=document.createElement('input');
+      remCb.type='checkbox';
+      var remTxt=document.createElement('span');
+      remTxt.textContent=L('Recordar contraseña en este equipo','Remember password on this device');
+      remLbl.appendChild(remCb);
+      remLbl.appendChild(remTxt);
       wrap.appendChild(rowEl);
       wrap.appendChild(hint);
+      wrap.appendChild(remLbl);
+      // Si el jugador escribe a mano, deja de ser autorrelleno; si desmarca
+      // la casilla, se olvida la contraseña guardada de ese nick.
+      pass.addEventListener('input',function(){pass._bfAuto=0;});
+      remCb.addEventListener('change',function(){if(!remCb.checked)forgetPass(input.value);});
+      input._bfPassRem=remCb;
       // Inserta el campo de contraseña JUSTO DEBAJO del input de nick, no
       // después de todo el .ig (que puede incluir avatar picker u otros
       // campos). Así queda pegado al nick en cualquier layout.
@@ -177,7 +223,15 @@ export const NICK_PASSWORD_PATCH = `
         for(var i=0;i<results.length;i++){
           if(!results[i].ok){bad={r:results[i],p:pairs[i]};break;}
         }
-        if(!bad){orig.apply(this,args);return;}
+        if(!bad){
+          // Verificación correcta: recuerda u olvida la contraseña según la casilla.
+          pairs.forEach(function(p){
+            var cb=p.nickInput&&p.nickInput._bfPassRem;
+            if(cb&&cb.checked&&p.pass)savePass(p.nick,p.pass);
+            else if(cb&&!cb.checked)forgetPass(p.nick);
+          });
+          orig.apply(this,args);return;
+        }
         warn(errMsg(bad.r),bad.p.passInput||bad.p.nickInput);
       });
     };
