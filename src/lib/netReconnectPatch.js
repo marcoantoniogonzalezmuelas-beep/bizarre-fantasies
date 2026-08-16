@@ -32,7 +32,7 @@ export const NET_RECONNECT_PATCH = `
     return null;
   };
   setInterval(function(){
-    if(typeof NET!=='undefined'&&typeof G!=='undefined'&&G.online&&!G._gameOver&&(NET.role==='client'||NET.role==='host')&&NET.code)saveResume();
+    if(typeof NET!=='undefined'&&typeof G!=='undefined'&&G.online&&!G._gameOver&&(NET.role==='client'||NET.role==='host')&&NET.code&&NET.pass)saveResume();
   },4000);
 
   var style=document.createElement('style');
@@ -290,8 +290,24 @@ export const NET_RECONNECT_PATCH = `
       }
     }catch(e){}
   }
+  // Salas LIBRES (sin contraseña): no hay reanudación. Si cualquiera pierde
+  // la conexión, la partida termina y la sala se cierra inmediatamente.
+  function endMatchNoResume(){
+    if(typeof G!=='undefined')G._gameOver=true;
+    rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
+    if(window.__bfClearSave)window.__bfClearSave();
+    if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
+    window.__bfRoomMarkedPlaying=false;
+    sendBye();
+    if(typeof NET!=='undefined'&&NET.code&&window.bfLobbyRequest){window.bfLobbyRequest('unregister',{code:NET.code}).catch(function(){});}
+    try{if(typeof NET!=='undefined'&&NET.conn)NET.conn.close();}catch(e){}
+    try{if(typeof NET!=='undefined'&&NET.peer)NET.peer.destroy();}catch(e){}
+    if(typeof modal==='function')modal('<h3>Conexión perdida</h3><div class="modal-note" style="font-size:15px">Esta es una <b>sala libre</b> (sin reanudación). La partida ha terminado y la sala se ha cerrado.</div><div style="margin-top:16px;text-align:center"><button class="btn primary" onclick="location.reload()">Volver al inicio</button></div>');
+  }
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
+    // Sala libre (sin contraseña): sin reanudación. Se acaba la partida.
+    if(typeof NET!=='undefined'&&!NET.pass){endMatchNoResume();return;}
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;
     markLeft();
     try{if(typeof notif==='function')notif('🔄 La partida sigue en curso. Tu rival puede reanudar desde Salas online.');}catch(e){}

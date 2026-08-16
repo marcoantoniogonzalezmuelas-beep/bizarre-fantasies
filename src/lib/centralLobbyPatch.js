@@ -66,18 +66,21 @@ export const CENTRAL_LOBBY_PATCH = `
     var cards=document.querySelectorAll('.room-card'),own=null;
     cards.forEach(function(card){var code=card.querySelector('.room-sub b');if(code&&code.textContent.trim()===NET.code)own=card;});
     if(own){
-      own.style.border='2px solid #FFD24A';own.style.boxShadow='0 0 20px rgba(255,210,74,.35)';
+      var isFree=!NET.pass;
+      own.style.border=isFree?'2px solid #6aa6ff':'2px solid #FFD24A';
+      own.style.boxShadow=isFree?'0 0 20px rgba(90,150,255,.35)':'0 0 20px rgba(255,210,74,.35)';
       var icon=own.querySelector('.room-ico');if(icon)setAvatarIcon(icon,avatarFor(NET.names_self));
       var join=own.querySelector('button');if(join){join.textContent='Cancelar sala';join.className='btn sm';join.onclick=window.bfCancelHostedRoom;}
-      var sub=own.querySelector('.room-sub');if(sub&&!sub.querySelector('.bf-own-room'))sub.insertAdjacentHTML('beforeend',' · <b class="bf-own-room" style="color:#FFD24A">TU SALA</b>');
+      var sub=own.querySelector('.room-sub');if(sub&&!sub.querySelector('.bf-own-room'))sub.insertAdjacentHTML('beforeend',' · <b class="bf-own-room" style="color:'+(isFree?'#a8c4ff':'#FFD24A')+'">TU SALA '+(isFree?'LIBRE':'PRIVADA')+'</b>');
     }
     Array.from(document.querySelectorAll('#s-lobby button')).forEach(function(button){if(/Crear sala/i.test(button.textContent)){button.disabled=true;button.textContent='🏠 Tu sala está activa';}});
   }
   function injectResumeCard(){
     // Si hay una partida en curso guardada en este dispositivo, mostrar una
-    // tarjeta destacada para volver a entrar y retomarla.
+    // tarjeta destacada para volver a entrar y retomarla. Las salas LIBRES no
+    // guardan reanudación (no hay contraseña), así que no se muestra.
     var info=window.__bfGetResume&&window.__bfGetResume();
-    if(!info||document.getElementById('bf-resume-card'))return;
+    if(!info||!info.pass||document.getElementById('bf-resume-card'))return;
     if(typeof NET!=='undefined'&&NET.role)return;
     var box=document.querySelector('#s-lobby .setup-box');if(!box)return;
     var html='<div id="bf-resume-card" class="room-card" style="border:2px solid #7ddf7d;box-shadow:0 0 18px rgba(90,220,120,.35)"><div class="room-ico">🔌</div><div class="room-info"><div class="room-name">Tienes una partida en curso</div><div class="room-sub">código <b>'+info.code+'</b> · puedes volver a entrar y continuar</div></div><button class="btn primary sm" onclick="bfResumeMatch()">Reconectar</button></div>';
@@ -87,25 +90,52 @@ export const CENTRAL_LOBBY_PATCH = `
   }
   function decorateRoomAvatars(){
     // Para cada tarjeta de sala visible, sustituye el icono genérico por el
-    // avatar del creador (si lo conocemos). No toca la sala propia (la pinta
-    // decorateHostedRoom) ni las de reanudación (las pinta decorateResumeRooms).
+    // avatar del creador. El avatar llega desde el backend (room.avatar), así
+    // que lo ve TODO el mundo, no solo el creador. No toca la sala propia (la
+    // pinta decorateHostedRoom) ni las de reanudación (las pinta
+    // decorateResumeRooms). Las salas LIBRES (sin contraseña) se diferencian
+    // por color azul; las privadas llevan el borde dorado habitual.
+    var avByCode={};
+    if(typeof LOBBY!=='undefined'&&LOBBY.rooms){
+      LOBBY.rooms.forEach(function(r){if(r&&r.id&&r.avatar)avByCode[r.id]=r.avatar;});
+    }
     var cards=document.querySelectorAll('.room-card');
     cards.forEach(function(card){
       if(card.dataset.bfAvatar==='1')return;
       if(card.style.border&&card.style.border.indexOf('FFD24A')!==-1)return; // sala propia
       if(card.dataset.bfResume==='1')return; // reanudación
-      var nameEl=card.querySelector('.room-name');
-      var nick=nameEl?nameEl.textContent.trim():'';
-      var url=avatarFor(nick);
-      if(!url)return;
-      var icon=card.querySelector('.room-ico');
-      if(icon){setAvatarIcon(icon,url);card.dataset.bfAvatar='1';}
+      var codeEl=card.querySelector('.room-sub b');
+      var code=codeEl?codeEl.textContent.trim():'';
+      var url=avByCode[code]||'';
+      if(!url){
+        var nameEl=card.querySelector('.room-name');
+        var nick=nameEl?nameEl.textContent.trim():'';
+        url=avatarFor(nick);
+      }
+      if(url){
+        var icon=card.querySelector('.room-ico');
+        if(icon){setAvatarIcon(icon,url);card.dataset.bfAvatar='1';}
+      }
+      // Diferenciación por color: salas libres (sin contraseña) en azul.
+      var room=LOBBY.rooms&&LOBBY.rooms.find(function(r){return r&&r.id===code;});
+      if(room&&!room.hasPass&&!room.isResume){
+        card.style.border='2px solid #6aa6ff';
+        card.style.boxShadow='0 0 16px rgba(90,150,255,.3)';
+        if(!card.querySelector('.bf-free-badge')){
+          var badge=document.createElement('span');
+          badge.className='bf-free-badge';
+          badge.style.cssText='position:absolute;top:6px;right:8px;font-size:9px;font-weight:900;letter-spacing:.5px;color:#a8c4ff;background:rgba(20,40,80,.7);border:1px solid rgba(90,150,255,.5);border-radius:6px;padding:2px 6px';
+          badge.textContent='LIBRE';
+          card.style.position=card.style.position||'relative';
+          card.appendChild(badge);
+        }
+      }
     });
   }
   function decorateResumeRooms(){
     if(typeof LOBBY==='undefined'||!LOBBY.rooms)return;
     LOBBY.rooms.forEach(function(r){
-      if(!r.isResume)return;
+      if(!r.isResume||!r.hasPass)return;
       var cards=document.querySelectorAll('.room-card');
       var card=null;
       cards.forEach(function(c){var codeEl=c.querySelector('.room-sub b');if(codeEl&&codeEl.textContent.trim()===r.id)card=c;});
@@ -170,10 +200,17 @@ export const CENTRAL_LOBBY_PATCH = `
     window.dirRegister=function(code,name,hasPass){
       LOBBY._reg={code:code,name:name,hasPass:hasPass,confirmed:false};
       var attempts=0;
+      // Avatar del creador: preferimos el avatar elegido localmente (bfMyAvatar,
+      // del parche de avatar) y, si no, el asociado al nick en el mapa de la BD.
+      // Se guarda en el backend para que TODOS los jugadores lo vean en la
+      // tarjeta de la sala, no solo el creador.
+      var avUrl='';
+      try{if(window.bfMyAvatar&&window.bfMyAvatar.url)avUrl=window.bfMyAvatar.url;}catch(e){}
+      if(!avUrl)avUrl=avatarFor(name);
       return new Promise(function(resolve,reject){
         function register(){
           attempts+=1;
-          request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||''}).then(function(data){
+          request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||'',avatar:avUrl}).then(function(data){
             if(!data||data.ok!==true)throw new Error('register rejected');
             return request('list');
           }).then(function(data){
@@ -209,15 +246,23 @@ export const CENTRAL_LOBBY_PATCH = `
       });
     };
 
-    // Contraseña obligatoria al crear sala: sin ella la reanudación no puede
-    // identificar a los dos jugadores originales (los nicks no son fiables sin
-    // registro). El juego nativo la hace opcional, así que la exigimos aquí.
+    // Contraseña obligatoria al crear sala PRIVADA: sin ella la reanudación no
+    // puede identificar a los dos jugadores originales (los nicks no son fiables
+    // sin registro). El juego nativo la hace opcional, así que la exigimos aquí
+    // solo para salas privadas. Las salas LIBRES no llevan contraseña y no tienen
+    // reanudación: si cualquiera se desconecta, la partida termina.
     if(!window.__bfHostCreateWrapped){
       window.__bfHostCreateWrapped=true;
       var origHostCreate=window.hostCreate;
       window.hostCreate=function(name,pass,roomName){
+        if(window.__bfRoomMode==='free'){
+          // Sala libre: sin contraseña. Nos aseguramos de que el campo vaya
+          // vacío al juego nativo (podría tener texto residual).
+          var lp=document.getElementById('hpass');if(lp)lp.value='';
+          return origHostCreate.apply(this,[name,'',roomName]);
+        }
         if(!pass||!String(pass).trim()){
-          try{if(typeof notif==='function')notif('⚠️ La contraseña es obligatoria para crear una sala (partida privada).');else alert('La contraseña es obligatoria para crear una sala.');}catch(e){alert('La contraseña es obligatoria para crear una sala.');}
+          try{if(typeof notif==='function')notif('⚠️ La contraseña es obligatoria para crear una sala privada.');else alert('La contraseña es obligatoria para crear una sala privada.');}catch(e){alert('La contraseña es obligatoria para crear una sala privada.');}
           return;
         }
         return origHostCreate.apply(this,arguments);
@@ -225,23 +270,50 @@ export const CENTRAL_LOBBY_PATCH = `
       var origRenderLobby=window.renderLobby;
       window.renderLobby=function(stage){
         var r=origRenderLobby.apply(this,arguments);
-        if(stage==='host')setTimeout(bfEnforcePassForm,0);
+        if(stage==='host')setTimeout(bfSetupHostForm,0);
         return r;
       };
     }
     centralList();
     return true;
   }
-  function bfEnforcePassForm(){
+  function bfSetupHostForm(){
     var lp=document.getElementById('hpass');
     if(!lp||lp.dataset.bfReq==='1')return;
     lp.dataset.bfReq='1';
-    lp.placeholder='Obligatoria (partida privada)';
     var ig=lp.closest('.ig');
     if(ig){var lbl=ig.querySelector('label');if(lbl)lbl.textContent='Contraseña';}
+    lp.placeholder='Obligatoria (partida privada)';
+    // Inyecta el selector de tipo de sala sobre el campo de contraseña.
+    if(!document.getElementById('bf-room-mode')){
+      var modeCss=document.createElement('style');
+      modeCss.textContent='.bf-mode-pill{flex:1;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#cfc6dd;font-family:Rubik,sans-serif;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s ease}.bf-mode-pill.active{border-color:#FFD24A;background:rgba(255,210,74,.18);color:#ffe49a}.bf-mode-pill[data-mode=free].active{border-color:#6aa6ff;background:rgba(90,150,255,.18);color:#a8c4ff}';
+      document.head.appendChild(modeCss);
+      var toggle=document.createElement('div');
+      toggle.id='bf-room-mode';
+      toggle.style.cssText='display:flex;gap:8px;margin:10px 0';
+      toggle.innerHTML='<button type="button" data-mode="private" class="bf-mode-pill active">🔒 Privada (con reanudación)</button><button type="button" data-mode="free" class="bf-mode-pill">🆓 Libre (sin reanudación)</button>';
+      ig.parentNode.insertBefore(toggle,ig);
+      var freeNote=document.createElement('div');
+      freeNote.id='bf-free-note';
+      freeNote.style.cssText='display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:rgba(20,40,80,.4);border:1px solid rgba(90,150,255,.4);font-size:12px;color:#a8c4ff;line-height:1.4';
+      freeNote.innerHTML='⚠️ <b>Sala libre</b>: sin contraseña. Si <b>cualquier jugador</b> pierde la conexión, la partida <b>termina y se cierra la sala</b> (no hay reanudación).';
+      ig.parentNode.insertBefore(freeNote,ig);
+      toggle.querySelectorAll('.bf-mode-pill').forEach(function(btn){
+        btn.onclick=function(){
+          toggle.querySelectorAll('.bf-mode-pill').forEach(function(b){b.classList.remove('active');});
+          btn.classList.add('active');
+          var mode=btn.dataset.mode;
+          window.__bfRoomMode=mode;
+          if(mode==='free'){ig.style.display='none';freeNote.style.display='block';}
+          else{ig.style.display='';freeNote.style.display='none';}
+        };
+      });
+      window.__bfRoomMode='private';
+    }
     var note=document.querySelector('#s-lobby .setup-box .note-box');
     if(note&&note.innerHTML.indexOf('La <b>contraseña</b> es opcional')!==-1){
-      note.innerHTML=note.innerHTML.replace('La <b>contraseña</b> es opcional (vacía = sala abierta).','La <b>contraseña</b> es <b>obligatoria</b> (partida privada: solo quien la sepa puede unirse y reanudar la partida).');
+      note.innerHTML=note.innerHTML.replace('La <b>contraseña</b> es opcional (vacía = sala abierta).','La <b>contraseña</b> es <b>obligatoria</b> en salas privadas (solo quien la sepa puede unirse y reanudar la partida). Elige <b>Libre</b> arriba para una sala abierta sin reanudación.');
     }
   }
 

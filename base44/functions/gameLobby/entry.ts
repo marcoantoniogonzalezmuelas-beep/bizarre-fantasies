@@ -39,6 +39,7 @@ Deno.serve(async (req) => {
             id: room.room_code,
             name: room.state?.room_name || room.host_name || room.room_code,
             hasPass: room.state?.has_pass === true,
+            avatar: room.state?.host_avatar || '',
             ts: Date.parse(room.updated_date || room.created_date || 0),
           });
         });
@@ -93,7 +94,7 @@ Deno.serve(async (req) => {
         status: 'waiting',
         host_name: String(body.name || code).slice(0, 28),
         left_at: null,
-        state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token, password: String(body.pass || '').slice(0, 40) },
+        state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token, password: String(body.pass || '').slice(0, 40), host_avatar: String(body.avatar || '').slice(0, 600) },
       };
       if (existing && !ownsRoom && !isStale) return Response.json({ error: 'Room code already active' }, { status: 409 });
       const room = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, data) : await base44.asServiceRole.entities.GameRoom.create(data);

@@ -21,7 +21,7 @@ export const MATCH_RECOVERY_PATCH = `
   function save(){
     try{
       if(typeof G==='undefined'||typeof NET==='undefined')return;
-      if(!G.online||G._gameOver||NET.role!=='host'||!NET.code)return;
+      if(!G.online||G._gameOver||NET.role!=='host'||!NET.code||!NET.pass)return;
       var s=scr();
       if(s!=='s-recruit'&&s!=='s-equip'&&s!=='s-battle')return;
       var g={};GF.forEach(function(k){g[k]=G[k];});
@@ -95,7 +95,7 @@ export const MATCH_RECOVERY_PATCH = `
     var host=getSave();
     var cli=host?null:((window.__bfGetResume&&window.__bfGetResume())||null);
     var d=host||cli;
-    if(!d)return;
+    if(!d||!d.pass)return;
     window.__bfResumeAsked=true;
     var ov=document.createElement('div');
     ov.id='bf-resume';
