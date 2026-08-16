@@ -40,6 +40,8 @@ Deno.serve(async (req) => {
 
     // ---- Habitación Bizarra: cola de visitantes + botón de pánico ----
     const BIZARRE_TIMEOUT = 40000; // 40 s sin latido = fuera
+    const SPIN_PREFIX = 'SPIN-';
+    const SPIN_TIMEOUT = 20000; // 20 s máximo de ruleta antes de cancelar
     async function cleanupBizarre() {
       try {
         const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
@@ -47,6 +49,13 @@ Deno.serve(async (req) => {
         for (const v of all) {
           if (now - (v.last_heartbeat || 0) > BIZARRE_TIMEOUT) {
             await base44.asServiceRole.entities.BizarreVisitor.delete(v.id);
+          } else if (v.match_code && String(v.match_code).startsWith(SPIN_PREFIX)) {
+            // Ruleta caducada: limpia el estado de spin para desbloquear el botón
+            const parts = String(v.match_code).split('-');
+            const spinStart = parseInt(parts[1] || '0', 36);
+            if (now - spinStart > SPIN_TIMEOUT) {
+              await base44.asServiceRole.entities.BizarreVisitor.update(v.id, { match_code: '', match_role: '', match_pass: '' });
+            }
           }
         }
       } catch (e) {}
@@ -101,10 +110,28 @@ Deno.serve(async (req) => {
       const visitors = all
         .filter((x) => now - (x.last_heartbeat || 0) < BIZARRE_TIMEOUT && !x.match_code)
         .map((x) => ({ nick: x.nick, avatar: x.avatar, total_wins: x.total_wins || 0 }));
+      // Detecta si hay una ruleta en curso (par con código SPIN-)
+      let spin: any = null;
+      const spinning = all.filter((x) => x.match_code && String(x.match_code).startsWith(SPIN_PREFIX) && now - (x.last_heartbeat || 0) < BIZARRE_TIMEOUT);
+      if (spinning.length >= 2) {
+        const spinner = spinning.find((x) => x.match_role === 'host') || spinning[0];
+        const target = spinning.find((x) => x.match_role === 'client') || spinning[1];
+        const spinVisitors = all
+          .filter((x) => now - (x.last_heartbeat || 0) < BIZARRE_TIMEOUT)
+          .map((x) => ({ nick: x.nick, avatar: x.avatar, total_wins: x.total_wins || 0 }));
+        spin = {
+          spinner_nick: spinner.nick, spinner_avatar: spinner.avatar,
+          target_nick: target.nick, target_avatar: target.avatar,
+          visitors: spinVisitors,
+        };
+      }
+      // No devuelve match si el código es SPIN- (la ruleta aún gira)
+      const isSpinning = v.match_code && String(v.match_code).startsWith(SPIN_PREFIX);
       return Response.json({
         ok: true,
         visitors,
-        match: v.match_code ? { code: v.match_code, role: v.match_role, pass: v.match_pass } : null,
+        match: (!isSpinning && v.match_code) ? { code: v.match_code, role: v.match_role, pass: v.match_pass } : null,
+        spin,
       });
     }
 
@@ -118,6 +145,12 @@ Deno.serve(async (req) => {
       if (me.match_code) return Response.json({ ok: false, error: 'already_matched' });
       const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
       const now = Date.now();
+      // Bloquea el pánico si ya hay una ruleta en curso
+      const activeSpin = all.some((v) =>
+        v.match_code && String(v.match_code).startsWith(SPIN_PREFIX) &&
+        (now - parseInt(String(v.match_code).split('-')[1] || '0', 36)) < SPIN_TIMEOUT
+      );
+      if (activeSpin) return Response.json({ ok: false, error: 'spin_in_progress' });
       const eligible = all.filter((v) =>
         v.id !== me.id && !v.match_code && now - (v.last_heartbeat || 0) < BIZARRE_TIMEOUT
       );
@@ -131,9 +164,34 @@ Deno.serve(async (req) => {
       for (let i = 0; i < 6; i++) roomCode += chars[Math.floor(Math.random() * chars.length)];
       let roomPass = '';
       for (let i = 0; i < 8; i++) roomPass += chars[Math.floor(Math.random() * chars.length)];
-      await base44.asServiceRole.entities.BizarreVisitor.update(me.id, { match_code: roomCode, match_role: 'host', match_pass: roomPass });
-      await base44.asServiceRole.entities.BizarreVisitor.update(opponent.id, { match_code: roomCode, match_role: 'client', match_pass: roomPass });
-      return Response.json({ ok: true, match: { code: roomCode, role: 'host', pass: roomPass, opponent: opponent.nick } });
+      // Marca a ambos con un código SPIN- temporal (la ruleta está girando).
+      // El código real se asigna cuando el host confirma tras la animación.
+      const spinCode = SPIN_PREFIX + now.toString(36) + '-' + roomCode;
+      await base44.asServiceRole.entities.BizarreVisitor.update(me.id, { match_code: spinCode, match_role: 'host', match_pass: roomPass });
+      await base44.asServiceRole.entities.BizarreVisitor.update(opponent.id, { match_code: spinCode, match_role: 'client', match_pass: roomPass });
+      // Snapshot de todos los visitantes activos para la ruleta
+      const spinVisitors = all
+        .filter((v) => now - (v.last_heartbeat || 0) < BIZARRE_TIMEOUT)
+        .map((v) => ({ nick: v.nick, avatar: v.avatar, total_wins: v.total_wins || 0 }));
+      return Response.json({
+        ok: true,
+        spin: { target_nick: opponent.nick, target_avatar: opponent.avatar, visitors: spinVisitors },
+        match: { code: roomCode, role: 'host', pass: roomPass, opponent: opponent.nick },
+      });
+    }
+
+    // Cancela una ruleta en curso (el que pulsó el pánico cerró la habitación)
+    if (action === 'bizarre_cancel_spin') {
+      const sessionToken = String(body.session_token || '').slice(0, 80);
+      if (!sessionToken) return Response.json({ ok: true });
+      const matches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
+      const v = matches[0];
+      if (!v || !v.match_code || !String(v.match_code).startsWith(SPIN_PREFIX)) return Response.json({ ok: true });
+      const pair = await base44.asServiceRole.entities.BizarreVisitor.filter({ match_code: v.match_code }, '-created_date', 10);
+      for (const p of pair) {
+        await base44.asServiceRole.entities.BizarreVisitor.update(p.id, { match_code: '', match_role: '', match_pass: '' });
+      }
+      return Response.json({ ok: true });
     }
 
     // El host (pulsador de pánico) reporta el código real de la sala que el

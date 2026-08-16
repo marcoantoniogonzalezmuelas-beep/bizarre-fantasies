@@ -63,6 +63,15 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-count b{color:#e2b0ff}
 #bf-bizarre-overlay .bf-biz-wait{margin-top:14px;padding:12px;border-radius:12px;background:rgba(255,42,90,.12);border:1px solid rgba(255,42,90,.4);text-align:center;color:#ffb0c0;font-size:13px;line-height:1.4}
 #bf-bizarre-overlay .bf-biz-spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,42,90,.3);border-top-color:#ff2a5a;border-radius:50%;animation:bfBizSpin .8s linear infinite;vertical-align:middle;margin-right:6px}
+/* Ruleta de la suerte */
+#bf-biz-roulette{position:relative;width:clamp(220px,70vw,300px);height:clamp(220px,70vw,300px);margin:0 auto 12px}
+.bf-biz-wheel{position:relative;width:100%;height:100%;border-radius:50%;border:4px solid #c06bff;background:radial-gradient(circle,rgba(30,15,50,.95),rgba(10,5,20,.98));box-shadow:0 0 30px rgba(192,91,255,.5),inset 0 0 30px rgba(120,40,200,.15);transition:transform 4s cubic-bezier(.15,.85,.25,1)}
+.bf-biz-wheel-av{position:absolute;width:clamp(36px,10vw,48px);height:clamp(36px,10vw,48px);border-radius:50%;border:2px solid rgba(255,210,74,.4);object-fit:cover;background:#1a1428;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.bf-biz-wheel-nick{position:absolute;font-size:clamp(7px,1.8vw,10px);color:#fff5dc;text-shadow:0 1px 3px #000;white-space:nowrap;transform:translate(-50%,0);pointer-events:none;font-weight:700}
+.bf-biz-pointer{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:28px;z-index:10;filter:drop-shadow(0 0 10px rgba(255,210,74,.9));animation:bfPtrBounce .6s ease-in-out infinite alternate}
+@keyframes bfPtrBounce{0%{transform:translateX(-50%) translateY(0)}100%{transform:translateX(-50%) translateY(4px)}}
+.bf-biz-roulette-label{text-align:center;font-family:Cinzel,serif;font-weight:900;font-size:15px;color:#e2b0ff;margin-bottom:8px;text-shadow:0 0 12px rgba(192,91,255,.6);letter-spacing:.5px}
+.bf-biz-roulette-sub{text-align:center;font-size:12px;color:#ffe49a;margin-top:6px;font-weight:700;min-height:18px}
 @keyframes bfBizSpin{to{transform:rotate(360deg)}}
 /* bf-biz-x y wrap movidos a la topbar */
 .bf-bizarre-room{position:relative;margin:18px 0 6px;padding:0;border-radius:18px;overflow:hidden;border:2px solid rgba(192,91,255,.5);box-shadow:0 12px 34px rgba(0,0,0,.6),inset 0 0 40px rgba(120,40,200,.18);background:linear-gradient(180deg,rgba(20,10,34,0) 0%,rgba(8,4,14,.55) 100%),radial-gradient(ellipse at 50% 120%,rgba(192,91,255,.25),transparent 60%),linear-gradient(160deg,#241438 0%,#160c26 55%,#0c0718 100%)}
@@ -115,6 +124,7 @@ export const BIZARRE_ROOM_PATCH = `
   var hbTimer=null;
   var visitors=[];
   var myMatch=null;
+  var spinState=null; // {target_nick,target_avatar,visitors,isSpinner,match}
   var avatarCatalog=[];
   var selectedAvatar='';
   var joined=false;
@@ -159,6 +169,70 @@ export const BIZARRE_ROOM_PATCH = `
       pick.classList.add('bf-av-empty');
     }
   }
+  // ---- RULETA DE LA SUERTE ----
+  // Renderiza la ruleta con todos los visitantes y la anima hasta parar en
+  // el objetivo. Todos los que estan en la habitacion la ven (sincronizada
+  // por heartbeat: el backend devuelve spin con el par activo).
+  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+  function renderRouletteHtml(){
+    if(!spinState) return '';
+    var vis=spinState.visitors||[];
+    if(!vis.length) return '';
+    var targetNick=spinState.target_nick||'';
+    var targetIdx=-1;
+    for(var i=0;i<vis.length;i++){ if(vis[i].nick===targetNick){ targetIdx=i; break; } }
+    if(targetIdx<0) targetIdx=0;
+    var N=vis.length;
+    var R=clamp(90, 38*100/N, 120);
+    var angleStep=360/N;
+    var html='';
+    for(var j=0;j<N;j++){
+      var angle=(j*angleStep)*Math.PI/180-Math.PI/2;
+      var x=Math.round(R*Math.cos(angle));
+      var y=Math.round(R*Math.sin(angle));
+      var isTarget=j===targetIdx;
+      var av=vis[j].avatar||'';
+      var nick=esc(vis[j].nick||'');
+      var borderStyle=isTarget?';border-color:#FFD24A;box-shadow:0 0 14px rgba(255,210,74,.8)':'';
+      html+='<img class="bf-biz-wheel-av" src="'+esc(av)+'" style="left:calc(50% + '+x+'px);top:calc(50% + '+y+'px)'+borderStyle+'" onerror="this.style.visibility=\'hidden\'">';
+      html+='<div class="bf-biz-wheel-nick" style="left:calc(50% + '+x+'px);top:calc(50% + '+(y+26)+'px)">'+nick+'</div>';
+    }
+    var label=spinState.isSpinner?L('🎡 ¡Ruleta de la Suerte!','🎡 Wheel of Fortune!'):L('🎡 '+esc(spinState.spinner_nick||'')+' pulsó el pánico…','🎡 '+esc(spinState.spinner_nick||'')+' hit panic…');
+    return '<div class="bf-biz-roulette-label">'+label+'</div>'+
+      '<div id="bf-biz-roulette"><div class="bf-biz-pointer">🔻</div><div class="bf-biz-wheel" id="bf-biz-wheel">'+html+'</div></div>'+
+      '<div class="bf-biz-roulette-sub" id="bf-biz-roulette-sub"></div>';
+  }
+  function spinRoulette(){
+    if(!spinState) return;
+    var vis=spinState.visitors||[];
+    if(!vis.length) return;
+    var targetNick=spinState.target_nick||'';
+    var targetIdx=-1;
+    for(var i=0;i<vis.length;i++){ if(vis[i].nick===targetNick){ targetIdx=i; break; } }
+    if(targetIdx<0) targetIdx=0;
+    var N=vis.length;
+    var angleStep=360/N;
+    var turns=5;
+    var finalAngle=turns*360+(360-targetIdx*angleStep);
+    var wheel=overlayEl().querySelector('#bf-biz-wheel');
+    if(wheel){
+      void wheel.offsetWidth;
+      wheel.style.transform='rotate('+finalAngle+'deg)';
+    }
+    var sub=overlayEl().querySelector('#bf-biz-roulette-sub');
+    if(sub){
+      sub.textContent=L('Girando…','Spinning…');
+      setTimeout(function(){ if(sub) sub.textContent=L('Casi…','Almost…'); },2800);
+      setTimeout(function(){ if(sub){ sub.textContent=L('¡Emparejado con '+esc(spinState.target_nick||'')+'!','Matched with '+esc(spinState.target_nick||'')+'!'); sub.style.color='#FFD24A'; } },3900);
+    }
+    if(spinState.isSpinner&&spinState.match){
+      setTimeout(function(){
+        if(spinState&&spinState.isSpinner) startMatchAsHost();
+      },4200);
+    }
+  }
+  function hideRoulette(){ spinState=null; }
+
   // Pinta retratos de héroes/bizarros del Oráculo (BD) en los marcos de la
   // habitación, como cuadros colgados en las paredes.
   function renderHeroPortraits(){
@@ -299,6 +373,11 @@ export const BIZARRE_ROOM_PATCH = `
   function renderBody(){
     var body=overlayEl().querySelector('.bf-biz-body');
     if(!body)return;
+    // Si la ruleta está girando, se muestra encima de todo
+    if(spinState){
+      body.innerHTML=renderRouletteHtml();
+      return;
+    }
     if(!joined){
       // Formulario de entrada: nick + contraseña + avatar
       var savedNick='';
@@ -444,15 +523,37 @@ export const BIZARRE_ROOM_PATCH = `
           return;
         }
         visitors=res.visitors||[];
+        // Si hay una ruleta girando y yo no la inicié, la muestro también
+        if(res.spin&&!spinState){
+          spinState={
+            target_nick:res.spin.target_nick,
+            target_avatar:res.spin.target_avatar,
+            visitors:res.spin.visitors,
+            isSpinner:false,
+            spinner_nick:res.spin.spinner_nick,
+            spinner_avatar:res.spin.spinner_avatar
+          };
+          renderBody();
+          setTimeout(spinRoulette,100);
+        }
+        // Si la ruleta terminó (ya no hay spin) y yo no la inicié, limpio
+        if(!res.spin&&spinState&&!spinState.isSpinner){
+          hideRoulette();
+        }
+        // Match real (código confirmado): el target se une a la partida
         if(res.match&&!myMatch){
           myMatch=res.match;
-          onMatched();
+          if(spinState){
+            setTimeout(function(){ if(myMatch) onMatched(); }, 4200);
+          } else {
+            onMatched();
+          }
         }
         renderBody();
       }).catch(function(){});
     }
     beat();
-    hbTimer=setInterval(beat,5000);
+    hbTimer=setInterval(beat,3000);
   }
   function stopHeartbeat(){if(hbTimer){clearInterval(hbTimer);hbTimer=null;}}
 
@@ -466,26 +567,36 @@ export const BIZARRE_ROOM_PATCH = `
         var msg=L('No hay rivales suficientes.','Not enough opponents.');
         if(res&&res.error==='need_3_total')msg=L('Necesitas mínimo 3 visitantes en total (2 además de ti).','Need at least 3 visitors total (2 besides you).');
         else if(res&&res.error==='already_matched')msg=L('Ya estás emparejado.','Already matched.');
+        else if(res&&res.error==='spin_in_progress')msg=L('Ya hay una ruleta girando. Espera a que termine.','A roulette is already spinning. Wait for it to finish.');
         try{notif(msg);}catch(e){}
         return;
       }
-      myMatch=res.match;
-      myMatch.opponent=res.match.opponent||'';
+      // La ruleta empieza a girar: se muestra en la habitación para todos
+      spinState={
+        target_nick:res.spin.target_nick,
+        target_avatar:res.spin.target_avatar,
+        visitors:res.spin.visitors,
+        isSpinner:true,
+        match:res.match
+      };
       renderBody();
-      // El host (pulsador) crea la sala con la contraseña autogenerada.
-      startMatchAsHost();
+      setTimeout(spinRoulette,100);
     }).catch(function(){if(btn){btn.disabled=false;btn.textContent=L('🚨 BOTÓN DE PÁNICO','🚨 PANIC BUTTON');}try{notif(L('Error al emparejar.','Matchmaking error.'));}catch(e){}});
   }
 
   function startMatchAsHost(){
-    if(!myMatch)return;
+    var match=(spinState&&spinState.match)||myMatch;
+    if(!match)return;
+    // Marca la partida como venida de la Habitación Bizarra (para el botón de
+    // volver al final de la partida).
+    window.__bfBizarreMatch=true;
     // Rellena el formulario de host del juego y llama a hostCreate.
     try{
       var hname=document.getElementById('hname');if(hname)hname.value=session.nick;
-      var hpass=document.getElementById('hpass');if(hpass)hpass.value=myMatch.pass;
+      var hpass=document.getElementById('hpass');if(hpass)hpass.value=match.pass;
       // El juego generará su propio código; lo leemos de NET.code y lo reportamos.
       if(typeof window.hostCreate==='function'){
-        window.hostCreate(session.nick,myMatch.pass,L('Bizarra','Bizarre'));
+        window.hostCreate(session.nick,match.pass,L('Bizarra','Bizarre'));
         // Espera a que NET.code esté disponible y lo reporta al backend.
         var attempts=0;
         var iv=setInterval(function(){
@@ -520,6 +631,7 @@ export const BIZARRE_ROOM_PATCH = `
 
   function joinAsClient(){
     if(!myMatch||!myMatch.code)return;
+    window.__bfBizarreMatch=true;
     try{
       var jname=document.getElementById('jname')||document.getElementById('jlname');
       if(jname)jname.value=session.nick;
@@ -536,8 +648,12 @@ export const BIZARRE_ROOM_PATCH = `
 
   function doLeave(){
     if(!session)return;
+    // Si hay una ruleta en curso y yo la inicié, la cancelo en el backend
+    if(spinState&&spinState.isSpinner){
+      req('bizarre_cancel_spin',{session_token:session.token}).catch(function(){});
+    }
     req('bizarre_leave',{session_token:session.token}).catch(function(){});
-    stopHeartbeat();session=null;joined=false;myMatch=null;
+    stopHeartbeat();session=null;joined=false;myMatch=null;spinState=null;
     try{localStorage.removeItem('bfBizarreSession');}catch(e){}
     renderBody();
   }
@@ -567,6 +683,15 @@ export const BIZARRE_ROOM_PATCH = `
         visitors=res.visitors||[];if(res.match)myMatch=res.match;
         startHeartbeat();
       }).catch(function(){session=null;joined=false;localStorage.removeItem('bfBizarreSession');});
+    }
+  }catch(e){}
+
+  // Auto-apertura: si el jugador viene del botón "Volver a la Habitación
+  // Bizarra" del final de partida, abre la habitación automáticamente.
+  try{
+    if(sessionStorage.getItem('bfBizarreReturn')==='1'){
+      sessionStorage.removeItem('bfBizarreReturn');
+      setTimeout(function(){ openOverlay(); }, 1200);
     }
   }catch(e){}
 })();
