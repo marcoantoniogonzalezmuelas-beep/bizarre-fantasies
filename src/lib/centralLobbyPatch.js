@@ -277,6 +277,26 @@ export const CENTRAL_LOBBY_PATCH = `
     centralList();
     return true;
   }
+  function bfGuardCreateButton(){
+    // Doble seguro: además de envolver hostCreate, interceptamos el clic del
+    // botón "Crear sala" en fase de captura. Si la contraseña está vacía en
+    // modo privado, frenamos el evento antes de que el juego nativo haga nada.
+    var btns=document.querySelectorAll('#s-lobby button');
+    btns.forEach(function(b){
+      if(!/Crear sala/i.test(b.textContent||''))return;
+      if(b.dataset.bfGuarded==='1')return;
+      b.dataset.bfGuarded='1';
+      b.addEventListener('click',function(e){
+        if(window.__bfRoomMode==='free')return;
+        var lpEl=document.getElementById('hpass');
+        if(!lpEl||!String(lpEl.value||'').trim()){
+          e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+          try{if(typeof notif==='function')notif('⚠️ La contraseña es obligatoria para crear una sala privada.');else alert('La contraseña es obligatoria para crear una sala privada.');}catch(x){alert('La contraseña es obligatoria para crear una sala privada.');}
+          if(lpEl)lpEl.focus();
+        }
+      },true);
+    });
+  }
   function bfSetupHostForm(){
     var lp=document.getElementById('hpass');
     if(!lp||lp.dataset.bfReq==='1')return;
@@ -315,9 +335,12 @@ export const CENTRAL_LOBBY_PATCH = `
     if(note&&note.innerHTML.indexOf('La <b>contraseña</b> es opcional')!==-1){
       note.innerHTML=note.innerHTML.replace('La <b>contraseña</b> es opcional (vacía = sala abierta).','La <b>contraseña</b> es <b>obligatoria</b> en salas privadas (solo quien la sepa puede unirse y reanudar la partida). Elige <b>Pública</b> arriba para una sala abierta sin reanudación.');
     }
+    bfGuardCreateButton();
   }
 
   var tries=0,timer=setInterval(function(){if(install()||tries++>50)clearInterval(timer);},100);
+  // Re-aplica la guarda del botón "Crear sala" si el juego re-renderiza el form.
+  setInterval(function(){if(typeof isLobby==='function'&&isLobby())bfGuardCreateButton();},1500);
   // Refresco frecuente (8s) para que las salas nuevas aparezcan enseguida;
   // el "toque" del host mantiene su sala visible en el servidor cada ~24s.
   var tick=0;
