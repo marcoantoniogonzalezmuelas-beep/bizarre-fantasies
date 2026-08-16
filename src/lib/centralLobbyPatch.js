@@ -279,20 +279,25 @@ export const CENTRAL_LOBBY_PATCH = `
   }
   function bfGuardCreateButton(){
     // Doble seguro: además de envolver hostCreate, interceptamos el clic del
-    // botón "Crear sala" en fase de captura. Si la contraseña está vacía en
-    // modo privado, frenamos el evento antes de que el juego nativo haga nada.
-    var btns=document.querySelectorAll('#s-lobby button');
+    // botón "Crear sala" del formulario de host (no el del menú que lo abre).
+    // Si la contraseña está vacía en modo privado, frenamos el evento antes
+    // de que el juego nativo haga nada.
+    var lpEl=document.getElementById('hpass');
+    if(!lpEl)return; // no hay formulario de host abierto todavía
+    var box=lpEl.closest('.setup-box')||lpEl.closest('form')||document.querySelector('#s-lobby .setup-box');
+    if(!box)return;
+    var btns=box.querySelectorAll('button');
     btns.forEach(function(b){
       if(!/Crear sala/i.test(b.textContent||''))return;
       if(b.dataset.bfGuarded==='1')return;
       b.dataset.bfGuarded='1';
       b.addEventListener('click',function(e){
         if(window.__bfRoomMode==='free')return;
-        var lpEl=document.getElementById('hpass');
-        if(!lpEl||!String(lpEl.value||'').trim()){
+        var lp=document.getElementById('hpass');
+        if(!lp||!String(lp.value||'').trim()){
           e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
           try{if(typeof notif==='function')notif('⚠️ La contraseña es obligatoria para crear una sala privada.');else alert('La contraseña es obligatoria para crear una sala privada.');}catch(x){alert('La contraseña es obligatoria para crear una sala privada.');}
-          if(lpEl)lpEl.focus();
+          if(lp)lp.focus();
         }
       },true);
     });
