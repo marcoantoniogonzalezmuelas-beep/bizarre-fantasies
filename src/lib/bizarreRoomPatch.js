@@ -73,6 +73,17 @@ export const BIZARRE_ROOM_PATCH = `
 @keyframes bfPortalSpin{to{transform:rotate(360deg)}}
 .bf-bizarre-portal>span{position:relative;z-index:1}
 .bf-bizarre-portal .bf-bizarre-ico{font-size:20px;filter:drop-shadow(0 0 8px rgba(192,91,255,.8))}
+.bf-bizarre-duck{position:absolute;font-size:26px;pointer-events:none;z-index:1;filter:drop-shadow(0 0 8px rgba(255,210,74,.6));animation:bfDuckFloat 6s ease-in-out infinite}
+.bf-bizarre-duck.d1{top:14%;left:30%;animation-delay:0s}
+.bf-bizarre-duck.d2{bottom:18%;right:28%;animation-delay:2s;font-size:22px}
+.bf-bizarre-duck.d3{top:40%;right:12%;animation-delay:4s;font-size:20px}
+@keyframes bfDuckFloat{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(6deg)}}
+.bf-bizarre-tentacle{position:absolute;pointer-events:none;z-index:1;opacity:.5}
+.bf-bizarre-tentacle.t1{bottom:-8px;left:8%;font-size:40px;color:#9d5df0;transform:rotate(-15deg);animation:bfTentWave 5s ease-in-out infinite}
+.bf-bizarre-tentacle.t2{bottom:-8px;right:8%;font-size:40px;color:#c06bff;transform:rotate(15deg) scaleX(-1);animation:bfTentWave 5s ease-in-out infinite reverse}
+@keyframes bfTentWave{0%,100%{transform:rotate(-15deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-6px)}}
+.bf-bizarre-eye{position:absolute;top:10%;left:50%;transform:translateX(-50%);font-size:18px;pointer-events:none;z-index:1;animation:bfEyeBlink 4s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(255,42,90,.7))}
+@keyframes bfEyeBlink{0%,90%,100%{opacity:.6}93%,97%{opacity:0}}
 </style>
 <script>
 (function(){
@@ -131,8 +142,14 @@ export const BIZARRE_ROOM_PATCH = `
     sec.className='bf-bizarre-room';
     sec.innerHTML=
       '<div class="bf-bizarre-arch"></div>'+
+      '<div class="bf-bizarre-eye">👁</div>'+
       '<div class="bf-bizarre-torch l"></div>'+
       '<div class="bf-bizarre-torch r"></div>'+
+      '<div class="bf-bizarre-duck d1">🦆</div>'+
+      '<div class="bf-bizarre-duck d2">🦆</div>'+
+      '<div class="bf-bizarre-duck d3">🦆</div>'+
+      '<div class="bf-bizarre-tentacle t1">🐙</div>'+
+      '<div class="bf-bizarre-tentacle t2">🐙</div>'+
       '<div class="bf-bizarre-rune" style="top:28%;left:16%">⛧</div>'+
       '<div class="bf-bizarre-rune" style="top:22%;right:18%;animation-delay:1s">✦</div>'+
       '<div class="bf-bizarre-rune" style="bottom:32%;left:22%;animation-delay:.5s">⚜</div>'+
