@@ -461,6 +461,59 @@ export const MOTIONS = [
       '<div class="bf-aa-vortex" style="width:30vmin;height:30vmin;animation-delay:.1s"></div><div class="bf-aa-vortex" style="width:46vmin;height:46vmin;animation-delay:.4s"></div><div class="bf-aa-vortex" style="width:62vmin;height:62vmin;animation-delay:.7s"></div>' +
       '<span class="bf-aa-debris2" style="left:46%;bottom:16%;--a:0deg;animation-delay:.2s"></span><span class="bf-aa-debris2" style="left:52%;bottom:14%;--a:90deg;animation-delay:.45s"></span><span class="bf-aa-debris2" style="left:48%;bottom:18%;--a:180deg;animation-delay:.7s"></span><span class="bf-aa-debris2" style="left:54%;bottom:12%;--a:270deg;animation-delay:.95s"></span><span class="bf-aa-debris2" style="left:44%;bottom:20%;--a:45deg;animation-delay:1.2s"></span>',
   },
+  // KAMIKAZE: bandazos locos y erráticos por toda la pantalla, zigzagueando
+  // sin control antes de estrellarse contra el centro. Estelas caóticas,
+  // chispas y ondas de impacto en cada giro brusco.
+  {
+    id: 'kamikaze',
+    keywords: ['kamikaze', 'bandazos', 'bandazo', 'loco', 'alocado', 'descontrolado', 'zigzag loco', 'caos total', 'estrellarse', 'estrellar', 'suicida', 'bomba', 'explosión', 'explosion', 'boomer loco', 'torpedo', 'misil', 'proyectil loco', 'bola loca', 'pinball', 'flipper'],
+    anim: 'bfAaKamikaze',
+    keyframes:
+      '@keyframes bfAaKamikaze{0%{transform:translate(-60vw,-30vh) scale(.3) rotate(-30deg);opacity:0}8%{opacity:1}14%{transform:translate(38vw,-22vh) scale(.5) rotate(45deg)}22%{transform:translate(44vw,20vh) scale(.65) rotate(-60deg)}30%{transform:translate(-30vw,28vh) scale(.75) rotate(70deg)}38%{transform:translate(-42vw,-18vh) scale(.85) rotate(-50deg)}46%{transform:translate(28vw,-26vh) scale(.9) rotate(55deg)}54%{transform:translate(36vw,14vh) scale(.95) rotate(-40deg)}62%{transform:translate(-22vw,22vh) scale(1) rotate(35deg)}70%{transform:translate(-14vw,-12vh) scale(1.05) rotate(-25deg)}78%{transform:translate(10vw,8vh) scale(1.1) rotate(15deg)}86%{transform:translate(-4vw,-4vh) scale(1.15) rotate(-8deg)}100%{transform:translate(0,-6vh) scale(1.25) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-wild{position:absolute;height:4px;width:22vw;background:linear-gradient(90deg,transparent,var(--aa-color,#fff),transparent);border-radius:4px;filter:drop-shadow(0 0 10px var(--aa-glow,#fff));opacity:0;animation:bfAaWild .7s ease-out forwards}' +
+      '@keyframes bfAaWild{0%{opacity:0;transform:translate(var(--fromx,-30vw),var(--fromy,0)) rotate(var(--rot,0deg)) scaleX(.2)}35%{opacity:.9}100%{opacity:0;transform:translate(var(--tox,30vw),var(--toy,0)) rotate(var(--rot,0deg)) scaleX(1.3)}}' +
+      '.bf-aa-bonk{position:absolute;top:50%;left:50%;width:30vmin;height:30vmin;margin:-15vmin 0 0 -15vmin;border-radius:50%;border:4px solid var(--aa-color,#fff);box-shadow:0 0 20px var(--aa-glow,#fff);opacity:0;animation:bfAaBonk .5s ease-out forwards}' +
+      '@keyframes bfAaBonk{0%{opacity:0;transform:scale(.2)}40%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.6)}}' +
+      '.bf-aa-spark5{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 12px #ffd24a,0 0 20px #ff6a14;opacity:0;animation:bfAaSpark5 .7s ease-out forwards}' +
+      '@keyframes bfAaSpark5{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,0px)) scale(1.5)}}',
+    fxTag:
+      '<div class="bf-aa-wild" style="top:20%;--fromx:-40vw;--fromy:0;--tox:40vw;--toy:0;--rot:-15deg;animation-delay:.1s"></div><div class="bf-aa-wild" style="top:72%;--fromx:40vw;--fromy:0;--tox:-40vw;--toy:0;--rot:15deg;animation-delay:.3s"></div><div class="bf-aa-wild" style="top:44%;--fromx:-30vw;--fromy:0;--tox:34vw;--toy:0;--rot:8deg;animation-delay:.5s"></div><div class="bf-aa-wild" style="top:56%;--fromx:30vw;--fromy:0;--tox:-34vw;--toy:0;--rot:-8deg;animation-delay:.7s"></div>' +
+      '<div class="bf-aa-bonk" style="left:22%;top:24%;animation-delay:.14s"></div><div class="bf-aa-bonk" style="left:76%;top:28%;animation-delay:.22s"></div><div class="bf-aa-bonk" style="left:78%;top:70%;animation-delay:.38s"></div><div class="bf-aa-bonk" style="left:18%;top:72%;animation-delay:.46s"></div><div class="bf-aa-bonk" style="left:50%;top:50%;animation-delay:.86s"></div>' +
+      '<span class="bf-aa-spark5" style="left:22%;top:24%;--dx:-30px;--dy:-40px;animation-delay:.14s"></span><span class="bf-aa-spark5" style="left:76%;top:28%;--dx:40px;--dy:-30px;animation-delay:.22s"></span><span class="bf-aa-spark5" style="left:78%;top:70%;--dx:50px;--dy:35px;animation-delay:.38s"></span><span class="bf-aa-spark5" style="left:18%;top:72%;--dx:-45px;--dy:40px;animation-delay:.46s"></span><span class="bf-aa-spark5" style="left:50%;top:50%;--dx:-60px;--dy:-50px;animation-delay:.86s"></span><span class="bf-aa-spark5" style="left:50%;top:50%;--dx:55px;--dy:45px;animation-delay:.9s"></span>',
+  },
+  // ZOOM IN: aparece en pequeño y crece poco a poco hasta su tamaño final.
+  {
+    id: 'zoom_in',
+    keywords: ['zoom in', 'zoom-in', 'crecer', 'agrandar', 'ampliar', 'de pequeño a grande', 'de chico a grande', 'acercarse', 'enfocar', 'lupa crecer', 'engrandar'],
+    anim: 'bfAaZoomIn',
+    keyframes:
+      '@keyframes bfAaZoomIn{0%{transform:scale(.05) translateY(0);opacity:0}15%{opacity:1;transform:scale(.15) translateY(2vh)}30%{transform:scale(.3) translateY(0)}45%{transform:scale(.5) translateY(-1vh)}60%{transform:scale(.75) translateY(0)}75%{transform:scale(1) translateY(-2vh)}90%{transform:scale(1.15) translateY(-4vh)}100%{transform:scale(1.25) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-zring{position:absolute;top:50%;left:50%;border-radius:50%;border:3px solid var(--aa-color,#fff);box-shadow:0 0 18px var(--aa-glow,#fff);opacity:0;animation:bfAaZRing 2.4s ease-out forwards}' +
+      '@keyframes bfAaZRing{0%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}30%{opacity:.7}100%{opacity:0;transform:translate(-50%,-50%) scale(.3)}}' +
+      '.bf-aa-zmote{position:absolute;top:50%;left:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--aa-color,#fff);box-shadow:0 0 12px var(--aa-glow,#fff);opacity:0;animation:bfAaZMote 2s ease-out forwards}' +
+      '@keyframes bfAaZMote{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:.9;transform:translate(var(--dx,0px),var(--dy,0px)) scale(1)}100%{opacity:0;transform:translate(0,0) scale(.4)}}',
+    fxTag:
+      '<div class="bf-aa-zring" style="width:60vmin;height:60vmin;animation-delay:.1s"></div><div class="bf-aa-zring" style="width:44vmin;height:44vmin;animation-delay:.5s"></div><div class="bf-aa-zring" style="width:28vmin;height:28vmin;animation-delay:1s"></div>' +
+      '<span class="bf-aa-zmote" style="--dx:30px;--dy:-20px;animation-delay:.3s"></span><span class="bf-aa-zmote" style="--dx:-25px;--dy:25px;animation-delay:.6s"></span><span class="bf-aa-zmote" style="--dx:35px;--dy:30px;animation-delay:.9s"></span><span class="bf-aa-zmote" style="--dx:-30px;--dy:-25px;animation-delay:1.2s"></span>',
+  },
+  // ZOOM OUT: aparece en grande y se encoge poco a poco hasta su tamaño final.
+  {
+    id: 'zoom_out',
+    keywords: ['zoom out', 'zoom-out', 'encoger', 'de grande a pequeño', 'de grande a chico', 'alejar', 'reducir', 'miniaturizar', 'empequeñecer'],
+    anim: 'bfAaZoomOut',
+    keyframes:
+      '@keyframes bfAaZoomOut{0%{transform:scale(2.6) translateY(0);opacity:0}15%{opacity:1;transform:scale(2.2) translateY(2vh)}30%{transform:scale(1.8) translateY(0)}45%{transform:scale(1.4) translateY(-1vh)}60%{transform:scale(1.1) translateY(0)}75%{transform:scale(.95) translateY(-2vh)}90%{transform:scale(1.1) translateY(-4vh)}100%{transform:scale(1.25) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-zring2{position:absolute;top:50%;left:50%;border-radius:50%;border:3px solid var(--aa-color,#fff);box-shadow:0 0 18px var(--aa-glow,#fff);opacity:0;animation:bfAaZRing2 2.4s ease-out forwards}' +
+      '@keyframes bfAaZRing2{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}30%{opacity:.7}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}' +
+      '.bf-aa-zmote2{position:absolute;top:50%;left:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--aa-color,#fff);box-shadow:0 0 12px var(--aa-glow,#fff);opacity:0;animation:bfAaZMote2 2s ease-out forwards}' +
+      '@keyframes bfAaZMote2{0%{opacity:0;transform:translate(0,0) scale(1)}25%{opacity:.9;transform:translate(var(--dx,0px),var(--dy,0px)) scale(.5)}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,0px)) scale(.2)}}',
+    fxTag:
+      '<div class="bf-aa-zring2" style="width:28vmin;height:28vmin;animation-delay:.1s"></div><div class="bf-aa-zring2" style="width:44vmin;height:44vmin;animation-delay:.5s"></div><div class="bf-aa-zring2" style="width:60vmin;height:60vmin;animation-delay:1s"></div>' +
+      '<span class="bf-aa-zmote2" style="--dx:30px;--dy:-20px;animation-delay:.3s"></span><span class="bf-aa-zmote2" style="--dx:-25px;--dy:25px;animation-delay:.6s"></span><span class="bf-aa-zmote2" style="--dx:35px;--dy:30px;animation-delay:.9s"></span><span class="bf-aa-zmote2" style="--dx:-30px;--dy:-25px;animation-delay:1.2s"></span>',
+  },
   // MONTAR VEHÍCULO / montura: entra a toda velocidad desde un lateral,
   // derrapa al frenar y se planta. Humo, chispas del suelo, estelas de
   // velocidad y polvo. Cubre cualquier vehículo o montura (caballo, moto,
@@ -518,6 +571,9 @@ export const MOTION_LABELS = {
   roam: '💨 Recorrer toda la pantalla',
   tornado: '🌪️ Tornado ascendente',
   teleport: '👻 Teletransporte / parpadeo',
+  kamikaze: '😵 Bandazos kamikaze locos',
+  zoom_in: '🔍 Zoom: de pequeño a grande',
+  zoom_out: '🔭 Zoom: de grande a pequeño',
   ride: '🏁 Montar vehículo / montura',
   heroic: '💥 Salto y aterrizaje épico',
   bicycle: '⚽ Chilena / remate',
