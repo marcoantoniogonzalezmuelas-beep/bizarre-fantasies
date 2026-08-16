@@ -25,7 +25,7 @@ export default function HomeSecondaryLinks({ style }) {
   const [rules, races] = ITEMS;
   return (
     <>
-      <div className="absolute z-20 pointer-events-auto" style={{ top: 16, left: 16 }}>
+      <div className="absolute z-20 pointer-events-auto" style={{ top: 46, left: 16 }}>
         <Card {...rules} narrow />
       </div>
       <div className="absolute z-20 pointer-events-auto" style={style}>
