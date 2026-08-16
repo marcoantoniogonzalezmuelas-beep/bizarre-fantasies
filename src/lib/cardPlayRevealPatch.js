@@ -68,7 +68,7 @@ export const CARD_PLAY_REVEAL_PATCH = `
       (info.text?'<div class="bf-reveal-txt">'+String(info.text)+'</div>':'')+
       '<div class="bf-reveal-name">'+String(ev.name)+'</div>';
     wrap.appendChild(card);
-    document.body.appendChild(wrap);
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(wrap);
     setTimeout(function(){if(wrap.parentNode)wrap.parentNode.removeChild(wrap);},5050);
   }
   window.__bfShowCardReveal=showReveal;

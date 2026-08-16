@@ -47,14 +47,14 @@ export const SPELL_FX_PATCH = `
 
   function centerOf(side,id){ var el=document.getElementById('b_'+side+'_'+id); if(!el)return null; var r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
   function panelRect(side,id){ var el=document.getElementById('b_'+side+'_'+id); if(!el)return null; var p=el.closest('.army-panel'); if(!p)return null; return p.getBoundingClientRect(); }
-  function spawn(node,ms){ document.body.appendChild(node); setTimeout(function(){ if(node&&node.parentNode)node.parentNode.removeChild(node); },ms||1300); }
+  function spawn(node,ms){ (window.__bfAppend||function(n){document.body.appendChild(n);})(node); setTimeout(function(){ if(node&&node.parentNode)node.parentNode.removeChild(node); },ms||1300); }
 
   function fxWater(side,id){
     var r=panelRect(side,id); if(!r)return;
     var ov=document.createElement('div'); ov.className='bf-wave-overlay';
     ov.style.left=r.left+'px'; ov.style.top=r.top+'px'; ov.style.width=r.width+'px'; ov.style.height=r.height+'px';
     ov.innerHTML='<div class="bf-wave w1"></div><div class="bf-wave w2"></div><div class="bf-wave w3"></div>';
-    document.body.appendChild(ov);
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     for(var i=0;i<8;i++){ var s=document.createElement('div'); s.className='bf-splash'; s.style.left=(Math.random()*r.width)+'px'; s.style.top=(r.height*0.5+Math.random()*r.height*0.4)+'px'; s.style.animationDelay=(Math.random()*0.4)+'s'; ov.appendChild(s); }
     setTimeout(function(){ if(ov.parentNode)ov.parentNode.removeChild(ov); },2400);
   }

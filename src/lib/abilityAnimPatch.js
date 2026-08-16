@@ -241,7 +241,7 @@ export const ABILITY_ANIM_PATCH = `
     html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
-    document.body.appendChild(ov);
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
     setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},5000);
   }

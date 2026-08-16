@@ -60,10 +60,21 @@ export const MOBILE_PINCH_PATCH = `
     apply();
   }
 
+  // Clamp del desplazamiento: permite mover el contenido zoomed dentro del
+  // viewport sin que quede hueco negro. Con zoom z>1, el contenido es más
+  // grande que la pantalla, así que hay margen de paneo (W*z - W) en cada eje.
+  // El margen se reparte entre los dos lados (no todo a la izquierda) para que
+  // el usuario pueda moverse a izquierda Y derecha por igual.
   function clampT(){
     var W = window.innerWidth, H = window.innerHeight;
-    tx = Math.min(0, Math.max(W - W * z, tx));
-    ty = Math.min(0, Math.max(H - H * z, ty));
+    var marginX = W * z - W; // espacio extra por el zoom (>=0)
+    var marginY = H * z - H;
+    // Sin zoom (z=1): margen 0, tx y ty deben ser 0.
+    // Con zoom: tx puede ir de -marginX a 0, ty de -marginY a 0.
+    if (marginX <= 0) tx = 0;
+    else tx = Math.min(0, Math.max(-marginX, tx));
+    if (marginY <= 0) ty = 0;
+    else ty = Math.min(0, Math.max(-marginY, ty));
   }
 
   function dist(t){ var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.hypot(dx, dy); }
@@ -173,6 +184,9 @@ export const MOBILE_PINCH_PATCH = `
   };
   window.__bfPinchZ = function(){ return z; };
   window.__bfPinchBusy = function(){ return !!pinch; };
+  // Expone el estado completo del zoom para que otros parches (FX, cinemáticas)
+  // puedan saber si hay zoom activo y ajustar su comportamiento.
+  window.__bfPinchState = function(){ return { z: z, tx: tx, ty: ty }; };
 
   // Reencuadra al abrir cualquier modal (.mo): con el body transformado, los
   // position:fixed se posicionan respecto al body escalado y quedan fuera.

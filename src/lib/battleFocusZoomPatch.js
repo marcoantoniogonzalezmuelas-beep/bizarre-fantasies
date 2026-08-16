@@ -4,13 +4,21 @@
 // NO cambia el nivel de zoom: se respeta el acercamiento/alejamiento que el
 // jugador haya puesto con el pellizco; solo se corrige el desplazamiento
 // vertical (y el scroll) para que nada quede fuera por arriba.
+//
+// IMPORTANTE: los FX de hechizos/ataques YA NO fuerzan el reencuadre. Antes,
+// cada hechizo llamaba a toTop() y eso saltaba el scroll del usuario a ty=0
+// aunque hubiera pellizcado para acercarse a la acción: la pantalla se
+// "descuadraba" y aparecía una zona negra. Ahora solo se reencuadra al
+// CAMBIAR DE TURNO (y solo si el usuario no está pellizcando ni tiene zoom
+// manual activo), para que las animaciones de hechizos respeten la posición
+// del jugador.
 export const BATTLE_FOCUS_ZOOM_PATCH = `
 <script>
 (function(){
   if(window.__bfFocusZoom)return;
   window.__bfFocusZoom=true;
 
-  var MANUAL_PAUSE=2500; // ms de respeto tras un pellizco manual
+  var MANUAL_PAUSE=4000; // ms de respeto tras un pellizco manual
   var lastManual=0,lastTop=0;
 
   document.addEventListener('touchstart',function(e){
@@ -22,12 +30,22 @@ export const BATTLE_FOCUS_ZOOM_PATCH = `
     return !!(a&&a.id==='s-battle');
   }
 
+  // Solo reencuadra si NO hay zoom manual activo. Si el usuario pellizcó para
+  // acercarse (z>1), respetamos su posición y no saltamos el scroll.
+  function userHasZoom(){
+    try{
+      if(typeof window.__bfPinchZ==='function')return window.__bfPinchZ()>1.02;
+    }catch(e){}
+    return false;
+  }
+
   function toTop(){
     if(typeof window.__bfPinchTop!=='function')return;
     if(!inBattle())return;
     var now=Date.now();
     if(now-lastManual<MANUAL_PAUSE)return;
     if(window.__bfPinchBusy&&window.__bfPinchBusy())return;
+    if(userHasZoom())return; // no mover si el usuario tiene zoom manual
     if(document.querySelector('#modalRoot .mo'))return; // no mover con un modal abierto
     if(now-lastTop<800)return;
     lastTop=now;
@@ -36,6 +54,7 @@ export const BATTLE_FOCUS_ZOOM_PATCH = `
   window.__bfBattleTop=toTop;
 
   // Turno activo: cada vez que le toca a otro héroe, la vista sube arriba.
+  // Solo si el usuario no tiene zoom manual (respeta su pellizco).
   var lastTurn='';
   function scanTurn(){
     try{
@@ -47,20 +66,13 @@ export const BATTLE_FOCUS_ZOOM_PATCH = `
     }catch(e){}
   }
 
-  // Efectos (ataques, hechizos, habilidades): asegura que la acción se vea.
-  function hookFx(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfFocusZoom)return false;
-    var orig=window.flushFx;
-    window.flushFx=function(list){
-      try{ if(list&&list.length)toTop(); }catch(e){}
-      return orig.apply(this,arguments);
-    };
-    window.flushFx.__bfFocusZoom=1;
-    return true;
-  }
+  // Los FX (ataques, hechizos, habilidades) YA NO fuerzan toTop: antes esto
+  // saltaba el scroll a ty=0 en cada hechizo y descuadraba la pantalla del
+  // usuario que había pellizcado para acercarse a la acción. Las animaciones
+  // ahora respetan la posición del jugador. El hook se mantiene vacío para
+  // no romper la cadena de flushFx de otros parches que esperan este envoltorio.
 
   setInterval(scanTurn,250);
-  var tries=0,t=setInterval(function(){ if(hookFx()||tries++>200)clearInterval(t); },200);
 })();
 </script>
 `;

@@ -30,7 +30,7 @@ export const SHIELD_FX_PATCH = `
   document.head.appendChild(st);
 
   function centerOf(side,id){ var el=document.getElementById('b_'+side+'_'+id); if(!el)return null; var r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
-  function spawn(node,ms){ document.body.appendChild(node); setTimeout(function(){ if(node&&node.parentNode)node.parentNode.removeChild(node); },ms||1000); }
+  function spawn(node,ms){ (window.__bfAppend||function(n){document.body.appendChild(n);})(node); setTimeout(function(){ if(node&&node.parentNode)node.parentNode.removeChild(node); },ms||1000); }
 
   function shieldFx(ev){
     var el=document.getElementById('b_'+ev.toSide+'_'+ev.toId); if(!el)return;

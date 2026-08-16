@@ -162,7 +162,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     html+='<img class="bf-sc-img" src="'+(cu&&cu!=='orig'?cu:src)+'" alt="">';
     html+='<div class="bf-sc-ttl">'+(kind==='phoenix_ave'?'¡EL AVE FÉNIX RESUCITA!':(kind==='phoenix'?'¡RENACE EL FÉNIX!':(kind==='duck'?'¡KILLERDUCKS AL ATAQUE!':(kind==='tank'?'¡TANQUE EN POSICIÓN!':'¡TRANSFORMACIÓN!'))))+'</div>';
     ov.innerHTML=html;
-    document.body.appendChild(ov);
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     setTimeout(function(){ov.classList.add('bf-sc-out');},2700);
     setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);document.body.classList.remove('bf-card-cine');},3150);
   }

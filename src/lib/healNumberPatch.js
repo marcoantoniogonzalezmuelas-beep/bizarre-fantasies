@@ -43,8 +43,8 @@ export const HEAL_NUMBER_PATCH = `
     n.style.left = (r.left + r.width / 2) + 'px';
     n.style.top = (r.top + r.height * 0.42) + 'px';
     n.innerHTML = '+' + amt + ' <small>HP</small>';
-    document.body.appendChild(glow);
-    document.body.appendChild(n);
+    (window.__bfAppend||function(x){document.body.appendChild(x);})(glow);
+    (window.__bfAppend||function(x){document.body.appendChild(x);})(n);
     setTimeout(function(){ if(glow.parentNode) glow.parentNode.removeChild(glow); }, 1500);
     setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 2350);
   }

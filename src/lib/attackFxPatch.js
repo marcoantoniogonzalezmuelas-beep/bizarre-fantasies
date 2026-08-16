@@ -64,7 +64,8 @@ export const ATTACK_FX_PATCH = `
 
   function centerOf(side,id){ var el=document.getElementById('b_'+side+'_'+id); if(!el)return null; var r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
   function getAttacker(side,id){ try{ return (typeof getHero==='function')?getHero(side,id):null; }catch(e){ return null; } }
-  function spawn(node,ms){ document.body.appendChild(node); setTimeout(function(){ if(node&&node.parentNode)node.parentNode.removeChild(node); },ms||800); }
+  var bfAppend=function(n){ (window.__bfAppend||function(x){bfAppend(x);})(n); };
+  function spawn(node,ms){ bfAppend(node); setTimeout(function(){ if(node&&node.parentNode)node.parentNode.removeChild(node); },ms||800); }
   function angle(a,b){ return Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI; }
   function dist(a,b){ return Math.hypot(b.x-a.x,b.y-a.y); }
 
@@ -78,11 +79,11 @@ export const ATTACK_FX_PATCH = `
     if(arc){ kf.push({left:((a.x+b.x)/2)+'px',top:((a.y+b.y)/2-60)+'px',opacity:1}); }
     kf.push({left:b.x+'px',top:b.y+'px',opacity:1});
     p.animate(kf,{duration:ms,easing:arc?'ease-in':'linear',fill:'forwards'});
-    document.body.appendChild(p);
+    bfAppend(p);
     setTimeout(function(){ if(p.parentNode)p.parentNode.removeChild(p); },ms+50);
   }
   function trail(cls,a,b,ms,count){
-    for(var i=0;i<count;i++){ (function(i){ setTimeout(function(){ var t=document.createElement('div'); t.className='bf-afx '+cls; var f=(i+1)/count; t.style.left=(a.x+(b.x-a.x)*f)+'px'; t.style.top=(a.y+(b.y-a.y)*f)+'px'; t.animate([{opacity:.8},{opacity:0}],{duration:320,fill:'forwards'}); document.body.appendChild(t); setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },340); }, ms*(i/count)); })(i); }
+    for(var i=0;i<count;i++){ (function(i){ setTimeout(function(){ var t=document.createElement('div'); t.className='bf-afx '+cls; var f=(i+1)/count; t.style.left=(a.x+(b.x-a.x)*f)+'px'; t.style.top=(a.y+(b.y-a.y)*f)+'px'; t.animate([{opacity:.8},{opacity:0}],{duration:320,fill:'forwards'}); bfAppend(t); setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },340); }, ms*(i/count)); })(i); }
   }
   function muzzle(a){ var m=document.createElement('div'); m.className='bf-afx bf-muzzle'; m.style.left=a.x+'px'; m.style.top=a.y+'px'; spawn(m,260); }
   function impactSparks(b,n,col){ for(var i=0;i<n;i++){ var s=document.createElement('div'); s.className='bf-afx bf-spark'; if(col){s.style.background=col;s.style.boxShadow='0 0 6px '+col;} s.style.left=b.x+'px'; s.style.top=b.y+'px'; var ang=Math.random()*Math.PI*2, d=50+Math.random()*85; s.animate([{transform:'translate(-50%,-50%)',opacity:1},{transform:'translate(calc(-50% + '+(Math.cos(ang)*d)+'px),calc(-50% + '+(Math.sin(ang)*d)+'px))',opacity:0}],{duration:1620,easing:'ease-out',fill:'forwards'}); spawn(s,1640); } }
@@ -133,7 +134,7 @@ export const ATTACK_FX_PATCH = `
       {opacity:1,transform:'translate(-50%,-50%) '+base,offset:.55},
       {opacity:0,transform:'translate(-50%,-50%) '+base+' scale(.85)'}
     ],{duration:1950,easing:'ease-out',fill:'forwards'});
-    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },1980);
+    bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },1980);
     return true;
   }
   // Arma cuerpo a cuerpo: viaja del atacante al objetivo describiendo un tajo
@@ -151,7 +152,7 @@ export const ATTACK_FX_PATCH = `
       {left:mx+'px',top:my+'px',opacity:1,transform:'translate(-50%,-80%) rotate('+(55*t)+'deg)'+flip,offset:.72},
       {left:mx+'px',top:my+'px',opacity:0,transform:'translate(-50%,-80%) rotate('+(62*t)+'deg)'+flip}
     ],{duration:1430,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
-    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },1460);
+    bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },1460);
     return true;
   }
   function weaponShow(a,b,wname,kind){
@@ -168,7 +169,7 @@ export const ATTACK_FX_PATCH = `
       {opacity:1,transform:'translate(-50%,-50%) scale(1) rotate('+(-6*t)+'deg)',offset:.62},
       {opacity:0,transform:'translate(-50%,-50%) scale(.8) rotate(0deg)'}
     ],{duration:1760,easing:'ease-out',fill:'forwards'});
-    document.body.appendChild(w); setTimeout(function(){ if(w.parentNode)w.parentNode.removeChild(w); },1790);
+    bfAppend(w); setTimeout(function(){ if(w.parentNode)w.parentNode.removeChild(w); },1790);
   }
   function speedLines(a){ var l=document.createElement('div'); l.className='bf-afx bf-lines'; l.style.left=a.x+'px'; l.style.top=a.y+'px'; spawn(l,1470); }
   function hitStar(b){ var s=document.createElement('div'); s.className='bf-afx bf-hitstar'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1440); }
@@ -221,7 +222,7 @@ export const ATTACK_FX_PATCH = `
       {opacity:1,transform:'translate(-50%,-58%) scale(1.05) rotate(0deg)',offset:.72},
       {opacity:0,transform:'translate(-50%,-70%) scale(1.25)'}
     ],{duration:ms,easing:'ease-out',fill:'forwards'});
-    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },ms+40);
+    bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },ms+40);
     return true;
   }
   // Sprite que vuela girando hasta el objetivo (hechizos ofensivos).
@@ -237,7 +238,7 @@ export const ATTACK_FX_PATCH = `
       {left:b.x+'px',top:b.y+'px',opacity:1,transform:'translate(-50%,-50%) scale(1.2) rotate(10deg)',offset:.88},
       {left:b.x+'px',top:b.y+'px',opacity:0,transform:'translate(-50%,-50%) scale(1.5) rotate(14deg)'}
     ],{duration:ms,easing:'ease-in',fill:'forwards'});
-    document.body.appendChild(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },ms+40);
+    bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },ms+40);
     return true;
   }
   // Ayudantes compartidos con los demás parches (hechizos, habilidades, objetos).
@@ -259,7 +260,7 @@ export const ATTACK_FX_PATCH = `
     else if(kind==='bullet'){ setTimeout(function(){ muzzle(a); for(var i=0;i<hits;i++){ (function(i){ setTimeout(function(){ shoot('bf-tracer',a,b,480,false); setTimeout(function(){ impact(function(){ impactSparks(b,7,'#ffe14a'); }); },480); }, i*300); })(i); } },L); }
     else if(kind==='cannon'){ setTimeout(function(){ shoot('bf-ball',a,b,1640,false); trail('bf-smoke-trail',a,b,1640,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-boom',null); impactSparks(b,10,'#ff8a2a'); }); },1640); },L); }
     else if(kind==='plasma'){ setTimeout(function(){ shoot('bf-plasma-orb',a,b,1560,false); trail('bf-plasma-trail',a,b,1560,6); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); }); },1560); },L); }
-    else if(kind==='photon'){ setTimeout(function(){ var d=dist(a,b),ang=angle(a,b); var be=document.createElement('div'); be.className='bf-afx bf-beam'; be.style.left=a.x+'px'; be.style.top=a.y+'px'; be.style.width=d+'px'; be.style.transform='rotate('+ang+'deg)'; be.style.transformOrigin='0 50%'; be.animate([{opacity:0},{opacity:1,offset:.2},{opacity:0}],{duration:1380,fill:'forwards'}); document.body.appendChild(be); spawn(be,1400); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); impactSparks(b,8,'#7ad6ff'); }); },400); },L); }
+    else if(kind==='photon'){ setTimeout(function(){ var d=dist(a,b),ang=angle(a,b); var be=document.createElement('div'); be.className='bf-afx bf-beam'; be.style.left=a.x+'px'; be.style.top=a.y+'px'; be.style.width=d+'px'; be.style.transform='rotate('+ang+'deg)'; be.style.transformOrigin='0 50%'; be.animate([{opacity:0},{opacity:1,offset:.2},{opacity:0}],{duration:1380,fill:'forwards'}); bfAppend(be); spawn(be,1400); setTimeout(function(){ impact(function(){ boomAt(b,'bf-plasma-boom','rgba(90,200,255,.9)'); impactSparks(b,8,'#7ad6ff'); }); },400); },L); }
     else { setTimeout(function(){ shoot('bf-arrow2',a,b,1460,false); setTimeout(function(){ impact(function(){ impactSparks(b,6,'#6fd98a'); }); },1460); },L); }
   }
 
