@@ -18,8 +18,9 @@ export const TABLE_MAT_PATCH = `
   var MAT = '${TABLE_MAT_URL}';
 
   var css = '' +
-  // Mano del jugador en batalla: el contenedor que rodea las cartas.
-  '#s-battle .hand-zone, #s-battle .hand, #s-battle .bf-hand-zone {' +
+  // Mano del jugador en batalla: el panel completo (mismo recuadro que la
+  // mano del rival, .hand-under-action), no solo el contenedor de los chips.
+  '#s-battle .hand-under-action, #s-battle .hand-zone, #s-battle .hand, #s-battle .bf-hand-zone {' +
     'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
     'border-radius:10px; border:1.5px solid rgba(255,210,74,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
@@ -79,17 +80,17 @@ export const TABLE_MAT_PATCH = `
   // JS de respaldo: encuentra los contenedores padre de las cartas y les pone
   // el tapete si el CSS por selector no los alcanzó.
   function applyToContainers() {
-    // Mano del jugador: padre de los chips (que no sea mano del rival).
-    document.querySelectorAll('#s-battle .chip.bf-chip-card').forEach(function(chip){
-      var parent = chip.parentElement;
-      if(!parent || parent.dataset.bfMat) return;
-      if(parent.closest('.hand-rival')) return;
-      parent.dataset.bfMat = '1';
-      parent.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
-      parent.style.borderRadius = '10px';
-      parent.style.border = '1.5px solid rgba(255,210,74,.3)';
-      parent.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
-      parent.style.padding = '5px';
+    // Mano del jugador: el PANEL COMPLETO (.hand-under-action), igual que la
+    // mano del rival. Antes se pintaba solo el contenedor interior de los
+    // chips y el tapete no llenaba todo el recuadro.
+    document.querySelectorAll('#s-battle .hand-under-action:not(.hand-rival)').forEach(function(h){
+      if(h.dataset.bfMat) return;
+      h.dataset.bfMat = '1';
+      h.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
+      h.style.borderRadius = '10px';
+      h.style.border = '1.5px solid rgba(255,210,74,.3)';
+      h.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
+      h.style.padding = '5px';
     });
     // Mano del rival.
     document.querySelectorAll('#s-battle .hand-rival').forEach(function(h){
