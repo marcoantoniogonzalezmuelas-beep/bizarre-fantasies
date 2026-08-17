@@ -42,9 +42,29 @@ export const RIVAL_HAND_BACK_PATCH = `
       chip.style.setProperty('background-color', '#120a1e', 'important');
     });
   }
-  setInterval(forceBack, 300);
-  var _bfRb=0;
-  new MutationObserver(function(){ var n=Date.now(); if(n-_bfRb<200)return; _bfRb=n; requestAnimationFrame(forceBack); }).observe(document.documentElement, { childList: true, subtree: true });
+  // Precarga del reverso: ya está en caché al entrar en batalla.
+  var _pre = new Image(); _pre.src = BACK_URL;
+
+  // Igual que los retratos de los héroes: se aplica dentro del propio bucle de
+  // render del juego (renderBattle / renderHand), en el mismo frame en que se
+  // dibuja la mano del rival. Se elimina el MutationObserver global, que
+  // repintaba con cualquier cambio del DOM y provocaba el parpadeo inicial.
+  function hookRender(name){
+    if(typeof window[name] !== 'function' || window[name].__bfRivalBack) return false;
+    var orig = window[name];
+    window[name] = function(){
+      var r = orig.apply(this, arguments);
+      try{ forceBack(); }catch(e){}
+      return r;
+    };
+    window[name].__bfRivalBack = 1;
+    return true;
+  }
+  function hookAll(){ var a = hookRender('renderBattle'), b = hookRender('renderHand'); return a && b; }
+  var tries = 0, hk = setInterval(function(){ if(hookAll() || tries++ > 150) clearInterval(hk); }, 120);
+  hookAll();
+
+  setInterval(forceBack, 600);
 })();
 </script>
 `;

@@ -131,6 +131,28 @@ export const TABLE_MAT_PATCH = `
     brightenCantPlay();
   }
 
+  // Precarga del tapete: al entrar en batalla ya está en caché, así que las
+  // zonas de mano se pintan de golpe con su fondo (antes entraba después).
+  var _pre = new Image(); _pre.src = MAT;
+
+  // Igual que los retratos de los héroes: se engancha al bucle de render del
+  // juego (renderBattle / renderHand) para aplicar el tapete en el MISMO frame
+  // en que se dibujan las manos. Así no se ve el repintado inicial.
+  function hookRender(name){
+    if(typeof window[name] !== 'function' || window[name].__bfMat) return false;
+    var orig = window[name];
+    window[name] = function(){
+      var r = orig.apply(this, arguments);
+      try{ applyToContainers(); }catch(e){}
+      return r;
+    };
+    window[name].__bfMat = 1;
+    return true;
+  }
+  function hookAll(){ var a = hookRender('renderBattle'), b = hookRender('renderHand'); return a && b; }
+  var tries = 0, hk = setInterval(function(){ if(hookAll() || tries++ > 150) clearInterval(hk); }, 120);
+  hookAll();
+
   applyToContainers();
   setInterval(applyToContainers, 600);
 })();
