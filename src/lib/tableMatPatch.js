@@ -55,30 +55,31 @@ export const TABLE_MAT_PATCH = `
     'border:1.5px solid rgba(255,210,74,.55) !important;' +
   '}' +
   // Cartas de hechizo/objeto que no se pueden jugar por falta de maná: el
-  // juego las oscurece con opacity/filter. Aquí les damos luz mínima para que
-  // el jugador siempre pueda ver qué carta es. Se aplica a .chip-spell y
-  // .chip-object cuando tienen style inline de opacity baja o filter brightness.
+  // juego las oscurece con opacity/filter. Aquí las marcamos en GRIS (escala de
+  // grises + opacidad reducida) para indicar claramente que no se pueden jugar,
+  // manteniéndolas visibles para que el jugador sepa qué carta es.
   '.chip.bf-chip-card[style*="opacity"], .chip-spell[style*="opacity"], .chip-object[style*="opacity"] {' +
-    'opacity:0.85 !important;' +
+    'opacity:0.5 !important; filter:grayscale(1) !important;' +
   '}' +
   '.chip.bf-chip-card[style*="brightness"], .chip-spell[style*="brightness"], .chip-object[style*="brightness"] {' +
-    'filter:brightness(0.8) !important;' +
+    'filter:grayscale(1) brightness(0.55) !important;' +
   '}' +
   '';
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
 
-  // JS: aclarea las cartas de hechizo/objeto que el juego ha oscurecido por
-  // falta de maná. El juego les pone opacity baja o filter brightness bajo
-  // inline. Aquí las subimos a un mínimo visible.
+  // JS: marca en gris las cartas de hechizo/objeto que el juego ha oscurecido
+  // por falta de maná. El juego les pone opacity baja o filter brightness bajo
+  // inline. Aquí las pasamos a escala de grises + opacidad reducida para
+  // indicar claramente que no se pueden jugar.
   function brightenCantPlay() {
     document.querySelectorAll('#s-battle .chip-spell, #s-battle .chip-object, #s-battle .chip.bf-chip-card').forEach(function(chip){
       var op = parseFloat(chip.style.opacity || '1');
       var f = chip.style.filter || '';
       // Si el juego la ha oscurecido mucho (opacity < 0.5 o brightness < 0.5)
-      if(op < 0.5) chip.style.setProperty('opacity', '0.82', 'important');
-      if(/brightness\\((0?\\.?[0-4])/.test(f)) chip.style.setProperty('filter', 'brightness(0.78)', 'important');
+      if(op < 0.5) chip.style.setProperty('opacity', '0.5', 'important');
+      if(/brightness\\((0?\\.?[0-4])/.test(f)) chip.style.setProperty('filter', 'grayscale(1) brightness(0.55)', 'important');
     });
   }
 
