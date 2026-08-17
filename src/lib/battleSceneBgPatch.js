@@ -112,16 +112,21 @@ export const BATTLE_SCENE_BG_PATCH = `
       // id formato: b_p_<card_id> o b_o_<card_id> → slice(4) quita el prefijo.
       var id = (card.id || '').slice(4);
       if(!id) return;
-      var scene = artMap[id];
-      var portrait = portraitMap[id];
       var h = heroById(id);
       var elite = !!(h && h.eliteMode);
 
-      // HÉROE TRANSFORMADO (hechizo Transformer): el héroe conserva su id pero
-      // ahora es un bizarro/token, así que la escena y el retrato de la BD (que
-      // van por card_id) serían los del héroe ORIGINAL. Se devuelve el recuadro
-      // al arte propio del juego, que ya apunta al token transformado.
-      if(h && h._token){
+      // HÉROE TRANSFORMADO o TOKEN INVOCADO (Transformer, Grulla…): el héroe
+      // conserva su id de juego pero ahora es un bizarro/token. Su _token es el
+      // card_id del token en la BD (tk_lav, tk_grulla…), así que la escena y el
+      // retrato se buscan por ESA clave. Antes este caso quitaba la escena en
+      // cada repintado, y por eso el arte aparecía al transformarse (lo ponía
+      // el juego) y luego desaparecía de forma aleatoria.
+      var key = (h && h._token) ? h._token : id;
+      var scene = artMap[key];
+      var portrait = portraitMap[key];
+
+      // Token sin arte propio en la BD: se devuelve el recuadro al arte del juego.
+      if(h && h._token && !scene && !portrait){
         if(card.classList.contains('bf-bscene')){
           card.classList.remove('bf-bscene');
           card.style.removeProperty('background-image');
