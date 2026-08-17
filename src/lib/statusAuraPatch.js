@@ -72,9 +72,9 @@ export const STATUS_AURA_PATCH = `
   STATES.forEach(function(s){
     css+=
       '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+';box-shadow:0 0 0 3px '+s.c+',0 0 28px '+s.c+'99,0 0 52px '+s.c+'55!important}'+
-      // Sin drop-shadow: ese halo de 15px alrededor del retrato hacía que el
-      // héroe pareciera "crecer" al entrar en el estado. Solo tinte de color.
-      '.bhero.'+s.cls+' .bf-battle-art{filter:'+s.filt.replace(/\\s*drop-shadow\\([^)]*\\)/g,'')+'!important}'+
+      // Halo incluido (queda bien), pero SIN escalar: el tamaño del retrato no
+      // cambia nunca al entrar o salir de un estado.
+      '.bhero.'+s.cls+' .bf-battle-art{filter:'+s.filt+'!important}'+
       '.bhero.'+s.cls+'::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;background:'+s.grad+';mix-blend-mode:normal;opacity:.82}'+
       '.bhero.'+s.cls+' .bf-pat{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:'+s.pat+';opacity:.9}'+
       '.bhero.'+s.cls+'::after{content:"'+s.ic+' '+s.lb+'";position:absolute;top:6px;right:8px;left:auto;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid '+s.c+';color:'+s.c+';font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px '+s.c+',0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 16px '+s.c+',inset 0 0 12px '+s.d+';white-space:nowrap}';
