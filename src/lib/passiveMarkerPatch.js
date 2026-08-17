@@ -35,13 +35,13 @@ export const PASSIVE_MARKER_PATCH = `
   '.bf-passive-mark{position:absolute;left:8px;bottom:8px;z-index:15;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-family:Cinzel,serif;font-size:11px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;animation:bfPassivePulse 2.4s ease-in-out infinite;white-space:nowrap}' +
   '@keyframes bfPassivePulse{0%,100%{opacity:.82;box-shadow:0 0 8px var(--bf-pc,#fff),0 2px 6px rgba(0,0,0,.5)}50%{opacity:1;box-shadow:0 0 18px var(--bf-pc,#fff),0 0 28px var(--bf-pc,#fff),0 2px 8px rgba(0,0,0,.5)}}' +
   // ---- Banner de ACCIÓN DEFINITIVA (solo cuando termina la partida) ----
-  '#bf-final-blow{position:fixed;inset:0;z-index:100008;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfFbIn .3s ease-out}' +
+  '#bf-final-blow{position:fixed;inset:0;z-index:999999;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfFbIn .3s ease-out}' +
   '#bf-final-blow.bf-fb-out{transition:opacity .6s;opacity:0}' +
   '@keyframes bfFbIn{from{opacity:0}to{opacity:1}}' +
-  '.bf-fb-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,210,74,.32),transparent 70%);animation:bfFbFlash 1.4s ease-out forwards}' +
+  '.bf-fb-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,210,74,.32),transparent 70%);animation:bfFbFlash 2s ease-out forwards}' +
   '@keyframes bfFbFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}' +
-  '.bf-fb-body{position:relative;text-align:center;animation:bfFbBody 3.2s ease-out forwards}' +
-  '@keyframes bfFbBody{0%{opacity:0;transform:scale(.5)}10%{opacity:1;transform:scale(1.1)}85%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}' +
+  '.bf-fb-body{position:relative;text-align:center;animation:bfFbBody 5s ease-out forwards}' +
+  '@keyframes bfFbBody{0%{opacity:0;transform:scale(.5)}8%{opacity:1;transform:scale(1.1)}88%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}' +
   '.bf-fb-title{font-family:Cinzel,serif;font-weight:900;font-size:clamp(34px,9vw,82px);color:#ffd24a;text-shadow:0 0 30px rgba(255,210,74,.9),0 0 60px rgba(255,210,74,.4),0 4px 10px #000;letter-spacing:6px;line-height:1}' +
   '.bf-fb-sub{font-family:Rubik,sans-serif;font-weight:700;font-size:clamp(15px,4vw,26px);color:#fff;text-shadow:0 2px 8px #000,0 0 14px rgba(255,210,74,.5);margin-top:12px}' +
   // ---- Flash de refracci\\u00f3n sobre el retrato de Juniana ----
@@ -111,6 +111,7 @@ export const PASSIVE_MARKER_PATCH = `
       return arr.length>0 && arr.every(function(h){ return !h || !h.alive; });
     }catch(e){return false;}
   }
+  var FINAL_BLOW_DELAY = 5000;
   function showFinalBlow(hero){
     var old = document.getElementById('bf-final-blow');
     if(old && old.parentNode) old.parentNode.removeChild(old);
@@ -121,8 +122,30 @@ export const PASSIVE_MARKER_PATCH = `
     html += '<div class="bf-fb-body"><div class="bf-fb-title">ACCI\\u00d3N DEFINITIVA</div><div class="bf-fb-sub">' + name + ' cae. Fin de la partida.</div></div>';
     ov.innerHTML = html;
     (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
-    setTimeout(function(){ ov.classList.add('bf-fb-out'); }, 2600);
-    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3300);
+    // Retrasa el fin de partida para que el banner se vea completo.
+    window.__bfFinalBlowUntil = Date.now() + FINAL_BLOW_DELAY;
+    setTimeout(function(){ ov.classList.add('bf-fb-out'); }, FINAL_BLOW_DELAY - 600);
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, FINAL_BLOW_DELAY);
+  }
+
+  // Hook de checkWin: retrasa el fin de partida (y la cinemática final del
+  // juego) hasta que el banner de ACCIÓN DEFINITIVA termine. As\\u00ed el
+  // jugador siempre ve cu\\u00e1l fue el \\u00faltimo golpe antes de que
+  // salga la pantalla de victoria/derrota.
+  function installCheckWinDelay(){
+    if(typeof window.checkWin !== 'function' || window.__bfFinalBlowDelayHooked) return false;
+    window.__bfFinalBlowDelayHooked = true;
+    var orig = window.checkWin;
+    window.checkWin = function(){
+      var until = window.__bfFinalBlowUntil || 0, now = Date.now();
+      if(until > now){
+        var self = this, args = arguments;
+        setTimeout(function(){ orig.apply(self, args); }, until - now);
+        return;
+      }
+      return orig.apply(this, arguments);
+    };
+    return true;
   }
 
   // Hook de dealDamage: solo muestra el banner si el golpe que mata al
@@ -159,6 +182,7 @@ export const PASSIVE_MARKER_PATCH = `
   var timer = setInterval(function(){
     hookRender();
     installFinalBlowHook();
+    installCheckWinDelay();
     updateMarkers();
     if((window.renderBattle && window.renderBattle.__bfPassiveMarker && window.__bfFinalBlowHooked) || tries++ > 120) clearInterval(timer);
   }, 200);
