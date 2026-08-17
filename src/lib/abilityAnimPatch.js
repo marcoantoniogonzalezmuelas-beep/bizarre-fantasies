@@ -58,17 +58,28 @@ export const ABILITY_ANIM_PATCH = `
         var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
         var x=c.getContext('2d');x.drawImage(img,0,0);
         var d=x.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
-        // Recorte por RELLENO DESDE LOS BORDES: solo se vuelve transparente el
-        // fondo oscuro conectado al marco de la imagen. Así las ropas, sombras
-        // y zonas negras del personaje conservan su color y opacidad completos
-        // (antes cualquier píxel oscuro se volvía translúcido).
-        // Umbral bajo (14): solo el negro puro del fondo se recorta. Con 30 se
-        // comía las ropas y sombras oscuras del personaje conectadas al fondo y
-        // dejaba huecos por los que se veía el escenario → aspecto translúcido.
-        var BG=14;
+        // Recorte por DISTANCIA DE COLOR + RELLENO DESDE LOS BORDES: se muestrea
+        // el color real del fondo desde los bordes de la imagen y se vuelve
+        // transparente todo lo conectado al marco que esté cerca de ese color.
+        // Así se eliminan fondos que no son negro puro (gris oscuro, azul
+        // oscuro, morado oscuro…) que el umbral de luminancia anterior (14) no
+        // detectaba. La conectividad desde los bordes protege las zonas oscuras
+        // del personaje que no tocan el marco: ropas, sombras y contornos
+        // conservan su color y opacidad completos.
+        var bgR=0,bgG=0,bgB=0,bgN=0;
+        var sPts=[[0,0],[W-1,0],[0,H-1],[W-1,H-1],[W>>1,0],[W>>1,H-1],[0,H>>1],[W-1,H>>1]];
+        for(var si=0;si<sPts.length;si++){
+          var sxx=sPts[si][0],syy=sPts[si][1];
+          for(var dx=-3;dx<=3;dx++){for(var dy=-3;dy<=3;dy++){
+            var px=Math.max(0,Math.min(W-1,sxx+dx)),py=Math.max(0,Math.min(H-1,syy+dy));
+            var oo=(py*W+px)*4;bgR+=p[oo];bgG+=p[oo+1];bgB+=p[oo+2];bgN++;
+          }}
+        }
+        bgR/=bgN;bgG/=bgN;bgB/=bgN;
+        var TOL=58,TOL2=TOL*TOL;
         var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
-        function lum(i){var o=i*4;return Math.max(p[o],p[o+1],p[o+2]);}
-        function push(i){if(!seen[i]&&lum(i)<BG){seen[i]=1;q[qe++]=i;}}
+        function bgDist(i){var o=i*4;var dr=p[o]-bgR,dg=p[o+1]-bgG,db=p[o+2]-bgB;return dr*dr+dg*dg+db*db;}
+        function push(i){if(!seen[i]&&bgDist(i)<TOL2){seen[i]=1;q[qe++]=i;}}
         for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
         for(var yy=0;yy<H;yy++){push(yy*W);push(yy*W+W-1);}
         while(qs<qe){
