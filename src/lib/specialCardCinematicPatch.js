@@ -133,6 +133,16 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     }catch(e){}
     return false;
   }
+  // Igual, pero por patrón: el efecto de red del Transformer ({k:'transform'})
+  // viaja SIN nombre de carta, así que se comprueba si ALGUNA carta con
+  // animación 3D propia encaja con el patrón (p.ej. /transformer/).
+  function anyAnimMatches(re){
+    try{
+      var m=window.__bfAbilityAnimMap||{};
+      for(var k in m){var e=m[k];if(e&&e.base&&e.name&&re.test(String(e.name)))return true;}
+    }catch(e){}
+    return false;
+  }
   var lastCine=0;
   function playCine(kind){
     // Cinemáticas 3D desactivadas (botón "Desactivar animaciones"): se salta
@@ -211,7 +221,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       // así que la cinemática se ve igual en tu pantalla y en la del rival.
       try{(list||[]).forEach(function(ev){
         if(!ev)return;
-        if(ev.k==='transform')playCine('robot');
+        if(ev.k==='transform'&&!anyAnimMatches(/transformer/i))playCine('robot');
         else if(ev.k==='bfcard'&&ev.name&&!hasOwnAnim(ev.name)){
           var n=String(ev.name);
           if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');
