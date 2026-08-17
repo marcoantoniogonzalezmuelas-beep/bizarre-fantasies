@@ -34,16 +34,16 @@ export const PASSIVE_MARKER_PATCH = `
   // ---- Marcador permanente de habilidad pasiva sobre el retrato ----
   '.bf-passive-mark{position:absolute;left:8px;bottom:8px;z-index:15;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-family:Cinzel,serif;font-size:11px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;animation:bfPassivePulse 2.4s ease-in-out infinite;white-space:nowrap}' +
   '@keyframes bfPassivePulse{0%,100%{opacity:.82;box-shadow:0 0 8px var(--bf-pc,#fff),0 2px 6px rgba(0,0,0,.5)}50%{opacity:1;box-shadow:0 0 18px var(--bf-pc,#fff),0 0 28px var(--bf-pc,#fff),0 2px 8px rgba(0,0,0,.5)}}' +
-  // ---- Banner de KO (golpe final) ----
-  '#bf-ko-overlay{position:fixed;inset:0;z-index:100008;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfKoIn .25s ease-out}' +
-  '#bf-ko-overlay.bf-ko-out{transition:opacity .5s;opacity:0}' +
-  '@keyframes bfKoIn{from{opacity:0}to{opacity:1}}' +
-  '.bf-ko-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,20,20,.38),transparent 65%);animation:bfKoFlash .9s ease-out forwards}' +
-  '@keyframes bfKoFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}' +
-  '.bf-ko-body{position:relative;text-align:center;animation:bfKoBody 2.2s ease-out forwards}' +
-  '@keyframes bfKoBody{0%{opacity:0;transform:scale(.4)}12%{opacity:1;transform:scale(1.12)}80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}' +
-  '.bf-ko-title{font-family:Cinzel,serif;font-weight:900;font-size:clamp(44px,13vw,130px);color:#ff2020;text-shadow:0 0 30px rgba(255,0,0,.9),0 0 60px rgba(255,0,0,.4),0 4px 10px #000;letter-spacing:8px;line-height:1}' +
-  '.bf-ko-sub{font-family:Rubik,sans-serif;font-weight:700;font-size:clamp(15px,4vw,26px);color:#fff;text-shadow:0 2px 8px #000,0 0 14px rgba(255,0,0,.5);margin-top:10px}' +
+  // ---- Banner de ACCIÓN DEFINITIVA (solo cuando termina la partida) ----
+  '#bf-final-blow{position:fixed;inset:0;z-index:100008;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfFbIn .3s ease-out}' +
+  '#bf-final-blow.bf-fb-out{transition:opacity .6s;opacity:0}' +
+  '@keyframes bfFbIn{from{opacity:0}to{opacity:1}}' +
+  '.bf-fb-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,210,74,.32),transparent 70%);animation:bfFbFlash 1.4s ease-out forwards}' +
+  '@keyframes bfFbFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}' +
+  '.bf-fb-body{position:relative;text-align:center;animation:bfFbBody 3.2s ease-out forwards}' +
+  '@keyframes bfFbBody{0%{opacity:0;transform:scale(.5)}10%{opacity:1;transform:scale(1.1)}85%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.1)}}' +
+  '.bf-fb-title{font-family:Cinzel,serif;font-weight:900;font-size:clamp(34px,9vw,82px);color:#ffd24a;text-shadow:0 0 30px rgba(255,210,74,.9),0 0 60px rgba(255,210,74,.4),0 4px 10px #000;letter-spacing:6px;line-height:1}' +
+  '.bf-fb-sub{font-family:Rubik,sans-serif;font-weight:700;font-size:clamp(15px,4vw,26px);color:#fff;text-shadow:0 2px 8px #000,0 0 14px rgba(255,210,74,.5);margin-top:12px}' +
   // ---- Flash de refracci\\u00f3n sobre el retrato de Juniana ----
   '.bf-refract-flash{animation:bfRefractFlash .8s ease-out forwards}' +
   '@keyframes bfRefractFlash{0%{box-shadow:0 0 0 3px #c79bff,0 0 30px #c79bff,0 0 60px #c79bffcc!important}100%{box-shadow:0 0 0 0 transparent!important}}';
@@ -94,32 +94,52 @@ export const PASSIVE_MARKER_PATCH = `
     });
   }
 
-  // KO: banner dram\\u00e1tico cuando un h\\u00e9roe cae
-  function showKO(hero){
-    var old = document.getElementById('bf-ko-overlay');
+  // ACCIÓN DEFINITIVA: banner solo cuando el golpe que mata al último
+  // héroe de un lado pone fin a la partida. As\\u00ed el jugador siempre
+  // sabe cu\\u00e1l fue la acci\\u00f3n que decidi\\u00f3 el final.
+  function sideOf(hero){
+    try{
+      if(typeof G==='undefined'||!G||!G.team)return null;
+      for(var s=0;s<2;s++){var side=s?'o':'p';var arr=G.team[side]||[];for(var i=0;i<arr.length;i++){if(arr[i]&&arr[i].id===hero.id)return side;}}
+    }catch(e){}
+    return null;
+  }
+  function allDead(side){
+    try{
+      if(typeof G==='undefined'||!G||!G.team)return false;
+      var arr=G.team[side]||[];
+      return arr.length>0 && arr.every(function(h){ return !h || !h.alive; });
+    }catch(e){return false;}
+  }
+  function showFinalBlow(hero){
+    var old = document.getElementById('bf-final-blow');
     if(old && old.parentNode) old.parentNode.removeChild(old);
     var ov = document.createElement('div');
-    ov.id = 'bf-ko-overlay';
+    ov.id = 'bf-final-blow';
     var name = (hero && hero.name) || 'H\\u00e9roe';
-    var html = '<div class="bf-ko-flash"></div>';
-    html += '<div class="bf-ko-body"><div class="bf-ko-title">KO</div><div class="bf-ko-sub">' + name + ' ha ca\\u00eddo</div></div>';
+    var html = '<div class="bf-fb-flash"></div>';
+    html += '<div class="bf-fb-body"><div class="bf-fb-title">ACCI\\u00d3N DEFINITIVA</div><div class="bf-fb-sub">' + name + ' cae. Fin de la partida.</div></div>';
     ov.innerHTML = html;
     (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
-    setTimeout(function(){ ov.classList.add('bf-ko-out'); }, 1900);
-    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 2500);
+    setTimeout(function(){ ov.classList.add('bf-fb-out'); }, 2600);
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3300);
   }
 
-  // Hook de dealDamage: detecta cuando un h\\u00e9roe pasa de vivo a muerto
-  function installKoHook(){
-    if(typeof window.dealDamage !== 'function' || window.__bfKoHooked) return false;
-    window.__bfKoHooked = true;
+  // Hook de dealDamage: solo muestra el banner si el golpe que mata al
+  // h\\u00e9roe deja a todo su equipo sin vivos → acci\\u00f3n definitiva.
+  function installFinalBlowHook(){
+    if(typeof window.dealDamage !== 'function' || window.__bfFinalBlowHooked) return false;
+    window.__bfFinalBlowHooked = true;
     var orig = window.dealDamage;
     window.dealDamage = function(target, dmg, opts){
       var wasAlive = target && target.alive;
       var result = orig.apply(this, arguments);
       try{
         if(wasAlive && target && !target.alive && Number(dmg) > 0){
-          showKO(target);
+          var side = sideOf(target);
+          if(side && allDead(side)){
+            showFinalBlow(target);
+          }
         }
       }catch(e){}
       return result;
@@ -138,9 +158,9 @@ export const PASSIVE_MARKER_PATCH = `
   var tries = 0;
   var timer = setInterval(function(){
     hookRender();
-    installKoHook();
+    installFinalBlowHook();
     updateMarkers();
-    if((window.renderBattle && window.renderBattle.__bfPassiveMarker && window.__bfKoHooked) || tries++ > 120) clearInterval(timer);
+    if((window.renderBattle && window.renderBattle.__bfPassiveMarker && window.__bfFinalBlowHooked) || tries++ > 120) clearInterval(timer);
   }, 200);
   updateMarkers();
 })();
