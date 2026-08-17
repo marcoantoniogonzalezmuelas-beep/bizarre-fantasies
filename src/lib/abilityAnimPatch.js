@@ -87,15 +87,21 @@ export const ABILITY_ANIM_PATCH = `
         // muestreo de esquinas se haya desviado (brillos/rayos de luz en las
         // esquinas, como en Curación Divina): sin esto el relleno se bloqueaba
         // y el fondo negro se quedaba sin recortar.
-        // OJO: esta excepción vale SOLO en una franja pegada al marco (12% del
-        // ancho/alto). Si se aplica a toda la imagen, el relleno viaja por los
-        // contornos negros del personaje y le abre agujeros por dentro: es lo
-        // que hacía que la figura se viera translúcida/fantasmal.
-        var BX=Math.max(8,Math.round(W*0.12)),BY=Math.max(8,Math.round(H*0.12));
+        // Fondo negro: se recorta en TODA la imagen (Curación Divina y demás
+        // escenas con fondo negro puro), pero solo cuando el píxel forma parte
+        // de una MANCHA negra ancha: se exige que él y sus 4 vecinos sean casi
+        // negros. Así el relleno no puede colarse por los contornos negros de
+        // 1-2 px del personaje y abrirle agujeros (eso era lo que hacía que la
+        // figura se viera translúcida/fantasmal).
+        function pitch(i){var o=i*4;return p[o]<20&&p[o+1]<20&&p[o+2]<20;}
         function dark(i){
-          var o=i*4,ix=i%W,iy=(i-ix)/W;
-          if(ix>BX&&ix<W-BX&&iy>BY&&iy<H-BY)return false;
-          return p[o]<34&&p[o+1]<34&&p[o+2]<34;
+          var ix=i%W,iy=(i-ix)/W;
+          if(!pitch(i))return false;
+          if(ix>0&&!pitch(i-1))return false;
+          if(ix<W-1&&!pitch(i+1))return false;
+          if(iy>0&&!pitch(i-W))return false;
+          if(iy<H-1&&!pitch(i+W))return false;
+          return true;
         }
         function push(i){if(!seen[i]&&(bgDist(i)<TOL2||dark(i))){seen[i]=1;q[qe++]=i;}}
         for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
@@ -114,8 +120,11 @@ export const ABILITY_ANIM_PATCH = `
         // píxeles del borde (vecinos de un transparente) que sigan pareciéndose
         // al fondo con una tolerancia mayor. Máx 4 pasadas de 1 px → no puede
         // comerse el interior de la figura (ropas/sombras quedan intactas).
-        var EDGE_TOL=85,EDGE_TOL2=EDGE_TOL*EDGE_TOL;
-        for(var pass=0;pass<4;pass++){
+        // Tolerancia MODERADA y una sola pasada: con 85 y 4 pasadas se comía
+        // ropa, sombras y contornos del personaje, y por eso la figura salía
+        // desvaída/translúcida en vez de con sus colores originales.
+        var EDGE_TOL=45,EDGE_TOL2=EDGE_TOL*EDGE_TOL;
+        for(var pass=0;pass<1;pass++){
           var kill=[];
           for(var ey=0;ey<H;ey++){for(var ex=0;ex<W;ex++){
             var ei=ey*W+ex;

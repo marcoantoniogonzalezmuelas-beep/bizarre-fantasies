@@ -100,6 +100,21 @@ export const BATTLE_SCENE_BG_PATCH = `
       var h = heroById(id);
       var elite = !!(h && h.eliteMode);
 
+      // HÉROE TRANSFORMADO (hechizo Transformer): el héroe conserva su id pero
+      // ahora es un bizarro/token, así que la escena y el retrato de la BD (que
+      // van por card_id) serían los del héroe ORIGINAL. Se devuelve el recuadro
+      // al arte propio del juego, que ya apunta al token transformado.
+      if(h && h._token){
+        if(card.classList.contains('bf-bscene')){
+          card.classList.remove('bf-bscene');
+          card.style.removeProperty('background-image');
+          delete card.dataset.bfBscene;
+          var op = card.querySelector('.bf-bscene-portrait');
+          if(op) op.remove();
+        }
+        return;
+      }
+
       // Fondo: escena de batalla (battle_art_url).
       if(scene){
         var url = elite ? (scene.elite || scene.base) : scene.base;

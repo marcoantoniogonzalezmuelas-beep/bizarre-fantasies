@@ -68,9 +68,12 @@ export const BATTLE_ANIME_PATCH = `
       var m=String(card.id||'').match(/^b_[po]_(.+)$/);
       var hid=m?m[1]:'';
       var map=window.__bfBattleArt||{};
-      if(hid&&map[hid]){
-        var h=heroFor(card);
-        var url=(h&&h.eliteMode)?map[hid].elite:map[hid].base;
+      var hero=heroFor(card);
+      // Héroe transformado por el Transformer: su arte ya no es el de la BD
+      // (sigue con el mismo id pero es un token), así que se usa el arte del
+      // juego (fallback de abajo).
+      if(hid&&map[hid]&&!(hero&&hero._token)){
+        var url=(hero&&hero.eliteMode)?map[hid].elite:map[hid].base;
         if(url)bg='url("'+url+'")';
       }
       // 2. Fallback: arte del retrato (mientras no llegue el mapa).
