@@ -71,11 +71,11 @@ export const STATUS_AURA_PATCH = `
   var css='.bhero{position:relative!important}';
   STATES.forEach(function(s){
     css+=
-      '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+';box-shadow:0 0 0 3px '+s.c+',0 0 28px '+s.c+'99,0 0 52px '+s.c+'55!important;animation:bfStateEdge 1.6s ease-in-out infinite}'+
+      '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+';box-shadow:0 0 0 3px '+s.c+',0 0 28px '+s.c+'99,0 0 52px '+s.c+'55!important}'+
       '.bhero.'+s.cls+' .bf-battle-art{filter:'+s.filt+'!important}'+
-      '.bhero.'+s.cls+'::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;background:'+s.grad+';mix-blend-mode:normal;opacity:.82;animation:bfAuraPulse 2.2s ease-in-out infinite}'+
-      '.bhero.'+s.cls+' .bf-pat{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:'+s.pat+';opacity:.9;animation:bfScanMove 3s linear infinite}'+
-      '.bhero.'+s.cls+'::after{content:"'+s.ic+' '+s.lb+'";position:absolute;top:6px;right:8px;left:auto;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid '+s.c+';color:'+s.c+';font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px '+s.c+',0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 16px '+s.c+',inset 0 0 12px '+s.d+';animation:bfStateBanner 1.5s ease-in-out infinite;white-space:nowrap}';
+      '.bhero.'+s.cls+'::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;background:'+s.grad+';mix-blend-mode:normal;opacity:.82}'+
+      '.bhero.'+s.cls+' .bf-pat{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:'+s.pat+';opacity:.9}'+
+      '.bhero.'+s.cls+'::after{content:"'+s.ic+' '+s.lb+'";position:absolute;top:6px;right:8px;left:auto;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid '+s.c+';color:'+s.c+';font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px '+s.c+',0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 16px '+s.c+',inset 0 0 12px '+s.d+';white-space:nowrap}';
   });
   // Animación de borde de estado + scanlines deslizantes
   css+='@keyframes bfStateEdge{0%,100%{box-shadow:0 0 0 3px var(--bf-state),0 0 20px var(--bf-state)77,0 0 40px var(--bf-state)44!important}50%{box-shadow:0 0 0 3px var(--bf-state),0 0 36px var(--bf-state)cc,0 0 64px var(--bf-state)66!important}}@keyframes bfScanMove{0%{background-position:0 0,0 0,0 0,0 0,0 0,0 0}100%{background-position:0 40px,0 40px,0 40px,0 40px,0 40px,0 40px}}';
@@ -114,11 +114,25 @@ export const STATUS_AURA_PATCH = `
     '@keyframes bfAuraPulse{0%,100%{opacity:.6}50%{opacity:1}}@keyframes bfStateBanner{0%,100%{box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 12px var(--bf-state),inset 0 0 12px var(--bf-state-dark);filter:brightness(1)}50%{box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 28px var(--bf-state),0 0 44px var(--bf-state),inset 0 0 16px var(--bf-state-dark);filter:brightness(1.25)}}';
   // Agonía
   css+=
-    '.bhero.bf-agonizing .bf-battle-art{animation:bfAgonPulse 1.1s ease-in-out infinite}'+
-    '.bhero.bf-agonizing .bf-agonize-badge{position:absolute;left:150px;bottom:7px;z-index:17;display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-family:Cinzel,serif;font-size:10px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;color:#ffd0d0;background:linear-gradient(180deg,#3a0606f2,#1a0202e6);border:1.5px solid #ff4040;box-shadow:0 0 12px rgba(255,40,40,.7),inset 0 0 8px rgba(120,0,0,.6);animation:bfAgonBadge 1s ease-in-out infinite}'+
+    ''+
+    '.bhero.bf-agonizing .bf-agonize-badge{position:absolute;left:150px;bottom:7px;z-index:17;display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-family:Cinzel,serif;font-size:10px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;color:#ffd0d0;background:linear-gradient(180deg,#3a0606f2,#1a0202e6);border:1.5px solid #ff4040;box-shadow:0 0 12px rgba(255,40,40,.7),inset 0 0 8px rgba(120,0,0,.6)}'+
     '@keyframes bfAgonPulse{0%,100%{opacity:.6;filter:brightness(1)}50%{opacity:1;filter:brightness(1.12)}}@keyframes bfAgonBadge{0%,100%{box-shadow:0 0 8px rgba(255,40,40,.5);transform:scale(1)}50%{box-shadow:0 0 18px rgba(255,40,40,.95);transform:scale(1.06)}}';
   // Ability burst
   css+='.bf-ability-burst{position:absolute;inset:0;z-index:30;pointer-events:none;display:flex;align-items:center;justify-content:center;border-radius:inherit;overflow:hidden;background:radial-gradient(circle,rgba(255,255,255,.42),rgba(114,240,181,.2) 35%,transparent 70%);animation:bfAbilityBurst 1.25s ease-out forwards}.bf-ability-burst b{padding:8px 13px;border-radius:999px;background:#080711e8;border:2px solid currentColor;font-family:Cinzel,serif;font-size:14px;color:#ffe27a;text-shadow:0 0 10px currentColor;box-shadow:0 0 22px currentColor}.bf-ability-burst i{position:absolute;font-style:normal;font-size:28px;animation:bfAbilityOrbit 1.1s ease-out forwards}.bf-ability-burst i:nth-child(2){transform:rotate(120deg) translateX(58px)}.bf-ability-burst i:nth-child(3){transform:rotate(240deg) translateX(58px)}@keyframes bfAbilityBurst{0%{opacity:0;transform:scale(.55)}25%{opacity:1;transform:scale(1.04)}100%{opacity:0;transform:scale(1.18)}}@keyframes bfAbilityOrbit{0%{opacity:0;filter:blur(5px)}35%{opacity:1}100%{opacity:0;transform:rotate(420deg) translateX(78px)}}';
+  // ---- ESTABILIDAD EN TABLET ----
+  // Las decoraciones de estado (arañas, copos, Zzz, grilletes…) se quedan
+  // QUIETAS: sus animaciones infinitas repintaban el recuadro del héroe sin
+  // parar y provocaban parpadeo en tablet. Se mantienen visibles, sin moverse.
+  // Igual con las transiciones del recuadro al cambiar de turno/estado: nada
+  // de crecer/encogerse continuamente.
+  css+='.bf-decor{animation:none!important}'+
+       '.bhero,.bhero .bf-battle-art,.bhero .bf-bscene-portrait{transition:none!important}'+
+       '.bhero .bf-battle-art,.bhero .bf-bscene-portrait{transform:none!important}';
+  // Retrato del héroe LO MÁS GRANDE posible dentro del recuadro (sin animarlo).
+  css+='#s-battle .bhero{padding-left:214px!important}'+
+       '#s-battle .bhero .bf-battle-art{width:200px!important}'+
+       '#s-battle .bhero.bf-bscene .bf-bscene-portrait{width:206px!important;background-position:center 6%!important}'+
+       '#s-battle .bhero.bf-agonizing .bf-agonize-badge{left:206px!important}';
   var style=document.createElement('style');
   style.textContent=css;
   document.head.appendChild(style);
