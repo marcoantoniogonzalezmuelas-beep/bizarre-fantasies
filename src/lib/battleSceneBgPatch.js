@@ -51,6 +51,15 @@ export const BATTLE_SCENE_BG_PATCH = `
     // Ocultar la tira original del juego (.bf-battle-art): ahora la escena es
     // el fondo de todo el recuadro, no una franja lateral.
     '#s-battle .bhero.bf-bscene .bf-battle-art{display:none!important}' +
+    // ESTE era el "velo": battleAnimePatch pinta .bf-bhero-bgart encima con la
+    // escena difuminada (blur 3px), oscurecida (brightness .82) y con un
+    // degradado lateral muy opaco. Tapaba por completo el fondo nítido de este
+    // parche, así que la batalla se veía igual que antes. Se le quita la
+    // imagen, el desenfoque y el degradado, pero se MANTIENE el elemento porque
+    // su ::before es el que pinta los tintes de estado (maldito, congelado,
+    // agonizando…). Se estira a toda la caja para que esos tintes cubran igual.
+    '#s-battle .bhero.bf-bscene .bf-bhero-bgart{left:0!important;background-image:none!important;filter:none!important;opacity:1!important}' +
+    '#s-battle .bhero.bf-bscene .bf-bhero-bgart::after{display:none!important}' +
     // Retrato del héroe (art_url): sangra por la izquierda, anclado arriba,
     // mismo encuadre que .bf-eq-portrait en la fase de equipamiento. z-index:2.
     '#s-battle .bhero.bf-bscene .bf-bscene-portrait{position:absolute!important;left:-14px!important;top:-14px!important;bottom:-14px!important;width:150px!important;height:auto!important;aspect-ratio:auto!important;background-size:cover!important;background-position:center 8%!important;background-repeat:no-repeat!important;background-color:#0a0710!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important;filter:saturate(1.14) contrast(1.1)!important;z-index:2!important;pointer-events:none}' +
