@@ -1,0 +1,110 @@
+// Parche inyectado en el iframe: garantiza que en la cinemática de GOLPE MORTAL
+// aparezca SIEMPRE el héroe que realmente ha provocado la muerte.
+//
+// PROBLEMA: la cinemática del juego deduce al ejecutor leyendo el DOM
+// (.bhero.active-turn) y, como respaldo, B.current / __bfLastTurn. Cuando la
+// muerte se pinta después de que el turno haya avanzado (habilidades, hechizos,
+// objetos, daño en cadena…), esos datos ya apuntan a otro héroe y la cinemática
+// mostraba al equivocado — o a ninguno.
+//
+// SOLUCIÓN: se anota el ejecutor EN EL MOMENTO del daño mortal (dealDamage) y,
+// justo antes de que la cinemática lo lea, se marca su retrato como el activo
+// durante ese instante, restaurando después el estado real del tablero. No se
+// altera ninguna lógica de combate: solo se corrige a quién retrata la escena.
+export const KILL_ACTOR_PATCH = `
+<script>
+(function(){
+  if(window.__bfKillActorPatch) return;
+  window.__bfKillActorPatch = true;
+
+  // Acción en curso (para saber CON QUÉ se remató: ataque, habilidad, hechizo
+  // u objeto). Se usará también en el resumen de la acción definitiva.
+  function markAction(kind){ window.__bfActionCtx = { kind: kind, ts: Date.now() }; }
+  ['useAbility','castSpell','useItem'].forEach(function(fn){
+    var tries = 0, t = setInterval(function(){
+      if(typeof window[fn] === 'function' && !window[fn].__bfKillActor){
+        var orig = window[fn];
+        window[fn] = function(){ markAction(fn); return orig.apply(this, arguments); };
+        window[fn].__bfKillActor = 1;
+        clearInterval(t);
+      } else if(tries++ > 150) clearInterval(t);
+    }, 200);
+  });
+
+  function currentActor(){
+    try{
+      if(typeof B === 'undefined' || !B || !B.current) return null;
+      return { side: B.current.side, id: B.current.id };
+    }catch(e){ return null; }
+  }
+
+  // Anota el ejecutor del golpe que deja a un héroe sin vida.
+  function installDamageHook(){
+    // El flag va en window (no en la función): otros parches vuelven a envolver
+    // dealDamage después y, con un flag en la función, este parche se apilaría
+    // una y otra vez.
+    if(typeof window.dealDamage !== 'function' || window.__bfKillActorDmgHooked) return false;
+    window.__bfKillActorDmgHooked = true;
+    var orig = window.dealDamage;
+    window.dealDamage = function(target, amount){
+      var wasAlive = !!(target && target.alive);
+      var actor = currentActor();
+      var result = orig.apply(this, arguments);
+      try{
+        if(wasAlive && target && !target.alive && actor && actor.id !== target.id){
+          var ctx = window.__bfActionCtx;
+          window.__bfKillActor = {
+            side: actor.side,
+            id: actor.id,
+            victim: target.id,
+            kind: (ctx && Date.now() - ctx.ts < 6000) ? ctx.kind : 'attack',
+            ts: Date.now(),
+          };
+        }
+      }catch(e){}
+      return result;
+    };
+    window.dealDamage.__bfKillActor = 1;
+    return true;
+  }
+
+  // Justo cuando llega el evento de muerte, el retrato del ejecutor anotado
+  // pasa a ser el "activo" durante el instante en que la cinemática lo lee.
+  function installDeathHook(){
+    if(typeof window.flushFx !== 'function' || window.__bfKillActorFxHooked) return false;
+    window.__bfKillActorFxHooked = true;
+    var orig = window.flushFx;
+    window.flushFx = function(events){
+      try{
+        var death = (events || []).filter(function(ev){ return ev && ev.k === 'death'; })[0];
+        var a = window.__bfKillActor;
+        if(death && a && Date.now() - a.ts < 6000 && a.victim === death.id){
+          var card = document.getElementById('b_' + a.side + '_' + a.id);
+          if(card && !card.classList.contains('active-turn')){
+            var prev = Array.prototype.slice.call(document.querySelectorAll('.bhero.active-turn'));
+            prev.forEach(function(c){ c.classList.remove('active-turn'); });
+            card.classList.add('active-turn');
+            window.__bfLastTurn = { side: a.side, id: a.id, elite: card.classList.contains('elite-mode') || card.classList.contains('bf-auto-elite') };
+            setTimeout(function(){
+              card.classList.remove('active-turn');
+              prev.forEach(function(c){ c.classList.add('active-turn'); });
+            }, 500);
+          } else if(card){
+            window.__bfLastTurn = { side: a.side, id: a.id, elite: card.classList.contains('elite-mode') || card.classList.contains('bf-auto-elite') };
+          }
+        }
+      }catch(e){}
+      return orig.apply(this, arguments);
+    };
+    window.flushFx.__bfKillActor = 1;
+    return true;
+  }
+
+  var tries = 0, timer = setInterval(function(){
+    var a = installDamageHook(), b = installDeathHook();
+    if((a && b) || tries++ > 200) clearInterval(timer);
+  }, 200);
+  installDamageHook(); installDeathHook();
+})();
+</script>
+`;

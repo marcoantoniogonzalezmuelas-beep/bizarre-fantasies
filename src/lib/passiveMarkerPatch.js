@@ -94,83 +94,8 @@ export const PASSIVE_MARKER_PATCH = `
     });
   }
 
-  // ACCIÓN DEFINITIVA: banner solo cuando el golpe que mata al último
-  // héroe de un lado pone fin a la partida. As\\u00ed el jugador siempre
-  // sabe cu\\u00e1l fue la acci\\u00f3n que decidi\\u00f3 el final.
-  function sideOf(hero){
-    try{
-      if(typeof G==='undefined'||!G||!G.team)return null;
-      for(var s=0;s<2;s++){var side=s?'o':'p';var arr=G.team[side]||[];for(var i=0;i<arr.length;i++){if(arr[i]&&arr[i].id===hero.id)return side;}}
-    }catch(e){}
-    return null;
-  }
-  function allDead(side){
-    try{
-      if(typeof G==='undefined'||!G||!G.team)return false;
-      var arr=G.team[side]||[];
-      return arr.length>0 && arr.every(function(h){ return !h || !h.alive; });
-    }catch(e){return false;}
-  }
-  // 9 s: tiempo de sobra para que AMBOS jugadores lean cuál fue la acción
-  // definitiva antes de que salga la pantalla de victoria/derrota.
-  var FINAL_BLOW_DELAY = 9000;
-  function showFinalBlow(hero){
-    var old = document.getElementById('bf-final-blow');
-    if(old && old.parentNode) old.parentNode.removeChild(old);
-    var ov = document.createElement('div');
-    ov.id = 'bf-final-blow';
-    var name = (hero && hero.name) || 'H\\u00e9roe';
-    var html = '<div class="bf-fb-flash"></div>';
-    html += '<div class="bf-fb-body"><div class="bf-fb-title">ACCI\\u00d3N DEFINITIVA</div><div class="bf-fb-sub">' + name + ' cae. Fin de la partida.</div></div>';
-    ov.innerHTML = html;
-    (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
-    // Retrasa el fin de partida para que el banner se vea completo.
-    window.__bfFinalBlowUntil = Date.now() + FINAL_BLOW_DELAY;
-    setTimeout(function(){ ov.classList.add('bf-fb-out'); }, FINAL_BLOW_DELAY - 600);
-    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, FINAL_BLOW_DELAY);
-  }
-
-  // Hook de checkWin: retrasa el fin de partida (y la cinemática final del
-  // juego) hasta que el banner de ACCIÓN DEFINITIVA termine. As\\u00ed el
-  // jugador siempre ve cu\\u00e1l fue el \\u00faltimo golpe antes de que
-  // salga la pantalla de victoria/derrota.
-  function installCheckWinDelay(){
-    if(typeof window.checkWin !== 'function' || window.__bfFinalBlowDelayHooked) return false;
-    window.__bfFinalBlowDelayHooked = true;
-    var orig = window.checkWin;
-    window.checkWin = function(){
-      var until = window.__bfFinalBlowUntil || 0, now = Date.now();
-      if(until > now){
-        var self = this, args = arguments;
-        setTimeout(function(){ orig.apply(self, args); }, until - now);
-        return;
-      }
-      return orig.apply(this, arguments);
-    };
-    return true;
-  }
-
-  // Hook de dealDamage: solo muestra el banner si el golpe que mata al
-  // h\\u00e9roe deja a todo su equipo sin vivos → acci\\u00f3n definitiva.
-  function installFinalBlowHook(){
-    if(typeof window.dealDamage !== 'function' || window.__bfFinalBlowHooked) return false;
-    window.__bfFinalBlowHooked = true;
-    var orig = window.dealDamage;
-    window.dealDamage = function(target, dmg, opts){
-      var wasAlive = target && target.alive;
-      var result = orig.apply(this, arguments);
-      try{
-        if(wasAlive && target && !target.alive && Number(dmg) > 0){
-          var side = sideOf(target);
-          if(side && allDead(side)){
-            showFinalBlow(target);
-          }
-        }
-      }catch(e){}
-      return result;
-    };
-    return true;
-  }
+  // (El resumen de la ACCIÓN DEFINITIVA se rehará como repaso de la jugada;
+  //  el cartel anterior y su espera al final de partida se han retirado.)
 
   function hookRender(){
     if(typeof window.renderBattle !== 'function' || window.renderBattle.__bfPassiveMarker) return false;
@@ -183,10 +108,8 @@ export const PASSIVE_MARKER_PATCH = `
   var tries = 0;
   var timer = setInterval(function(){
     hookRender();
-    installFinalBlowHook();
-    installCheckWinDelay();
     updateMarkers();
-    if((window.renderBattle && window.renderBattle.__bfPassiveMarker && window.__bfFinalBlowHooked) || tries++ > 120) clearInterval(timer);
+    if((window.renderBattle && window.renderBattle.__bfPassiveMarker) || tries++ > 120) clearInterval(timer);
   }, 200);
   updateMarkers();
 })();
