@@ -72,6 +72,23 @@ export const BATTLE_FOCUS_ZOOM_PATCH = `
   // ahora respetan la posición del jugador. El hook se mantiene vacío para
   // no romper la cadena de flushFx de otros parches que esperan este envoltorio.
 
+  // Hechizos: al lanzar un hechizo, la vista sube al campo de batalla para que
+  // se vea toda la acción. Usa las MISMAS guardas que el cambio de turno: si el
+  // jugador ha pellizcado para acercarse, se respeta su encuadre y no se mueve.
+  function hookSpell(){
+    if(typeof window.castSpell!=='function'||window.castSpell.__bfFocus)return false;
+    var orig=window.castSpell;
+    window.castSpell=function(){
+      var r=orig.apply(this,arguments);
+      try{ setTimeout(toTop,60); }catch(e){}
+      return r;
+    };
+    window.castSpell.__bfFocus=1;
+    return true;
+  }
+  var st=0,ht=setInterval(function(){ if(hookSpell()||st++>120)clearInterval(ht); },200);
+  hookSpell();
+
   setInterval(scanTurn,250);
 })();
 </script>
