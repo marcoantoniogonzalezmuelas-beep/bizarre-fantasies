@@ -53,11 +53,31 @@ export const KILL_ACTOR_PATCH = `
       try{
         if(wasAlive && target && !target.alive && actor && actor.id !== target.id){
           var ctx = window.__bfActionCtx;
+          var kind = (ctx && Date.now() - ctx.ts < 6000) ? ctx.kind : 'attack';
           window.__bfKillActor = {
             side: actor.side,
             id: actor.id,
             victim: target.id,
-            kind: (ctx && Date.now() - ctx.ts < 6000) ? ctx.kind : 'attack',
+            kind: kind,
+            ts: Date.now(),
+          };
+          // Datos para el REPASO de la acción definitiva (último golpe mortal de
+          // la partida): quién, a quién, con qué y cuánto daño.
+          var ah = null;
+          try{
+            (G.team[actor.side] || []).forEach(function(h){ if(h && h.id === actor.id) ah = h; });
+          }catch(e2){}
+          window.__bfFinalBlow = {
+            side: actor.side, id: actor.id,
+            actorName: (ah && ah.name) || '',
+            actorElite: !!(ah && ah.eliteMode),
+            actorKey: (ah && ah._token) || actor.id,
+            victimId: target.id,
+            victimName: target.name || '',
+            victimElite: !!target.eliteMode,
+            victimKey: target._token || target.id,
+            kind: kind,
+            amount: Number(amount) || 0,
             ts: Date.now(),
           };
         }
