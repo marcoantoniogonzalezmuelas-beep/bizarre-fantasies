@@ -2,9 +2,10 @@
 // mesa" (table mat) a las zonas donde se muestran las cartas en el juego:
 // - Mano del jugador en batalla (contenedor de .chip.bf-chip-card)
 // - Mano del rival en batalla (.hand-rival)
-// - Fase de equipamiento (contenedor de .eq-hero)
-// Así las cartas parecen estar sobre un tapete de mesa de juego, como un TCG
-// real. La imagen del tapete se generó por IA basada en el estilo del juego.
+// - Cartas de la tienda en la fase de equipamiento (.shop-card, .bf-quick-card)
+// - Mazo de descartes (contenedor .bf-discard-pile)
+// Además, aclarea las cartas de hechizos que no se pueden jugar por falta de
+// maná para que el jugador siempre pueda ver qué carta es.
 
 const TABLE_MAT_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/da1552d7d_generated_image.png';
 
@@ -29,30 +30,52 @@ export const TABLE_MAT_PATCH = `
     'border-radius:10px; border:1.5px solid rgba(192,107,255,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
-  // Fase de equipamiento: el contenedor de los héroes.
-  '#s-equip .eq-list, #s-equip .eq-heroes, #s-equip .bf-eq-list {' +
-    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.65) !important;' +
-    'border-radius:12px; border:1.5px solid rgba(255,210,74,.25);' +
-    'box-shadow:inset 0 0 26px rgba(0,0,0,.55); padding:8px;' +
+  // Mazo de descartes: el tapete cubre todo el recuadro incluyendo el mazo.
+  '#s-battle .bf-discard-pile {' +
+    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
+    'border-radius:10px; border:1.5px solid rgba(255,140,50,.3);' +
+    'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
-  // Cada carta de la mano del jugador: el tapete como fondo base del recuadro,
-  // visible en el borde y la zona de texto. El arte va encima (z-index mayor).
+  // Fase de equipamiento: las cartas de la TIENDA (no los héroes).
+  '#s-equip .shop-card.has-art, #s-equip .bf-quick-card, #modalRoot .shop-card.has-art {' +
+    'background: url("' + MAT + '") center/cover, #07050b !important;' +
+    'border:1.5px solid rgba(255,210,74,.45) !important;' +
+  '}' +
+  // Cada carta de la mano del jugador: el tapete como fondo base del recuadro.
   '.chip.bf-chip-card {' +
     'background: url("' + MAT + '") center/cover, #07050b !important;' +
     'border:1.5px solid rgba(255,210,74,.55) !important;' +
   '}' +
-  // Cada héroe de la fase de equipamiento: el tapete como fondo del recuadro.
-  '.eq-hero.bf-eq-hero-with-art {' +
-    'background: url("' + MAT + '") center/cover, #120d1d !important;' +
+  // Cartas de hechizo/objeto que no se pueden jugar por falta de maná: el
+  // juego las oscurece con opacity/filter. Aquí les damos luz mínima para que
+  // el jugador siempre pueda ver qué carta es. Se aplica a .chip-spell y
+  // .chip-object cuando tienen style inline de opacity baja o filter brightness.
+  '.chip.bf-chip-card[style*="opacity"], .chip-spell[style*="opacity"], .chip-object[style*="opacity"] {' +
+    'opacity:0.85 !important;' +
+  '}' +
+  '.chip.bf-chip-card[style*="brightness"], .chip-spell[style*="brightness"], .chip-object[style*="brightness"] {' +
+    'filter:brightness(0.8) !important;' +
   '}' +
   '';
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
 
+  // JS: aclarea las cartas de hechizo/objeto que el juego ha oscurecido por
+  // falta de maná. El juego les pone opacity baja o filter brightness bajo
+  // inline. Aquí las subimos a un mínimo visible.
+  function brightenCantPlay() {
+    document.querySelectorAll('#s-battle .chip-spell, #s-battle .chip-object, #s-battle .chip.bf-chip-card').forEach(function(chip){
+      var op = parseFloat(chip.style.opacity || '1');
+      var f = chip.style.filter || '';
+      // Si el juego la ha oscurecido mucho (opacity < 0.5 o brightness < 0.5)
+      if(op < 0.5) chip.style.setProperty('opacity', '0.82', 'important');
+      if(/brightness\\((0?\\.?[0-4])/.test(f)) chip.style.setProperty('filter', 'brightness(0.78)', 'important');
+    });
+  }
+
   // JS de respaldo: encuentra los contenedores padre de las cartas y les pone
-  // el tapete si el CSS por selector no los alcanzó (los nombres de clase
-  // pueden variar según la pantalla del juego).
+  // el tapete si el CSS por selector no los alcanzó.
   function applyToContainers() {
     // Mano del jugador: padre de los chips (que no sea mano del rival).
     document.querySelectorAll('#s-battle .chip.bf-chip-card').forEach(function(chip){
@@ -76,20 +99,17 @@ export const TABLE_MAT_PATCH = `
       h.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
       h.style.padding = '5px';
     });
-    // Fase de equipamiento: contenedor de los héroes.
-    var equip = document.getElementById('s-equip');
-    if(equip && equip.classList.contains('active')) {
-      equip.querySelectorAll('.eq-hero.bf-eq-hero-with-art').forEach(function(hero){
-        var parent = hero.parentElement;
-        if(!parent || parent.dataset.bfMat) return;
-        parent.dataset.bfMat = '1';
-        parent.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.65)';
-        parent.style.borderRadius = '12px';
-        parent.style.border = '1.5px solid rgba(255,210,74,.25)';
-        parent.style.boxShadow = 'inset 0 0 26px rgba(0,0,0,.55)';
-        parent.style.padding = '8px';
-      });
-    }
+    // Mazo de descartes.
+    document.querySelectorAll('#s-battle .bf-discard-pile').forEach(function(d){
+      if(d.dataset.bfMat) return;
+      d.dataset.bfMat = '1';
+      d.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
+      d.style.borderRadius = '10px';
+      d.style.border = '1.5px solid rgba(255,140,50,.3)';
+      d.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
+      d.style.padding = '5px';
+    });
+    brightenCantPlay();
   }
 
   applyToContainers();
