@@ -37,8 +37,25 @@ export const BATTLE_SCENE_BG_PATCH = `
     if(!e.data) return;
     if(e.data.bfBattleArt && typeof e.data.bfBattleArt === 'object') ownScene = e.data.bfBattleArt;
     if(e.data.bfCardArt && typeof e.data.bfCardArt === 'object') ownPortrait = e.data.bfCardArt;
-    if(e.data.bfBattleArt || e.data.bfCardArt) apply();
+    if(e.data.bfBattleArt || e.data.bfCardArt){ preload(); apply(); }
   });
+
+  // Precarga de escenas y retratos: las imágenes se descargan en cuanto llegan
+  // los mapas, así que al entrar en batalla ya están en caché y el recuadro se
+  // pinta de golpe con su escena (antes iban apareciendo una a una).
+  var PRE = {};
+  function preload(){
+    var M = maps();
+    [M.scene, M.portrait].forEach(function(m){
+      Object.keys(m || {}).forEach(function(k){
+        var e = m[k]; if(!e) return;
+        [e.base, e.elite].forEach(function(u){
+          if(u && !PRE[u]){ PRE[u] = 1; var im = new Image(); im.src = u; }
+        });
+      });
+    });
+  }
+  preload();
 
   var st = document.createElement('style');
   st.textContent =
@@ -144,6 +161,25 @@ export const BATTLE_SCENE_BG_PATCH = `
       }
     });
   }
+
+  // Al empezar la partida los recuadros se pintaban primero "en crudo" y la
+  // escena/retrato entraban hasta medio segundo después (sondeo de 500 ms), y
+  // eso es lo que hacía que todo diera un salto. Enganchándose a renderBattle
+  // se aplican en el MISMO frame en que el juego dibuja los héroes, así que
+  // aparecen ya con su escena. El sondeo se mantiene solo como respaldo.
+  function hookRender(){
+    if(typeof window.renderBattle !== 'function' || window.renderBattle.__bfBscene) return false;
+    var orig = window.renderBattle;
+    window.renderBattle = function(){
+      var r = orig.apply(this, arguments);
+      try{ apply(); }catch(e){}
+      return r;
+    };
+    window.renderBattle.__bfBscene = 1;
+    return true;
+  }
+  var tries = 0, hk = setInterval(function(){ if(hookRender() || tries++ > 150) clearInterval(hk); }, 120);
+  hookRender();
 
   setInterval(apply, 500);
   apply();
