@@ -196,7 +196,7 @@ export const BIZARRE_ROOM_PATCH = `
       var av=vis[j].avatar||'';
       var nick=esc(vis[j].nick||'');
       var borderStyle=isTarget?';border-color:#FFD24A;box-shadow:0 0 14px rgba(255,210,74,.8)':'';
-      html+='<img class="bf-biz-wheel-av" src="'+esc(av)+'" style="left:calc(50% + '+x+'px);top:calc(50% + '+y+'px)'+borderStyle+'" onerror="this.style.visibility=\'hidden\'">';
+      html+='<img class="bf-biz-wheel-av" src="'+esc(av)+'" style="left:calc(50% + '+x+'px);top:calc(50% + '+y+'px)'+borderStyle+'" onerror="this.style.visibility=&quot;hidden&quot;">';
       html+='<div class="bf-biz-wheel-nick" style="left:calc(50% + '+x+'px);top:calc(50% + '+(y+26)+'px)">'+nick+'</div>';
     }
     var label=spinState.isSpinner?L('🎡 ¡Ruleta de la Suerte!','🎡 Wheel of Fortune!'):L('🎡 '+esc(spinState.spinner_nick||'')+' pulsó el pánico…','🎡 '+esc(spinState.spinner_nick||'')+' hit panic…');
