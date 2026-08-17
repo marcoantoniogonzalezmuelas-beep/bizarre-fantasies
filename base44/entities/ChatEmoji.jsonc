@@ -1,0 +1,51 @@
+{
+  "name": "ChatEmoji",
+  "type": "object",
+  "properties": {
+    "source_card_id": {
+      "type": "string",
+      "description": "card_id de la carta origen"
+    },
+    "name": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "default": "Cartas"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "source_card_id",
+    "name",
+    "url"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

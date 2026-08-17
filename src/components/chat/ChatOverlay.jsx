@@ -19,7 +19,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   const [emojiCat, setEmojiCat] = useState(0);
   const [unread, setUnread] = useState(0);
   const [sending, setSending] = useState(false);
-  const [avatarEmojis, setAvatarEmojis] = useState([]);
+  const [managedEmojis, setManagedEmojis] = useState([]);
   const messagesEndRef = useRef(null);
   const unsubRef = useRef(null);
   const myNickRef = useRef('');
@@ -29,27 +29,20 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   const iconDrag = useDragOffset();
   const panelDrag = useDragOffset();
 
-  // Carga los ~100 avatares del catálogo (AvatarCatalog) para la pestaña
-  // "Avatares" del selector de emojis del chat.
+  // Catálogo administrado: se comparte entre multiplayer y Habitación Bizarra.
   useEffect(() => {
-    base44.entities.AvatarCatalog.list('name', 200).then((cats) => {
-      const emojis = (cats || []).map((a, i) => ({
-        id: `av_${a.name || ('av' + i)}`,
-        name: a.name || '',
-        url: a.url,
-      }));
-      setAvatarEmojis(emojis);
-    }).catch(() => {});
+    base44.entities.ChatEmoji.filter({ active: true }, 'sort_order', 500).then(setManagedEmojis).catch(() => {});
   }, []);
 
-  // Categorías dinámicas: las estáticas + la pestaña de Avatares si hay datos.
   const categories = useMemo(() => {
-    const base = EMOJI_CATEGORIES;
-    if (avatarEmojis.length > 0) {
-      return [...base, { id: 'avatars', label: 'Avatares', emojis: avatarEmojis }];
-    }
-    return base;
-  }, [avatarEmojis]);
+    if (!managedEmojis.length) return EMOJI_CATEGORIES;
+    const groups = {};
+    managedEmojis.forEach((emoji) => {
+      const label = emoji.category || 'Cartas';
+      (groups[label] = groups[label] || []).push({ id: emoji.source_card_id, name: emoji.name, url: emoji.url });
+    });
+    return Object.entries(groups).map(([label, emojis]) => ({ id: label, label, emojis }));
+  }, [managedEmojis]);
 
   useEffect(() => { openRef.current = open; }, [open]);
 
@@ -119,13 +112,14 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
     if (!status?.roomCode) return;
     setSending(true);
     try {
-      await base44.entities.ChatMessage.create({
+      const created = await base44.entities.ChatMessage.create({
         room_code: status.roomCode,
         sender_nick: status.playerNick || 'Jugador',
         sender_is_host: !!status.isHost,
         text: trimmed,
         emoji_id: emojiId || '',
       });
+      setMessages((prev) => prev.some((m) => m.id === created.id) ? prev : [...prev, created]);
       setInput('');
     } catch (e) {
       // noop

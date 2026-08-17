@@ -21,6 +21,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AdminChat from './pages/AdminChat';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -57,6 +58,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/news" element={<FlashNewsAdmin />} />
       <Route path="/admin/ia" element={<AdminAiLogs />} />
       <Route path="/admin/subastas" element={<AdminAuctions />} />
+      <Route path="/admin/chat" element={<AdminChat />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/guiacartas" element={<CardGuide />} />
       <Route path="/races" element={<RacesPage />} />

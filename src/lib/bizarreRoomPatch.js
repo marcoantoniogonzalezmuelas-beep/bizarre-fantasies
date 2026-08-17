@@ -133,6 +133,10 @@ export const BIZARRE_ROOM_PATCH = `
   var selectedAvatar='';
   var joined=false;
 
+  function notifyRoomChat(active){
+    try{parent.postMessage({bfChatStatus:{roomCode:active?'BIZARRE_ROOM':'',connOpen:!!active,inBattle:false,isHost:false,playerNick:active&&session?session.nick:''}},'*');}catch(e){}
+  }
+
   var playerAvatars={}; // nick → avatar_url (BD PlayerAvatar)
   window.addEventListener('message',function(e){
     if(e.data&&Array.isArray(e.data.bfAvatarCatalog)){
@@ -505,6 +509,7 @@ export const BIZARRE_ROOM_PATCH = `
         session={token:res.session_token,nick:nick,avatar:av};
         joined=true;
         try{localStorage.setItem('bfBizarreSession',JSON.stringify(session));}catch(e){}
+        notifyRoomChat(true);
         startHeartbeat();
         renderBody();
       }).catch(function(){if(btn){btn.disabled=false;btn.textContent=L('Entrar en la habitación','Enter the room');}try{notif(L('No se pudo entrar.','Could not enter.'));}catch(e){}});
@@ -518,7 +523,7 @@ export const BIZARRE_ROOM_PATCH = `
       req('bizarre_heartbeat',{session_token:session.token}).then(function(res){
         if(!res||!res.ok||res.error==='session_expired'){
           // Sesión caducada: volver al formulario
-          stopHeartbeat();session=null;joined=false;renderBody();
+          stopHeartbeat();notifyRoomChat(false);session=null;joined=false;renderBody();
           try{notif(L('Tu sesión en la habitación expiró.','Your room session expired.'));}catch(e){}
           return;
         }
@@ -653,7 +658,7 @@ export const BIZARRE_ROOM_PATCH = `
       req('bizarre_cancel_spin',{session_token:session.token}).catch(function(){});
     }
     req('bizarre_leave',{session_token:session.token}).catch(function(){});
-    stopHeartbeat();session=null;joined=false;myMatch=null;spinState=null;
+    stopHeartbeat();notifyRoomChat(false);session=null;joined=false;myMatch=null;spinState=null;
     try{localStorage.removeItem('bfBizarreSession');}catch(e){}
     renderBody();
   }
@@ -681,6 +686,7 @@ export const BIZARRE_ROOM_PATCH = `
       req('bizarre_heartbeat',{session_token:session.token}).then(function(res){
         if(!res||!res.ok){session=null;joined=false;localStorage.removeItem('bfBizarreSession');return;}
         visitors=res.visitors||[];if(res.match)myMatch=res.match;
+        notifyRoomChat(true);
         startHeartbeat();
       }).catch(function(){session=null;joined=false;localStorage.removeItem('bfBizarreSession');});
     }

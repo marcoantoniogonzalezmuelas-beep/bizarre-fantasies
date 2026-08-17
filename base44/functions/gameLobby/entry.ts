@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
         const now = Date.now();
         for (const v of all) {
           if (now - (v.last_heartbeat || 0) > BIZARRE_TIMEOUT) {
+            await base44.asServiceRole.entities.ChatMessage.deleteMany({ room_code: 'BIZARRE_ROOM', sender_nick: v.nick });
             await base44.asServiceRole.entities.BizarreVisitor.delete(v.id);
           } else if (v.match_code && String(v.match_code).startsWith(SPIN_PREFIX)) {
             // Ruleta caducada: limpia el estado de spin para desbloquear el botón
@@ -217,6 +218,7 @@ Deno.serve(async (req) => {
       const pair = await base44.asServiceRole.entities.BizarreVisitor.filter({ match_code: v.match_code }, '-created_date', 10);
       for (const p of pair) {
         await base44.asServiceRole.entities.BizarreVisitor.update(p.id, { match_code: realCode });
+        await base44.asServiceRole.entities.ChatMessage.deleteMany({ room_code: 'BIZARRE_ROOM', sender_nick: p.nick });
       }
       return Response.json({ ok: true });
     }
@@ -225,7 +227,10 @@ Deno.serve(async (req) => {
       const sessionToken = String(body.session_token || '').slice(0, 80);
       if (!sessionToken) return Response.json({ ok: true });
       const matches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
-      if (matches[0]) await base44.asServiceRole.entities.BizarreVisitor.delete(matches[0].id);
+      if (matches[0]) {
+        await base44.asServiceRole.entities.ChatMessage.deleteMany({ room_code: 'BIZARRE_ROOM', sender_nick: matches[0].nick });
+        await base44.asServiceRole.entities.BizarreVisitor.delete(matches[0].id);
+      }
       return Response.json({ ok: true });
     }
 
