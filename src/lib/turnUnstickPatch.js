@@ -11,8 +11,9 @@
 // 2) Las cinemáticas nunca capturan pulsaciones (pointer-events:none) y la
 //    clase bf-cine-active se limpia en cuanto no queda ninguna en pantalla,
 //    para que el repintado del tablero deje de estar congelado.
-// 3) Tras limpiar, se repinta la batalla de inmediato y se suelta cualquier
-//    objetivo pendiente huérfano, así el menú de acciones vuelve al momento.
+// 3) Tras limpiar, se repinta la batalla de inmediato, así el panel de acciones
+//    vuelve al momento. El guardián NUNCA toca el estado del juego (objetivos
+//    pendientes incluidos): solo retira capas visuales muertas.
 export const TURN_UNSTICK_PATCH = `
 <script>
 (function(){
@@ -32,19 +33,9 @@ export const TURN_UNSTICK_PATCH = `
         cleaned=true;
       }
     });
-    if(!document.querySelector(CINE_SEL)){
-      if(document.body.classList.contains('bf-cine-active')){
-        document.body.classList.remove('bf-cine-active');
-        cleaned=true;
-      }
-      // Objetivo pendiente sin carta ni cinemática en pantalla y sin selector
-      // visible: es un pendiente huérfano, se suelta para devolver el menú.
-      try{
-        if(typeof B!=='undefined'&&B&&B.pending&&!document.querySelector('.bf-reveal')&&!document.querySelector('.pickable,.bf-pick,.targetable')){
-          B.pending=null;
-          cleaned=true;
-        }
-      }catch(e){}
+    if(!document.querySelector(CINE_SEL)&&document.body.classList.contains('bf-cine-active')){
+      document.body.classList.remove('bf-cine-active');
+      cleaned=true;
     }
     if(cleaned){ try{ if(typeof renderBattle==='function')renderBattle(); }catch(e){} }
   }
