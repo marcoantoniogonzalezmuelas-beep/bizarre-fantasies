@@ -51,6 +51,12 @@ export function applyHtmlPatches(html: string, RB: string): string {
   // con la fórmula original (MANA_BASE[tipo] + clan.manaBonus). Así editar el
   // maná desde el backoffice se refleja en la partida.
   html = html.replace('h.maxMana=Math.max(0,(MANA_BASE[h.type]||0)+(pr.manaBonus||0)); h.mana=h.maxMana;', 'h.maxMana=(h.mana!=null&&h.mana!==""?Number(h.mana):Math.max(0,(MANA_BASE[h.type]||0)+(pr.manaBonus||0))); h.mana=h.maxMana;');
+  // Skarla · Alarido Eterno: el texto no dejaba claro que afecta a TODOS los
+  // rivales (el motor siempre lo aplicó en área), así que se reescribe.
+  html = html.replace(/Penalización -6 hasta el próximo turno rival\./g, 'Todos los rivales -6 a todos sus stats durante 2 turnos.');
+  // La curación de 10 del debuff en área solo la tiene El Político en su carta;
+  // Skarla y Boss no deben curarse al usar su habilidad élite.
+  html = html.replace("pushLog('li',`${h.name} -${a} a todos los rivales.`);if(el)heal(h,10);", "pushLog('li',`${h.name} -${a} a todos los rivales.`);if(el&&h.id==='pol')heal(h,10);");
   html = html.replace(/Quita sueño\/parálisis\/maldición a un aliado\./g, 'Elimina cualquier estado negativo del héroe.');
   html = html.replace("case 'cleanse': pendTarget('Aliado a liberar',allies,(t)=>{t.sleep=0;t.para=0;t.skip=0;t._mods=t._mods.filter(m=>!(m.cc<0||m.ad<0||m.he<0));pushLog('lh',`${o.name}: ${t.name} liberado.`);consume();finishAct();});return;", "case 'cleanse': pendTarget('Héroe a restablecer',allies,(t)=>{t.sleep=0;t.para=0;t.skip=0;t.silence=0;t.mark=null;t._bfConfused=0;t._bfDrunk=0;t._mods=(t._mods||[]).filter(m=>!((m.cc||0)<0||(m.ad||0)<0||(m.he||0)<0||(m.vel||0)<0));pushLog('lh',`${o.name}: ${t.name} vuelve a su estado normal.`);consume();finishAct();});return;");
   html = html.replace("case 'cleanse':{const t=living(allies).find(a=>a.sleep||a.para||a.skip)||living(allies)[0];t.sleep=0;t.para=0;t.skip=0;pushLog('lh',`${o.name}: ${t.name} liberado.`);break;}", "case 'cleanse':{const t=living(allies).find(a=>a.sleep||a.para||a.skip||a.silence||a.mark||a._bfConfused||a._bfDrunk||(a._mods||[]).some(m=>(m.cc||0)<0||(m.ad||0)<0||(m.he||0)<0||(m.vel||0)<0))||living(allies)[0];t.sleep=0;t.para=0;t.skip=0;t.silence=0;t.mark=null;t._bfConfused=0;t._bfDrunk=0;t._mods=(t._mods||[]).filter(m=>!((m.cc||0)<0||(m.ad||0)<0||(m.he||0)<0||(m.vel||0)<0));pushLog('lh',`${o.name}: ${t.name} vuelve a su estado normal.`);break;}");
