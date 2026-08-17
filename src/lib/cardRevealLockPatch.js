@@ -56,7 +56,13 @@ body.bf-cine-active #bf-abil-anim .bf-aa-glowdisc{left:70%!important}
     var wrapped=function(){
       if(locked()){
         var self=this,args=arguments;
-        setTimeout(function(){ wrapped.apply(self,args); }, Math.max(60,until-Date.now()+40));
+        // Espera acotada: nunca puede quedarse encadenando esperas (eso dejaba
+        // el turno colgado si una revelación renovaba el candado).
+        var wait=Math.min(4300,Math.max(60,until-Date.now()+40));
+        setTimeout(function(){
+          until=0;   // el candado no puede volver a aplazar esta misma acción
+          try{ fn.apply(self,args); }catch(e){}
+        }, wait);
         return;
       }
       return fn.apply(this,arguments);
