@@ -36,10 +36,12 @@ export const TABLE_MAT_PATCH = `
     'border-radius:10px; border:1.5px solid rgba(255,140,50,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
-  // Fase de equipamiento: las cartas de la TIENDA (no los héroes).
-  '#s-equip .shop-card.has-art, #s-equip .bf-quick-card, #modalRoot .shop-card.has-art {' +
-    'background: url("' + MAT + '") center/cover, #07050b !important;' +
-    'border:1.5px solid rgba(255,210,74,.45) !important;' +
+  // Fase de equipamiento: SOLO el recuadro de cartas en mano (objetos y
+  // hechizos). Nada más de la fase de equipamiento lleva el tapete.
+  '#s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone {' +
+    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
+    'border-radius:10px; border:1.5px solid rgba(255,210,74,.3);' +
+    'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
   // Cada carta de la mano del jugador: el tapete como fondo base del recuadro.
   '.chip.bf-chip-card {' +
@@ -108,6 +110,16 @@ export const TABLE_MAT_PATCH = `
       d.style.border = '1.5px solid rgba(255,140,50,.3)';
       d.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
       d.style.padding = '5px';
+    });
+    // Fase de equipamiento: SOLO el recuadro de cartas en mano.
+    document.querySelectorAll('#s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone').forEach(function(h){
+      if(h.dataset.bfMat) return;
+      h.dataset.bfMat = '1';
+      h.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
+      h.style.borderRadius = '10px';
+      h.style.border = '1.5px solid rgba(255,210,74,.3)';
+      h.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
+      h.style.padding = '5px';
     });
     brightenCantPlay();
   }
