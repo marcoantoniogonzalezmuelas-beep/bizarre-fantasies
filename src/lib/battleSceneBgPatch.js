@@ -45,8 +45,9 @@ export const BATTLE_SCENE_BG_PATCH = `
     // Escena de batalla como fondo del recuadro del héroe (mismo encuadre que
     // la fase de equipamiento: cover + center 22%).
     '#s-battle .bhero.bf-bscene{background-size:cover!important;background-position:center 22%!important;background-repeat:no-repeat!important;isolation:isolate}' +
-    // Velo oscuro vertical (z-index:1) — idéntico al de la fase de equipamiento.
-    '#s-battle .bhero.bf-bscene::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:1;background:linear-gradient(180deg,rgba(8,5,14,.12) 0%,rgba(8,5,14,.42) 45%,rgba(8,5,14,.72) 100%);pointer-events:none}' +
+    // SIN velo: la escena se ve con sus colores originales, a plena luz. La
+    // legibilidad del texto se consigue solo con text-shadow (más abajo).
+    '#s-battle .bhero.bf-bscene::before{display:none!important}' +
     // Ocultar la tira original del juego (.bf-battle-art): ahora la escena es
     // el fondo de todo el recuadro, no una franja lateral.
     '#s-battle .bhero.bf-bscene .bf-battle-art{display:none!important}' +
