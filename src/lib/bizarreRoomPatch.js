@@ -31,7 +31,9 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-torch::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:12px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb24a 40%,#ff5a2a 75%,transparent 100%);box-shadow:0 0 16px rgba(255,150,40,.8),0 0 30px rgba(255,90,20,.5);animation:bfTorchFlick .45s ease-in-out infinite alternate}
 #bf-bizarre-overlay .bf-biz-torch::after{content:'';position:absolute;left:50%;top:-10px;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,160,60,.35),transparent 70%)}
 #bf-bizarre-overlay .bf-biz-rune{position:absolute;font-family:Cinzel,serif;font-size:26px;color:rgba(199,155,255,.3);text-shadow:0 0 12px rgba(192,91,255,.5);pointer-events:none;animation:bfRunePulse 3s ease-in-out infinite}
-#bf-bizarre-overlay .bf-biz-ember{position:absolute;bottom:10%;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfEmber 4s linear infinite;pointer-events:none}
+#bf-bizarre-overlay .bf-biz-ember{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfEmber 4s linear infinite;pointer-events:none}
+#bf-bizarre-overlay .bf-biz-sparkle{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff5dc;box-shadow:0 0 6px rgba(255,210,74,.8),0 0 12px rgba(255,210,74,.4);opacity:0;animation:bfSparkle 3s ease-in-out infinite;pointer-events:none}
+@keyframes bfSparkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.9;transform:scale(1.2)}}
 #bf-bizarre-overlay .bf-biz-duck{position:absolute;font-size:30px;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,210,74,.6));animation:bfDuckFloat 6s ease-in-out infinite}
 #bf-bizarre-overlay .bf-biz-tentacle{position:absolute;font-size:44px;pointer-events:none;opacity:.55}
 #bf-bizarre-overlay .bf-biz-eyeball{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:22px;pointer-events:none;animation:bfEyeBlink 4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(255,42,90,.8))}
@@ -131,15 +133,10 @@ export const BIZARRE_ROOM_PATCH = `
   var selectedAvatar='';
   var joined=false;
 
-  var cardArt={};
   var playerAvatars={}; // nick → avatar_url (BD PlayerAvatar)
   window.addEventListener('message',function(e){
     if(e.data&&Array.isArray(e.data.bfAvatarCatalog)){
       avatarCatalog=(e.data.bfAvatarCatalog||[]).map(function(a){return a.url;}).filter(Boolean);
-    }
-    if(e.data&&e.data.bfCardArt){
-      cardArt=e.data.bfCardArt||{};
-      renderHeroPortraits();
     }
     if(e.data&&e.data.bfPlayerAvatars&&typeof e.data.bfPlayerAvatars==='object'){
       playerAvatars=e.data.bfPlayerAvatars;
@@ -185,7 +182,12 @@ export const BIZARRE_ROOM_PATCH = `
     for(var i=0;i<vis.length;i++){ if(vis[i].nick===targetNick){ targetIdx=i; break; } }
     if(targetIdx<0) targetIdx=0;
     var N=vis.length;
-    var R=clamp(90, 38*100/N, 120);
+    // La ruleta escala según el nº de jugadores: hasta 20 avatares con nicks.
+    var wheelSize,avSize,nickSize,R;
+    if(N<=6){wheelSize=300;avSize=48;nickSize=10;R=118;}
+    else if(N<=10){wheelSize=320;avSize=40;nickSize=9;R=128;}
+    else if(N<=15){wheelSize=350;avSize=34;nickSize=8;R=142;}
+    else {wheelSize=380;avSize=30;nickSize=7;R=152;}
     var angleStep=360/N;
     var html='';
     for(var j=0;j<N;j++){
@@ -195,13 +197,14 @@ export const BIZARRE_ROOM_PATCH = `
       var isTarget=j===targetIdx;
       var av=vis[j].avatar||'';
       var nick=esc(vis[j].nick||'');
+      if(N>10&&nick.length>10)nick=nick.slice(0,9)+'…';
       var borderStyle=isTarget?';border-color:#FFD24A;box-shadow:0 0 14px rgba(255,210,74,.8)':'';
-      html+='<img class="bf-biz-wheel-av" src="'+esc(av)+'" style="left:calc(50% + '+x+'px);top:calc(50% + '+y+'px)'+borderStyle+'" onerror="this.style.visibility=&quot;hidden&quot;">';
-      html+='<div class="bf-biz-wheel-nick" style="left:calc(50% + '+x+'px);top:calc(50% + '+(y+26)+'px)">'+nick+'</div>';
+      html+='<img class="bf-biz-wheel-av" src="'+esc(av)+'" style="width:'+avSize+'px;height:'+avSize+'px;left:calc(50% + '+x+'px);top:calc(50% + '+y+'px)'+borderStyle+'" onerror="this.style.visibility=&quot;hidden&quot;">';
+      html+='<div class="bf-biz-wheel-nick" style="left:calc(50% + '+x+'px);top:calc(50% + '+(y+Math.round(avSize/2)+3)+'px);font-size:'+nickSize+'px">'+nick+'</div>';
     }
     var label=spinState.isSpinner?L('🎡 ¡Ruleta de la Suerte!','🎡 Wheel of Fortune!'):L('🎡 '+esc(spinState.spinner_nick||'')+' pulsó el pánico…','🎡 '+esc(spinState.spinner_nick||'')+' hit panic…');
     return '<div class="bf-biz-roulette-label">'+label+'</div>'+
-      '<div id="bf-biz-roulette"><div class="bf-biz-pointer">🔻</div><div class="bf-biz-wheel" id="bf-biz-wheel">'+html+'</div></div>'+
+      '<div id="bf-biz-roulette" style="width:'+wheelSize+'px;height:'+wheelSize+'px"><div class="bf-biz-pointer">🔻</div><div class="bf-biz-wheel" id="bf-biz-wheel">'+html+'</div></div>'+
       '<div class="bf-biz-roulette-sub" id="bf-biz-roulette-sub"></div>';
   }
   function spinRoulette(){
@@ -235,18 +238,26 @@ export const BIZARRE_ROOM_PATCH = `
   }
   function hideRoulette(){ spinState=null; }
 
-  // Pinta retratos de héroes/bizarros del Oráculo (BD) en los marcos de la
-  // habitación, como cuadros colgados en las paredes.
-  function renderHeroPortraits(){
-    var el=document.getElementById('bf-bizarre-overlay');
-    if(!el||el.style.display==='none')return;
-    var frames=el.querySelectorAll('.bf-biz-portrait');
-    if(!frames.length)return;
-    var urls=[];
-    Object.keys(cardArt).forEach(function(k){var a=cardArt[k];if(a&&a.base)urls.push(a.base);});
-    for(var i=urls.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=urls[i];urls[i]=urls[j];urls[j]=t;}
-    if(!urls.length)return;
-    frames.forEach(function(f,i){var img=f.querySelector('.bf-biz-portrait-img');if(img&&urls[i])img.style.backgroundImage="url('"+String(urls[i]).replace(/'/g,'')+"')";});
+  // Genera brasas y puntitos de luz dinámicos por toda la habitación.
+  function spawnAmbient(){
+    var c=document.getElementById('bf-biz-ambient');
+    if(!c)return;
+    c.innerHTML='';
+    for(var i=0;i<28;i++){
+      var e=document.createElement('div');
+      e.className='bf-biz-ember';
+      var sz=2+Math.floor(Math.random()*3);
+      e.style.cssText='left:'+(Math.random()*100).toFixed(1)+'%;bottom:'+(Math.random()*50).toFixed(1)+'%;width:'+sz+'px;height:'+sz+'px;animation-delay:'+(Math.random()*4).toFixed(2)+'s;animation-duration:'+(3+Math.random()*3).toFixed(2)+'s';
+      if(Math.random()<0.25){e.style.background='#c79bff';e.style.boxShadow='0 0 6px rgba(199,155,255,.9)';}
+      c.appendChild(e);
+    }
+    for(var i=0;i<36;i++){
+      var s=document.createElement('div');
+      s.className='bf-biz-sparkle';
+      var sz=2+Math.floor(Math.random()*4);
+      s.style.cssText='left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*92).toFixed(1)+'%;width:'+sz+'px;height:'+sz+'px;animation-delay:'+(Math.random()*4).toFixed(2)+'s;animation-duration:'+(2+Math.random()*3).toFixed(2)+'s';
+      c.appendChild(s);
+    }
   }
 
   function req(action,data){
@@ -330,28 +341,7 @@ export const BIZARRE_ROOM_PATCH = `
       el=document.createElement('div');
       el.id='bf-bizarre-overlay';
       el.innerHTML='<div class="bf-biz-room-bg"></div>'+
-        '<div class="bf-biz-deco">'+
-        '<div class="bf-biz-eyeball">👁</div>'+
-        '<div class="bf-biz-torch l"></div><div class="bf-biz-torch r"></div>'+
-        '<div class="bf-biz-rune" style="top:15%;left:14%">⛧</div>'+
-        '<div class="bf-biz-rune" style="top:12%;right:16%;animation-delay:1s">✦</div>'+
-        '<div class="bf-biz-rune" style="top:30%;left:6%;animation-delay:.5s">⚜</div>'+
-        '<div class="bf-biz-rune" style="top:26%;right:8%;animation-delay:1.5s">✧</div>'+
-        '<div class="bf-biz-ember" style="left:20%;animation-delay:0s"></div>'+
-        '<div class="bf-biz-ember" style="left:50%;animation-delay:1.3s"></div>'+
-        '<div class="bf-biz-ember" style="left:80%;animation-delay:2.6s"></div>'+
-        '<div class="bf-biz-duck" style="top:16%;left:32%;animation-delay:0s">🦆</div>'+
-        '<div class="bf-biz-duck" style="top:22%;right:30%;animation-delay:2s;font-size:26px">🦆</div>'+
-        '<div class="bf-biz-duck" style="top:38%;left:20%;animation-delay:4s;font-size:22px">🦆</div>'+
-        '<div class="bf-biz-shelf" style="bottom:34%"></div>'+
-        '<div class="bf-biz-shelf" style="bottom:14%"></div>'+
-        '<div class="bf-biz-portrait" style="bottom:calc(34% + 8px);left:9%"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-portrait" style="bottom:calc(34% + 8px);right:9%;animation-delay:1.2s"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-portrait" style="bottom:calc(14% + 8px);left:9%;animation-delay:.6s"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-portrait" style="bottom:calc(14% + 8px);right:9%;animation-delay:1.8s"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-tentacle" style="bottom:-10px;left:4%;color:#9d5df0;transform:rotate(-15deg);animation:bfTentWave 5s ease-in-out infinite">🐙</div>'+
-        '<div class="bf-biz-tentacle" style="bottom:-10px;right:4%;color:#c06bff;transform:rotate(15deg) scaleX(-1);animation:bfTentWave 5s ease-in-out infinite reverse">🐙</div>'+
-        '</div>'+
+        '<div class="bf-biz-deco" id="bf-biz-ambient"></div>'+
         '<div class="bf-biz-topbar"><div style="width:38px"></div><div class="bf-biz-titlebar">🃏 '+L('Habitación Bizarra','Bizarre Room')+'</div><button class="bf-biz-x">✕</button></div>'+
         '<div class="bf-biz-panel"><div class="bf-biz-sub">'+L('Entra, mira quién hay y pulsa el botón de pánico para una partida al azar.','Join, see who is here and hit the panic button for a random match.')+'</div><div class="bf-biz-body"></div></div>';
       document.body.appendChild(el);
@@ -363,8 +353,8 @@ export const BIZARRE_ROOM_PATCH = `
   function openOverlay(){
     var el=overlayEl();
     el.style.display='flex';
+    spawnAmbient();
     renderBody();
-    renderHeroPortraits();
   }
   function closeOverlay(){
     var el=document.getElementById('bf-bizarre-overlay');
