@@ -1034,10 +1034,15 @@ function buildArtScript(dbCards) {
       var dealt = originalDealDamage.apply(this, arguments);
       if (target && target.akind === 'reflect-damage' && dealt > 0 && !(opts && opts.bfReflect)) {
         var attacker = (typeof B !== 'undefined' && B.current && typeof getHero === 'function') ? getHero(B.current.side, B.current.id) : null;
-        if (attacker && attacker.alive && attacker !== target) {
+        var targetSide = typeof tSide === 'function' ? tSide(target) : '';
+        var atkSide = attacker && typeof tSide === 'function' ? tSide(attacker) : '';
+        // La refracción SOLO devuelve daño al RIVAL que la ha herido: si el daño
+        // viene de su propio equipo (o de ella misma, p. ej. un hechizo de área
+        // lanzado por un aliado), no se refleja nada — nunca daña a aliados.
+        if (attacker && attacker.alive && attacker !== target && atkSide && targetSide && atkSide !== targetSide) {
           var reflected = Math.ceil(dealt / 2);
-          var sourceCard = getBattleCard(typeof tSide === 'function' ? tSide(target) : '', target.id);
-          var attackerSide = typeof tSide === 'function' ? tSide(attacker) : '';
+          var sourceCard = getBattleCard(targetSide, target.id);
+          var attackerSide = atkSide;
           var attackerCard = getBattleCard(attackerSide, attacker.id);
           if (sourceCard) addOverlayFx(sourceCard, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-spell-wave" style="color:#c79bff"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#c79bff">↺ REFRACCIÓN</div>', 1050);
           if (sourceCard && attackerCard) launchMagic(cardCenter(sourceCard), cardCenter(attackerCard), 'arcano');
