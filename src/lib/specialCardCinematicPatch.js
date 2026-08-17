@@ -122,6 +122,17 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
   'body.bf-card-cine .bf-reveal{transform:translateX(-26vw)}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
+  // Si la carta tiene su PROPIA cinemática 3D en la BD (abilityAnimPatch),
+  // esa toma precedencia: no se reproduce además la cinemática genérica del
+  // fénix/robot (antes Pluma Fénix salía duplicada: las dos a la vez).
+  function hasOwnAnim(name){
+    try{
+      var m=window.__bfAbilityAnimMap||{},n=String(name||'').toLowerCase();
+      if(!n)return false;
+      for(var k in m){var e=m[k];if(e&&e.base&&e.name&&String(e.name).toLowerCase()===n)return true;}
+    }catch(e){}
+    return false;
+  }
   var lastCine=0;
   function playCine(kind){
     // Cinemáticas 3D desactivadas (botón "Desactivar animaciones"): se salta
@@ -178,9 +189,11 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
     window.__bfShowCardReveal=function(ev){
       try{
         var n=ev&&ev.name?String(ev.name):'';
-        if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');
-        else if(/f[eé]nix/i.test(n))playCine('phoenix');
-        else if(/transformer/i.test(n))playCine('robot');
+        if(n&&!hasOwnAnim(n)){
+          if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');
+          else if(/f[eé]nix/i.test(n))playCine('phoenix');
+          else if(/transformer/i.test(n))playCine('robot');
+        }
       }catch(e){}
       return orig.apply(this,arguments);
     };
@@ -199,7 +212,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       try{(list||[]).forEach(function(ev){
         if(!ev)return;
         if(ev.k==='transform')playCine('robot');
-        else if(ev.k==='bfcard'&&ev.name){
+        else if(ev.k==='bfcard'&&ev.name&&!hasOwnAnim(ev.name)){
           var n=String(ev.name);
           if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');
           else if(/f[eé]nix/i.test(n))playCine('phoenix');

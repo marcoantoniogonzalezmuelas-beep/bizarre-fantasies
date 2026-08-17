@@ -48,6 +48,16 @@ export const CARD_PLAY_REVEAL_PATCH = `
     // está reproduciendo a pantalla completa: NO mostrar la carta revelada
     // para evitar que ambas animaciones se solapen en el centro de la pantalla.
     if(window.__bfCardCineName&&window.__bfCardCineName===ev.name)return;
+    // Si el hechizo/objeto tiene cinemática 3D propia en la BD y las
+    // animaciones están ACTIVADAS, la cinemática 3D (que ya lleva el texto)
+    // basta: no se muestra además la carta en el centro. Con las animaciones
+    // desactivadas, sí se muestra la carta revelada.
+    if(!window.__bfNoCinematics&&ev.name){
+      try{
+        var _m=window.__bfAbilityAnimMap||{},_n=String(ev.name).toLowerCase();
+        for(var _k in _m){var _e=_m[_k];if(_e&&_e.base&&_e.name&&String(_e.name).toLowerCase()===_n)return;}
+      }catch(e){}
+    }
     var old=document.querySelector('.bf-reveal');
     if(old&&old.parentNode)old.parentNode.removeChild(old);
     var who='';

@@ -83,7 +83,12 @@ export const ABILITY_ANIM_PATCH = `
         var TOL=30,TOL2=TOL*TOL;
         var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
         function bgDist(i){var o=i*4;var dr=p[o]-bgR,dg=p[o+1]-bgG,db=p[o+2]-bgB;return dr*dr+dg*dg+db*db;}
-        function push(i){if(!seen[i]&&bgDist(i)<TOL2){seen[i]=1;q[qe++]=i;}}
+        // Un píxel casi negro conectado al marco SIEMPRE es fondo, aunque el
+        // muestreo de esquinas se haya desviado (brillos/rayos de luz en las
+        // esquinas, como en Curación Divina): sin esto el relleno se bloqueaba
+        // y el fondo negro se quedaba sin recortar.
+        function dark(i){var o=i*4;return p[o]<34&&p[o+1]<34&&p[o+2]<34;}
+        function push(i){if(!seen[i]&&(bgDist(i)<TOL2||dark(i))){seen[i]=1;q[qe++]=i;}}
         for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
         for(var yy=0;yy<H;yy++){push(yy*W);push(yy*W+W-1);}
         while(qs<qe){
@@ -107,7 +112,7 @@ export const ABILITY_ANIM_PATCH = `
             var ei=ey*W+ex;
             if(p[ei*4+3]===0)continue;
             var nT=(ex>0&&p[(ei-1)*4+3]===0)||(ex<W-1&&p[(ei+1)*4+3]===0)||(ey>0&&p[(ei-W)*4+3]===0)||(ey<H-1&&p[(ei+W)*4+3]===0);
-            if(nT&&bgDist(ei)<EDGE_TOL2)kill.push(ei);
+            if(nT&&(bgDist(ei)<EDGE_TOL2||dark(ei)))kill.push(ei);
           }}
           if(!kill.length)break;
           for(var ki=0;ki<kill.length;ki++)p[kill[ki]*4+3]=0;
@@ -322,6 +327,18 @@ export const ABILITY_ANIM_PATCH = `
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
     (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
+    // Si el recorte de fondo aún no estaba listo al abrir la cinemática, la
+    // imagen original (con fondo negro) se sustituye por la recortada en
+    // cuanto termina de procesarse.
+    if(!cu){
+      var imEl=ov.querySelector('.bf-aa-img');
+      var swp=setInterval(function(){
+        if(!ov.parentNode){clearInterval(swp);return;}
+        var c2=CUT[url];
+        if(c2){imEl.src=c2;clearInterval(swp);}
+      },250);
+      setTimeout(function(){clearInterval(swp);},5000);
+    }
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
     setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);playingUrl=null;},5000);
   }

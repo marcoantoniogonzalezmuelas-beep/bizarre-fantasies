@@ -35,7 +35,10 @@ function run(url, done) {
       const seen = new Uint8Array(W * H), q = new Int32Array(W * H);
       let qs = 0, qe = 0;
       const bgDist = (i) => { const o = i * 4; const dr = p[o] - bgR, dg = p[o + 1] - bgG, db = p[o + 2] - bgB; return dr * dr + dg * dg + db * db; };
-      const push = (i) => { if (!seen[i] && bgDist(i) < TOL2) { seen[i] = 1; q[qe++] = i; } };
+      // Casi negro conectado al marco = fondo, aunque las esquinas tengan
+      // brillos que desvíen el color muestreado (p.ej. Curación Divina).
+      const dark = (i) => { const o = i * 4; return p[o] < 34 && p[o + 1] < 34 && p[o + 2] < 34; };
+      const push = (i) => { if (!seen[i] && (bgDist(i) < TOL2 || dark(i))) { seen[i] = 1; q[qe++] = i; } };
       for (let xx = 0; xx < W; xx++) { push(xx); push((H - 1) * W + xx); }
       for (let yy = 0; yy < H; yy++) { push(yy * W); push(yy * W + W - 1); }
       while (qs < qe) {
@@ -56,7 +59,7 @@ function run(url, done) {
           const ei = ey * W + ex;
           if (p[ei * 4 + 3] === 0) continue;
           const nT = (ex > 0 && p[(ei - 1) * 4 + 3] === 0) || (ex < W - 1 && p[(ei + 1) * 4 + 3] === 0) || (ey > 0 && p[(ei - W) * 4 + 3] === 0) || (ey < H - 1 && p[(ei + W) * 4 + 3] === 0);
-          if (nT && bgDist(ei) < EDGE_TOL2) kill.push(ei);
+          if (nT && (bgDist(ei) < EDGE_TOL2 || dark(ei))) kill.push(ei);
         }
         if (!kill.length) break;
         for (const ki of kill) p[ki * 4 + 3] = 0;
