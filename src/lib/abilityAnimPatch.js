@@ -221,6 +221,12 @@ export const ABILITY_ANIM_PATCH = `
   }
 
   var lastCine=0;
+  // Cola de cinemáticas: si se pide una nueva mientras otra está en curso, se
+  // reproduce cuando termine la actual (5s). Así nunca se solapan, pero el
+  // jugador ve ambas (antes se saltaban con el cooldown de 5s y se perdían —
+  // p.ej. la Refracción Arcana de Juniana al recibir daño justo tras la
+  // cinemática del atacante).
+  var queuedCine=null,cineTimer=null;
   // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
@@ -229,9 +235,19 @@ export const ABILITY_ANIM_PATCH = `
     // animaciones" en batalla), se salta el overlay 3D. La carta revelada y
     // los FX 2D (rayo en cadena, tormenta ígnea, banners…) siguen funcionando.
     if(window.__bfNoCinematics)return;
-    var now=Date.now();
-    if(document.getElementById('bf-abil-anim')||now-lastCine<5000)return;
-    lastCine=now;
+    // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
+    // termine la actual. Solo se guarda la última pendiente (no acumula cola).
+    if(document.getElementById('bf-abil-anim')){
+      queuedCine={url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText};
+      if(!cineTimer){
+        cineTimer=setTimeout(function(){
+          cineTimer=null;var q=queuedCine;queuedCine=null;
+          if(q)showCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);
+        },5000);
+      }
+      return;
+    }
+    lastCine=Date.now();
     var ov=document.createElement('div');ov.id='bf-abil-anim';
     ov.style.setProperty('--aa-color',cc);
     ov.style.setProperty('--aa-glow',hexToRgba(cc,0.38)||'rgba(255,210,74,0.38)');
