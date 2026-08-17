@@ -98,12 +98,9 @@ export default function Ranking() {
   });
   // Fallback de avatares para IAs cuyas partidas se registraron antes de que
   // se guardara el avatar en el resultado.
-  Object.keys(AI_AVATARS).forEach(k => {
-    if (!playerArtMap[k]) playerArtMap[k] = AI_AVATARS[k];
-    // Aunque el avatar venga del resultado de la partida, las IAs se amplían
-    // igual para que su emblema llene el círculo sin marco claro alrededor.
-    else playerArtMap[k] = { ...playerArtMap[k], zoom: AI_AVATARS[k].zoom };
-  });
+  // Las IAs SIEMPRE usan su emblema oficial: algunas partidas antiguas
+  // guardaron una URL inválida en el resultado y el avatar salía en blanco.
+  Object.keys(AI_AVATARS).forEach(k => { playerArtMap[k] = AI_AVATARS[k]; });
   const playerExtra = (nick) => {
     const w = wins[nick] || 0, l = losses[nick] || 0;
     return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
