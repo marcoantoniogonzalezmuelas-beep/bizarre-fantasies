@@ -19,8 +19,10 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-x{width:38px;height:38px;border-radius:50%;border:1px solid rgba(199,155,255,.45);background:rgba(18,13,34,.72);color:#e2b0ff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);flex-shrink:0}
 #bf-bizarre-overlay .bf-biz-x:hover{background:rgba(40,24,64,.88);color:#fff}
 #bf-bizarre-overlay .bf-biz-panel{position:relative;z-index:3;width:100%;max-width:720px;margin-left:auto;margin-right:auto;padding:18px 18px 24px;border-radius:0 0 26px 26px;background:linear-gradient(180deg,rgba(22,14,40,.9),rgba(10,6,20,.96));border-bottom:2px solid rgba(199,155,255,.5);box-shadow:0 16px 44px rgba(0,0,0,.6),inset 0 0 30px rgba(120,40,200,.12);backdrop-filter:blur(6px);max-height:62vh;overflow-y:auto}
-#bf-bizarre-overlay .bf-biz-portrait{position:absolute;padding:6px;border-radius:7px;background:linear-gradient(135deg,#4a3420,#1f1408 55%,#3a2614);border:3px solid #c9a44a;box-shadow:0 14px 30px rgba(0,0,0,.8),inset 0 0 0 2px rgba(120,76,30,.55),0 0 14px rgba(192,91,255,.18);pointer-events:none;animation:bfPortraitSway 6s ease-in-out infinite;transform-origin:top center}
-#bf-bizarre-overlay .bf-biz-portrait-img{width:56px;height:72px;border-radius:3px;background:#1a1428;background-size:cover;background-position:center top;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 -16px 24px rgba(0,0,0,.55)}
+#bf-bizarre-overlay .bf-biz-shelf{position:absolute;height:7px;left:5%;right:5%;background:linear-gradient(180deg,#4a3220 0%,#1a0e06 45%,#2a180e 100%);box-shadow:0 6px 14px rgba(0,0,0,.8),inset 0 1px 0 rgba(160,110,50,.4),inset 0 -1px 0 rgba(0,0,0,.5);border-radius:2px;z-index:0;pointer-events:none}
+#bf-bizarre-overlay .bf-biz-portrait{position:absolute;padding:8px 8px 9px;border-radius:4px;background:linear-gradient(145deg,#d4a84a 0%,#8a6020 22%,#b8902a 48%,#6a4818 72%,#c9a44a 100%);box-shadow:0 18px 36px rgba(0,0,0,.9),0 6px 12px rgba(0,0,0,.6),inset 0 2px 3px rgba(255,230,160,.45),inset 0 -3px 6px rgba(0,0,0,.5),inset 2px 0 3px rgba(255,220,140,.25),inset -2px 0 3px rgba(0,0,0,.35),0 0 14px rgba(192,91,255,.1);pointer-events:none;animation:bfPortraitSway 6s ease-in-out infinite;transform-origin:top center;z-index:2}
+#bf-bizarre-overlay .bf-biz-portrait-img{width:56px;height:72px;border-radius:1px;background:#1a1428;background-size:cover;background-position:center top;box-shadow:inset 0 0 0 3px #ece0c8,inset 0 0 0 4px rgba(0,0,0,.25),inset 0 -14px 22px rgba(0,0,0,.45),inset 0 0 18px rgba(0,0,0,.25);position:relative;overflow:hidden}
+#bf-bizarre-overlay .bf-biz-portrait-img::after{content:'';position:absolute;inset:3px;background:linear-gradient(135deg,rgba(255,255,255,.16) 0%,transparent 35%,transparent 65%,rgba(255,255,255,.04) 100%);pointer-events:none;border-radius:1px}
 #bf-bizarre-overlay .bf-biz-portrait::before{content:'';position:absolute;top:-26px;left:50%;width:1.5px;height:26px;background:linear-gradient(180deg,rgba(199,155,255,.55),rgba(199,155,255,.12));transform:translateX(-50%)}
 #bf-bizarre-overlay .bf-biz-portrait::after{content:'';position:absolute;top:-29px;left:50%;width:7px;height:7px;border-radius:50%;background:#e2c46a;transform:translateX(-50%);box-shadow:0 0 8px rgba(226,196,106,.8),0 1px 2px #000}
 @keyframes bfPortraitSway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
@@ -341,10 +343,12 @@ export const BIZARRE_ROOM_PATCH = `
         '<div class="bf-biz-duck" style="top:16%;left:32%;animation-delay:0s">🦆</div>'+
         '<div class="bf-biz-duck" style="top:22%;right:30%;animation-delay:2s;font-size:26px">🦆</div>'+
         '<div class="bf-biz-duck" style="top:38%;left:20%;animation-delay:4s;font-size:22px">🦆</div>'+
-        '<div class="bf-biz-portrait" style="top:73%;left:8px"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-portrait" style="top:77%;left:calc(33% - 16px);animation-delay:1.2s"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-portrait" style="top:73%;right:calc(33% - 16px);animation-delay:.6s"><div class="bf-biz-portrait-img"></div></div>'+
-        '<div class="bf-biz-portrait" style="top:77%;right:8px;animation-delay:1.8s"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-shelf" style="bottom:34%"></div>'+
+        '<div class="bf-biz-shelf" style="bottom:14%"></div>'+
+        '<div class="bf-biz-portrait" style="bottom:calc(34% + 8px);left:9%"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-portrait" style="bottom:calc(34% + 8px);right:9%;animation-delay:1.2s"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-portrait" style="bottom:calc(14% + 8px);left:9%;animation-delay:.6s"><div class="bf-biz-portrait-img"></div></div>'+
+        '<div class="bf-biz-portrait" style="bottom:calc(14% + 8px);right:9%;animation-delay:1.8s"><div class="bf-biz-portrait-img"></div></div>'+
         '<div class="bf-biz-tentacle" style="bottom:-10px;left:4%;color:#9d5df0;transform:rotate(-15deg);animation:bfTentWave 5s ease-in-out infinite">🐙</div>'+
         '<div class="bf-biz-tentacle" style="bottom:-10px;right:4%;color:#c06bff;transform:rotate(15deg) scaleX(-1);animation:bfTentWave 5s ease-in-out infinite reverse">🐙</div>'+
         '</div>'+
@@ -426,7 +430,7 @@ export const BIZARRE_ROOM_PATCH = `
       }).join('');
       if(!listHtml)listHtml='<div style="text-align:center;color:#cfc6dd;font-size:13px;padding:14px">'+L('Aún no hay otros visitantes.','No other visitors yet.')+'</div>';
       var canPanic=visitors.length>=3;
-      body.innerHTML='<div class="bf-biz-count">'+L('Visitantes en la habitación','Visitors in the room')+': <b>'+visitors.length+'</b> · '+L('Mínimo 3 para el botón de pánico','Min 3 for panic button')+'</div>'+
+      body.innerHTML='<div class="bf-biz-count">'+L('Visitantes en la habitación','Visitors in the room')+': <b>'+visitors.length+'/20</b> · '+L('Mínimo 3 para el botón de pánico','Min 3 for panic button')+'</div>'+
         '<div class="bf-biz-list">'+listHtml+'</div>'+
         '<button class="bf-biz-btn bf-biz-panic" id="bf-biz-panic-btn"'+(canPanic?'':'disabled')+'>'+L('🚨 BOTÓN DE PÁNICO','🚨 PANIC BUTTON')+'</button>'+
         '<button class="bf-biz-btn bf-biz-leave" id="bf-biz-leave-btn">'+L('Salir de la habitación','Leave the room')+'</button>';
@@ -501,7 +505,13 @@ export const BIZARRE_ROOM_PATCH = `
       }catch(e){}
       var av=(window.bfMyAvatar&&window.bfMyAvatar.url)||(window.__bfAvatarMap&&window.__bfAvatarMap[nick])||'';
       req('bizarre_join',{nick:nick,avatar:av}).then(function(res){
-        if(!res||!res.ok){if(btn){btn.disabled=false;btn.textContent=L('Entrar en la habitación','Enter the room');}try{notif(L('No se pudo entrar.','Could not enter.'));}catch(e){}return;}
+        if(!res||!res.ok){
+          if(btn){btn.disabled=false;btn.textContent=L('Entrar en la habitación','Enter the room');}
+          var joinMsg=L('No se pudo entrar.','Could not enter.');
+          if(res&&res.error==='room_full')joinMsg=L('Habitación llena (20/20). Inténtalo más tarde.','Room full (20/20). Try again later.');
+          try{notif(joinMsg);}catch(e){}
+          return;
+        }
         session={token:res.session_token,nick:nick,avatar:av};
         joined=true;
         try{localStorage.setItem('bfBizarreSession',JSON.stringify(session));}catch(e){}

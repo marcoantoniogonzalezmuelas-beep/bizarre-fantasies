@@ -72,6 +72,16 @@ Deno.serve(async (req) => {
       const nick = String(body.nick || '').slice(0, 28).trim();
       const avatar = String(body.avatar || '').slice(0, 600);
       if (!nick) return Response.json({ error: 'Nick required' }, { status: 400 });
+      // Capacidad máxima: 20 visitantes (10 partidas simultáneas). Si la
+      // habitación está llena, bloquea el acceso salvo que el nick ya esté
+      // dentro (reentrada tras recarga).
+      const allForCap = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
+      const nowCap = Date.now();
+      const activeCap = allForCap.filter((v) => nowCap - (v.last_heartbeat || 0) < BIZARRE_TIMEOUT && !v.match_code);
+      const isReentry = activeCap.some((v) => String(v.nick).toLowerCase() === nick.toLowerCase());
+      if (activeCap.length >= 20 && !isReentry) {
+        return Response.json({ ok: false, error: 'room_full' });
+      }
       // Elimina visitantes existentes con el mismo nick (evita duplicados)
       const existing = await base44.asServiceRole.entities.BizarreVisitor.filter({ nick }, '-created_date', 10);
       for (const v of existing) {
