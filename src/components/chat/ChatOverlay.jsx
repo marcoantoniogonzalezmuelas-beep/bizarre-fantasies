@@ -239,6 +239,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
             </div>
             <button
               onClick={() => setOpen(false)}
+              onPointerDown={(e) => e.stopPropagation()}
               className="rounded-full p-1 transition-colors hover:bg-white/10"
               aria-label="Cerrar chat"
             >
