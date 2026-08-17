@@ -21,21 +21,12 @@ export const EQ_HERO_SCENE_BG_PATCH = `
   });
 
   var st = document.createElement('style');
-  st.textContent = '#s-equip .eq-hero.bf-eq-scene{background-size:100% 100%!important;background-position:center center!important;background-repeat:no-repeat!important;border-color:rgba(255,210,74,.4)!important;box-shadow:inset 0 0 40px rgba(0,0,0,.55),0 4px 16px rgba(0,0,0,.5)!important}' +
+  st.textContent = '#s-equip .eq-hero.bf-eq-scene{background-size:cover!important;background-position:center 22%!important;background-repeat:no-repeat!important;border-color:rgba(255,210,74,.4)!important;box-shadow:inset 0 0 40px rgba(0,0,0,.55),0 4px 16px rgba(0,0,0,.5)!important}' +
     '#s-equip .eq-hero.bf-eq-scene>*{position:relative;z-index:2}' +
     '#s-equip .eq-hero.bf-eq-scene{position:relative;isolation:isolate}' +
     '#s-equip .eq-hero.bf-eq-scene::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:1;background:linear-gradient(180deg,rgba(8,5,14,.12) 0%,rgba(8,5,14,.42) 45%,rgba(8,5,14,.72) 100%)}' +
     '#s-equip .eq-hero.bf-eq-scene .eq-hero-name,#s-equip .eq-hero.bf-eq-scene .eq-extra,#s-equip .eq-hero.bf-eq-scene .eq-slot{text-shadow:0 2px 6px #000,0 0 10px rgba(0,0,0,.9)}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-slot{background:rgba(12,8,20,.72)!important}' +
-    // Sin retrato: el contenido aprovecha TODO el ancho del recuadro.
-    '#s-equip .eq-hero.bf-eq-scene{padding:14px 16px!important}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-hero-name{font-size:19px!important;width:100%}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-extra{font-size:14px!important;width:100%}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-slot{width:100%!important;box-sizing:border-box;font-size:14px!important;padding:11px 13px!important;' +
-      'display:flex!important;align-items:center!important;gap:10px!important;justify-content:flex-start!important;text-align:left!important;flex-wrap:nowrap!important}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-slot img{flex:0 0 auto!important;position:static!important;margin:0!important}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-slot>span,#s-equip .eq-hero.bf-eq-scene .eq-slot>div{min-width:0;flex:1 1 auto;text-align:left!important}' +
-    '#s-equip .eq-hero.bf-eq-scene .eq-slot .slot-x{flex:0 0 auto!important}';
+    '#s-equip .eq-hero.bf-eq-scene .eq-slot{background:rgba(12,8,20,.72)!important}';
   document.head.appendChild(st);
 
   function heroById(id){
