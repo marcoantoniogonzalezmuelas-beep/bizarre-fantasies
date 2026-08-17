@@ -350,13 +350,22 @@ export default function AdminCards() {
         ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
         : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
       const refs = refImages(refUrl);
-      const result = await withTimeout(genImageWithFallback(prompt, refs), 120000, 'la generación de la imagen');
+      // Si la referencia (arte de la carta) hace fallar al motor de imagen, se
+      // reintenta sin referencia: así los tokens/bizarros con arte problemático
+      // (p.ej. la Grulla) sí pueden generar su escena.
+      let result;
+      try {
+        result = await withTimeout(genImageWithFallback(prompt, refs), 120000, 'la generación de la imagen');
+      } catch (e) {
+        console.error('Escena con referencia fallida, reintento sin referencia', e);
+        result = await withTimeout(genImageWithFallback(prompt, []), 120000, 'la generación de la imagen');
+      }
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
       }
     } catch (err) {
       console.error(err);
-      alert('No se pudo generar la escena de batalla.');
+      alert('No se pudo generar la escena de batalla: ' + (err?.message || 'error desconocido') + '. Inténtalo de nuevo.');
     } finally {
       setGenerating(false);
     }

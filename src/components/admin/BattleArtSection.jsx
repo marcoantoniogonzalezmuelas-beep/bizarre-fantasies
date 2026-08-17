@@ -47,10 +47,11 @@ export default function BattleArtSection({ form, onGenerate, generating }) {
           >
             {isGeneratingBase ? 'Generando...' : form.battle_art_url ? '🔄 Regenerar base' : '⚔️ Generar base'}
           </button>
-          {form.battle_art_url && (
+          {(
             <input
               type="text"
-              value={form.battle_art_url}
+              placeholder="Pega aquí la URL de la escena base"
+              value={form.battle_art_url || ''}
               onChange={(e) => onGenerate('__set_battle_art_url', e.target.value)}
               className="w-full rounded-lg border border-[#ffd24a22] bg-black/45 px-2 py-1 text-[10px] text-[#cfc6dd] outline-none"
             />
@@ -81,10 +82,11 @@ export default function BattleArtSection({ form, onGenerate, generating }) {
           >
             {isGeneratingElite ? 'Generando...' : form.elite_battle_art_url ? '🔄 Regenerar élite' : '⚔️ Generar élite'}
           </button>
-          {form.elite_battle_art_url && (
+          {(
             <input
               type="text"
-              value={form.elite_battle_art_url}
+              placeholder="Pega aquí la URL de la escena élite"
+              value={form.elite_battle_art_url || ''}
               onChange={(e) => onGenerate('__set_elite_battle_art_url', e.target.value)}
               className="w-full rounded-lg border border-[#c05bff22] bg-black/45 px-2 py-1 text-[10px] text-[#cfc6dd] outline-none"
             />
