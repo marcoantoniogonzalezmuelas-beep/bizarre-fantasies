@@ -89,6 +89,7 @@ export const JUNIANA_ABILITY_PATCH = `
           var side = (typeof tSide === 'function') ? tSide(target) : null;
           if(side){
             var foes = foesOf(side);
+            var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
             if(foes.length){
               var el = !!target.eliteMode;
               var reflectDmg = el ? Math.round(Number(dmg)) : Math.round(Number(dmg) / 2);
@@ -96,14 +97,19 @@ export const JUNIANA_ABILITY_PATCH = `
                 if(el){
                   foes.forEach(function(f){
                     dealDamage(f, reflectDmg, {type:'spell', element:'arcano', bfReflect:true});
+                    if(typeof pushFx === 'function') pushFx({k:'status', side:(typeof tSide==='function'?tSide(f):foesSide), id:f.id, txt:'\\u2192'+reflectDmg});
                   });
                   if(typeof pushLog === 'function') pushLog('ld', (target.eAbility||target.ability||target.name) + ' refleja ' + reflectDmg + ' de da\\u00f1o m\\u00e1gico a todos los enemigos.');
                 }else{
                   var tgt = foes[Math.floor(Math.random() * foes.length)];
                   dealDamage(tgt, reflectDmg, {type:'spell', element:'arcano', bfReflect:true});
+                  if(typeof pushFx === 'function') pushFx({k:'status', side:(typeof tSide==='function'?tSide(tgt):foesSide), id:tgt.id, txt:'\\u2192'+reflectDmg});
                   if(typeof pushLog === 'function') pushLog('ld', (target.ability||target.name) + ' refleja ' + reflectDmg + ' de da\\u00f1o m\\u00e1gico a ' + tgt.name + '.');
                 }
-                if(typeof pushFx === 'function') pushFx({k:'status', side:side, id:target.id, txt:'\\u2726'});
+                // Indicador claro en Juniana: "REFLEJADO" + flash morado en su carta
+                if(typeof pushFx === 'function') pushFx({k:'status', side:side, id:target.id, txt:'\\u21A9 REFLEJADO'});
+                var card = document.getElementById('b_' + side + '_' + target.id);
+                if(card){ card.classList.add('bf-refract-flash'); setTimeout(function(){ card.classList.remove('bf-refract-flash'); }, 800); }
                 if(typeof renderBattle === 'function') renderBattle();
                 if(typeof netSync === 'function') netSync('s-battle');
               }
