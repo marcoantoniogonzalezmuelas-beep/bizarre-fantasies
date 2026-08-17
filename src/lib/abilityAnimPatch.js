@@ -139,12 +139,19 @@ export const ABILITY_ANIM_PATCH = `
         if(ent.base)cutout(ent.base);
         if(ent.elite)cutout(ent.elite);
       });
-      // Si el mapa llega después de que un héroe ya usó su habilidad, el
-      // escaneo anterior no pudo encontrar la animación (lookup vacío) y
-      // marcó prev[key]=true. Reseteando prev, el próximo escaneo reevalúa
-      // todos los héroes con abilityUsed=true y reproduce la animación ahora
-      // que el mapa está disponible.
-      prev={};
+      // Al recibir el mapa, marca como "ya reproducidos" los héroes que ya
+      // tienen abilityUsed=true. Así NO se relanzan sus cinemáticas cada vez
+      // que el mapa se reenvía (cada cambio de pantalla envía el mapa otra
+      // vez, y antes el reset prev={} provocaba que todos los héroes usados
+      // repitieran su animación sin sentido). Solo los héroes que usen su
+      // habilidad DESPUÉS de este momento dispararán la cinemática.
+      if(typeof G!=='undefined'&&G&&G.team){
+        ['p','o'].forEach(function(side){
+          (G.team[side]||[]).forEach(function(h){
+            if(h&&h.id&&h.abilityUsed)prev[side+'_'+h.id]=true;
+          });
+        });
+      }
     }
   });
 
@@ -156,13 +163,13 @@ export const ABILITY_ANIM_PATCH = `
   // se asigna inline según la variante de movimiento (abilityAnimMotions).
   '#bf-abil-anim .bf-aa-dim{position:absolute;inset:0;background:radial-gradient(circle at 50% 52%,transparent 24%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.78) 100%);animation:bfAaDim .5s ease-out both}'+
   '@keyframes bfAaDim{from{opacity:0}to{opacity:1}}'+
-  '#bf-abil-anim .bf-aa-glowdisc{position:absolute;top:50%;left:50%;width:min(80vmin,700px);height:min(80vmin,700px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--aa-glow,rgba(255,210,74,.4)) 0%,transparent 68%);opacity:0;animation:bfAaGlowIn .6s ease-out .05s both}'+
+  '#bf-abil-anim .bf-aa-glowdisc{position:absolute;top:50%;left:50%;width:min(80vmin,700px);height:min(80vmin,700px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--aa-glow,rgba(255,210,74,.22)) 0%,transparent 68%);opacity:0;animation:bfAaGlowIn .6s ease-out .05s both;z-index:1}'+
   '@keyframes bfAaGlowIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}'+
-  // COLORES ORIGINALES: sin brillos de color pegados a la figura (los dos
-  // drop-shadow del color de clan la teñían y la hacían parecer translúcida) y
-  // sin brightness. Solo una sombra negra de apoyo, saturación/contraste leves
-  // para que las ropas se vean vivas, y opacidad forzada al 100%.
-  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;mix-blend-mode:normal;filter:saturate(1.18) contrast(1.08) drop-shadow(0 16px 38px rgba(0,0,0,.8))}'+
+  // COLORES ORIGINALES PUROS: sin saturate/contrast (alteraban los colores y
+  // daban un aspecto translúcido/falso), sin mix-blend-mode, sin brillos de
+  // color. Solo una sombra negra de apoyo y opacidad forzada al 100%. z-index
+  // alto para que la imagen SIEMPRE esté encima del dim/glowdisc/veil/flash.
+  '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;mix-blend-mode:normal;z-index:5;filter:drop-shadow(0 16px 38px rgba(0,0,0,.8))}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
   '#bf-abil-anim .bf-aa-ttl{position:absolute;top:7%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 4.2s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
