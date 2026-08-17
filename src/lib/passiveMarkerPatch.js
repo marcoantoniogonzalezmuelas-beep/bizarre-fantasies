@@ -22,6 +22,13 @@ export const PASSIVE_MARKER_PATCH = `
     _bfRefract: { icon: '\\u2726', color: '#c79bff', label: 'Refracci\\u00f3n' },
     _bfCrane: { icon: '\\u{1F6E1}\\uFE0F', color: '#9dffcf', label: 'Protecci\\u00f3n' }
   };
+  // Mapa din\u00e1mico desde el editor: card_id \u2192 {flag, icon, color, label}
+  var markersMap = {};
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.bfPassiveMarkers && typeof e.data.bfPassiveMarkers === 'object'){
+      markersMap = e.data.bfPassiveMarkers;
+    }
+  });
 
   var css =
   // ---- Marcador permanente de habilidad pasiva sobre el retrato ----
@@ -58,8 +65,16 @@ export const PASSIVE_MARKER_PATCH = `
       var badge = card.querySelector('.bf-passive-mark');
       var found = null;
       if(h){
-        for(var flag in PASSIVES){
-          if(h[flag]){ found = PASSIVES[flag]; break; }
+        // Primero mira el mapa del editor (card_id → {flag, icon, color, label})
+        var cfg = markersMap[h.id] || markersMap[h.cid] || markersMap[h.card_id];
+        if(cfg && cfg.flag && h[cfg.flag]){
+          found = { icon: cfg.icon || '\\u2726', color: cfg.color || '#ffd24a', label: cfg.label || 'Pasiva' };
+        }
+        // Fallback al mapa hardcoded
+        if(!found){
+          for(var flag in PASSIVES){
+            if(h[flag]){ found = PASSIVES[flag]; break; }
+          }
         }
       }
       if(found){

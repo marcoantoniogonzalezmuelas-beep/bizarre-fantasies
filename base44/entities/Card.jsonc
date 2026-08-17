@@ -172,6 +172,28 @@
       "type": "string",
       "description": "Movimiento en pantalla de la cinem\u00e1tica 3D \u00e9lite. 'auto' = elegido por palabras clave de la descripci\u00f3n."
     },
+    "passive_marker": {
+      "type": "object",
+      "description": "Marcador de habilidad pasiva en batalla. Se muestra sobre el retrato cuando el flag est\u00e1 activo.",
+      "properties": {
+        "flag": {
+          "type": "string",
+          "description": "Flag del estado pasivo en el juego (ej: _bfRefract)"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Icono/emoji del marcador"
+        },
+        "color": {
+          "type": "string",
+          "description": "Color del marcador (hex)"
+        },
+        "label": {
+          "type": "string",
+          "description": "Texto del marcador"
+        }
+      }
+    },
     "in_auction": {
       "type": "boolean",
       "description": "If true, the hero is available in auctions"

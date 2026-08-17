@@ -374,6 +374,7 @@ export default function Home() {
   const abilityAnimRef = useRef(null);
   const avatarListRef = useRef(null);
   const cardArtRef = useRef(null);
+  const passiveMarkersRef = useRef(null);
   const avatarCatalogRef = useRef(null);
   const playerAvatarsRef = useRef(null);
   const nickCredsRef = useRef({});
@@ -565,6 +566,9 @@ export default function Home() {
         }
         if (cardArtRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfCardArt: cardArtRef.current }, '*');
+        }
+        if (passiveMarkersRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfPassiveMarkers: passiveMarkersRef.current }, '*');
         }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
@@ -818,7 +822,16 @@ export default function Home() {
         if (c.name) cardArt[c.name] = entry;
       });
       cardArtRef.current = cardArt;
+      // Marcadores de habilidades pasivas configurados desde el editor
+      const passiveMarkers = {};
+      (cards || []).forEach(c => {
+        if (c.card_id && c.passive_marker && c.passive_marker.flag) {
+          passiveMarkers[c.card_id] = c.passive_marker;
+        }
+      });
+      passiveMarkersRef.current = passiveMarkers;
       try { iframeRef.current?.contentWindow?.postMessage({ bfCardArt: cardArt }, '*'); } catch (e) {}
+      try { iframeRef.current?.contentWindow?.postMessage({ bfPassiveMarkers: passiveMarkers }, '*'); } catch (e) {}
       // Catálogo de avatares generados por IA para el selector del jugador.
       base44.entities.AvatarCatalog.list('name', 300).then(cat => {
         avatarCatalogRef.current = (cat || []).map(a => ({ name: a.name, url: a.url }));
@@ -868,6 +881,7 @@ export default function Home() {
           if (avatarCatalogRef.current) iw.postMessage({ bfAvatarCatalog: avatarCatalogRef.current }, '*');
           if (playerAvatarsRef.current) iw.postMessage({ bfPlayerAvatars: playerAvatarsRef.current }, '*');
           if (nickCredsRef.current && Object.keys(nickCredsRef.current).length) iw.postMessage({ bfNickCreds: Object.keys(nickCredsRef.current) }, '*');
+          if (passiveMarkersRef.current) iw.postMessage({ bfPassiveMarkers: passiveMarkersRef.current }, '*');
         }
       } catch (e) {}
     }).catch(() => {});
