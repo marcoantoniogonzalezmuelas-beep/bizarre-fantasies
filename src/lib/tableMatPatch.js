@@ -38,8 +38,8 @@ export const TABLE_MAT_PATCH = `
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
   // Fase de equipamiento: SOLO el recuadro de cartas en mano (objetos y
-  // hechizos). Nada más de la fase de equipamiento lleva el tapete.
-  '#s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone {' +
+  // hechizos, .eq-hand-box). Nada más de la fase de equipamiento lleva el tapete.
+  '#s-equip .eq-hand-box, #s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone {' +
     'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
     'border-radius:10px; border:1.5px solid rgba(255,210,74,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
@@ -113,7 +113,7 @@ export const TABLE_MAT_PATCH = `
       d.style.padding = '5px';
     });
     // Fase de equipamiento: SOLO el recuadro de cartas en mano.
-    document.querySelectorAll('#s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone').forEach(function(h){
+    document.querySelectorAll('#s-equip .eq-hand-box, #s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone').forEach(function(h){
       if(h.dataset.bfMat) return;
       h.dataset.bfMat = '1';
       h.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
