@@ -221,7 +221,7 @@ export const SPECIAL_CARD_CINEMATIC_PATCH = `
       // así que la cinemática se ve igual en tu pantalla y en la del rival.
       try{(list||[]).forEach(function(ev){
         if(!ev)return;
-        if(ev.k==='transform'&&!anyAnimMatches(/transformer/i))playCine('robot');
+        if(ev.k==='transform')playCine('robot');
         else if(ev.k==='bfcard'&&ev.name&&!hasOwnAnim(ev.name)){
           var n=String(ev.name);
           if(/ave.*f[eé]nix|f[eé]nix.*ave/i.test(n))playCine('phoenix_ave');

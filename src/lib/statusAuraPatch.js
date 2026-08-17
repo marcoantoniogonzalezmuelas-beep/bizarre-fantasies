@@ -125,17 +125,13 @@ export const STATUS_AURA_PATCH = `
   // parar y provocaban parpadeo en tablet. Se mantienen visibles, sin moverse.
   // Igual con las transiciones del recuadro al cambiar de turno/estado: nada
   // de crecer/encogerse continuamente.
+  // El recuadro del héroe NO se mueve ni se agranda por estado (nada de
+  // sacudidas, crecer/encoger ni latidos): el aura, el patrón, la etiqueta y
+  // las decoraciones se ven igual, pero quietos y con el tamaño de siempre.
   css+='.bf-decor{animation:none!important}'+
-       '.bhero,.bhero .bf-battle-art,.bhero .bf-bscene-portrait{transition:none!important}'+
+       '.bhero,.bhero::before,.bhero::after,.bhero .bf-pat,.bhero .bf-battle-art,.bhero .bf-bscene-portrait,.bhero .bf-agonize-badge{animation:none!important;transition:none!important}'+
+       '.bhero{transform:translateZ(0)!important}'+
        '.bhero .bf-battle-art,.bhero .bf-bscene-portrait{transform:none!important}';
-  // Retrato del héroe LO MÁS GRANDE posible dentro del recuadro. Ya no se
-  // reajusta con el turno ni con los estados, así que puede ocupar todo el
-  // ancho que cabe sin pisar el nombre, los stats ni las ranuras.
-  css+='#s-battle .bhero{padding-left:236px!important}'+
-       '#s-battle .bhero .bf-battle-art{width:222px!important}'+
-       '#s-battle .bhero.active-turn .bf-battle-art{width:222px!important}'+
-       '#s-battle .bhero.bf-bscene .bf-bscene-portrait{width:228px!important;background-position:center 6%!important}'+
-       '#s-battle .bhero.bf-agonizing .bf-agonize-badge{left:228px!important}';
   var style=document.createElement('style');
   style.textContent=css;
   document.head.appendChild(style);

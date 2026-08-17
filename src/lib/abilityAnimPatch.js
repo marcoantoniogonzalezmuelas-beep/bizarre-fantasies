@@ -87,7 +87,16 @@ export const ABILITY_ANIM_PATCH = `
         // muestreo de esquinas se haya desviado (brillos/rayos de luz en las
         // esquinas, como en Curación Divina): sin esto el relleno se bloqueaba
         // y el fondo negro se quedaba sin recortar.
-        function dark(i){var o=i*4;return p[o]<34&&p[o+1]<34&&p[o+2]<34;}
+        // OJO: esta excepción vale SOLO en una franja pegada al marco (12% del
+        // ancho/alto). Si se aplica a toda la imagen, el relleno viaja por los
+        // contornos negros del personaje y le abre agujeros por dentro: es lo
+        // que hacía que la figura se viera translúcida/fantasmal.
+        var BX=Math.max(8,Math.round(W*0.12)),BY=Math.max(8,Math.round(H*0.12));
+        function dark(i){
+          var o=i*4,ix=i%W,iy=(i-ix)/W;
+          if(ix>BX&&ix<W-BX&&iy>BY&&iy<H-BY)return false;
+          return p[o]<34&&p[o+1]<34&&p[o+2]<34;
+        }
         function push(i){if(!seen[i]&&(bgDist(i)<TOL2||dark(i))){seen[i]=1;q[qe++]=i;}}
         for(var xx=0;xx<W;xx++){push(xx);push((H-1)*W+xx);}
         for(var yy=0;yy<H;yy++){push(yy*W);push(yy*W+W-1);}
