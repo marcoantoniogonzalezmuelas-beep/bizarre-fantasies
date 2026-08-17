@@ -218,6 +218,41 @@ export default function Reglas() {
             </div>
           </div>
 
+          <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border-2 border-[#c06bff]/45 p-5 mb-5 shadow-[0_0_24px_rgba(192,91,255,.12)]">
+            <div className="font-heading font-black text-[#e2b0ff] text-lg mb-3">🃏 {L('Habitación Bizarra', 'Bizarre Room')}</div>
+            <p className="text-[#d8d0e4] text-base leading-relaxed mb-4">{L('La Habitación Bizarra es un lobby público donde entras con tu nick y contraseña, ves quién hay dentro y puedes pulsar el Botón de Pánico para una partida al azar contra otro visitante.', 'The Bizarre Room is a public lobby where you join with your nick and password, see who is inside and can hit the Panic Button for a random match against another visitor.')}</p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 bg-gradient-to-b from-[#1a0d2e]/85 to-[#0a0518]/95 rounded-xl p-3.5 border border-[#c06bff]/35">
+                <span className="shrink-0 w-10 h-10 rounded-lg border-2 border-[#c06bff]/50 flex items-center justify-center text-xl" style={{ background: '#c06bff', boxShadow: '0 0 14px #c06bffcc' }}>🚪</span>
+                <div className="flex-1">
+                  <div className="font-black text-base tracking-wide mb-1" style={{ color: '#e2b0ff' }}>{L('Entrar', 'Enter')}</div>
+                  <div className="text-[#e6dff2] text-sm leading-snug">{L('Entras con tu nick y contraseña. Verás el listado de visitantes con su avatar y victorias totales. Máximo 20 visitantes a la vez.', 'You join with your nick and password. You\'ll see the visitor list with their avatar and total wins. Maximum 20 visitors at once.')}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-gradient-to-b from-[#1a0d2e]/85 to-[#0a0518]/95 rounded-xl p-3.5 border border-[#ff2a5a]/45">
+                <span className="shrink-0 w-10 h-10 rounded-lg border-2 border-[#ff2a5a]/50 flex items-center justify-center text-xl" style={{ background: '#ff2a5a', boxShadow: '0 0 14px #ff2a5acc' }}>🚨</span>
+                <div className="flex-1">
+                  <div className="font-black text-base tracking-wide mb-1" style={{ color: '#ff7a9a' }}>{L('Botón de Pánico', 'Panic Button')}</div>
+                  <div className="text-[#e6dff2] text-sm leading-snug">{L('Necesita mínimo 3 visitantes para activarse. Al pulsarlo aparece una Ruleta de la Suerte que gira entre todos los visitantes y se detiene en tu rival: la partida arranca sola.', 'Needs at least 3 visitors to activate. When pressed, a Wheel of Fortune spins among all visitors and stops on your rival: the game starts automatically.')}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-gradient-to-b from-[#1a0d2e]/85 to-[#0a0518]/95 rounded-xl p-3.5 border border-[#c06bff]/35">
+                <span className="shrink-0 w-10 h-10 rounded-lg border-2 border-[#c06bff]/50 flex items-center justify-center text-xl" style={{ background: '#9d5df0', boxShadow: '0 0 14px #9d5df0cc' }}>🔄</span>
+                <div className="flex-1">
+                  <div className="font-black text-base tracking-wide mb-1" style={{ color: '#e2b0ff' }}>{L('Reanudación y regreso', 'Resuming and return')}</div>
+                  <div className="text-[#e6dff2] text-sm leading-snug">{L('La partida lleva contraseña interna para reanudar si se cae la conexión. Al terminar, un botón te devuelve a la Habitación Bizarra sin pasar por el menú.', 'The game has an internal password to resume if the connection drops. When finished, a button takes you back to the Bizarre Room without going through the menu.')}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-gradient-to-b from-[#1a0d2e]/85 to-[#0a0518]/95 rounded-xl p-3.5 border border-[#ffd24a]/35">
+                <span className="shrink-0 w-10 h-10 rounded-lg border-2 border-[#ffd24a]/50 flex items-center justify-center text-xl" style={{ background: '#FFD24A', boxShadow: '0 0 14px #FFD24Acc' }}>💬</span>
+                <div className="flex-1">
+                  <div className="font-black text-base tracking-wide mb-1" style={{ color: '#FFD24A' }}>{L('Chat de sala', 'Room chat')}</div>
+                  <div className="text-[#e6dff2] text-sm leading-snug">{L('Durante las partidas multijugador puedes abrir el chat desde el icono del borde derecho. Mensajes en tiempo real y emojis de héroes. Los insultos y contenido inapropiado se bloquean automáticamente.', 'During multiplayer games you can open the chat from the right edge icon. Real-time messages and hero emojis. Insults and inappropriate content are blocked automatically.')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5">
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">✨ {L('Estados de combate', 'Combat states')}</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
