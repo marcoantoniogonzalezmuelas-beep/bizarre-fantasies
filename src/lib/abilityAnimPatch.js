@@ -94,7 +94,36 @@ export const ABILITY_ANIM_PATCH = `
           if(cy>0)push(i0-W);
           if(cy<H-1)push(i0+W);
         }
-        // NADA de alfa parcial: el personaje queda 100% opaco. Antes se
+        // AFINADO DE BORDES: tras el relleno conservador (TOL 30) suele quedar
+        // una franja oscura de 1-4 px pegada al contorno de la figura (el halo
+        // negro que se ve alrededor del personaje). Se erosiona SOLO esa franja:
+        // píxeles del borde (vecinos de un transparente) que sigan pareciéndose
+        // al fondo con una tolerancia mayor. Máx 4 pasadas de 1 px → no puede
+        // comerse el interior de la figura (ropas/sombras quedan intactas).
+        var EDGE_TOL=85,EDGE_TOL2=EDGE_TOL*EDGE_TOL;
+        for(var pass=0;pass<4;pass++){
+          var kill=[];
+          for(var ey=0;ey<H;ey++){for(var ex=0;ex<W;ex++){
+            var ei=ey*W+ex;
+            if(p[ei*4+3]===0)continue;
+            var nT=(ex>0&&p[(ei-1)*4+3]===0)||(ex<W-1&&p[(ei+1)*4+3]===0)||(ey>0&&p[(ei-W)*4+3]===0)||(ey<H-1&&p[(ei+W)*4+3]===0);
+            if(nT&&bgDist(ei)<EDGE_TOL2)kill.push(ei);
+          }}
+          if(!kill.length)break;
+          for(var ki=0;ki<kill.length;ki++)p[kill[ki]*4+3]=0;
+        }
+        // Suavizado de 1 px SOLO en el contorno final: el píxel de borde baja a
+        // alfa 165 para que el recorte no se vea dentado. La figura sigue 100%
+        // opaca por dentro (nunca translúcida).
+        var edge=[];
+        for(var fy=0;fy<H;fy++){for(var fx=0;fx<W;fx++){
+          var fi=fy*W+fx;
+          if(p[fi*4+3]===0)continue;
+          var fT=(fx>0&&p[(fi-1)*4+3]===0)||(fx<W-1&&p[(fi+1)*4+3]===0)||(fy>0&&p[(fi-W)*4+3]===0)||(fy<H-1&&p[(fi+W)*4+3]===0);
+          if(fT)edge.push(fi);
+        }}
+        for(var fe=0;fe<edge.length;fe++)p[edge[fe]*4+3]=165;
+        // NADA de alfa parcial (interior): el personaje queda 100% opaco. Antes se
         // difuminaba el contorno bajando el alfa de los píxeles oscuros
         // pegados al fondo, y eso hacía que la figura (Patrón, Surucho…)
         // se viera translúcida. Solo se recorta el negro exterior, a fondo
