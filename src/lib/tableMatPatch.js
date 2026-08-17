@@ -44,6 +44,11 @@ export const TABLE_MAT_PATCH = `
     'border-radius:10px; border:1.5px solid rgba(255,210,74,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
+  // Etiquetas "Mano · Hechizos (× para devolver)" y "Mano · Objetos": el gris
+  // original no se lee sobre el tapete; se pasan a dorado con sombra.
+  '#s-equip .hand-lbl, #s-battle .hand-lbl {' +
+    'color:#ffd98a !important; font-weight:800 !important; text-shadow:0 1px 3px #000, 0 0 8px rgba(0,0,0,.9) !important; letter-spacing:.3px;' +
+  '}' +
   // Cada carta de la mano del jugador: el tapete como fondo base del recuadro.
   '.chip.bf-chip-card {' +
     'background: url("' + MAT + '") center/cover, #07050b !important;' +
