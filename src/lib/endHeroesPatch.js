@@ -52,9 +52,11 @@ export const END_HEROES_PATCH = `
     var aid = hh._token ? hh._token : (hh.id || '');
     var nm = hh.name || '';
     var isElite = !!(hh.eliteMode || hh._bfElite || hh.eliteUsed);
-    var av = window.__bfAvatarMap || {}, ba = window.__bfBattleArtMap || {}, ca = window.__bfCardArtMap || {};
-    if(aid && av[aid]) return av[aid];
-    if(nm && av[nm]) return av[nm];
+    // OJO: no se usa __bfAvatarMap. Ese mapa lo sobrescribe el lobby con los
+    // AVATARES DE LOS JUGADORES (por nick), y por eso a veces se colaba el
+    // avatar del jugador entre los 6 héroes. Aquí solo se usa arte de carta /
+    // escena de batalla, que siempre pertenece al héroe.
+    var ba = window.__bfBattleArtMap || {}, ca = window.__bfCardArtMap || {};
     if(aid && ba[aid]){ var e=ba[aid]; return isElite ? (e.elite||e.base) : e.base; }
     // Arte de la carta (tokens y bizarros como la Grulla, que no están en el
     // mapa de avatares ni tienen escena de batalla).
@@ -158,10 +160,42 @@ export const END_HEROES_PATCH = `
     return col;
   }
 
-  function buildTeam(team, isWin){
+  // Avatar + nick del jugador dueño de ese ejército (side 'p' = yo, 'o' = rival
+  // desde el punto de vista de este dispositivo).
+  function buildPlayerHead(side, mySide, isWin){
+    var mine = (side === mySide);
+    var av = mine ? window.bfMyAvatar : window.bfOppAvatar;
+    var url = (av && av.url) || '';
+    var name = '';
+    try {
+      if(typeof NET!=='undefined' && NET && NET.names_self && (typeof online==='function' ? online() : false)){
+        name = mine ? NET.names_self : (NET.names_opp || '');
+      }
+    } catch(e){}
+    if(!name) { try { name = (G.names && G.names[side]) || ''; } catch(e){} }
+    if(!url && !name) return null;
+    var head = el('div', 'display:flex;align-items:center;gap:7px');
+    if(url){
+      var im = document.createElement('img');
+      im.src = url;
+      im.setAttribute('style', 'width:clamp(28px,4vw,44px);height:clamp(28px,4vw,44px);border-radius:50%;object-fit:cover;' +
+        'border:2px solid ' + (isWin ? '#ffd24a' : '#4a3a3a') + ';box-shadow:0 2px 10px rgba(0,0,0,.6);' +
+        (isWin ? '' : '-webkit-filter:grayscale(100%) brightness(.7);filter:grayscale(100%) brightness(.7);'));
+      head.appendChild(im);
+    }
+    if(name){
+      head.appendChild(el('span', 'font-family:\\'Cinzel\\',serif;font-weight:1000;font-size:clamp(11px,2.2vw,17px);' +
+        'letter-spacing:1px;text-shadow:0 2px 4px #000;color:' + (isWin ? '#ffe9a8' : '#9a8f8f'), name));
+    }
+    return head;
+  }
+
+  function buildTeam(team, isWin, side, mySide){
     var arr = (team||[]).filter(function(h){ return h && !h._bfDuck; });
     if(!arr.length) return null;
     var wrap = el('div', 'display:flex;flex-direction:column;align-items:center;gap:6px');
+    var head = buildPlayerHead(side, mySide, isWin);
+    if(head) wrap.appendChild(head);
     var lbl = isWin
       ? (typeof L==='function' ? L('Vencedores','Winners') : 'Vencedores')
       : (typeof L==='function' ? L('Caídos','Fallen') : 'Caídos');
@@ -188,8 +222,8 @@ export const END_HEROES_PATCH = `
       var winnerSide = (youWin === (mySide==='p')) ? 'p' : 'o';
       var loserSide = winnerSide==='p' ? 'o' : 'p';
 
-      var win = buildTeam(G.team[winnerSide], true);
-      var lose = buildTeam(G.team[loserSide], false);
+      var win = buildTeam(G.team[winnerSide], true, winnerSide, mySide);
+      var lose = buildTeam(G.team[loserSide], false, loserSide, mySide);
       if(!win && !lose) return;
 
       var wrap = el('div', 'position:fixed;left:0;right:0;bottom:0;z-index:100055;display:flex;' +
