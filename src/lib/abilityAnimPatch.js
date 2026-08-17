@@ -238,6 +238,10 @@ export const ABILITY_ANIM_PATCH = `
   // p.ej. la Refracción Arcana de Juniana al recibir daño justo tras la
   // cinemática del atacante).
   var queuedCine=null,cineTimer=null;
+  // URL de la cinemática que se está reproduciendo ahora mismo. Se usa para
+  // evitar que la MISMA animación se encole dos veces (p.ej. si el hook de
+  // useAbility y el escaneo periódico la disparan a la vez).
+  var playingUrl=null;
   // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
@@ -249,6 +253,10 @@ export const ABILITY_ANIM_PATCH = `
     // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
     // termine la actual. Solo se guarda la última pendiente (no acumula cola).
     if(document.getElementById('bf-abil-anim')){
+      // Si la cinemática en curso o ya en cola es la MISMA (misma URL), no la
+      // encola de nuevo: evita que se repita la misma animación.
+      if(playingUrl===url)return;
+      if(queuedCine&&queuedCine.url===url)return;
       queuedCine={url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText};
       if(!cineTimer){
         cineTimer=setTimeout(function(){
@@ -258,6 +266,7 @@ export const ABILITY_ANIM_PATCH = `
       }
       return;
     }
+    playingUrl=url;
     lastCine=Date.now();
     var ov=document.createElement('div');ov.id='bf-abil-anim';
     ov.style.setProperty('--aa-color',cc);
@@ -274,7 +283,7 @@ export const ABILITY_ANIM_PATCH = `
     ov.innerHTML=html;
     (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
-    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},5000);
+    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);playingUrl=null;},5000);
   }
   function playAnim(side,hero){
     if(!hero)return;
@@ -389,7 +398,17 @@ export const ABILITY_ANIM_PATCH = `
     window.__bfAbilityAnimHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,h){
-      try{var k=h&&h.akind;if(!(k&&String(k).indexOf('tk_')===0))playAnim(side,h);}catch(e){}
+      try{
+        var k=h&&h.akind;
+        if(!(k&&String(k).indexOf('tk_')===0)){
+          playAnim(side,h);
+          // Marca este héroe como ya reproducido para que el escaneo periódico
+          // (que detecta abilityUsed false→true) NO lo dispare de nuevo. Sin
+          // esto, la cinemática se repite: useAbility la reproduce al instante
+          // y el escaneo la vuelve a encolar al ver el flag abilityUsed cambiar.
+          if(h&&h.id)prev[side+'_'+h.id]=true;
+        }
+      }catch(e){}
       return orig.apply(this,arguments);
     };
     return true;
