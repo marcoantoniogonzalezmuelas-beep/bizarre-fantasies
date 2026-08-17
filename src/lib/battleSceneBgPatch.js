@@ -16,20 +16,28 @@ export const BATTLE_SCENE_BG_PATCH = `
   if(window.__bfBattleSceneBg) return;
   window.__bfBattleSceneBg = true;
 
-  // Mapa card_id -> {base, elite} de ESCENAS DE BATALLA (battle_art_url).
-  var artMap = {};
-  // Mapa card_id -> {base, elite} de RETRATOS de carta (art_url).
-  var portraitMap = {};
+  // Mapas de arte. Se leen SIEMPRE de los globales que mantienen
+  // endGameFixPatch (__bfBattleArtMap, escenas) y cardArtMapPatch
+  // (__bfCardArtMap, retratos). Antes este parche solo escuchaba el
+  // postMessage del padre y, como los mapas ya se habían enviado antes de que
+  // arrancara, se quedaba con los mapas vacíos y nunca pintaba el fondo.
+  // Este parche guarda sus PROPIAS copias de los mapas al recibirlos del padre
+  // (el padre los reenvía en cada cambio de pantalla) y además cae a los
+  // globales que mantienen endGameFixPatch / cardArtMapPatch. Antes solo
+  // escuchaba el mensaje y si llegaba antes de arrancar se quedaba sin mapas.
+  var ownScene = null, ownPortrait = null;
+  function maps(){
+    return {
+      scene: ownScene || window.__bfBattleArtMap || {},
+      portrait: ownPortrait || window.__bfCardArtMap || {},
+    };
+  }
 
   window.addEventListener('message', function(e){
-    if(e.data && e.data.bfBattleArt && typeof e.data.bfBattleArt === 'object'){
-      artMap = e.data.bfBattleArt;
-      apply();
-    }
-    if(e.data && e.data.bfCardArt && typeof e.data.bfCardArt === 'object'){
-      portraitMap = e.data.bfCardArt;
-      apply();
-    }
+    if(!e.data) return;
+    if(e.data.bfBattleArt && typeof e.data.bfBattleArt === 'object') ownScene = e.data.bfBattleArt;
+    if(e.data.bfCardArt && typeof e.data.bfCardArt === 'object') ownPortrait = e.data.bfCardArt;
+    if(e.data.bfBattleArt || e.data.bfCardArt) apply();
   });
 
   var st = document.createElement('style');
@@ -68,7 +76,9 @@ export const BATTLE_SCENE_BG_PATCH = `
 
   function apply(){
     var scr = document.getElementById('s-battle');
-    if(!scr || !scr.classList.contains('active')) return;
+    if(!scr) return;
+    var M = maps();
+    var artMap = M.scene, portraitMap = M.portrait;
     scr.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
       // id formato: b_p_<card_id> o b_o_<card_id> → slice(4) quita el prefijo.
       var id = (card.id || '').slice(4);

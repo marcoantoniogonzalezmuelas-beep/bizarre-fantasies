@@ -76,7 +76,11 @@ export const ABILITY_ANIM_PATCH = `
           }}
         }
         bgR/=bgN;bgG/=bgN;bgB/=bgN;
-        var TOL=58,TOL2=TOL*TOL;
+        // Tolerancia CONSERVADORA: con 58 el relleno se comía zonas oscuras de
+        // la propia figura (ropa, sombras, contornos) que tocan el marco, y eso
+        // es lo que hacía que el héroe se viera translúcido/fantasmal. Con 30
+        // solo se elimina el fondo real, la figura queda entera y opaca.
+        var TOL=30,TOL2=TOL*TOL;
         var seen=new Uint8Array(W*H),q=new Int32Array(W*H),qs=0,qe=0;
         function bgDist(i){var o=i*4;var dr=p[o]-bgR,dg=p[o+1]-bgG,db=p[o+2]-bgB;return dr*dr+dg*dg+db*db;}
         function push(i){if(!seen[i]&&bgDist(i)<TOL2){seen[i]=1;q[qe++]=i;}}
