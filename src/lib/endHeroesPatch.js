@@ -176,12 +176,48 @@ export const END_HEROES_PATCH = `
     if(!url && !name) return null;
     var head = el('div', 'display:flex;align-items:center;gap:7px');
     if(url){
+      // Mismo tratamiento que los retratos de héroe: vencedor con corona,
+      // halo dorado y destello; perdedor en gris con tinieblas y velo de sangre.
+      var box = el('div', 'position:relative;width:clamp(32px,4.6vw,52px);height:clamp(32px,4.6vw,52px);' +
+        'border-radius:50%;overflow:hidden;background-color:#07050c;flex:0 0 auto;' +
+        'border:2px solid ' + (isWin ? '#ffd24a' : '#2b2b33') + ';' +
+        (isWin
+          ? 'animation:bfEhRing 1.6s ease-in-out infinite;'
+          : 'box-shadow:0 4px 14px rgba(0,0,0,.7),inset 0 0 18px rgba(0,0,0,.9);'));
       var im = document.createElement('img');
       im.src = url;
-      im.setAttribute('style', 'width:clamp(28px,4vw,44px);height:clamp(28px,4vw,44px);border-radius:50%;object-fit:cover;' +
-        'border:2px solid ' + (isWin ? '#ffd24a' : '#4a3a3a') + ';box-shadow:0 2px 10px rgba(0,0,0,.6);' +
-        (isWin ? '' : '-webkit-filter:grayscale(100%) brightness(.7);filter:grayscale(100%) brightness(.7);'));
-      head.appendChild(im);
+      im.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;' +
+        (isWin ? '' : '-webkit-filter:grayscale(100%) brightness(.42) contrast(1.15);' +
+                      'filter:grayscale(100%) brightness(.42) contrast(1.15);'));
+      box.appendChild(im);
+      if(isWin){
+        box.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;' +
+          'background:radial-gradient(circle at 50% 28%,rgba(255,232,150,.5),rgba(255,205,70,.18) 48%,rgba(255,190,40,0) 76%);' +
+          'animation:bfEhGoldShine 1.8s ease-in-out infinite'));
+        var sw = el('div', 'position:absolute;inset:0;overflow:hidden;pointer-events:none');
+        sw.appendChild(el('div', 'position:absolute;top:-30%;bottom:-30%;width:38%;' +
+          'background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,246,214,.75),rgba(255,255,255,0));' +
+          'animation:bfEhSweep 2.6s ease-in-out infinite'));
+        box.appendChild(sw);
+      } else {
+        box.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;' +
+          'background:radial-gradient(ellipse at 50% 30%,rgba(0,0,0,0) 20%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.95) 100%)'));
+        box.appendChild(el('div', 'position:absolute;inset:0;pointer-events:none;' +
+          'background:linear-gradient(180deg,rgba(120,10,10,.18),rgba(50,3,3,.4));' +
+          'animation:bfEhBloodPulse 2.6s ease-in-out infinite'));
+      }
+      var holder = el('div', 'position:relative;display:flex;align-items:center');
+      holder.appendChild(box);
+      if(isWin){
+        holder.appendChild(el('div', 'position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:3;' +
+          'font-size:clamp(13px,2.6vw,22px);filter:drop-shadow(0 0 7px rgba(255,210,74,.95));' +
+          'animation:bfEhCrown 1.8s ease-in-out infinite', '👑'));
+      } else {
+        holder.appendChild(el('div', 'position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);z-index:3;' +
+          'font-size:clamp(10px,2vw,15px);color:#ff4444;text-shadow:0 0 8px rgba(220,30,30,.9),0 1px 2px #000',
+          '\\u2620\\uFE0E'));
+      }
+      head.appendChild(holder);
     }
     if(name){
       head.appendChild(el('span', 'font-family:\\'Cinzel\\',serif;font-weight:1000;font-size:clamp(11px,2.2vw,17px);' +

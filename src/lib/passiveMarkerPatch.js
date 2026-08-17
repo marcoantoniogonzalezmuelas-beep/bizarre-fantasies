@@ -111,7 +111,9 @@ export const PASSIVE_MARKER_PATCH = `
       return arr.length>0 && arr.every(function(h){ return !h || !h.alive; });
     }catch(e){return false;}
   }
-  var FINAL_BLOW_DELAY = 5000;
+  // 9 s: tiempo de sobra para que AMBOS jugadores lean cuál fue la acción
+  // definitiva antes de que salga la pantalla de victoria/derrota.
+  var FINAL_BLOW_DELAY = 9000;
   function showFinalBlow(hero){
     var old = document.getElementById('bf-final-blow');
     if(old && old.parentNode) old.parentNode.removeChild(old);
