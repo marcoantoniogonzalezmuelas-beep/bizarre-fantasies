@@ -68,6 +68,8 @@ export const BATTLE_SCENE_BG_PATCH = `
     // velo. Se excluyen el retrato, la tira original (oculta) y la lupa de
     // zoom (conserva su position:absolute y z-index:12 de battlePortraitPatch).
     '#s-battle .bhero.bf-bscene>*:not(.bf-bscene-portrait):not(.bf-battle-art):not(.bf-battle-zoom){position:relative;z-index:3}' +
+    // Héroe caído: escena y retrato en escala de grises (sigue legible).
+    '#s-battle .bhero.bf-bscene.bf-truedead{filter:grayscale(1) brightness(.72)!important}' +
     // Sombra de texto para legibilidad sobre la escena.
     '#s-battle .bhero.bf-bscene .bhero-name,#s-battle .bhero.bf-bscene .bhero-stats,#s-battle .bhero.bf-bscene .bf-status-aura{text-shadow:0 2px 6px #000,0 0 10px rgba(0,0,0,.9)}';
   document.head.appendChild(st);
