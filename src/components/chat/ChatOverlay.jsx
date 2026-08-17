@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { EMOJI_CATEGORIES } from '@/lib/heroEmojis';
 import { MessageCircle, X, Send, Smile, GripHorizontal } from 'lucide-react';
 import useDragOffset from '@/hooks/useDragOffset';
+import { isChatMessageBlocked } from '@/lib/chatModeration';
 
 // Overlay de chat entre jugadores en partidas multiplayer. Se muestra como un
 // icono circular plegable en el borde derecho de la pantalla (que no se solapa
@@ -19,6 +20,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   const [emojiCat, setEmojiCat] = useState(0);
   const [unread, setUnread] = useState(0);
   const [sending, setSending] = useState(false);
+  const [moderationError, setModerationError] = useState('');
   const [managedEmojis, setManagedEmojis] = useState([]);
   const messagesEndRef = useRef(null);
   const unsubRef = useRef(null);
@@ -110,6 +112,11 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
     const trimmed = (text || '').trim();
     if (!trimmed && !emojiId) return;
     if (!status?.roomCode) return;
+    if (trimmed && isChatMessageBlocked(trimmed)) {
+      setModerationError('Mensaje no permitido: evita insultos, contenido sexual y palabras ofensivas.');
+      return;
+    }
+    setModerationError('');
     setSending(true);
     try {
       const created = await base44.entities.ChatMessage.create({
@@ -316,7 +323,12 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
           )}
 
           {/* Input */}
-          <div className="flex items-center gap-1 px-2 py-2" style={{ borderTop: '1px solid rgba(255,210,74,0.15)' }}>
+          {moderationError && (
+            <div role="alert" className="px-3 pt-2 text-[11px] font-semibold" style={{ color: '#ff8f8f', borderTop: '1px solid rgba(255,90,90,0.25)' }}>
+              {moderationError}
+            </div>
+          )}
+          <div className="flex items-center gap-1 px-2 py-2" style={{ borderTop: moderationError ? 'none' : '1px solid rgba(255,210,74,0.15)' }}>
             <button
               onClick={() => setShowEmojis((s) => !s)}
               className="rounded-full p-1.5 transition-colors hover:bg-white/10"
@@ -328,7 +340,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
             <input
               type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => { setInput(e.target.value); if (moderationError) setModerationError(''); }}
               onKeyDown={onKey}
               placeholder="Escribe un mensaje…"
               maxLength={200}
