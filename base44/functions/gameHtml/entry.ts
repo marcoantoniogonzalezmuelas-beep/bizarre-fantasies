@@ -1033,14 +1033,18 @@ function buildArtScript(dbCards) {
       }
       var dealt = originalDealDamage.apply(this, arguments);
       if (target && target.akind === 'reflect-damage' && dealt > 0 && !(opts && opts.bfReflect)) {
-        var foes = typeof enemySide === 'function' ? enemySide(typeof tSide === 'function' ? tSide(target) : '') : '';
-        var enemies = typeof living === 'function' ? living(foes) : [];
-        var reflected = target.eliteMode ? dealt : Math.ceil(dealt / 2);
-        var victims = target.eliteMode ? enemies : (enemies.length ? [enemies[Math.floor(Math.random() * enemies.length)]] : []);
-        var sourceCard = getBattleCard(typeof tSide === 'function' ? tSide(target) : '', target.id);
-        if (sourceCard) addOverlayFx(sourceCard, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-spell-wave" style="color:#c79bff"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#c79bff">↺ REFRACCIÓN</div>', 1050);
-        victims.forEach(function(enemy) { var enemyCard = getBattleCard(foes, enemy.id); launchMagic(cardCenter(sourceCard), cardCenter(enemyCard), 'arcano'); originalDealDamage.call(this, enemy, reflected, { type: 'spell', element: 'arcano', bfReflect: true }); if (typeof pushFx === 'function') pushFx({ k: 'spell', toSide: foes, toId: enemy.id, el: 'arcano' }); });
-        if (victims.length && typeof pushLog === 'function') pushLog('li', '✦ ' + target.name + ' devuelve ' + reflected + ' de daño mágico con Refracción Arcana.');
+        var attacker = (typeof B !== 'undefined' && B.current && typeof getHero === 'function') ? getHero(B.current.side, B.current.id) : null;
+        if (attacker && attacker.alive && attacker !== target) {
+          var reflected = Math.ceil(dealt / 2);
+          var sourceCard = getBattleCard(typeof tSide === 'function' ? tSide(target) : '', target.id);
+          var attackerSide = typeof tSide === 'function' ? tSide(attacker) : '';
+          var attackerCard = getBattleCard(attackerSide, attacker.id);
+          if (sourceCard) addOverlayFx(sourceCard, '<div class="bf-fx-elite-aura"></div><div class="bf-fx-spell-wave" style="color:#c79bff"></div><div class="bf-fx-float bf-fx-status-txt" style="color:#c79bff">↺ REFRACCIÓN</div>', 1050);
+          if (sourceCard && attackerCard) launchMagic(cardCenter(sourceCard), cardCenter(attackerCard), 'arcano');
+          originalDealDamage.call(this, attacker, reflected, { type: 'spell', element: 'arcano', bfReflect: true });
+          if (typeof pushFx === 'function') pushFx({ k: 'spell', toSide: attackerSide, toId: attacker.id, el: 'arcano' });
+          if (typeof pushLog === 'function') pushLog('li', '✦ ' + target.name + ' refracta ' + reflected + ' de daño a ' + attacker.name + ' con Refracción Arcana.');
+        }
       }
       return dealt;
     };

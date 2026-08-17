@@ -2,33 +2,23 @@
 // (Refracción Arcana / Supernova Espejada, card_id "juni").
 //
 // La habilidad es PASIVA: al activarse, reproduce la cinemática 3D, se marca
-// como "EN JUEGO" (no se puede volver a activar) y pasa el turno. Mientras
-// Juniana esté viva, cada vez que reciba daño refleja parte de ese valor:
-//   Normal (Refracción Arcana): la mitad del daño recibido como daño mágico
-//     a un enemigo aleatorio.
-//   Élite (Supernova Espejada): el valor total recibido como daño mágico a
-//     todos los enemigos vivos.
-//
-// Sigue el mismo patrón que craneSummonPatch (la Grulla): el botón de
-// habilidad se muestra como "EN JUEGO" y se desactiva; el turno avanza con
-// done()/finishAct().
+// como "EN JUEGO" (no se puede volver a activar) y pasa el turno. La refracción
+// de daño (la mitad del daño recibido devuelta al atacante) la gestiona el
+// propio motor del juego (patchDuckAbility en gameHtml) a través del akind
+// 'reflect-damage'. Este parche SOLO añade la cinemática y el marcador
+// "EN JUEGO"; NO duplica la lógica de refracción (antes lo hacía y causaba
+// doble reflejo + objetivos equivocados).
 export const JUNIANA_ABILITY_PATCH = `
 <script>
 (function(){
   if(window.__bfJunianaPatch) return;
   window.__bfJunianaPatch = true;
 
-  function isJun(h){ return h && (h.id === 'juni' || h.cid === 'juni' || h.card_id === 'juni' || h.akind === 'Jdjdjjxjx'); }
-
-  function foesOf(side){
-    var fs = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
-    return (typeof living === 'function') ? living((typeof G !== 'undefined' && G.team) ? (G.team[fs] || []) : []) : [];
-  }
+  function isJun(h){ return h && (h.id === 'juni' || h.cid === 'juni' || h.card_id === 'juni' || h.akind === 'reflect-damage' || h.akind === 'Jdjdjjxjx'); }
 
   // Hook de useAbility: intercepta la activación de Juniana. Reproduce la
   // cinemática, marca la habilidad como pasiva (_bfRefract + abilityUsed) y
-  // pasa el turno. No llama a orig: el akind nativo ("Jdjdjjxjx") no hace
-  // nada útil en el motor.
+  // pasa el turno. La refracción la hace el motor (akind 'reflect-damage').
   function installAbility(){
     if(typeof window.useAbility !== 'function' || window.__bfJunianaHooked) return false;
     window.__bfJunianaHooked = true;
@@ -75,62 +65,10 @@ export const JUNIANA_ABILITY_PATCH = `
     }catch(e){}
   }
 
-  // Hook de dealDamage: cuando Juniana con _bfRefract recibe da\\u00f1o, refleja
-  // parte de ese valor como da\\u00f1o m\\u00e1gico al rival. El flag bfReflect
-  // evita la recursi\\u00f3n infinita (el da\\u00f1o reflejado no vuelve a reflejarse).
-  function installReflect(){
-    if(typeof window.dealDamage !== 'function' || window.__bfJunianaReflectHooked) return false;
-    window.__bfJunianaReflectHooked = true;
-    var orig = window.dealDamage;
-    window.dealDamage = function(target, dmg, opts){
-      var applied = orig.apply(this, arguments);
-      try{
-        if(target && isJun(target) && target._bfRefract && Number(dmg) > 0 && !(opts && opts.bfReflect)){
-          var side = (typeof tSide === 'function') ? tSide(target) : null;
-          if(side){
-            var foes = foesOf(side);
-            var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
-            if(foes.length){
-              var el = !!target.eliteMode;
-              var reflectDmg = el ? Math.round(Number(dmg)) : Math.round(Number(dmg) / 2);
-              if(reflectDmg > 0){
-                if(el){
-                  foes.forEach(function(f){
-                    dealDamage(f, reflectDmg, {type:'spell', element:'arcano', bfReflect:true});
-                    if(typeof pushFx === 'function') pushFx({k:'status', side:(typeof tSide==='function'?tSide(f):foesSide), id:f.id, txt:'\\u2192'+reflectDmg});
-                  });
-                  if(typeof pushLog === 'function') pushLog('ld', (target.eAbility||target.ability||target.name) + ' refleja ' + reflectDmg + ' de da\\u00f1o m\\u00e1gico a todos los enemigos.');
-                }else{
-                  var tgt = foes[Math.floor(Math.random() * foes.length)];
-                  dealDamage(tgt, reflectDmg, {type:'spell', element:'arcano', bfReflect:true});
-                  if(typeof pushFx === 'function') pushFx({k:'status', side:(typeof tSide==='function'?tSide(tgt):foesSide), id:tgt.id, txt:'\\u2192'+reflectDmg});
-                  if(typeof pushLog === 'function') pushLog('ld', (target.ability||target.name) + ' refleja ' + reflectDmg + ' de da\\u00f1o m\\u00e1gico a ' + tgt.name + '.');
-                }
-                // Indicador claro en Juniana: "REFLEJADO" + flash morado en su carta
-                if(typeof pushFx === 'function') pushFx({k:'status', side:side, id:target.id, txt:'\\u21A9 REFLEJADO'});
-                var card = document.getElementById('b_' + side + '_' + target.id);
-                if(card){ card.classList.add('bf-refract-flash'); setTimeout(function(){ card.classList.remove('bf-refract-flash'); }, 800); }
-                if(typeof renderBattle === 'function') renderBattle();
-                if(typeof netSync === 'function') netSync('s-battle');
-              }
-            }
-          }
-        }
-        // Si Juniana muere, desactiva el reflejo (hasta que reviva y reactiven).
-        if(target && isJun(target) && !target.alive && target._bfRefract){
-          target._bfRefract = false;
-        }
-      }catch(e){}
-      return applied;
-    };
-    return true;
-  }
-
   var tries = 0;
   var timer = setInterval(function(){
     installAbility();
-    installReflect();
-    if((window.__bfJunianaHooked && window.__bfJunianaReflectHooked) || tries++ > 200) clearInterval(timer);
+    if(window.__bfJunianaHooked || tries++ > 200) clearInterval(timer);
   }, 150);
   setInterval(markPassiveButton, 250);
 })();
