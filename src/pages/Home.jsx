@@ -524,13 +524,16 @@ export default function Home() {
   const MAX_SCALE = 1.35;
   const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
   const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
+  // Con el viewport global de escritorio activo no se aplica una segunda
+  // escala al iframe: el navegador ya ajusta los 1280 px a la pantalla.
+  const useScaledIframe = IS_MOBILE && typeof window !== 'undefined' && layoutW() < 1000;
   const [mobScale, setMobScale] = useState(() =>
-    IS_MOBILE && typeof window !== 'undefined' ? Math.min(MAX_SCALE, layoutW() / 1200) : 1
+    useScaledIframe ? Math.min(MAX_SCALE, layoutW() / 1200) : 1
   );
 
   useEffect(() => {
     if (!IS_MOBILE) return;
-    const update = () => setMobScale(Math.min(MAX_SCALE, layoutW() / 1200));
+    const update = () => setMobScale(layoutW() < 1000 ? Math.min(MAX_SCALE, layoutW() / 1200) : 1);
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', () => setTimeout(update, 300));
     return () => window.removeEventListener('resize', update);
@@ -940,15 +943,12 @@ export default function Home() {
         // CSS crítico en el <head>: se aplica en el primer pintado y evita ver
         // la portada a medio estilar (emojis + imágenes gigantes) mientras el
         // navegador termina de leer los 566 KB del documento.
-        if (IS_MOBILE) {
-          // El juego tiene su propio meta viewport que bloquea el zoom
-          // (maximum-scale=1.0, user-scalable=no). El navegador usa el
-          // PRIMER meta viewport que encuentra, así que hay que ELIMINARLO
-          // antes de inyectar el nuestro.
-          patchedData = patchedData.replace(/<meta\b[^>]*?name=["']viewport["'][^>]*>/gi, '');
-        }
+        // El documento del juego trae un viewport que bloquea el pellizco.
+        // Se sustituye siempre antes de montar el iframe: en escritorio no
+        // altera la vista y en móvil/tablet permite el zoom nativo.
+        patchedData = patchedData.replace(/<meta\b[^>]*?name=["']viewport["'][^>]*>/gi, '');
         if (patchedData.includes('</head>')) {
-          patchedData = patchedData.replace('</head>', CRITICAL_HEAD_CSS + (IS_MOBILE ? PINCH_ZOOM_HEAD_PATCH : '') + '</head>');
+          patchedData = patchedData.replace('</head>', CRITICAL_HEAD_CSS + PINCH_ZOOM_HEAD_PATCH + '</head>');
         }
         if (IS_MOBILE) {
           // En móvil los iframes con blob: URL grandes a veces no renderizan.
@@ -988,11 +988,11 @@ export default function Home() {
     );
   }
 
-  const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
+  const iframeH = useScaledIframe ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
   // En móvil/tablet la página se sirve en modo escritorio (viewport 1280 px),
   // así que el juego (1200 px) cabe entero y el zoom lo hace el navegador con
   // el pellizco. No hay escalado manual adicional.
-  const effScale = IS_MOBILE ? mobScale : 1;
+  const effScale = useScaledIframe ? mobScale : 1;
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#0e0a16]">
@@ -1038,7 +1038,7 @@ export default function Home() {
         escalado es puramente visual y el navegador puede pellizcar para zoom
         adicional. Las pulsaciones funcionan bien (el navegador mapea las
         coordenadas táctiles al espacio sin transformar). */}
-      {(blobUrl || srcDoc) && IS_MOBILE && (
+      {(blobUrl || srcDoc) && useScaledIframe && (
         <div className="absolute inset-0 overflow-hidden">
           <iframe
             ref={iframeRef}
@@ -1054,7 +1054,7 @@ export default function Home() {
           />
         </div>
       )}
-      {(blobUrl || srcDoc) && !IS_MOBILE && (
+      {(blobUrl || srcDoc) && !useScaledIframe && (
         <iframe
           ref={iframeRef}
           title="Bizarre Fantasies v5"
