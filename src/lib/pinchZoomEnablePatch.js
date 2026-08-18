@@ -16,8 +16,8 @@
 export const PINCH_ZOOM_HEAD_PATCH = `
 <meta name="viewport" content="width=1200, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 <style id="bf-pinch-zoom">
-html, body { touch-action: pinch-zoom !important; }
-*, *::before, *::after { touch-action: pinch-zoom !important; }
+html, body { touch-action: pan-x pan-y pinch-zoom !important; }
+*, *::before, *::after { touch-action: pan-x pan-y pinch-zoom !important; }
 </style>
 `;
 
@@ -33,9 +33,25 @@ export const PINCH_ZOOM_BODY_PATCH = `
   try {
     var nativePreventDefault = Event.prototype.preventDefault;
     Event.prototype.preventDefault = function(){
+      // Chrome/Android cancela TODO el gesto (incluido el pellizco) si se
+      // bloquea el primer 'touchstart', aunque solo haya un dedo. Por eso los
+      // touchstart nunca se bloquean; el arrastre del juego usa touchmove.
+      if (this.type === 'touchstart' || this.type === 'pointerdown') return;
       if ((this.touches && this.touches.length >= 2) || this.type === 'gesturestart' || this.type === 'gesturechange') return;
       return nativePreventDefault.call(this);
     };
+  } catch(e) {}
+
+  // La captura de puntero de los arrastres del juego también impide el
+  // pellizco: se ignora en cuanto hay más de un dedo en pantalla.
+  try {
+    var nativeCapture = Element.prototype.setPointerCapture;
+    Element.prototype.setPointerCapture = function(id){
+      if (window.__bfTouchCount > 1) return;
+      return nativeCapture.call(this, id);
+    };
+    document.addEventListener('touchstart', function(e){ window.__bfTouchCount = e.touches.length; }, { capture: true, passive: true });
+    document.addEventListener('touchend', function(e){ window.__bfTouchCount = e.touches.length; }, { capture: true, passive: true });
   } catch(e) {}
 
   // --- 1. Elimina cualquier meta viewport que el juego añada después ---
@@ -125,8 +141,8 @@ export const PINCH_ZOOM_BODY_PATCH = `
   // intervalo re-aplica manipulation en el body y elementos clave.
   setInterval(function(){
     try {
-      document.documentElement.style.setProperty('touch-action', 'pinch-zoom', 'important');
-      document.body.style.setProperty('touch-action', 'pinch-zoom', 'important');
+      document.documentElement.style.setProperty('touch-action', 'pan-x pan-y pinch-zoom', 'important');
+      document.body.style.setProperty('touch-action', 'pan-x pan-y pinch-zoom', 'important');
     } catch(e) {}
   }, 1000);
 })();
