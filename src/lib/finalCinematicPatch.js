@@ -62,9 +62,14 @@ export const FINAL_CINEMATIC_PATCH = `
       var args=arguments,self=this;
       // Re-comprueba la espera: si la cinemática de muerte arranca más tarde
       // (porque la animación de la acción era larga), el turno sigue esperando.
+      var t0=Date.now();
       (function wait(){
         var until=window.__bfDeathDelayUntil||0,now=Date.now();
         if(until>now)return setTimeout(wait,Math.min(500,until-now));
+        // Tampoco se pasa al siguiente turno mientras haya una cinemática (o
+        // una en cola) en pantalla: el turno espera a que termine. Techo de
+        // 20 s por seguridad para no bloquear nunca la partida.
+        if(now-t0<20000&&document.querySelector(CINE_SEL+',#bf-kill-ov'))return setTimeout(wait,200);
         orig.apply(self,args);
       })();
     };
