@@ -117,6 +117,7 @@ import { BATTLE_LOG_ORDER_PATCH } from '@/lib/battleLogOrderPatch';
 import { HOME_MENU_PATCH } from '@/lib/homeMenuPatch';
 import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 import HomeSecondaryLinks from '@/components/home/HomeSecondaryLinks';
+import GameSpaceOverlay from '@/components/home/GameSpaceOverlay';
 import ChatOverlay from '@/components/chat/ChatOverlay';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
@@ -426,6 +427,10 @@ export default function Home() {
   // avía por postMessage para que el cartel de actualidad se amplíe igual.
   const pinchRafRef = useRef(null);
   const [pinch, setPinch] = useState({ z: 1, tx: 0, ty: 0 });
+  // true cuando el gesto ha terminado: entonces los elementos del espacio del
+  // juego se redibujan nítidos (zoom) en vez de reescalarse (transform).
+  const [pinchSettled, setPinchSettled] = useState(true);
+  const pinchSettleRef = useRef(null);
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -630,6 +635,9 @@ export default function Home() {
         const p = e.data.bfPinch;
         if (pinchRafRef.current) cancelAnimationFrame(pinchRafRef.current);
         pinchRafRef.current = requestAnimationFrame(() => setPinch({ z: p.z, tx: p.tx, ty: p.ty }));
+        setPinchSettled(false);
+        if (pinchSettleRef.current) clearTimeout(pinchSettleRef.current);
+        pinchSettleRef.current = setTimeout(() => setPinchSettled(true), 280);
       }
       // Botón "Intro" de la portada del juego: abre la cinemática de intro.
       // Si viene con bfAutoDemo (desde "Aprender a jugar"), al cerrarla arranca
@@ -1056,26 +1064,15 @@ export default function Home() {
         + pellizco con desplazamiento), así que zoom y pellizco les afectan
         igual que al resto del juego (icono de contactar, menús…). */}
       {IS_MOBILE && showOracle && (
-        <div className="absolute inset-0 z-20 pointer-events-none" style={{ overflow: 'hidden' }}>
-          {/* Se usa `zoom` (no `transform: scale`) para que el Oráculo, Reglas
-            y Razas se REDIBUJEN al ampliar con el pellizco: con transform el
-            navegador reescala una textura ya pintada y se ven borrosos. */}
-          <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, zoom: mobScale * pinch.z, transform: `translate(${pinch.tx / pinch.z}px, ${pinch.ty / pinch.z}px)`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, pointerEvents: 'none' }}>
-              <Link to="/cards" className="absolute flex items-center gap-2 group pointer-events-auto" style={{ bottom: 20, right: 16, filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', textDecoration: 'none' }}>
-                <div className="relative rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110" style={{ width: 48, height: 48 }}>
-                  <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
-                </div>
-                <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
-                  <div className="font-heading font-black text-[13px] text-[#e2b0ff] leading-none tracking-wide">{t('Oráculo Bizarro')}</div>
-                  <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} {t('cartas · Base Set')}</div>
-                </div>
-              </Link>
-              <HomeSecondaryLinks style={{ bottom: 82, right: 16 }} />
-              {!demoModalOpen && <FlashNewsMarquee inGameSpace mobScale={1} isMobile pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
-            </div>
-          </div>
-        </div>
+        <GameSpaceOverlay
+          width={iframeW}
+          height={iframeH}
+          mobScale={mobScale}
+          pinch={pinch}
+          settled={pinchSettled}
+          dbCount={dbCount}
+          demoModalOpen={demoModalOpen}
+        />
       )}
 
       {/* Móvil/tablet: la escala del juego se aplica en un CONTENEDOR aparte,
