@@ -111,6 +111,27 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* === Responsive: móvil (≤480px) y tablet (≤768px) ===
+   Unidades relativas (%/rem/vw) para que contenedores, imágenes y cartas se
+   adapten al ancho de pantalla sin desbordarse. El zoom nativo del navegador
+   funciona porque el viewport no tiene maximum-scale ni user-scalable=no. */
+
+/* Móvil ≤480px: reduce paddings, tamaños de texto y alturas fijas. */
+@media (max-width: 480px) {
+  .max-w-7xl { padding-left: 0.75rem; padding-right: 0.75rem; }
+  /* Cartas de héroe: altura fluida en vez de 420px fijos. */
+  .grid > div > .relative.h-\[420px\] { height: 62vw; max-height: 340px; }
+  /* Botones de la home (Oráculo/Reglas/Razas) ya usan tamaños responsivos
+     en JSX; aquí garantizamos que el texto no fuerce el ancho. */
+  .bf-home-oracle { max-width: calc(100vw - 1.5rem); }
+  .bf-home-utility-link { max-width: calc(100vw - 1.5rem); }
+}
+
+/* Tablet ≤768px: ajusta grids y contenedores sin llegar al layout de escritorio. */
+@media (max-width: 768px) {
+  .max-w-7xl { padding-left: 1rem; padding-right: 1rem; }
+}
+
 /* Podio del Top Ranking: brillo de borde por medalla (oro/plata/bronce) — ver RankPodium.jsx */
 
 @keyframes bfFoilShift { 0% { background-position: 0% 0%; } 100% { background-position: 300% 300%; } }
