@@ -119,7 +119,7 @@ export const JUNIANA_ABILITY_PATCH = `
             var victims, dmg;
             if(target.eliteMode){
               victims=((typeof G!=='undefined'&&G.team&&G.team[atkSide])||[]).filter(function(h){return h&&h.alive;});
-              dmg=dealt;
+              dmg=Math.ceil(dealt/2);
             } else {
               victims=[attacker];
               dmg=Math.ceil(dealt/2);
