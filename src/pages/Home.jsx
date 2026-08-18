@@ -924,6 +924,11 @@ export default function Home() {
         // CSS crítico en el <head>: se aplica en el primer pintado y evita ver
         // la portada a medio estilar (emojis + imágenes gigantes) mientras el
         // navegador termina de leer los 566 KB del documento.
+        // El juego trae un viewport que bloquea el pellizco (maximum-scale=1,
+        // user-scalable=no). Se sustituye por uno estándar que permite zoom
+        // nativo del navegador en móvil/tablet.
+        patchedData = patchedData.replace(/<meta\b[^>]*?name=["']viewport["'][^>]*>/gi,
+          '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes" />');
         if (patchedData.includes('</head>')) {
           patchedData = patchedData.replace('</head>', CRITICAL_HEAD_CSS + '</head>');
         }
