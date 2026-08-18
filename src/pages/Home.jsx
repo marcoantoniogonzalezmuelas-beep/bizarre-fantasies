@@ -15,13 +15,8 @@ import { DAMAGE_NUMBER_PATCH } from '@/lib/damageNumberPatch';
 import { STAT_NUMBER_PATCH } from '@/lib/statNumberPatch';
 import { CARD_ART_MAP_PATCH } from '@/lib/cardArtMapPatch';
 import { PERF_BOOST_PATCH } from '@/lib/perfBoostPatch';
-import { MOBILE_PINCH_PATCH } from '@/lib/mobilePinchZoomPatch';
 import { MOBILE_ANTIFLICKER_PATCH } from '@/lib/mobileAntiFlickerPatch';
-import { BATTLE_FOCUS_ZOOM_PATCH } from '@/lib/battleFocusZoomPatch';
-import { MODAL_FOCUS_PATCH } from '@/lib/modalFocusPatch';
 import { NO_FLICKER_PATCH } from '@/lib/noFlickerPatch';
-import { PINCH_FREEZE_PATCH } from '@/lib/pinchFreezePatch';
-import { PINCH_ANIM_FREEZE_PATCH } from '@/lib/pinchAnimFreezePatch';
 import { WHITE_FLASH_FIX_PATCH } from '@/lib/whiteFlashFixPatch';
 import { CRITICAL_HEAD_CSS } from '@/lib/criticalHeadCss';
 import { MP_EQUIP_PATCH } from '@/lib/mpEquipPatch';
@@ -117,7 +112,6 @@ import { BATTLE_LOG_ORDER_PATCH } from '@/lib/battleLogOrderPatch';
 import { HOME_MENU_PATCH } from '@/lib/homeMenuPatch';
 import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 import HomeSecondaryLinks from '@/components/home/HomeSecondaryLinks';
-import GameSpaceOverlay from '@/components/home/GameSpaceOverlay';
 import ChatOverlay from '@/components/chat/ChatOverlay';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
@@ -411,14 +405,6 @@ export default function Home() {
   // esté visible, ocultamos el cartel de flash news para que no tape el modal.
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
-  // Zoom de pellizco (móvil/tablet): el juego lo aplica dentro del iframe y nos
-  // avía por postMessage para que el cartel de actualidad se amplíe igual.
-  const pinchRafRef = useRef(null);
-  const [pinch, setPinch] = useState({ z: 1, tx: 0, ty: 0 });
-  // true cuando el gesto ha terminado: entonces los elementos del espacio del
-  // juego se redibujan nítidos (zoom) en vez de reescalarse (transform).
-  const [pinchSettled, setPinchSettled] = useState(true);
-  const pinchSettleRef = useRef(null);
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -532,7 +518,7 @@ export default function Home() {
   // porque la escala es ~0,3 y el área pintada es pequeña. Se limita la escala
   // de la tablet al mismo presupuesto de pintado del móvil: el jugador amplía
   // con el pellizco, igual que en móvil.
-  const MAX_SCALE = IS_TABLET ? 0.55 : 1;
+  const MAX_SCALE = 1;
   const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
   const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
   const [mobScale, setMobScale] = useState(() =>
@@ -613,19 +599,7 @@ export default function Home() {
         }
       }
       if (e.data && e.data.bfReloading) {
-        // El iframe se va a recargar (Salir / Volver al inicio): tapamos para
-        // evitar el flash de iconos enormes antes de que el CSS del juego aplique.
         setLoading(true);
-      }
-      if (e.data && e.data.bfPinch) {
-        // El juego amplió su contenido con el pellizco: refleja el mismo zoom
-        // en el cartel de actualidad (throttle por rAF para no saturar).
-        const p = e.data.bfPinch;
-        if (pinchRafRef.current) cancelAnimationFrame(pinchRafRef.current);
-        pinchRafRef.current = requestAnimationFrame(() => setPinch({ z: p.z, tx: p.tx, ty: p.ty }));
-        setPinchSettled(false);
-        if (pinchSettleRef.current) clearTimeout(pinchSettleRef.current);
-        pinchSettleRef.current = setTimeout(() => setPinchSettled(true), 280);
       }
       // Botón "Intro" de la portada del juego: abre la cinemática de intro.
       // Si viene con bfAutoDemo (desde "Aprender a jugar"), al cerrarla arranca
@@ -951,13 +925,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = PERF_BOOST_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + DAMAGE_NUMBER_PATCH + STAT_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + HOME_MENU_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + ACTION_PANEL_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + CRANE_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + JUNIANA_ABILITY_PATCH + FAITHFUL_ABILITIES_PATCH + ABILITY_ANIM_PATCH + PASSIVE_MARKER_PATCH + TABLE_MAT_PATCH + EQ_HERO_SCENE_BG_PATCH + BATTLE_SCENE_BG_PATCH + TURN_UNSTICK_PATCH + AI_WAIT_CINE_PATCH + KILL_ACTOR_PATCH + FINAL_ACTION_RECAP_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + BIZARRE_ROOM_PATCH + BIZARRE_RETURN_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + BATTLE_LOG_ORDER_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_LEVEL_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + buildFumbleRollPatch(getLang()) + (IS_TABLET
-          // Tablet: NO se usa pellizco propio (transformaba el documento entero
-          // y la GPU tenía que repintar una textura enorme en cada frame → el
-          // parpadeo). Se deja el zoom NATIVO del navegador, que trabaja en el
-          // compositor y nunca parpadea.
-          ? NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH
-          : IS_MOBILE ? MOBILE_PINCH_PATCH + PINCH_FREEZE_PATCH + PINCH_ANIM_FREEZE_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + BATTLE_FOCUS_ZOOM_PATCH + MODAL_FOCUS_PATCH : '');
+        const INJECT = PERF_BOOST_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + DAMAGE_NUMBER_PATCH + STAT_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + STATUS_AURA_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + HOME_MENU_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + ACTION_PANEL_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + CRANE_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + JUNIANA_ABILITY_PATCH + FAITHFUL_ABILITIES_PATCH + ABILITY_ANIM_PATCH + PASSIVE_MARKER_PATCH + TABLE_MAT_PATCH + EQ_HERO_SCENE_BG_PATCH + BATTLE_SCENE_BG_PATCH + TURN_UNSTICK_PATCH + AI_WAIT_CINE_PATCH + KILL_ACTOR_PATCH + FINAL_ACTION_RECAP_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + BIZARRE_ROOM_PATCH + BIZARRE_RETURN_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + BATTLE_LOG_ORDER_PATCH + SPEED_GAUGE_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + AI_LEVEL_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + buildFumbleRollPatch(getLang()) + (IS_MOBILE ? NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus').replace(/Despertar/g, 'Sanar').replace(/despertar/g, 'sanar');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
@@ -1011,16 +979,10 @@ export default function Home() {
   }
 
   const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
-  // Tablet: la escala se limita a 0,55 para no recalentar la GPU, así que un
-  // documento de 1200 px sólo ocupaba 660 px y quedaba una franja negra a la
-  // derecha. Se ensancha el documento lo necesario para llenar la pantalla.
-  const iframeW = IS_MOBILE
-    ? Math.max(1200, Math.ceil((typeof window !== 'undefined' ? layoutW() : 1200) / mobScale))
-    : 1200;
 
   return (
-    <div className="fixed inset-0 bg-[#0e0a16]">
-      {!IS_MOBILE && showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={1} isMobile={false} pinchZ={pinch.z} pinchTx={pinch.tx} pinchTy={pinch.ty} />}
+    <div className="fixed inset-0 overflow-hidden bg-[#0e0a16]">
+      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
@@ -1034,9 +996,9 @@ export default function Home() {
       >
         <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
       </div>
-      {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial (escritorio) */}
-      {!IS_MOBILE && showOracle && (
-        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', transform: `scale(${pinch.z})`, transformOrigin: 'bottom right' }}>
+      {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
+      {showOracle && (
+        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
           <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
             <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
           </div>
@@ -1046,66 +1008,32 @@ export default function Home() {
           </div>
         </Link>
       )}
-      {!IS_MOBILE && showOracle && <HomeSecondaryLinks style={{ bottom: 88, right: 16 }} />}
-      {/* Móvil/tablet: el Oráculo y el cartel de Actualidad viven DENTRO de un
-        contenedor que replica exactamente el transform del iframe (escala móvil
-        + pellizco con desplazamiento), así que zoom y pellizco les afectan
-        igual que al resto del juego (icono de contactar, menús…). */}
-      {IS_MOBILE && showOracle && (
-        <GameSpaceOverlay
-          width={iframeW}
-          height={iframeH}
-          mobScale={mobScale}
-          pinch={pinch}
-          settled={pinchSettled}
-          dbCount={dbCount}
-          demoModalOpen={demoModalOpen}
+      {showOracle && <HomeSecondaryLinks style={{ bottom: 88, right: 16 }} />}
+
+      {/* Móvil/tablet: el juego (1200 px) se ajusta a la pantalla con `zoom`
+        (no transform): el navegador lo redibuja nítido, igual que el zoom
+        nativo de la tablet, y las pulsaciones funcionan bien. El pellizco
+        nativo del navegador amplía el iframe y los botones juntos. */}
+      {(blobUrl || srcDoc) && IS_MOBILE && (
+        <iframe
+          ref={iframeRef}
+          title="Bizarre Fantasies v5"
+          {...(srcDoc ? { srcDoc } : { src: blobUrl })}
+          onLoad={() => {
+            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+            loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
+          }}
+          className="border-0"
+          style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, zoom: mobScale }}
+          allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
-
-      {/* Móvil/tablet: la escala del juego se aplica en un CONTENEDOR aparte,
-        nunca en el propio iframe. Con el transform en el iframe, cualquier
-        repintado interno (animaciones de batalla) obliga al navegador a
-        re-rasterizar el documento entero a escala fraccionaria — en tablet
-        (escala ~0,7) eso es una textura enorme y se ve como parpadeo. Con el
-        transform en el contenedor promovido a capa (will-change), el iframe se
-        rasteriza a su tamaño real y el compositor solo reescala esa textura. */}
-      {(blobUrl || srcDoc) && IS_MOBILE ? (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: iframeW,
-            height: iframeH,
-            transform: `scale(${mobScale})`,
-            transformOrigin: 'top left',
-          }}
-        >
-          <iframe
-            ref={iframeRef}
-            title="Bizarre Fantasies v5"
-            {...(srcDoc ? { srcDoc } : { src: blobUrl })}
-            onLoad={() => {
-              if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
-              loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
-            }}
-            className="border-0"
-            style={{ width: iframeW, height: iframeH, display: 'block' }}
-            allow="autoplay; fullscreen; clipboard-read; clipboard-write"
-          />
-        </div>
-      ) : null}
       {(blobUrl || srcDoc) && !IS_MOBILE && (
         <iframe
           ref={iframeRef}
           title="Bizarre Fantasies v5"
           {...(srcDoc ? { srcDoc } : { src: blobUrl })}
           onLoad={() => {
-            // No ocultamos el spinner en el onLoad: el iframe acaba de cargar su
-            // HTML pero el juego aún no inyecta el CSS/layout (flash de iconos
-            // enormes). Se oculta al recibir la primera pantalla lista (bfScreen)
-            // o, si no llega, tras un seguro de 3.5s.
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
@@ -1113,7 +1041,7 @@ export default function Home() {
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
-      <ChatOverlay mobScale={IS_MOBILE ? mobScale : 1} pinchZ={pinch.z} />
+      <ChatOverlay mobScale={IS_MOBILE ? mobScale : 1} pinchZ={1} />
     </div>
   );
 }

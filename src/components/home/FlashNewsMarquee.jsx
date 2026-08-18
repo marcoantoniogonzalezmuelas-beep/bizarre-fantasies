@@ -3,49 +3,38 @@ import { Radio, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { getLang } from '@/lib/i18n';
 
-// Cartel digital de "Actualidad": SIEMPRE FIJO (centrado abajo), como los
-// iconos del menú del juego (Aprende a jugar, Reglas…). No se arrastra: solo
-// adapta su tamaño con el zoom de pellizco y con la escala móvil del juego.
-// Las noticias las gestiona el admin desde la entidad FlashNews.
-export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinchZ = 1, inGameSpace = false }) {
+// Cartel digital de "Actualidad": FIJO en su posición (debajo del título del
+// juego), igual que en escritorio. No flota ni se mueve con el pellizco: solo
+// se amplía/reduce con el zoom nativo del navegador, igual que los botones del
+// Oráculo, Reglas y Razas. Las noticias las gestiona el admin (entidad FlashNews).
+export default function FlashNewsMarquee({ mobScale = 1 }) {
   const [items, setItems] = useState([]);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
   const [enabled, setEnabled] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [topY, setTopY] = useState(null); // px (viewport) justo debajo de los iconos
-  const signRef = useRef(null);
+  const [topY, setTopY] = useState(null);
+  const mobScaleRef = useRef(mobScale);
+  useEffect(() => { mobScaleRef.current = mobScale; }, [mobScale]);
 
-  const pz = pinchZ || 1;
-  const scale = mobScale || 1;
-  const MOB_W = 760; // ancho del cartel en coordenadas 1200 (escala igual que el juego)
-
-  // En modo inGameSpace (móvil) el cartel vive dentro de un wrapper que replica
-  // el transform del iframe (escala + pellizco). Durante el pellizco el cuerpo
-  // del juego se transforma, por lo que getBoundingClientRect devolvería la
-  // posición ya transformada; congelamos la base y deja que el wrapper aplique
-  // zoom/pan. Solo medimos la posición base cuando NO hay pellizco activo.
-  const pzRef = useRef(1);
-  useEffect(() => { pzRef.current = pinchZ || 1; }, [pinchZ]);
-
+  // Mide la posición del título del juego dentro del iframe para sentar el
+  // cartel justo debajo. En móvil/tablet el iframe lleva `zoom: mobScale`, así
+  // que las coordenadas internas se multiplican por mobScale para obtener la
+  // posición visual real en el viewport.
   useEffect(() => {
     const measure = () => {
-      if (inGameSpace && pzRef.current !== 1) return; // congelar base durante pellizco
       const iframe = document.querySelector('iframe');
       const doc = iframe?.contentDocument;
       const links = doc?.querySelector('.title-links');
       if (!links) return;
       const r = links.getBoundingClientRect();
-      // r.bottom está en coordenadas internas del iframe (espacio 1200 en
-      // móvil, viewport en escritorio). Sumamos 14px de margen en ese mismo
-      // espacio. El wrapper del móvil aplica luego la escala/pellizco.
-      setTopY(r.bottom + 14);
+      setTopY((r.bottom + 14) * mobScaleRef.current);
     };
     measure();
     const iv = setInterval(measure, 500);
     window.addEventListener('resize', measure);
     window.addEventListener('orientationchange', () => setTimeout(measure, 300));
     return () => { clearInterval(iv); window.removeEventListener('resize', measure); };
-  }, [scale, inGameSpace]);
+  }, []);
 
   useEffect(() => {
     base44.entities.FlashNews.filter({ active: true }, 'order', 100)
@@ -65,8 +54,7 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
     try { sessionStorage.setItem('bfSignClosed', '1'); } catch (e) {}
   }
 
-  // Oculta el cartel cuando hay un modal abierto en el juego (reglas, razas,
-  // info de héroe…): no debe impedir la lectura del contenido del modal.
+  // Oculta el cartel cuando hay un modal abierto en el juego.
   useEffect(() => {
     const check = () => {
       const iframe = document.querySelector('iframe');
@@ -84,20 +72,10 @@ export default function FlashNewsMarquee({ mobScale = 1, isMobile = false, pinch
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
-  // inGameSpace (móvil): el cartel se posiciona en coordenadas 1200 dentro del
-  // wrapper que replica el transform del iframe; por eso NO aplica su propia
-  // escala/pellizco (lo hace el wrapper) y usa position:absolute.
-  // Escritorio: fijo en viewport, centrado, sin pellizco (pz=1).
-  const s = scale * pz;
-  const style = inGameSpace
-    ? { position: 'absolute', left: 600, top: topY, width: 760, maxWidth: 'none', transform: 'translateX(-50%)', transformOrigin: 'center top' }
-    : { position: 'fixed', left: '50%', top: topY, transform: `translateX(-50%) scale(${s})`, transformOrigin: 'center top', ...(scale < 1 ? { width: MOB_W, maxWidth: 'none' } : {}) };
-
   return (
     <div
-      ref={signRef}
-      style={style}
-      className="bf-led-sign pointer-events-auto fixed z-40 w-[86vw] max-w-[560px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:max-w-[760px] lg:px-4 lg:py-2.5"
+      style={{ position: 'fixed', left: '50%', top: topY, transform: 'translateX(-50%)' }}
+      className="bf-led-sign pointer-events-auto z-40 w-[86vw] max-w-[560px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:max-w-[760px] lg:px-4 lg:py-2.5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />
       <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-[#9a6b00] to-transparent opacity-70" />
