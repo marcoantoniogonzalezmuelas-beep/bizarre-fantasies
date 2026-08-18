@@ -133,10 +133,19 @@ export function buildFumbleRollPatch(lang) {
   // Habilidades de efecto PERMANENTE (se activan una vez y siguen actuando):
   // solo se tira el dado al activarlas, nunca hay fallo épico y, si sale pifia,
   // no ocurre nada pero la habilidad queda marcada como usada (no "en juego").
+  // Auditadas del texto de las cartas:
+  //   · Juniana (normal y élite): refracción mientras esté en juego.
+  //   · KillerDucks (normal y élite): los patitos quedan en juego.
+  //   · Daidoji Esva (normal): +5 por aliado "para el resto de la batalla".
+  //   · Batu (élite): escudo que se regenera cada turno.
+  //   · Edredon (normal y élite): sin penalización de tipo durante el combate.
   function isPassive(h){
     var n = String((h && h.name) || '').toLowerCase();
     if(n.indexOf('juniana') >= 0) return true;
-    if((n.indexOf('patito') >= 0 || n.indexOf('duck') >= 0) && !h.eliteMode) return true;
+    if(n.indexOf('killerduck') >= 0 || n.indexOf('patito') >= 0 || n.indexOf('duck') >= 0) return true;
+    if(n.indexOf('daidoji') >= 0 && !h.eliteMode) return true;
+    if(n.indexOf('batu') >= 0 && h.eliteMode) return true;
+    if(n.indexOf('edredon') >= 0) return true;
     return false;
   }
   // La Grulla no tira dado: basta con la tirada de la invocación de Daidoji.
