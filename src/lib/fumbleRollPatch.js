@@ -32,7 +32,7 @@ export function buildFumbleRollPatch(lang) {
     + "font-family:'Cinzel',serif;font-weight:900;font-size:34px;line-height:1;color:#ff86d2;white-space:nowrap;"
     + 'background:radial-gradient(circle,rgba(60,8,42,.82),rgba(60,8,42,0) 74%);'
     + 'text-shadow:0 0 14px rgba(255,110,205,.95),0 3px 8px #000,0 0 3px #000;'
-    + 'animation:bfFumblePop 3.6s cubic-bezier(.2,.8,.3,1) forwards}'
+    + 'animation:bfFumblePop 4.4s cubic-bezier(.2,.8,.3,1) forwards}'
     + '.bf-fumble-pop.epic{font-size:30px;color:#ff5fc0}'
     + '.bf-fumble-pop small{font-size:15px;font-weight:800;color:#ffd0ec;letter-spacing:1px;text-shadow:0 2px 6px #000}'
     + '@keyframes bfFumblePop{0%{opacity:0;transform:translate(-50%,-20%) scale(.5) rotate(-6deg)}'
@@ -52,7 +52,7 @@ export function buildFumbleRollPatch(lang) {
     n.style.top = (r.top + r.height * 0.42) + 'px';
     n.innerHTML = (epic ? '\\u{1F480} ${T.epic}' : '\\u{1F3B2} ${T.pifia}') + (roll ? '<small>${T.roll}: ' + roll + '/20</small>' : '');
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3750);
+    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 4550);
   }
   // Disponible para otros parches (Juniana hace su propia tirada).
   window.__bfFumblePop = pop;

@@ -16,7 +16,7 @@ export const STAT_NUMBER_PATCH = `
     + '.bf-stat-pop{position:fixed;z-index:100004;pointer-events:none;transform:translate(-50%,-50%);'
     + 'display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;'
     + "font-family:'Cinzel',serif;font-weight:900;font-size:28px;line-height:1;"
-    + 'animation:bfStatPop 2s cubic-bezier(.2,.8,.3,1) forwards}'
+    + 'animation:bfStatPop 3.2s cubic-bezier(.2,.8,.3,1) forwards}'
     // Verde = curación, rojo = daño, AZUL = cambios de stats (sube con + y baja con −).
     + '.bf-stat-pop.up{color:#6fc8ff;background:radial-gradient(circle,rgba(6,32,60,.7),rgba(6,32,60,0) 72%);'
     + 'text-shadow:0 0 12px rgba(90,180,255,.95),0 3px 8px #000}'
@@ -50,14 +50,14 @@ export const STAT_NUMBER_PATCH = `
     n.style.top = (r.top + r.height * 0.24) + 'px';
     n.innerHTML = (job.delta > 0 ? '+' : '−') + Math.abs(job.delta) + ' <small>' + job.label + '</small>';
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 2100);
+    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3300);
   }
 
   // Los avisos se muestran de uno en uno (300 ms entre ellos) para que varios
   // cambios simultáneos se lean bien y no se pisen sobre el retrato.
   setInterval(function(){
     if(!queue.length || showing > Date.now()) return;
-    showing = Date.now() + 300;
+    showing = Date.now() + 500;
     render(queue.shift());
   }, 100);
 

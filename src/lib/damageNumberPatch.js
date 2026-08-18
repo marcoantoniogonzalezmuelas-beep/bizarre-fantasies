@@ -16,7 +16,7 @@ export const DAMAGE_NUMBER_PATCH = `
     + "font-family:'Cinzel',serif;font-weight:900;font-size:40px;line-height:1;color:#ff6b6b;"
     + 'background:radial-gradient(circle,rgba(48,8,8,.72),rgba(48,8,8,0) 72%);'
     + 'text-shadow:0 0 12px rgba(255,70,70,.95),0 3px 8px #000,0 0 3px #000;'
-    + 'animation:bfDmgPop 2.2s cubic-bezier(.2,.8,.3,1) forwards}'
+    + 'animation:bfDmgPop 3.4s cubic-bezier(.2,.8,.3,1) forwards}'
     + '.bf-dmg-pop small{font-size:18px;font-weight:800;color:#ffd9d9;text-shadow:0 2px 6px #000}'
     + '@keyframes bfDmgPop{0%{opacity:0;transform:translate(-50%,-20%) scale(.5)}'
     + '12%{opacity:1;transform:translate(-50%,-58%) scale(1.14)}'
@@ -35,7 +35,7 @@ export const DAMAGE_NUMBER_PATCH = `
     n.style.top = (r.top + r.height * 0.42) + 'px';
     n.innerHTML = '-' + amt + ' <small>HP</small>';
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 2350);
+    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3550);
   }
 
   function install(){

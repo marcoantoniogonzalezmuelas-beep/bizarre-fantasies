@@ -15,7 +15,7 @@ export const HEAL_NUMBER_PATCH = `
     + "font-family:'Cinzel',serif;font-weight:900;font-size:40px;line-height:1;color:#8dffc4;"
     + 'background:radial-gradient(circle,rgba(10,40,26,.72),rgba(10,40,26,0) 72%);'
     + 'text-shadow:0 0 12px rgba(110,255,190,.95),0 3px 8px #000,0 0 3px #000;'
-    + 'animation:bfHealPop 2.2s cubic-bezier(.2,.8,.3,1) forwards}'
+    + 'animation:bfHealPop 3.4s cubic-bezier(.2,.8,.3,1) forwards}'
     + '.bf-heal-pop small{font-size:18px;font-weight:800;color:#d6ffe9;text-shadow:0 2px 6px #000}'
     + '@keyframes bfHealPop{0%{opacity:0;transform:translate(-50%,-20%) scale(.5)}'
     + '12%{opacity:1;transform:translate(-50%,-60%) scale(1.12)}'
@@ -24,7 +24,7 @@ export const HEAL_NUMBER_PATCH = `
     + '100%{opacity:0;transform:translate(-50%,-150%) scale(1.05)}}'
     + '.bf-heal-glow{position:fixed;z-index:100003;pointer-events:none;transform:translate(-50%,-50%);'
     + 'border-radius:16px;box-shadow:0 0 0 3px rgba(126,255,196,.85),0 0 34px rgba(110,255,190,.75) inset;'
-    + 'animation:bfHealGlow 1.4s ease-out forwards}'
+    + 'animation:bfHealGlow 2.2s ease-out forwards}'
     + '@keyframes bfHealGlow{0%{opacity:0}20%{opacity:1}100%{opacity:0}}';
   document.head.appendChild(st);
 
@@ -45,8 +45,8 @@ export const HEAL_NUMBER_PATCH = `
     n.innerHTML = '+' + amt + ' <small>HP</small>';
     (window.__bfAppend||function(x){document.body.appendChild(x);})(glow);
     (window.__bfAppend||function(x){document.body.appendChild(x);})(n);
-    setTimeout(function(){ if(glow.parentNode) glow.parentNode.removeChild(glow); }, 1500);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 2350);
+    setTimeout(function(){ if(glow.parentNode) glow.parentNode.removeChild(glow); }, 2300);
+    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3550);
   }
 
   function install(){
