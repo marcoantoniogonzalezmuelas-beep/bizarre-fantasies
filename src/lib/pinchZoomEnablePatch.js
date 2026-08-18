@@ -3,20 +3,23 @@
 //
 // El HTML del juego no tiene meta viewport y sus manejadores táctiles pueden
 // llamar a preventDefault() sobre touchmove, lo que anula el pellizco del
-// navegador. Este parche:
-//   1. Inserta un meta viewport que permite el zoom del usuario.
-//   2. Fija touch-action: manipulation en el body (permite pan + pellizco,
-//      desactiva solo el doble toque para zoom).
-//   3. Envuelve addEventListener para que los touchmove con preventDefault
-//      no bloqueen los gestos de dos dedos.
-export const PINCH_ZOOM_ENABLE_PATCH = `
+// navegador.
+//
+// Se divide en dos partes:
+//   · HEAD: meta viewport + CSS touch-action. Va en el <head> del documento
+//     (el navegador SOLO respeta el meta viewport si está en el <head>;
+//     inyectarlo al final del <body> no sirve).
+//   · BODY: JS que envuelve addEventListener para que los touchmove con
+//     preventDefault no bloqueen los gestos de dos dedos.
+
+export const PINCH_ZOOM_HEAD_PATCH = `
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 <style id="bf-pinch-zoom">
-html, body { touch-action: manipulation !important; }
-#s-title, #s-setup, #s-lobby, #s-recruit, #s-equip, #s-battle, #s-handoff, #s-result {
-  touch-action: manipulation !important;
-}
+*, *::before, *::after { touch-action: manipulation !important; }
 </style>
+`;
+
+export const PINCH_ZOOM_BODY_PATCH = `
 <script>
 (function(){
   if(window.__bfPinchZoom) return;
@@ -25,14 +28,13 @@ html, body { touch-action: manipulation !important; }
   // Los gestos de dos dedos (pellizco) no deben ser anulados por el juego.
   // Si un listener de touchmove llama a preventDefault cuando hay 2+ dedos,
   // el navegador no puede hacer zoom. Se envuelve addEventListener para
-  // ignorar preventDefault en touchmove cuando hay 2+ puntos de contacto.
+  // neutralizar preventDefault en touchmove cuando hay 2+ puntos de contacto.
   if(typeof EventTarget !== 'undefined'){
     var origAdd = EventTarget.prototype.addEventListener;
     EventTarget.prototype.addEventListener = function(type, listener, opts){
       if(type === 'touchmove' && typeof listener === 'function'){
         var wrapped = function(e){
           if(e.touches && e.touches.length >= 2){
-            // No deja que el juego anule el gesto de pellizco.
             e.preventDefault = function(){};
           }
           return listener.call(this, e);
@@ -43,8 +45,7 @@ html, body { touch-action: manipulation !important; }
     };
   }
 
-  // También intercepta los touchmove ya registrados en document/window antes
-  // de que este parche se ejecute (el juego puede haberlos añadido antes).
+  // Intercepta los touchmove ya registrados antes de este parche (capture phase).
   document.addEventListener('touchmove', function(e){
     if(e.touches && e.touches.length >= 2){
       e.stopImmediatePropagation();
