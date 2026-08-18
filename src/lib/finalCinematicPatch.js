@@ -59,19 +59,17 @@ export const FINAL_CINEMATIC_PATCH = `
     if(typeof window.endTurn!=='function'||window.endTurn.__bfDeathDelay)return false;
     var orig=window.endTurn;
     window.endTurn=function(){
-      var args=arguments,self=this;
-      // Re-comprueba la espera: si la cinemática de muerte arranca más tarde
-      // (porque la animación de la acción era larga), el turno sigue esperando.
-      var t0=Date.now();
-      (function wait(){
-        var until=window.__bfDeathDelayUntil||0,now=Date.now();
-        if(until>now)return setTimeout(wait,Math.min(500,until-now));
-        // Tampoco se pasa al siguiente turno mientras haya una cinemática (o
-        // una en cola) en pantalla: el turno espera a que termine. Techo de
-        // 20 s por seguridad para no bloquear nunca la partida.
-        if(now-t0<20000&&document.querySelector(CINE_SEL+',#bf-kill-ov'))return setTimeout(wait,200);
-        orig.apply(self,args);
-      })();
+      // IMPORTANTE: el fin de turno NUNCA se aplaza en bucle esperando a las
+      // cinemáticas — un endTurn aplazado se disparaba más tarde y "forzaba"
+      // el turno del jugador. La barra de turnos (por velocidad) manda: solo
+      // se respeta la breve espera tras una muerte, y una única vez.
+      var until=window.__bfDeathDelayUntil||0,now=Date.now();
+      if(until>now){
+        var args=arguments,self=this;
+        window.__bfDeathDelayUntil=0;
+        return setTimeout(function(){orig.apply(self,args);},until-now);
+      }
+      return orig.apply(this,arguments);
     };
     window.endTurn.__bfDeathDelay=1;
     return true;
