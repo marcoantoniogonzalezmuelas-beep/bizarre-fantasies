@@ -99,10 +99,31 @@ export function buildFumbleRollPatch(lang) {
     }catch(e){}
   }
 
+  // UNA SOLA tirada por acción: una misma acción pasa por varias funciones
+  // (habilidad que luego golpea, objeto que lanza un hechizo, targeteo…) y cada
+  // paso tiraba su propio dado, así que la probabilidad real de pifia/fallo
+  // épico se multiplicaba. El candado se abre al terminar la acción o el turno.
+  var rolledThisAct = false;
+  function openRoll(){ rolledThisAct = false; }
+  ['finishAct','endTurn'].forEach(function(fn){
+    var n = 0, iv = setInterval(function(){
+      if(typeof window[fn] === 'function' && !window[fn].__bfRollReset){
+        var o = window[fn];
+        var w = function(){ openRoll(); return o.apply(this, arguments); };
+        w.__bfRollReset = true;
+        window[fn] = w;
+        clearInterval(iv);
+      }
+      if(++n > 300) clearInterval(iv);
+    }, 200);
+  });
+
   // Devuelve true si la acción se ha "pifiado" (y ya se ha resuelto el fallo).
   function fumbled(label){
     var a = actor();
     if(!a) return false;
+    if(rolledThisAct) return false;
+    rolledThisAct = true;
     var t = roll();
     if(t.ok){
       log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + 'OK.');
@@ -214,6 +235,10 @@ export function buildFumbleRollPatch(lang) {
     var w = function(side, h, done){
       var self = this;
       if(noRoll(h)) return orig.apply(self, arguments);
+      // Ya se tiró el dado en esta misma acción (p.ej. habilidad que vuelve a
+      // pasar por aquí tras elegir objetivo): no se tira otra vez.
+      if(rolledThisAct) return orig.apply(self, arguments);
+      if(isSummon(h) || isPassive(h)) rolledThisAct = true;
       if(isSummon(h)){
         var r = 1 + Math.floor(Math.random() * 30);
         if(r === 19 || r === 20){

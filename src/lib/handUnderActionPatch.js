@@ -10,8 +10,10 @@ export const HAND_UNDER_ACTION_PATCH = `
 
   var st = document.createElement('style');
   st.textContent = [
-    '.bf-hands-row{display:flex;gap:10px;width:100%;margin:10px 0 16px;align-items:stretch;flex-wrap:wrap}',
-    '.bf-hands-row .hand-under-action{flex:1 1 260px}',
+    // Altura reservada: el tamaño de la fila de manos no cambia entre
+    // repintados, así deja de "bailar" durante la batalla.
+    '.bf-hands-row{display:flex;gap:10px;width:100%;margin:10px 0 16px;align-items:stretch;flex-wrap:wrap;min-height:132px;contain:layout style}',
+    '.bf-hands-row .hand-under-action{flex:1 1 260px;min-height:124px}',
     '.hand-under-action{margin:0!important;background:var(--panel);border:1px solid rgba(255,210,74,.35)!important;border-top:1px solid rgba(255,210,74,.35)!important;border-radius:12px;padding:8px 12px 10px!important}',
     '.hand-under-action.hand-rival{border-color:rgba(138,160,255,.4)!important;border-top-color:rgba(138,160,255,.4)!important}',
     '.hand-under-action.hand-rival .hand-under-title{color:var(--he)}',
@@ -34,7 +36,9 @@ export const HAND_UNDER_ACTION_PATCH = `
       if (!row) {
         row = s.querySelector('.bf-hands-row');
         if (!row) { row = document.createElement('div'); row.className = 'bf-hands-row'; }
-        anchor.parentNode.insertBefore(row, anchor);
+        // Solo se recoloca si no está ya justo antes del ancla (evita mover el
+        // nodo en cada repintado, que es lo que hacía parpadear la fila).
+        if (row.parentNode !== anchor.parentNode || row.nextSibling !== anchor) anchor.parentNode.insertBefore(row, anchor);
       }
       var mine = side === mySide;
       hand.classList.add('hand-under-action');
@@ -47,7 +51,7 @@ export const HAND_UNDER_ACTION_PATCH = `
         t.textContent = mine ? '🖐 Tu mano' : ('🖐 Mano de ' + (name || 'rival'));
         hand.insertBefore(t, hand.firstChild);
       }
-      row.appendChild(hand);
+      if (hand.parentNode !== row) row.appendChild(hand);
       hand.dataset.bfMoved = '1';
     });
   }

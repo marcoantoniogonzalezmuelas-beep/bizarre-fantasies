@@ -366,10 +366,17 @@ export const ABILITY_ANIM_PATCH = `
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
     setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);playingUrl=null;},5000);
   }
+  // Una sola cinemática por héroe y acción: las habilidades que piden objetivo
+  // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso
+  // lanzaba la misma animación dos veces.
+  var lastPlay={};
   function playAnim(side,hero){
     if(!hero)return;
     var entry=lookup(hero);
     if(!entry)return;
+    var pk=(side||'')+'_'+(hero.id||hero.name||'');
+    if(lastPlay[pk]&&Date.now()-lastPlay[pk]<9000)return;
+    lastPlay[pk]=Date.now();
     var isElite=!!hero.eliteMode;
     var url=isElite?(entry.elite||entry.base):entry.base;
     if(!url)return;
