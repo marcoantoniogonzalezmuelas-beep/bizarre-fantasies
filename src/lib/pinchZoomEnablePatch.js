@@ -27,6 +27,17 @@ export const PINCH_ZOOM_BODY_PATCH = `
   if(window.__bfPinchZoom) return;
   window.__bfPinchZoom = true;
 
+  // Los controles originales del juego se registran antes que este parche y
+  // pueden cancelar un gesto de dos dedos. Se preservan sus toques de juego,
+  // pero nunca se permite cancelar el pellizco ni los gestos nativos de Safari.
+  try {
+    var nativePreventDefault = Event.prototype.preventDefault;
+    Event.prototype.preventDefault = function(){
+      if ((this.touches && this.touches.length >= 2) || this.type === 'gesturestart' || this.type === 'gesturechange') return;
+      return nativePreventDefault.call(this);
+    };
+  } catch(e) {}
+
   // --- 1. Elimina cualquier meta viewport que el juego añada después ---
   function killViewportMetas(){
     var metas = document.querySelectorAll('meta[name="viewport"]');

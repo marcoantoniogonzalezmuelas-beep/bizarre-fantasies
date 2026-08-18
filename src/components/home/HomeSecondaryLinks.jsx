@@ -28,10 +28,10 @@ export default function HomeSecondaryLinks({ style }) {
   const rulesStyle = { bottom: (style?.bottom ?? 88) + 58, right: style?.right ?? 16 };
   return (
     <>
-      <div className="absolute z-20 pointer-events-auto" style={rulesStyle}>
+      <div className="bf-home-utility-link absolute z-20 pointer-events-auto" style={rulesStyle}>
         <Card {...rules} narrow />
       </div>
-      <div className="absolute z-20 pointer-events-auto" style={style}>
+      <div className="bf-home-utility-link absolute z-20 pointer-events-auto" style={style}>
         <Card {...races} />
       </div>
     </>

@@ -121,6 +121,12 @@
   html.bf-dz .grid.grid-cols-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* Los accesos auxiliares de la portada deben quedar por debajo del tamaño del
+   botón principal en pantallas táctiles. `scale` no interfiere con su posición
+   ni con el pellizco nativo. */
+.bf-mobile-home .bf-home-oracle, .bf-mobile-home .bf-home-utility-link { scale: .72; transform-origin: bottom right; }
+.bf-mobile-home .bf-home-flash { scale: .72; transform-origin: center top; }
+
 /* Podio del Top Ranking: brillo de borde por medalla (oro/plata/bronce) — ver RankPodium.jsx */
 
 @keyframes bfFoilShift { 0% { background-position: 0% 0%; } 100% { background-position: 300% 300%; } }
