@@ -1057,8 +1057,11 @@ export default function Home() {
         igual que al resto del juego (icono de contactar, menús…). */}
       {IS_MOBILE && showOracle && (
         <div className="absolute inset-0 z-20 pointer-events-none" style={{ overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, transform: `translate(${pinch.tx}px, ${pinch.ty}px) scale(${pinch.z})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+          {/* Se usa `zoom` (no `transform: scale`) para que el Oráculo, Reglas
+            y Razas se REDIBUJEN al ampliar con el pellizco: con transform el
+            navegador reescala una textura ya pintada y se ven borrosos. */}
+          <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, zoom: mobScale * pinch.z, transform: `translate(${pinch.tx / pinch.z}px, ${pinch.ty / pinch.z}px)`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, pointerEvents: 'none' }}>
               <Link to="/cards" className="absolute flex items-center gap-2 group pointer-events-auto" style={{ bottom: 20, right: 16, filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', textDecoration: 'none' }}>
                 <div className="relative rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110" style={{ width: 48, height: 48 }}>
                   <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
