@@ -2,6 +2,11 @@
 // Extraídos de entry.ts para mantener el archivo principal bajo el límite de
 // líneas. Aplican los mismos reemplazos que antes estaban inline.
 export function applyHtmlPatches(html: string, RB: string): string {
+  // El HTML upstream trae un viewport que bloquea el pellizco (maximum-scale=1,
+  // user-scalable=no). Se sustituye por uno estándar que permite el zoom nativo
+  // del navegador dentro del iframe en móvil/tablet.
+  html = html.replace(/<meta\b[^>]*?name=["']viewport["'][^>]*>/gi,
+    '<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5.0, user-scalable=yes" />');
   var BTN_LEARN = RB+'843af3814_generated_image.png', BTN_RULES = RB+'0848f4ffb_generated_image.png', BTN_RACES = RB+'5e41f1add_generated_image.png';
   html = html.replace('const AD_REF=18,HE_REF=18,EQUIP_BASE=45,START_COINS=100;', 'const AD_REF=18,HE_REF=18,EQUIP_BASE=100,START_COINS=100;');
   // Batalla reordenada: campo de batalla (héroes + mano) arriba, después el
