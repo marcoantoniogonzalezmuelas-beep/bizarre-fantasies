@@ -359,6 +359,19 @@ export default function Home() {
     return () => document.removeEventListener('contextmenu', blockContextMenu);
   }, []);
 
+  // El juego embebido no es responsivo (siempre 1200px de ancho): solo esta
+  // página fuerza el viewport a modo escritorio (1280px) mientras está
+  // montada, para que el navegador móvil escale y pellizque el juego igual
+  // que en PC. Al salir de Home se restaura el viewport normal del resto de
+  // páginas (Oráculo, Reglas, Razas...), que ya son responsivas por sí mismas.
+  useEffect(() => {
+    if (!IS_MOBILE) return;
+    const meta = document.getElementById('bf-viewport');
+    const prev = meta?.getAttribute('content');
+    if (meta) meta.setAttribute('content', 'width=1280, initial-scale=1.0, minimum-scale=0.2, maximum-scale=6.0, user-scalable=yes');
+    return () => { if (meta && prev) meta.setAttribute('content', prev); };
+  }, []);
+
   // Al volver de "Conocer las cartas" tras salir desde la demo: si el flag
   // sigue en sessionStorage, arrancamos la demo automáticamente cuando el
   // juego termine de cargar (bfScreen 's-title').

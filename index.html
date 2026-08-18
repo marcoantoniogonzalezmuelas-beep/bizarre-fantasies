@@ -3,20 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" />
-    <meta id="bf-viewport" name="viewport" content="width=1280, initial-scale=1.0, minimum-scale=0.2, maximum-scale=6.0, user-scalable=yes" />
-    <script>
-      // Móvil/tablet: la app se muestra en MODO ESCRITORIO (1280 px de ancho).
-      // El navegador la ajusta a la pantalla y el pellizco (pinch-zoom) es el
-      // nativo, igual que en cualquier web vista en modo escritorio.
-      (function () {
-        var ua = navigator.userAgent || '';
-        var touch = (navigator.maxTouchPoints || 0) > 1 || /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
-        var small = Math.min(screen.width, screen.height) <= 1366;
-        if (!touch || !small) return;
-        var m = document.getElementById('bf-viewport');
-        if (m) m.setAttribute('content', 'width=1280, user-scalable=yes, minimum-scale=0.2, maximum-scale=6.0');
-      })();
-    </script>
+    <!-- Viewport responsivo estándar para toda la app (Oráculo, Reglas,
+      Razas, Guía de cartas...). Solo la página del juego (Home) cambia este
+      meta a modo escritorio mientras está montada, y lo restaura al salir. -->
+    <meta id="bf-viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <link rel="manifest" href="/manifest.json" />
     <title>Bizarre Fantasies · Base Set</title>
   </head>
