@@ -19,16 +19,13 @@ export const ENGINE_AKIND = {
 };
 
 // Héroes con implementación exacta al texto (parche de habilidades fieles).
-export const FAITHFUL_NUMBERS = [2, 3, 4, 7, 8, 10, 12, 15, 16, 18, 19, 21, 22, 24, 30, 31, 32, 36, 37, 39, 44];
+export const FAITHFUL_NUMBERS = [2, 3, 4, 7, 8, 10, 12, 15, 16, 18, 19, 20, 21, 22, 24, 30, 31, 32, 36, 37, 39, 42, 44];
 
 // Héroes con habilidad propia programada aparte (parches dedicados).
 export const CUSTOM_NUMBERS = { 114: 'Juniana (refracción)', 115: 'KillerDucks (tokens)', 118: 'Daidoji Esva (bonus por aliados)', 119: 'Grulla (token)' };
 
 // Efectos del texto que aún NO existen en el motor y hay que programar.
-export const PENDING = {
-  20: 'Sin penalización por atacar fuera de su tipo (no existe en el motor).',
-  42: 'Élite: bloquear la mano de cartas del rival (no existe en el motor).',
-};
+export const PENDING = {};
 
 export function abilityAuditFor(number) {
   const n = Number(number);

@@ -64,6 +64,52 @@ export const FAITHFUL_ABILITIES_PATCH = `
     };
   }
 
+  // Maestría (Edredon): sin penalización por atacar fuera de su tipo. El motor
+  // usa el stat correspondiente al tipo de ataque, así que mientras el flag esté
+  // activo sus tres stats de combate valen lo mismo que su stat principal.
+  function hookNoTypePen(){
+    if(window.__bfNtpHook || typeof window.stat !== 'function') return;
+    window.__bfNtpHook = true;
+    var orig = window.stat;
+    window.stat = function(h, k){
+      if(h && h._bfNoTypePen && (k === 'cc' || k === 'ad' || k === 'he')){
+        return Math.max(orig(h,'cc'), orig(h,'ad'), orig(h,'he'));
+      }
+      return orig.apply(this, arguments);
+    };
+  }
+
+  // Vacío Mental (Coffetath élite): bloquea la mano del rival — su equipo no
+  // puede lanzar hechizos ni usar objetos durante su siguiente turno.
+  function hookHandBlock(){
+    window.__bfHandBlock = window.__bfHandBlock || { p:0, o:0 };
+    ['castSpell','useItem','castSpell_AI','useItem_AI'].forEach(function(fn){
+      if(typeof window[fn] !== 'function' || window[fn].__bfHb) return;
+      var orig = window[fn];
+      var wrapped = function(){
+        try{
+          var s = (typeof B !== 'undefined' && B.current) ? B.current.side : null;
+          if(s && window.__bfHandBlock[s] > 0){
+            log('li', '\\ud83d\\udeab Mano bloqueada: este equipo no puede usar hechizos ni objetos.');
+            return;
+          }
+        }catch(e){}
+        return orig.apply(this, arguments);
+      };
+      wrapped.__bfHb = true;
+      window[fn] = wrapped;
+    });
+    if(typeof window.nextRound === 'function' && !window.nextRound.__bfHb){
+      var on = window.nextRound;
+      var wr = function(){
+        try{ ['p','o'].forEach(function(s){ if(window.__bfHandBlock[s] > 0) window.__bfHandBlock[s]--; }); }catch(e){}
+        return on.apply(this, arguments);
+      };
+      wr.__bfHb = true;
+      window.nextRound = wr;
+    }
+  }
+
   // ---- implementaciones fieles ------------------------------------------
   var IMPL = {
     // Boss — texto: -3 (1 turno) / -5 (2 turnos) a todos los rivales
@@ -253,6 +299,23 @@ export const FAITHFUL_ABILITIES_PATCH = `
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u25bc'});
       log('li', c.h.name + ' maldice a ' + c.t.name + ' (-' + d + ', -3).');
     },
+    // Edredon — sin penalización por atacar fuera de su tipo (élite: +3 stats)
+    edre: function(c){
+      c.h._bfNoTypePen = 1;
+      if(c.el) mods(c.h).push({cc:3, ad:3, he:3, vel:3, turns:99});
+      fx({k:'status', side:c.side, id:c.h.id, txt:'\\u2694\\ufe0f'});
+      log('lg', c.h.name + ' domina todas las armas: sin penalizaci\\u00f3n por atacar fuera de su tipo' + (c.el ? ' y +3 a todos sus stats' : '') + '.');
+    },
+    // Coffetath élite — golpe mágico que bloquea la mano rival un turno
+    caoffe: function(c){
+      if(!c.el) return false;
+      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + 6, {type:'spell', element:'rayo'});
+      window.__bfHandBlock = window.__bfHandBlock || { p:0, o:0 };
+      window.__bfHandBlock[c.foes] = 2;
+      L(c.foes).forEach(function(x){ fx({k:'status', side:side_(x), id:x.id, txt:'\\ud83d\\udeab'}); });
+      log('li', c.h.name + ' golpea a ' + c.t.name + ' (-' + d + ') y BLOQUEA la mano rival: sin hechizos ni objetos en su siguiente turno.');
+    },
     // El Rolero — conjuro aleatorio (élite: crítico garantizado)
     rol: function(c){
       var roll = c.el ? 20 : (1 + Math.floor(Math.random() * 20));
@@ -263,7 +326,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
     }
   };
 
-  var NEEDS_ENEMY = { bos:0, nar:1, hil:0, renhu:1, boski:0, mor:1, hannai:0, pij:1, pat:1, elder:1, zar:1, alf:1, dix:1, syx:0, ser:1, bat:0, nix:1, man:0, pac:1, rev:1, rol:1 };
+  var NEEDS_ENEMY = { edre:0, caoffe:1, bos:0, nar:1, hil:0, renhu:1, boski:0, mor:1, hannai:0, pij:1, pat:1, elder:1, zar:1, alf:1, dix:1, syx:0, ser:1, bat:0, nix:1, man:0, pac:1, rev:1, rol:1 };
   var NEEDS_ALLY = { bat:1 };
 
   function hook(){
@@ -271,6 +334,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
     window.__bfFaHooked = true;
     hookLifesteal();
     hookShieldRegen();
+    hookNoTypePen();
+    hookHandBlock();
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
       var id = hid(h), impl = IMPL[id];
