@@ -90,10 +90,7 @@
 
   body {
     @apply bg-background text-foreground font-body;
-    overflow-x: hidden;
-    width: 100%;
   }
-  html { overflow-x: hidden; }
 }
 
 /* Scroll lateral suave y responsivo en móvil/tablet (pestañas del Oráculo,
