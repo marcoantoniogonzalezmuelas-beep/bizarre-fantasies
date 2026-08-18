@@ -130,11 +130,48 @@ export function buildFumbleRollPatch(lang) {
     window[name] = w;
   }
 
+  // Habilidades de efecto PERMANENTE (se activan una vez y siguen actuando):
+  // solo se tira el dado al activarlas, nunca hay fallo épico y, si sale pifia,
+  // no ocurre nada pero la habilidad queda marcada como usada (no "en juego").
+  function isPassive(h){
+    var n = String((h && h.name) || '').toLowerCase();
+    if(n.indexOf('juniana') >= 0) return true;
+    if((n.indexOf('patito') >= 0 || n.indexOf('duck') >= 0) && !h.eliteMode) return true;
+    return false;
+  }
+  // La Grulla no tira dado: basta con la tirada de la invocación de Daidoji.
+  function noRoll(h){
+    var n = String((h && h.name) || '').toLowerCase();
+    return n.indexOf('grulla') >= 0 || n.indexOf('crane') >= 0;
+  }
+
+  // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
+  function passiveFumbled(side, h){
+    var r = 1 + Math.floor(Math.random() * 20);
+    if(r < 19 && r !== 1){
+      log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/20 \\u2192 OK.');
+      return false;
+    }
+    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/20 \\u2192 ${T.fumbleLog}');
+    pop(side, h.id, false, r);
+    return true;
+  }
+
   function wrapAbility(){
     if(typeof window.useAbility !== 'function' || window.useAbility.__bfFum) return;
     var orig = window.useAbility;
     var w = function(side, h, done){
       var self = this;
+      if(noRoll(h)) return orig.apply(self, arguments);
+      if(isPassive(h)){
+        if(passiveFumbled(side, h)){
+          h.abilityUsed = true;
+          try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
+          setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
+          return;
+        }
+        return orig.apply(self, arguments);
+      }
       try{
         if(fumbled('${en ? 'ability' : 'habilidad'}')){
           h.abilityUsed = true;
