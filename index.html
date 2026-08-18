@@ -11,7 +11,7 @@
       (function () {
         var ua = navigator.userAgent || '';
         var touch = (navigator.maxTouchPoints || 0) > 1 || /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
-        var small = Math.min(screen.width, screen.height) <= 1100;
+        var small = Math.min(screen.width, screen.height) <= 1366;
         if (!touch || !small) return;
         var m = document.getElementById('bf-viewport');
         if (m) m.setAttribute('content', 'width=1280, user-scalable=yes, minimum-scale=0.2, maximum-scale=6.0');

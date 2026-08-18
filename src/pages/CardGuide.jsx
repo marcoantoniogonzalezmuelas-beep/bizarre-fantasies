@@ -72,7 +72,7 @@ export default function CardGuide() {
   ) : null;
 
   return (
-    <div className="min-h-screen relative bg-[#050308] bg-cover bg-center bg-fixed text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fabd7df37_generated_image.png")' }}>
+    <div className="min-h-screen relative bg-[#050308] bg-cover bg-center text-[#efe9dc]" style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fabd7df37_generated_image.png")' }}>
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#06040acc]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0a0812dd] via-[#070512bb] to-[#050308ee]" />
       <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_30%,rgba(80,40,120,.14),transparent_65%)]" />
