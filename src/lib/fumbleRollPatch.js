@@ -165,10 +165,14 @@ export function buildFumbleRollPatch(lang) {
     if(/invoca|summon/.test(txt)) return true;
     return n.indexOf('daidoji') >= 0 || n.indexOf('killerduck') >= 0;
   }
-  // La Grulla no tira dado: basta con la tirada de la invocación de Daidoji.
+  // Sin tirada de dado:
+  //  · La Grulla (basta con la tirada de la invocación de Daidoji).
+  //  · Juniana: su habilidad la resuelve su propio parche (cinemática 3D +
+  //    espejo de refracción); interceptarla rompía ambos efectos.
   function noRoll(h){
     var n = String((h && h.name) || '').toLowerCase();
-    return n.indexOf('grulla') >= 0 || n.indexOf('crane') >= 0;
+    if(h && (h.akind === 'reflect-damage' || h.cid === 'juni' || h.card_id === 'juni')) return true;
+    return n.indexOf('grulla') >= 0 || n.indexOf('crane') >= 0 || n.indexOf('juniana') >= 0;
   }
 
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
