@@ -67,6 +67,9 @@ export default function Ranking() {
     });
   }, []);
 
+  // Nicks genéricos que el juego asigna por defecto: no cuentan para el ranking.
+  const GENERIC = /^(tú|tu|rival|jugador\s*\d*|player\s*\d*|player|cpu|ia|bot|oponente|opponent)$/i;
+  const isGeneric = (s) => !s || GENERIC.test(String(s).trim());
   // Tokens invocados en batalla (no son héroes): fuera de las listas de héroes.
   const SUMMON_TOKENS = ['Patito de Goma'];
   // IAs y jugadores comparten ranking: se cuentan todas las victorias y
@@ -79,6 +82,7 @@ export default function Ranking() {
   // MatchResult; y por último el fallback de IAs para partidas antiguas.
   const playerArtMap = { ...(playerAvatars || {}) };
   (results || []).forEach(r => {
+    if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
     wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
     losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
     if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
@@ -113,6 +117,7 @@ export default function Ranking() {
   const monthLabel = MONTH_NAMES()[curMonth];
   const monthWins = {}, monthLosses = {};
   (results || []).forEach(r => {
+    if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
     const d = new Date(r.created_date);
     if (isNaN(d.getTime()) || d.getMonth() !== curMonth || d.getFullYear() !== curYear) return;
     monthWins[r.winner_nick] = (monthWins[r.winner_nick] || 0) + 1;

@@ -57,9 +57,9 @@ export const MATCH_SCORE_PATCH = `
 
   // Reset general único: pone a cero todos los marcadores históricos.
   try{
-    if(localStorage.getItem('bfScoreReset')!=='v2'){
+    if(localStorage.getItem('bfScoreReset')!=='v3'){
       localStorage.removeItem('bfScoreByNick');
-      localStorage.setItem('bfScoreReset','v2');
+      localStorage.setItem('bfScoreReset','v3');
     }
   }catch(e){}
 
@@ -131,18 +131,21 @@ export const MATCH_SCORE_PATCH = `
     }
   }
 
-  // El marcador NO se muestra hasta que el jugador haya terminado al menos
-  // una partida en esta sesión. Así evitamos que aparezca en la home o en
-  // la pantalla de configuración con nicks por defecto ("Jugador 1") antes
-  // de que el jugador haya introducido su nick y jugado de verdad.
-  var __bfScoreActive=false;
+  // Nicks genéricos que el juego asigna por defecto. Si alguno de los dos
+  // jugadores tiene un nick genérico, el marcador no se muestra.
+  var GENERIC=/^(tú|tu|rival|jugador\\s*\\d*|player\\s*\\d*|player|cpu|ia|bot|oponente|opponent)$/i;
+  function isGeneric(s){ return !s || GENERIC.test(String(s).trim()); }
+  // El marcador solo se muestra a partir de la subasta (no en la portada).
+  function isOnTitle(){
+    try{ var a=document.querySelector('.screen.active'); return !a||a.id==='s-title'; }catch(e){ return true; }
+  }
   function render(animateSide){
     var s=get();var bar=ensureBar();
     bar.querySelector('.bf-score-p-name').textContent=shortName(s.selfNick);
     bar.querySelector('.bf-score-o-name').textContent=shortName(s.oppNick);
     var pNum=bar.querySelector('.bf-score-p-num'),oNum=bar.querySelector('.bf-score-o-num');
     var pOld=parseInt(pNum.textContent)||0,oOld=parseInt(oNum.textContent)||0;
-    if(!__bfScoreActive){bar.classList.remove('bf-score-show');return;}
+    if(isOnTitle()||isGeneric(s.selfNick)||isGeneric(s.oppNick)){bar.classList.remove('bf-score-show');return;}
     if(s.self===0&&s.opp===0){bar.classList.remove('bf-score-show');return;}
     pNum.textContent=s.self;oNum.textContent=s.opp;
     bar.classList.add('bf-score-show');
@@ -161,7 +164,6 @@ export const MATCH_SCORE_PATCH = `
     get:get,
     render:render,
     addWin:function(nick){
-      __bfScoreActive=true;
       var n=nicks(),s=addWin(nick);
       render(String(nick).toLowerCase()===n.self.toLowerCase()?'self':'opp');
       return s;
@@ -173,7 +175,6 @@ export const MATCH_SCORE_PATCH = `
         if(typeof G==='undefined'||!G||G.demo)return;
         if(G.__bfScoredOnce)return;
         G.__bfScoredOnce=true;
-        __bfScoreActive=true;
         window.bfSeriesScore.addWin(winnerNick);
       }catch(e){}
     }

@@ -30,9 +30,10 @@ export const NICK_REQUIRED_PATCH = `
   }
   // Un nick es válido si no está vacío, no es el genérico "Jugador 1/2" y no
   // contiene palabras malsonantes.
+  var GENERIC=/^(tú|tu|rival|jugador(\\s*\\d+)?|player(\\s*\\d+)?|player|cpu|ia|bot|oponente|opponent)$/i;
   function badNick(v){
     var s=String(v==null?'':v).trim();
-    return !s||/^jugador(\\s*\\d+)?$/i.test(s)||obsceneNick(s);
+    return !s||GENERIC.test(s)||obsceneNick(s);
   }
   // Mensaje adecuado: distinto si el nick está vacío o si es malsonante.
   function nickMsg(v,fallback){
@@ -106,7 +107,7 @@ export const NICK_REQUIRED_PATCH = `
       var i=el(id);
       if(!i||i.dataset.bfNickClean==='1')return;
       i.dataset.bfNickClean='1';
-      if(/^jugador\\s*\\d*$/i.test(String(i.value).trim()))i.value='';
+      if(GENERIC.test(String(i.value).trim()))i.value='';
       i.placeholder='Escribe tu nick';
     });
   }
