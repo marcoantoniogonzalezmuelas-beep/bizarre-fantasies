@@ -11,7 +11,7 @@ export const ACTION_PANEL_FOCUS_PATCH = `
   window.__bfActionPanelFocus = true;
 
   function toTop(){
-    try{ if(typeof window.__bfPinchTop === 'function'){ window.__bfPinchTop(280); } }catch(e){}
+    try{ if(typeof window.__bfPinchReset === 'function'){ window.__bfPinchReset(); } }catch(e){}
     try{ window.scrollTo({ top:0, left:0, behavior:'auto' }); }catch(e){ try{ window.scrollTo(0,0); }catch(e2){} }
     try{
       var se = document.scrollingElement || document.documentElement;
