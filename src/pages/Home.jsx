@@ -114,7 +114,6 @@ import { HOME_MENU_PATCH } from '@/lib/homeMenuPatch';
 import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 import HomeSecondaryLinks from '@/components/home/HomeSecondaryLinks';
 import ChatOverlay from '@/components/chat/ChatOverlay';
-import MobileZoomControls from '@/components/home/MobileZoomControls';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
@@ -407,7 +406,6 @@ export default function Home() {
   // esté visible, ocultamos el cartel de flash news para que no tape el modal.
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
-  const [userZoom, setUserZoom] = useState(1);
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -521,7 +519,7 @@ export default function Home() {
   // porque la escala es ~0,3 y el área pintada es pequeña. Se limita la escala
   // de la tablet al mismo presupuesto de pintado del móvil: el jugador amplía
   // con el pellizco, igual que en móvil.
-  const MAX_SCALE = 1;
+  const MAX_SCALE = 1.35;
   const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
   const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
   const [mobScale, setMobScale] = useState(() =>
@@ -989,10 +987,10 @@ export default function Home() {
   }
 
   const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
-  // Zoom manual del jugador en móvil/tablet (el pellizco del navegador queda
-  // bloqueado por los manejadores táctiles del juego, así que se ofrece un
-  // control explícito que además permite desplazarse por la mesa).
-  const effScale = IS_MOBILE ? mobScale * userZoom : 1;
+  // En móvil/tablet la página se sirve en modo escritorio (viewport 1280 px),
+  // así que el juego (1200 px) cabe entero y el zoom lo hace el navegador con
+  // el pellizco. No hay escalado manual adicional.
+  const effScale = IS_MOBILE ? mobScale : 1;
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#0e0a16]">
@@ -1015,7 +1013,7 @@ export default function Home() {
         los botones de la portada, igual que en PC. */}
       <div
         className="absolute inset-0 z-20 pointer-events-none"
-        style={IS_MOBILE ? { transform: `scale(${Math.max(0.55, effScale)})`, transformOrigin: 'bottom right' } : undefined}
+        style={undefined}
       >
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
@@ -1055,13 +1053,6 @@ export default function Home() {
             />
           </div>
         </div>
-      )}
-      {IS_MOBILE && (blobUrl || srcDoc) && !loading && (
-        <MobileZoomControls
-          zoom={userZoom}
-          onZoom={(d) => setUserZoom((z) => Math.max(0.6, Math.min(4, Math.round((z + d) * 100) / 100)))}
-          onReset={() => setUserZoom(1)}
-        />
       )}
       {(blobUrl || srcDoc) && !IS_MOBILE && (
         <iframe
