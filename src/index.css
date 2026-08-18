@@ -99,7 +99,6 @@
 /* Móvil/tablet: permite el pellizco nativo del navegador (manipulation =
    pan + pinch-zoom, solo desactiva el doble toque para zoom). */
 @media (max-width: 1024px) {
-  html, body { touch-action: auto !important; overscroll-behavior: none; }
   .overflow-x-auto, .no-scrollbar {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
@@ -111,23 +110,6 @@
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Modo "escritorio con zoom" en móvil/tablet (Oráculo y Guía de Cartas):
-   cuando useDesktopZoom activa la clase bf-dz en <html>, los grids usan el
-   nº de columnas de escritorio aunque el viewport sea de móvil, para que la
-   página se vea como en un PC y el usuario la navegue con zoom de pellizco. */
-@media (max-width: 1024px) {
-  html.bf-dz .grid.grid-cols-2 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  html.bf-dz .grid.grid-cols-1 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-/* Los accesos auxiliares de la portada deben quedar por debajo del tamaño del
-   botón principal en pantallas táctiles. `scale` no interfiere con su posición
-   ni con el pellizco nativo. */
-/* La portada se sirve en modo escritorio (viewport 1280 px) también en
-   móvil/tablet, así que estos accesos se integran con el mismo tamaño y
-   posición que en PC: sin escalas propias que los descoloquen. */
-iframe { touch-action: auto !important; }
 
 /* Podio del Top Ranking: brillo de borde por medalla (oro/plata/bronce) — ver RankPodium.jsx */
 

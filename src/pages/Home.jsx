@@ -80,7 +80,6 @@ import { END_HEROES_PATCH } from '@/lib/endHeroesPatch';
 import { REMATCH_PATCH } from '@/lib/rematchPatch';
 import { VS_TEXT_PATCH } from '@/lib/vsTextPatch';
 import { buildFumbleRollPatch } from '@/lib/fumbleRollPatch';
-import { PINCH_ZOOM_HEAD_PATCH, PINCH_ZOOM_BODY_PATCH } from '@/lib/pinchZoomEnablePatch';
 import { THINK_BOX_SKIN_PATCH } from '@/lib/thinkBoxSkinPatch';
 
 
@@ -359,19 +358,6 @@ export default function Home() {
     return () => document.removeEventListener('contextmenu', blockContextMenu);
   }, []);
 
-  // El juego embebido no es responsivo (siempre 1200px de ancho): solo esta
-  // página fuerza el viewport a modo escritorio (1280px) mientras está
-  // montada, para que el navegador móvil escale y pellizque el juego igual
-  // que en PC. Al salir de Home se restaura el viewport normal del resto de
-  // páginas (Oráculo, Reglas, Razas...), que ya son responsivas por sí mismas.
-  useEffect(() => {
-    if (!IS_MOBILE) return;
-    const meta = document.getElementById('bf-viewport');
-    const prev = meta?.getAttribute('content');
-    if (meta) meta.setAttribute('content', 'width=1280, initial-scale=1.0, minimum-scale=0.2, maximum-scale=6.0, user-scalable=yes');
-    return () => { if (meta && prev) meta.setAttribute('content', prev); };
-  }, []);
-
   // Al volver de "Conocer las cartas" tras salir desde la demo: si el flag
   // sigue en sessionStorage, arrancamos la demo automáticamente cuando el
   // juego termine de cargar (bfScreen 's-title').
@@ -534,24 +520,6 @@ export default function Home() {
   // porque la escala es ~0,3 y el área pintada es pequeña. Se limita la escala
   // de la tablet al mismo presupuesto de pintado del móvil: el jugador amplía
   // con el pellizco, igual que en móvil.
-  const MAX_SCALE = 1.35;
-  const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
-  const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
-  // Con el viewport global de escritorio activo no se aplica una segunda
-  // escala al iframe: el navegador ya ajusta los 1280 px a la pantalla.
-  const useScaledIframe = IS_MOBILE && typeof window !== 'undefined' && layoutW() < 1000;
-  const [mobScale, setMobScale] = useState(() =>
-    useScaledIframe ? Math.min(MAX_SCALE, layoutW() / 1200) : 1
-  );
-
-  useEffect(() => {
-    if (!IS_MOBILE) return;
-    const update = () => setMobScale(layoutW() < 1000 ? Math.min(MAX_SCALE, layoutW() / 1200) : 1);
-    window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', () => setTimeout(update, 300));
-    return () => window.removeEventListener('resize', update);
-  }, []);
-
   useEffect(() => {
     const onMessage = (e) => {
       if (e.data && typeof e.data.bfScreen === 'string') {
@@ -956,14 +924,8 @@ export default function Home() {
         // CSS crítico en el <head>: se aplica en el primer pintado y evita ver
         // la portada a medio estilar (emojis + imágenes gigantes) mientras el
         // navegador termina de leer los 566 KB del documento.
-        // El documento del juego trae un viewport que bloquea el pellizco.
-        // Se sustituye siempre antes de montar el iframe: en escritorio no
-        // altera la vista y en móvil/tablet permite el zoom nativo.
-        patchedData = patchedData.replace(/<meta\b[^>]*?name=["']viewport["'][^>]*>/gi, '');
         if (patchedData.includes('</head>')) {
-          // El script del pellizco va en el <head>, antes que los scripts del
-          // juego, para envolver sus manejadores táctiles desde el principio.
-          patchedData = patchedData.replace('</head>', CRITICAL_HEAD_CSS + PINCH_ZOOM_HEAD_PATCH + PINCH_ZOOM_BODY_PATCH + '</head>');
+          patchedData = patchedData.replace('</head>', CRITICAL_HEAD_CSS + '</head>');
         }
         if (IS_MOBILE) {
           // En móvil los iframes con blob: URL grandes a veces no renderizan.
@@ -1003,15 +965,9 @@ export default function Home() {
     );
   }
 
-  const iframeH = useScaledIframe ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
-  // En móvil/tablet la página se sirve en modo escritorio (viewport 1280 px),
-  // así que el juego (1200 px) cabe entero y el zoom lo hace el navegador con
-  // el pellizco. No hay escalado manual adicional.
-  const effScale = useScaledIframe ? mobScale : 1;
-
   return (
     <div className={`fixed inset-0 overflow-hidden bg-[#0e0a16] ${IS_MOBILE ? 'bf-mobile-home' : ''}`}>
-      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={effScale} />}
+      {showOracle && !demoModalOpen && <FlashNewsMarquee />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
@@ -1028,10 +984,7 @@ export default function Home() {
       {/* Oráculo / Razas / Reglas: se escalan con el mismo factor que el juego
         (mobScale) para que en móvil/tablet tengan el mismo tamaño relativo que
         los botones de la portada, igual que en PC. */}
-      <div
-        className="absolute inset-0 z-20 pointer-events-none"
-        style={effScale < 1 ? { transform: `scale(${effScale})`, transformOrigin: 'bottom right' } : undefined}
-      >
+      <div className="absolute inset-0 z-20 pointer-events-none">
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
         <Link to="/cards" className="bf-home-oracle absolute bottom-5 right-4 z-20 flex items-center gap-2 group pointer-events-auto" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
@@ -1047,29 +1000,7 @@ export default function Home() {
       {showOracle && <HomeSecondaryLinks style={{ bottom: 88, right: 16 }} />}
       </div>
 
-      {/* Móvil/tablet: el juego (1200 px) se ajusta a la pantalla con
-        `transform: scale()` (no `zoom`): `zoom` crea un contexto de zoom que
-        BLOQUEA el pellizco nativo del navegador. Con `transform: scale()` el
-        escalado es puramente visual y el navegador puede pellizcar para zoom
-        adicional. Las pulsaciones funcionan bien (el navegador mapea las
-        coordenadas táctiles al espacio sin transformar). */}
-      {(blobUrl || srcDoc) && useScaledIframe && (
-        <div className="absolute inset-0 overflow-hidden">
-          <iframe
-            ref={iframeRef}
-            title="Bizarre Fantasies v5"
-            {...(srcDoc ? { srcDoc } : { src: blobUrl })}
-            onLoad={() => {
-              if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
-              loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
-            }}
-            className="border-0"
-            style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${effScale})`, transformOrigin: 'top left' }}
-            allow="autoplay; fullscreen; clipboard-read; clipboard-write"
-          />
-        </div>
-      )}
-      {(blobUrl || srcDoc) && !useScaledIframe && (
+      {(blobUrl || srcDoc) && (
         <iframe
           ref={iframeRef}
           title="Bizarre Fantasies v5"
@@ -1082,7 +1013,7 @@ export default function Home() {
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
-      <ChatOverlay mobScale={effScale} pinchZ={1} />
+      <ChatOverlay />
     </div>
   );
 }
