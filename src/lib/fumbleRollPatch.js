@@ -146,11 +146,12 @@ export function buildFumbleRollPatch(lang) {
     if(n.indexOf('daidoji') >= 0 && !h.eliteMode) return true;
     if(n.indexOf('batu') >= 0 && h.eliteMode) return true;
     if(n.indexOf('edredon') >= 0) return true;
-    return isSummon(h);
+    return false;
   }
 
   // Invocaciones (patitos de KillerDucks, Grulla de Daidoji y las que vengan en
-  // cartas nuevas): solo tirada de pifia, nunca fallo épico.
+  // cartas nuevas): pifia = no invoca nada; fallo épico = las criaturas
+  // invocadas aparecen en el EJÉRCITO RIVAL.
   function isSummon(h){
     var txt = String((h && (h.eliteMode ? (h.eAbilityText || h.eAbility) : (h.abilityText || h.ability))) || '').toLowerCase();
     var n = String((h && h.name) || '').toLowerCase();
@@ -175,12 +176,53 @@ export function buildFumbleRollPatch(lang) {
     return true;
   }
 
+  // Fallo épico de una invocación: las criaturas recién invocadas cambian de
+  // bando y pasan a servir al ejército rival.
+  function stealSummons(side, before){
+    try{
+      var foe = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
+      var mine = (G.team[side] || []);
+      var moved = mine.filter(function(x){ return before.indexOf(x.id) < 0; });
+      if(!moved.length) return;
+      G.team[side] = mine.filter(function(x){ return before.indexOf(x.id) >= 0; });
+      G.team[foe] = (G.team[foe] || []).concat(moved);
+      log('lx', '\\u{1F480} ' + moved.map(function(x){ return x.name; }).join(', ') + ' ${en ? 'turn against their summoner and join the rival army!' : '\\u00a1se vuelven contra quien los invoc\\u00f3 y se unen al ej\\u00e9rcito rival!'}');
+      moved.forEach(function(x){ if(typeof pushFx === 'function') pushFx({k:'status', side:foe, id:x.id, txt:'\\u{1F480}'}); });
+      if(typeof renderBattle === 'function') renderBattle();
+      if(typeof netSync === 'function') netSync('s-battle');
+    }catch(e){}
+  }
+
   function wrapAbility(){
     if(typeof window.useAbility !== 'function' || window.useAbility.__bfFum) return;
     var orig = window.useAbility;
     var w = function(side, h, done){
       var self = this;
       if(noRoll(h)) return orig.apply(self, arguments);
+      if(isSummon(h)){
+        var r = 1 + Math.floor(Math.random() * 20);
+        if(r >= 19){
+          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/20 \\u2192 ${T.fumbleLog}');
+          pop(side, h.id, false, r);
+          h.abilityUsed = true;
+          try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
+          setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
+          return;
+        }
+        if(r === 1){
+          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): 1/20 \\u2192 ${T.epicLog}');
+          pop(side, h.id, true, r);
+          var before = ((G.team[side] || []).map(function(x){ return x.id; }));
+          var doneSteal = function(){
+            stealSummons(side, before);
+            if(typeof done === 'function') return done.apply(this, arguments);
+            if(typeof finishAct === 'function') finishAct();
+          };
+          return orig.call(self, side, h, doneSteal);
+        }
+        log('li', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/20 \\u2192 OK.');
+        return orig.apply(self, arguments);
+      }
       if(isPassive(h)){
         if(passiveFumbled(side, h)){
           h.abilityUsed = true;
