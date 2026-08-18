@@ -93,6 +93,19 @@
   }
 }
 
+/* Scroll lateral suave y responsivo en móvil/tablet (pestañas del Oráculo,
+   filas de cartas…): inercia nativa, sin rebotes que arrastren la página y con
+   ajuste por elemento para que no se pare a medio camino. */
+@media (max-width: 1024px) {
+  .overflow-x-auto, .no-scrollbar {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 12px;
+  }
+  .overflow-x-auto > *, .no-scrollbar > * { scroll-snap-align: start; }
+}
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 

@@ -84,22 +84,45 @@ export function useDesktopZoom(minWidth = 1024) {
     }
     window.__bfPagePinchReset = resetZoom;
 
-    // Reencuadrar a x1 cuando aparezca un overlay/modal fijo (igual que el
-    // juego hace con los `.mo`): con el body transformado, los position:fixed
-    // se posicionan respecto al body escalado y quedan fuera de pantalla.
+    // Con el body transformado, un modal `position:fixed` se coloca respecto al
+    // body escalado (aparece pequeño, descentrado y arrastrando el resto de la
+    // página). Mientras haya un modal abierto se QUITA el transform del body:
+    // así el modal se ve exactamente igual que en escritorio. Al cerrarlo se
+    // restaura el zoom que tenía el usuario.
+    let frozen = null;
+    function freezeForOverlay() {
+      if (frozen) return;
+      frozen = { z, tx, ty };
+      const b = document.body;
+      b.style.transition = '';
+      b.style.transform = 'none';
+    }
+    function unfreeze() {
+      if (!frozen) return;
+      z = frozen.z; tx = frozen.tx; ty = frozen.ty;
+      frozen = null;
+      apply();
+    }
+
     const isOverlay = (n) => {
       if (!n || n.nodeType !== 1) return false;
       if (n.classList && n.classList.contains('bf-zoom-modal')) return true;
       if (n.querySelector && n.querySelector('.bf-zoom-modal')) return true;
       try { const st = getComputedStyle(n); return st.position === 'fixed' && parseInt(st.zIndex || '0', 10) >= 1000; } catch (e) { return false; }
     };
+    const overlayOpen = () => {
+      const nodes = document.querySelectorAll('body *');
+      for (let i = 0; i < nodes.length; i++) if (isOverlay(nodes[i])) return true;
+      return false;
+    };
     const mo = new MutationObserver((muts) => {
+      let touched = false;
       for (let i = 0; i < muts.length; i++) {
-        const added = muts[i].addedNodes;
-        for (let j = 0; j < added.length; j++) {
-          if (isOverlay(added[j])) { resetZoom(); return; }
-        }
+        const m = muts[i];
+        for (let j = 0; j < m.addedNodes.length; j++) if (isOverlay(m.addedNodes[j])) { freezeForOverlay(); return; }
+        if (m.removedNodes.length) touched = true;
       }
+      if (touched && frozen && !overlayOpen()) unfreeze();
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
 

@@ -1,18 +1,16 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import HeroCardFace from '@/components/cards/HeroCardFace';
-import useVisualViewportBox from '@/hooks/useVisualViewportBox';
 
 // Full-screen modal that shows the whole hero card (art + stats + ability)
 // enlarged, not just the artwork.
 export default function HeroCardZoomModal({ hero, elite, onClose }) {
-  const vvBox = useVisualViewportBox();
   if (!hero) return null;
 
   return (
     <div
       className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-cover bg-center backdrop-blur-sm"
-      style={{ backgroundImage: 'linear-gradient(rgba(6,4,12,.72), rgba(6,4,12,.88)), url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")', ...vvBox }}
+      style={{ backgroundImage: 'linear-gradient(rgba(6,4,12,.72), rgba(6,4,12,.88)), url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
       onClick={onClose}
     >
       <button

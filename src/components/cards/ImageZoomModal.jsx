@@ -1,14 +1,12 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import useVisualViewportBox from '@/hooks/useVisualViewportBox';
 
 export default function ImageZoomModal({ src, alt, onClose }) {
-  const vvBox = useVisualViewportBox();
   if (!src) return null;
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center p-4"
-      style={{ background: 'rgba(6,4,12,0.92)', backdropFilter: 'blur(6px)', ...vvBox }}
+      style={{ background: 'rgba(6,4,12,0.92)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <button
