@@ -315,7 +315,11 @@ export const ABILITY_ANIM_PATCH = `
     if(window.__bfNoCinematics)return;
     // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
     // termine la actual. Solo se guarda la última pendiente (no acumula cola).
-    if(document.getElementById('bf-abil-anim')){
+    // Cualquier capa cinemática en pantalla bloquea la siguiente: además de
+    // otra cinemática 3D, también el golpe mortal (#bf-kill-ov) y las cartas
+    // especiales (#bf-spec-cine). Así nunca se solapan (p.ej. la curación de
+    // la IA encima de la cinemática de muerte).
+    if(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')){
       // Si la cinemática en curso o ya en cola es la MISMA (misma URL), no la
       // encola de nuevo: evita que se repita la misma animación.
       if(playingUrl===url)return;
@@ -324,8 +328,10 @@ export const ABILITY_ANIM_PATCH = `
       if(!cineTimer){
         cineTimer=setTimeout(function(){
           cineTimer=null;var q=queuedCine;queuedCine=null;
+          // Si al vencer el turno de espera sigue habiendo una capa en
+          // pantalla, showCinematic vuelve a encolarla sola (sin solapar).
           if(q)showCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);
-        },5000);
+        },1200);
       }
       return;
     }
