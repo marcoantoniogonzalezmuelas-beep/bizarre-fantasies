@@ -17,10 +17,11 @@ export const STAT_NUMBER_PATCH = `
     + 'display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;'
     + "font-family:'Cinzel',serif;font-weight:900;font-size:28px;line-height:1;"
     + 'animation:bfStatPop 2s cubic-bezier(.2,.8,.3,1) forwards}'
-    + '.bf-stat-pop.up{color:#ffd24a;background:radial-gradient(circle,rgba(60,44,6,.7),rgba(60,44,6,0) 72%);'
-    + 'text-shadow:0 0 12px rgba(255,210,74,.95),0 3px 8px #000}'
-    + '.bf-stat-pop.down{color:#ff8f6b;background:radial-gradient(circle,rgba(48,16,8,.7),rgba(48,16,8,0) 72%);'
-    + 'text-shadow:0 0 12px rgba(255,120,70,.95),0 3px 8px #000}'
+    // Verde = curación, rojo = daño, AZUL = cambios de stats (sube con + y baja con −).
+    + '.bf-stat-pop.up{color:#6fc8ff;background:radial-gradient(circle,rgba(6,32,60,.7),rgba(6,32,60,0) 72%);'
+    + 'text-shadow:0 0 12px rgba(90,180,255,.95),0 3px 8px #000}'
+    + '.bf-stat-pop.down{color:#6fc8ff;background:radial-gradient(circle,rgba(6,32,60,.7),rgba(6,32,60,0) 72%);'
+    + 'text-shadow:0 0 12px rgba(90,180,255,.95),0 3px 8px #000}'
     + '.bf-stat-pop small{font-size:15px;font-weight:800;letter-spacing:.5px;color:#fff6df;text-shadow:0 2px 6px #000}'
     + '@keyframes bfStatPop{0%{opacity:0;transform:translate(-50%,10%) scale(.6)}'
     + '14%{opacity:1;transform:translate(-50%,-24%) scale(1.1)}'
