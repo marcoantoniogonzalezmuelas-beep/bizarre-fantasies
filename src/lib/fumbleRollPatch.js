@@ -54,6 +54,8 @@ export function buildFumbleRollPatch(lang) {
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
     setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3750);
   }
+  // Disponible para otros parches (Juniana hace su propia tirada).
+  window.__bfFumblePop = pop;
 
   function log(c, m){ if(typeof pushLog === 'function') pushLog(c, m); }
 

@@ -25,6 +25,24 @@ export const JUNIANA_ABILITY_PATCH = `
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
       if(!isJun(h)) return orig.apply(this, arguments);
+      // Tirada de d20 como el resto de héroes. Al ser una habilidad de efecto
+      // permanente: sin fallo épico y, si sale pifia (19-20 o 1), no ocurre
+      // nada pero la habilidad queda marcada como usada.
+      try{
+        var r = 1 + Math.floor(Math.random() * 20);
+        var fum = (r >= 19 || r === 1);
+        if(typeof pushLog === 'function'){
+          pushLog(fum ? 'lx' : 'li', '\\u{1F3B2} Tirada d20 (habilidad): ' + r + '/20 \\u2192 ' + (fum ? '\\u00a1PIFIA! La habilidad no produce ning\\u00fan efecto.' : 'OK.'));
+        }
+        if(fum){
+          h.abilityUsed = true;
+          if(typeof window.__bfFumblePop === 'function') window.__bfFumblePop(side, h.id, false, r);
+          if(typeof renderBattle === 'function') renderBattle();
+          if(typeof netSync === 'function') netSync('s-battle');
+          setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
+          return;
+        }
+      }catch(e){}
       try{
         h._bfRefract = true;
         h.abilityUsed = true;
