@@ -1,16 +1,17 @@
 // Parche SOLO móvil/tablet: garantiza que el pellizco nativo del navegador
 // funcione dentro del iframe del juego.
 //
-// El HTML del juego no tiene meta viewport y sus manejadores táctiles pueden
-// llamar a preventDefault() sobre touchmove, lo que anula el pellizco del
-// navegador.
+// El HTML del juego tiene su propio meta viewport que bloquea el zoom
+// (maximum-scale=1.0, user-scalable=no) y sus manejadores táctiles pueden
+// llamar a preventDefault() sobre touchmove, lo que anula el pellizco.
 //
 // Se divide en dos partes:
 //   · HEAD: meta viewport + CSS touch-action. Va en el <head> del documento
-//     (el navegador SOLO respeta el meta viewport si está en el <head>;
-//     inyectarlo al final del <body> no sirve).
-//   · BODY: JS que envuelve addEventListener para que los touchmove con
-//     preventDefault no bloqueen los gestos de dos dedos.
+//     (el navegador SOLO respeta el meta viewport si está en el <head>).
+//   · BODY: JS que envuelve addEventListener y ontouchmove para que los
+//     touchmove con preventDefault no bloqueen los gestos de dos dedos, y
+//     un MutationObserver que elimina cualquier meta viewport que el juego
+//     re-añada dinámicamente.
 
 export const PINCH_ZOOM_HEAD_PATCH = `
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
@@ -25,10 +26,38 @@ export const PINCH_ZOOM_BODY_PATCH = `
   if(window.__bfPinchZoom) return;
   window.__bfPinchZoom = true;
 
-  // Los gestos de dos dedos (pellizco) no deben ser anulados por el juego.
-  // Si un listener de touchmove llama a preventDefault cuando hay 2+ dedos,
-  // el navegador no puede hacer zoom. Se envuelve addEventListener para
-  // neutralizar preventDefault en touchmove cuando hay 2+ puntos de contacto.
+  // --- 1. Elimina cualquier meta viewport que el juego añada después ---
+  function killViewportMetas(){
+    var metas = document.querySelectorAll('meta[name="viewport"]');
+    metas.forEach(function(m){
+      var c = m.getAttribute('content') || '';
+      // Solo elimina los que bloquean el zoom
+      if(/maximum-scale=1\.0|user-scalable=no/i.test(c)){
+        m.parentNode && m.parentNode.removeChild(m);
+      }
+    });
+  }
+  killViewportMetas();
+  // Observa cambios en el <head> por si el juego re-añade el meta
+  try {
+    var headObs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes.forEach(function(n){
+          if(n.nodeName && n.nodeName.toLowerCase() === 'meta' && n.getAttribute && n.getAttribute('name') === 'viewport'){
+            var c = n.getAttribute('content') || '';
+            if(/maximum-scale=1\.0|user-scalable=no/i.test(c)){
+              n.parentNode && n.parentNode.removeChild(n);
+            }
+          }
+        });
+      });
+    });
+    headObs.observe(document.documentElement, { childList: true, subtree: true });
+  } catch(e) {}
+
+  // --- 2. Neutraliza preventDefault en touchmove con 2+ dedos ---
+  // Envuelve addEventListener para que los touchmove que el juego registre
+  // no puedan llamar a preventDefault cuando hay 2+ puntos de contacto.
   if(typeof EventTarget !== 'undefined'){
     var origAdd = EventTarget.prototype.addEventListener;
     EventTarget.prototype.addEventListener = function(type, listener, opts){
@@ -45,12 +74,47 @@ export const PINCH_ZOOM_BODY_PATCH = `
     };
   }
 
+  // Override ontouchmove property (por si el juego usa asignación directa)
+  try {
+    var origDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'ontouchmove') ||
+                   Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'ontouchmove');
+    if(origDesc && origDesc.set){
+      Object.defineProperty(document, 'ontouchmove', {
+        get: function(){ return origDesc.get.call(this); },
+        set: function(fn){
+          if(typeof fn === 'function'){
+            var wrapped = function(e){
+              if(e.touches && e.touches.length >= 2){ e.preventDefault = function(){}; }
+              return fn.call(this, e);
+            };
+            origDesc.set.call(this, wrapped);
+          } else {
+            origDesc.set.call(this, fn);
+          }
+        },
+        configurable: true
+      });
+    }
+  } catch(e) {}
+
   // Intercepta los touchmove ya registrados antes de este parche (capture phase).
+  // stopImmediatePropagation evita que los listeners del juego (bubble phase)
+  // se ejecuten y llamen a preventDefault.
   document.addEventListener('touchmove', function(e){
     if(e.touches && e.touches.length >= 2){
       e.stopImmediatePropagation();
     }
   }, { capture: true, passive: true });
+
+  // --- 3. Fuerza touch-action: manipulation periódicamente ---
+  // El juego puede cambiar touch-action vía JavaScript (inline styles). Este
+  // intervalo re-aplica manipulation en el body y elementos clave.
+  setInterval(function(){
+    try {
+      document.documentElement.style.setProperty('touch-action', 'manipulation', 'important');
+      document.body.style.setProperty('touch-action', 'manipulation', 'important');
+    } catch(e) {}
+  }, 1000);
 })();
 </script>
 `;

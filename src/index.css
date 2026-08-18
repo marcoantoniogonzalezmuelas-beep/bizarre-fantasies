@@ -99,7 +99,8 @@
 /* Móvil/tablet: permite el pellizco nativo del navegador (manipulation =
    pan + pinch-zoom, solo desactiva el doble toque para zoom). */
 @media (max-width: 1024px) {
-  body { touch-action: manipulation; }
+  body { touch-action: manipulation; overscroll-behavior: none; }
+  html { overscroll-behavior: none; }
   .overflow-x-auto, .no-scrollbar {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;

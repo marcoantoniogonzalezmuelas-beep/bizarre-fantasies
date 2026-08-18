@@ -1018,10 +1018,12 @@ export default function Home() {
       )}
       {showOracle && <HomeSecondaryLinks style={{ bottom: 88, right: 16 }} />}
 
-      {/* Móvil/tablet: el juego (1200 px) se ajusta a la pantalla con `zoom`
-        (no transform): el navegador lo redibuja nítido, igual que el zoom
-        nativo de la tablet, y las pulsaciones funcionan bien. El pellizco
-        nativo del navegador amplía el iframe y los botones juntos. */}
+      {/* Móvil/tablet: el juego (1200 px) se ajusta a la pantalla con
+        `transform: scale()` (no `zoom`): `zoom` crea un contexto de zoom que
+        BLOQUEA el pellizco nativo del navegador. Con `transform: scale()` el
+        escalado es puramente visual y el navegador puede pellizcar para zoom
+        adicional. Las pulsaciones funcionan bien (el navegador mapea las
+        coordenadas táctiles al espacio sin transformar). */}
       {(blobUrl || srcDoc) && IS_MOBILE && (
         <iframe
           ref={iframeRef}
@@ -1032,7 +1034,7 @@ export default function Home() {
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
           className="border-0"
-          style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, zoom: mobScale, touchAction: 'manipulation' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', touchAction: 'manipulation' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
