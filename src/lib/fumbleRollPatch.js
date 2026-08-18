@@ -146,7 +146,16 @@ export function buildFumbleRollPatch(lang) {
     if(n.indexOf('daidoji') >= 0 && !h.eliteMode) return true;
     if(n.indexOf('batu') >= 0 && h.eliteMode) return true;
     if(n.indexOf('edredon') >= 0) return true;
-    return false;
+    return isSummon(h);
+  }
+
+  // Invocaciones (patitos de KillerDucks, Grulla de Daidoji y las que vengan en
+  // cartas nuevas): solo tirada de pifia, nunca fallo épico.
+  function isSummon(h){
+    var txt = String((h && (h.eliteMode ? (h.eAbilityText || h.eAbility) : (h.abilityText || h.ability))) || '').toLowerCase();
+    var n = String((h && h.name) || '').toLowerCase();
+    if(/invoca|summon/.test(txt)) return true;
+    return n.indexOf('daidoji') >= 0 || n.indexOf('killerduck') >= 0;
   }
   // La Grulla no tira dado: basta con la tirada de la invocación de Daidoji.
   function noRoll(h){
