@@ -196,17 +196,36 @@ export const MATCH_SCORE_PATCH = `
     return true;
   }
 
-  // Render periódico: muestra el marcador general en cuanto hay victorias.
+  // Render periódico: muestra el marcador general SOLO durante una partida
+  // real (no en la portada ni en la demo). Detecta la pantalla activa del
+  // juego: si es la portada (s-title) o no hay pantalla de batalla activa,
+  // oculta la barra para que no aparezca "Jugador 1" al entrar.
+  function isOnBattleScreen(){
+    try{
+      var scr=document.querySelector('.screen.active');
+      if(!scr)return false;
+      var id=scr.id||'';
+      // s-title = portada; cualquier otra pantalla de juego cuenta como
+      // partida en curso (subasta, batalla, equipo, resultado…).
+      return id && id!=='s-title';
+    }catch(e){ return false; }
+  }
   var lastRender=0;
   setInterval(function(){
     if(typeof G==='undefined'||!G||G.demo)return;
+    if(!isOnBattleScreen()){
+      // Oculta la barra si estamos en la portada.
+      var bar=document.getElementById('bf-score-bar');
+      if(bar)bar.classList.remove('bf-score-show');
+      return;
+    }
     var s=get();
     if(s.self>0||s.opp>0){
       if(Date.now()-lastRender>2000){render(null);lastRender=Date.now();}
     }
   },1500);
 
-  setTimeout(function(){try{render(null);}catch(e){}},3000);
+  setTimeout(function(){try{ if(isOnBattleScreen())render(null); }catch(e){}},3000);
   setInterval(function(){install();},200);
 })();
 </script>
