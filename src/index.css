@@ -99,7 +99,7 @@
 /* Móvil/tablet: permite el pellizco nativo del navegador (manipulation =
    pan + pinch-zoom, solo desactiva el doble toque para zoom). */
 @media (max-width: 1024px) {
-  html, body { touch-action: pan-x pan-y pinch-zoom !important; overscroll-behavior: none; }
+  html, body { touch-action: auto !important; overscroll-behavior: none; }
   .overflow-x-auto, .no-scrollbar {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
@@ -127,7 +127,7 @@
 /* La portada se sirve en modo escritorio (viewport 1280 px) también en
    móvil/tablet, así que estos accesos se integran con el mismo tamaño y
    posición que en PC: sin escalas propias que los descoloquen. */
-iframe { touch-action: pan-x pan-y pinch-zoom !important; }
+iframe { touch-action: auto !important; }
 
 /* Podio del Top Ranking: brillo de borde por medalla (oro/plata/bronce) — ver RankPodium.jsx */
 
