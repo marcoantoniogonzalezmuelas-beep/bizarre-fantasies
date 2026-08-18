@@ -2,7 +2,7 @@
 //
 // Antes de resolver una acción (golpe cuerpo a cuerpo, disparo, habilidad,
 // hechizo u objeto) se tira internamente un d30 y se explica en el registro:
-//   · 29 o 30 → PIFIA (≈7%): la acción no hace nada.
+//   · 19 o 20 → PIFIA (≈7%): la acción no hace nada.
 //   · 1       → FALLO ÉPICO (≈3%): además de fallar, el efecto se vuelve
 //     contra el propio héroe.
 //
@@ -14,7 +14,7 @@ export function buildFumbleRollPatch(lang) {
     pifia: en ? 'FUMBLE' : 'PIFIA',
     epic: en ? 'EPIC FAIL' : 'FALLO ÉPICO',
     roll: en ? 'd30 roll' : 'Tirada d30',
-    fumbleLog: en ? 'FUMBLE! (29-30 on a d30 ≈ 7%): the action does nothing.' : '¡PIFIA! (29-30 en d30 ≈ 7%): la acción no hace nada.',
+    fumbleLog: en ? 'FUMBLE! (19-20 on a d30 ≈ 7%): the action does nothing.' : '¡PIFIA! (19-20 en d30 ≈ 7%): la acción no hace nada.',
     epicLog: en ? 'EPIC FAIL! (a 1 on a d30 ≈ 3%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d30 ≈ 3%): la acción no hace nada y el efecto se vuelve en su contra.',
     selfHit: en ? 'hits itself for' : 'se golpea a sí mismo por',
     nothing: en ? 'FUMBLE: this ability has no effect.' : 'PIFIA: esta habilidad no produce ningún efecto.',
@@ -81,12 +81,12 @@ export function buildFumbleRollPatch(lang) {
 
   // Tirada interna: UNA sola tirada de d30 por acción.
   //   · 1        → FALLO ÉPICO (≈3%)
-  //   · 29 o 30  → PIFIA (≈7%)
+  //   · 19 o 20  → PIFIA (≈7%)
   //   · resto    → la acción se resuelve con normalidad
   function roll(){
     var r = 1 + Math.floor(Math.random() * 30);
     if(r === 1) return { ok:false, r:r, epic:true };
-    if(r >= 29) return { ok:false, r:r, epic:false };
+    if(r >= 19) return { ok:false, r:r, epic:false };
     return { ok:true, r:r };
   }
 
@@ -105,7 +105,7 @@ export function buildFumbleRollPatch(lang) {
     if(!a) return false;
     var t = roll();
     if(t.ok){
-      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 OK.');
+      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.r >= 18 ? '\\u00a1' : '') + 'OK.');
       return false;
     }
     log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.epic ? '${T.epicLog}' : '${T.fumbleLog}'));
@@ -180,7 +180,7 @@ export function buildFumbleRollPatch(lang) {
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
   function passiveFumbled(side, h){
     var r = 1 + Math.floor(Math.random() * 30);
-    if(r < 29 && r !== 1){
+    if(r < 19 && r !== 1){
       log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 OK.');
       return false;
     }
@@ -216,7 +216,7 @@ export function buildFumbleRollPatch(lang) {
       if(noRoll(h)) return orig.apply(self, arguments);
       if(isSummon(h)){
         var r = 1 + Math.floor(Math.random() * 30);
-        if(r >= 29){
+        if(r >= 19){
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
           pop(side, h.id, false, r);
           h.abilityUsed = true;
