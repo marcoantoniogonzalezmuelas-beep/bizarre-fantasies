@@ -12,7 +12,12 @@ const EFFECTS = `
 - damage_enemy: al usar la habilidad inflige X de daño directo a un rival, o a todos si all=true. params: { amount:number, all?:boolean }
 - buff_self: al usar la habilidad sube un stat propio (cc, ad o he). params: { stat:'cc'|'ad'|'he', amount:number }
 - shield_self: al usar la habilidad se otorga un escudo de X puntos. params: { amount:number }
-- unsupported: la habilidad NO encaja en ninguna de las anteriores.
+- custom_steps: MECÁNICA NUEVA a medida. Úsalo cuando la habilidad no encaje en las anteriores. params: { steps: [ { action, target, amount?, stat?, turns? } ] }
+    · action: 'damage' | 'heal' | 'shield' | 'buff' | 'debuff' | 'paralyze' | 'mana'
+    · target: 'self' | 'ally' | 'all_allies' | 'enemy' | 'all_enemies' | 'weakest_enemy' | 'strongest_enemy'
+    · stat (solo buff/debuff): 'cc' | 'ad' | 'he'  ·  turns (solo paralyze): número de turnos
+    Puedes combinar varios pasos para reproducir el texto exacto de la carta.
+- unsupported: la habilidad NO se puede reproducir ni combinando pasos de custom_steps (por ejemplo requiere cambiar las reglas del juego, la mano de cartas o el orden de turnos).
 `;
 
 export default function AbilityImplementButton({ cardId, elite, abilityName, abilityText }) {
@@ -32,7 +37,7 @@ Texto: "${abilityText}"
 
 Catálogo de efectos soportados por el motor:${EFFECTS}
 
-Devuelve effect_type, params (solo las claves del efecto elegido) y note: una explicación breve en español de lo implementado. Si eliges unsupported, en note explica exactamente por qué la dinámica del juego no permite automatizarla.`,
+Devuelve effect_type, params (solo las claves del efecto elegido) y note: una explicación breve en español de lo implementado. Prioriza los efectos concretos; si ninguno reproduce el texto, construye la mecánica nueva con custom_steps respetando los números exactos de la carta. Reserva unsupported solo para lo que ni custom_steps puede hacer, y en note explica por qué.`,
         response_json_schema: {
           type: 'object',
           properties: {

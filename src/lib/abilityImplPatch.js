@@ -46,6 +46,48 @@ export const ABILITY_IMPL_PATCH = `
   }
   function num(v, d){ var n = Number(v); return isNaN(n) ? d : n; }
 
+  // ── Mecánicas NUEVAS creadas desde el editor: lista de pasos (custom_steps).
+  // El editor guarda params.steps = [{action, target, amount, stat, turns}] y
+  // aquí se traduce cada paso a las funciones reales del motor de batalla.
+  function pickTargets(side, hero, target){
+    var f = foes(side), a = team(side).filter(function(h){ return h && h.alive; });
+    var byHp = function(list, asc){ return list.slice().sort(function(x,y){ return asc ? (x.hp - y.hp) : (y.hp - x.hp); }); };
+    switch(String(target || 'enemy')){
+      case 'self': return [hero];
+      case 'ally': return byHp(a.filter(function(h){ return h !== hero; }), true).slice(0, 1);
+      case 'all_allies': return a;
+      case 'all_enemies': return f;
+      case 'weakest_enemy': return byHp(f, true).slice(0, 1);
+      case 'strongest_enemy': return byHp(f, false).slice(0, 1);
+      default: return f.slice(0, 1);
+    }
+  }
+
+  function runSteps(side, hero, spec){
+    var steps = ((spec.params || {}).steps) || [];
+    var did = false;
+    steps.forEach(function(st){
+      if(!st || !st.action) return;
+      var list = pickTargets(side, hero, st.target);
+      var amount = num(st.amount, 0);
+      var stat = ['cc','ad','he'].indexOf(st.stat) >= 0 ? st.stat : 'cc';
+      list.forEach(function(t){
+        if(!t) return;
+        try{
+          if(st.action === 'damage' && typeof dealDamage === 'function'){ dealDamage(t, amount, { type:'true' }); did = true; }
+          else if(st.action === 'heal' && typeof heal === 'function'){ heal(t, amount); did = true; }
+          else if(st.action === 'shield'){ t.shield = (t.shield || 0) + amount; did = true; }
+          else if(st.action === 'buff'){ var m = {}; m[stat] = amount; (t._mods = t._mods || []).push(m); did = true; }
+          else if(st.action === 'debuff'){ var d = {}; d[stat] = -Math.abs(amount); (t._mods = t._mods || []).push(d); did = true; }
+          else if(st.action === 'paralyze'){ t.skipTurns = (t.skipTurns || 0) + Math.max(1, num(st.turns, 1)); did = true; }
+          else if(st.action === 'mana'){ t.mana = Math.max(0, Math.min(num(t.maxMana, 99), num(t.mana, 0) + amount)); did = true; }
+        }catch(e){}
+      });
+    });
+    if(did && typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': ' + (spec.note || 'habilidad aplicada') + '.');
+    return did;
+  }
+
   // ── Pasiva: daño extra al atacar por cada aliado vivo (opcionalmente de un clan)
   function hookDamage(){
     if(window.__bfAiDmgHooked || typeof window.dealDamage !== 'function') return false;
@@ -135,6 +177,8 @@ export const ABILITY_IMPL_PATCH = `
         (hero._mods = hero._mods || []).push(mod);
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': +' + inc + ' de ' + stat.toUpperCase() + '.');
         acted = true;
+      } else if(kind === 'custom_steps'){
+        acted = runSteps(side, hero, spec);
       } else if(kind === 'shield_self'){
         var sh = num(p.amount, 0);
         hero.shield = (hero.shield || 0) + sh;
