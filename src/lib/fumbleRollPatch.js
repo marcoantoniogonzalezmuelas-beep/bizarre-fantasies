@@ -113,8 +113,15 @@ export function buildFumbleRollPatch(lang) {
     return true;
   }
 
+  // Solo se envuelve UNA vez cada acción. Otros parches vuelven a envolver
+  // estas funciones más tarde; sin este registro se apilaba una tirada por
+  // cada capa y salían varias tiradas seguidas hasta que una fallaba.
+  var WRAPPED = {};
+
   function wrapAction(name, label){
+    if(WRAPPED[name]) return;
     if(typeof window[name] !== 'function' || window[name].__bfFum) return;
+    WRAPPED[name] = true;
     var orig = window[name];
     var w = function(){
       try{
@@ -194,7 +201,9 @@ export function buildFumbleRollPatch(lang) {
   }
 
   function wrapAbility(){
+    if(WRAPPED.useAbility) return;
     if(typeof window.useAbility !== 'function' || window.useAbility.__bfFum) return;
+    WRAPPED.useAbility = true;
     var orig = window.useAbility;
     var w = function(side, h, done){
       var self = this;
