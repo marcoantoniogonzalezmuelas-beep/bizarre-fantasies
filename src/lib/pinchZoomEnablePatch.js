@@ -16,7 +16,8 @@
 export const PINCH_ZOOM_HEAD_PATCH = `
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 <style id="bf-pinch-zoom">
-*, *::before, *::after { touch-action: manipulation !important; }
+html, body { touch-action: pinch-zoom !important; }
+*, *::before, *::after { touch-action: pinch-zoom !important; }
 </style>
 `;
 
@@ -100,19 +101,21 @@ export const PINCH_ZOOM_BODY_PATCH = `
   // Intercepta los touchmove ya registrados antes de este parche (capture phase).
   // stopImmediatePropagation evita que los listeners del juego (bubble phase)
   // se ejecuten y llamen a preventDefault.
-  document.addEventListener('touchmove', function(e){
-    if(e.touches && e.touches.length >= 2){
-      e.stopImmediatePropagation();
-    }
-  }, { capture: true, passive: true });
+  ['touchstart','touchmove'].forEach(function(type){
+    document.addEventListener(type, function(e){
+      if(e.touches && e.touches.length >= 2){
+        e.stopImmediatePropagation();
+      }
+    }, { capture: true, passive: true });
+  });
 
   // --- 3. Fuerza touch-action: manipulation periódicamente ---
   // El juego puede cambiar touch-action vía JavaScript (inline styles). Este
   // intervalo re-aplica manipulation en el body y elementos clave.
   setInterval(function(){
     try {
-      document.documentElement.style.setProperty('touch-action', 'manipulation', 'important');
-      document.body.style.setProperty('touch-action', 'manipulation', 'important');
+      document.documentElement.style.setProperty('touch-action', 'pinch-zoom', 'important');
+      document.body.style.setProperty('touch-action', 'pinch-zoom', 'important');
     } catch(e) {}
   }, 1000);
 })();

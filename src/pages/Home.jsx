@@ -1004,9 +1004,16 @@ export default function Home() {
       >
         <div className="w-9 h-9 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin" />
       </div>
+      {/* Oráculo / Razas / Reglas: se escalan con el mismo factor que el juego
+        (mobScale) para que en móvil/tablet tengan el mismo tamaño relativo que
+        los botones de la portada, igual que en PC. */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={IS_MOBILE ? { transform: `scale(${mobScale})`, transformOrigin: 'bottom right' } : undefined}
+      >
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
-        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
+        <Link to="/cards" className="absolute bottom-5 right-4 z-20 flex items-center gap-2 group pointer-events-auto" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
           <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
             <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
           </div>
@@ -1017,6 +1024,7 @@ export default function Home() {
         </Link>
       )}
       {showOracle && <HomeSecondaryLinks style={{ bottom: 88, right: 16 }} />}
+      </div>
 
       {/* Móvil/tablet: el juego (1200 px) se ajusta a la pantalla con
         `transform: scale()` (no `zoom`): `zoom` crea un contexto de zoom que
@@ -1034,7 +1042,7 @@ export default function Home() {
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
           className="border-0"
-          style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', touchAction: 'manipulation' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', touchAction: 'pinch-zoom' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
