@@ -21,6 +21,9 @@ html, body { touch-action: pan-x pan-y pinch-zoom !important; }
 </style>
 `;
 
+// El script debe ejecutarse ANTES que los scripts del juego (por eso va en el
+// <head>): así los manejadores táctiles que el juego registre pasan ya por
+// nuestra envoltura y no pueden cancelar el pellizco.
 export const PINCH_ZOOM_BODY_PATCH = `
 <script>
 (function(){
@@ -129,11 +132,13 @@ export const PINCH_ZOOM_BODY_PATCH = `
   // stopImmediatePropagation evita que los listeners del juego (bubble phase)
   // se ejecuten y llamen a preventDefault.
   ['touchstart','touchmove'].forEach(function(type){
-    document.addEventListener(type, function(e){
-      if(e.touches && e.touches.length >= 2){
-        e.stopImmediatePropagation();
-      }
-    }, { capture: true, passive: true });
+    [window, document].forEach(function(target){
+      target.addEventListener(type, function(e){
+        if(e.touches && e.touches.length >= 2){
+          e.stopImmediatePropagation();
+        }
+      }, { capture: true, passive: true });
+    });
   });
 
   // --- 3. Fuerza touch-action: manipulation periódicamente ---
