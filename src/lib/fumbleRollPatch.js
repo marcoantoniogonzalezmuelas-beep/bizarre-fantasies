@@ -86,7 +86,7 @@ export function buildFumbleRollPatch(lang) {
   function roll(){
     var r = 1 + Math.floor(Math.random() * 30);
     if(r === 1) return { ok:false, r:r, epic:true };
-    if(r >= 19) return { ok:false, r:r, epic:false };
+    if(r === 19 || r === 20) return { ok:false, r:r, epic:false };
     return { ok:true, r:r };
   }
 
@@ -105,7 +105,7 @@ export function buildFumbleRollPatch(lang) {
     if(!a) return false;
     var t = roll();
     if(t.ok){
-      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.r >= 18 ? '\\u00a1' : '') + 'OK.');
+      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + 'OK.');
       return false;
     }
     log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.epic ? '${T.epicLog}' : '${T.fumbleLog}'));
@@ -180,7 +180,7 @@ export function buildFumbleRollPatch(lang) {
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
   function passiveFumbled(side, h){
     var r = 1 + Math.floor(Math.random() * 30);
-    if(r < 19 && r !== 1){
+    if(r !== 19 && r !== 20 && r !== 1){
       log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 OK.');
       return false;
     }
@@ -216,7 +216,7 @@ export function buildFumbleRollPatch(lang) {
       if(noRoll(h)) return orig.apply(self, arguments);
       if(isSummon(h)){
         var r = 1 + Math.floor(Math.random() * 30);
-        if(r >= 19){
+        if(r === 19 || r === 20){
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
           pop(side, h.id, false, r);
           h.abilityUsed = true;
