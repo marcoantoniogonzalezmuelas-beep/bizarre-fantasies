@@ -14,8 +14,8 @@ export function buildFumbleRollPatch(lang) {
     pifia: en ? 'FUMBLE' : 'PIFIA',
     epic: en ? 'EPIC FAIL' : 'FALLO ÉPICO',
     roll: en ? 'd20 roll' : 'Tirada d20',
-    fumbleLog: en ? 'FUMBLE! (1-2 on a d20 = 10%): the action does nothing.' : '¡PIFIA! (1-2 en d20 = 10%): la acción no hace nada.',
-    epicLog: en ? 'EPIC FAIL! (a 1 on the confirmation d20 = 5% of fumbles): the effect backfires.' : '¡FALLO ÉPICO! (1 en el d20 de confirmación = 5% de las pifias): el efecto se vuelve en su contra.',
+    fumbleLog: en ? 'FUMBLE! (19-20 on a d20 = 10%): the action does nothing.' : '¡PIFIA! (19-20 en d20 = 10%): la acción no hace nada.',
+    epicLog: en ? 'EPIC FAIL! (a 1 on a d20 = 5%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d20 = 5%): la acción no hace nada y el efecto se vuelve en su contra.',
     selfHit: en ? 'hits itself for' : 'se golpea a sí mismo por',
     nothing: en ? 'FUMBLE: this ability has no effect.' : 'PIFIA: esta habilidad no produce ningún efecto.',
   };
@@ -77,12 +77,15 @@ export function buildFumbleRollPatch(lang) {
     }catch(e){ return null; }
   }
 
-  // Tirada interna: d20. 1-2 = pifia (10%). Segundo d20 con un 1 = fallo épico.
+  // Tirada interna: UNA sola tirada de d20 por acción.
+  //   · 1        → FALLO ÉPICO (5%)
+  //   · 19 o 20  → PIFIA (10%)
+  //   · resto    → la acción se resuelve con normalidad
   function roll(){
     var r = 1 + Math.floor(Math.random() * 20);
-    if(r > 2) return { ok:true, r:r };
-    var conf = 1 + Math.floor(Math.random() * 20);
-    return { ok:false, r:r, epic: conf === 1, conf: conf };
+    if(r === 1) return { ok:false, r:r, epic:true };
+    if(r >= 19) return { ok:false, r:r, epic:false };
+    return { ok:true, r:r };
   }
 
   function selfBackfire(a){
@@ -103,8 +106,7 @@ export function buildFumbleRollPatch(lang) {
       log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/20 \\u2192 ' + (t.r >= 18 ? '\\u00a1' : '') + 'OK.');
       return false;
     }
-    log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/20 \\u2192 ${T.fumbleLog}');
-    if(t.epic) log('lx', '\\u{1F3B2} ' + t.conf + '/20 \\u2192 ${T.epicLog}');
+    log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/20 \\u2192 ' + (t.epic ? '${T.epicLog}' : '${T.fumbleLog}'));
     pop(a.side, a.h.id, t.epic, t.r);
     if(t.epic) selfBackfire(a);
     try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
