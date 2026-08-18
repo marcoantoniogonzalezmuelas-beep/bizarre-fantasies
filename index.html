@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" />
-    <!-- Viewport responsivo estándar: sin restricciones de zoom. El navegador
-      gestiona el pellizco nativo en toda la app. -->
-    <meta id="bf-viewport" name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Viewport responsivo estándar para toda la app (Oráculo, Reglas,
+      Razas, Guía de cartas...). Solo la página del juego (Home) cambia este
+      meta a modo escritorio mientras está montada, y lo restaura al salir. -->
+    <meta id="bf-viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
     <link rel="manifest" href="/manifest.json" />
     <title>Bizarre Fantasies · Base Set</title>
   </head>

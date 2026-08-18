@@ -987,17 +987,17 @@ export default function Home() {
       <div className="absolute inset-0 z-20 pointer-events-none">
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
-        <Link to="/cards" className="bf-home-oracle absolute bottom-4 right-3 z-20 flex items-center gap-2 group pointer-events-auto max-w-[calc(100vw-1.5rem)]" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
-          <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110 shrink-0">
+        <Link to="/cards" className="bf-home-oracle absolute bottom-5 right-4 z-20 flex items-center gap-2 group pointer-events-auto" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
+          <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
             <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
           </div>
-          <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-2.5 py-1.5 backdrop-blur-sm shadow-lg min-w-0">
-            <div className="font-heading font-black text-[11px] sm:text-[13px] text-[#e2b0ff] leading-none tracking-wide truncate">{t('Oráculo Bizarro')}</div>
-            <div className="text-[8px] sm:text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider truncate">{dbCount} {t('cartas · Base Set')}</div>
+          <div className="bg-[#120a1e] border border-[#c06bff]/60 rounded-xl px-3 py-1.5 backdrop-blur-sm shadow-lg">
+            <div className="font-heading font-black text-[13px] text-[#e2b0ff] leading-none tracking-wide">{t('Oráculo Bizarro')}</div>
+            <div className="text-[9px] text-[#b06cff] mt-0.5 font-bold tracking-wider">{dbCount} {t('cartas · Base Set')}</div>
           </div>
         </Link>
       )}
-      {showOracle && <HomeSecondaryLinks style={{ bottom: 80, right: 12 }} />}
+      {showOracle && <HomeSecondaryLinks style={{ bottom: 88, right: 16 }} />}
       </div>
 
       {(blobUrl || srcDoc) && (
