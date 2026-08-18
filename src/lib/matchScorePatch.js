@@ -16,12 +16,6 @@ export const MATCH_SCORE_PATCH = `
   window.__bfMatchScore=true;
 
   // ---- Nicks de los dos jugadores ----
-  // Nicks genéricos que el juego asigna por defecto antes de que el jugador
-  // escriba el suyo. Si alguno de los dos es genérico, el marcador NO se
-  // muestra: sería un marcador ajeno (victorias de otra pareja que usó ese
-  // mismo nombre por defecto), no del jugador real.
-  var GENERIC=/^(tú|tu|rival|jugador\s*1|jugador\s*2|player\s*1|player\s*2|player|cpu|ia|bot|oponente|opponent)$/i;
-  function isGeneric(s){ return !s || GENERIC.test(String(s).trim()); }
   function nicks(){
     var self='Tú',opp='Rival';
     try{
@@ -71,20 +65,11 @@ export const MATCH_SCORE_PATCH = `
 
   function get(){
     var n=nicks(),all=readAll(),rec=all[pairKey(n)]||{};
-    // Si algún nick es genérico (Jugador 1, Tú, Rival…), no mostramos el
-    // marcador: sería el histórico de otra pareja, no del jugador real.
-    if(isGeneric(n.self)||isGeneric(n.opp)){
-      return {self:0,opp:0,selfNick:n.self,oppNick:n.opp};
-    }
     return {self:rec[n.self.toLowerCase()]||0,opp:rec[n.opp.toLowerCase()]||0,selfNick:n.self,oppNick:n.opp};
   }
   function addWin(winnerNick){
     if(!winnerNick)return get();
     var n=nicks(),all=readAll(),k=pairKey(n),rec=all[k]||{};
-    // No persistimos victorias de nicks genéricos: serían datos basura
-    // asignados a "Jugador 1" / "Rival" que luego aparecerían como
-    // marcador ajeno para cualquier jugador que reciba ese nombre por defecto.
-    if(isGeneric(n.self)||isGeneric(n.opp))return get();
     var w=String(winnerNick).toLowerCase();
     rec[w]=(rec[w]||0)+1;   // una victoria = +1 punto
     all[k]=rec; writeAll(all);
