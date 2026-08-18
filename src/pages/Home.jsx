@@ -356,18 +356,6 @@ const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof na
 const IS_MOBILE = IS_TABLET || /Android|iPhone|iPod|Mobile/i.test(UA);
 
 export default function Home() {
-  // Tablet: se habilita el zoom de pellizco NATIVO del navegador (el propio se
-  // desactiva) para que ampliar no repinte el documento y desaparezca el
-  // parpadeo. En móvil se mantiene el pellizco propio.
-  useEffect(() => {
-    if (!IS_TABLET) return;
-    const meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) return;
-    const prev = meta.getAttribute('content');
-    meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
-    return () => meta.setAttribute('content', prev);
-  }, []);
-
   useEffect(() => {
     const blockContextMenu = (e) => e.preventDefault();
     document.addEventListener('contextmenu', blockContextMenu);

@@ -19,7 +19,10 @@ const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d
 export default function GameSpaceOverlay({ width, height, mobScale, pinch, settled, dbCount, demoModalOpen }) {
   const z = pinch.z || 1;
   const base = { position: 'absolute', top: 0, left: 0, width, height, transformOrigin: 'top left', pointerEvents: 'none' };
-  const zoomStyle = settled
+  // `zoom` solo cuando hay pellizco propio activo (móvil) y ya ha terminado el
+  // gesto: en tablet el zoom es el NATIVO del navegador (z siempre 1), que ya
+  // redibuja nítido, y ahí `zoom` estorbaba a la detección de pulsaciones.
+  const zoomStyle = settled && z !== 1
     ? { ...base, zoom: mobScale * z, transform: `translate(${pinch.tx / z}px, ${pinch.ty / z}px)` }
     : { ...base, transform: `scale(${mobScale}) translate(${pinch.tx}px, ${pinch.ty}px) scale(${z})` };
 
