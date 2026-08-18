@@ -1,10 +1,10 @@
 // Sistema de tiradas de dado (rol americano) para TODAS las acciones.
 //
 // Antes de resolver una acción (golpe cuerpo a cuerpo, disparo, habilidad,
-// hechizo u objeto) se tira internamente un d20 y se explica en el registro:
-//   · 1-2  → PIFIA (10%): la acción no hace nada.
-//   · de esas pifias, un segundo d20 con un 1 → FALLO ÉPICO (5% de las pifias):
-//     además de fallar, el efecto se vuelve contra el propio héroe.
+// hechizo u objeto) se tira internamente un d30 y se explica en el registro:
+//   · 19 o 20 → PIFIA (≈7%): la acción no hace nada.
+//   · 1       → FALLO ÉPICO (≈3%): además de fallar, el efecto se vuelve
+//     contra el propio héroe.
 //
 // También marca como PIFIA las habilidades de héroes bizarros que el motor no
 // resuelve (no producen ningún efecto), una vez terminada su animación.
@@ -13,9 +13,9 @@ export function buildFumbleRollPatch(lang) {
   const T = {
     pifia: en ? 'FUMBLE' : 'PIFIA',
     epic: en ? 'EPIC FAIL' : 'FALLO ÉPICO',
-    roll: en ? 'd20 roll' : 'Tirada d20',
-    fumbleLog: en ? 'FUMBLE! (19-20 on a d20 = 10%): the action does nothing.' : '¡PIFIA! (19-20 en d20 = 10%): la acción no hace nada.',
-    epicLog: en ? 'EPIC FAIL! (a 1 on a d20 = 5%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d20 = 5%): la acción no hace nada y el efecto se vuelve en su contra.',
+    roll: en ? 'd30 roll' : 'Tirada d30',
+    fumbleLog: en ? 'FUMBLE! (19-20 on a d30 ≈ 7%): the action does nothing.' : '¡PIFIA! (19-20 en d30 ≈ 7%): la acción no hace nada.',
+    epicLog: en ? 'EPIC FAIL! (a 1 on a d30 ≈ 3%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d30 ≈ 3%): la acción no hace nada y el efecto se vuelve en su contra.',
     selfHit: en ? 'hits itself for' : 'se golpea a sí mismo por',
     nothing: en ? 'FUMBLE: this ability has no effect.' : 'PIFIA: esta habilidad no produce ningún efecto.',
   };
@@ -50,7 +50,7 @@ export function buildFumbleRollPatch(lang) {
     n.className = 'bf-fumble-pop' + (epic ? ' epic' : '');
     n.style.left = (r.left + r.width / 2) + 'px';
     n.style.top = (r.top + r.height * 0.42) + 'px';
-    n.innerHTML = (epic ? '\\u{1F480} ${T.epic}' : '\\u{1F3B2} ${T.pifia}') + (roll ? '<small>${T.roll}: ' + roll + '/20</small>' : '');
+    n.innerHTML = (epic ? '\\u{1F480} ${T.epic}' : '\\u{1F3B2} ${T.pifia}') + (roll ? '<small>${T.roll}: ' + roll + '/30</small>' : '');
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
     setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 4550);
   }
@@ -79,12 +79,12 @@ export function buildFumbleRollPatch(lang) {
     }catch(e){ return null; }
   }
 
-  // Tirada interna: UNA sola tirada de d20 por acción.
-  //   · 1        → FALLO ÉPICO (5%)
-  //   · 19 o 20  → PIFIA (10%)
+  // Tirada interna: UNA sola tirada de d30 por acción.
+  //   · 1        → FALLO ÉPICO (≈3%)
+  //   · 19 o 20  → PIFIA (≈7%)
   //   · resto    → la acción se resuelve con normalidad
   function roll(){
-    var r = 1 + Math.floor(Math.random() * 20);
+    var r = 1 + Math.floor(Math.random() * 30);
     if(r === 1) return { ok:false, r:r, epic:true };
     if(r >= 19) return { ok:false, r:r, epic:false };
     return { ok:true, r:r };
@@ -105,10 +105,10 @@ export function buildFumbleRollPatch(lang) {
     if(!a) return false;
     var t = roll();
     if(t.ok){
-      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/20 \\u2192 ' + (t.r >= 18 ? '\\u00a1' : '') + 'OK.');
+      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.r >= 18 ? '\\u00a1' : '') + 'OK.');
       return false;
     }
-    log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/20 \\u2192 ' + (t.epic ? '${T.epicLog}' : '${T.fumbleLog}'));
+    log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.epic ? '${T.epicLog}' : '${T.fumbleLog}'));
     pop(a.side, a.h.id, t.epic, t.r);
     if(t.epic) selfBackfire(a);
     try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
@@ -179,12 +179,12 @@ export function buildFumbleRollPatch(lang) {
 
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
   function passiveFumbled(side, h){
-    var r = 1 + Math.floor(Math.random() * 20);
+    var r = 1 + Math.floor(Math.random() * 30);
     if(r < 19 && r !== 1){
-      log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/20 \\u2192 OK.');
+      log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 OK.');
       return false;
     }
-    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/20 \\u2192 ${T.fumbleLog}');
+    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
     pop(side, h.id, false, r);
     return true;
   }
@@ -215,9 +215,9 @@ export function buildFumbleRollPatch(lang) {
       var self = this;
       if(noRoll(h)) return orig.apply(self, arguments);
       if(isSummon(h)){
-        var r = 1 + Math.floor(Math.random() * 20);
+        var r = 1 + Math.floor(Math.random() * 30);
         if(r >= 19){
-          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/20 \\u2192 ${T.fumbleLog}');
+          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
           pop(side, h.id, false, r);
           h.abilityUsed = true;
           try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
@@ -225,7 +225,7 @@ export function buildFumbleRollPatch(lang) {
           return;
         }
         if(r === 1){
-          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): 1/20 \\u2192 ${T.epicLog}');
+          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): 1/30 \\u2192 ${T.epicLog}');
           pop(side, h.id, true, r);
           var before = ((G.team[side] || []).map(function(x){ return x.id; }));
           var doneSteal = function(){
@@ -235,7 +235,7 @@ export function buildFumbleRollPatch(lang) {
           };
           return orig.call(self, side, h, doneSteal);
         }
-        log('li', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/20 \\u2192 OK.');
+        log('li', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 OK.');
         return orig.apply(self, arguments);
       }
       if(isPassive(h)){
