@@ -111,6 +111,25 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Responsividad estándar: imágenes y contenedores nunca desbordan el ancho
+   de pantalla. El pellizco nativo del navegador funciona al no haber reglas
+   touch-action que lo bloqueen. */
+img { max-width: 100%; height: auto; }
+video, canvas { max-width: 100%; }
+
+/* Móvil (≤480px): los accesos flotantes de la portada (Oráculo, Reglas,
+   Razas) se ajustan con unidades relativas para no desbordar ni recortarse. */
+@media (max-width: 480px) {
+  .bf-home-oracle { max-width: 60vw; }
+  .bf-home-utility-link { max-width: 60vw; }
+}
+
+/* Tablet (≤768px): margen extra para que los textos largos respiren sin
+   salirse del encuadre. */
+@media (max-width: 768px) {
+  .bf-home-oracle, .bf-home-utility-link { gap: 0.4rem; }
+}
+
 /* Podio del Top Ranking: brillo de borde por medalla (oro/plata/bronce) — ver RankPodium.jsx */
 
 @keyframes bfFoilShift { 0% { background-position: 0% 0%; } 100% { background-position: 300% 300%; } }

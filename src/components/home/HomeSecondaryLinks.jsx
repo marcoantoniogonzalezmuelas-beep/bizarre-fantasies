@@ -9,13 +9,13 @@ const ITEMS = [
 
 function Card({ to, label, sub, icon, narrow }) {
   return (
-    <Link to={to} aria-label={t(label)} className="group flex items-center gap-2 no-underline">
-      <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110">
+    <Link to={to} aria-label={t(label)} className="group flex items-center gap-1.5 sm:gap-2 no-underline max-w-[62vw]">
+      <div className="relative h-10 w-10 sm:h-12 sm:w-12 overflow-hidden rounded-full border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110 shrink-0">
         <img src={icon} alt="" className="h-full w-full object-cover" />
       </div>
-      <div className={narrow ? 'min-w-[88px] rounded-xl border border-[#c06bff]/60 bg-[#120a1e]/95 px-2.5 py-1.5 shadow-lg backdrop-blur-sm' : 'min-w-[118px] rounded-xl border border-[#c06bff]/60 bg-[#120a1e]/95 px-3 py-1.5 shadow-lg backdrop-blur-sm'}>
-        <div className="font-heading text-[13px] font-black leading-none tracking-wide text-[#e2b0ff]">{t(label)}</div>
-        <div className="mt-0.5 text-[9px] font-bold tracking-wider text-[#b06cff]">{t(sub)}</div>
+      <div className="rounded-xl border border-[#c06bff]/60 bg-[#120a1e]/95 px-2 py-1 sm:px-2.5 sm:py-1.5 shadow-lg backdrop-blur-sm min-w-0">
+        <div className="font-heading text-[11px] sm:text-[13px] font-black leading-none tracking-wide text-[#e2b0ff] truncate">{t(label)}</div>
+        <div className="mt-0.5 text-[8px] sm:text-[9px] font-bold tracking-wider text-[#b06cff] truncate">{t(sub)}</div>
       </div>
     </Link>
   );
@@ -25,7 +25,7 @@ export default function HomeSecondaryLinks({ style }) {
   const [rules, races] = ITEMS;
   // Reglas se apila encima de Razas (mismo lado derecho), dejando los tres
   // botones (Reglas · Razas · Oráculo) escalonados en la esquina inferior.
-  const rulesStyle = { bottom: (style?.bottom ?? 88) + 58, right: style?.right ?? 16 };
+  const rulesStyle = { bottom: (style?.bottom ?? 80) + 52, right: style?.right ?? 12 };
   return (
     <>
       <div className="bf-home-utility-link absolute z-20 pointer-events-auto" style={rulesStyle}>
