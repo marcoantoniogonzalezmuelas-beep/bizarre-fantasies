@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png" />
-    <!-- Viewport responsivo estándar: sin restricciones de zoom. El pellizco
-      nativo del navegador funciona en toda la app (Oráculo, Reglas, Razas,
-      Guía de cartas y la portada del juego). -->
-    <meta id="bf-viewport" name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Modelo de responsividad "modo escritorio": la página se maqueta a
+      1280px de ancho en TODOS los dispositivos (paridad total con PC). En
+      móvil/tablet el navegador la encoge para que quepa entera y el jugador
+      usa el zoom de pellizco y el scroll NATIVOS para ampliar y moverse.
+      Sin maximum-scale ni user-scalable=no: el pellizco nunca se bloquea. -->
+    <meta id="bf-viewport" name="viewport" content="width=1280" />
     <link rel="manifest" href="/manifest.json" />
     <title>Bizarre Fantasies · Base Set</title>
   </head>
