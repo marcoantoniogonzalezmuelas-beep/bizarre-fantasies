@@ -997,6 +997,12 @@ export default function Home() {
   }
 
   const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
+  // Tablet: la escala se limita a 0,55 para no recalentar la GPU, así que un
+  // documento de 1200 px sólo ocupaba 660 px y quedaba una franja negra a la
+  // derecha. Se ensancha el documento lo necesario para llenar la pantalla.
+  const iframeW = IS_MOBILE
+    ? Math.max(1200, Math.ceil((typeof window !== 'undefined' ? layoutW() : 1200) / mobScale))
+    : 1200;
 
   return (
     <div className="fixed inset-0 bg-[#0e0a16]">
@@ -1033,8 +1039,8 @@ export default function Home() {
         igual que al resto del juego (icono de contactar, menús…). */}
       {IS_MOBILE && showOracle && (
         <div className="absolute inset-0 z-20 pointer-events-none" style={{ overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `translate(${pinch.tx}px, ${pinch.ty}px) scale(${pinch.z})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: iframeW, height: iframeH, transform: `translate(${pinch.tx}px, ${pinch.ty}px) scale(${pinch.z})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
               <Link to="/cards" className="absolute flex items-center gap-2 group pointer-events-auto" style={{ bottom: 20, right: 16, filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))', textDecoration: 'none' }}>
                 <div className="relative rounded-full overflow-hidden border-2 border-[#c06bff] shadow-[0_0_22px_rgba(192,91,255,0.55)] transition-transform group-hover:scale-110" style={{ width: 48, height: 48 }}>
                   <img src={ORACLE_IMG} alt="Oráculo" className="w-full h-full object-cover" />
@@ -1064,7 +1070,7 @@ export default function Home() {
             position: 'absolute',
             top: 0,
             left: 0,
-            width: 1200,
+            width: iframeW,
             height: iframeH,
             transform: `scale(${mobScale})`,
             transformOrigin: 'top left',
@@ -1079,7 +1085,7 @@ export default function Home() {
               loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
             }}
             className="border-0"
-            style={{ width: 1200, height: iframeH, display: 'block' }}
+            style={{ width: iframeW, height: iframeH, display: 'block' }}
             allow="autoplay; fullscreen; clipboard-read; clipboard-write"
           />
         </div>
