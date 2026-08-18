@@ -114,6 +114,7 @@ import { HOME_MENU_PATCH } from '@/lib/homeMenuPatch';
 import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 import HomeSecondaryLinks from '@/components/home/HomeSecondaryLinks';
 import ChatOverlay from '@/components/chat/ChatOverlay';
+import MobileZoomControls from '@/components/home/MobileZoomControls';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
@@ -406,6 +407,7 @@ export default function Home() {
   // esté visible, ocultamos el cartel de flash news para que no tape el modal.
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [userZoom, setUserZoom] = useState(1);
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -987,10 +989,14 @@ export default function Home() {
   }
 
   const iframeH = IS_MOBILE ? Math.ceil((typeof window !== 'undefined' ? layoutH() : 800) / mobScale) : 800;
+  // Zoom manual del jugador en móvil/tablet (el pellizco del navegador queda
+  // bloqueado por los manejadores táctiles del juego, así que se ofrece un
+  // control explícito que además permite desplazarse por la mesa).
+  const effScale = IS_MOBILE ? mobScale * userZoom : 1;
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#0e0a16]">
-      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} />}
+      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={effScale} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
@@ -1008,8 +1014,8 @@ export default function Home() {
         (mobScale) para que en móvil/tablet tengan el mismo tamaño relativo que
         los botones de la portada, igual que en PC. */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={IS_MOBILE ? { transform: `scale(${mobScale})`, transformOrigin: 'bottom right' } : undefined}
+        className="absolute inset-0 z-20 pointer-events-none"
+        style={IS_MOBILE ? { transform: `scale(${Math.max(0.55, effScale)})`, transformOrigin: 'bottom right' } : undefined}
       >
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
@@ -1033,17 +1039,28 @@ export default function Home() {
         adicional. Las pulsaciones funcionan bien (el navegador mapea las
         coordenadas táctiles al espacio sin transformar). */}
       {(blobUrl || srcDoc) && IS_MOBILE && (
-        <iframe
-          ref={iframeRef}
-          title="Bizarre Fantasies v5"
-          {...(srcDoc ? { srcDoc } : { src: blobUrl })}
-          onLoad={() => {
-            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
-            loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
-          }}
-          className="border-0"
-          style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${mobScale})`, transformOrigin: 'top left', touchAction: 'pinch-zoom' }}
-          allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+        <div className="absolute inset-0 overflow-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ position: 'relative', width: Math.ceil(1200 * effScale), height: Math.ceil(iframeH * effScale) }}>
+            <iframe
+              ref={iframeRef}
+              title="Bizarre Fantasies v5"
+              {...(srcDoc ? { srcDoc } : { src: blobUrl })}
+              onLoad={() => {
+                if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+                loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
+              }}
+              className="border-0"
+              style={{ position: 'absolute', top: 0, left: 0, width: 1200, height: iframeH, transform: `scale(${effScale})`, transformOrigin: 'top left' }}
+              allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+            />
+          </div>
+        </div>
+      )}
+      {IS_MOBILE && (blobUrl || srcDoc) && !loading && (
+        <MobileZoomControls
+          zoom={userZoom}
+          onZoom={(d) => setUserZoom((z) => Math.max(0.6, Math.min(4, Math.round((z + d) * 100) / 100)))}
+          onReset={() => setUserZoom(1)}
         />
       )}
       {(blobUrl || srcDoc) && !IS_MOBILE && (
@@ -1059,7 +1076,7 @@ export default function Home() {
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
-      <ChatOverlay mobScale={IS_MOBILE ? mobScale : 1} pinchZ={1} />
+      <ChatOverlay mobScale={effScale} pinchZ={1} />
     </div>
   );
 }
