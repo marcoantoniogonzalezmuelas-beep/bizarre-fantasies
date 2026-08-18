@@ -518,7 +518,13 @@ export default function Home() {
   // el área pintada es pequeña. Se limita la escala del tablet al mismo
   // presupuesto de pintado del móvil (el jugador amplía con el pellizco, igual
   // que en móvil), y así el parpadeo desaparece.
-  const MAX_SCALE = 1;
+  // TABLET: el juego se pintaba casi a tamaño real (escala ~0,7-1), así que la
+  // textura de la pantalla es enorme y cada repintado (zoom de pellizco,
+  // animaciones) obliga a la GPU a rehacerla → parpadeo. En móvil no ocurre
+  // porque la escala es ~0,3 y el área pintada es pequeña. Se limita la escala
+  // de la tablet al mismo presupuesto de pintado del móvil: el jugador amplía
+  // con el pellizco, igual que en móvil.
+  const MAX_SCALE = IS_TABLET ? 0.55 : 1;
   const layoutW = () => Math.max(320, document.documentElement.clientWidth || window.innerWidth);
   const layoutH = () => Math.max(320, document.documentElement.clientHeight || window.innerHeight);
   const [mobScale, setMobScale] = useState(() =>
