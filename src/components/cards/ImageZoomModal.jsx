@@ -1,12 +1,14 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import useVisualViewportBox from '@/hooks/useVisualViewportBox';
 
 export default function ImageZoomModal({ src, alt, onClose }) {
+  const vvBox = useVisualViewportBox();
   if (!src) return null;
   return (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center p-4"
-      style={{ background: 'rgba(6,4,12,0.92)', backdropFilter: 'blur(6px)' }}
+      style={{ background: 'rgba(6,4,12,0.92)', backdropFilter: 'blur(6px)', ...vvBox }}
       onClick={onClose}
     >
       <button
@@ -20,7 +22,7 @@ export default function ImageZoomModal({ src, alt, onClose }) {
         src={src}
         alt={alt || ''}
         className="max-w-full max-h-full rounded-2xl border-2 border-[#caa14a] shadow-[0_0_50px_rgba(0,0,0,0.8)] object-contain"
-        style={{ maxHeight: '92vh', maxWidth: '92vw' }}
+        style={{ maxHeight: '92%', maxWidth: '92%' }}
         onClick={(e) => e.stopPropagation()}
       />
     </div>
