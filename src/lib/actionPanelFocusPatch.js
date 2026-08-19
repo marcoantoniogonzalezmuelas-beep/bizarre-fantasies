@@ -23,7 +23,9 @@ export const ACTION_PANEL_FOCUS_PATCH = `
   document.addEventListener('click', function(ev){
     var t = ev.target;
     if(!t || !t.closest) return;
-    var btn = t.closest('.jrpg-btn, .act-btn, #s-battle button');
+    // Incluye el botón ▶ de las cartas de la mano (hechizos y objetos como
+    // Tormenta Ígnea), que no viven dentro del panel de acciones.
+    var btn = t.closest('.jrpg-btn, .act-btn, #s-battle button, .chip.bf-chip-card .bf-chip-play');
     if(!btn || btn.classList.contains('disabled')) return;
     // Tras el clic: el juego resuelve la acción y luego subimos la vista, así
     // los proyectiles se dibujan sobre el tablero ya visible.
