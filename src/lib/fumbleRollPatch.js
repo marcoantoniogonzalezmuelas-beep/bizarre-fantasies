@@ -15,7 +15,7 @@ export function buildFumbleRollPatch(lang) {
     epic: en ? 'EPIC FAIL' : 'FALLO ÉPICO',
     roll: en ? 'd30 roll' : 'Tirada d30',
     fumbleLog: en ? 'FUMBLE! (19-20 on a d30 ≈ 7%): the action does nothing.' : '¡PIFIA! (19-20 en d30 ≈ 7%): la acción no hace nada.',
-    epicLog: en ? 'EPIC FAIL! (a 1 on a d30 ≈ 3%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d30 ≈ 3%): la acción no hace nada y el efecto se vuelve en su contra.',
+    epicLog: en ? 'EPIC FAIL! (a 1 on a d30 confirmed with a 1 on a d6 ≈ 0.5%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d30 confirmado con 1 en d6 ≈ 0,5%): la acción no hace nada y el efecto se vuelve en su contra.',
     selfHit: en ? 'hits itself for' : 'se golpea a sí mismo por',
     nothing: en ? 'FUMBLE: this ability has no effect.' : 'PIFIA: esta habilidad no produce ningún efecto.',
   };
@@ -83,9 +83,15 @@ export function buildFumbleRollPatch(lang) {
   //   · 1        → FALLO ÉPICO (≈3%)
   //   · 19 o 20  → PIFIA (≈7%)
   //   · resto    → la acción se resuelve con normalidad
+  // El fallo épico salía demasiado a menudo (1/30 = 3% por acción, y en una
+  // partida hay 60-100 acciones → 2-3 por partida). Ahora el 1 hay que
+  // CONFIRMARLO con un d6: solo si sale otro 1 es fallo épico (≈0,5%); si no,
+  // se queda en pifia normal.
+  function confirmEpic(){ return (1 + Math.floor(Math.random() * 6)) === 1; }
+
   function roll(){
     var r = 1 + Math.floor(Math.random() * 30);
-    if(r === 1) return { ok:false, r:r, epic:true };
+    if(r === 1) return { ok:false, r:r, epic:confirmEpic() };
     if(r === 19 || r === 20) return { ok:false, r:r, epic:false };
     return { ok:true, r:r };
   }
@@ -241,7 +247,7 @@ export function buildFumbleRollPatch(lang) {
       if(isSummon(h) || isPassive(h)) rolledThisAct = true;
       if(isSummon(h)){
         var r = 1 + Math.floor(Math.random() * 30);
-        if(r === 19 || r === 20){
+        if(r === 19 || r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
           pop(side, h.id, false, r);
           h.abilityUsed = true;
