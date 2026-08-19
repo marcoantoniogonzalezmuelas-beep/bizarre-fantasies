@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import HeroCardFace from '@/components/cards/HeroCardFace';
 import EquipCard from '@/components/cards/EquipCard';
@@ -31,9 +32,11 @@ export default function CardPreviewModal({ form, onClose }) {
   const isHero = ['hero', 'bizarro'].includes(form.category);
   const equipType = EQUIP_TYPE_BY_CATEGORY[form.category];
 
-  return (
+  // Se monta en el body (fuera del zoom/transformación de la página) para que
+  // la carta salga centrada y nítida, sin necesidad de hacer scroll.
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100001] flex flex-col items-center justify-center gap-4 p-5 bg-black/85 backdrop-blur-sm"
+      className="fixed inset-0 z-[100001] flex flex-col items-center justify-center gap-4 p-5 bg-black/90"
       onClick={onClose}
     >
       <button
@@ -56,6 +59,7 @@ export default function CardPreviewModal({ form, onClose }) {
           {elite ? 'Ver versión Normal' : 'Ver versión Élite'}
         </button>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

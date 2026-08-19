@@ -40,16 +40,15 @@ export default function BattlePreview({ form }) {
               backgroundSize: 'cover',
               backgroundPosition: 'center 18%',
               backgroundRepeat: 'no-repeat',
-              filter: 'blur(3px) saturate(1.3) brightness(0.82)',
-              opacity: 0.9,
+              filter: 'saturate(1.15)',
             }}
           >
-            {/* Overlay de degradado del rectángulo */}
+            {/* Solo el fundido lateral izquierdo, para que el retrato se una a
+                la escena igual que en la batalla real (sin velo oscuro). */}
             <div
               className="absolute inset-0"
               style={{
-                background:
-                  'linear-gradient(90deg,rgba(14,9,22,.82) 0%,rgba(14,9,22,.12) 26%,rgba(14,9,22,.12) 74%,rgba(14,9,22,.8) 100%),linear-gradient(180deg,rgba(14,9,22,.1),rgba(14,9,22,.45))',
+                background: 'linear-gradient(90deg,rgba(14,9,22,.75) 0%,rgba(14,9,22,0) 22%)',
               }}
             />
           </div>
