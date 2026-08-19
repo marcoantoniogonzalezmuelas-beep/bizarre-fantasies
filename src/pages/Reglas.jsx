@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Target } from 'lucide-react';
 import { t, getLang } from '@/lib/i18n';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
+import FumbleRulesSection from '@/components/rules/FumbleRulesSection';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png';
@@ -201,6 +202,8 @@ export default function Reglas() {
               <p><b style={{ color: '#ffd24a' }}>🔑 {L('Habilidades:', 'Abilities:')}</b> {L('cada héroe puede usar su habilidad normal y su habilidad élite una sola vez por batalla (se cuentan por separado). Al revivir no recupera una habilidad ya gastada.', "each hero can use its normal ability and its elite ability once per battle (counted separately). On reviving it doesn't recover an already-spent ability.")}</p>
             </div>
           </div>
+
+          <FumbleRulesSection />
 
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">🎮 {L('Modos de juego', 'Game modes')}</div>
