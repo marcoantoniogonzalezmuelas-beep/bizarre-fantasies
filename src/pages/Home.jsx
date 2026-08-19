@@ -408,6 +408,18 @@ export default function Home() {
   // esté visible, ocultamos el cartel de flash news para que no tape el modal.
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  // Móvil/tablet: el juego se maqueta a 1280px (paridad con PC) y se encoge con
+  // CSS para que quepa entero en la pantalla. El pellizco sigue funcionando
+  // dentro del iframe (MOBILE_PINCH_PATCH).
+  const [mobScale, setMobScale] = useState(1);
+  useEffect(() => {
+    if (!IS_MOBILE) return;
+    const calc = () => setMobScale(Math.min(1, (document.documentElement.clientWidth || 360) / 1280));
+    calc();
+    window.addEventListener('resize', calc);
+    window.addEventListener('orientationchange', calc);
+    return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
+  }, []);
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -1015,12 +1027,12 @@ export default function Home() {
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
-          className="h-full border-0"
-          // Ancho fijo de escritorio: el documento del juego se maqueta a
-          // 1280px en cualquier dispositivo (en móvil el navegador ignoraba la
-          // etiqueta de viewport del iframe y lo maquetaba al ancho del
-          // teléfono, dejando la portada apelotonada).
-          style={{ width: 1280, maxWidth: 'none' }}
+          className="border-0"
+          // El documento del juego se maqueta SIEMPRE a 1280px (paridad con PC)
+          // y en móvil/tablet se encoge con CSS para que quepa entero.
+          style={IS_MOBILE
+            ? { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
+            : { width: '100%', height: '100%' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
