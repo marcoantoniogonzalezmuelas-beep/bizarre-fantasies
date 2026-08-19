@@ -1015,7 +1015,12 @@ export default function Home() {
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
-          className="w-full h-full border-0"
+          className="h-full border-0"
+          // Ancho fijo de escritorio: el documento del juego se maqueta a
+          // 1280px en cualquier dispositivo (en móvil el navegador ignoraba la
+          // etiqueta de viewport del iframe y lo maquetaba al ancho del
+          // teléfono, dejando la portada apelotonada).
+          style={{ width: 1280, maxWidth: 'none' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
