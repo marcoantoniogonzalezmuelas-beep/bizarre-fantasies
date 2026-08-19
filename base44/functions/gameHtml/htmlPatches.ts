@@ -2,6 +2,14 @@
 // Extraídos de entry.ts para mantener el archivo principal bajo el límite de
 // líneas. Aplican los mismos reemplazos que antes estaban inline.
 export function applyHtmlPatches(html: string, RB: string): string {
+  // Paridad total con PC en móvil y tablet: el documento del juego se maqueta
+  // SIEMPRE a 1280px de ancho (igual que la página padre), y el jugador amplía
+  // con el pellizco. Con width=device-width el juego entraba en sus media
+  // queries de móvil y la portada salía apelotonada.
+  html = html.replace(
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">',
+    '<meta name="viewport" content="width=1280">'
+  );
   var BTN_LEARN = RB+'843af3814_generated_image.png', BTN_RULES = RB+'0848f4ffb_generated_image.png', BTN_RACES = RB+'5e41f1add_generated_image.png';
   html = html.replace('const AD_REF=18,HE_REF=18,EQUIP_BASE=45,START_COINS=100;', 'const AD_REF=18,HE_REF=18,EQUIP_BASE=100,START_COINS=100;');
   // Batalla reordenada: campo de batalla (héroes + mano) arriba, después el
