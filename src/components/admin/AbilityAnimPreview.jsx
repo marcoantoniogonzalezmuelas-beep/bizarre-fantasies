@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { pickMotion, ALL_MOTION_CSS } from '@/lib/abilityAnimMotions';
 import { cutoutOpaque } from '@/lib/cutoutOpaque';
 
@@ -68,7 +69,9 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
     delay: Math.random() * 1.2,
   }));
 
-  return (
+  // Se monta en el body (fuera del zoom/transformación de la página) para que
+  // la cinemática salga centrada y nítida a pantalla completa.
+  return createPortal(
     <div
       onClick={onClose}
       style={{
@@ -111,6 +114,7 @@ export default function AbilityAnimPreview({ artUrl, abilityName, clanColor, eli
       <div style={{ position: 'absolute', bottom: 16, left: 0, right: 0, textAlign: 'center', fontSize: 12, color: '#9d8ab8', pointerEvents: 'none' }}>
         Toca para cerrar · Vista previa de la cinemática 3D {motion.id !== 'default' ? `· ${motion.id}` : ''}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
