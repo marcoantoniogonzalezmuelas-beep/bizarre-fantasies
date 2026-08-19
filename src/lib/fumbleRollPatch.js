@@ -15,6 +15,9 @@ export function buildFumbleRollPatch(lang) {
     epic: en ? 'EPIC FAIL' : 'FALLO ÉPICO',
     roll: en ? 'd30 roll' : 'Tirada d30',
     fumbleLog: en ? 'FUMBLE! (19-20 on a d30 ≈ 7%): the action does nothing.' : '¡PIFIA! (19-20 en d30 ≈ 7%): la acción no hace nada.',
+    // Un 1 en el d30 solo es FALLO ÉPICO si se confirma con un 1 en el d6;
+    // si no se confirma, se queda en pifia normal (y así debe explicarse).
+    oneLog: en ? 'FUMBLE! (a 1 on a d30 not confirmed on the d6): the action does nothing.' : '¡PIFIA! (1 en d30 no confirmado en el d6): la acción no hace nada.',
     epicLog: en ? 'EPIC FAIL! (a 1 on a d30 confirmed with a 1 on a d6 ≈ 0.5%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d30 confirmado con 1 en d6 ≈ 0,5%): la acción no hace nada y el efecto se vuelve en su contra.',
     selfHit: en ? 'hits itself for' : 'se golpea a sí mismo por',
     nothing: en ? 'FUMBLE: this ability has no effect.' : 'PIFIA: esta habilidad no produce ningún efecto.',
@@ -135,7 +138,7 @@ export function buildFumbleRollPatch(lang) {
       log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + 'OK.');
       return false;
     }
-    log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.epic ? '${T.epicLog}' : '${T.fumbleLog}'));
+    log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.epic ? '${T.epicLog}' : (t.r === 1 ? '${T.oneLog}' : '${T.fumbleLog}')));
     pop(a.side, a.h.id, t.epic, t.r);
     if(t.epic) selfBackfire(a);
     try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
@@ -211,7 +214,7 @@ export function buildFumbleRollPatch(lang) {
       log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 OK.');
       return false;
     }
-    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
+    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
     pop(side, h.id, false, r);
     return true;
   }
@@ -248,7 +251,7 @@ export function buildFumbleRollPatch(lang) {
       if(isSummon(h)){
         var r = 1 + Math.floor(Math.random() * 30);
         if(r === 19 || r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
-          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
+          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
           pop(side, h.id, false, r);
           h.abilityUsed = true;
           try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
