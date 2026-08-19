@@ -344,7 +344,7 @@ const DRAGGABLE_GUIDE_PATCH = `
 const RELOAD_COVER_PATCH = `<script>window.addEventListener('pagehide',function(){try{parent.postMessage({bfReloading:true},'*')}catch(e){}});</script>`;
 // Empuja el botón "Contacta con los Bizarros" hacia abajo para dejar sitio
 // al cartel de Actualidad (flash news) entre el menú y el botón de contacto.
-const CONTACT_REPOSITION_PATCH = `<style>#s-title #bf-contact{margin-top:68px!important}</style>`;
+const CONTACT_REPOSITION_PATCH = `<style>#s-title #bf-contact{margin-top:112px!important}</style>`;
 
 const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
 // Tablets (iPad, Android sin "Mobile", Mac con pantalla táctil) usan el mismo
