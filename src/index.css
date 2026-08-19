@@ -132,6 +132,16 @@ html.bf-pinching .bf-home-utility-link {
 }
 html.bf-pinching iframe { will-change: transform; }
 
+/* Durante el pellizco en cualquier página (Oráculo, Reglas, Razas, Ranking…)
+   se desactivan los efectos que obligan al navegador a re-rasterizar toda la
+   pantalla en cada fotograma del gesto (desenfoques de fondo, sombras
+   animadas). Es lo que provocaba el parpadeo en tablet. */
+html.bf-pinching * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.bf-pinching .bf-rainbow-border { animation: none !important; }
+
 /* Responsividad estándar: imágenes y contenedores nunca desbordan el ancho
    de pantalla. El pellizco nativo del navegador funciona al no haber reglas
    touch-action que lo bloqueen. */

@@ -23,6 +23,12 @@ export default function PagePinchZoom() {
       root.style.transformOrigin = '0 0';
       root.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${z})`;
     };
+    // Capa GPU PERMANENTE (igual que dentro del juego): si la capa se crea al
+    // empezar el pellizco y se destruye al soltar, el navegador re-rasteriza
+    // toda la pantalla y eso es lo que provoca el parpadeo en tablet.
+    root.style.backfaceVisibility = 'hidden';
+    root.style.willChange = 'transform';
+    apply();
     const schedule = () => {
       if (raf) return;
       raf = requestAnimationFrame(() => { raf = null; apply(); });
@@ -84,6 +90,8 @@ export default function PagePinchZoom() {
       html.classList.remove('bf-pinching');
       root.style.transform = '';
       root.style.transition = '';
+      root.style.willChange = '';
+      root.style.backfaceVisibility = '';
     };
   }, [pathname]);
 
