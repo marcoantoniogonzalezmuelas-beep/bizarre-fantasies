@@ -255,7 +255,9 @@ export const EPIC_ABILITY_FX_PATCH = `
     if(window.__bfAbilityAnimMap){var _aak=hero.id||hero.cid||hero.card_id;if(_aak&&window.__bfAbilityAnimMap[_aak])return;}
     var key=side+'_'+hero.id;
     var now=Date.now();
-    if(lastFx[key]&&now-lastFx[key]<1200)return;
+    // Una sola animación por uso: las habilidades con objetivo marcan
+    // abilityUsed después de targetear y relanzaban la misma cinemática.
+    if(lastFx[key]&&now-lastFx[key]<12000)return;
     lastFx[key]=now;
     try{playCine(side,hero);}catch(e){}
   }

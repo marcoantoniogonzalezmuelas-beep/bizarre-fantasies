@@ -277,7 +277,10 @@ export const ABILITY_FX_PATCH = `
     if(hero.id&&EPIC_FX_IDS[hero.id])return;
     var key=side+'_'+hero.id;
     var now=Date.now();
-    if(lastFx[key]&&now-lastFx[key]<1200)return;
+    // Las habilidades que piden objetivo pasan por useAbility ANTES de
+    // targetear y marcan abilityUsed DESPUÉS: con una ventana corta la misma
+    // animación se lanzaba dos veces. 12 s cubre toda la elección de objetivo.
+    if(lastFx[key]&&now-lastFx[key]<12000)return;
     lastFx[key]=now;
     try{play(side,hero);}catch(e){}
   }
