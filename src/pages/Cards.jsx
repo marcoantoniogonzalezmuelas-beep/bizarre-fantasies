@@ -10,6 +10,7 @@ import ClanSigil from '@/components/cards/ClanSigil';
 import DownloadDocsButton from '@/components/cards/DownloadDocsButton';
 import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 import { getLang, t } from '@/lib/i18n';
+import useDesktopMode from '@/hooks/useDesktopMode';
 
 const TABS = [
   { key: 'heroes', label: 'Héroes' },
@@ -136,10 +137,22 @@ export default function Cards() {
     });
   }, [heroes, search, clanFilter, typeFilter]);
 
+  // Móvil/tablet: la página se maqueta a 1280px (paridad con PC) y se encoge
+  // con zoom para que se vea igual que en escritorio (todas las pestañas y
+  // columnas). El pellizco nativo permite ampliar después.
+  const deskScale = useDesktopMode();
+  // Los breakpoints de Tailwind miran el viewport real (pequeño en móvil), así
+  // que en modo escritorio se fuerzan las columnas de PC directamente.
+  const grid4 = deskScale < 1 ? 'grid grid-cols-5 gap-4' : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-4';
+  const grid3 = deskScale < 1 ? 'grid grid-cols-5 gap-3' : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3';
+
   return (
     <div
       className="min-h-screen relative bg-[#050308] bg-cover bg-center"
-      style={{ backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
+      style={{
+        backgroundImage: 'url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")',
+        ...(deskScale < 1 ? { width: 1280, zoom: deskScale, minHeight: `${100 / deskScale}vh` } : {}),
+      }}
     >
       <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14aa] via-[#0a081055] to-[#050308dd]" />
 
@@ -204,34 +217,34 @@ export default function Cards() {
 
         {/* Content */}
         {tab === 'heroes' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className={grid4}>
             {filteredHeroes.map(hero => (
               <HeroCard key={hero.id} hero={hero} onClick={h => setSelectedHero(h)} />
             ))}
           </div>
         )}
         {tab === 'spells' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={grid3}>
             {spells.map(s => <EquipCard key={s.id} item={s} type="spell" />)}
           </div>
         )}
         {tab === 'ranged' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={grid3}>
             {ranged.map(w => <EquipCard key={w.id} item={w} type="ranged" />)}
           </div>
         )}
         {tab === 'melee' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={grid3}>
             {melee.map(w => <EquipCard key={w.id} item={w} type="melee" />)}
           </div>
         )}
         {tab === 'armors' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={grid3}>
             {armors.map(a => <EquipCard key={a.id} item={a} type="armor" />)}
           </div>
         )}
         {tab === 'objects' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={grid3}>
             {objects.map(o => <EquipCard key={o.id} item={o} type="object" />)}
           </div>
         )}
@@ -246,19 +259,19 @@ export default function Cards() {
             {tokens.length === 0 ? (
               <div className="text-center py-16 text-[#a89fbb]">{t('Aún no hay Bizarros en el catálogo.')}</div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div className={grid4}>
                 {tokens.map(token => <HeroCard key={token.id} hero={token} onClick={h => setSelectedHero(h)} />)}
               </div>
             )}
           </>
         )}
         {tab === 'bonuses' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className={grid3}>
             {bonuses.map(b => <EquipCard key={b.id} item={{ ...b, cost: '—' }} type="bonus" />)}
           </div>
         )}
         {tab === 'races' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={deskScale < 1 ? 'grid grid-cols-2 gap-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
             {RACES.map(r => <RaceCard key={r.name} race={r} />)}
           </div>
         )}
