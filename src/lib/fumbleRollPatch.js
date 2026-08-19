@@ -90,13 +90,43 @@ export function buildFumbleRollPatch(lang) {
   // partida hay 60-100 acciones → 2-3 por partida). Ahora el 1 hay que
   // CONFIRMARLO con un d6: solo si sale otro 1 es fallo épico (≈0,5%); si no,
   // se queda en pifia normal.
-  function confirmEpic(){ return (1 + Math.floor(Math.random() * 6)) === 1; }
+  // Dado realmente aleatorio y SIN SESGO: Math.random() escalado puede
+  // repetir valores en rachas; se usa el generador criptográfico del navegador
+  // con rechazo de los valores que sobran (para que las 30 caras sean
+  // exactamente equiprobables).
+  function die(faces){
+    try{
+      if(window.crypto && window.crypto.getRandomValues){
+        var lim = Math.floor(256 / faces) * faces;
+        var b = new Uint8Array(1);
+        for(var i = 0; i < 32; i++){
+          window.crypto.getRandomValues(b);
+          if(b[0] < lim) return (b[0] % faces) + 1;
+        }
+      }
+    }catch(e){}
+    return 1 + Math.floor(Math.random() * faces);
+  }
+  window.__bfDie = die;
 
+  function confirmEpic(){ return die(6) === 1; }
+
+  // Anti-racha: dos pifias seguidas (o muy pegadas) hacen que el jugador sienta
+  // que el dado "tiende al 1". Tras un fallo, las 2 acciones siguientes vuelven
+  // a tirar el dado una vez más si repiten resultado de fallo.
+  var lastFail = -99, actCount = 0;
   function roll(){
-    var r = 1 + Math.floor(Math.random() * 30);
+    actCount++;
+    var r = die(30);
+    var bad = (r === 1 || r === 19 || r === 20);
+    if(bad && (actCount - lastFail) <= 2){
+      r = die(30);
+      bad = (r === 1 || r === 19 || r === 20);
+    }
+    if(!bad) return { ok:true, r:r };
+    lastFail = actCount;
     if(r === 1) return { ok:false, r:r, epic:confirmEpic() };
-    if(r === 19 || r === 20) return { ok:false, r:r, epic:false };
-    return { ok:true, r:r };
+    return { ok:false, r:r, epic:false };
   }
 
   function selfBackfire(a){
@@ -209,7 +239,7 @@ export function buildFumbleRollPatch(lang) {
 
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
   function passiveFumbled(side, h){
-    var r = 1 + Math.floor(Math.random() * 30);
+    var r = die(30);
     if(r !== 19 && r !== 20 && r !== 1){
       log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 OK.');
       return false;
@@ -249,7 +279,7 @@ export function buildFumbleRollPatch(lang) {
       if(rolledThisAct) return orig.apply(self, arguments);
       if(isSummon(h) || isPassive(h)) rolledThisAct = true;
       if(isSummon(h)){
-        var r = 1 + Math.floor(Math.random() * 30);
+        var r = die(30);
         if(r === 19 || r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
           pop(side, h.id, false, r);
