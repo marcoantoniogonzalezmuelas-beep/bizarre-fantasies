@@ -14,6 +14,9 @@ export const AI_AUCTION_PATCH = `
   // Debe tener un héroe del rol que se subasta ahora (CC, AD o HE). Una compra
   // de una fase anterior nunca cuenta como la compra de la ronda actual.
   function needsHero(s){
+    // No queda ningún héroe disponible que pujar: la IA no puede reclutar y la
+    // fase debe poder cerrarse (si no, se repuja indefinidamente).
+    if (G.bfAiNoCands && G.bfAiNoCands[s]) return false;
     var team = (G.team && G.team[s]) || [];
     var currentRole = G.curType || ['CC','AD','HE'][Number(G.aIndex || 0)];
     if (!team.some(function(h){ return h && h.type === currentRole; })) return true;
@@ -32,7 +35,13 @@ export const AI_AUCTION_PATCH = `
   }
   function pool(s){
     var taken = takenIds();
-    return (((G.epicCands && G.epicCands[s]) || G.cands || [])).filter(function(h){ return h && h.id && !taken[h.id]; });
+    var free = function(list){ return (list || []).filter(function(h){ return h && h.id && !taken[h.id]; }); };
+    // Lista restringida por bonificadores (p. ej. "Destino épico rival"). Si se
+    // queda vacía (todos adjudicados), se usa la terna general: si no, la IA no
+    // podía pujar y la fase se quedaba atascada repujando sin fin.
+    var restricted = free(G.epicCands && G.epicCands[s]);
+    if (restricted.length) return restricted;
+    return free(G.cands);
   }
   function cheapest(s){ var c = null; pool(s).forEach(function(h){ if (h && (!c || Number(h.cost||0) < Number(c.cost||0))) c = h; }); return c; }
 
@@ -60,7 +69,13 @@ export const AI_AUCTION_PATCH = `
   // Puja forzada: el héroe más barato, por su coste (o todo lo que le quede).
   function forceBid(s){
     var ch = cheapest(s);
-    if (!ch) { G.bids[s] = { pass: true }; return; }
+    if (!ch) {
+      if (!G.bfAiNoCands) G.bfAiNoCands = {};
+      G.bfAiNoCands[s] = true;
+      if (G.phaseNeeds) G.phaseNeeds[s] = false;
+      G.bids[s] = { pass: true };
+      return;
+    }
     ensureFunds(s);
     var m = mods(s), c = Number((G.coins && G.coins[s]) || 0);
     var max = Math.max(0, c + m.add - m.sub);
@@ -90,6 +105,8 @@ export const AI_AUCTION_PATCH = `
       var ai = aiSide();
       if (s !== ai) return innerAiBid.apply(this, arguments);
       var preLen = ((G.team && G.team[s]) || []).length;
+      // Nueva terna con héroes libres: se olvida el bloqueo de "sin candidatos".
+      if (G.bfAiNoCands && G.bfAiNoCands[s] && pool(s).length) G.bfAiNoCands[s] = false;
       if (needsHero(s)) ensureFunds(s);
       try { innerAiBid.apply(this, arguments); } catch(e){}
       stripBizarros(s, preLen);
