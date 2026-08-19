@@ -111,6 +111,14 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Mientras se hace el pellizco (zoom táctil) se congelan animaciones y
+   transiciones: repintarlas sobre la capa escalada es lo que provoca el
+   parpadeo en móvil/tablet. Al soltar, todo vuelve a moverse. */
+html.bf-pinching *, html.bf-pinching *::before, html.bf-pinching *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
 /* Responsividad estándar: imágenes y contenedores nunca desbordan el ancho
    de pantalla. El pellizco nativo del navegador funciona al no haber reglas
    touch-action que lo bloqueen. */

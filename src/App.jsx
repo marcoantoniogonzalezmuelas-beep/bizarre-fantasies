@@ -6,6 +6,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import PagePinchZoom from './components/PagePinchZoom';
 import Home from './pages/Home';
 import Cards from './pages/Cards';
 import CardGuide from './pages/CardGuide';
@@ -78,6 +79,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
+          <PagePinchZoom />
           <AuthenticatedApp />
         </Router>
         <Toaster />

@@ -99,11 +99,20 @@ export const MOBILE_PINCH_PATCH = `
     return pinch && t[0].identifier === pinch.id0 && t[1].identifier === pinch.id1;
   }
 
+  // Congela animaciones y transiciones mientras se pellizca: repintarlas sobre
+  // la capa escalada es lo que provoca el parpadeo (portada, equipamiento y
+  // batalla tienen muchas animaciones activas a la vez).
+  var pzStyle = document.createElement('style');
+  pzStyle.textContent = 'html.bf-pinching *,html.bf-pinching *::before,html.bf-pinching *::after{animation-play-state:paused!important;transition:none!important}';
+  (document.head || document.documentElement).appendChild(pzStyle);
+
   function onStart(e){
     if (e.touches.length < 2) return;
     e.preventDefault();
     e.stopPropagation();
     document.body.style.transition = 'none';
+    document.documentElement.classList.add('bf-pinching');
+    try { window.parent.postMessage({ bfPinching: true }, '*'); } catch (err) {}
     enableWC();
     startPinch(e.touches);
   }
@@ -135,6 +144,10 @@ export const MOBILE_PINCH_PATCH = `
       return;
     }
     pinch = null;
+    setTimeout(function(){
+      document.documentElement.classList.remove('bf-pinching');
+      try { window.parent.postMessage({ bfPinching: false }, '*'); } catch (err) {}
+    }, 300);
     var b = document.body;
     b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
     if (z < 1.05) { z = 1; tx = 0; ty = 0; }
