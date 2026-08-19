@@ -420,6 +420,10 @@ export default function Home() {
     window.addEventListener('orientationchange', calc);
     return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
   }, []);
+  // Los accesos flotantes (Oráculo, Reglas, Razas) y el cartel de actualidad se
+  // encogen con el juego, pero con un mínimo para que sigan siendo legibles y
+  // se puedan pulsar con el dedo.
+  const overlayScale = IS_MOBILE ? Math.max(mobScale, 0.62) : 1;
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -985,7 +989,7 @@ export default function Home() {
 
   return (
     <div className={`fixed inset-0 overflow-hidden bg-[#0e0a16] ${IS_MOBILE ? 'bf-mobile-home' : ''}`}>
-      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={mobScale} />}
+      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={overlayScale} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
@@ -1002,7 +1006,7 @@ export default function Home() {
       {/* Oráculo / Razas / Reglas: se escalan con el mismo factor que el juego
         (mobScale) para que en móvil/tablet tengan el mismo tamaño relativo que
         los botones de la portada, igual que en PC. */}
-      <div className="absolute inset-0 z-20 pointer-events-none" style={IS_MOBILE ? { transform: `scale(${mobScale})`, transformOrigin: 'bottom right' } : undefined}>
+      <div className="absolute inset-0 z-20 pointer-events-none" style={IS_MOBILE ? { transform: `scale(${overlayScale})`, transformOrigin: 'bottom right' } : undefined}>
       {/* Oráculo Bizarro — acceso al catálogo, solo en la portada inicial */}
       {showOracle && (
         <Link to="/cards" className="bf-home-oracle absolute bottom-4 right-3 sm:bottom-5 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2 group pointer-events-auto max-w-[62vw]" style={{ filter: 'drop-shadow(0 0 14px rgba(192,91,255,0.55))' }}>
