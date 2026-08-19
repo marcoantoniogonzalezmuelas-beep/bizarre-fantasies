@@ -13,8 +13,6 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
   const [enabled, setEnabled] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [topY, setTopY] = useState(null);
-  const mobScaleRef = useRef(mobScale);
-  useEffect(() => { mobScaleRef.current = mobScale; }, [mobScale]);
 
   // Mide la posición del título del juego dentro del iframe para sentar el
   // cartel justo debajo. En móvil/tablet el iframe lleva `zoom: mobScale`, así
@@ -25,9 +23,13 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
       const iframe = document.querySelector('iframe');
       const doc = iframe?.contentDocument;
       const links = doc?.querySelector('.title-links');
-      if (!links) return;
+      if (!iframe || !links) return;
+      // Escala REAL con la que se pinta el iframe (ancho visual / ancho de
+      // maquetación): sitúa el cartel justo debajo de los iconos del menú
+      // (Aprende a jugar · Habitación Bizarra · Top Ranking), con margen.
+      const scale = iframe.getBoundingClientRect().width / (iframe.offsetWidth || 1280);
       const r = links.getBoundingClientRect();
-      setTopY((r.bottom + 14) * mobScaleRef.current);
+      setTopY((r.bottom + 22) * scale);
     };
     measure();
     const iv = setInterval(measure, 500);
