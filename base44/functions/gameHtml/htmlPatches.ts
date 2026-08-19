@@ -68,5 +68,19 @@ export function applyHtmlPatches(html: string, RB: string): string {
   html = html.replace(/Quita sueño\/parálisis\/maldición a un aliado\./g, 'Elimina cualquier estado negativo del héroe.');
   html = html.replace("case 'cleanse': pendTarget('Aliado a liberar',allies,(t)=>{t.sleep=0;t.para=0;t.skip=0;t._mods=t._mods.filter(m=>!(m.cc<0||m.ad<0||m.he<0));pushLog('lh',`${o.name}: ${t.name} liberado.`);consume();finishAct();});return;", "case 'cleanse': pendTarget('Héroe a restablecer',allies,(t)=>{t.sleep=0;t.para=0;t.skip=0;t.silence=0;t.mark=null;t._bfConfused=0;t._bfDrunk=0;t._mods=(t._mods||[]).filter(m=>!((m.cc||0)<0||(m.ad||0)<0||(m.he||0)<0||(m.vel||0)<0));pushLog('lh',`${o.name}: ${t.name} vuelve a su estado normal.`);consume();finishAct();});return;");
   html = html.replace("case 'cleanse':{const t=living(allies).find(a=>a.sleep||a.para||a.skip)||living(allies)[0];t.sleep=0;t.para=0;t.skip=0;pushLog('lh',`${o.name}: ${t.name} liberado.`);break;}", "case 'cleanse':{const t=living(allies).find(a=>a.sleep||a.para||a.skip||a.silence||a.mark||a._bfConfused||a._bfDrunk||(a._mods||[]).some(m=>(m.cc||0)<0||(m.ad||0)<0||(m.he||0)<0||(m.vel||0)<0))||living(allies)[0];t.sleep=0;t.para=0;t.skip=0;t.silence=0;t.mark=null;t._bfConfused=0;t._bfDrunk=0;t._mods=(t._mods||[]).filter(m=>!((m.cc||0)<0||(m.ad||0)<0||(m.he||0)<0||(m.vel||0)<0));pushLog('lh',`${o.name}: ${t.name} vuelve a su estado normal.`);break;}");
+  // REGISTRO COMPLETO DE LA PARTIDA: el juego solo guardaba las 40 últimas
+  // líneas y borraba el resto. El cuadro ya tiene scroll, así que se amplía el
+  // histórico para poder consultar toda la partida bajando el scroll.
+  html = html.replace('if(B.log.length>40)B.log.pop();', 'if(B.log.length>600)B.log.pop();');
+  // TURNOS FORZADOS: el juego armaba un "watchdog" de 4,2 s en cada turno de la
+  // IA y, si no había terminado, cerraba el turno a la fuerza escribiendo
+  // "(turno forzado)". Con las cinemáticas de habilidad/muerte (que duran más de
+  // 4 s) saltaba constantemente y la IA perdía su acción. Ahora el vigilante
+  // espera a que no haya ninguna cinemática en pantalla y solo interviene si el
+  // turno lleva 15 s realmente atascado, explicándolo en el registro.
+  html = html.replace(
+    "function armWatchdog(){ const mySeq=++B.seq, myQi=B.qi; B.wd=setTimeout(()=>{ if(!B.over && B.seq===mySeq && B.qi===myQi){ pushLog('ld','(turno forzado)'); endTurn(); } },4200); }",
+    "function armWatchdog(){ const mySeq=++B.seq, myQi=B.qi; const cine=()=>!!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'); const check=()=>{ if(B.over||B.seq!==mySeq||B.qi!==myQi)return; if(cine()){ B.wd=setTimeout(check,2000); return; } pushLog('ld','⏳ '+((B.current&&G.names&&G.names[B.current.side])||'El rival')+' no ha completado su acción: se pasa su turno.'); endTurn(); }; B.wd=setTimeout(check,15000); }"
+  );
   return html;
 }
