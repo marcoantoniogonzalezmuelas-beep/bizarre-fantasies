@@ -423,7 +423,10 @@ export default function Home() {
   // Los accesos flotantes (Oráculo, Reglas, Razas) y el cartel de actualidad se
   // encogen con el juego, pero con un mínimo para que sigan siendo legibles y
   // se puedan pulsar con el dedo.
-  const overlayScale = IS_MOBILE ? Math.max(mobScale, 0.62) : 1;
+  // Zoom de pellizco dentro del juego: los accesos y el cartel crecen con el
+  // mismo factor para mantener la proporción con los botones del juego.
+  const [pinchZ, setPinchZ] = useState(1);
+  const overlayScale = IS_MOBILE ? Math.max(mobScale, 0.62) * pinchZ : 1;
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -614,6 +617,9 @@ export default function Home() {
       }
       // Pellizco dentro del juego: congela también las animaciones de los
       // elementos que viven fuera del iframe (cartel de actualidad, accesos).
+      if (e.data && e.data.bfPinch && typeof e.data.bfPinch.z === 'number') {
+        setPinchZ(Math.max(1, Math.min(4, e.data.bfPinch.z)));
+      }
       if (e.data && typeof e.data.bfPinching === 'boolean') {
         document.documentElement.classList.toggle('bf-pinching', e.data.bfPinching);
       }
