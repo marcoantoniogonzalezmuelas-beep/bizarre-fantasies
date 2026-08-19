@@ -255,8 +255,11 @@ export const MOBILE_PINCH_PATCH = `
   // y poder hacer preventDefault del gesto de 2 dedos.
   document.addEventListener('touchstart', onStart, { capture: true, passive: false });
   document.addEventListener('touchmove', onMove, { capture: true, passive: false });
-  document.addEventListener('touchend', onEnd, { capture: true, passive: false });
-  document.addEventListener('touchcancel', onEnd, { capture: true, passive: false });
+  // touchend/touchcancel NO hacen preventDefault: se registran como passive
+  // para no bloquear el hilo de composición del navegador al soltar el gesto
+  // (una de las causas del parpadeo en tablet).
+  document.addEventListener('touchend', onEnd, { capture: true, passive: true });
+  document.addEventListener('touchcancel', onEnd, { capture: true, passive: true });
 })();
 </script>
 `;

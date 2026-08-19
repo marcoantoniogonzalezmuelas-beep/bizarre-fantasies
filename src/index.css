@@ -119,6 +119,19 @@ html.bf-pinching *, html.bf-pinching *::before, html.bf-pinching *::after {
   transition: none !important;
 }
 
+/* Tablet/móvil: durante el pellizco, los elementos que viven FUERA del juego
+   (cartel de actualidad, Oráculo, Reglas, Razas) son capas compuestas encima
+   del juego escalado; repintarlas en cada frame del gesto es lo que provoca el
+   parpadeo. Se ocultan mientras dura el pellizco y vuelven al soltar. Al juego
+   se le declara will-change: transform solo durante el gesto (única capa que
+   realmente se transforma). */
+html.bf-pinching .bf-home-flash,
+html.bf-pinching .bf-home-oracle,
+html.bf-pinching .bf-home-utility-link {
+  visibility: hidden !important;
+}
+html.bf-pinching iframe { will-change: transform; }
+
 /* Responsividad estándar: imágenes y contenedores nunca desbordan el ancho
    de pantalla. El pellizco nativo del navegador funciona al no haber reglas
    touch-action que lo bloqueen. */
