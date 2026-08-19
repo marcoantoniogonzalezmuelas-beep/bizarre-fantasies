@@ -1,16 +1,19 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import HeroCardFace from '@/components/cards/HeroCardFace';
 
-// Full-screen modal that shows the whole hero card (art + stats + ability)
-// enlarged, not just the artwork.
+// Vista ampliada de la carta completa. Se monta con un portal en <body> para
+// que en móvil/tablet NO herede el zoom de "modo escritorio" ni el pellizco
+// del Oráculo (ahí es donde la carta se descentraba y desaparecía). Así queda
+// siempre centrada en pantalla, con el botón de cerrar visible.
 export default function HeroCardZoomModal({ hero, elite, onClose }) {
-  if (!hero) return null;
+  if (!hero || typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100001] flex items-center justify-center p-5 bg-cover bg-center backdrop-blur-sm"
-      style={{ backgroundImage: 'linear-gradient(rgba(6,4,12,.72), rgba(6,4,12,.88)), url("https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/9b034fe3c_generated_image.png")' }}
+      className="fixed inset-0 z-[100001] flex items-center justify-center bg-cover bg-center px-3 pt-20 pb-4"
+      style={{ backgroundImage: 'linear-gradient(rgba(6,4,12,.82), rgba(6,4,12,.94))' }}
       onClick={onClose}
     >
       <button
@@ -22,12 +25,13 @@ export default function HeroCardZoomModal({ hero, elite, onClose }) {
         Cerrar
       </button>
       <div
-        className="relative w-full max-w-[420px]"
-        style={{ aspectRatio: '7 / 10', maxHeight: '92%' }}
+        className="relative"
+        style={{ aspectRatio: '7 / 10', height: 'min(78vh, 620px)', maxWidth: '94vw' }}
         onClick={(e) => e.stopPropagation()}
       >
         <HeroCardFace hero={hero} elite={elite} />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
