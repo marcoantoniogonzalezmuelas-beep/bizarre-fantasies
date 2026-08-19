@@ -29,20 +29,17 @@ export const DUCK_ABILITY_PATCH = `
       if(h.eliteMode){
         var total = 0;
         living(foes).forEach(function(t){
-          for(var i = 0; i < 2; i++){
-            if(!t.alive) break;
-            total += dealDamage(t, 3, { type:'ranged' });
-          }
-          pushFx({ k:'arrow', fromSide:side, fromId:h.id, toSide:tSide(t), toId:t.id, hits:2 });
+          total += dealDamage(t, 1, { type:'ranged' });
+          pushFx({ k:'arrow', fromSide:side, fromId:h.id, toSide:tSide(t), toId:t.id, hits:1 });
         });
-        pushLog('ld', h.name + ' desata su Doble Metralleta Láser sobre todos los rivales (-' + total + ').');
+        pushLog('ld', h.name + ' suelta una ráfaga leve de metralleta láser sobre todos los rivales (-' + total + ').');
         finish();
         return;
       }
 
       // NORMAL — Picotazo: pequeño ataque a distancia y queda en juego bloqueando.
       var shoot = function(t){
-        var d = dealDamage(t, 3, { type:'ranged' });
+        var d = dealDamage(t, 2, { type:'ranged' });
         pushFx({ k:'arrow', fromSide:side, fromId:h.id, toSide:tSide(t), toId:t.id, hits:1 });
         pushFx({ k:'status', side:side, id:h.id, txt:'\\u{1F986}' });
         pushLog('ld', h.name + ' da un Picotazo a ' + t.name + ' (-' + d + ') y queda EN JUEGO bloqueando los golpes de sus aliados.');
