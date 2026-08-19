@@ -131,6 +131,9 @@ export const STATUS_AURA_PATCH = `
   // sacudidas, crecer/encoger ni latidos): el aura, el patrón, la etiqueta y
   // las decoraciones se ven igual, pero quietos y con el tamaño de siempre.
   css+='.bf-decor{animation:none!important}'+
+       // Marcadores de estado sobre el retrato (badges nativos, marcador de
+       // pasiva, insignia de agonía): visibles pero SIN movimiento alguno.
+       '.bhero .status-badge,.bhero .bf-status-badge,.bhero .bf-passive-mark,.bhero .bf-decor-layer,.bhero .bf-decor-layer *{animation:none!important;transition:none!important}'+
        '.bhero,.bhero::before,.bhero::after,.bhero .bf-pat,.bhero .bf-battle-art,.bhero .bf-bscene-portrait,.bhero .bf-agonize-badge{animation:none!important;transition:none!important}'+
        '.bhero{transform:translateZ(0)!important}'+
        '.bhero .bf-battle-art,.bhero .bf-bscene-portrait{transform:none!important}';

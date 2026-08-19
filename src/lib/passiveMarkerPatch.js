@@ -33,7 +33,9 @@ export const PASSIVE_MARKER_PATCH = `
   var css =
   // ---- Marcador permanente de habilidad pasiva sobre el retrato ----
   '.bf-passive-mark{position:absolute;left:8px;bottom:8px;z-index:15;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-family:Cinzel,serif;font-size:11px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;animation:bfPassivePulse 2.4s ease-in-out infinite;white-space:nowrap}' +
-  '@keyframes bfPassivePulse{0%,100%{opacity:.82;box-shadow:0 0 8px var(--bf-pc,#fff),0 2px 6px rgba(0,0,0,.5)}50%{opacity:1;box-shadow:0 0 18px var(--bf-pc,#fff),0 0 28px var(--bf-pc,#fff),0 2px 8px rgba(0,0,0,.5)}}' +
+  // El marcador se ve igual, pero QUIETO: el latido repintaba el retrato sin
+  // parar y provocaba parpadeo de pantalla.
+  '.bf-passive-mark{animation:none!important;opacity:1;box-shadow:0 0 10px var(--bf-pc,#fff),0 2px 6px rgba(0,0,0,.5)}' +
   // ---- Banner de ACCIÓN DEFINITIVA (solo cuando termina la partida) ----
   '#bf-final-blow{position:fixed;inset:0;z-index:999999;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfFbIn .3s ease-out}' +
   '#bf-final-blow.bf-fb-out{transition:opacity .6s;opacity:0}' +
