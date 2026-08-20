@@ -40,11 +40,25 @@ export const BATTLE_ZOOM_PATCH = `
       var btn = document.createElement('div');
       btn.className = 'bf-battle-zoom';
       btn.textContent = '🔍';
-      btn.title = 'Ver la ilustración';
+      btn.title = 'Ver la carta';
       btn.addEventListener('click', function(e){
         e.stopPropagation(); e.preventDefault();
-        var art = card.querySelector('.bf-battle-art');
-        open(urlOf(art));
+        // Igual que en la fase de equipamiento: se abre la CARTA completa
+        // (con stats, habilidad y giro Normal/Élite). Si por lo que sea no
+        // está disponible, se muestra la ilustración como respaldo.
+        var id = card.id.slice(2), side = '', h = null;
+        try{
+          ['p','o'].forEach(function(s){
+            var f = (G.team[s]||[]).find(function(x){ return x && x.id === id; });
+            if(f && !h){ h = f; side = s; }
+          });
+        }catch(e2){}
+        if(typeof window.bfZoomCard === 'function'){
+          window.bfZoomCard(id, (h && h.eliteMode) ? 'elite' : 'normal', side);
+          return;
+        }
+        if(typeof window.zoomCard === 'function'){ window.zoomCard(id); return; }
+        open(urlOf(card.querySelector('.bf-battle-art')));
       });
       card.appendChild(btn);
     });
