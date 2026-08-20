@@ -20,6 +20,9 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
   // posición visual real en el viewport.
   useEffect(() => {
     const measure = () => {
+      // Durante el pellizco no se remide: el zoom altera las medidas del juego
+      // y el cartel se descolocaba. Se queda donde estaba.
+      if (document.documentElement.classList.contains('bf-pinching')) return;
       const iframe = document.querySelector('iframe');
       const doc = iframe?.contentDocument;
       const links = doc?.querySelector('.title-links');

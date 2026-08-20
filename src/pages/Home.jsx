@@ -1012,7 +1012,9 @@ export default function Home() {
 
   return (
     <div className={`fixed inset-0 overflow-hidden bg-[#0e0a16] ${IS_MOBILE ? 'bf-mobile-home' : ''}`}>
-      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={overlayScale} />}
+      {/* El cartel de Actualidad NO se escala con el pellizco: mantiene su
+        tamaño y su sitio (solo se ajusta al encaje del juego en pantalla). */}
+      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? Math.max(mobScale, 0.62) : 1} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
