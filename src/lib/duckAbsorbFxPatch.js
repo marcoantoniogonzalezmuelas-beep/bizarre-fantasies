@@ -14,7 +14,13 @@ export const DUCK_ABSORB_FX_PATCH = `
     +'@keyframes bfDuckAbs{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}16%{opacity:1;transform:translate(-50%,-95%) scale(1.2)}75%{opacity:1;transform:translate(-50%,-120%) scale(1.08)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}';
   document.head.appendChild(st);
 
-  function isDuck(h){ return !!h && (h._bfDuck || h._token === 'tk_patito_goma' || h.id === 'tk_patito_goma' || h.akind === 'tk_patito_goma'); }
+  // Cualquier héroe que esté tanqueando/bloqueando golpes por sus aliados:
+  // patitos de goma o cualquier otro con un estado de tanque/provocación activo.
+  function isTank(h){
+    if(!h) return false;
+    return !!(h._bfDuck || h._bfTank || h._bfBlock || h.tank || h.taunt || h.blocker || h.guard || h.isTank
+      || h._token === 'tk_patito_goma' || h.id === 'tk_patito_goma' || h.akind === 'tk_patito_goma');
+  }
 
   function cardEl(h){
     if(!h) return null;
@@ -42,9 +48,9 @@ export const DUCK_ABSORB_FX_PATCH = `
     window.dealDamage = function(t){
       var d = orig.apply(this, arguments);
       try{
-        if(isDuck(t) && d > 0){
+        if(isTank(t) && d > 0){
           pop(t, d);
-          if(typeof pushLog === 'function') pushLog('ld', t.name + ' absorbe ' + d + ' de daño con su cuerpo de goma.');
+          if(typeof pushLog === 'function') pushLog('ld', t.name + ' absorbe ' + d + ' de daño tanqueando por sus aliados.');
         }
       }catch(e){}
       return d;
