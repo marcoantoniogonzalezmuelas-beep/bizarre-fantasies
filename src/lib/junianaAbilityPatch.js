@@ -89,14 +89,17 @@ export const JUNIANA_ABILITY_PATCH = `
   function fxCss(){
     if(document.getElementById('bf-refract-fx-css')) return;
     var st=document.createElement('style'); st.id='bf-refract-fx-css';
-    st.textContent='.bf-refract-mirror{position:fixed;z-index:9999;pointer-events:none;width:46px;height:60px;border-radius:23px/30px;transform:translate(-50%,-50%);background:linear-gradient(135deg,#fff,#dff3ff 28%,#c79bff 58%,#fff);border:3px solid #f3e4ff;box-shadow:0 0 26px #c79bff,inset 0 0 16px rgba(255,255,255,.9);animation:bfMirrorPop 1s ease-out forwards}'
-      +'.bf-refract-beam{position:fixed;z-index:9998;pointer-events:none;height:10px;border-radius:999px;transform-origin:0 50%;background:linear-gradient(90deg,#fff,#e9d4ff 30%,#c79bff 70%,rgba(199,155,255,0));box-shadow:0 0 22px #c79bff,0 0 44px rgba(199,155,255,.6);animation:bfBeamShoot .8s ease-out forwards}'
-      +'@keyframes bfMirrorPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-18deg)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(6deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1) rotate(0)}}'
-      +'@keyframes bfBeamShoot{0%{opacity:0;transform:scaleX(.05)}20%{opacity:1}70%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:scaleX(1)}}';
+    st.textContent='.bf-refract-mirror{position:fixed;z-index:9999;pointer-events:none;width:56px;height:72px;border-radius:28px/36px;transform:translate(-50%,-50%);background:linear-gradient(135deg,#fff,#dff3ff 28%,#c79bff 58%,#fff);border:3px solid #f3e4ff;box-shadow:0 0 26px #c79bff,inset 0 0 16px rgba(255,255,255,.9);animation:bfMirrorPop 2.4s ease-out forwards}'
+      +'.bf-refract-beam{position:fixed;z-index:9998;pointer-events:none;height:12px;border-radius:999px;transform-origin:0 50%;background:linear-gradient(90deg,#fff,#e9d4ff 30%,#c79bff 70%,rgba(199,155,255,0));box-shadow:0 0 22px #c79bff,0 0 44px rgba(199,155,255,.6);animation:bfBeamShoot 2.2s ease-out forwards}'
+      +'.bf-refract-num{position:fixed;z-index:10000;pointer-events:none;transform:translate(-50%,-50%);font-family:Cinzel,serif;font-weight:1000;font-size:34px;color:#e9d4ff;text-shadow:0 0 14px #c79bff,0 0 26px rgba(199,155,255,.85),0 3px 6px #000;white-space:nowrap;animation:bfRefractNum 2.2s ease-out forwards}'
+      +'.bf-refract-num small{display:block;font-family:Rubik,sans-serif;font-size:11px;letter-spacing:2px;color:#fff;opacity:.9}'
+      +'@keyframes bfMirrorPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-18deg)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.2) rotate(6deg)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.05) rotate(-2deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1) rotate(0)}}'
+      +'@keyframes bfBeamShoot{0%{opacity:0;transform:scaleX(.05)}12%{opacity:1}80%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:scaleX(1)}}'
+      +'@keyframes bfRefractNum{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}14%{opacity:1;transform:translate(-50%,-90%) scale(1.25)}75%{opacity:1;transform:translate(-50%,-120%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-165%) scale(1)}}';
     document.head.appendChild(st);
   }
   function center(el){ if(!el) return null; var r=el.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; }
-  function beam(fromEl,toEl){
+  function beam(fromEl,toEl,dmg){
     var a=center(fromEl), b=center(toEl);
     if(!a||!b) return;
     fxCss();
@@ -108,7 +111,15 @@ export const JUNIANA_ABILITY_PATCH = `
     bm.style.left=a.x+'px'; bm.style.top=(a.y-5)+'px'; bm.style.width=len+'px';
     bm.style.transform='rotate('+(Math.atan2(dy,dx)*180/Math.PI)+'deg)';
     (window.__bfAppend||function(x){document.body.appendChild(x);})(bm);
-    setTimeout(function(){ if(m.parentNode)m.remove(); if(bm.parentNode)bm.remove(); },1060);
+    // Número del daño refractado sobre el objetivo, bien visible.
+    var nm=null;
+    if(dmg>0){
+      nm=document.createElement('div'); nm.className='bf-refract-num';
+      nm.style.left=b.x+'px'; nm.style.top=b.y+'px';
+      nm.innerHTML='\\u2726 -'+dmg+'<small>REFRACCI\\u00d3N</small>';
+      (window.__bfAppend||function(x){document.body.appendChild(x);})(nm);
+    }
+    setTimeout(function(){ if(m.parentNode)m.remove(); if(bm.parentNode)bm.remove(); if(nm&&nm.parentNode)nm.remove(); },2500);
   }
   function card(side,id){ return document.getElementById('b_'+side+'_'+id); }
 
@@ -145,7 +156,7 @@ export const JUNIANA_ABILITY_PATCH = `
               dmg=Math.ceil(dealt/2);
             }
             victims.forEach(function(v){
-              beam(src,card(atkSide,v.id));
+              beam(src,card(atkSide,v.id),dmg);
               orig.call(window,v,dmg,{type:'spell',element:'arcano',bfReflect:true});
               if(typeof pushFx==='function') pushFx({k:'spell',toSide:atkSide,toId:v.id,el:'arcano'});
             });
