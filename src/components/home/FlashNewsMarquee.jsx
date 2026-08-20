@@ -28,8 +28,12 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
       // maquetación): sitúa el cartel justo debajo de los iconos del menú
       // (Aprende a jugar · Habitación Bizarra · Top Ranking), con margen.
       const scale = iframe.getBoundingClientRect().width / (iframe.offsetWidth || 1280);
-      const r = links.getBoundingClientRect();
-      setTopY((r.bottom + 22) * scale);
+      // Posición de MAQUETACIÓN (offsetTop acumulado), no getBoundingClientRect:
+      // así el pellizco dentro del juego no desplaza el cartel; este se queda
+      // fijo y solo cambia de tamaño proporcionalmente.
+      let y = 0, el = links;
+      while (el) { y += el.offsetTop || 0; el = el.offsetParent; }
+      setTopY((y + (links.offsetHeight || 0) + 22) * scale);
     };
     measure();
     const iv = setInterval(measure, 500);
