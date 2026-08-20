@@ -29,8 +29,12 @@ export const ACTION_PANEL_STABLE_PATCH = `
         get:function(){ return desc.get.call(this); },
         set:function(v){
           var s=String(v);
-          if(this.__bfIhLast===s)return; // mismo HTML: no tocar el DOM
-          this.__bfIhLast=s;
+          // Se compara con el HTML REAL que hay ahora en pantalla, no con la
+          // última asignación memorizada: si otro parche tocó el panel por su
+          // cuenta, la memoria quedaba desfasada y el juego no podía volver a
+          // pintar el contenido correcto (p.ej. el cuadro de "elige objetivo"
+          // no aparecía y el turno se quedaba encallado).
+          try{ if(desc.get.call(this)===s)return; }catch(e){}
           desc.set.call(this,s);
         }
       });
