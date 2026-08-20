@@ -319,7 +319,16 @@ export const ABILITY_ANIM_PATCH = `
     // otra cinemática 3D, también el golpe mortal (#bf-kill-ov) y las cartas
     // especiales (#bf-spec-cine). Así nunca se solapan (p.ej. la curación de
     // la IA encima de la cinemática de muerte).
-    if(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')){
+    // También se espera a que terminen los EFECTOS VISUALES de la acción
+    // anterior (disparos, impactos, números de daño/curación): si Surucho está
+    // lanzando sus flechas, la cinemática de la poción de la IA espera su turno
+    // en vez de colarse por encima.
+    var fxOn=false;
+    try{
+      var fxl=document.getElementById('bf-fx-layer');
+      fxOn=!!((fxl&&fxl.children.length)||document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop'));
+    }catch(e){}
+    if(fxOn||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')){
       // Si la cinemática en curso o ya en cola es la MISMA (misma URL), no la
       // encola de nuevo: evita que se repita la misma animación.
       if(playingUrl===url)return;

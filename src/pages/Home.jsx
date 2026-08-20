@@ -439,7 +439,9 @@ export default function Home() {
   // Zoom de pellizco dentro del juego: los accesos y el cartel crecen con el
   // mismo factor para mantener la proporción con los botones del juego.
   const [pinchZ, setPinchZ] = useState(1);
-  const overlayScale = IS_MOBILE ? Math.max(mobScale, 0.62) * pinchZ : 1;
+  // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
+  // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
+  const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
