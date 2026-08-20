@@ -7,12 +7,15 @@ import { getLang } from '@/lib/i18n';
 // juego), igual que en escritorio. No flota ni se mueve con el pellizco: solo
 // se amplía/reduce con el zoom nativo del navegador, igual que los botones del
 // Oráculo, Reglas y Razas. Las noticias las gestiona el admin (entidad FlashNews).
-export default function FlashNewsMarquee({ mobScale = 1 }) {
+export default function FlashNewsMarquee({ mobScale = 1, pinch = { z: 1, tx: 0, ty: 0 } }) {
   const [items, setItems] = useState([]);
   const [closed, setClosed] = useState(() => { try { return sessionStorage.getItem('bfSignClosed') === '1'; } catch (e) { return false; } });
   const [enabled, setEnabled] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [topY, setTopY] = useState(null);
+  // Ancla del cartel en coordenadas de MAQUETACIÓN del juego (dentro del
+  // iframe) + escala con la que se pinta el iframe. Con el zoom de pellizco se
+  // recalcula la posición visual para que el cartel viaje CON el juego.
+  const [anchor, setAnchor] = useState(null);
 
   // Mide la posición del título del juego dentro del iframe para sentar el
   // cartel justo debajo. En móvil/tablet el iframe lleva `zoom: mobScale`, así
@@ -34,9 +37,13 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
       // Posición de MAQUETACIÓN (offsetTop acumulado), no getBoundingClientRect:
       // así el pellizco dentro del juego no desplaza el cartel; este se queda
       // fijo y solo cambia de tamaño proporcionalmente.
-      let y = 0, el = links;
-      while (el) { y += el.offsetTop || 0; el = el.offsetParent; }
-      setTopY((y + (links.offsetHeight || 0) + 22) * scale);
+      let y = 0, x = 0, el = links;
+      while (el) { y += el.offsetTop || 0; x += el.offsetLeft || 0; el = el.offsetParent; }
+      setAnchor({
+        y: y + (links.offsetHeight || 0) + 22,
+        x: x + (links.offsetWidth || 0) / 2,
+        scale,
+      });
     };
     measure();
     const iv = setInterval(measure, 500);
@@ -76,14 +83,20 @@ export default function FlashNewsMarquee({ mobScale = 1 }) {
     return () => clearInterval(iv);
   }, []);
 
-  if (!items.length || closed || !enabled || modalOpen || topY == null) return null;
+  if (!items.length || closed || !enabled || modalOpen || !anchor) return null;
+  const z = pinch.z || 1;
+  // El juego se transforma con translate(tx,ty) scale(z) dentro del iframe, y el
+  // iframe se pinta a `anchor.scale`. Aplicando lo mismo al cartel, este queda
+  // pegado a su sitio del juego en vez de flotar sobre la pantalla.
+  const top = (anchor.y * z + (pinch.ty || 0)) * anchor.scale;
+  const left = (anchor.x * z + (pinch.tx || 0)) * anchor.scale;
   const isEn = getLang() === 'en';
   const label = isEn ? 'NEWS' : 'ACTUALIDAD';
   const joined = items.map((i) => (isEn ? (i.text_en || i.text) : i.text)).join('      ◆      ');
 
   return (
     <div
-      style={{ position: 'fixed', left: '50%', top: topY, transform: `translateX(-50%) scale(${mobScale})`, transformOrigin: 'center top' }}
+      style={{ position: 'fixed', left, top, transform: `translateX(-50%) scale(${mobScale * z})`, transformOrigin: 'center top' }}
       className="bf-home-flash bf-led-sign pointer-events-auto z-40 w-[86vw] max-w-[560px] overflow-hidden rounded-2xl border border-[#ffd24a]/55 bg-[#0a0700] px-3 py-1 shadow-[0_8px_28px_rgba(0,0,0,.7),0_0_20px_rgba(255,210,74,.28)] lg:max-w-[760px] lg:px-4 lg:py-2.5"
     >
       <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd24a] to-transparent opacity-80" />

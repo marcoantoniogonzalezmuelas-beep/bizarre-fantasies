@@ -440,6 +440,9 @@ export default function Home() {
   // Zoom de pellizco dentro del juego: los accesos y el cartel crecen con el
   // mismo factor para mantener la proporción con los botones del juego.
   const [pinchZ, setPinchZ] = useState(1);
+  // Zoom + desplazamiento del pellizco dentro del juego: el cartel de
+  // actualidad los aplica igual para quedarse pegado a su sitio del juego.
+  const [pinchState, setPinchState] = useState({ z: 1, tx: 0, ty: 0 });
   // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
   // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
   const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
@@ -635,7 +638,9 @@ export default function Home() {
       // Pellizco dentro del juego: congela también las animaciones de los
       // elementos que viven fuera del iframe (cartel de actualidad, accesos).
       if (e.data && e.data.bfPinch && typeof e.data.bfPinch.z === 'number') {
-        setPinchZ(Math.max(1, Math.min(4, e.data.bfPinch.z)));
+        const z = Math.max(1, Math.min(4, e.data.bfPinch.z));
+        setPinchZ(z);
+        setPinchState({ z, tx: e.data.bfPinch.tx || 0, ty: e.data.bfPinch.ty || 0 });
       }
       if (e.data && typeof e.data.bfPinching === 'boolean') {
         document.documentElement.classList.toggle('bf-pinching', e.data.bfPinching);
@@ -1012,9 +1017,9 @@ export default function Home() {
 
   return (
     <div className={`fixed inset-0 overflow-hidden bg-[#0e0a16] ${IS_MOBILE ? 'bf-mobile-home' : ''}`}>
-      {/* El cartel de Actualidad NO se escala con el pellizco: mantiene su
-        tamaño y su sitio (solo se ajusta al encaje del juego en pantalla). */}
-      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? Math.max(mobScale, 0.62) : 1} />}
+      {/* El cartel de Actualidad viaja CON el juego: aplica el mismo zoom y
+        desplazamiento del pellizco, así no flota sobre la pantalla. */}
+      {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} pinch={IS_MOBILE ? pinchState : { z: 1, tx: 0, ty: 0 }} />}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
