@@ -16,17 +16,20 @@ export const NICK_MEMORY_PATCH = `
   }
 
   // Autocompleta el nick guardado en los campos propios (no en el del J2).
+  // Se rellena SIEMPRE que el campo esté vacío o con el genérico "Jugador N",
+  // incluidos los formularios que el juego dibuja después (crear/unirse a sala),
+  // para que el jugador no tenga que volver a escribir su nick.
   function prefill(){
     var saved=getNick();
     if(!saved)return;
-    ['p1name','hname','jname'].forEach(function(id){
-      var i=document.getElementById(id);
-      if(!i||i.dataset.bfNickMem==='1')return;
+    var fields=['p1name','hname','jname'].map(function(id){return document.getElementById(id);});
+    document.querySelectorAll('#s-lobby input[id*="name" i]').forEach(function(i){
+      if(i.id!=='p2name'&&fields.indexOf(i)===-1)fields.push(i);
+    });
+    fields.forEach(function(i){
+      if(!i||i===document.activeElement)return;
       var cur=String(i.value).trim();
-      if(!cur||/^jugador(\\s*\\d+)?$/i.test(cur)){
-        i.value=saved;
-        i.dataset.bfNickMem='1';
-      }
+      if(!cur||/^jugador(\\s*\\d+)?$/i.test(cur))i.value=saved;
     });
   }
 
