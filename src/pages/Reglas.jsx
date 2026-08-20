@@ -4,6 +4,7 @@ import { BookOpen, Target } from 'lucide-react';
 import { t, getLang } from '@/lib/i18n';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
 import FumbleRulesSection from '@/components/rules/FumbleRulesSection';
+import MobileHandRulesSection from '@/components/rules/MobileHandRulesSection';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png';
@@ -204,6 +205,8 @@ export default function Reglas() {
           </div>
 
           <FumbleRulesSection />
+
+          <MobileHandRulesSection />
 
           <div className="rounded-2xl bg-gradient-to-br from-[#1c102e]/80 to-[#0c0714]/90 border border-[#ffd24a]/35 p-5 mb-5">
             <div className="font-heading font-black text-[#ffd24a] text-lg mb-3">🎮 {L('Modos de juego', 'Game modes')}</div>
