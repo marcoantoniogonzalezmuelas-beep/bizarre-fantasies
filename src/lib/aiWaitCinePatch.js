@@ -27,7 +27,7 @@ export const AI_WAIT_CINE_PATCH = `
   // después de que el efecto visual del disparo/golpe termine. Sin este margen,
   // la IA se colaba justo en ese hueco y su animación se solapaba con el golpe
   // mortal. Se exige que no haya nada en pantalla durante 700 ms seguidos.
-  var QUIET_MS=700;
+  var QUIET_MS=900;
 
   function install(){
     if(typeof window.aiTurn!=='function'||window.aiTurn.__bfWaitCine)return false;
