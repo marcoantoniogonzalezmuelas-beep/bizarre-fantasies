@@ -23,14 +23,22 @@ export const AI_WAIT_CINE_PATCH = `
   }
   function busy(){ return !!document.querySelector(CINE_SEL)||fxBusy(); }
 
+  // Margen de calma: la cinemática de GOLPE MORTAL se crea unos instantes
+  // después de que el efecto visual del disparo/golpe termine. Sin este margen,
+  // la IA se colaba justo en ese hueco y su animación se solapaba con el golpe
+  // mortal. Se exige que no haya nada en pantalla durante 700 ms seguidos.
+  var QUIET_MS=700;
+
   function install(){
     if(typeof window.aiTurn!=='function'||window.aiTurn.__bfWaitCine)return false;
     var orig=window.aiTurn;
     window.aiTurn=function(h,side){
-      var self=this,t0=Date.now();
+      var self=this,t0=Date.now(),quietFrom=0;
       (function tick(){
         if(window.B&&window.B.over)return;
-        if(busy()&&Date.now()-t0<8000){
+        if(busy())quietFrom=0;
+        else if(!quietFrom)quietFrom=Date.now();
+        if((busy()||Date.now()-quietFrom<QUIET_MS)&&Date.now()-t0<9000){
           // Sigue habiendo una animación: la IA espera y se re-arma el
           // vigilante para que no fuerce el turno mientras tanto.
           try{ if(typeof window.armWatchdog==='function'){ if(typeof window.clearWatchdog==='function')window.clearWatchdog(); window.armWatchdog(); } }catch(e){}
