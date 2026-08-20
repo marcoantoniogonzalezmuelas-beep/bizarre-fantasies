@@ -77,26 +77,6 @@ export const MOBILE_PINCH_PATCH = `
     else ty = Math.min(0, Math.max(-marginY, ty));
   }
 
-  // LÍMITE DE ZOOM POR TAMAÑO DE CAPA: al escalar el body, el navegador tiene
-  // que rasterizar una textura de W*z × H*z. Si supera el máximo de la GPU
-  // (~4096 px en móvil), las zonas que no caben se pintan NEGRAS (media
-  // pantalla en negro al hacer zoom en la subasta). Se limita el zoom máximo
-  // para que la capa nunca pase de ~3600 px en ningún eje.
-  var MAX_LAYER = 3600;
-  function maxZoom(){
-    var W = window.innerWidth || 1280;
-    var H = Math.max(window.innerHeight || 800, document.documentElement.scrollHeight || 0);
-    return Math.max(1.2, Math.min(4, MAX_LAYER / W, MAX_LAYER / H));
-  }
-
-  // Fuerza al navegador a re-rasterizar la capa del body: tras un pellizco,
-  // algunas zonas pueden quedar sin pintar (negras) hasta el siguiente repintado.
-  function repaint(){
-    var b = document.body;
-    b.style.opacity = '0.999';
-    requestAnimationFrame(function(){ b.style.opacity = ''; });
-  }
-
   function dist(t){ var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.hypot(dx, dy); }
   function mid(t){ return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 }; }
 
@@ -146,7 +126,7 @@ export const MOBILE_PINCH_PATCH = `
     if (!samePair(e.touches)) { startPinch(e.touches); return; }
     var d = dist(e.touches), c = mid(e.touches);
     if (!pinch.d0) return;
-    var nz = Math.min(maxZoom(), Math.max(1, pinch.z0 * (d / pinch.d0)));
+    var nz = Math.min(4, Math.max(1, pinch.z0 * (d / pinch.d0)));
     var px = (pinch.c0.x - pinch.tx0) / pinch.z0;
     var py = (pinch.c0.y - pinch.ty0) / pinch.z0;
     z = nz;
@@ -171,11 +151,9 @@ export const MOBILE_PINCH_PATCH = `
     var b = document.body;
     b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
     if (z < 1.05) { z = 1; tx = 0; ty = 0; }
-    if (z > maxZoom()) z = maxZoom();
     clampT();
     applyNow();
     flushMsg();
-    setTimeout(repaint, 300);
     // will-change se quita tras la transición (con margen) para evitar el
     // parpadeo de desmontar la capa a mitad de la animación.
     disableWC(360);

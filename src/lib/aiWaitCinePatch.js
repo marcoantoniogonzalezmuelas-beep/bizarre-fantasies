@@ -12,6 +12,17 @@ export const AI_WAIT_CINE_PATCH = `
 
   var CINE_SEL='#bf-abil-anim,#bf-spec-cine,#bf-kill-ov';
 
+  // Además de las cinemáticas, se espera a que terminen los efectos visuales
+  // de la acción anterior (proyectiles, impactos, números de daño/curación,
+  // marcadores de absorción): mientras la capa de FX tenga algo en pantalla,
+  // la IA no encadena su acción.
+  function fxBusy(){
+    var l=document.getElementById('bf-fx-layer');
+    if(l&&l.children.length)return true;
+    return !!document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop');
+  }
+  function busy(){ return !!document.querySelector(CINE_SEL)||fxBusy(); }
+
   function install(){
     if(typeof window.aiTurn!=='function'||window.aiTurn.__bfWaitCine)return false;
     var orig=window.aiTurn;
@@ -19,7 +30,7 @@ export const AI_WAIT_CINE_PATCH = `
       var self=this,t0=Date.now();
       (function tick(){
         if(window.B&&window.B.over)return;
-        if(document.querySelector(CINE_SEL)&&Date.now()-t0<8000){
+        if(busy()&&Date.now()-t0<8000){
           // Sigue habiendo una animación: la IA espera y se re-arma el
           // vigilante para que no fuerce el turno mientras tanto.
           try{ if(typeof window.armWatchdog==='function'){ if(typeof window.clearWatchdog==='function')window.clearWatchdog(); window.armWatchdog(); } }catch(e){}
