@@ -80,10 +80,31 @@ export const ACTION_FOCUS_PATCH = `
     window.flushFx.__bfFocus=1;
   }
 
-  function hook(){ hookAbility(); hookFlush(); }
+  // 3) Hechizos y objetos: al lanzarse (desde la mano o desde el menú), la
+  // vista sube al campo de batalla para que se vean las animaciones.
+  function toTop(){
+    try{ if(window.__bfPinchReset)window.__bfPinchReset(); }catch(e){}
+    try{ window.scrollTo({top:0,left:0,behavior:'auto'}); }catch(e){ window.scrollTo(0,0); }
+    try{
+      var se=document.scrollingElement||document.documentElement;
+      se.scrollTop=0; se.scrollLeft=0;
+      document.body.scrollTop=0; document.body.scrollLeft=0;
+    }catch(e){}
+  }
+  window.__bfFocusTop=toTop;
+
+  function hookPlay(name){
+    var fn=window[name];
+    if(typeof fn!=='function'||fn.__bfFocus)return;
+    window[name]=function(){ try{toTop();}catch(e){} return fn.apply(this,arguments); };
+    window[name].__bfFocus=1;
+  }
+  function hookSpellsItems(){ hookPlay('castSpell'); hookPlay('useItem'); }
+
+  function hook(){ hookAbility(); hookFlush(); hookSpellsItems(); }
   var iv=setInterval(function(){
     hook();
-    if(window.useAbility&&window.useAbility.__bfFocus&&window.__bfFocusFlushInstalled)clearInterval(iv);
+    if(window.useAbility&&window.useAbility.__bfFocus&&window.__bfFocusFlushInstalled&&window.castSpell&&window.castSpell.__bfFocus&&window.useItem&&window.useItem.__bfFocus)clearInterval(iv);
   },200);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook); else hook();
 })();
