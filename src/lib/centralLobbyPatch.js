@@ -1,4 +1,12 @@
 export const CENTRAL_LOBBY_PATCH = `
+<style id="bf-lobby-ready-css">
+/* Al entrar en "Salas online" el juego pinta primero SU lista nativa y un
+   instante después llega la lista central ya decorada (instrucciones,
+   avatares, Habitación Bizarra…). Ese primer pintado se oculta para que solo
+   se vea la pantalla definitiva. */
+#s-lobby .setup-box{visibility:hidden}
+#s-lobby.bf-lobby-ready .setup-box{visibility:visible}
+</style>
 <script>
 (function(){
   if(window.__bfCentralLobby)return;
@@ -203,8 +211,10 @@ export const CENTRAL_LOBBY_PATCH = `
         '💡 También puedes jugar <b style="color:#ffe49a">Local</b> (2 jugadores en este dispositivo) o contra la <b style="color:#ffe49a">IA</b> (4 niveles) desde el menú principal.</div>';
     box.insertBefore(div,box.firstChild);
   }
+  function revealLobby(){var s=document.getElementById('s-lobby');if(s)s.classList.add('bf-lobby-ready');}
   function renderCentralList(){
     if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateRoomAvatars();decorateResumeRooms();injectResumeCard();injectLobbyInstructions();}
+    revealLobby();
   }
   function centralList(){
     if(typeof LOBBY==='undefined')return;
@@ -214,7 +224,12 @@ export const CENTRAL_LOBBY_PATCH = `
 
   function install(){
     if(typeof LOBBY==='undefined'||typeof window.hostCreate!=='function'||typeof window.renderRoomList!=='function')return false;
-    window.lobbyConnect=function(){LOBBY.role='central';centralList();};
+    window.lobbyConnect=function(){
+      // Oculta el primer pintado nativo hasta que la lista central esté lista.
+      var s=document.getElementById('s-lobby');if(s)s.classList.remove('bf-lobby-ready');
+      setTimeout(revealLobby,2500);
+      LOBBY.role='central';centralList();
+    };
     window.refreshList=centralList;
     window.dirRegister=function(code,name,hasPass){
       LOBBY._reg={code:code,name:name,hasPass:hasPass,confirmed:false};
@@ -365,6 +380,15 @@ export const CENTRAL_LOBBY_PATCH = `
   var tries=0,timer=setInterval(function(){if(install()||tries++>50)clearInterval(timer);},100);
   // Re-aplica la guarda del botón "Crear sala" si el juego re-renderiza el form.
   setInterval(function(){if(typeof isLobby==='function'&&isLobby())bfGuardCreateButton();},1500);
+  // Seguro: si el lobby se muestra por otra vía y la lista central no llega,
+  // se revela igualmente para no dejar la pantalla en blanco.
+  var lobbyTicks=0;
+  setInterval(function(){
+    var s=document.getElementById('s-lobby');
+    if(!s||!(typeof isLobby==='function'&&isLobby())){lobbyTicks=0;return;}
+    if(s.classList.contains('bf-lobby-ready')){lobbyTicks=0;return;}
+    if(++lobbyTicks>5)revealLobby();
+  },500);
   // Refresco frecuente (8s) para que las salas nuevas aparezcan enseguida;
   // el "toque" del host mantiene su sala visible en el servidor cada ~24s.
   var tick=0;

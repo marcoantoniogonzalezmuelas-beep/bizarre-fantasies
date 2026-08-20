@@ -22,7 +22,9 @@ export const NICK_MEMORY_PATCH = `
   function prefill(){
     var saved=getNick();
     if(!saved)return;
-    var fields=['p1name','hname','jname'].map(function(id){return document.getElementById(id);});
+    // 'jlname' = campo de nick del formulario "Unirse" que abre una sala de la
+    // lista (puede vivir fuera de #s-lobby, en un modal).
+    var fields=['p1name','hname','jname','jlname'].map(function(id){return document.getElementById(id);});
     document.querySelectorAll('#s-lobby input[id*="name" i]').forEach(function(i){
       if(i.id!=='p2name'&&fields.indexOf(i)===-1)fields.push(i);
     });

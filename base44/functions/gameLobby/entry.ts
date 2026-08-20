@@ -9,6 +9,9 @@ Deno.serve(async (req) => {
     const token = String(body.token || '').slice(0, 80);
     const cutoff = Date.now() - 90000;
     const LEFT_TTL = 300000; // 5 minutos tras salir un jugador
+    // Una sala creada y en espera vive SIEMPRE 5 minutos (visible sin
+    // intermitencias). Pasados los 5 minutos sin que nadie se una, se borra.
+    const WAITING_TTL = 300000;
 
     // Borra una sala y su caché asociada (mensajes de chat de la sala).
     async function deleteRoomFully(room: any) {
@@ -27,11 +30,12 @@ Deno.serve(async (req) => {
         const now = Date.now();
         for (const room of all) {
           const upd = Date.parse(room.updated_date || room.created_date || 0);
+          const created = Date.parse(room.created_date || room.updated_date || 0);
           const leftAt = room.left_at || room.state?.left_at;
           const stale =
             room.status === 'finished' ||
             (leftAt && now - leftAt > LEFT_TTL) ||
-            (room.status === 'waiting' && now - upd > 600000) ||
+            (room.status === 'waiting' && now - created > WAITING_TTL) ||
             ((room.status === 'playing' || room.status === 'resuming') && now - upd > 10800000);
           if (stale) await deleteRoomFully(room);
         }
@@ -243,7 +247,10 @@ Deno.serve(async (req) => {
       ]);
       const rooms: any[] = [];
       waitingRecords
-        .filter((room) => Date.parse(room.updated_date || room.created_date || 0) >= cutoff)
+        // La sala en espera se mantiene visible 5 minutos completos desde su
+        // creación, sin depender de los "toques" del anfitrión (antes
+        // aparecía y desaparecía de la lista).
+        .filter((room) => Date.now() - Date.parse(room.created_date || room.updated_date || 0) < WAITING_TTL)
         .forEach((room) => {
           rooms.push({
             id: room.room_code,
