@@ -46,8 +46,10 @@ export const JUNIANA_ABILITY_PATCH = `
       try{
         h._bfRefract = true;
         h.abilityUsed = true;
+        // Cinemática 3D en el momento EXACTO de la activación (normal o élite).
+        // force=true: ignora el antirrebote para que nunca se salte.
         if(typeof window.__bfPlayAbilityAnim === 'function'){
-          try{ window.__bfPlayAbilityAnim(side, h); }catch(e){}
+          try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){}
         }
         var name = h.eliteMode ? (h.eAbility || h.ability || h.name) : (h.ability || h.name);
         if(typeof pushLog === 'function') pushLog('li', name + ' se activa: reflejar\\u00e1 el da\\u00f1o recibido mientras siga viva.');

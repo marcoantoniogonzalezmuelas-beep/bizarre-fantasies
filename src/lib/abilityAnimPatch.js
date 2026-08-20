@@ -370,11 +370,14 @@ export const ABILITY_ANIM_PATCH = `
   // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso
   // lanzaba la misma animación dos veces.
   var lastPlay={};
-  function playAnim(side,hero){
+  function playAnim(side,hero,force){
     if(!hero)return;
     var entry=lookup(hero);
     if(!entry)return;
     var pk=(side||'')+'_'+(hero.id||hero.name||'');
+    // force: la habilidad se acaba de ACTIVAR (p.ej. Juniana) — se ignora el
+    // antirrebote para que la cinemática se vea siempre en ese momento.
+    if(force)delete lastPlay[pk];
     if(lastPlay[pk]&&Date.now()-lastPlay[pk]<9000)return;
     lastPlay[pk]=Date.now();
     var isElite=!!hero.eliteMode;
@@ -501,26 +504,6 @@ export const ABILITY_ANIM_PATCH = `
     };
     return true;
   }
-  // Hook sobre dealDamage: detecta cuando una habilidad PASIVA (como
-  // reflect-damage de Juniana) se activa al recibir daño. Estas habilidades
-  // no pasan por useAbility ni marcan abilityUsed, así que sin este hook la
-  // cinemática 3D nunca se dispararía.
-  function installDealDamage(){
-    if(typeof window.dealDamage!=='function'||window.__bfAbilityAnimDealDamageHooked)return false;
-    window.__bfAbilityAnimDealDamageHooked=true;
-    var orig=window.dealDamage;
-    window.dealDamage=function(target,dmg,opts){
-      try{
-        if(target&&target.akind==='reflect-damage'&&Number(dmg)>0&&!(opts&&opts.bfReflect)){
-          var side=sideOf(target);
-          if(side)playAnim(side,target);
-        }
-      }catch(e){}
-      return orig.apply(this,arguments);
-    };
-    return true;
-  }
-
   // Escaneo periódico: detecta abilityUsed false->true. Funciona en AMBOS
   // jugadores online (G.team viaja en el snapshot).
   var prev={};
@@ -544,10 +527,6 @@ export const ABILITY_ANIM_PATCH = `
     // parches (Transformer), así que se reintenta hasta que ambos existan.
     installSpell();
     installItem();
-    // Hook de daño: detecta habilidades pasivas (reflect-damage) que no pasan
-    // por useAbility. dealDamage puede ser envuelto por otros parches, así que
-    // se reintenta hasta que exista.
-    installDealDamage();
   },150);
 })();
 </script>
