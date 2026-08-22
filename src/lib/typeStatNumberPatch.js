@@ -11,7 +11,9 @@ export const TYPE_STAT_NUMBER_PATCH = `
   var COLORS = { cc:'#ff6a5f', ad:'#54e876', he:'#b06cff' };
 
   var st = document.createElement('style');
-  st.textContent = '.bf-type-num{display:inline-block;margin-left:3px;font-family:Rubik,sans-serif;font-weight:900;font-size:12px;line-height:1;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}';
+  st.textContent = '.bf-type-num{display:inline-block;margin-left:3px;font-family:Rubik,sans-serif;font-weight:900;font-size:15px;line-height:1;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}'+
+    '.bf-more-stats{display:inline-block;margin-left:4px;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;color:#d8cfae;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}'+
+    '.bf-more-stats b{font-weight:900}';
   document.head.appendChild(st);
 
   function keyOf(t){
@@ -54,6 +56,22 @@ export const TYPE_STAT_NUMBER_PATCH = `
       }
       var txt = String(v);
       if(num.textContent !== txt) num.textContent = txt;
+      // TODOS los stats, no solo el propio del tipo: tras el número principal
+      // se muestran también los otros dos (CC/AD/HE), cada uno con su color.
+      var more = tag.querySelector('.bf-more-stats');
+      if(!more){
+        more = document.createElement('span');
+        more.className = 'bf-more-stats';
+        num.parentNode.insertBefore(more, num.nextSibling);
+      }
+      var html = '';
+      ['cc','ad','he'].forEach(function(x){
+        if(x === k) return;
+        var vv = effStat(h, x);
+        if(vv == null) return;
+        html += ' · <b style="color:' + COLORS[x] + '">' + x.toUpperCase() + ' ' + vv + '</b>';
+      });
+      if(more.__bfHtml !== html){ more.__bfHtml = html; more.innerHTML = html; }
     });
   }
 

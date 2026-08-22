@@ -46,12 +46,12 @@ export const BATTLE_ZOOM_PATCH = `
         // Igual que en la fase de equipamiento: se abre la CARTA completa
         // (con stats, habilidad y giro Normal/Élite). Si por lo que sea no
         // está disponible, se muestra la ilustración como respaldo.
-        var id = card.id.slice(2), side = '', h = null;
+        // id formato b_p_<id> / b_o_<id>: antes se recortaba mal (slice(2)
+        // dejaba "p_<id>") y la carta nunca se encontraba → la lupa no abría.
+        var m = String(card.id || '').match(/^b_([po])_(.+)$/);
+        var side = m ? m[1] : '', id = m ? m[2] : '', h = null;
         try{
-          ['p','o'].forEach(function(s){
-            var f = (G.team[s]||[]).find(function(x){ return x && x.id === id; });
-            if(f && !h){ h = f; side = s; }
-          });
+          h = (G.team[side] || []).find(function(x){ return x && x.id === id; }) || null;
         }catch(e2){}
         if(typeof window.bfZoomCard === 'function'){
           window.bfZoomCard(id, (h && h.eliteMode) ? 'elite' : 'normal', side);

@@ -18,11 +18,11 @@ export const SPEED_GAUGE_PATCH = `
 
   var css = ''+
   // Píldora de velocidad (batalla, stat row)
-  '.bf-vel-pill{display:inline-flex;align-items:center;gap:2px;font-family:Rubik,sans-serif;font-weight:900;font-size:13px;line-height:1;color:#ffd24a;white-space:nowrap}'+
+  '.bf-vel-pill{display:inline-flex;align-items:center;gap:2px;font-family:Rubik,sans-serif;font-weight:900;font-size:16px;line-height:1;color:#ffd24a;white-space:nowrap}'+
   '.bf-vel-pill.bf-vel-fast{color:#fff5cc;text-shadow:0 0 8px rgba(255,210,74,.9),0 1px 2px #000;filter:drop-shadow(0 0 5px rgba(255,210,74,.7));animation:bfVelPulse 1.8s ease-in-out infinite}'+
-  '.bf-vel-pill .bf-vel-ico{font-size:13px;line-height:1}'+
+  '.bf-vel-pill .bf-vel-ico{font-size:15px;line-height:1}'+
   // Mini (barra de turnos y etiqueta de nombre)
-  '.bf-vel-mini{display:inline-flex;align-items:center;gap:1px;font-family:Rubik,sans-serif;font-weight:900;font-size:10px;line-height:1;color:#ffd24a;white-space:nowrap}'+
+  '.bf-vel-mini{display:inline-flex;align-items:center;gap:1px;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;color:#ffd24a;white-space:nowrap}'+
   '.bf-vel-mini.bf-vel-fast{color:#fff5cc;text-shadow:0 0 6px rgba(255,210,74,.9);filter:drop-shadow(0 0 4px rgba(255,210,74,.7))}'+
   // Sello en la carta de subasta (esquina superior central, prominente)
   '.bf-vel-auc{position:absolute;top:7px;left:50%;transform:translateX(-50%);z-index:8;display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;font-family:Rubik,sans-serif;font-size:13px;font-weight:900;letter-spacing:.3px;background:rgba(8,5,16,.85);border:1.5px solid rgba(255,210,74,.55);color:#ffd24a;backdrop-filter:blur(2px);white-space:nowrap;line-height:1}'+

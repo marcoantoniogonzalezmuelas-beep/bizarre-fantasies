@@ -22,6 +22,29 @@ export const STATUS_FREEZE_PATCH = `
   var st=document.createElement('style');
   st.textContent=css;
   document.head.appendChild(st);
+
+  // Movimiento residual: el CSS no puede parar las animaciones creadas por JS
+  // (Web Animations API) ni los transform inline que el juego re-escribe en
+  // cada frame. Este vigilante los cancela en los héroes con estado activo,
+  // dejándolos completamente quietos. Los efectos (daño, ráfagas) no se tocan.
+  var SEL='${STATUS_CLASSES.map((c) => '.bhero.' + c).join(',')}';
+  setInterval(function(){
+    document.querySelectorAll(SEL).forEach(function(card){
+      try{
+        if(card.getAnimations){
+          card.getAnimations({subtree:true}).forEach(function(a){
+            var t=a.effect&&a.effect.target;
+            if(t&&t.closest&&t.closest('.bf-ability-burst,.bf-fx,.bf-dmg,.bf-heal,.bf-absorb-pop'))return;
+            a.cancel();
+          });
+        }
+        card.querySelectorAll('[style*="transform"]').forEach(function(el){
+          if(el.closest('.bf-decor-layer,.bf-ability-burst,.bf-fx'))return;
+          if(el.style.transform&&el.style.transform!=='none')el.style.transform='none';
+        });
+      }catch(e){}
+    });
+  },350);
 })();
 </script>
 `;
