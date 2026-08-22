@@ -44,7 +44,9 @@ export const FAITHFUL_ABILITIES_PATCH = `
     };
   }
 
-  // Escudo regenerativo (Batu élite): al final de cada turno vuelve a su valor.
+  // Escudo regenerativo (Batu élite): se rellena al final de cada turno, pero
+  // cada vez con la MITAD del valor anterior (22 → 11 → 6 → 3 → 2 → 1 → 0), para
+  // que no sea un muro eterno.
   function hookShieldRegen(){
     if(window.__bfSrHook || typeof window.endTurn !== 'function') return;
     window.__bfSrHook = true;
@@ -53,9 +55,14 @@ export const FAITHFUL_ABILITIES_PATCH = `
       try{
         ['p','o'].forEach(function(s){
           L(s).forEach(function(x){
-            if(x._bfShieldRegen && x.shield < x._bfShieldRegen){
-              x.shield = x._bfShieldRegen;
+            if(!x._bfShieldRegen) return;
+            var next = x._bfShieldRegen <= 1 ? 0 : Math.ceil(x._bfShieldRegen / 2);
+            x._bfShieldRegen = next;
+            if(!next){ delete x._bfShieldRegen; log('li', x.name + ': su escudo ancestral se agota.'); return; }
+            if(x.shield < next){
+              x.shield = next;
               fx({ k:'shieldup', toSide: side_(x), toId: x.id });
+              log('lg', x.name + ' regenera su escudo ancestral a ' + next + '.');
             }
           });
         });
@@ -257,7 +264,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
       var v = c.el ? 22 : 14;
       c.t.shield += v;
       fx({k:'shieldup', toSide:side_(c.t), toId:c.t.id});
-      if(c.el){ c.t._bfShieldRegen = v; log('lg', c.h.name + ' da a ' + c.t.name + ' un escudo regenerativo de ' + v + '.'); }
+      if(c.el){ c.t._bfShieldRegen = v; log('lg', c.h.name + ' da a ' + c.t.name + ' un escudo regenerativo de ' + v + ' (cada turno se regenera a la mitad).'); }
       else log('lg', c.h.name + ' escuda ' + v + ' a ' + c.t.name + '.');
     },
     // Nixara élite — roba más HP y lo reparte entre los aliados
