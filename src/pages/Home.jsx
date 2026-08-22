@@ -1077,7 +1077,7 @@ export default function Home() {
         />
       )}
       {IS_MOBILE && !showOracle && (
-        <MobileExitButton onQuit={() => {
+        <MobileExitButton scale={mobScale * pinchZ} onQuit={() => {
           setLoading(true);
           try { iframeRef.current?.contentWindow?.postMessage({ bfQuitHome: true }, '*'); } catch (e) {}
         }} />
