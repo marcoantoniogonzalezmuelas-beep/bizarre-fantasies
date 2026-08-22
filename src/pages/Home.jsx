@@ -1074,6 +1074,12 @@ export default function Home() {
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
+      {IS_MOBILE && !showOracle && (
+        <MobileExitButton onQuit={() => {
+          setLoading(true);
+          try { iframeRef.current?.contentWindow?.postMessage({ bfQuitHome: true }, '*'); } catch (e) {}
+        }} />
+      )}
       <ChatOverlay />
     </div>
   );
