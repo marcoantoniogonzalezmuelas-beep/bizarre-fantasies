@@ -356,16 +356,20 @@ export default function AdminCards() {
       const prompt = isElite
         ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
         : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
+      // La regla anti-marcos va TAMBIÉN al principio (máxima prioridad para el
+      // motor de imagen): puesta solo al final, la IA seguía pintando orlas.
+      const NO_FRAME_FIRST = `CRITICAL — ABSOLUTE RULE (HIGHEST PRIORITY, OVERRIDES EVERYTHING ELSE): NO FRAME AND NO BORDER OF ANY KIND. The illustration must be full-bleed, edge-to-edge, filling 100% of the image with scenery and action, with nothing drawn around it. STRICTLY FORBIDDEN: frames, borders, ornate edges, card frames, plaques, passepartout, rounded corners, vignettes, black bars, margins, padding, outlines around the image, text, logo, watermark, signature. THIS IS NON-NEGOTIABLE. `;
+      const scenePrompt = NO_FRAME_FIRST + prompt;
       const refs = refImages(refUrl);
       // Si la referencia (arte de la carta) hace fallar al motor de imagen, se
       // reintenta sin referencia: así los tokens/bizarros con arte problemático
       // (p.ej. la Grulla) sí pueden generar su escena.
       let result;
       try {
-        result = await withTimeout(genImageWithFallback(prompt, refs), 120000, 'la generación de la imagen');
+        result = await withTimeout(genImageWithFallback(scenePrompt, refs), 120000, 'la generación de la imagen');
       } catch (e) {
         console.error('Escena con referencia fallida, reintento sin referencia', e);
-        result = await withTimeout(genImageWithFallback(prompt, []), 120000, 'la generación de la imagen');
+        result = await withTimeout(genImageWithFallback(scenePrompt, []), 120000, 'la generación de la imagen');
       }
       if (result?.url) {
         setForm(prev => ({ ...prev, [target]: result.url }));
