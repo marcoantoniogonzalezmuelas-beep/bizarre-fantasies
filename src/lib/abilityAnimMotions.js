@@ -558,6 +558,193 @@ export const MOTIONS = [
       '<div class="bf-aa-blink" style="left:20%;top:34%;animation-delay:.1s"></div><div class="bf-aa-blink" style="left:78%;top:62%;animation-delay:.75s"></div><div class="bf-aa-blink" style="left:32%;top:64%;animation-delay:1.5s"></div><div class="bf-aa-blink" style="left:50%;top:50%;animation-delay:2.3s"></div>' +
       '<div class="bf-aa-glitch" style="left:14%;top:40%;animation-delay:.3s"></div><div class="bf-aa-glitch" style="left:52%;top:56%;animation-delay:1.1s"></div><div class="bf-aa-glitch" style="left:26%;top:48%;animation-delay:1.9s"></div>',
   },
+  // CAGAR: se pone en cuclillas, hace fuerza y suelta zurullos + moscas + tufo.
+  {
+    id: 'poop',
+    keywords: ['cagar', 'cagando', 'caca', 'zurullo', 'mojón', 'mojon', 'defecar', 'poop', 'excremento', 'letrina', 'retrete', 'váter', 'vater'],
+    anim: 'bfAaPoop',
+    keyframes:
+      '@keyframes bfAaPoop{0%{transform:scale(.15) translateY(20vh);opacity:0}14%{opacity:1;transform:scale(1.1) translateY(0)}26%{transform:scale(1.05) translateY(5vh) scaleY(.82)}36%{transform:scale(1.06) translateY(6vh) scaleY(.78) rotate(2deg)}46%{transform:scale(1.06) translateY(6vh) scaleY(.74) rotate(-2deg)}58%{transform:scale(1.05) translateY(6vh) scaleY(.8)}72%{transform:scale(1.1) translateY(1vh) scaleY(1)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-turd{position:absolute;font-size:clamp(24px,5vw,44px);opacity:0;animation:bfAaTurd 1.4s ease-in forwards;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6))}' +
+      '@keyframes bfAaTurd{0%{opacity:0;transform:translate(0,0) scale(.3) rotate(0)}20%{opacity:1;transform:translate(0,6vh) scale(1) rotate(10deg)}70%{opacity:1;transform:translate(var(--dx,0px),24vh) scale(1.05) rotate(-8deg)}100%{opacity:0;transform:translate(var(--dx,0px),28vh) scale(1)}}' +
+      '.bf-aa-stink{position:absolute;font-size:clamp(18px,4vw,34px);opacity:0;animation:bfAaStink 2.2s ease-out forwards;filter:drop-shadow(0 0 10px rgba(140,180,60,.7))}' +
+      '@keyframes bfAaStink{0%{opacity:0;transform:translate(0,0) scale(.4)}22%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,0px),-48vh) scale(1.6) rotate(20deg)}}' +
+      '.bf-aa-stinkcloud{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 72%,rgba(150,190,70,.28),transparent 62%);opacity:0;animation:bfAaStinkCloud 2.6s ease-out forwards}' +
+      '@keyframes bfAaStinkCloud{0%{opacity:0}35%{opacity:.7}100%{opacity:0}}',
+    fxTag:
+      '<div class="bf-aa-stinkcloud"></div>' +
+      '<span class="bf-aa-turd" style="left:48%;top:52%;--dx:-8px;animation-delay:.35s">💩</span><span class="bf-aa-turd" style="left:52%;top:54%;--dx:12px;animation-delay:.65s">💩</span><span class="bf-aa-turd" style="left:50%;top:50%;--dx:-4px;animation-delay:.95s">💩</span>' +
+      '<span class="bf-aa-stink" style="left:40%;top:56%;--dx:-24px;animation-delay:.5s">🌫️</span><span class="bf-aa-stink" style="left:58%;top:58%;--dx:28px;animation-delay:.8s">🌫️</span><span class="bf-aa-stink" style="left:46%;top:60%;--dx:-14px;animation-delay:1.1s">🪰</span><span class="bf-aa-stink" style="left:56%;top:54%;--dx:18px;animation-delay:1.4s">🪰</span>',
+  },
+  // MEAR: chorro en arco desde la cintura + charco creciente + gotas + vapor.
+  {
+    id: 'pee',
+    keywords: ['mear', 'meando', 'orinar', 'orina', 'pis', 'pipí', 'pipi', 'pee', 'chorro', 'micción', 'miccion', 'urinario'],
+    anim: 'bfAaPee',
+    keyframes:
+      '@keyframes bfAaPee{0%{transform:scale(.15) translateY(18vh);opacity:0}14%{opacity:1;transform:scale(1.1) translateY(0) rotate(0)}28%{transform:scale(1.08) translateY(1vh) rotate(-5deg)}44%{transform:scale(1.08) translateY(1.5vh) rotate(-7deg)}60%{transform:scale(1.08) translateY(1vh) rotate(-5deg)}74%{transform:scale(1.1) translateY(0) rotate(0)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-stream{position:absolute;top:52%;left:56%;width:34vmin;height:8px;border-radius:8px;background:linear-gradient(90deg,#ffe97a,rgba(255,225,110,.25));box-shadow:0 0 14px rgba(255,220,90,.8);transform-origin:left center;opacity:0;animation:bfAaStream 2.2s ease-out .3s forwards}' +
+      '@keyframes bfAaStream{0%{opacity:0;transform:rotate(8deg) scaleX(.1)}25%{opacity:.95;transform:rotate(16deg) scaleX(1)}70%{opacity:.95;transform:rotate(22deg) scaleX(1.05)}100%{opacity:0;transform:rotate(26deg) scaleX(.6)}}' +
+      '.bf-aa-puddle{position:absolute;bottom:14%;left:66%;width:8vmin;height:3vmin;border-radius:50%;background:radial-gradient(ellipse,rgba(255,225,110,.85),rgba(255,225,110,.15) 70%);box-shadow:0 0 18px rgba(255,220,90,.6);opacity:0;animation:bfAaPuddle 2.4s ease-out .5s forwards}' +
+      '@keyframes bfAaPuddle{0%{opacity:0;transform:scale(.2)}35%{opacity:.9;transform:scale(1)}100%{opacity:.75;transform:scale(2.4)}}' +
+      '.bf-aa-pdrop{position:absolute;width:7px;height:11px;border-radius:50%;background:#ffe97a;box-shadow:0 0 8px rgba(255,220,90,.9);opacity:0;animation:bfAaPDrop 1s ease-in forwards}' +
+      '@keyframes bfAaPDrop{0%{opacity:0;transform:translate(0,0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx,20px),22vh) scale(.7)}}',
+    fxTag:
+      '<div class="bf-aa-stream"></div><div class="bf-aa-puddle"></div>' +
+      '<span class="bf-aa-pdrop" style="left:70%;top:62%;--dx:18px;animation-delay:.7s"></span><span class="bf-aa-pdrop" style="left:66%;top:64%;--dx:-14px;animation-delay:.95s"></span><span class="bf-aa-pdrop" style="left:72%;top:60%;--dx:24px;animation-delay:1.2s"></span><span class="bf-aa-pdrop" style="left:68%;top:66%;--dx:-10px;animation-delay:1.5s"></span>',
+  },
+  // ERUPTO: pecho hinchado, sacudida seca y onda de eructo + letras BUUURP.
+  {
+    id: 'burp',
+    keywords: ['erupto', 'eructo', 'eructar', 'erupte', 'burp', 'regüeldo', 'regueldo', 'buurp', 'gas de boca'],
+    anim: 'bfAaBurp',
+    keyframes:
+      '@keyframes bfAaBurp{0%{transform:scale(.15) translateY(18vh);opacity:0}14%{opacity:1;transform:scale(1.05) translateY(0)}26%{transform:scale(1.22) scaleY(1.12) translateY(-1vh)}34%{transform:scale(1) scaleY(.9) translateY(2vh) rotate(-3deg)}42%{transform:scale(1.18) scaleY(1.08) translateY(-2vh) rotate(2deg)}52%{transform:scale(1.02) scaleY(.94) translateY(1vh) rotate(-2deg)}64%{transform:scale(1.14) scaleY(1.04) translateY(-1vh)}78%{transform:scale(1.1) translateY(0)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-burpwave{position:absolute;top:44%;left:56%;width:26vmin;height:26vmin;margin:-13vmin 0 0 -13vmin;border-radius:50%;border:5px solid rgba(180,230,140,.9);box-shadow:0 0 22px rgba(160,220,120,.8);opacity:0;animation:bfAaBurpWave .9s ease-out forwards}' +
+      '@keyframes bfAaBurpWave{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}' +
+      '.bf-aa-burptxt{position:absolute;font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(24px,6vw,52px);color:#d8ff9a;text-shadow:0 0 16px rgba(160,220,120,.9),0 3px 0 #2c3a12;opacity:0;animation:bfAaBurpTxt 1.2s ease-out forwards}' +
+      '@keyframes bfAaBurpTxt{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(-8deg)}30%{opacity:1;transform:translate(0,-4vh) scale(1.1) rotate(4deg)}100%{opacity:0;transform:translate(var(--dx,20px),-24vh) scale(1.3) rotate(-6deg)}}' +
+      '.bf-aa-burpbub{position:absolute;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#eaffd0,rgba(180,230,140,.3));box-shadow:0 0 12px rgba(160,220,120,.7);opacity:0;animation:bfAaBurpBub 1.8s ease-out forwards}' +
+      '@keyframes bfAaBurpBub{0%{opacity:0;transform:translate(0,0) scale(.3)}20%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,0px),-46vh) scale(1.8)}}',
+    fxTag:
+      '<div class="bf-aa-burpwave" style="animation-delay:.24s"></div><div class="bf-aa-burpwave" style="animation-delay:.42s"></div>' +
+      '<span class="bf-aa-burptxt" style="left:56%;top:36%;--dx:26px;animation-delay:.26s">BUUURP!</span>' +
+      '<span class="bf-aa-burpbub" style="left:58%;top:46%;--dx:20px;animation-delay:.4s"></span><span class="bf-aa-burpbub" style="left:62%;top:44%;--dx:-16px;animation-delay:.7s"></span><span class="bf-aa-burpbub" style="left:54%;top:48%;--dx:28px;animation-delay:1s"></span>',
+  },
+  // PEDOS: se echa hacia delante y dispara ventosidades por detrás, con
+  // propulsión a reacción, nubes verdes y notas de "trompeta".
+  {
+    id: 'fart',
+    keywords: ['pedo', 'pedos', 'pedis', 'ventosidad', 'flatulencia', 'peer', 'tirarse un pedo', 'fart', 'cuesco', 'follón', 'pfff'],
+    anim: 'bfAaFart',
+    keyframes:
+      '@keyframes bfAaFart{0%{transform:scale(.15) translateY(18vh);opacity:0}14%{opacity:1;transform:scale(1.08) translateY(0) rotate(0)}24%{transform:scale(1.06) translateY(1vh) rotate(-6deg)}30%{transform:scale(1.12) translate(-6vw,-2vh) rotate(4deg)}40%{transform:scale(1.06) translate(0,1vh) rotate(-5deg)}46%{transform:scale(1.12) translate(-5vw,-2vh) rotate(3deg)}56%{transform:scale(1.06) translate(0,1vh) rotate(-4deg)}62%{transform:scale(1.12) translate(-4vw,-1vh) rotate(2deg)}76%{transform:scale(1.1) translate(0,0) rotate(0)}100%{transform:scale(1.2) translateY(-6vh);opacity:1}}',
+    fxCss:
+      '.bf-aa-fartjet{position:absolute;top:52%;left:58%;width:30vmin;height:18vmin;background:radial-gradient(ellipse at 0% 50%,rgba(170,225,110,.85),transparent 72%);border-radius:50%;transform-origin:left center;opacity:0;animation:bfAaFartJet .7s ease-out forwards;filter:blur(4px)}' +
+      '@keyframes bfAaFartJet{0%{opacity:0;transform:scaleX(.2) scaleY(.5)}40%{opacity:.9;transform:scaleX(1) scaleY(1)}100%{opacity:0;transform:scaleX(1.5) scaleY(1.3)}}' +
+      '.bf-aa-fartcloud{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,rgba(160,220,110,.8),transparent 70%);opacity:0;animation:bfAaFartCloud 2s ease-out forwards;filter:blur(5px)}' +
+      '@keyframes bfAaFartCloud{0%{opacity:0;transform:translate(0,0) scale(.4)}22%{opacity:.85}100%{opacity:0;transform:translate(var(--dx,30px),-40vh) scale(3)}}' +
+      '.bf-aa-farttxt{position:absolute;font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(20px,5vw,42px);color:#c7ff8a;text-shadow:0 0 14px rgba(160,220,120,.9),0 3px 0 #24340f;opacity:0;animation:bfAaFartTxt 1.1s ease-out forwards}' +
+      '@keyframes bfAaFartTxt{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(6deg)}30%{opacity:1;transform:translate(6vw,-3vh) scale(1.1) rotate(-6deg)}100%{opacity:0;transform:translate(16vw,-18vh) scale(1.25) rotate(8deg)}}',
+    fxTag:
+      '<div class="bf-aa-fartjet" style="animation-delay:.26s"></div><div class="bf-aa-fartjet" style="animation-delay:.44s"></div><div class="bf-aa-fartjet" style="animation-delay:.62s"></div>' +
+      '<span class="bf-aa-farttxt" style="left:60%;top:44%;animation-delay:.28s">PRRRT!</span><span class="bf-aa-farttxt" style="left:62%;top:52%;animation-delay:.6s">PFFF!</span>' +
+      '<span class="bf-aa-fartcloud" style="left:62%;top:54%;--dx:30px;animation-delay:.3s"></span><span class="bf-aa-fartcloud" style="left:66%;top:52%;--dx:44px;animation-delay:.6s"></span><span class="bf-aa-fartcloud" style="left:60%;top:58%;--dx:22px;animation-delay:.9s"></span><span class="bf-aa-fartcloud" style="left:68%;top:56%;--dx:52px;animation-delay:1.2s"></span>',
+  },
+  // CAMINAR LENTAMENTE: avanza pesado de un lado al otro con balanceo lento,
+  // pisadas marcadas y polvillo bajo los pies.
+  {
+    id: 'walk_slow',
+    keywords: ['caminar lentamente', 'caminar despacio', 'andar despacio', 'paso lento', 'lentamente', 'pasear', 'caminata lenta', 'arrastrar los pies', 'walk slow'],
+    anim: 'bfAaWalkSlow',
+    keyframes:
+      '@keyframes bfAaWalkSlow{0%{transform:translate(-42vw,0) scale(.9) rotate(-2deg);opacity:0}12%{opacity:1}28%{transform:translate(-26vw,-1.5vh) scale(.95) rotate(2deg)}44%{transform:translate(-12vw,0) scale(1) rotate(-2deg)}60%{transform:translate(-2vw,-1.5vh) scale(1.08) rotate(2deg)}78%{transform:translate(2vw,0) scale(1.14) rotate(-1deg)}100%{transform:translate(0,-6vh) scale(1.2) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-step{position:absolute;bottom:15%;width:22px;height:9px;border-radius:50%;background:radial-gradient(ellipse,rgba(210,195,160,.8),transparent 70%);opacity:0;animation:bfAaStep 1.5s ease-out forwards;filter:blur(2px)}' +
+      '@keyframes bfAaStep{0%{opacity:0;transform:scale(.3)}25%{opacity:.85;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}' +
+      '.bf-aa-slowdust{position:absolute;bottom:17%;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#d9c9a0,transparent 70%);opacity:0;animation:bfAaSlowDust 1.8s ease-out forwards}' +
+      '@keyframes bfAaSlowDust{0%{opacity:0;transform:translate(0,0) scale(.4)}25%{opacity:.7}100%{opacity:0;transform:translate(var(--dx,-20px),-16vh) scale(2.2)}}',
+    fxTag:
+      '<span class="bf-aa-step" style="left:22%;animation-delay:.2s"></span><span class="bf-aa-step" style="left:34%;animation-delay:.7s"></span><span class="bf-aa-step" style="left:46%;animation-delay:1.2s"></span><span class="bf-aa-step" style="left:56%;animation-delay:1.7s"></span>' +
+      '<span class="bf-aa-slowdust" style="left:24%;--dx:-18px;animation-delay:.3s"></span><span class="bf-aa-slowdust" style="left:38%;--dx:-24px;animation-delay:.8s"></span><span class="bf-aa-slowdust" style="left:50%;--dx:-20px;animation-delay:1.3s"></span>',
+  },
+  // CAMINAR MUY RÁPIDO: cruza la pantalla a toda pastilla con estelas de
+  // velocidad, siluetas fantasma y polvo levantado.
+  {
+    id: 'walk_fast',
+    keywords: ['caminar muy rápido', 'caminar rápido', 'andar rápido', 'correr', 'corriendo', 'sprint', 'a toda prisa', 'a toda pastilla', 'paso ligero', 'walk fast', 'run'],
+    anim: 'bfAaWalkFast',
+    keyframes:
+      '@keyframes bfAaWalkFast{0%{transform:translate(-70vw,0) scale(.7) rotate(-6deg);opacity:0}8%{opacity:1}20%{transform:translate(-40vw,-2vh) scale(.8) rotate(5deg)}34%{transform:translate(-14vw,0) scale(.95) rotate(-5deg)}46%{transform:translate(10vw,-2vh) scale(1.05) rotate(5deg)}58%{transform:translate(26vw,0) scale(1.1) rotate(-4deg)}70%{transform:translate(8vw,-2vh) scale(1.15) rotate(3deg)}84%{transform:translate(2vw,0) scale(1.18) rotate(-2deg)}100%{transform:translate(0,-6vh) scale(1.24) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-rushline{position:absolute;height:4px;width:34vw;background:linear-gradient(90deg,transparent,#fff,var(--aa-color,#fff),transparent);border-radius:4px;filter:drop-shadow(0 0 10px var(--aa-glow,#fff));opacity:0;animation:bfAaRushLine .8s ease-out forwards}' +
+      '@keyframes bfAaRushLine{0%{opacity:0;transform:translateX(-46vw) scaleX(.2)}30%{opacity:1}100%{opacity:0;transform:translateX(48vw) scaleX(1.4)}}' +
+      '.bf-aa-rushdust{position:absolute;bottom:16%;width:18px;height:10px;border-radius:50%;background:radial-gradient(ellipse,#d9c9a0,transparent 70%);opacity:0;animation:bfAaRushDust 1s ease-out forwards;filter:blur(2px)}' +
+      '@keyframes bfAaRushDust{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,-60px),-12vh) scale(2.6)}}',
+    fxTag:
+      '<div class="bf-aa-rushline" style="top:34%;animation-delay:.1s"></div><div class="bf-aa-rushline" style="top:48%;animation-delay:.3s"></div><div class="bf-aa-rushline" style="top:60%;animation-delay:.5s"></div><div class="bf-aa-rushline" style="top:42%;animation-delay:.75s"></div>' +
+      '<span class="bf-aa-rushdust" style="left:26%;--dx:-70px;animation-delay:.2s"></span><span class="bf-aa-rushdust" style="left:40%;--dx:-80px;animation-delay:.45s"></span><span class="bf-aa-rushdust" style="left:54%;--dx:-65px;animation-delay:.7s"></span><span class="bf-aa-rushdust" style="left:64%;--dx:-75px;animation-delay:.95s"></span>',
+  },
+  // CUESTA ARRIBA: sube en diagonal ascendente, inclinado hacia delante, con
+  // esfuerzo, piedrecitas que caen y sudor.
+  {
+    id: 'walk_uphill',
+    keywords: ['cuesta arriba', 'subir cuesta', 'subida', 'ascender', 'escalar cuesta', 'uphill', 'trepar la pendiente', 'monte arriba'],
+    anim: 'bfAaUphill',
+    keyframes:
+      '@keyframes bfAaUphill{0%{transform:translate(-42vw,26vh) scale(.6) rotate(-14deg);opacity:0}12%{opacity:1}28%{transform:translate(-28vw,16vh) scale(.78) rotate(-12deg)}44%{transform:translate(-16vw,8vh) scale(.92) rotate(-13deg)}60%{transform:translate(-6vw,2vh) scale(1.05) rotate(-11deg)}78%{transform:translate(0,-2vh) scale(1.15) rotate(-8deg)}100%{transform:translate(0,-8vh) scale(1.22) rotate(-4deg);opacity:1}}',
+    fxCss:
+      '.bf-aa-slope{position:absolute;inset:0;background:linear-gradient(28deg,rgba(120,100,70,.35) 0 38%,transparent 39%);opacity:0;animation:bfAaSlope 2.6s ease-out forwards}' +
+      '@keyframes bfAaSlope{0%{opacity:0}25%{opacity:.8}100%{opacity:0}}' +
+      '.bf-aa-pebble{position:absolute;width:9px;height:9px;border-radius:3px;background:linear-gradient(180deg,#c9b48c,#7d6640);box-shadow:0 0 8px rgba(0,0,0,.5);opacity:0;animation:bfAaPebble 1.4s ease-in forwards}' +
+      '@keyframes bfAaPebble{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx,-70px),34vh) rotate(420deg) scale(1)}}' +
+      '.bf-aa-sweat{position:absolute;width:8px;height:12px;border-radius:50%;background:#bfe9ff;box-shadow:0 0 10px rgba(140,210,255,.9);opacity:0;animation:bfAaSweat 1.1s ease-out forwards}' +
+      '@keyframes bfAaSweat{0%{opacity:0;transform:translate(0,0) scale(.4)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,30px),-16vh) scale(1.1)}}',
+    fxTag:
+      '<div class="bf-aa-slope"></div>' +
+      '<span class="bf-aa-pebble" style="left:34%;top:56%;--dx:-80px;animation-delay:.3s"></span><span class="bf-aa-pebble" style="left:44%;top:50%;--dx:-95px;animation-delay:.6s"></span><span class="bf-aa-pebble" style="left:52%;top:44%;--dx:-70px;animation-delay:.9s"></span><span class="bf-aa-pebble" style="left:40%;top:52%;--dx:-110px;animation-delay:1.2s"></span>' +
+      '<span class="bf-aa-sweat" style="left:52%;top:32%;--dx:34px;animation-delay:.5s"></span><span class="bf-aa-sweat" style="left:46%;top:30%;--dx:-28px;animation-delay:.85s"></span><span class="bf-aa-sweat" style="left:56%;top:34%;--dx:40px;animation-delay:1.2s"></span>',
+  },
+  // CUESTA ABAJO: baja en diagonal descendente cogiendo carrerilla, echado
+  // hacia atrás, frenando con los talones y levantando polvo.
+  {
+    id: 'walk_downhill',
+    keywords: ['cuesta abajo', 'bajar cuesta', 'bajada', 'descender', 'downhill', 'monte abajo', 'ladera abajo'],
+    anim: 'bfAaDownhill',
+    keyframes:
+      '@keyframes bfAaDownhill{0%{transform:translate(-42vw,-26vh) scale(.6) rotate(12deg);opacity:0}12%{opacity:1}28%{transform:translate(-26vw,-14vh) scale(.8) rotate(14deg)}44%{transform:translate(-12vw,-6vh) scale(.95) rotate(13deg)}60%{transform:translate(2vw,0) scale(1.08) rotate(11deg)}72%{transform:translate(10vw,3vh) scale(1.14) rotate(6deg)}86%{transform:translate(2vw,0) scale(1.18) rotate(-3deg)}100%{transform:translate(0,-6vh) scale(1.22) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-slopedn{position:absolute;inset:0;background:linear-gradient(-28deg,rgba(120,100,70,.35) 0 38%,transparent 39%);opacity:0;animation:bfAaSlopeDn 2.6s ease-out forwards}' +
+      '@keyframes bfAaSlopeDn{0%{opacity:0}25%{opacity:.8}100%{opacity:0}}' +
+      '.bf-aa-rockroll{position:absolute;width:11px;height:11px;border-radius:4px;background:linear-gradient(180deg,#c9b48c,#7d6640);box-shadow:0 0 8px rgba(0,0,0,.5);opacity:0;animation:bfAaRockRoll 1.3s ease-in forwards}' +
+      '@keyframes bfAaRockRoll{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx,90px),28vh) rotate(560deg) scale(1)}}' +
+      '.bf-aa-brakedust{position:absolute;width:20px;height:11px;border-radius:50%;background:radial-gradient(ellipse,#d9c9a0,transparent 70%);opacity:0;animation:bfAaBrakeDust 1.2s ease-out forwards;filter:blur(2px)}' +
+      '@keyframes bfAaBrakeDust{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,-50px),-10vh) scale(2.6)}}',
+    fxTag:
+      '<div class="bf-aa-slopedn"></div>' +
+      '<span class="bf-aa-rockroll" style="left:36%;top:38%;--dx:100px;animation-delay:.3s"></span><span class="bf-aa-rockroll" style="left:46%;top:46%;--dx:85px;animation-delay:.6s"></span><span class="bf-aa-rockroll" style="left:54%;top:52%;--dx:110px;animation-delay:.9s"></span>' +
+      '<span class="bf-aa-brakedust" style="left:52%;top:64%;--dx:-60px;animation-delay:.75s"></span><span class="bf-aa-brakedust" style="left:58%;top:66%;--dx:-45px;animation-delay:.95s"></span><span class="bf-aa-brakedust" style="left:62%;top:62%;--dx:-70px;animation-delay:1.15s"></span>',
+  },
+  // DIAGONAL: cruza la pantalla en diagonal (de esquina a esquina) dos veces
+  // dejando estelas inclinadas antes de plantarse en el centro.
+  {
+    id: 'diagonal',
+    keywords: ['diagonal', 'en diagonal', 'de esquina a esquina', 'oblicuo', 'sesgado', 'cruzado'],
+    anim: 'bfAaDiagonal',
+    keyframes:
+      '@keyframes bfAaDiagonal{0%{transform:translate(-58vw,-34vh) scale(.35) rotate(-18deg);opacity:0}10%{opacity:1}30%{transform:translate(0,0) scale(.8) rotate(-10deg)}48%{transform:translate(48vw,30vh) scale(1) rotate(-6deg)}56%{transform:translate(48vw,30vh) scale(1) rotate(6deg)}76%{transform:translate(-24vw,-16vh) scale(1.12) rotate(10deg)}90%{transform:translate(-4vw,-2vh) scale(1.2) rotate(3deg)}100%{transform:translate(0,-6vh) scale(1.24) rotate(0);opacity:1}}',
+    fxCss:
+      '.bf-aa-diagline{position:absolute;top:50%;left:50%;width:120vmax;height:5px;margin:-2.5px 0 0 -60vmax;background:linear-gradient(90deg,transparent,#fff,var(--aa-color,#fff),transparent);filter:drop-shadow(0 0 12px var(--aa-glow,#fff));opacity:0;animation:bfAaDiagLine 1s ease-out forwards}' +
+      '@keyframes bfAaDiagLine{0%{opacity:0;transform:rotate(var(--r,32deg)) scaleX(.2)}35%{opacity:.95;transform:rotate(var(--r,32deg)) scaleX(1)}100%{opacity:0;transform:rotate(var(--r,32deg)) scaleX(1.3)}}' +
+      '.bf-aa-diagmote{position:absolute;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#fff,var(--aa-color,#fff));box-shadow:0 0 16px var(--aa-glow,#fff);opacity:0;animation:bfAaDiagMote 1.1s ease-out forwards}' +
+      '@keyframes bfAaDiagMote{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,60px),var(--dy,40px)) scale(1.5)}}',
+    fxTag:
+      '<div class="bf-aa-diagline" style="--r:32deg;animation-delay:.15s"></div><div class="bf-aa-diagline" style="--r:-32deg;animation-delay:.85s"></div><div class="bf-aa-diagline" style="--r:32deg;animation-delay:1.5s"></div>' +
+      '<span class="bf-aa-diagmote" style="left:24%;top:26%;--dx:70px;--dy:50px;animation-delay:.25s"></span><span class="bf-aa-diagmote" style="left:70%;top:66%;--dx:-70px;--dy:-50px;animation-delay:.7s"></span><span class="bf-aa-diagmote" style="left:40%;top:44%;--dx:60px;--dy:-45px;animation-delay:1.1s"></span><span class="bf-aa-diagmote" style="left:58%;top:52%;--dx:-55px;--dy:45px;animation-delay:1.5s"></span>',
+  },
+  // MONTAÑA RUSA: recorre subidas y bajadas encadenadas con loop, ganando
+  // velocidad, con raíles luminosos, chispas en los tirones y estelas.
+  {
+    id: 'rollercoaster',
+    keywords: ['montaña rusa', 'montana rusa', 'rollercoaster', 'roller coaster', 'vagoneta', 'looping', 'subidas y bajadas', 'atracción', 'atraccion'],
+    anim: 'bfAaCoaster',
+    keyframes:
+      '@keyframes bfAaCoaster{0%{transform:translate(-58vw,22vh) scale(.4) rotate(-14deg);opacity:0}8%{opacity:1}18%{transform:translate(-40vw,-24vh) scale(.55) rotate(-20deg)}28%{transform:translate(-24vw,16vh) scale(.7) rotate(22deg)}38%{transform:translate(-8vw,-22vh) scale(.82) rotate(-18deg)}48%{transform:translate(8vw,14vh) scale(.95) rotate(20deg)}58%{transform:translate(24vw,-18vh) scale(1.02) rotate(-160deg)}66%{transform:translate(32vw,4vh) scale(1.06) rotate(-360deg)}76%{transform:translate(14vw,12vh) scale(1.12) rotate(-370deg)}86%{transform:translate(2vw,-4vh) scale(1.18) rotate(-356deg)}100%{transform:translate(0,-6vh) scale(1.24) rotate(-360deg);opacity:1}}',
+    fxCss:
+      '.bf-aa-rail{position:absolute;left:-10%;width:120%;height:6px;border-radius:6px;background:linear-gradient(90deg,transparent,var(--aa-color,#fff),#fff,var(--aa-color,#fff),transparent);filter:drop-shadow(0 0 12px var(--aa-glow,#fff));opacity:0;animation:bfAaRail 1.6s ease-out forwards}' +
+      '@keyframes bfAaRail{0%{opacity:0;transform:rotate(var(--r,-18deg)) scaleX(.3)}30%{opacity:.85;transform:rotate(var(--r,-18deg)) scaleX(1)}100%{opacity:0;transform:rotate(var(--r,-18deg)) scaleX(1.2)}}' +
+      '.bf-aa-coastspark{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 12px #ffd24a,0 0 20px #ff8a14;opacity:0;animation:bfAaCoastSpark .9s ease-out forwards}' +
+      '@keyframes bfAaCoastSpark{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,0px),var(--dy,40px)) scale(1.5)}}' +
+      '.bf-aa-scream{position:absolute;font-size:clamp(20px,4vw,36px);opacity:0;animation:bfAaScream 1.4s ease-out forwards;filter:drop-shadow(0 0 12px var(--aa-glow,#fff))}' +
+      '@keyframes bfAaScream{0%{opacity:0;transform:translate(0,0) scale(.4) rotate(-10deg)}30%{opacity:1;transform:translate(0,-6vh) scale(1.1) rotate(8deg)}100%{opacity:0;transform:translate(var(--dx,20px),-30vh) scale(1.3) rotate(-12deg)}}',
+    fxTag:
+      '<div class="bf-aa-rail" style="top:30%;--r:-18deg;animation-delay:.1s"></div><div class="bf-aa-rail" style="top:52%;--r:16deg;animation-delay:.5s"></div><div class="bf-aa-rail" style="top:70%;--r:-14deg;animation-delay:.9s"></div>' +
+      '<span class="bf-aa-coastspark" style="left:28%;top:34%;--dx:-40px;--dy:50px;animation-delay:.3s"></span><span class="bf-aa-coastspark" style="left:44%;top:46%;--dx:50px;--dy:40px;animation-delay:.6s"></span><span class="bf-aa-coastspark" style="left:62%;top:38%;--dx:-30px;--dy:60px;animation-delay:.9s"></span><span class="bf-aa-coastspark" style="left:52%;top:58%;--dx:45px;--dy:35px;animation-delay:1.2s"></span>' +
+      '<span class="bf-aa-scream" style="left:34%;top:30%;--dx:24px;animation-delay:.5s">😱</span><span class="bf-aa-scream" style="left:60%;top:36%;--dx:-22px;animation-delay:1.1s">🎢</span>',
+  },
   DEFAULT_MOTION,
 ];
 
@@ -593,6 +780,16 @@ export const MOTION_LABELS = {
   ice: '❄️ Hielo',
   lightning: '⚡ Rayo',
   dance: '🕺 Bailar',
+  poop: '💩 Cagar',
+  pee: '🚽 Mear',
+  burp: '🫧 Tirarse un eructo',
+  fart: '💨 Tirarse pedos',
+  walk_slow: '🚶 Caminar lentamente',
+  walk_fast: '🏃 Caminar muy rápido',
+  walk_uphill: '⛰️ Caminar cuesta arriba',
+  walk_downhill: '🏔️ Caminar cuesta abajo',
+  diagonal: '↗️ Movimiento en diagonal',
+  rollercoaster: '🎢 Montaña rusa',
 };
 
 // Orden en el que se muestran en el selector.
