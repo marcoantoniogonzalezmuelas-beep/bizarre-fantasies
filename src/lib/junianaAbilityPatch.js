@@ -20,6 +20,11 @@ export const JUNIANA_ABILITY_PATCH = `
   // cinemática, marca la habilidad como pasiva (_bfRefract + abilityUsed) y
   // pasa el turno. La refracción la hace el motor (akind 'reflect-damage').
   function installAbility(){
+    // IMPORTANTE: hay que envolver DESPUÉS del parche del motor (patchDuckAbility),
+    // que intercepta 'reflect-damage' y solo muestra un aviso sin cinemática. Si
+    // enganchamos antes, el motor queda por fuera y la habilidad de Juniana nunca
+    // se lanzaba.
+    if(!window.__bfDuckPatched) return false;
     if(typeof window.useAbility !== 'function' || window.__bfJunianaHooked) return false;
     window.__bfJunianaHooked = true;
     var orig = window.useAbility;
