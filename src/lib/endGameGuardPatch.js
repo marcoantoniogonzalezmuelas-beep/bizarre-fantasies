@@ -40,6 +40,14 @@ export const END_GAME_GUARD_PATCH = `
       if(active('s-title')){ since=0; forced=0; return; }
       if(active('s-result')){ since=0; return; }
 
+      // La batalla tiene que estar REALMENTE en marcha: si los equipos aún no
+      // están montados (portada, subasta, equipamiento) no hay nada que decidir.
+      var pTot=(G.team.p||[]).length, oTot=(G.team.o||[]).length;
+      if(!pTot || !oTot){ since=0; return; }
+      var started = false;
+      try{ started = !!(typeof B!=='undefined' && B && (B.over || B.turn || B.round || (B.log && B.log.length))); }catch(e){}
+      if(!started){ since=0; return; }
+
       var pAlive=alive('p'), oAlive=alive('o');
       var decided = (typeof B!=='undefined'&&B&&B.over) || pAlive===0 || oAlive===0;
       if(!decided){ since=0; return; }
