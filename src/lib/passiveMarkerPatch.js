@@ -113,6 +113,10 @@ export const PASSIVE_MARKER_PATCH = `
     updateMarkers();
     if((window.renderBattle && window.renderBattle.__bfPassiveMarker) || tries++ > 120) clearInterval(timer);
   }, 200);
+  // Vigilancia permanente: otros parches redibujan los retratos y el marcador
+  // podr\\u00eda perderse; as\\u00ed el estado (Refracci\\u00f3n, Protecci\\u00f3n\\u2026) se mantiene
+  // visible todo el tiempo que la pasiva siga activa.
+  setInterval(updateMarkers, 500);
   updateMarkers();
 })();
 </script>
