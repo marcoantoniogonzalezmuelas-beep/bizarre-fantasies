@@ -1,12 +1,16 @@
 import React from 'react';
 
-const ROLES = [['CC', '🗡️ Cuerpo a cuerpo'], ['AD', '🏹 A distancia'], ['HE', '🔮 Magia']];
+const ROLES = [['CC', '🗡️ Cuerpo a cuerpo'], ['AD', '🏹 A distancia'], ['HE', '🔮 Magia'], ['', '✦ Sin rol / Épicas']];
 
 export default function HeroPickGrid({ heroes, selected, onToggle, onBulk }) {
   return (
     <div className="grid gap-4">
       {ROLES.map(([role, label]) => {
-        const list = heroes.filter(h => (h.type || '') === role);
+        // El grupo "Sin rol" recoge cualquier héroe cuyo rol no sea CC/AD/HE
+        // (p. ej. las Épicas nuevas), para que siempre se puedan subastar.
+        const list = role
+          ? heroes.filter(h => (h.type || '') === role)
+          : heroes.filter(h => !['CC', 'AD', 'HE'].includes(h.type || ''));
         const ids = list.map(h => h.card_id);
         const allOn = ids.length > 0 && ids.every(id => selected.includes(id));
         return (
