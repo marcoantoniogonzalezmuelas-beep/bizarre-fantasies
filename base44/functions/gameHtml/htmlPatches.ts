@@ -80,7 +80,7 @@ export function applyHtmlPatches(html: string, RB: string): string {
   // turno lleva 15 s realmente atascado, explicándolo en el registro.
   html = html.replace(
     "function armWatchdog(){ const mySeq=++B.seq, myQi=B.qi; B.wd=setTimeout(()=>{ if(!B.over && B.seq===mySeq && B.qi===myQi){ pushLog('ld','(turno forzado)'); endTurn(); } },4200); }",
-    "function armWatchdog(){ const mySeq=++B.seq, myQi=B.qi; const cine=()=>!!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'); const check=()=>{ if(B.over||B.seq!==mySeq||B.qi!==myQi)return; if(cine()){ B.wd=setTimeout(check,2000); return; } pushLog('ld','⏳ '+((B.current&&G.names&&G.names[B.current.side])||'El rival')+' no ha completado su acción: se pasa su turno.'); endTurn(); }; B.wd=setTimeout(check,15000); }"
+    "function armWatchdog(){ const mySeq=++B.seq, myQi=B.qi; const cine=()=>!!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'); const online=()=>{ try{ return typeof NET!=='undefined'&&NET&&(NET.role==='host'||NET.role==='client'); }catch(e){ return false; } }; const check=()=>{ if(B.over||B.seq!==mySeq||B.qi!==myQi)return; if(cine()||online()){ B.wd=setTimeout(check,2000); return; } pushLog('ld','⏳ '+((B.current&&G.names&&G.names[B.current.side])||'El rival')+' no ha completado su acción: se pasa su turno.'); endTurn(); }; B.wd=setTimeout(check,15000); }"
   );
   return html;
 }

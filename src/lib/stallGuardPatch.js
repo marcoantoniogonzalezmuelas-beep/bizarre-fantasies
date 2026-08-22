@@ -54,7 +54,9 @@ export const STALL_GUARD_PATCH = `
     var scr = document.getElementById('s-battle');
     if(!scr || !scr.classList.contains('active')) { lastAt = Date.now(); return; }
     if(typeof B === 'undefined' || !B || B.over) { lastAt = Date.now(); return; }
-    try{ if(typeof NET !== 'undefined' && NET && NET.role === 'client') { lastAt = Date.now(); return; } }catch(e){}
+    // Partida entre dos jugadores humanos (online): NUNCA hay límite de tiempo
+    // para hacer el turno; se espera todo lo que haga falta.
+    try{ if(typeof NET !== 'undefined' && NET && (NET.role === 'client' || NET.role === 'host')) { lastAt = Date.now(); return; } }catch(e){}
 
     var s = sig();
     if(s !== lastSig){ lastSig = s; lastAt = Date.now(); return; }
