@@ -162,7 +162,7 @@ export default function Cards() {
       {/* Header */}
       <div className="sticky top-0 z-20 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
-          <Link to="/" className="-ml-2 p-2.5 rounded-lg text-[#a89fbb] hover:text-[#FFD24A] hover:bg-[#ffffff10] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={24} /></Link>
+          <Link to="/" className="shrink-0 flex items-center justify-center w-12 h-12 rounded-xl border-2 border-[#FFD24A]/70 bg-[#FFD24A]/10 text-[#FFD24A] shadow-[0_2px_10px_rgba(0,0,0,.5)] hover:bg-[#FFD24A] hover:text-[#3a2600] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={28} strokeWidth={3} /></Link>
           <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">{t('ORÁCULO BIZARRO')}</h1>
           <span className="text-xs text-[#a89fbb] hidden md:inline">{hasDbCards ? dbCards.length : 103} {t('cartas · Base Set')}</span>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
