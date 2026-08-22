@@ -81,7 +81,7 @@ export const ABILITY_IMPL_PATCH = `
           // modificador cuando llega a 0. Sin ese campo el bonus/penalización
           // desaparecía en la misma ronda y nunca se veía en los indicadores.
           else if(st.action === 'buff'){ var m = { turns: Math.max(1, num(st.turns, 99)) }; m[stat] = Math.abs(amount); (t._mods = t._mods || []).push(m); did = true; }
-          else if(st.action === 'debuff'){ var d = { turns: Math.max(1, num(st.turns, 2)) }; d[stat] = -Math.abs(amount); (t._mods = t._mods || []).push(d); did = true; }
+          else if(st.action === 'debuff'){ var d = { turns: Math.max(1, num(st.turns, 99)) }; d[stat] = -Math.abs(amount); (t._mods = t._mods || []).push(d); did = true; }
           else if(st.action === 'paralyze'){ t.skipTurns = (t.skipTurns || 0) + Math.max(1, num(st.turns, 1)); did = true; }
           else if(st.action === 'mana'){ t.mana = Math.max(0, Math.min(num(t.maxMana, 99), num(t.mana, 0) + amount)); did = true; }
         }catch(e){}
