@@ -128,6 +128,10 @@ export const REMATCH_PATCH = `
   // Sustituye el botón "Jugar otra vez" (location.reload) por la revancha.
   function swapButton(){
     var root=document.getElementById('s-result'); if(!root) return;
+    // En online la pantalla de resultado ya trae su propio botón de revancha
+    // ("Jugar otra vez" → bfMatchRematch). Ahí NO se convierte el botón de
+    // "Terminar", que si no aparecían dos botones de volver a jugar.
+    if(root.querySelector('[onclick*="bfMatchRematch"]')) return;
     root.querySelectorAll('button').forEach(function(b){
       var oc=b.getAttribute('onclick')||'';
       if(oc.indexOf('location.reload')===-1) return;
