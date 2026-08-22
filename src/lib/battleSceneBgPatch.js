@@ -79,7 +79,7 @@ export const BATTLE_SCENE_BG_PATCH = `
     '#s-battle .bhero.bf-bscene .bf-bhero-bgart::after{display:none!important}' +
     // Retrato del héroe (art_url): sangra por la izquierda, anclado arriba,
     // mismo encuadre que .bf-eq-portrait en la fase de equipamiento. z-index:2.
-    '#s-battle .bhero.bf-bscene .bf-bscene-portrait{position:absolute!important;left:-14px!important;top:-14px!important;bottom:-14px!important;width:186px!important;height:auto!important;aspect-ratio:auto!important;background-size:cover!important;background-position:center 8%!important;background-repeat:no-repeat!important;background-color:#0a0710!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important;filter:saturate(1.14) contrast(1.1)!important;z-index:2!important;pointer-events:none}' +
+    '#s-battle .bhero.bf-bscene .bf-bscene-portrait{position:absolute!important;left:-14px!important;top:-14px!important;bottom:-14px!important;width:212px!important;height:auto!important;aspect-ratio:auto!important;background-size:cover!important;background-position:center 8%!important;background-repeat:no-repeat!important;background-color:#0a0710!important;border:0!important;border-radius:0!important;overflow:hidden!important;box-shadow:none!important;filter:saturate(1.14) contrast(1.1)!important;z-index:2!important;pointer-events:none}' +
     '#s-battle .bhero.bf-bscene .bf-bscene-portrait::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.04) 48%,rgba(14,9,26,.95) 100%)!important;pointer-events:none}' +
     // Contenido (nombre, stats, slots, aura…) por encima del retrato y del
     // velo. Se excluyen el retrato, la tira original (oculta) y la lupa de

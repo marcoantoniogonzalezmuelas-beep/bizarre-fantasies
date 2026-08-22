@@ -35,7 +35,7 @@ export const BATTLE_PORTRAIT_PATCH = `
     '.bhero .bf-battle-zoom:hover{background:rgba(255,210,74,.35)!important;transform:scale(1.18)!important;box-shadow:0 3px 12px rgba(0,0,0,.7),0 0 20px rgba(255,210,74,.6)!important}',
     '.bhero.active-turn .bf-battle-art{filter:saturate(1.3) contrast(1.16) brightness(1.07)!important}',
     // ---- Campo de batalla épico ----
-    '.bhero{position:relative!important;overflow:hidden!important;border-radius:14px!important;padding-left:172px!important;min-height:188px!important;background:linear-gradient(180deg,rgba(8,5,14,.42),rgba(8,5,14,.92))!important;border:1.5px solid rgba(255,210,74,.22)!important;box-shadow:0 6px 16px rgba(0,0,0,.5)!important}',
+    '.bhero{position:relative!important;overflow:hidden!important;border-radius:14px!important;padding-left:198px!important;min-height:240px!important;background:linear-gradient(180deg,rgba(8,5,14,.42),rgba(8,5,14,.92))!important;border:1.5px solid rgba(255,210,74,.22)!important;box-shadow:0 6px 16px rgba(0,0,0,.5)!important}',
     '.bhero.active-turn{border-color:rgba(255,210,74,.8)!important;box-shadow:0 0 0 1px rgba(255,210,74,.4),0 0 24px rgba(255,210,74,.3),0 6px 16px rgba(0,0,0,.5)!important}',
     '.army-panel{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(28,20,46,.92),rgba(12,8,22,.95))!important;border:1.5px solid rgba(255,210,74,.32)!important;box-shadow:0 12px 30px rgba(0,0,0,.55),inset 0 0 40px rgba(0,0,0,.4)!important}',
     '.army-panel::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 0%,rgba(255,210,74,.10),transparent 60%)}',
