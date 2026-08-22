@@ -160,7 +160,7 @@ export default function Cards() {
       <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#0d0a14aa] via-[#0a081055] to-[#050308dd]" />
 
       {/* Header */}
-      <div className="sticky top-0 z-20 border-b border-[#3c3158]" style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
+      <div className={`${deskScale < 1 ? 'relative' : 'sticky top-0'} z-20 border-b border-[#3c3158]`} style={{ background: 'linear-gradient(180deg, #1a1430ee, #120e1cee)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
           <Link to="/" className="shrink-0 ml-4 flex items-center gap-1.5 h-12 px-4 rounded-xl border-2 border-[#FFD24A] bg-[#FFD24A]/15 text-[#FFD24A] font-heading font-black text-sm shadow-[0_2px_10px_rgba(0,0,0,.5)] hover:bg-[#FFD24A] hover:text-[#3a2600] active:scale-95 transition-all" aria-label="Volver"><ArrowLeft size={26} strokeWidth={3} /> {t('Salir')}</Link>
           <h1 className="font-heading font-extrabold text-xl text-[#FFD24A] tracking-wider">{t('ORÁCULO BIZARRO')}</h1>
