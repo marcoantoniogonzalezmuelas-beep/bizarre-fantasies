@@ -347,7 +347,12 @@ export default function AdminCards() {
     try {
       const isElite = target === 'elite_battle_art_url';
       const refUrl = isElite ? (form.elite_art_url || form.art_url) : form.art_url;
-      const hint = customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '';
+      // El recuadro de batalla del juego es un rectángulo ancho y la imagen se
+      // recorta a "cover": la escena debe ser panorámica, llegar hasta los
+      // bordes y NO llevar marcos ni orlas pintadas (si los lleva, la escena
+      // parece no ocupar todo el recuadro).
+      const FRAME_RULE = ` COMPOSITION — MANDATORY: wide cinematic horizontal 16:9 panoramic composition, full-bleed edge-to-edge artwork that fills the whole image with scenery and action right up to all four edges. STRICTLY FORBIDDEN: any frame, border, ornate edge, card frame, plaque, passepartout, rounded corners, vignette, letterbox black bars, margins, empty padding, text, logo, watermark or signature.`;
+      const hint = (customPrompt ? ` Additional art direction from the admin: ${customPrompt.trim()}.` : '') + FRAME_RULE;
       const prompt = isElite
         ? `Elite legendary battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in upgraded ultimate form. Glowing golden aura, enhanced ornate armor, fierce powerful combat stance, spectacular magical effects, battlefield background, anime-inspired dark fantasy art, premium golden legendary trading card game artwork.${hint}`
         : `Battle scene of ${form.name}${form.title ? ', ' + form.title : ''} — a ${form.clan || 'dark fantasy'} hero in the Bizarre Fantasies card game. Dynamic full-body combat pose, mid-action, dramatic cinematic lighting, battlefield background, anime-inspired dark fantasy illustration, intense atmosphere, detailed armor and magical effects, epic trading card game artwork.${hint}`;
