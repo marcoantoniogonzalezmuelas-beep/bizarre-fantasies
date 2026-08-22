@@ -305,6 +305,8 @@ export const ABILITY_ANIM_PATCH = `
   // evitar que la MISMA animación se encole dos veces (p.ej. si el hook de
   // useAbility y el escaneo periódico la disparan a la vez).
   var playingUrl=null;
+  // Última vez que se reprodujo cada imagen (antirrebote por URL).
+  var lastUrlPlay={};
   // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
@@ -313,6 +315,10 @@ export const ABILITY_ANIM_PATCH = `
     // animaciones" en batalla), se salta el overlay 3D. La carta revelada y
     // los FX 2D (rayo en cadena, tormenta ígnea, banners…) siguen funcionando.
     if(window.__bfNoCinematics)return;
+    // Antirrebote POR IMAGEN: la misma cinemática no se repite dentro de 9 s,
+    // ni siquiera desde la cola. Antes, una animación bloqueada por los efectos
+    // visuales se quedaba encolada y volvía a saltar después de tarjetear.
+    if(lastUrlPlay[url]&&Date.now()-lastUrlPlay[url]<9000)return;
     // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
     // termine la actual. Solo se guarda la última pendiente (no acumula cola).
     // Cualquier capa cinemática en pantalla bloquea la siguiente: además de
@@ -345,6 +351,7 @@ export const ABILITY_ANIM_PATCH = `
       return;
     }
     playingUrl=url;
+    lastUrlPlay[url]=Date.now();
     lastCine=Date.now();
     var ov=document.createElement('div');ov.id='bf-abil-anim';
     ov.style.setProperty('--aa-color',cc);
