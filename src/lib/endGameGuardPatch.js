@@ -49,8 +49,8 @@ export const END_GAME_GUARD_PATCH = `
       if(!started){ since=0; return; }
 
       var pAlive=alive('p'), oAlive=alive('o');
-      var decided = (typeof B!=='undefined'&&B&&B.over) || pAlive===0 || oAlive===0;
-      if(!decided){ since=0; return; }
+      // Solo cuando un bando se queda SIN héroes vivos (todos muertos).
+      if(pAlive!==0 && oAlive!==0){ since=0; return; }
 
       if(!since){ since=Date.now(); return; }
       if(Date.now()-since < 1500) return;
