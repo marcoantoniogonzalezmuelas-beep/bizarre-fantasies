@@ -21,6 +21,10 @@ export default function PagePinchZoom() {
 
     const apply = () => {
       root.style.transformOrigin = '0 0';
+      // Sin pellizco activo NO se deja transform puesto: al combinarse con el
+      // "modo escritorio" (zoom CSS) el navegador desplazaba la zona sensible
+      // al toque y la cabecera/pestañas dejaban de responder.
+      if (z === 1 && tx === 0 && ty === 0) { root.style.transform = 'none'; return; }
       root.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${z})`;
     };
     // Capa GPU PERMANENTE (igual que dentro del juego): si la capa se crea al
