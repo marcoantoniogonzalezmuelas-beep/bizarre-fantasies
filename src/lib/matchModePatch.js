@@ -257,6 +257,13 @@ export const MATCH_MODE_PATCH = `
       // datos que tiene (youWin llega vía el mensaje 'end' del juego). Así el
       // jugador siempre puede salir aunque el bfsync del host se pierda o
       // tarde en llegar. Cuando bfsync llegue, actualizará el marcador.
+      // El marcador general se suma YA en local (no escribe en la BD: de eso se
+      // encarga el host). Sin esto, si el bfsync del host no llega, el ganador
+      // veía un 0-0 en su pantalla final.
+      try{
+        var wNick = myWin ? (n.names_self||'Jugador') : (n.names_opp||'Rival');
+        if(window.bfSeriesScore) window.bfSeriesScore.scoreOnce(wNick);
+      }catch(e){}
       renderResultScreen({ myWin: !!youWin, score: n.score||{p:0,o:0}, matchMode: n.matchMode||'free' });
     }
   };
