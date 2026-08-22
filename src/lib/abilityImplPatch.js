@@ -46,6 +46,20 @@ export const ABILITY_IMPL_PATCH = `
   }
   function num(v, d){ var n = Number(v); return isNaN(n) ? d : n; }
 
+  // Daño escalado con el stat del héroe: con params.min/params.max el golpe
+  // va del mínimo al máximo según el stat indicado (por defecto HE), tomando
+  // 10 como suelo y 30 como techo de referencia del stat.
+  function scaledAmount(hero, p){
+    var min = num(p.min, NaN), max = num(p.max, NaN);
+    if(isNaN(min) || isNaN(max)) return num(p.amount, 0);
+    var stat = ['cc','ad','he'].indexOf(p.stat) >= 0 ? p.stat : 'he';
+    var val = 0;
+    try{ val = (typeof stat_ === 'function') ? stat_(hero, stat) : (typeof stat === 'string' && typeof window.stat === 'function' ? window.stat(hero, stat) : num(hero[stat], 0)); }catch(e){ val = num(hero[stat], 0); }
+    if(!val) val = num(hero[stat], 0);
+    var f = Math.max(0, Math.min(1, (val - 10) / 20));
+    return Math.round(min + (max - min) * f);
+  }
+
   // ── Mecánicas NUEVAS creadas desde el editor: lista de pasos (custom_steps).
   // El editor guarda params.steps = [{action, target, amount, stat, turns}] y
   // aquí se traduce cada paso a las funciones reales del motor de batalla.
@@ -167,11 +181,11 @@ export const ABILITY_IMPL_PATCH = `
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': +' + amount + ' de vida a todo el equipo.');
         acted = true;
       } else if(kind === 'damage_enemy'){
-        var dmg = num(p.amount, 0);
+        var dmg = scaledAmount(hero, p);
         var list = foes(side);
-        if(!p.all) list = list.slice(0, 1);
+        if(!p.all) list = list.slice(0, Math.max(1, num(p.targets, 1)));
         list.forEach(function(t){ if(typeof dealDamage === 'function') dealDamage(t, dmg, { type:'true' }); });
-        if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': ' + dmg + ' de da\\u00f1o a ' + (p.all ? 'todos los rivales' : (list[0] ? list[0].name : 'un rival')) + '.');
+        if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': ' + dmg + ' de da\\u00f1o a ' + (p.all ? 'todos los rivales' : (list.length > 1 ? list.length + ' rivales' : (list[0] ? list[0].name : 'un rival'))) + '.');
         acted = list.length > 0;
       } else if(kind === 'buff_self'){
         var stat = ['cc','ad','he'].indexOf(p.stat) >= 0 ? p.stat : 'cc';
