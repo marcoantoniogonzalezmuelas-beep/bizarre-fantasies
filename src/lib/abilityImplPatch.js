@@ -77,8 +77,11 @@ export const ABILITY_IMPL_PATCH = `
           if(st.action === 'damage' && typeof dealDamage === 'function'){ dealDamage(t, amount, { type:'true' }); did = true; }
           else if(st.action === 'heal' && typeof heal === 'function'){ heal(t, amount); did = true; }
           else if(st.action === 'shield'){ t.shield = (t.shield || 0) + amount; did = true; }
-          else if(st.action === 'buff'){ var m = {}; m[stat] = amount; (t._mods = t._mods || []).push(m); did = true; }
-          else if(st.action === 'debuff'){ var d = {}; d[stat] = -Math.abs(amount); (t._mods = t._mods || []).push(d); did = true; }
+          // IMPORTANTE: el motor descuenta 1 a "turns" cada ronda y descarta el
+          // modificador cuando llega a 0. Sin ese campo el bonus/penalización
+          // desaparecía en la misma ronda y nunca se veía en los indicadores.
+          else if(st.action === 'buff'){ var m = { turns: Math.max(1, num(st.turns, 99)) }; m[stat] = Math.abs(amount); (t._mods = t._mods || []).push(m); did = true; }
+          else if(st.action === 'debuff'){ var d = { turns: Math.max(1, num(st.turns, 2)) }; d[stat] = -Math.abs(amount); (t._mods = t._mods || []).push(d); did = true; }
           else if(st.action === 'paralyze'){ t.skipTurns = (t.skipTurns || 0) + Math.max(1, num(st.turns, 1)); did = true; }
           else if(st.action === 'mana'){ t.mana = Math.max(0, Math.min(num(t.maxMana, 99), num(t.mana, 0) + amount)); did = true; }
         }catch(e){}
@@ -173,7 +176,8 @@ export const ABILITY_IMPL_PATCH = `
       } else if(kind === 'buff_self'){
         var stat = ['cc','ad','he'].indexOf(p.stat) >= 0 ? p.stat : 'cc';
         var inc = num(p.amount, 0);
-        var mod = {}; mod[stat] = inc;
+        // turns: el motor caduca los modificadores por rondas; 99 = todo el combate.
+        var mod = { turns: Math.max(1, num(p.turns, 99)) }; mod[stat] = inc;
         (hero._mods = hero._mods || []).push(mod);
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': +' + inc + ' de ' + stat.toUpperCase() + '.');
         acted = true;
