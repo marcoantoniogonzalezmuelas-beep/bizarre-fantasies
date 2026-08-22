@@ -22,7 +22,10 @@ export default function AdminAuctions() {
   useEffect(() => {
     if (user?.role !== 'admin') return;
     base44.entities.Card.list('number', 300).then(list => {
-      setHeroes((list || []).filter(c => c.category === 'hero' && c.clan !== 'Bizarros' && ['CC', 'AD', 'HE'].includes(c.type || '')));
+      // Todos los héroes del set (incluidas las Épicas nuevas), sin importar
+      // si tienen el rol CC/AD/HE bien puesto: así cualquier héroe que se añada
+      // aparece siempre en el control de subastas.
+      setHeroes((list || []).filter(c => c.category === 'hero' && c.clan !== 'Bizarros'));
     });
     base44.entities.AuctionConfig.list('-updated_date', 1).then(rows => {
       if (rows && rows.length) {
