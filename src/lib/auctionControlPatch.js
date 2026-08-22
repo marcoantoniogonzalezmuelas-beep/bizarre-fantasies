@@ -110,23 +110,24 @@ export const AUCTION_CONTROL_PATCH = `
       try{
         if(isOn() && CFG.mode !== 'weights'){
           var ids = CFG.hero_ids || [];
-          // Solo se fuerzan los héroes del rol que se subasta en esta fase:
-          // meter uno de otro rol rompería la regla de la fase y provocaba que
-          // saliese un héroe distinto al marcado.
           var curT = (typeof G !== 'undefined' && G.curType) ? G.curType : '';
-          (p || []).forEach(function(h){
-            if(ids.indexOf(h.id) < 0) return;
-            if(curT && String(h.type || '') !== curT) return;
-            for(var k = 0; k < out.length; k++){ if(out[k] && out[k].id === h.id) return; }
-            var same = -1, free = -1;
-            for(var i = 0; i < out.length; i++){
-              if(same < 0 && out[i] && out[i].clan === h.clan) same = i;
-              if(free < 0 && out[i] && ids.indexOf(out[i].id) < 0) free = i;
-            }
-            if(same >= 0) out[same] = h;
-            else if(free >= 0) out[free] = h;
-            else out.push(h);
+          // Se busca el héroe marcado tanto en el pool que recibe la función
+          // como en el catálogo completo del juego (una épica nueva puede no
+          // estar en el pool de razas por su clan).
+          var all = (p || []).slice();
+          (typeof HEROES !== 'undefined' ? HEROES : []).forEach(function(h){
+            if(h && all.indexOf(h) < 0) all.push(h);
           });
+          var forced = [], seen = {};
+          all.forEach(function(h){
+            if(!h || ids.indexOf(h.id) < 0 || seen[h.id]) return;
+            if(curT && String(h.type || '') !== curT) return;
+            seen[h.id] = 1;
+            forced.push(h);
+          });
+          // Se RESPETA la configuración al 100%: si hay héroes marcados para el
+          // rol de esta fase, los candidatos son EXCLUSIVAMENTE esos héroes.
+          if(forced.length) out = shuf(forced);
         }
       }catch(e){}
       return out;
