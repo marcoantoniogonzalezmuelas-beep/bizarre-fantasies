@@ -11,6 +11,7 @@ import DownloadDocsButton from '@/components/cards/DownloadDocsButton';
 import { HERO_ART, HERO_ELITE_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 import { getLang, t } from '@/lib/i18n';
 import useDesktopMode from '@/hooks/useDesktopMode';
+import { isSummonCard } from '@/lib/summonCards';
 
 const TABS = [
   { key: 'heroes', label: 'Héroes' },
@@ -20,6 +21,7 @@ const TABS = [
   { key: 'armors', label: 'Armaduras' },
   { key: 'objects', label: 'Objetos' },
   { key: 'tokens', label: 'Héroes bizarros' },
+  { key: 'summons', label: 'Invocaciones' },
   { key: 'bonuses', label: 'Bonificadores' },
   { key: 'races', label: 'Razas' },
 ];
@@ -120,7 +122,8 @@ export default function Cards() {
   const isToken = (c) => String(c.card_id || '').startsWith('tk_');
   const hasDbCards = dbCards.length > 0;
   const heroes = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'hero' && !isToken(c)).map(normalizeHero) : HEROES, [dbCards, hasDbCards]);
-  const tokens = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'bizarro' || isToken(c)).map(normalizeHero) : [], [dbCards, hasDbCards]);
+  const tokens = useMemo(() => hasDbCards ? dbCards.filter(c => (c.category === 'bizarro' || isToken(c)) && !isSummonCard(c)).map(normalizeHero) : [], [dbCards, hasDbCards]);
+  const summons = useMemo(() => hasDbCards ? dbCards.filter(isSummonCard).map(normalizeHero) : [], [dbCards, hasDbCards]);
   const spells = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'spell').map(normalizeItem) : SPELLS, [dbCards, hasDbCards]);
   const ranged = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'ranged_weapon').map(normalizeItem) : RANGED_WEAPONS, [dbCards, hasDbCards]);
   const melee = useMemo(() => hasDbCards ? dbCards.filter(c => c.category === 'melee_weapon').map(normalizeItem) : MELEE_WEAPONS, [dbCards, hasDbCards]);
@@ -261,6 +264,23 @@ export default function Cards() {
             ) : (
               <div className={grid4}>
                 {tokens.map(token => <HeroCard key={token.id} hero={token} onClick={h => setSelectedHero(h)} />)}
+              </div>
+            )}
+          </>
+        )}
+        {tab === 'summons' && (
+          <>
+            <div className="mb-6 rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2" style={{ background: '#8fd8ff18', border: '1px solid #8fd8ff55', color: '#cfeaff' }}>
+              <span className="text-lg">✦</span>
+              {getLang() === 'en'
+                ? <span><strong>Summons</strong> are followers created by a hero's ability in battle. They are never drafted or auctioned.</span>
+                : <span>Las <strong>Invocaciones</strong> son followers que un héroe crea con su habilidad en plena batalla. No se subastan ni se reclutan.</span>}
+            </div>
+            {summons.length === 0 ? (
+              <div className="text-center py-16 text-[#a89fbb]">{t('Aún no hay Invocaciones en el catálogo.')}</div>
+            ) : (
+              <div className={grid4}>
+                {summons.map(s => <HeroCard key={s.id} hero={s} onClick={h => setSelectedHero(h)} />)}
               </div>
             )}
           </>
