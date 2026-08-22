@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import HeroCardFace from '@/components/cards/HeroCardFace';
+import PinchZoomBox from '@/components/cards/PinchZoomBox';
 
 // Vista ampliada de la carta completa. Se monta con un portal en <body> para
 // que en móvil/tablet NO herede el zoom de "modo escritorio" ni el pellizco
@@ -24,12 +25,13 @@ export default function HeroCardZoomModal({ hero, elite, onClose }) {
         <X size={22} />
         Cerrar
       </button>
-      <div
-        className="relative"
-        style={{ aspectRatio: '7 / 10', height: 'min(78vh, 620px)', maxWidth: '94vw' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <HeroCardFace hero={hero} elite={elite} />
+      <div onClick={(e) => e.stopPropagation()}>
+        <PinchZoomBox
+          className="relative"
+          style={{ aspectRatio: '7 / 10', height: 'min(78vh, 620px)', maxWidth: '94vw' }}
+        >
+          <HeroCardFace hero={hero} elite={elite} />
+        </PinchZoomBox>
       </div>
     </div>,
     document.body
