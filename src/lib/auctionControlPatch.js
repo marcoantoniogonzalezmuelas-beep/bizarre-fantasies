@@ -134,8 +134,43 @@ export const AUCTION_CONTROL_PATCH = `
     };
   }
 
+  // Héroes marcados en el editor para un rol concreto.
+  function forcedFor(type){
+    if(!isOn() || CFG.mode === 'weights') return [];
+    var ids = CFG.hero_ids || [];
+    return (typeof HEROES !== 'undefined' ? HEROES : []).filter(function(h){
+      return h && ids.indexOf(h.id) >= 0 && (!type || String(h.type || '') === type);
+    });
+  }
+
+  // ÉPICAS: el juego sortea la épica al azar (prepareEpicOffers). Si el editor
+  // tiene marcada una épica para ese rol, se sustituye la sorteada por ella.
+  function fixEpicCands(){
+    try{
+      if(typeof G === 'undefined' || !G.epicCands) return;
+      ['p','o'].forEach(function(s){
+        var list = G.epicCands[s];
+        if(!list || !list.length) return;
+        for(var i = 0; i < list.length; i++){
+          var h = list[i];
+          if(!h || h.clan !== 'Épicas') continue;
+          var want = forcedFor(String(h.type || '')).filter(function(f){ return f.clan === 'Épicas'; });
+          if(want.length && want.indexOf(h) < 0) list[i] = want[Math.floor(Math.random() * want.length)];
+        }
+      });
+    }catch(e){}
+  }
+
+  function hookRecruit(){
+    if(window.__bfEpicHooked || typeof window.renderRecruit !== 'function') return;
+    window.__bfEpicHooked = true;
+    var orig = window.renderRecruit;
+    window.renderRecruit = function(){ fixEpicCands(); return orig.apply(this, arguments); };
+  }
+
   function install(){
     hookSlate();
+    hookRecruit();
     if(window.__bfAuctionHooked || typeof window.startAuctionPhase !== 'function') return false;
     window.__bfAuctionHooked = true;
     var orig = window.startAuctionPhase;
