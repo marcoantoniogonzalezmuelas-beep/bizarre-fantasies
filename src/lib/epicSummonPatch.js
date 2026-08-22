@@ -1,0 +1,128 @@
+// Chuchinjo Tokatus (Épicas) — habilidades de INVOCACIÓN de caballería:
+//
+//   Normal (akind 'epic-summon', no élite): pierde 15 de vida e invoca un
+//   Unicornio Kamikaze (arte aleatorio entre las dos ilustraciones). El
+//   unicornio puede inmolarse: 20 de daño a un rival, atravesando armaduras, y
+//   se sacrifica.
+//
+//   Élite: pierde 20 de vida e invoca un Pegaso. El Pegaso pasa a ser el más
+//   rápido de todos los héroes y lanza un rayo que atraviesa armaduras a TODOS
+//   los rivales (5 de daño; 10 en su versión élite, curándose además 5).
+//
+// La vida que pierde el invocador se aplica con dealDamage, así que se muestra
+// con el mismo marcador de daño que cualquier otro golpe.
+export const EPIC_SUMMON_PATCH = `
+<script>
+(function(){
+  if(window.__bfEpicSummon) return;
+  window.__bfEpicSummon = true;
+
+  function tokenTpl(id){
+    var fromH = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(h){ return h && h.id === id; });
+    if(fromH) return fromH;
+    return (typeof TOKENS !== 'undefined' ? TOKENS : []).find(function(t){ return t && t.id === id; }) || null;
+  }
+  function alive(side){ return ((typeof G !== 'undefined' && G.team && G.team[side]) || []).filter(function(x){ return x && x.alive; }); }
+  function sideOf(x){ return (typeof tSide === 'function') ? tSide(x) : 'p'; }
+  function log(k, t){ try{ if(typeof pushLog === 'function') pushLog(k, t); }catch(e){} }
+  function fx(o){ try{ if(typeof pushFx === 'function') pushFx(o); }catch(e){} }
+  function sync(){
+    try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
+    try{ if(typeof netSync === 'function') netSync('s-battle'); }catch(e){}
+  }
+
+  function summon(side, hero){
+    var el = !!hero.eliteMode;
+    var id = el ? 'tk_pegaso' : 'tk_unicornio';
+    var tpl = tokenTpl(id);
+    if(!tpl) return false;
+    var cost = el ? 20 : 15;
+    // Coste en vida del invocador: se muestra como cualquier otro daño.
+    if(typeof dealDamage === 'function') dealDamage(hero, cost, { type:'true', ignoreShield:true, ignoreArmor:true });
+    var inst = (typeof makeInstance === 'function') ? makeInstance(tpl) : Object.assign({}, tpl);
+    inst.id = id + '_' + Date.now();
+    inst._token = id;
+    inst.akind = el ? 'pegasus-token' : 'kamikaze-token';
+    // Unicornio: sin versión élite real — se elige al azar una de sus dos
+    // ilustraciones (los stats y la habilidad son idénticos).
+    inst.eliteMode = el ? true : (Math.random() < 0.5);
+    inst.eliteUsed = true;
+    inst.abilityUsed = false;
+    inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
+    inst.maxHp = Number(el ? (tpl.eHp || tpl.hp) : tpl.hp) || 15;
+    inst.hp = inst.maxHp; inst.alive = true;
+    (G.team[side] || (G.team[side] = [])).push(inst);
+    hero.abilityUsed = true;
+    log('lg', hero.name + ' pierde ' + cost + ' de vida e invoca a ' + inst.name + '.');
+    fx({ k:'status', side:side, id:hero.id, txt: el ? '\\u{1F40E}' : '\\u{1F984}' });
+    if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, hero); }catch(e){} }
+    sync();
+    return true;
+  }
+
+  function kamikaze(side, h, finish){
+    var foes = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
+    function blow(t){
+      if(t && typeof dealDamage === 'function'){
+        fx({ k:'spell', toSide:sideOf(t), toId:t.id, el:'fuego' });
+        var d = dealDamage(t, 20, { type:'true', pierce:1, ignoreArmor:true });
+        log('ld', h.name + ' se INMOLA sobre ' + t.name + ' (-' + d + ').');
+      }
+      // Se sacrifica.
+      if(typeof dealDamage === 'function') dealDamage(h, (h.hp || 0) + (h.shield || 0) + 1, { type:'true', ignoreShield:true, ignoreArmor:true });
+      h.abilityUsed = true;
+      sync();
+      finish();
+    }
+    if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
+      pendTarget('Objetivo de Kamikaze', foes, blow);
+    } else {
+      blow(alive(foes).sort(function(a,b){ return a.hp - b.hp; })[0]);
+    }
+  }
+
+  function pegasus(side, h, finish){
+    var el = !!h.eliteMode, dmg = el ? 10 : 5;
+    var foes = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
+    // Pasa a ser el más rápido de todos los héroes.
+    (h._mods = h._mods || []).push({ vel:99, turns:99 });
+    fx({ k:'status', side:side, id:h.id, txt:'\\u26A1' });
+    alive(foes).forEach(function(x){
+      fx({ k:'spell', toSide:sideOf(x), toId:x.id, el:'rayo' });
+      var d = (typeof dealDamage === 'function') ? dealDamage(x, dmg, { type:'spell', element:'rayo', pierce:1, ignoreArmor:true }) : 0;
+      log('ld', h.name + ' fulmina a ' + x.name + ' con un rayo (-' + d + ').');
+    });
+    if(el && typeof heal === 'function'){
+      var g = heal(h, 5);
+      if(g) log('lh', h.name + ' se cura +' + g + '.');
+    }
+    log('li', h.name + ' se vuelve el m\\u00e1s r\\u00e1pido de todos los h\\u00e9roes.');
+    h.abilityUsed = true;
+    sync();
+    finish();
+  }
+
+  function install(){
+    if(window.__bfEpicSummonHooked || typeof window.useAbility !== 'function' || typeof G === 'undefined') return false;
+    window.__bfEpicSummonHooked = true;
+    var orig = window.useAbility;
+    window.useAbility = function(side, h, done){
+      var k = h && h.akind;
+      if(k !== 'epic-summon' && k !== 'kamikaze-token' && k !== 'pegasus-token') return orig.apply(this, arguments);
+      var finish = function(){
+        if(typeof done === 'function') done();
+        else if(typeof finishAct === 'function') finishAct();
+      };
+      if(k === 'kamikaze-token'){ kamikaze(side, h, finish); return; }
+      if(k === 'pegasus-token'){ pegasus(side, h, finish); return; }
+      if(!summon(side, h)) return orig.apply(this, arguments);
+      setTimeout(finish, 420);
+    };
+    return true;
+  }
+
+  var tries = 0, iv = setInterval(function(){ if(install() || tries++ > 160) clearInterval(iv); }, 150);
+  install();
+})();
+</script>
+`;
