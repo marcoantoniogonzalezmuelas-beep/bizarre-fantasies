@@ -1,0 +1,75 @@
+// SINCRONIZACIÓN DEL FIN DE PARTIDA (multiplayer).
+//
+// Cuando la partida termina en un cliente, se avisa al otro jugador con un
+// mensaje de red propio ('bfEndSync') para que los dos vean su pantalla final.
+// Solo actúa con la pantalla de BATALLA activa: nunca durante subastas ni
+// equipamiento (ahí no hay resultado que mostrar).
+export const END_GAME_SYNC_PATCH = `
+<script>
+(function(){
+  if(window.__bfEndSync) return;
+  window.__bfEndSync = true;
+
+  function inBattle(){
+    var s = document.getElementById('s-battle');
+    return !!(s && s.classList.contains('active'));
+  }
+  function mySide(){
+    try{ if(typeof NET!=='undefined'&&NET&&NET.role) return NET.mySide||(NET.role==='client'?'o':'p'); }catch(e){}
+    return 'p';
+  }
+
+  // Avisa al rival en cuanto este cliente muestra su pantalla final.
+  function hookShowResult(){
+    if(typeof window.showResult !== 'function' || window.showResult.__bfEndSync) return false;
+    var orig = window.showResult;
+    window.showResult = function(youWin){
+      try{
+        if(typeof netSend === 'function' && !window.__bfEndSyncGot){
+          // pWin: victoria del anfitrión (lado 'p'), independiente de quién avisa.
+          var pWin = (youWin === (mySide() === 'p'));
+          netSend({ t: 'bfEndSync', pWin: pWin });
+        }
+      }catch(e){}
+      return orig.apply(this, arguments);
+    };
+    window.showResult.__bfEndSync = 1;
+    return true;
+  }
+
+  // Recibe el aviso del rival y muestra la pantalla final correcta.
+  function handle(msg){
+    if(!msg || msg.t !== 'bfEndSync' || !inBattle()) return;
+    window.__bfEndSyncGot = true;
+    try{
+      if(typeof G !== 'undefined' && G) G._result = { pWin: !!msg.pWin };
+      ['bf-abil-anim','bf-kill-ov','bf-spec-cine','bf-target-pick'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el && el.parentNode) el.parentNode.removeChild(el);
+      });
+      var youWin = (!!msg.pWin === (mySide() === 'p'));
+      if(typeof showResult === 'function') showResult(youWin);
+      else if(typeof show === 'function') show('s-result');
+    }catch(e){}
+    setTimeout(function(){ window.__bfEndSyncGot = false; }, 4000);
+  }
+
+  // Escucha los datos de red del juego sin romper su propio manejador.
+  function hookNetRecv(){
+    if(typeof window.netOnData !== 'function' || window.netOnData.__bfEndSync) return false;
+    var orig = window.netOnData;
+    window.netOnData = function(msg){
+      try{ handle(msg); }catch(e){}
+      return orig.apply(this, arguments);
+    };
+    window.netOnData.__bfEndSync = 1;
+    return true;
+  }
+
+  var tries = 0, t = setInterval(function(){
+    var a = hookShowResult(), b = hookNetRecv();
+    if((window.showResult && window.showResult.__bfEndSync && window.netOnData && window.netOnData.__bfEndSync) || tries++ > 200) clearInterval(t);
+  }, 200);
+})();
+</script>
+`;
