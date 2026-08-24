@@ -131,6 +131,17 @@ export const STATUS_AURA_PATCH = `
   // sacudidas, crecer/encoger ni latidos): el aura, el patrón, la etiqueta y
   // las decoraciones se ven igual, pero quietos y con el tamaño de siempre.
   css+='.bf-decor{animation:none!important}'+
+       // Un solo indicador por estado: el rótulo de este parche (::after). El
+       // emblema flotante nativo (.bf-status-badge, con su parpadeo) se oculta
+       // SIEMPRE, esté donde esté dentro del recuadro — era el segundo
+       // indicador intermitente que se veía duplicado.
+       '.bhero .bf-status-badge{display:none!important}'+
+       // TODA la batalla sin movimiento en los retratos: ni sacudida de agonía,
+       // ni scanlines, ni escarcha animada, ni goteo de sangre. Solo las
+       // ráfagas de habilidad conservan su animación.
+       '.bhero,.bhero::before,.bhero::after,.bhero *:not(.bf-ability-burst):not(.bf-ability-burst *),.bhero *:not(.bf-ability-burst)::before,.bhero *:not(.bf-ability-burst)::after{animation:none!important;transition:none!important}'+
+       '.bhero.bf-agonizing,.bhero.bf-agonizing *{transform:none!important}'+
+       '.bhero .bf-blood-drop{display:none!important}'+
        // Marcadores de estado sobre el retrato (badges nativos, marcador de
        // pasiva, insignia de agonía): visibles pero SIN movimiento alguno.
        '.bhero .status-badge,.bhero .bf-status-badge,.bhero .bf-passive-mark,.bhero .bf-decor-layer,.bhero .bf-decor-layer *{animation:none!important;transition:none!important}'+

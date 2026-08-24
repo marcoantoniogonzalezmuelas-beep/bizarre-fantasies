@@ -33,7 +33,8 @@ export const BATTLE_ANIME_PATCH = `
   '.bhero.bf-state-drunk .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(184,236,114,.42),rgba(29,47,11,.5)),repeating-linear-gradient(65deg,transparent 0 9px,rgba(184,236,114,.18) 9px 10px)}'+
   '.bhero.bf-state-dizzy .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(114,240,181,.42),rgba(11,73,52,.5)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(114,240,181,.14),transparent 20deg)}'+
   // Agonizando: velo de sangre anime sobre el retrato + pulso rojo del rectángulo.
-  '.bhero.bf-agonizing{box-shadow:0 0 0 2px rgba(255,30,30,.85),0 0 26px rgba(255,0,0,.6)!important;animation:bfAgonShake 1.1s ease-in-out infinite!important}'+
+  // Agonía SIN sacudida: el retrato se queda quieto (solo borde rojo).
+  '.bhero.bf-agonizing{box-shadow:0 0 0 2px rgba(255,30,30,.85),0 0 26px rgba(255,0,0,.6)!important;animation:none!important}'+
   '.bhero.bf-agonizing .bf-battle-art{filter:saturate(1.1) brightness(.7) drop-shadow(0 0 10px rgba(255,0,0,.7))!important}'+
   // (El velo de sangre real lo gestiona heroBloodFxPatch con un elemento dedicado)
   '@keyframes bfAgonShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}'+

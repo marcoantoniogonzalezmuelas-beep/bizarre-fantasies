@@ -31,11 +31,10 @@ export const HERO_BLOOD_FX_PATCH = `
   '.bf-blood-drop{position:absolute;top:-20px;width:5px;height:12px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:linear-gradient(180deg,#ff1a1a,#7a0000);box-shadow:0 0 5px rgba(255,0,0,.9),0 1px 2px rgba(0,0,0,.5);animation:bfBloodFall linear infinite;pointer-events:none}' +
   '@keyframes bfBloodFall{0%{transform:translateY(0) scale(.4);opacity:0}8%{opacity:1}90%{opacity:.7}100%{transform:translateY(230px) scale(1.3);opacity:0}}' +
   // ---- Animación de borde de agonía más viva ----
-  '.bhero.bf-agonizing{box-shadow:0 0 0 3px rgba(255,20,20,.9),0 0 30px rgba(255,0,0,.7),inset 0 0 20px rgba(120,0,0,.4)!important;animation:bfAgonShake .8s ease-in-out infinite!important}' +
-  '@keyframes bfAgonShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-2px)}60%{transform:translateX(2px)}}' +
-  // Scanlines animados sobre el fondo del héroe con estado
-  '.bhero.s-cursed .bf-bhero-bgart::before,.bhero.s-paralyzed .bf-bhero-bgart::before,.bhero.s-sleeping .bf-bhero-bgart::before,.bhero.s-frozen .bf-bhero-bgart::before,.bhero.s-tank .bf-bhero-bgart::before,.bhero.bf-state-confused .bf-bhero-bgart::before,.bhero.bf-state-drunk .bf-bhero-bgart::before,.bhero.bf-state-dizzy .bf-bhero-bgart::before{animation:bfScanShift 3s linear infinite}' +
-  '@keyframes bfScanShift{0%{transform:translateY(0)}100%{transform:translateY(8px)}}';
+  // Agonía SIN sacudida ni pulsos: borde rojo y velo estáticos.
+  '.bhero.bf-agonizing{box-shadow:0 0 0 3px rgba(255,20,20,.9),0 0 30px rgba(255,0,0,.7),inset 0 0 20px rgba(120,0,0,.4)!important;animation:none!important;transform:none!important}' +
+  '.bhero .bf-blood-veil,.bhero .bf-blood-veil::before,.bhero .bf-blood-veil::after{animation:none!important}' +
+  '.bhero .bf-blood-drop{display:none!important}';
 
   var st = document.createElement('style');
   st.textContent = css;
@@ -54,14 +53,6 @@ export const HERO_BLOOD_FX_PATCH = `
       if(!veil){
         veil = document.createElement('div');
         veil.className = 'bf-blood-veil';
-        DROPS.forEach(function(d){
-          var drop = document.createElement('div');
-          drop.className = 'bf-blood-drop';
-          drop.style.left = d.x + '%';
-          drop.style.animationDelay = d.d + 's';
-          drop.style.animationDuration = d.dur + 's';
-          veil.appendChild(drop);
-        });
         card.appendChild(veil);
       }
     } else if(veil){
