@@ -18,7 +18,8 @@ export const FAST_ABILITY_PATCH = `
   function isFast(h){
     if(!h) return false;
     var id = String(h.id || h.cid || h.card_id || '').toLowerCase();
-    return id === 'fast' || String(h.name || '') === 'Fast Everest Panzer';
+    var nm = String(h.name || '');
+    return id === 'faseve' || id === 'fast' || nm === 'Fas Everest Panzer' || nm === 'Fast Everest Panzer';
   }
 
   var CSS = '#bf-fast-pick{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(6,4,12,.82)}'
