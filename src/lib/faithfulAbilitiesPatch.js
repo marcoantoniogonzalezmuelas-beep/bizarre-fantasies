@@ -36,7 +36,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
           var a = getHero(B.current.side, B.current.id);
           if(a && a._bfLifestealCC && a !== target && typeof heal === 'function'){
             var g = heal(a, Math.round(d * 0.5));
-            if(g) log('lh', a.name + ' roba ' + g + ' de vida.');
+            if(g){ fx({k:'heal', side:B.current.side, id:a.id, amt:g}); log('lh', a.name + ' roba ' + g + ' de vida.'); }
           }
         }
       }catch(e){}
@@ -258,6 +258,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
       fx({k:'slash', toSide:side_(t), toId:t.id});
       var d = dealDamage(t, Math.round(stat(c.h,'cc') * 0.6), {type:'melee'});
       var g = heal(c.h, d);
+      if(g) fx({k:'heal', side:c.side, id:c.h.id, amt:g});
       log('ld', c.h.name + ' drena la vida de ' + t.name + ' (-' + d + ', +' + g + ') y roba vida en cuerpo a cuerpo.');
     },
     // Sylvex — +4 a todos sus stats (élite: +6 y cura 10)
@@ -296,12 +297,12 @@ export const FAITHFUL_ABILITIES_PATCH = `
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'agua'});
       var d = dealDamage(c.t, Math.round(stat(c.h,'he') * (c.el ? 1.25 : 1.1)) + (c.el ? 6 : 0), {type:'spell', element:'agua'});
       var g = heal(c.h, d);
-      fx({k:'status', side:c.side, id:c.h.id, txt:'\\u271a'});
+      if(g) fx({k:'heal', side:c.side, id:c.h.id, amt:g});
       log('ld', c.h.name + ' drena a ' + c.t.name + ' (-' + d + ') y absorbe esa vida (+' + g + ').');
       if(c.el){
         var others = L(c.allies).filter(function(x){ return x !== c.h; });
         var each = Math.max(1, Math.round(d / 2 / Math.max(1, others.length)));
-        others.forEach(function(x){ var gg = heal(x, each); if(gg) log('lh', x.name + ' +' + gg + '.'); });
+        others.forEach(function(x){ var gg = heal(x, each); if(gg){ fx({k:'heal', side:side_(x), id:x.id, amt:gg}); log('lh', x.name + ' +' + gg + '.'); } });
       }
     },
     // Mantenimiento — iguala la vida del grupo (élite: cura a todos al máximo)
