@@ -140,11 +140,13 @@ export const JUNIANA_ABILITY_PATCH = `
     window.dealDamage=function(target,amount,opts){
       var isRef = target && target.akind==='reflect-damage' && target.alive && Number(amount)>0 && !(opts&&opts.bfReflect);
       if(!isRef) return orig.apply(this,arguments);
-      // Copia de opts con bfReflect: desactiva el reflejo interno del motor.
+      // Copia de opts con bfReflect: desactiva el reflejo interno del motor
+      // (así la refracción NO está activa de base: hay que activar la habilidad).
       var o={}; if(opts) for(var k in opts) o[k]=opts[k]; o.bfReflect=true;
       var dealt=orig.call(this,target,amount,o);
       try{
-        if(dealt>0 && typeof B!=='undefined' && B && B.current && typeof getHero==='function'){
+        // La refracción solo funciona si el jugador ha activado la habilidad.
+        if(dealt>0 && target._bfRefract && typeof B!=='undefined' && B && B.current && typeof getHero==='function'){
           var attacker=getHero(B.current.side,B.current.id);
           var tSideF=(typeof tSide==='function')?tSide:null;
           var tgtSide=tSideF?tSideF(target):'';
