@@ -229,13 +229,36 @@ export const FAITHFUL_ABILITIES_PATCH = `
         log('ld', c.h.name + ' dispara a ' + c.t.name + ' (-' + d + ')' + (i === 1 ? ' (segundo disparo -3)' : '') + '.');
       }
     },
-    // Dixie Plasma élite — ignora equipo y pega al 50% de la vida del rival
+    // Dixie Plasma — normal: disparo que ignora la armadura defensiva.
+    // Élite: ignora equipo y pega al 50% de la vida del rival.
+    // (Las dos versiones se resuelven aquí para no pedir el objetivo dos veces.)
     dix: function(c){
-      if(!c.el) return false;
       fx({k:'arrow', fromSide:c.side, fromId:c.h.id, toSide:side_(c.t), toId:c.t.id, hits:1});
-      var half = Math.max(1, Math.round(c.t.hp * 0.5));
-      var d = dealDamage(c.t, half, {type:'ranged', pierce:1, ignoreShield:true, ignoreArmor:true});
-      log('ld', c.h.name + ' fulmina a ' + c.t.name + ' al 50% de su vida (-' + d + ').');
+      if(c.el){
+        var half = Math.max(1, Math.round(c.t.hp * 0.5));
+        var dh = dealDamage(c.t, half, {type:'ranged', pierce:1, ignoreShield:true, ignoreArmor:true});
+        log('ld', c.h.name + ' fulmina a ' + c.t.name + ' al 50% de su vida (-' + dh + ').');
+        return;
+      }
+      var d = dealDamage(c.t, Math.round(stat(c.h,'ad') * 1.2), {type:'ranged', pierce:1, ignoreArmor:true});
+      log('ld', c.h.name + ' dispara al punto d\\u00e9bil de ' + c.t.name + ' ignorando su armadura (-' + d + ').');
+    },
+    // AchuchaMoto — +6 CC / +4 vel. Élite: +9 CC, +6 vel, robo de vida en CC y
+    // drenaje inmediato a un rival vivo al azar.
+    achucm: function(c){
+      var cc = c.el ? 9 : 6, vel = c.el ? 6 : 4;
+      mods(c.h).push({cc:cc, vel:vel, turns:99});
+      fx({k:'status', side:c.side, id:c.h.id, txt:'\\u25b2'});
+      log('lg', c.h.name + ' entra en furia (+' + cc + ' CC, +' + vel + ' velocidad).');
+      if(!c.el) return;
+      c.h._bfLifestealCC = 1;
+      var pool = L(c.foes);
+      if(!pool.length) return;
+      var t = pool[Math.floor(Math.random() * pool.length)];
+      fx({k:'slash', toSide:side_(t), toId:t.id});
+      var d = dealDamage(t, Math.round(stat(c.h,'cc') * 0.6), {type:'melee'});
+      var g = heal(c.h, d);
+      log('ld', c.h.name + ' drena la vida de ' + t.name + ' (-' + d + ', +' + g + ') y roba vida en cuerpo a cuerpo.');
     },
     // Sylvex — +4 a todos sus stats (élite: +6 y cura 10)
     syx: function(c){
@@ -267,15 +290,19 @@ export const FAITHFUL_ABILITIES_PATCH = `
       if(c.el){ c.t._bfShieldRegen = v; log('lg', c.h.name + ' da a ' + c.t.name + ' un escudo regenerativo de ' + v + ' (cada turno se regenera a la mitad).'); }
       else log('lg', c.h.name + ' escuda ' + v + ' a ' + c.t.name + '.');
     },
-    // Nixara élite — roba más HP y lo reparte entre los aliados
+    // Nixara — drena vida del rival y ESA vida se la suma ella misma.
+    // Élite: drena más y, además de curarse, reparte la mitad entre sus aliados.
     nix: function(c){
-      if(!c.el) return false;
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'agua'});
-      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.1) + 4, {type:'spell', element:'agua'});
-      var al = L(c.allies);
-      var each = Math.max(1, Math.round(d / Math.max(1, al.length)));
-      al.forEach(function(x){ var g = heal(x, each); if(g) log('lh', x.name + ' +' + g + '.'); });
-      log('ld', c.h.name + ' drena a ' + c.t.name + ' (-' + d + ') y reparte la vida entre sus aliados.');
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * (c.el ? 1.25 : 1.1)) + (c.el ? 6 : 0), {type:'spell', element:'agua'});
+      var g = heal(c.h, d);
+      fx({k:'status', side:c.side, id:c.h.id, txt:'\\u271a'});
+      log('ld', c.h.name + ' drena a ' + c.t.name + ' (-' + d + ') y absorbe esa vida (+' + g + ').');
+      if(c.el){
+        var others = L(c.allies).filter(function(x){ return x !== c.h; });
+        var each = Math.max(1, Math.round(d / 2 / Math.max(1, others.length)));
+        others.forEach(function(x){ var gg = heal(x, each); if(gg) log('lh', x.name + ' +' + gg + '.'); });
+      }
     },
     // Mantenimiento — iguala la vida del grupo (élite: cura a todos al máximo)
     man: function(c){
