@@ -53,7 +53,51 @@ export const DAMAGE_NUMBER_PATCH = `
     return true;
   }
 
-  var n = 0, t = setInterval(function(){ if(install() || n++ > 160) clearInterval(t); }, 150);
+  // Red de seguridad: hay daños (ataques en área, habilidades, efectos) que se
+  // aplican con dealDamage SIN encolar el efecto 'hit', así que el número rojo
+  // no aparecía. Se registra cada 'hit' encolado y, si un dealDamage no genera
+  // ninguno para ese héroe, se muestra el número directamente.
+  var recent = {};
+  function markHit(ev){
+    if(ev && ev.k === 'hit') recent[ev.side + '_' + ev.id] = Date.now();
+  }
+
+  function installFallback(){
+    if(window.__bfDmgFallback) return false;
+    if(typeof window.dealDamage !== 'function' || typeof window.pushFx !== 'function') return false;
+    window.__bfDmgFallback = true;
+
+    var origPush = window.pushFx;
+    window.pushFx = function(ev){ try{ markHit(ev); }catch(e){} return origPush.apply(this, arguments); };
+
+    var origDeal = window.dealDamage;
+    window.dealDamage = function(target){
+      var before = target && target.hp;
+      var out = origDeal.apply(this, arguments);
+      try{
+        var amt = Number(out);
+        if(!amt && typeof before === 'number' && target) amt = before - target.hp;
+        if(target && amt > 0){
+          var side = (typeof tSide === 'function') ? tSide(target) : null;
+          if(side){
+            var key = side + '_' + target.id;
+            var since = Date.now();
+            setTimeout(function(){
+              if(!recent[key] || recent[key] < since - 60) pop(side, target.id, amt);
+            }, 40);
+          }
+        }
+      }catch(e){}
+      return out;
+    };
+    return true;
+  }
+
+  var n = 0, t = setInterval(function(){
+    var a = install(), b = installFallback();
+    if((a || window.__bfDmgHooked) && (b || window.__bfDmgFallback)) clearInterval(t);
+    else if(n++ > 200) clearInterval(t);
+  }, 150);
 })();
 </script>
 `;
