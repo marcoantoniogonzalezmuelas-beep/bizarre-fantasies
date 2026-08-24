@@ -57,14 +57,13 @@ export const TOKEN_ABILITIES_PATCH = `
         sync(); finish();
       }
 
-      // Caja de Zapatos élite — Zapatillazo: 4 de daño a todos los rivales,
-      // ignorando armadura.
-      function applyShoe(){
-        living(foes).forEach(function(x){
-          pushFx({k:'status', side:tSide(x), id:x.id, txt:'\\u{1F45E}'});
-          var d = dealDamage(x, 4, {type:'true'});
-          pushLog('ld', name + ' \\u2192 ' + x.name + ' (-' + d + ', ignora defensa).');
-        });
+      // Caja de Zapatos élite — Zapatillazo: 4 de daño que ignora defensa a UN
+      // rival tarjeteado, y lo humilla (MALDITO: -4 a sus stats, 2 turnos).
+      function applyShoe(t){
+        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F45E}'});
+        var d = dealDamage(t, 4, {type:'true'});
+        t._mods.push({cc:-4, ad:-4, he:-4, vel:-4, turns:2});
+        pushLog('ld', name + ' \\u2192 ' + t.name + ' (-' + d + ', ignora defensa) y queda MALDITO (-4 stats, 2 turnos).');
         sync(); finish();
       }
 
@@ -116,7 +115,7 @@ export const TOKEN_ABILITIES_PATCH = `
         }
       }
 
-      if(id === 'tk_caj'){ el ? applyShoe() : applyNone(); return; }
+      if(id === 'tk_caj'){ el ? pickFoe(applyShoe) : applyNone(); return; }
       if(id === 'tk_buf'){ el ? applyDizzyAll() : applyNone(); return; }
       if(id === 'tk_lav'){ el ? pickFoe(applyStun) : applyNone(); return; }
       if(id === 'tk_ban'){ pickFoe(applyConfuse); return; }
