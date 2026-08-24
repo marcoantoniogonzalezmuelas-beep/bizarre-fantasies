@@ -1,23 +1,32 @@
-// Parche inyectado en el iframe: implementa los efectos reales de las
-// habilidades de los héroes token (Bizarros). Hasta ahora todos caían al
-// `default` de useAbility (un ataque básico de fuego) y sus textos de
-// "mareado/confuso/borracho" no tenían ningún efecto.
+// Habilidades de los HÉROES BIZARROS (tokens). Antes se repartían por "akind",
+// pero varios tokens comparten el mismo akind heredado del juego original y sus
+// habilidades no hacían nada. Ahora cada bizarro se resuelve por su card_id:
 //
-// Ahora cada akind hace lo que dice su carta:
-//   tk_dizzy  (La Butifarra) — normal: nada (Petardeo); élite: -4 stats a todos los rivales 2 turnos.
-//   tk_drunk  (El Pez Espada) — -3 stats + 3 daño a un rival (2/3 turnos).
-//   tk_confuse (El Bañador) — confunde a un rival: pierde 2/3 turnos.
-//   tk_none   (La Lavadora / La Caja) — gag: no pasa nada (intencional).
+//   tk_caj (La Caja de Zapatos) — normal: PIFIA (gag, no pasa nada);
+//                                 élite:  4 de daño que ignora defensa a TODOS los rivales.
+//   tk_buf (La Butifarra)       — normal: PIFIA; élite: -4 a los stats de todos los rivales (2 turnos).
+//   tk_lav (La Lavadora)        — normal: PIFIA; élite: aturde por completo a un rival 2 turnos.
+//   tk_ban (El Bañador)         — deja Confuso a un rival (pierde 2 / 3 turnos).
+//   tk_pez (El Pez Espada)      — emborracha a un rival: -3 stats y 3 de daño (2 / 3 turnos).
 //
-// Todos los estados usan campos nativos del motor (_mods negativos y skip),
-// que el objeto "Sanar" (cleanse) ya elimina: filtra _mods negativos y
-// resetea skip/para/silence. Así todo es eliminable con Sanar sin tocar el
-// caso cleanse del juego.
+// Las invocaciones (Patito, Grulla, Unicornio, Pegaso) las resuelven sus
+// propios parches y no se tocan aquí.
+//
+// Todos los estados usan campos nativos del motor (_mods negativos y skip), así
+// que el objeto "Sanar" los limpia igual que el resto.
 export const TOKEN_ABILITIES_PATCH = `
 <script>
 (function(){
   if(window.__bfTokenAbilPatch) return;
   window.__bfTokenAbilPatch = true;
+
+  // Solo estos bizarros se gestionan aquí (los demás tienen su propio parche).
+  var OWN = ['tk_caj', 'tk_buf', 'tk_lav', 'tk_ban', 'tk_pez'];
+
+  function tokId(h){
+    var raw = String((h && (h._token || h.cid || h.card_id || h.id)) || '');
+    return OWN.indexOf(raw) >= 0 ? raw : '';
+  }
 
   function install(){
     if(typeof window.useAbility !== 'function' || window.__bfTokenAbilHooked) return false;
@@ -26,72 +35,93 @@ export const TOKEN_ABILITIES_PATCH = `
     var orig = window.useAbility;
 
     window.useAbility = function(side, h, done){
-      var k = h && h.akind;
-      // Solo interceptamos los héroes token; el resto sigue su curso original.
-      if(!k || String(k).indexOf('tk_') !== 0) return orig.apply(this, arguments);
+      var id = tokId(h);
+      if(!id) return orig.apply(this, arguments);
 
       var el = !!h.eliteMode;
       var foes = enemySide(side);
-      var finish = function(){ h.abilityUsed = true; if(typeof done === 'function') done(); };
       var name = el ? (h.eAbility || h.ability) : (h.ability || h.name);
+      var finish = function(){ h.abilityUsed = true; if(typeof done === 'function') done(); };
 
       function sync(){
         if(typeof renderBattle === 'function') renderBattle();
         if(typeof netSync === 'function') netSync('s-battle');
       }
 
-      // tk_dizzy élite — Gases Tóxicos: todos los rivales se marean (-4 stats, 2 turnos).
-      function applyDizzy(){
+      // Gag intencional: la habilidad no produce ningún efecto → letras y
+      // efecto visual de PIFIA sobre el bizarro.
+      function applyNone(){
+        pushLog('lx', '\\u{1F3B2} ' + h.name + ' \\u2014 ' + name + ': PIFIA, no produce ning\\u00fan efecto.');
+        if(typeof window.__bfFumblePop === 'function') window.__bfFumblePop(side, h.id, false, 0);
+        else pushFx({k:'status', side:side, id:h.id, txt:'\\u{1F4A9}'});
+        sync(); finish();
+      }
+
+      // Caja de Zapatos élite — Zapatillazo: 4 de daño a todos los rivales,
+      // ignorando armadura.
+      function applyShoe(){
+        living(foes).forEach(function(x){
+          pushFx({k:'status', side:tSide(x), id:x.id, txt:'\\u{1F45E}'});
+          var d = dealDamage(x, 4, {type:'true'});
+          pushLog('ld', name + ' \\u2192 ' + x.name + ' (-' + d + ', ignora defensa).');
+        });
+        sync(); finish();
+      }
+
+      // Butifarra élite — Gases Tóxicos: -4 stats a todos los rivales (2 turnos).
+      function applyDizzyAll(){
         living(foes).forEach(function(x){
           x._mods.push({cc:-4, ad:-4, he:-4, vel:-4, turns:2});
-          pushFx({k:'status', side:tSide(x), id:x.id, txt:'\u{1F635}'});
+          pushFx({k:'status', side:tSide(x), id:x.id, txt:'\\u{1F635}'});
         });
         pushLog('li', name + ': todos los rivales se marean (-4 stats, 2 turnos).');
         sync(); finish();
       }
 
-      // tk_drunk — Licor: -3 stats + 3 daño a un rival (2/3 turnos).
-      function applyDrunk(t){
-        var turns = el ? 3 : 2;
-        t._mods.push({cc:-3, ad:-3, he:-3, vel:-3, turns:turns});
-        var d = dealDamage(t, 3, {type:'true'});
-        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\u{1F974}'});
-        pushLog('li', name + ' emborracha a ' + t.name + ' (-3 stats, -' + d + ', ' + turns + ' turnos).');
+      // Lavadora élite — Programa Delicado: aturdimiento total 2 turnos.
+      function applyStun(t){
+        t.skip = Math.max(t.skip || 0, 2);
+        t.para = Math.max(t.para || 0, 2);
+        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F300}'});
+        pushLog('li', name + ' aturde por completo a ' + t.name + ' (2 turnos).');
         sync(); finish();
       }
 
-      // tk_confuse — Paella: confunde a un rival, pierde 2/3 turnos.
+      // Bañador — Paella: Confuso 2 / 3 turnos.
       function applyConfuse(t){
         var turns = el ? 3 : 2;
         t.skip = Math.max(t.skip || 0, turns);
-        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\u{1F300}'});
+        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F300}'});
         pushLog('li', name + ' deja confuso a ' + t.name + ' (pierde ' + turns + ' turnos).');
         sync(); finish();
       }
 
-      // tk_none / tk_dizzy normal — gag: no pasa nada (intencional).
-      function applyNone(){
-        pushFx({k:'status', side:side, id:h.id, txt:'\u{1F4A9}'});
-        pushLog('li', h.name + ' usa ' + name + '… no pasa nada.');
+      // Pez Espada — Licor: -3 stats + 3 de daño (2 / 3 turnos).
+      function applyDrunk(t){
+        var turns = el ? 3 : 2;
+        t._mods.push({cc:-3, ad:-3, he:-3, vel:-3, turns:turns});
+        var d = dealDamage(t, 3, {type:'true'});
+        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F974}'});
+        pushLog('li', name + ' emborracha a ' + t.name + ' (-3 stats, -' + d + ', ' + turns + ' turnos).');
         sync(); finish();
       }
 
-      // Lógica de selección de objetivo (igual que el motor: humano elige, IA al de menos vida).
+      // Objetivo: el humano elige; la IA va al rival con menos vida.
       function pickFoe(cb){
         if(humanCtl(side)){
           pendTarget('Objetivo de ' + name, foes, cb);
         } else {
-          var t = living(foes).sort(function(a,b){ return a.hp - b.hp; })[0];
+          var t = living(foes).sort(function(a, b){ return a.hp - b.hp; })[0];
           if(t) cb(t); else finish();
         }
       }
 
-      if(k === 'tk_dizzy'){ el ? applyDizzy() : applyNone(); return; }
-      if(k === 'tk_none'){ applyNone(); return; }
-      if(k === 'tk_drunk'){ pickFoe(applyDrunk); return; }
-      if(k === 'tk_confuse'){ pickFoe(applyConfuse); return; }
+      if(id === 'tk_caj'){ el ? applyShoe() : applyNone(); return; }
+      if(id === 'tk_buf'){ el ? applyDizzyAll() : applyNone(); return; }
+      if(id === 'tk_lav'){ el ? pickFoe(applyStun) : applyNone(); return; }
+      if(id === 'tk_ban'){ pickFoe(applyConfuse); return; }
+      if(id === 'tk_pez'){ pickFoe(applyDrunk); return; }
 
-      // Fallback (no debería alcanzarse): comportamiento original.
       return orig.apply(this, arguments);
     };
     return true;
