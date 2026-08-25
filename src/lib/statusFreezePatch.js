@@ -7,7 +7,14 @@ const STATUS_CLASSES = [
   'bf-state-confused', 'bf-state-drunk', 'bf-state-dizzy',
 ];
 
-const sel = (suffix) => STATUS_CLASSES.map((c) => '.bhero.' + c + suffix).join(',');
+// Selector de MÁXIMA prioridad: se repiten las clases y se ancla a html body
+// para ganar a cualquier regla del juego (incluidas las que usan !important) y
+// se cubren también las capas decorativas (::before / ::after), que eran las
+// que seguían dando el destello intermitente de luz sobre el retrato.
+const sel = (suffix) =>
+  STATUS_CLASSES.map((c) => 'html body .bhero.bhero.' + c + '.' + c + suffix).join(',');
+
+const selAll = (suffix) => [sel(suffix), sel(suffix + '::before'), sel(suffix + '::after')].join(',');
 
 export const STATUS_FREEZE_PATCH = `
 <script>
@@ -15,13 +22,16 @@ export const STATUS_FREEZE_PATCH = `
   if(window.__bfStatusFreeze)return;
   window.__bfStatusFreeze=true;
   var css=''
-    + '${sel('')},${sel(' *')}{animation:none!important;transition:none!important;animation-play-state:paused!important}'
+    + '${selAll('')},${selAll(' *')}{animation:none!important;animation-name:none!important;transition:none!important;animation-play-state:paused!important}'
     + '${sel('')}{transform:translateZ(0)!important}'
     + '${sel(' .bf-battle-art')},${sel(' .bf-bscene-portrait')},${sel(' .bhero-art')},${sel(' img')}{transform:none!important}'
     + '${sel(' .bf-decor')}{transform:translate(-50%,-50%)!important}';
   var st=document.createElement('style');
   st.textContent=css;
   document.head.appendChild(st);
+  // El juego inyecta hojas de estilo más tarde: se reubica la nuestra al final
+  // para que siempre tenga la última palabra.
+  setInterval(function(){ if(st.parentNode!==document.head||document.head.lastChild!==st) document.head.appendChild(st); },2000);
 
   // Movimiento residual: el CSS no puede parar las animaciones creadas por JS
   // (Web Animations API) ni los transform inline que el juego re-escribe en
