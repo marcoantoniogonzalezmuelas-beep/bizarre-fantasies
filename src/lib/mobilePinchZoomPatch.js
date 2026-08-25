@@ -31,7 +31,10 @@ export const MOBILE_PINCH_PATCH = `
     // el transform a x1 y ese montaje/desmontaje de capa era el destello.
     // Los FX viven en #bf-fx-layer (aislada), así que el body no se repinta
     // durante las animaciones de batalla aunque sea una capa GPU permanente.
-    b.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(' + z + ')';
+    // Desplazamiento redondeado a píxeles enteros: los valores fraccionarios
+    // hacían que el compositor pintase la pantalla en mosaicos desalineados
+    // (la imagen se "descoyuntaba" al mover con zoom) y añadían desenfoque.
+    b.style.transform = 'translate3d(' + Math.round(tx) + 'px,' + Math.round(ty) + 'px,0) scale(' + z + ')';
     // Avisa al padre del zoom para que el cartel de actualidad (que vive fuera
     // del iframe) se amplíe igual que el juego al pellizcar en móvil/tablet.
     // Solo al soltar (sin pinch): durante el gesto el padre re-renderizaría
@@ -126,7 +129,10 @@ export const MOBILE_PINCH_PATCH = `
     if (!samePair(e.touches)) { startPinch(e.touches); return; }
     var d = dist(e.touches), c = mid(e.touches);
     if (!pinch.d0) return;
-    var nz = Math.min(4, Math.max(1, pinch.z0 * (d / pinch.d0)));
+    // Zoom máximo x2,5: por encima de eso la capa escalada del juego (1280px)
+    // es tan grande que el navegador móvil no puede repintarla entera y la
+    // pantalla se rompe/descuadra al desplazarse.
+    var nz = Math.min(2.5, Math.max(1, pinch.z0 * (d / pinch.d0)));
     var px = (pinch.c0.x - pinch.tx0) / pinch.z0;
     var py = (pinch.c0.y - pinch.ty0) / pinch.z0;
     z = nz;
@@ -154,6 +160,16 @@ export const MOBILE_PINCH_PATCH = `
     clampT();
     applyNow();
     flushMsg();
+    // Al soltar, se pide al navegador que vuelva a dibujar el contenido al
+    // nuevo tamaño (en vez de estirar la imagen anterior): así el juego se ve
+    // nítido con el zoom puesto, sin desenfoque.
+    setTimeout(function(){
+      if (pinch) return;
+      var bd = document.body;
+      bd.style.transition = 'none';
+      bd.style.willChange = 'auto';
+      void bd.offsetHeight;
+    }, 320);
     // will-change se quita tras la transición (con margen) para evitar el
     // parpadeo de desmontar la capa a mitad de la animación.
     disableWC(360);
