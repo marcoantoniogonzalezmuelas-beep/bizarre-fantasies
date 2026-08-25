@@ -86,19 +86,21 @@ export const FAITHFUL_ABILITIES_PATCH = `
     };
   }
 
-  // Vacío Mental (Coffetath élite): bloquea la mano del rival — su equipo no
-  // puede lanzar hechizos ni usar objetos durante su siguiente turno.
+  // Vacío Mental (Coffetath élite): bloquea la mano del HÉROE RIVAL objetivo —
+  // mientras dura, ese héroe no puede jugar ninguna carta de la mano (ni
+  // hechizos ni objetos). Los demás héroes de su equipo sí pueden.
   function hookHandBlock(){
-    window.__bfHandBlock = window.__bfHandBlock || { p:0, o:0 };
     ['castSpell','useItem','castSpell_AI','useItem_AI'].forEach(function(fn){
       if(typeof window[fn] !== 'function' || window[fn].__bfHb) return;
       var orig = window[fn];
       var wrapped = function(){
         try{
-          var s = (typeof B !== 'undefined' && B.current) ? B.current.side : null;
-          if(s && window.__bfHandBlock[s] > 0){
-            log('li', '\\ud83d\\udeab Mano bloqueada: este equipo no puede usar hechizos ni objetos.');
-            return;
+          if(typeof B !== 'undefined' && B.current){
+            var a = getHero(B.current.side, B.current.id);
+            if(a && a._bfHandBlock > 0){
+              log('li', '\\ud83d\\udeab ' + a.name + ' tiene la mano bloqueada: no puede jugar hechizos ni objetos.');
+              return;
+            }
           }
         }catch(e){}
         return orig.apply(this, arguments);
@@ -109,12 +111,42 @@ export const FAITHFUL_ABILITIES_PATCH = `
     if(typeof window.nextRound === 'function' && !window.nextRound.__bfHb){
       var on = window.nextRound;
       var wr = function(){
-        try{ ['p','o'].forEach(function(s){ if(window.__bfHandBlock[s] > 0) window.__bfHandBlock[s]--; }); }catch(e){}
+        try{
+          ['p','o'].forEach(function(s){ L(s).forEach(function(x){ if(x._bfHandBlock > 0 && !--x._bfHandBlock) log('li', x.name + ' recupera el control de su mano.'); }); });
+        }catch(e){}
         return on.apply(this, arguments);
       };
       wr.__bfHb = true;
       window.nextRound = wr;
     }
+  }
+
+  // Efecto visual de Coffetath sobre el héroe objetivo: un cortado (normal) o un
+  // café con leche (élite) dibujado sobre su retrato durante ~3,5 s.
+  function coffeeFx(target, elite){
+    try{
+      if(!window.__bfCoffeeCss){
+        window.__bfCoffeeCss = 1;
+        var st = document.createElement('style');
+        st.textContent = '.bf-coffee-fx{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);z-index:34;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:3px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.75))}'
+          + '.bf-coffee-cup{width:64px;height:52px;border-radius:6px 6px 26px 26px;border:3px solid #f4e3c8;background:linear-gradient(180deg,#f6ead6 0 26%,#5b3418 26%);position:relative}'
+          + '.bf-coffee-cup.bf-coffee-elite{background:linear-gradient(180deg,#fdf6ea 0 46%,#9c6b3f 46%)}'
+          + '.bf-coffee-cup:after{content:"";position:absolute;right:-19px;top:12px;width:20px;height:22px;border:3px solid #f4e3c8;border-left:none;border-radius:0 14px 14px 0}'
+          + '.bf-coffee-cup:before{content:"";position:absolute;left:12px;top:-14px;width:16px;height:14px;border-radius:50%;background:rgba(255,255,255,.35)}'
+          + '.bf-coffee-lbl{padding:2px 8px;border-radius:999px;background:rgba(8,5,14,.9);border:1.5px solid #d9b877;color:#ffe9c2;font-family:Cinzel,serif;font-size:10px;font-weight:1000;letter-spacing:.6px;white-space:nowrap}';
+        document.head.appendChild(st);
+      }
+      // Se pinta tras el repintado del tablero para que no lo borre.
+      setTimeout(function(){
+        var card = document.getElementById('b_' + side_(target) + '_' + target.id);
+        if(!card) return;
+        var el = document.createElement('div');
+        el.className = 'bf-coffee-fx';
+        el.innerHTML = '<div class="bf-coffee-cup' + (elite ? ' bf-coffee-elite' : '') + '"></div><div class="bf-coffee-lbl">' + (elite ? 'CAF\\u00c9 CON LECHE' : 'CORTADO') + '</div>';
+        card.appendChild(el);
+        setTimeout(function(){ if(el.parentNode) el.remove(); }, 3500);
+      }, 120);
+    }catch(e){}
   }
 
   // ---- implementaciones fieles ------------------------------------------
@@ -347,15 +379,16 @@ export const FAITHFUL_ABILITIES_PATCH = `
       if(!c.el){
         fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
         var dn = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.8), {type:'spell', element:'arcano'});
+        coffeeFx(c.t, false);
         log('ld', c.h.name + ' provoca un colapso mental en ' + c.t.name + ' (-' + dn + ') y le sirve un cortado.');
         return;
       }
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
       var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + 6, {type:'spell', element:'rayo'});
-      window.__bfHandBlock = window.__bfHandBlock || { p:0, o:0 };
-      window.__bfHandBlock[c.foes] = 2;
-      L(c.foes).forEach(function(x){ fx({k:'status', side:side_(x), id:x.id, txt:'\\ud83d\\udeab'}); });
-      log('li', c.h.name + ' golpea a ' + c.t.name + ' (-' + d + ') y BLOQUEA la mano rival: sin hechizos ni objetos en su siguiente turno.');
+      c.t._bfHandBlock = 2;
+      fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
+      coffeeFx(c.t, true);
+      log('li', c.h.name + ' golpea a ' + c.t.name + ' (-' + d + ') y le BLOQUEA LA MANO: no podr\\u00e1 jugar hechizos ni objetos.');
     },
     // El Rolero — conjuro aleatorio (élite: crítico garantizado)
     rol: function(c){
