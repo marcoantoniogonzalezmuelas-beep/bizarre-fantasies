@@ -82,9 +82,22 @@ export function usePlayersAdmin() {
       .sort((a, b) => (b.last?.getTime() || 0) - (a.last?.getTime() || 0));
   }, [visibleMatches, avatarOf]);
 
-  // Enfrentamientos entre nicks (marcador histórico de la BD).
+  // Enfrentamientos entre nicks: se cruzan las partidas registradas
+  // (MatchResult) con el marcador histórico (HeadToHead). El marcador solo se
+  // empezó a guardar más tarde, así que hay enfrentamientos antiguos que solo
+  // existen como partidas; sin este cruce no aparecían en la lista.
   const pairs = useMemo(() => {
     const map = {};
+    matches.forEach(mt => {
+      const w = norm(mt.winner_nick), l = norm(mt.loser_nick);
+      if (!w || !l) return;
+      const key = [w, l].sort().join('||');
+      const rec = (map[key] = map[key] || { pair_key: key, scores: {}, ids: [], updated: null });
+      rec.scores[w] = (rec.scores[w] || 0) + 1;
+      rec.scores[l] = rec.scores[l] || 0;
+      const d = new Date(mt.created_date);
+      if (!rec.updated || d > rec.updated) rec.updated = d;
+    });
     h2h.forEach(r => {
       if (!r.pair_key) return;
       const rec = (map[r.pair_key] = map[r.pair_key] || { pair_key: r.pair_key, scores: {}, ids: [], updated: null });
@@ -97,7 +110,7 @@ export function usePlayersAdmin() {
       const [a, b] = rec.pair_key.split('||');
       return { ...rec, a, b, aWins: rec.scores[a] || 0, bWins: rec.scores[b] || 0 };
     }).sort((x, y) => (y.updated?.getTime() || 0) - (x.updated?.getTime() || 0));
-  }, [h2h]);
+  }, [h2h, matches]);
 
   // Resetea TODO el histórico de un nick: partidas, enfrentamientos y progreso IA.
   const resetPlayer = useCallback(async (nick) => {
