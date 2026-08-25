@@ -43,6 +43,23 @@ export const NO_HERO_MOTION_PATCH = `
     'html body .bhero.bhero.active-turn .bf-active-tag{'+
       'animation:none!important;-webkit-animation:none!important;transition:none!important;transform:none!important;'+
     '}'+
+    // Estado MALDITO: las runas que suben y el pulso violeta daban sensación de
+    // movimiento en el retrato. Se quedan visibles pero completamente quietas.
+    'html body .bhero.bhero .bf-curse-fx,'+
+    'html body .bhero.bhero .bf-curse-fx *,'+
+    'html body .bhero.bhero .bf-curse-rune,'+
+    'html body .bhero.bhero.s-cursed .bf-decor-layer,'+
+    'html body .bhero.bhero.s-cursed .bf-decor-layer *,'+
+    'html body .bhero.bhero.s-cursed .bf-decor{'+
+      'animation:none!important;-webkit-animation:none!important;transition:none!important;'+
+    '}'+
+    'html body .bhero.bhero .bf-curse-fx::before,'+
+    'html body .bhero.bhero .bf-curse-rune::before{animation:none!important}'+
+    // Las runas nacen fuera del retrato (bottom:-10%) y solo se ven al subir:
+    // sin animación hay que colocarlas dentro para que sigan visibles.
+    'html body .bhero.bhero .bf-curse-rune{bottom:34%!important;opacity:.9!important}'+
+    'html body .bhero.bhero .bf-curse-rune.r2{bottom:52%!important}'+
+    'html body .bhero.bhero .bf-curse-rune.r3{bottom:20%!important}'+
     // Rótulo "★ SU TURNO": quieto, pero con un brillo dorado fijo bien visible.
     'html body .bhero.bhero.active-turn .bf-active-tag{'+
       'opacity:1!important;'+
