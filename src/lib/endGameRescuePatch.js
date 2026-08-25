@@ -9,9 +9,9 @@
 //     la pantalla final con un setTimeout, pero esa llamada se perdió (error en
 //     una cinemática, repintado fallido…). La red de seguridad anterior se
 //     rendía justo en este caso, porque solo actuaba con B.over === false.
-//  2) De un bando solo quedan criaturas invocadas (patitos, grulla…): el motor
-//     las cuenta como vivas y no declara la victoria, pero ninguna tiene turno,
-//     así que la partida no avanza nunca.
+//  2) Un bando se ha quedado sin NINGUNA unidad viva (ni héroes ni criaturas
+//     invocadas) y la partida sigue abierta: se cierra y se muestra el
+//     resultado. Mientras quede cualquier unidad viva, la partida continúa.
 //
 // No cambia ninguna regla: solo muestra el resultado que ya estaba decidido.
 export const END_GAME_RESCUE_PATCH = `
@@ -32,10 +32,11 @@ export const END_GAME_RESCUE_PATCH = `
     try{ if(typeof NET !== 'undefined' && NET && NET.role) return NET.mySide || (NET.role === 'client' ? 'o' : 'p'); }catch(e){}
     return 'p';
   }
-  // Héroes REALES vivos (las criaturas invocadas no sostienen la partida).
+  // Unidades vivas del bando: héroes Y criaturas invocadas. Mientras quede
+  // cualquiera con vida, la partida continúa.
   function realAlive(side){
     try{
-      return (G.team[side] || []).filter(function(h){ return h && h.alive && !h._token && !h._bfDuck; }).length;
+      return (G.team[side] || []).filter(function(h){ return h && h.alive; }).length;
     }catch(e){ return 1; }
   }
   function clearOverlays(){
@@ -79,7 +80,7 @@ export const END_GAME_RESCUE_PATCH = `
       }
       overSince = 0;
 
-      // 2) Un bando se ha quedado sin héroes reales y la partida sigue abierta.
+      // 2) Un bando se ha quedado sin ninguna unidad viva y la partida sigue abierta.
       if(!G.team || !G.team.p || !G.team.o) { extinctSince = 0; return; }
       var pA = realAlive('p'), oA = realAlive('o');
       if(pA > 0 && oA > 0){ extinctSince = 0; return; }
