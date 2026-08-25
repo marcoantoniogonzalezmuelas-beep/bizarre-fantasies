@@ -321,19 +321,20 @@ export const ABILITY_ANIM_PATCH = `
   // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
-  function showCinematic(url,title,cc,desc,motionId,descText){
+  function showCinematic(url,title,cc,desc,motionId,descText,once){
     // Si el jugador ha desactivado las cinemáticas 3D (botón "Desactivar
     // animaciones" en batalla), se salta el overlay 3D. La carta revelada y
     // los FX 2D (rayo en cadena, tormenta ígnea, banners…) siguen funcionando.
     if(window.__bfNoCinematics)return;
-    // REGLA DEL MOTOR: cada cinemática 3D (habilidad de héroe, hechizo u
-    // objeto) se reproduce UNA SOLA VEZ por partida. Una vez vista, no vuelve a
-    // salir hasta que empiece una partida nueva.
-    if(played[url])return;
-    // Antirrebote POR IMAGEN: la misma cinemática no se repite dentro de 9 s,
-    // ni siquiera desde la cola. Antes, una animación bloqueada por los efectos
-    // visuales se quedaba encolada y volvía a saltar después de tarjetear.
-    if(lastUrlPlay[url]&&Date.now()-lastUrlPlay[url]<9000)return;
+    // REGLA DEL MOTOR: la cinemática 3D de una HABILIDAD DE HÉROE se reproduce
+    // una sola vez por partida (once=true). Los HECHIZOS y OBJETOS de la mano
+    // salen SIEMPRE que se juegan (once=false).
+    if(once&&played[url])return;
+    // Antirrebote POR IMAGEN: evita que el mismo disparo se duplique (varios
+    // hooks a la vez). Largo para héroes, corto para hechizos/objetos, que sí
+    // pueden repetirse en la misma partida.
+    var deb=once?9000:2000;
+    if(lastUrlPlay[url]&&Date.now()-lastUrlPlay[url]<deb)return;
     // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
     // termine la actual. Solo se guarda la última pendiente (no acumula cola).
     // Cualquier capa cinemática en pantalla bloquea la siguiente: además de
@@ -354,19 +355,19 @@ export const ABILITY_ANIM_PATCH = `
       // encola de nuevo: evita que se repita la misma animación.
       if(playingUrl===url)return;
       if(queuedCine&&queuedCine.url===url)return;
-      queuedCine={url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText};
+      queuedCine={url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText,once:once};
       if(!cineTimer){
         cineTimer=setTimeout(function(){
           cineTimer=null;var q=queuedCine;queuedCine=null;
           // Si al vencer el turno de espera sigue habiendo una capa en
           // pantalla, showCinematic vuelve a encolarla sola (sin solapar).
-          if(q)showCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);
+          if(q)showCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText,q.once);
         },1200);
       }
       return;
     }
     playingUrl=url;
-    played[url]=true;
+    if(once)played[url]=true;
     lastUrlPlay[url]=Date.now();
     lastCine=Date.now();
     var ov=document.createElement('div');ov.id='bf-abil-anim';
@@ -421,7 +422,7 @@ export const ABILITY_ANIM_PATCH = `
     var motionId=isElite?(entry.eliteMotion||entry.motion):entry.motion;
     var isEn=!!window.__bfLangEn;
     var descText=isElite?(isEn?(entry.eliteTextEn||entry.eliteText||entry.text):(entry.eliteText||entry.text)):(isEn?(entry.textEn||entry.text):(entry.text));
-    showCinematic(url,ability,cc,descSrc||ability,motionId,descText);
+    showCinematic(url,ability,cc,descSrc||ability,motionId,descText,true);
   }
   window.__bfPlayAbilityAnim=playAnim;
 
