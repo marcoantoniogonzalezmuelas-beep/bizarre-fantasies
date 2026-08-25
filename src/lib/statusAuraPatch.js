@@ -141,7 +141,7 @@ export const STATUS_AURA_PATCH = `
        // ráfagas de habilidad conservan su animación.
        '.bhero,.bhero::before,.bhero::after,.bhero *:not(.bf-ability-burst):not(.bf-ability-burst *),.bhero *:not(.bf-ability-burst)::before,.bhero *:not(.bf-ability-burst)::after{animation:none!important;transition:none!important}'+
        '.bhero.bf-agonizing,.bhero.bf-agonizing *{transform:none!important}'+
-       '.bhero .bf-blood-drop{display:none!important}'+
+
        // Marcadores de estado sobre el retrato (badges nativos, marcador de
        // pasiva, insignia de agonía): visibles pero SIN movimiento alguno.
        '.bhero .status-badge,.bhero .bf-status-badge,.bhero .bf-passive-mark,.bhero .bf-decor-layer,.bhero .bf-decor-layer *{animation:none!important;transition:none!important}'+

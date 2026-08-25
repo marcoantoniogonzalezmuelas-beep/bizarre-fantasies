@@ -33,8 +33,8 @@ export const HERO_BLOOD_FX_PATCH = `
   // ---- Animación de borde de agonía más viva ----
   // Agonía SIN sacudida ni pulsos: borde rojo y velo estáticos.
   '.bhero.bf-agonizing{box-shadow:0 0 0 3px rgba(255,20,20,.9),0 0 30px rgba(255,0,0,.7),inset 0 0 20px rgba(120,0,0,.4)!important;animation:none!important;transform:none!important}' +
-  '.bhero .bf-blood-veil,.bhero .bf-blood-veil::before,.bhero .bf-blood-veil::after{animation:none!important}' +
-  '.bhero .bf-blood-drop{display:none!important}';
+  // El velo de sangre y las gotas SIGUEN visibles, pero quietos (sin caída ni pulso).
+  '.bhero .bf-blood-veil,.bhero .bf-blood-veil::before,.bhero .bf-blood-veil::after,.bhero .bf-blood-drop{animation:none!important;transition:none!important}';
 
   var st = document.createElement('style');
   st.textContent = css;
@@ -53,6 +53,14 @@ export const HERO_BLOOD_FX_PATCH = `
       if(!veil){
         veil = document.createElement('div');
         veil.className = 'bf-blood-veil';
+        DROPS.forEach(function(d){
+          var drop = document.createElement('div');
+          drop.className = 'bf-blood-drop';
+          drop.style.left = d.x + '%';
+          // Gotas visibles pero estáticas: sin caída, se colocan a distintas alturas.
+          drop.style.top = (10 + (d.d * 22) % 70) + '%';
+          veil.appendChild(drop);
+        });
         card.appendChild(veil);
       }
     } else if(veil){
