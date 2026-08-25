@@ -7,7 +7,21 @@ export default function useChatEmojiAdmin(enabled) {
   const [emojis, setEmojis] = useState([]);
   const [syncing, setSyncing] = useState(false);
   const load = useCallback(async () => setEmojis((await base44.entities.ChatEmoji.list('sort_order', 500)) || []), []);
-  useEffect(() => { if (enabled) load(); }, [enabled, load]);
+  // Cada carta nueva de la base de datos se añade automáticamente a la lista de
+  // emojis del chat (sin borrar nada de lo que ya hay).
+  const addNewCards = useCallback(async () => {
+    const [cards, current] = await Promise.all([
+      base44.entities.Card.list('number', 500),
+      base44.entities.ChatEmoji.list('sort_order', 500),
+    ]);
+    const have = new Set((current || []).map((e) => e.source_card_id));
+    const creates = (cards || [])
+      .filter((c) => c.art_url && c.card_id && !have.has(c.card_id))
+      .map((c, i) => ({ source_card_id: c.card_id, name: c.name, url: c.art_url, category: categoryName(c), active: true, sort_order: Number(c.number || i) }));
+    if (creates.length) await base44.entities.ChatEmoji.bulkCreate(creates);
+    await load();
+  }, [load]);
+  useEffect(() => { if (enabled) addNewCards(); }, [enabled, addNewCards]);
   const save = async (id, data) => { await base44.entities.ChatEmoji.update(id, data); await load(); };
   const sync = async () => {
     setSyncing(true);
