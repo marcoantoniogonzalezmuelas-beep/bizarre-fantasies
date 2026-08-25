@@ -18,12 +18,15 @@ export const HERO_CARD_SPEED_PATCH = `
   function num(t){var m=String(t||'').match(/-?\\d+(\\.\\d+)?/);return m?parseFloat(m[0]):null;}
 
   function decorate(){
-    document.querySelectorAll('#bf-zoom-flip .cardface.bf-hero-card').forEach(function(card){
-      if(card.querySelector('.bf-vel-card'))return;
+    // Cualquier carta de héroe ampliada (lupa del retrato en equipamiento y en
+    // batalla, sea el contenedor que sea). Las cartas de subasta ya llevan su
+    // propio sello (.bf-vel-auc), así que se saltan.
+    document.querySelectorAll('.cardface.bf-hero-card').forEach(function(card){
+      if(card.querySelector('.bf-vel-card')||card.querySelector('.bf-vel-auc'))return;
       // Velocidad REAL de la carta (mapa enviado desde la base de datos); si el
       // héroe no la tiene fijada, se usa su stat principal como antes.
       var nameEl=card.querySelector('.bf-hero-name');
-      var nm=nameEl?String(nameEl.textContent||'').replace(/[★\\s]+$/,'').trim().toLowerCase():'';
+      var nm=nameEl?String(nameEl.textContent||'').replace(/[★\\s]+$/,'').replace(/^[^\\p{L}]+/u,'').trim().toLowerCase():'';
       var isElite=/★/.test((nameEl&&nameEl.textContent)||'');
       var ent=(window.__bfHeroVelMap||{})[nm];
       var v=null;
