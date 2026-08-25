@@ -440,7 +440,7 @@ export const ABILITY_ANIM_PATCH = `
     var cc=(item&&item.element&&SPELL_COLORS[item.element])||'#ffd24a';
     var isEn=!!window.__bfLangEn;
     var descText=isEn?(entry.textEn||entry.text):(entry.text);
-    showCinematic(url,item?item.name:'Objeto',cc,entry.desc||(item?item.name:''),entry.motion,descText);
+    showCinematic(url,item?item.name:'Objeto',cc,entry.desc||(item?item.name:''),entry.motion,descText,false);
     // Suprime la carta revelada de este hechizo/objeto durante la cinemática 3D.
     window.__bfCardCineName=item?item.name:null;
     setTimeout(function(){window.__bfCardCineName=null;},5200);
