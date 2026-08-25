@@ -8,7 +8,10 @@ export const NO_HERO_MOTION_PATCH = `
   if(window.__bfNoHeroMotion)return;
   window.__bfNoHeroMotion=true;
 
-  var KEEP='.bf-fx,.bf-dmg,.bf-heal,.bf-num,.bf-coffee-fx,.bf-ability-burst,.bf-cine,.bf-3d,.bf-fx-root';
+  // Capas de EFECTO que sí se animan (sangre de agonía, escarcha/cadenas y demás
+  // decoraciones de estado, ráfagas, números de daño). El retrato y la escena
+  // quedan totalmente quietos.
+  var KEEP='.bf-fx,.bf-dmg,.bf-heal,.bf-num,.bf-coffee-fx,.bf-ability-burst,.bf-cine,.bf-3d,.bf-fx-root,.bf-decor-layer,.bf-decor,.bf-blood-veil,.bf-blood-drop';
   var HOST='.bhero,[id^="b_p_"],[id^="b_o_"]';
   var css=
     HOST+',\\n'+

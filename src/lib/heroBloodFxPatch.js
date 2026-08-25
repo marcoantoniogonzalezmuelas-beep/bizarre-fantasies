@@ -33,18 +33,9 @@ export const HERO_BLOOD_FX_PATCH = `
   // ---- Animación de borde de agonía más viva ----
   // Agonía SIN sacudida ni pulsos: borde rojo y velo estáticos.
   '.bhero.bf-agonizing{box-shadow:0 0 0 3px rgba(255,20,20,.9),0 0 30px rgba(255,0,0,.7),inset 0 0 20px rgba(120,0,0,.4)!important;animation:none!important;transform:none!important}' +
-  // El velo de sangre y las gotas SIGUEN visibles, pero quietos (sin caída ni pulso).
-  '.bhero .bf-blood-veil,.bhero .bf-blood-veil::before,.bhero .bf-blood-veil::after,.bhero .bf-blood-drop{animation:none!important;transition:none!important}' +
-  // CERO parpadeo y CERO movimiento en los retratos de batalla: los efectos
-  // (velo de sangre, escarcha, cadenas, tintes) se mantienen visibles pero
-  // completamente quietos. Doble clase para ganar a las reglas del juego
-  // (.bhero.active-turn, .bhero.s-frozen, .bhero.bf-epic-gold, fx-shake…).
-  // Solo las ráfagas de habilidad conservan su animación.
-  '.bhero.bhero,.bhero.bhero::before,.bhero.bhero::after,' +
-  '.bhero.bhero *:not(.bf-ability-burst):not(.bf-ability-burst *),' +
-  '.bhero.bhero *:not(.bf-ability-burst)::before,.bhero.bhero *:not(.bf-ability-burst)::after' +
-  '{animation:none!important;transition:none!important}' +
-  '.bhero.bhero{transform:none!important}';
+  // El velo de sangre y las gotas SÍ se animan (goteo y tinte): es el efecto
+  // chulo de la agonía. El retrato y la escena siguen quietos por su parche.
+  '.bhero .bf-blood-veil,.bhero .bf-blood-veil *{animation-play-state:running!important}';
 
   var st = document.createElement('style');
   st.textContent = css;
@@ -67,8 +58,9 @@ export const HERO_BLOOD_FX_PATCH = `
           var drop = document.createElement('div');
           drop.className = 'bf-blood-drop';
           drop.style.left = d.x + '%';
-          // Gotas visibles pero estáticas: sin caída, se colocan a distintas alturas.
-          drop.style.top = (10 + (d.d * 22) % 70) + '%';
+          // Gotas cayendo por el retrato, cada una con su ritmo.
+          drop.style.animationDuration = d.dur + 's';
+          drop.style.animationDelay = d.d + 's';
           veil.appendChild(drop);
         });
         card.appendChild(veil);
