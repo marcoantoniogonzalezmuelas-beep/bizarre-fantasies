@@ -25,6 +25,29 @@ export const NO_HERO_MOTION_PATCH = `
     // Escena de batalla / retrato: capa estable, sin repintados por filtro animado.
     '.bhero>.bhero-art,.bhero .bf-battle-art,.bhero .bf-bscene-portrait,.bhero .bf-bscene-bg,.bhero>img{'+
       'animation:none!important;transition:none!important;transform:translateZ(0)!important;backface-visibility:hidden!important;'+
+    '}'+
+    // El HÉROE EN TURNO movía el retrato: el juego le pone .active-turn con
+    // animación (bfHeroActive), más el balanceo idle (bfHeroIdle), el aro y el
+    // aura pulsantes y el rótulo balanceándose. Esas reglas ganaban por
+    // especificidad, así que aquí se anulan con selectores más específicos:
+    // el retrato queda TOTALMENTE quieto durante toda la partida.
+    'html body .bhero.bhero.bhero,'+
+    'html body .bhero.bhero.bhero.active-turn,'+
+    'html body .bhero.bhero.bhero.elite-mode,'+
+    'html body .bhero.bhero.bhero.bf-epic-gold,'+
+    'html body .bhero.bhero.bhero.targetable,'+
+    'html body .bhero.bhero.bhero:hover,'+
+    'html body .bhero.bhero .bhero-aura,'+
+    'html body .bhero.bhero .bf-active-ring,'+
+    'html body .bhero.bhero.active-turn .bf-active-ring,'+
+    'html body .bhero.bhero.active-turn .bf-active-tag{'+
+      'animation:none!important;-webkit-animation:none!important;transition:none!important;transform:none!important;'+
+    '}'+
+    // Rótulo "★ SU TURNO": quieto, pero con un brillo dorado fijo bien visible.
+    'html body .bhero.bhero.active-turn .bf-active-tag{'+
+      'opacity:1!important;'+
+      'box-shadow:0 0 10px rgba(255,210,74,.85),0 0 22px rgba(255,180,40,.55)!important;'+
+      'text-shadow:0 0 8px rgba(255,225,140,.95),0 1px 2px #000!important;'+
     '}';
 
   var st=document.createElement('style');
