@@ -307,6 +307,17 @@ export const ABILITY_ANIM_PATCH = `
   var playingUrl=null;
   // Última vez que se reprodujo cada imagen (antirrebote por URL).
   var lastUrlPlay={};
+  // Cinemáticas ya vistas en ESTA partida: no se repiten (regla del motor).
+  var played={};
+  // Nueva partida (pantallas de preparación/subasta): se olvidan las vistas.
+  var lastSid='';
+  setInterval(function(){
+    var a=document.querySelector('.screen.active');
+    var sid=a?(a.id||''):'';
+    if(sid===lastSid)return;
+    lastSid=sid;
+    if(sid==='s-setup'||sid==='s-title'){played={};lastUrlPlay={};}
+  },500);
   // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
   // recortada, el título, las partículas y el movimiento temático. Lo usan
   // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
@@ -315,6 +326,10 @@ export const ABILITY_ANIM_PATCH = `
     // animaciones" en batalla), se salta el overlay 3D. La carta revelada y
     // los FX 2D (rayo en cadena, tormenta ígnea, banners…) siguen funcionando.
     if(window.__bfNoCinematics)return;
+    // REGLA DEL MOTOR: cada cinemática 3D (habilidad de héroe, hechizo u
+    // objeto) se reproduce UNA SOLA VEZ por partida. Una vez vista, no vuelve a
+    // salir hasta que empiece una partida nueva.
+    if(played[url])return;
     // Antirrebote POR IMAGEN: la misma cinemática no se repite dentro de 9 s,
     // ni siquiera desde la cola. Antes, una animación bloqueada por los efectos
     // visuales se quedaba encolada y volvía a saltar después de tarjetear.
@@ -351,6 +366,7 @@ export const ABILITY_ANIM_PATCH = `
       return;
     }
     playingUrl=url;
+    played[url]=true;
     lastUrlPlay[url]=Date.now();
     lastCine=Date.now();
     var ov=document.createElement('div');ov.id='bf-abil-anim';

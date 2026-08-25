@@ -341,9 +341,15 @@ export const FAITHFUL_ABILITIES_PATCH = `
       fx({k:'status', side:c.side, id:c.h.id, txt:'\\u2694\\ufe0f'});
       log('lg', c.h.name + ' domina todas las armas: sin penalizaci\\u00f3n por atacar fuera de su tipo' + (c.el ? ' y +3 a todos sus stats' : '') + '.');
     },
-    // Coffetath élite — golpe mágico que bloquea la mano rival un turno
+    // Coffetath — normal: golpe mágico brutal a un objetivo.
+    // Élite: golpe mágico que además bloquea la mano rival un turno.
     caoffe: function(c){
-      if(!c.el) return false;
+      if(!c.el){
+        fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+        var dn = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.8), {type:'spell', element:'arcano'});
+        log('ld', c.h.name + ' provoca un colapso mental en ' + c.t.name + ' (-' + dn + ') y le sirve un cortado.');
+        return;
+      }
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
       var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + 6, {type:'spell', element:'rayo'});
       window.__bfHandBlock = window.__bfHandBlock || { p:0, o:0 };
