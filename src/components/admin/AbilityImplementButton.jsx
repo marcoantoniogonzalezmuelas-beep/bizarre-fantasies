@@ -26,11 +26,13 @@ const EFFECTS = `
         'mark' (el objetivo recibirá +amount de daño) | 'evade' (esquiva los próximos amount ataques)
         'mana' (suma/resta maná) | 'lifesteal' (roba vida en cada golpe cuerpo a cuerpo el resto del combate)
         'recover_card' (roba una carta de la pila de descartes/usados y la devuelve a la mano)
+        'steal_card' (roba amount cartas al azar de la MANO del rival y las pasa a tu mano)
     · target: 'self' | 'ally' | 'all_allies' | 'enemy' | 'all_enemies' | 'weakest_enemy' | 'strongest_enemy'
       (con 'enemy' o 'ally' el jugador elige el objetivo en la batalla)
     · amount: número EXACTO del texto de la carta. Si el texto habla de "el doble de su ataque" o similar, usa stat_mult (1.5 = 1,5 veces su stat principal) en vez de amount.
     · turns: turnos que dura el estado o la penalización (los del texto; por defecto 2).
     · pierce: true si el texto dice que ignora la defensa/armadura.
+    NOTA: con estos pasos puedes reproducir CUALQUIER efecto de hechizo u objeto del juego (daño, curación, escudo, estados, recuperar del descarte, robar cartas al rival) como habilidad de un héroe nuevo.
     Combina varios pasos para reproducir el texto COMPLETO (p.ej. "hace 6 de daño y lo emborracha 2 turnos" = paso damage + paso drunk).
 - unsupported: RESERVADO. Solo si la habilidad exige cambiar las reglas del juego, el orden de turnos o la subasta.
 `;

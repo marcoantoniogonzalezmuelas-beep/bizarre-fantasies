@@ -140,6 +140,19 @@ export const ABILITY_IMPL_PATCH = `
       case 'mana': { t.mana = Math.max(0, Math.min(num(t.maxMana, 99), num(t.mana, 0) + a)); log(t.name + ': man\\u00e1 ' + (a >= 0 ? '+' : '') + a + '.'); return true; }
       case 'lifesteal': { hero._bfLifestealCC = 1; log(hero.name + ' roba vida con cada golpe cuerpo a cuerpo.'); return true; }
       case 'recover_card': { var nm = recoverCard(side); if(!nm) { log('No hay cartas en la pila de usados.'); return false; } log(hero.name + ' recupera ' + nm + ' de la pila de usados y la devuelve a su mano.'); return true; }
+      // Robo de cartas de la mano rival (mismo mecanismo que el hechizo
+      // "El Ladrón Enmascarado").
+      case 'steal_card': {
+        var veces = Math.max(1, num(st.amount, 1)), robadas = [];
+        for(var q = 0; q < veces; q++){
+          var rn = (typeof window.__bfStealFromRival === 'function') ? window.__bfStealFromRival(side) : '';
+          if(!rn) break;
+          robadas.push(rn);
+        }
+        if(!robadas.length){ log('El rival no tiene cartas en la mano.'); return false; }
+        log(hero.name + ' roba de la mano del rival: ' + robadas.join(', ') + '.');
+        return true;
+      }
       default: return false;
     }
   }
