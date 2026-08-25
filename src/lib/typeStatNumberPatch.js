@@ -13,7 +13,8 @@ export const TYPE_STAT_NUMBER_PATCH = `
   var st = document.createElement('style');
   st.textContent = '.bf-type-num{display:inline-block;margin-left:3px;font-family:Rubik,sans-serif;font-weight:900;font-size:15px;line-height:1;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}'+
     '.bf-more-stats{display:inline-block;margin-left:4px;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;color:#d8cfae;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}'+
-    '.bf-more-stats b{font-weight:900}';
+    '.bf-more-stats b{font-weight:900}'+
+    '.bf-vel-num{display:inline-block;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;color:#ffd24a;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}';
   document.head.appendChild(st);
 
   function keyOf(t){
@@ -72,6 +73,19 @@ export const TYPE_STAT_NUMBER_PATCH = `
         html += ' · <b style="color:' + COLORS[x] + '">' + x.toUpperCase() + ' ' + vv + '</b>';
       });
       if(more.__bfHtml !== html){ more.__bfHtml = html; more.innerHTML = html; }
+      // VELOCIDAD en el retrato: si el sello ⚡ no está presente (ni el "vX"
+      // original del motor), se añade aquí con la velocidad real del héroe.
+      var vv = (typeof velocity === 'function') ? velocity(h) : null;
+      if(vv != null && !tag.querySelector('.bf-vel-mini')){
+        var vel = tag.querySelector('.bf-vel-num');
+        if(!vel){
+          vel = document.createElement('span');
+          vel.className = 'bf-vel-num';
+          more.parentNode.insertBefore(vel, more.nextSibling);
+        }
+        var vt = ' · ⚡' + vv;
+        if(vel.textContent !== vt) vel.textContent = vt;
+      }
     });
   }
 

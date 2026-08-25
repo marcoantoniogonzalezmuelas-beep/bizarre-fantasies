@@ -20,12 +20,22 @@ export const HERO_CARD_SPEED_PATCH = `
   function decorate(){
     document.querySelectorAll('#bf-zoom-flip .cardface.bf-hero-card').forEach(function(card){
       if(card.querySelector('.bf-vel-card'))return;
-      var medal=card.querySelector('.bf-type-medal span');
-      var role=medal?String(medal.textContent||'').trim().toUpperCase():'';
-      var key=role==='CC'?'cc':role==='AD'?'ad':role==='HE'?'he':'';
-      if(!key)return;
-      var statEl=card.querySelector('.bf-stat-'+key);
-      var v=statEl?num(statEl.textContent):null;
+      // Velocidad REAL de la carta (mapa enviado desde la base de datos); si el
+      // héroe no la tiene fijada, se usa su stat principal como antes.
+      var nameEl=card.querySelector('.bf-hero-name');
+      var nm=nameEl?String(nameEl.textContent||'').replace(/[★\\s]+$/,'').trim().toLowerCase():'';
+      var isElite=/★/.test((nameEl&&nameEl.textContent)||'');
+      var ent=(window.__bfHeroVelMap||{})[nm];
+      var v=null;
+      if(ent){var cv=isElite?(ent.elite!=null?ent.elite:ent.base):ent.base;if(cv!=null&&!isNaN(Number(cv)))v=Number(cv);}
+      if(v==null){
+        var medal=card.querySelector('.bf-type-medal span');
+        var role=medal?String(medal.textContent||'').trim().toUpperCase():'';
+        var key=role==='CC'?'cc':role==='AD'?'ad':role==='HE'?'he':'';
+        if(!key)return;
+        var statEl=card.querySelector('.bf-stat-'+key);
+        v=statEl?num(statEl.textContent):null;
+      }
       if(v==null)return;
       var fast=v>=21;
       var g=document.createElement('span');
