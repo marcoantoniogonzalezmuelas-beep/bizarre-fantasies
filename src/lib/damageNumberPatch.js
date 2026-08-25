@@ -36,7 +36,27 @@ export const DAMAGE_NUMBER_PATCH = `
     return null;
   }
 
+  // Cinemática de habilidad / carta especial en pantalla: son capas a pantalla
+  // completa por encima del número, así que el -X HP se pintaba debajo y se
+  // apagaba antes de que acabase la cinemática (habilidad del Patrón, entre
+  // otras). Se espera a que la cinemática termine y entonces se muestra.
+  function cineOpen(){
+    return !!(document.getElementById('bf-abil-anim') || document.getElementById('bf-spec-cine'));
+  }
   function pop(side, id, amt){
+    if(cineOpen()){
+      var waited = 0, iv = setInterval(function(){
+        waited += 300;
+        if(cineOpen() && waited < 20000) return;
+        clearInterval(iv);
+        paint(side, id, amt);
+      }, 300);
+      return;
+    }
+    paint(side, id, amt);
+  }
+
+  function paint(side, id, amt){
     var el = document.getElementById('b_' + side + '_' + id);
     if(!el) return;
     var r = el.getBoundingClientRect();
