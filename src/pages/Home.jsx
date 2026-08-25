@@ -68,6 +68,7 @@ import { MATCH_RECOVERY_PATCH } from '@/lib/matchRecoveryPatch';
 import { BATTLE_RULES_PATCH } from '@/lib/battleRulesPatch';
 import { buildLangEnPatch } from '@/lib/langEnPatch';
 import { getLang, setLang, t } from '@/lib/i18n';
+import { loadScoreDb } from '@/lib/scoreDb';
 import { buildLangSelectorPatch } from '@/lib/langSelectorPatch';
 import { NICK_REQUIRED_PATCH } from '@/lib/nickRequiredPatch';
 import { NICK_MEMORY_PATCH } from '@/lib/nickMemoryPatch';
@@ -472,13 +473,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!base44.entities?.HeadToHead) return;
-    base44.entities.HeadToHead.list('-updated_date', 1000).then(rows => {
-      const map = {};
-      (rows || []).forEach(r => {
-        if (!r.pair_key || !r.nick) return;
-        const pair = (map[r.pair_key] = map[r.pair_key] || {});
-        pair[r.nick] = Math.max(pair[r.nick] || 0, r.wins || 0);
-      });
+    loadScoreDb().then(map => {
       scoreDbRef.current = map;
       try { iframeRef.current?.contentWindow?.postMessage({ bfScoreDb: map }, '*'); } catch (e) {}
     }).catch(() => {});
