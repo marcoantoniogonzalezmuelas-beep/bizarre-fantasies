@@ -12,12 +12,27 @@ const EFFECTS = `
 - damage_enemy: al usar la habilidad inflige X de daño directo a un rival, o a todos si all=true. params: { amount:number, all?:boolean }
 - buff_self: al usar la habilidad sube un stat propio (cc, ad o he). params: { stat:'cc'|'ad'|'he', amount:number }
 - shield_self: al usar la habilidad se otorga un escudo de X puntos. params: { amount:number }
-- custom_steps: MECÁNICA NUEVA a medida. Úsalo cuando la habilidad no encaje en las anteriores. params: { steps: [ { action, target, amount?, stat?, turns? } ] }
-    · action: 'damage' | 'heal' | 'shield' | 'buff' | 'debuff' | 'paralyze' | 'mana'
+- custom_steps: MECÁNICA A MEDIDA (la opción PREFERIDA en casi todos los casos, porque respeta el texto al pie de la letra).
+    params: { steps: [ { action, target, amount?, stat_mult?, stat?, turns?, pierce? } ] }
+    · action (todas están programadas y funcionan en la batalla):
+        'damage' (golpe con el tipo del héroe: CC melee, AD disparo, HE hechizo)
+        'true_damage' (daño que ignora escudo y armadura)
+        'drain' (daño y el héroe se cura esa misma cantidad — habilidad de drenaje)
+        'heal' | 'heal_full' | 'shield' | 'cleanse' (quita todos los estados negativos)
+        'buff' | 'debuff' (un stat concreto) | 'debuff_all_stats' (-X a CC, AD, HE y velocidad)
+        'paralyze' | 'skip_turn' | 'sleep' | 'silence'
+        'confuse' (estado CONFUSO: 50% de fallar cada acción)
+        'drunk' (estado BORRACHO: -3 a sus atributos, daño y 35% de fallar cada acción)
+        'mark' (el objetivo recibirá +amount de daño) | 'evade' (esquiva los próximos amount ataques)
+        'mana' (suma/resta maná) | 'lifesteal' (roba vida en cada golpe cuerpo a cuerpo el resto del combate)
+        'recover_card' (roba una carta de la pila de descartes/usados y la devuelve a la mano)
     · target: 'self' | 'ally' | 'all_allies' | 'enemy' | 'all_enemies' | 'weakest_enemy' | 'strongest_enemy'
-    · stat (solo buff/debuff): 'cc' | 'ad' | 'he'  ·  turns (solo paralyze): número de turnos
-    Puedes combinar varios pasos para reproducir el texto exacto de la carta.
-- unsupported: la habilidad NO se puede reproducir ni combinando pasos de custom_steps (por ejemplo requiere cambiar las reglas del juego, la mano de cartas o el orden de turnos).
+      (con 'enemy' o 'ally' el jugador elige el objetivo en la batalla)
+    · amount: número EXACTO del texto de la carta. Si el texto habla de "el doble de su ataque" o similar, usa stat_mult (1.5 = 1,5 veces su stat principal) en vez de amount.
+    · turns: turnos que dura el estado o la penalización (los del texto; por defecto 2).
+    · pierce: true si el texto dice que ignora la defensa/armadura.
+    Combina varios pasos para reproducir el texto COMPLETO (p.ej. "hace 6 de daño y lo emborracha 2 turnos" = paso damage + paso drunk).
+- unsupported: RESERVADO. Solo si la habilidad exige cambiar las reglas del juego, el orden de turnos o la subasta.
 `;
 
 export default function AbilityImplementButton({ cardId, elite, abilityName, abilityText }) {
@@ -37,7 +52,13 @@ Texto: "${abilityText}"
 
 Catálogo de efectos soportados por el motor:${EFFECTS}
 
-Devuelve effect_type, params (solo las claves del efecto elegido) y note: una explicación breve en español de lo implementado. Prioriza los efectos concretos; si ninguno reproduce el texto, construye la mecánica nueva con custom_steps respetando los números exactos de la carta. Reserva unsupported solo para lo que ni custom_steps puede hacer, y en note explica por qué.`,
+Devuelve effect_type, params (solo las claves del efecto elegido) y note: una explicación breve en español de lo implementado.
+
+REGLAS OBLIGATORIAS:
+1. Usa custom_steps siempre que el texto tenga números concretos, estados (borracho, confuso, dormido, paralizado, marcado, silenciado), drenaje de vida, robo de cartas del descarte o varios efectos a la vez. Los efectos concretos de arriba solo para textos que encajen literalmente en ellos.
+2. Copia los NÚMEROS EXACTOS del texto (daño, curación, escudo, penalización, turnos). Nunca los inventes ni los redondees.
+3. Reproduce TODOS los efectos del texto, cada uno como un paso. Si el texto afecta a todos los rivales usa 'all_enemies'; si es a uno, 'enemy'.
+4. unsupported está prohibido salvo que sea imposible con los pasos de arriba; explica el motivo en note.`,
         response_json_schema: {
           type: 'object',
           properties: {

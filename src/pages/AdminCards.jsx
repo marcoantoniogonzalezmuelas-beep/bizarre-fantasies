@@ -11,6 +11,7 @@ import ReferencePhotoSection from '@/components/admin/ReferencePhotoSection';
 import ImageRetouchSection from '@/components/admin/ImageRetouchSection';
 import { CLAN_COLORS } from '@/lib/cardData';
 import { calcHeroMana } from '@/lib/heroMana';
+import { balanceHeroStats } from '@/lib/heroStatBalance';
 
 import { isSummonCard } from '@/lib/summonCards';
 
@@ -120,6 +121,15 @@ export default function AdminCards() {
       - buff_self: sube un stat propio (cc, ad o he) al usar la habilidad. (Guerreros berserker, duelistas).
       - shield_self: se otorga un escudo de X puntos. (Tanques, protectores).
       - summon_token: invoca un token/criatura aliada. (Nigromantes, invocadores bizarros).
+      - drenaje: inflige X de daño a un rival y el héroe se cura esa misma cantidad. (No-muertos, vampiros).
+      - emborrachar: deja BORRACHO a un rival X turnos (-3 a sus atributos, algo de daño y 35% de fallar cada acción). (Bizarros, taberneros).
+      - confundir: deja CONFUSO a un rival X turnos (50% de fallar cada acción). (Bizarros, ilusionistas).
+      - dormir / paralizar / silenciar a un rival durante X turnos.
+      - marcar: el rival marcado recibe +X de daño.
+      - recuperar_carta: roba una carta de la pila de descartes y la devuelve a la mano. (Nigromantes, chatarreros).
+      - penalizar: -X a los atributos de un rival (o de todos) durante X turnos.
+
+      IMPORTANTE: el texto de la habilidad debe indicar los NÚMEROS concretos (daño, curación, turnos) para que el motor la ejecute tal cual.
 
       La habilidad (ability_name corto + ability_text descriptivo) debe tener SINERGIA con:
       - El NOMBRE del héroe (si se llama "Piromaníaco", la habilidad va de fuego → damage_enemy).
@@ -144,7 +154,9 @@ export default function AdminCards() {
         } 
       });
       
-      const resData = response || {};
+      // El rol manda: el stat primario (CC/AD/HE) queda siempre como el más
+      // alto, tanto en la versión normal como en la élite.
+      const resData = balanceHeroStats(response || {}, (response && response.type) || form.type);
       // Velocidad: refleja el stat primario (CC/AD/HE) generado por la IA.
       const _v = resData.type === 'CC' ? resData.cc : resData.type === 'AD' ? resData.ad : resData.he;
       const _ev = resData.type === 'CC' ? resData.elite_cc : resData.type === 'AD' ? resData.elite_ad : resData.elite_he;

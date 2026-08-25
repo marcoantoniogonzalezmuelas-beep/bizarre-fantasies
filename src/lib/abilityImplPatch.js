@@ -77,31 +77,97 @@ export const ABILITY_IMPL_PATCH = `
     }
   }
 
-  function runSteps(side, hero, spec){
+  // Stat principal del héroe según su rol, y tipo de golpe correspondiente.
+  function primStat(h){ return h && h.type === 'CC' ? 'cc' : h && h.type === 'AD' ? 'ad' : 'he'; }
+  function hitType(h){ return h && h.type === 'CC' ? 'melee' : h && h.type === 'AD' ? 'ranged' : 'spell'; }
+  function statOf(h, k){ try{ return typeof stat === 'function' ? stat(h, k) : num(h[k], 0); }catch(e){ return num(h[k], 0); } }
+  // Valor del paso: amount fijo, o multiplicador sobre el stat del héroe
+  // (stat_mult: 1.5 = "1,5 veces su stat principal").
+  function stepAmount(hero, st){
+    var mult = Number(st.stat_mult);
+    if(!isNaN(mult) && mult > 0) return Math.max(1, Math.round(statOf(hero, primStat(hero)) * mult));
+    return num(st.amount, 0);
+  }
+  // Devuelve a la mano una carta de la pila de usados (mismo mecanismo que el
+  // hechizo "Reanimación Arcana").
+  function recoverCard(side){
+    try{
+      var entry = typeof window.bfDiscardPop === 'function' ? window.bfDiscardPop(side) : null;
+      if(!entry) return '';
+      if(entry.kind === 'object'){
+        var tmpl = typeof OBJECTS !== 'undefined' ? byId(OBJECTS, entry.id) : null;
+        if(!tmpl) return '';
+        G.items[side].push(JSON.parse(JSON.stringify(tmpl)));
+        return tmpl.name;
+      }
+      var arr = entry.kind === 'mwep' ? (typeof MELEE !== 'undefined' ? MELEE : []) : entry.kind === 'rwep' ? (typeof RANGED !== 'undefined' ? RANGED : []) : (typeof ARMORS !== 'undefined' ? ARMORS : []);
+      var eq = byId(arr, entry.id);
+      if(!eq) return '';
+      var rec = JSON.parse(JSON.stringify(eq));
+      rec._bfRecoveredEq = true; rec._bfSlot = entry.kind; rec.kind = 'object'; rec.num = entry.num || 0;
+      G.items[side].push(rec);
+      return eq.name;
+    }catch(e){ return ''; }
+  }
+
+  function applyStep(side, hero, st, t){
+    var a = stepAmount(hero, st);
+    var turns = Math.max(1, num(st.turns, st.action === 'buff' || st.action === 'debuff' ? 99 : 2));
+    var sk = ['cc','ad','he','vel'].indexOf(st.stat) >= 0 ? st.stat : 'cc';
+    var mods = function(x){ return (x._mods = x._mods || []); };
+    var mark = function(x, txt){ try{ pushFx({k:'status', side:tSide(x), id:x.id, txt:txt}); }catch(e){} };
+    switch(st.action){
+      case 'damage': { var d = dealDamage(t, a, { type: hitType(hero), pierce: st.pierce ? 1 : 0 }); log(hero.name + ' golpea a ' + t.name + ' (-' + d + ').'); return true; }
+      case 'true_damage': { var dt = dealDamage(t, a, { type:'true' }); log(hero.name + ' hiere a ' + t.name + ' ignorando su defensa (-' + dt + ').'); return true; }
+      case 'drain': { var dd = dealDamage(t, a, { type: hitType(hero) }); var g = heal(hero, dd); log(hero.name + ' drena a ' + t.name + ' (-' + dd + ') y absorbe esa vida (+' + g + ').'); return true; }
+      case 'heal': { var gh = heal(t, a); log(t.name + ' recupera +' + gh + ' de vida.'); return true; }
+      case 'heal_full': { var gf = heal(t, t.maxHp); log(t.name + ' recupera toda su vida (+' + gf + ').'); return true; }
+      case 'shield': { t.shield = (t.shield || 0) + a; try{ pushFx({k:'shieldup', toSide:tSide(t), toId:t.id}); }catch(e){} log(t.name + ' gana un escudo de ' + a + '.'); return true; }
+      // El motor descuenta 1 a "turns" cada ronda y descarta el modificador al
+      // llegar a 0: sin ese campo el bonus desaparecería en la misma ronda.
+      case 'buff': { var mb = { turns: turns }; mb[sk] = Math.abs(a); mods(t).push(mb); mark(t, '\\u25b2'); log(t.name + ': +' + Math.abs(a) + ' de ' + sk.toUpperCase() + '.'); return true; }
+      case 'debuff': { var md = { turns: turns }; md[sk] = -Math.abs(a); mods(t).push(md); mark(t, '\\u25bc'); log(t.name + ': -' + Math.abs(a) + ' de ' + sk.toUpperCase() + ' (' + turns + ' turnos).'); return true; }
+      case 'debuff_all_stats': { mods(t).push({ cc:-Math.abs(a), ad:-Math.abs(a), he:-Math.abs(a), vel:-Math.abs(a), turns: turns }); mark(t, '\\u25bc'); log(t.name + ': -' + Math.abs(a) + ' a todos sus atributos (' + turns + ' turnos).'); return true; }
+      case 'paralyze': { t.para = Math.max(t.para || 0, turns); mark(t, '\\u26a1'); log(t.name + ' queda paralizado ' + turns + ' turnos.'); return true; }
+      case 'skip_turn': { t.skip = Math.max(t.skip || 0, turns); mark(t, '\\u23f8'); log(t.name + ' pierde ' + turns + ' turnos.'); return true; }
+      case 'sleep': { t.sleep = Math.max(t.sleep || 0, turns); mark(t, '\\u{1F4A4}'); log(t.name + ' se queda dormido ' + turns + ' turnos.'); return true; }
+      case 'silence': { t.silence = Math.max(t.silence || 0, turns); mark(t, '\\u{1F507}'); log(t.name + ' queda silenciado ' + turns + ' turnos.'); return true; }
+      case 'confuse': { t._bfConfused = Math.max(t._bfConfused || 0, turns); mark(t, '\\u2605'); log(t.name + ' queda CONFUSO ' + turns + ' turnos (50% de fallar cada acci\\u00f3n).'); return true; }
+      case 'drunk': { t._bfDrunk = Math.max(t._bfDrunk || 0, turns); mods(t).push({ cc:-3, ad:-3, he:-3, vel:-3, turns: turns }); var db = dealDamage(t, num(st.amount, 3), { type:'true' }); mark(t, '\\u25c9'); log(t.name + ' se emborracha: -3 a sus atributos, -' + db + ' y 35% de fallar durante ' + turns + ' turnos.'); return true; }
+      case 'mark': { t.mark = { dmg: a || 5, turns: turns }; mark(t, '\\u{1F3AF}'); log(t.name + ' queda marcado: recibir\\u00e1 +' + (a || 5) + ' de da\\u00f1o.'); return true; }
+      case 'evade': { t.evade = Math.max(t.evade || 0, num(st.amount, 1)); mark(t, '\\u{1F4A8}'); log(t.name + ' esquivar\\u00e1 los ' + Math.max(1, num(st.amount, 1)) + ' pr\\u00f3ximos ataques.'); return true; }
+      case 'cleanse': { t.sleep = 0; t.para = 0; t.skip = 0; t.silence = 0; t.mark = null; t._bfConfused = 0; t._bfDrunk = 0; t._mods = (t._mods || []).filter(function(m){ return !((m.cc||0) < 0 || (m.ad||0) < 0 || (m.he||0) < 0 || (m.vel||0) < 0); }); log(t.name + ' vuelve a su estado normal.'); return true; }
+      case 'mana': { t.mana = Math.max(0, Math.min(num(t.maxMana, 99), num(t.mana, 0) + a)); log(t.name + ': man\\u00e1 ' + (a >= 0 ? '+' : '') + a + '.'); return true; }
+      case 'lifesteal': { hero._bfLifestealCC = 1; log(hero.name + ' roba vida con cada golpe cuerpo a cuerpo.'); return true; }
+      case 'recover_card': { var nm = recoverCard(side); if(!nm) { log('No hay cartas en la pila de usados.'); return false; } log(hero.name + ' recupera ' + nm + ' de la pila de usados y la devuelve a su mano.'); return true; }
+      default: return false;
+    }
+  }
+  function log(msg){ try{ if(typeof pushLog === 'function') pushLog('lg', msg); }catch(e){} }
+
+  // ¿Necesita que el jugador elija objetivo? Solo cuando algún paso apunta a un
+  // único rival/aliado (los pasos de área o sobre uno mismo no preguntan).
+  function needsPick(spec){
+    var steps = ((spec.params || {}).steps) || [];
+    for(var i = 0; i < steps.length; i++){
+      var tg = String((steps[i] || {}).target || 'enemy');
+      if(tg === 'enemy' || tg === 'ally') return tg;
+    }
+    return '';
+  }
+
+  function runSteps(side, hero, spec, chosen){
     var steps = ((spec.params || {}).steps) || [];
     var did = false;
     steps.forEach(function(st){
       if(!st || !st.action) return;
-      var list = pickTargets(side, hero, st.target);
-      var amount = num(st.amount, 0);
-      var stat = ['cc','ad','he'].indexOf(st.stat) >= 0 ? st.stat : 'cc';
+      var tg = String(st.target || 'enemy');
+      var list = (chosen && (tg === 'enemy' || tg === 'ally')) ? [chosen] : pickTargets(side, hero, tg);
       list.forEach(function(t){
-        if(!t) return;
-        try{
-          if(st.action === 'damage' && typeof dealDamage === 'function'){ dealDamage(t, amount, { type:'true' }); did = true; }
-          else if(st.action === 'heal' && typeof heal === 'function'){ heal(t, amount); did = true; }
-          else if(st.action === 'shield'){ t.shield = (t.shield || 0) + amount; did = true; }
-          // IMPORTANTE: el motor descuenta 1 a "turns" cada ronda y descarta el
-          // modificador cuando llega a 0. Sin ese campo el bonus/penalización
-          // desaparecía en la misma ronda y nunca se veía en los indicadores.
-          else if(st.action === 'buff'){ var m = { turns: Math.max(1, num(st.turns, 99)) }; m[stat] = Math.abs(amount); (t._mods = t._mods || []).push(m); did = true; }
-          else if(st.action === 'debuff'){ var d = { turns: Math.max(1, num(st.turns, 99)) }; d[stat] = -Math.abs(amount); (t._mods = t._mods || []).push(d); did = true; }
-          else if(st.action === 'paralyze'){ t.skipTurns = (t.skipTurns || 0) + Math.max(1, num(st.turns, 1)); did = true; }
-          else if(st.action === 'mana'){ t.mana = Math.max(0, Math.min(num(t.maxMana, 99), num(t.mana, 0) + amount)); did = true; }
-        }catch(e){}
+        if(!t || !t.alive) return;
+        try{ if(applyStep(side, hero, st, t)) did = true; }catch(e){}
       });
     });
-    if(did && typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': ' + (spec.note || 'habilidad aplicada') + '.');
     return did;
   }
 
@@ -196,7 +262,27 @@ export const ABILITY_IMPL_PATCH = `
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': +' + inc + ' de ' + stat.toUpperCase() + '.');
         acted = true;
       } else if(kind === 'custom_steps'){
-        acted = runSteps(side, hero, spec);
+        var self = this, args = arguments;
+        var pick = needsPick(spec);
+        var finishSteps = function(t){
+          if(!runSteps(side, hero, spec, t)){ orig.apply(self, args); return; }
+          hero.abilityUsed = true;
+          if(hero.eliteMode) hero.eliteUsed = true;
+          if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, hero); }catch(e){} }
+          if(typeof renderBattle === 'function') renderBattle();
+          if(typeof netSync === 'function') netSync('s-battle');
+          setTimeout(complete, 420);
+        };
+        if(!pick){ finishSteps(null); return; }
+        var pool = pick === 'ally' ? side : (side === 'p' ? 'o' : 'p');
+        var label = 'Objetivo de ' + (hero.eliteMode ? (hero.eAbility || hero.ability) : hero.ability);
+        if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
+          pendTarget(label, pool, finishSteps);
+        } else {
+          var cands = team(pool).filter(function(x){ return x && x.alive; }).sort(function(a, b){ return a.hp - b.hp; });
+          finishSteps(cands[0] || null);
+        }
+        return;
       } else if(kind === 'shield_self'){
         var sh = num(p.amount, 0);
         hero.shield = (hero.shield || 0) + sh;

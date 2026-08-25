@@ -86,22 +86,26 @@ export const TOKEN_ABILITIES_PATCH = `
         sync(); finish();
       }
 
-      // Bañador — Paella: Confuso 2 / 3 turnos.
+      // Bañador — Paella: estado CONFUSO 2 / 3 turnos (50% de fallar cada
+      // acción). Usa el campo _bfConfused, que es el que pinta el rótulo
+      // "★ CONFUSO" en el retrato y aplica el fallo por turno.
       function applyConfuse(t){
         var turns = el ? 3 : 2;
-        t.skip = Math.max(t.skip || 0, turns);
-        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F300}'});
-        pushLog('li', name + ' deja confuso a ' + t.name + ' (pierde ' + turns + ' turnos).');
+        t._bfConfused = Math.max(t._bfConfused || 0, turns);
+        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u2605'});
+        pushLog('li', name + ' deja CONFUSO a ' + t.name + ' (' + turns + ' turnos, 50% de fallar cada acci\\u00f3n).');
         sync(); finish();
       }
 
-      // Pez Espada — Licor: -3 stats + 3 de daño (2 / 3 turnos).
+      // Pez Espada — Licor: estado BORRACHO (rótulo ◉ BORRACHO en el retrato,
+      // 35% de fallar cada acción) + -3 stats y 3 de daño (2 / 3 turnos).
       function applyDrunk(t){
         var turns = el ? 3 : 2;
+        t._bfDrunk = Math.max(t._bfDrunk || 0, turns);
         t._mods.push({cc:-3, ad:-3, he:-3, vel:-3, turns:turns});
         var d = dealDamage(t, 3, {type:'true'});
-        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F974}'});
-        pushLog('li', name + ' emborracha a ' + t.name + ' (-3 stats, -' + d + ', ' + turns + ' turnos).');
+        pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u25c9'});
+        pushLog('li', name + ' emborracha a ' + t.name + ' (-3 stats, -' + d + ', ' + turns + ' turnos, 35% de fallar).');
         sync(); finish();
       }
 
