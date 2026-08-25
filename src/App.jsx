@@ -23,6 +23,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AdminChat from './pages/AdminChat';
+import AdminPlayers from './pages/AdminPlayers';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/ia" element={<AdminAiLogs />} />
       <Route path="/admin/subastas" element={<AdminAuctions />} />
       <Route path="/admin/chat" element={<AdminChat />} />
+      <Route path="/admin/jugadores" element={<AdminPlayers />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/guiacartas" element={<CardGuide />} />
       <Route path="/races" element={<RacesPage />} />
