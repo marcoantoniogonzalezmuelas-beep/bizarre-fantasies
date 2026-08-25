@@ -79,7 +79,7 @@ export function usePlayersAdmin() {
     });
     return Object.values(map)
       .map(p => ({ ...p, modes: [...p.modes], games: p.wins + p.losses, avatar: avatarOf(p.nick) }))
-      .sort((a, b) => (b.last?.getTime() || 0) - (a.last?.getTime() || 0));
+      .sort((a, b) => (b.games - a.games) || ((b.last?.getTime() || 0) - (a.last?.getTime() || 0)));
   }, [visibleMatches, avatarOf]);
 
   // Enfrentamientos entre nicks: se cruzan las partidas registradas
