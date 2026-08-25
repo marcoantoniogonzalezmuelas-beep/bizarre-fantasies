@@ -25,6 +25,17 @@ export const DAMAGE_NUMBER_PATCH = `
     + '100%{opacity:0;transform:translate(-50%,-145%) scale(1.05)}}';
   document.head.appendChild(st);
 
+  // Lado del héroe objetivo. tSide no siempre es accesible desde aquí (vive en
+  // el ámbito del juego), así que si falla se deduce del propio tablero: se
+  // busca en qué lado existe el retrato con ese id.
+  function sideOf(target){
+    try{ if(typeof tSide === 'function'){ var s = tSide(target); if(s) return s; } }catch(e){}
+    var hasP = !!document.getElementById('b_p_' + target.id);
+    var hasO = !!document.getElementById('b_o_' + target.id);
+    if(hasP !== hasO) return hasP ? 'p' : 'o';
+    return null;
+  }
+
   function pop(side, id, amt){
     var el = document.getElementById('b_' + side + '_' + id);
     if(!el) return;
@@ -59,7 +70,10 @@ export const DAMAGE_NUMBER_PATCH = `
   // ninguno para ese héroe, se muestra el número directamente.
   var recent = {};
   function markHit(ev){
-    if(ev && ev.k === 'hit') recent[ev.side + '_' + ev.id] = Date.now();
+    // Solo cuenta como "ya mostrado" si el efecto lleva daño: los eventos sin
+    // cantidad (flecha, golpe sin cifra) no pintan número y hacían que el
+    // número rojo se perdiera (habilidad del Patrón, entre otras).
+    if(ev && ev.k === 'hit' && ev.dmg > 0) recent[ev.side + '_' + ev.id] = Date.now();
   }
 
   function installFallback(){
@@ -78,7 +92,7 @@ export const DAMAGE_NUMBER_PATCH = `
         var amt = Number(out);
         if(!amt && typeof before === 'number' && target) amt = before - target.hp;
         if(target && amt > 0){
-          var side = (typeof tSide === 'function') ? tSide(target) : null;
+          var side = sideOf(target);
           if(side){
             var key = side + '_' + target.id;
             var since = Date.now();
