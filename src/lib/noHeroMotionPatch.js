@@ -11,7 +11,7 @@ export const NO_HERO_MOTION_PATCH = `
   // Capas de EFECTO que sí se animan (sangre de agonía, escarcha/cadenas y demás
   // decoraciones de estado, ráfagas, números de daño). El retrato y la escena
   // quedan totalmente quietos.
-  var KEEP='.bf-fx,.bf-dmg,.bf-heal,.bf-num,.bf-coffee-fx,.bf-ability-burst,.bf-cine,.bf-3d,.bf-fx-root,.bf-decor-layer,.bf-decor,.bf-blood-veil,.bf-blood-drop';
+  var KEEP='.bf-fx,.bf-dmg,.bf-heal,.bf-num,.bf-coffee-fx,.bf-ability-burst,.bf-cine,.bf-3d,.bf-fx-root,.bf-decor-layer,.bf-decor,.bf-blood-veil,.bf-blood-drop,.bf-epic-foil,.bf-loss-pop';
   var HOST='.bhero,[id^="b_p_"],[id^="b_o_"]';
   var css=
     HOST+',\\n'+
@@ -47,10 +47,7 @@ export const NO_HERO_MOTION_PATCH = `
     // movimiento en el retrato. Se quedan visibles pero completamente quietas.
     'html body .bhero.bhero .bf-curse-fx,'+
     'html body .bhero.bhero .bf-curse-fx *,'+
-    'html body .bhero.bhero .bf-curse-rune,'+
-    'html body .bhero.bhero.s-cursed .bf-decor-layer,'+
-    'html body .bhero.bhero.s-cursed .bf-decor-layer *,'+
-    'html body .bhero.bhero.s-cursed .bf-decor{'+
+    'html body .bhero.bhero .bf-curse-rune{'+
       'animation:none!important;-webkit-animation:none!important;transition:none!important;'+
     '}'+
     'html body .bhero.bhero .bf-curse-fx::before,'+

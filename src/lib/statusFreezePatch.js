@@ -17,7 +17,7 @@ const sel = (suffix) =>
 // Las capas de efecto (decoraciones de estado, velo de sangre, ráfagas) quedan
 // FUERA del congelado: sus animaciones son el efecto visual que se quiere ver.
 const FXOK =
-  ':not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop)';
+  ':not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-epic-foil)';
 
 const selAll = (suffix) => [sel(suffix), sel(suffix + '::before'), sel(suffix + '::after')].join(',');
 
@@ -49,7 +49,7 @@ export const STATUS_FREEZE_PATCH = `
         if(card.getAnimations){
           card.getAnimations({subtree:true}).forEach(function(a){
             var t=a.effect&&a.effect.target;
-            if(t&&t.closest&&t.closest('.bf-ability-burst,.bf-fx,.bf-dmg,.bf-heal,.bf-absorb-pop,.bf-decor-layer,.bf-blood-veil'))return;
+            if(t&&t.closest&&t.closest('.bf-ability-burst,.bf-fx,.bf-dmg,.bf-heal,.bf-absorb-pop,.bf-decor-layer,.bf-blood-veil,.bf-epic-foil'))return;
             a.cancel();
           });
         }

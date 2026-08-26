@@ -14,9 +14,9 @@ export const HERO_BLOOD_FX_PATCH = `
 
   var css =
   // ---- Velo de sangre sobre el retrato ----
-  '.bf-blood-veil{position:absolute!important;left:-22px!important;top:-18px!important;bottom:-18px!important;width:216px!important;z-index:3!important;pointer-events:none!important;overflow:hidden!important;border-radius:0!important}' +
-  // Tinte rojo degradado que tiñe TODO el retrato
-  '.bf-blood-veil::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(140,0,0,.72) 0%,rgba(90,0,0,.88) 50%,rgba(60,0,0,.95) 100%);mix-blend-mode:multiply;animation:bfBloodTint 1s ease-in-out infinite}' +
+  // SIN velo de color: la sangre fluye por TODO el recuadro (rayas + gotas)
+  // sin teñir de rojo la escena.
+  '.bf-blood-veil{position:absolute!important;inset:0!important;left:0!important;top:0!important;bottom:0!important;right:0!important;width:auto!important;z-index:6!important;pointer-events:none!important;overflow:hidden!important;border-radius:inherit!important}' +
   // Rayas de sangre verticales que se deslizan
   '.bf-blood-veil::after{content:"";position:absolute;inset:0;background:' +
     'repeating-linear-gradient(175deg,transparent 0 16px,rgba(200,0,0,.4) 16px 19px),' +

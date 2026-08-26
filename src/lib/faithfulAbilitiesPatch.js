@@ -149,6 +149,36 @@ export const FAITHFUL_ABILITIES_PATCH = `
     }catch(e){}
   }
 
+  // Marcador flotante (estilo pifia / daño / curación) sobre el retrato del
+  // objetivo: indica pérdidas de habilidad, fase élite anulada, etc. Se pinta
+  // FUERA del recuadro (fixed en el body) para que los parches de congelado
+  // del héroe no le quiten la animación.
+  function lossPop(t, txt, color){
+    try{
+      if(!window.__bfLossPopCss){
+        window.__bfLossPopCss = 1;
+        var st = document.createElement('style');
+        st.textContent = '@keyframes bfLossPop{0%{opacity:0;transform:translate(-50%,-40%) scale(.6)}15%{opacity:1;transform:translate(-50%,-60%) scale(1.18)}30%{transform:translate(-50%,-58%) scale(1)}100%{opacity:0;transform:translate(-50%,-170%) scale(.95)}}'
+          + '.bf-loss-pop{position:fixed;z-index:99999;pointer-events:none;font-family:Cinzel,serif;font-weight:1000;font-size:15px;letter-spacing:.4px;white-space:nowrap;padding:5px 14px;border-radius:999px;background:rgba(8,5,14,.92);border:2px solid currentColor;text-shadow:0 0 10px currentColor,0 2px 4px #000;box-shadow:0 4px 14px rgba(0,0,0,.6),0 0 18px currentColor;animation:bfLossPop 2s ease-out forwards}';
+        document.head.appendChild(st);
+      }
+      var tgt = t;
+      setTimeout(function(){
+        var card = document.getElementById('b_' + side_(tgt) + '_' + tgt.id);
+        if(!card) return;
+        var r = card.getBoundingClientRect();
+        var el = document.createElement('div');
+        el.className = 'bf-loss-pop';
+        el.style.color = color || '#ff7a7a';
+        el.textContent = txt;
+        el.style.left = (r.left + r.width / 2) + 'px';
+        el.style.top = (r.top + r.height * 0.42) + 'px';
+        document.body.appendChild(el);
+        setTimeout(function(){ if(el.parentNode) el.remove(); }, 2100);
+      }, 140);
+    }catch(e){}
+  }
+
   // ---- implementaciones fieles ------------------------------------------
   var IMPL = {
     // Boss — texto: -3 (1 turno) / -5 (2 turnos) a todos los rivales
@@ -366,12 +396,69 @@ export const FAITHFUL_ABILITIES_PATCH = `
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u25bc'});
       log('li', c.h.name + ' maldice a ' + c.t.name + ' (-' + d + ', -3).');
     },
-    // Edredon — sin penalización por atacar fuera de su tipo (élite: +3 stats)
+    // Edredon — Ráfaga del Veterano: 3 flechas certeras a un rival elegido.
+    // Élite — Tormenta de Flechas: lluvia de flechas sobre TODOS los rivales.
     edre: function(c){
-      c.h._bfNoTypePen = 1;
-      if(c.el) mods(c.h).push({cc:3, ad:3, he:3, vel:3, turns:99});
-      fx({k:'status', side:c.side, id:c.h.id, txt:'\\u2694\\ufe0f'});
-      log('lg', c.h.name + ' domina todas las armas: sin penalizaci\\u00f3n por atacar fuera de su tipo' + (c.el ? ' y +3 a todos sus stats' : '') + '.');
+      if(c.el){
+        var foes = L(c.foes);
+        foes.forEach(function(x, i){
+          setTimeout(function(){ fx({k:'arrow', fromSide:c.side, fromId:c.h.id, toSide:side_(x), toId:x.id, hits:1}); }, i * 180);
+        });
+        foes.forEach(function(x){
+          var d = dealDamage(x, Math.round(stat(c.h,'ad') * 0.7) + 3, {type:'ranged'});
+          log('ld', '\\ud83c\\udff9 La lluvia de flechas de ' + c.h.name + ' alcanza a ' + x.name + ' (-' + d + ').');
+        });
+        log('lx', '\\ud83c\\udff9 ' + c.h.name + ' desata la TORMENTA DE FLECHAS sobre todo el equipo rival.');
+        return;
+      }
+      var total = 0;
+      for(var i = 0; i < 3; i++){
+        if(!c.t.alive) break;
+        fx({k:'arrow', fromSide:c.side, fromId:c.h.id, toSide:side_(c.t), toId:c.t.id, hits:1});
+        total += dealDamage(c.t, Math.round(stat(c.h,'ad') * 0.45) + 1, {type:'ranged'});
+      }
+      log('ld', '\\ud83c\\udff9 ' + c.h.name + ' acribilla a ' + c.t.name + ' con una r\\u00e1faga de 3 flechas (-' + total + ').');
+    },
+    // Vexal — Interferencia: anula la habilidad de un rival y hace daño.
+    // Élite — Silencio Total: anula la habilidad y golpe mágico fuerte.
+    vex: function(c){
+      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * (c.el ? 1.6 : 1.1)), {type:'spell', element:'arcano'});
+      c.t.silence = 99; c.t.abilityUsed = true;
+      fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
+      lossPop(c.t, '\\ud83d\\udeab HABILIDAD ANULADA', '#ff7a7a');
+      log('li', c.h.name + ' anula la habilidad de ' + c.t.name + ' (-' + d + ').');
+    },
+    // Fas Everest Panzer — Compresor Roto: desactiva la habilidad del rival
+    // elegido O su Fase Élite (a elección). Élite — Monedero Roto: -15 stats
+    // repartidos al azar. Con marcador flotante sobre el objetivo.
+    Faseve: function(c){
+      if(c.el){
+        var r = {cc:0, ad:0, he:0}, keys = ['cc','ad','he'];
+        for(var i = 0; i < 15; i++) r[keys[Math.floor(Math.random()*3)]]++;
+        mods(c.t).push({cc:-r.cc, ad:-r.ad, he:-r.he, turns:99});
+        fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u25bc'});
+        lossPop(c.t, '\\u25bc -15 A SUS STATS', '#ffb43a');
+        log('li', c.h.name + ' rompe el monedero de ' + c.t.name + ': -' + r.cc + ' CC, -' + r.ad + ' AD y -' + r.he + ' HE.');
+        return;
+      }
+      var blockElite;
+      if(typeof humanCtl === 'function' && humanCtl(c.side)){
+        blockElite = window.confirm('COMPRESOR ROTO sobre ' + c.t.name + ':\\n\\nAceptar = anular su FASE \\u00c9LITE\\nCancelar = anular su HABILIDAD');
+      } else {
+        blockElite = !c.t.eliteMode && !c.t.eliteUsed;
+      }
+      if(blockElite){
+        c.t.eliteUsed = true; c.t._bfNoElite = 1;
+        fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u26d4'});
+        lossPop(c.t, '\\u26d4 FASE \\u00c9LITE ANULADA', '#c79bff');
+        log('li', c.h.name + ' desactiva la FASE \\u00c9LITE de ' + c.t.name + ': ya no podr\\u00e1 renacer.');
+      } else {
+        c.t.silence = 99; c.t.abilityUsed = true;
+        fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
+        lossPop(c.t, '\\ud83d\\udeab HABILIDAD ANULADA', '#ff7a7a');
+        log('li', c.h.name + ' desactiva la habilidad de ' + c.t.name + '.');
+      }
     },
     // Coffetath — normal: golpe mágico brutal a un objetivo.
     // Élite: golpe mágico que además bloquea la mano rival un turno.
@@ -400,7 +487,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
     }
   };
 
-  var NEEDS_ENEMY = { edre:0, caoffe:1, bos:0, nar:1, hil:0, renhu:1, boski:0, mor:1, hannai:0, pij:1, pat:1, elder:1, zar:1, alf:1, dix:1, syx:0, ser:1, bat:0, nix:1, man:0, pac:1, rev:1, rol:1 };
+  var NEEDS_ENEMY = { edre:1, vex:1, Faseve:1, caoffe:1, bos:0, nar:1, hil:0, renhu:1, boski:0, mor:1, hannai:0, pij:1, pat:1, elder:1, zar:1, alf:1, dix:1, syx:0, ser:1, bat:0, nix:1, man:0, pac:1, rev:1, rol:1 };
   var NEEDS_ALLY = { bat:1 };
 
   function hook(){

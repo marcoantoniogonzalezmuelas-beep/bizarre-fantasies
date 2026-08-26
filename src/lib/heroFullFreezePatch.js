@@ -1,13 +1,11 @@
 // CONGELADO TOTAL de los héroes en batalla (última palabra: se inyecta al final
 // de todos los parches).
 //
-// Nada dentro del recuadro del héroe (.bhero) se mueve ni parpadea durante toda
-// la partida: ni retrato, ni escena, ni aura, ni rótulos, ni decoraciones de
-// estado (escarcha, cadenas, velas, chispas, Zzz…). Todo se ve, pero quieto y
-// con luz constante — sin intermitencias.
-//
-// Los efectos de combate (números de daño, ráfagas, cinemáticas) viven en la
-// capa de FX fuera del recuadro (#bf-fx-layer), así que siguen animándose.
+// El retrato, la escena, los rótulos y las decoraciones estructurales quedan
+// quietos y con luz constante. EXCEPCIONES (efectos "vivos" pedidos por el
+// jugador): las partículas de estado (.bf-decor — escarcha, velas, calaveras…),
+// la sangre de la agonía (.bf-blood-veil), las ráfagas de habilidad
+// (.bf-ability-burst) y el brillo foil que recorre la carta (.bf-epic-foil).
 export const HERO_FULL_FREEZE_PATCH = `
 <script>
 (function(){
@@ -15,10 +13,13 @@ export const HERO_FULL_FREEZE_PATCH = `
   window.__bfHeroFullFreeze = true;
 
   var HOST = 'html body .bhero.bhero';
+  // Capas de efecto que SÍ se animan.
+  var OK = ':not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-epic-foil)';
   var css = ''
-    // Cero animaciones y cero transiciones en TODO el recuadro del héroe.
+    // Cero animaciones y cero transiciones en el recuadro del héroe (salvo las
+    // capas de efecto permitidas).
     + HOST + ',' + HOST + '::before,' + HOST + '::after,'
-    + HOST + ' *,' + HOST + ' *::before,' + HOST + ' *::after{'
+    + HOST + ' *' + OK + ',' + HOST + ' *' + OK + '::before,' + HOST + ' *' + OK + '::after{'
     +   'animation:none!important;-webkit-animation:none!important;'
     +   'animation-name:none!important;animation-play-state:paused!important;'
     +   'transition:none!important;will-change:auto!important;'
@@ -27,12 +28,10 @@ export const HERO_FULL_FREEZE_PATCH = `
     // se quedan exactamente en su sitio y con su tamaño.
     + HOST + '{transform:translateZ(0)!important}'
     + HOST + ' .bf-battle-art,' + HOST + ' .bf-bscene-portrait,' + HOST + ' .bhero-art,'
-    + HOST + ' img,' + HOST + ' .bf-pat,' + HOST + ' .bf-active-ring,'
+    + HOST + ' img,' + HOST + ' .bf-active-ring,'
     + HOST + ' .bf-active-tag,' + HOST + ' .bhero-aura,' + HOST + ' .bf-agonize-badge{transform:none!important}'
-    // Las decoraciones de estado siguen centradas donde toca (sin animación).
-    + HOST + ' .bf-decor{transform:translate(-50%,-50%)!important}'
-    // Luz CONSTANTE: opacidad fija en las capas que antes latían.
-    + HOST + ' .bf-decor,' + HOST + ' .bf-pat{opacity:.9!important}';
+    // Posición base de las partículas (sus keyframes animan desde aquí).
+    + HOST + ' .bf-decor{transform:translate(-50%,-50%)}';
 
   var st = document.createElement('style');
   st.textContent = css;
@@ -43,15 +42,21 @@ export const HERO_FULL_FREEZE_PATCH = `
 
   // El CSS no puede parar lo que hace el JavaScript del juego: aquí se cancelan
   // las animaciones creadas por código y se limpian los transform/opacity que
-  // reescribe en cada repintado.
+  // reescribe en cada repintado. Las capas de efecto permitidas no se tocan.
+  var SKIP = '.bf-decor-layer,.bf-blood-veil,.bf-ability-burst,.bf-epic-foil';
   setInterval(function(){
     document.querySelectorAll('.bhero').forEach(function(card){
       try{
         if(card.getAnimations){
-          card.getAnimations({ subtree: true }).forEach(function(a){ try{ a.cancel(); }catch(e){} });
+          card.getAnimations({ subtree: true }).forEach(function(a){
+            var t = a.effect && a.effect.target;
+            if(t && t.closest && t.closest(SKIP)) return;
+            try{ a.cancel(); }catch(e){}
+          });
         }
         card.querySelectorAll('[style*="transform"],[style*="animation"]').forEach(function(el){
-          if(el.classList.contains('bf-decor')) return;
+          if(el.closest && el.closest(SKIP)) return;
+          if(el.classList.contains('bf-decor') || el.classList.contains('bf-epic-foil')) return;
           if(el.style.transform && el.style.transform !== 'none') el.style.transform = 'none';
           if(el.style.animation) el.style.animation = 'none';
         });

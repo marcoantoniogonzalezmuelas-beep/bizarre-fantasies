@@ -25,7 +25,7 @@ export const STATUS_AURA_PATCH = `
      grad:'linear-gradient(135deg,rgba(78,6,59,.55),rgba(28,4,22,.78))',
      filt:'saturate(1.25) hue-rotate(260deg) drop-shadow(0 0 15px #ff45c8)',
      pat:WEB_TL+' left top/110px 110px no-repeat,'+WEB_BR+' right bottom/110px 110px no-repeat,'+'radial-gradient(circle at 50% 60%,rgba(255,69,200,.2),transparent 65%)',
-     decor:[{t:'spider',e:'🕷',x:'10%',y:'22%'},{t:'spider',e:'🕷',x:'82%',y:'68%'},{t:'candle',e:'🕯',x:'6%',y:'80%'},{t:'candle',e:'🕯',x:'90%',y:'34%'},{t:'bug',e:'🦋',x:'70%',y:'12%'}]},
+     decor:[{t:'candle',e:'🕯',x:'8%',y:'88%'},{t:'candle',e:'🕯',x:'32%',y:'91%',d:.5},{t:'candle',e:'🕯',x:'68%',y:'91%',d:.9},{t:'candle',e:'🕯',x:'92%',y:'88%',d:.3},{t:'skullrise',e:'💀',x:'20%',y:'70%',sz:16,d:0,dur:4.4},{t:'skullrise',e:'💀',x:'50%',y:'76%',sz:22,d:1.5,dur:5.2},{t:'skullrise',e:'💀',x:'80%',y:'72%',sz:14,d:2.8,dur:4.7}]},
     {cls:'s-paralyzed',c:'#bde8ff',d:'#14324b',ic:'⛓',lb:'PARALIZADO',
      grad:'linear-gradient(135deg,rgba(20,50,75,.5),rgba(8,18,32,.78))',
      filt:'saturate(.55) brightness(.92) drop-shadow(0 0 14px #bde8ff)',
@@ -45,7 +45,7 @@ export const STATUS_AURA_PATCH = `
      grad:'linear-gradient(135deg,rgba(7,58,83,.5),rgba(10,30,45,.78))',
      filt:'saturate(.7) brightness(.95) hue-rotate(-12deg) drop-shadow(0 0 15px #75e8ff)',
      pat:FROST+' left top/40px 40px no-repeat,'+FROST+' right bottom/40px 40px no-repeat,'+FROST+' center/60px 60px no-repeat,'+'repeating-linear-gradient(45deg,rgba(160,230,255,.16) 0 6px,transparent 6px 18px)',
-     decor:[{t:'snow',e:'❄',x:'24%',y:'16%'},{t:'snow',e:'❄',x:'72%',y:'62%'},{t:'snow',e:'❄',x:'44%',y:'82%'}]},
+     decor:[{t:'flake',e:'❄',x:'8%',y:'10%',sz:13,d:0,dur:3.4},{t:'flake',e:'❅',x:'22%',y:'20%',sz:17,d:1.2,dur:4.1},{t:'flake',e:'❄',x:'38%',y:'8%',sz:12,d:2.2,dur:3.7},{t:'flake',e:'❆',x:'52%',y:'16%',sz:19,d:.6,dur:4.5},{t:'flake',e:'❄',x:'66%',y:'12%',sz:14,d:1.8,dur:3.9},{t:'flake',e:'❅',x:'80%',y:'18%',sz:16,d:2.9,dur:4.3},{t:'flake',e:'❄',x:'92%',y:'10%',sz:12,d:.9,dur:3.5}]},
     {cls:'s-tank',c:'#ffb43a',d:'#5a3f04',ic:'🛡',lb:'TANQUEANDO',
      grad:'linear-gradient(135deg,rgba(255,140,30,.42),rgba(80,40,5,.72))',
      filt:'saturate(1.15) contrast(1.08) drop-shadow(0 0 16px #ffb43a)',
@@ -71,18 +71,20 @@ export const STATUS_AURA_PATCH = `
   var css='.bhero{position:relative!important}';
   STATES.forEach(function(s){
     css+=
-      '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+';box-shadow:0 0 0 3px '+s.c+',0 0 28px '+s.c+'99,0 0 52px '+s.c+'55!important}'+
-      // Halo incluido (queda bien), pero SIN escalar: el tamaño del retrato no
-      // cambia nunca al entrar o salir de un estado.
-      '.bhero.'+s.cls+' .bf-battle-art{filter:'+s.filt+'!important}'+
-      '.bhero.'+s.cls+'::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;background:'+s.grad+';mix-blend-mode:normal;opacity:.82}'+
-      '.bhero.'+s.cls+' .bf-pat{position:absolute;inset:0;z-index:5;pointer-events:none;border-radius:inherit;background:'+s.pat+';opacity:.9}'+
+      // SIN velos de color: ni borde de neón, ni degradado, ni filtro sobre la
+      // escena, ni patrón de fondo. El estado se indica SOLO con el rótulo y
+      // con las partículas (escarcha, velas/calaveras…) por toda la escena.
+      '.bhero.'+s.cls+'{--bf-state:'+s.c+';--bf-state-dark:'+s.d+'}'+
+      'html body .bhero.'+s.cls+' .bf-battle-art{filter:saturate(1.14) contrast(1.1)!important}'+
       '.bhero.'+s.cls+'::after{content:"'+s.ic+' '+s.lb+'";position:absolute;top:6px;right:8px;left:auto;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid '+s.c+';color:'+s.c+';font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px '+s.c+',0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6),0 0 16px '+s.c+',inset 0 0 12px '+s.d+';white-space:nowrap}';
   });
   // Animación de borde de estado + scanlines deslizantes
   css+='@keyframes bfStateEdge{0%,100%{box-shadow:0 0 0 3px var(--bf-state),0 0 20px var(--bf-state)77,0 0 40px var(--bf-state)44!important}50%{box-shadow:0 0 0 3px var(--bf-state),0 0 36px var(--bf-state)cc,0 0 64px var(--bf-state)66!important}}@keyframes bfScanMove{0%{background-position:0 0,0 0,0 0,0 0,0 0,0 0}100%{background-position:0 40px,0 40px,0 40px,0 40px,0 40px,0 40px}}';
   // Ocultar badge nativo duplicado.
   css+='.bhero.s-cursed>.bf-status-badge,.bhero.s-paralyzed>.bf-status-badge,.bhero.s-sleeping>.bf-status-badge,.bhero.s-blessed>.bf-status-badge,.bhero.s-frozen>.bf-status-badge,.bhero.s-tank>.bf-status-badge,.bhero.bf-state-confused>.bf-status-badge,.bhero.bf-state-drunk>.bf-status-badge,.bhero.bf-state-dizzy>.bf-status-badge{display:none!important}';
+  // Overlays nativos del juego (placa de hielo, ovejas/Zzz, runas, rayos…) y la
+  // capa de patrón: fuera — el efecto de cada estado son solo las partículas.
+  css+='html body .bhero .bf-pat{display:none!important}html body .bhero .bf-frost{display:none!important}html body .bhero .bf-fx-overlay{display:none!important}';
 
   // ---- Decoraciones animadas (capa JS) ----
   css+=
@@ -101,6 +103,12 @@ export const STATUS_AURA_PATCH = `
     '.bf-decor-star{font-size:20px;color:#ffe65a;text-shadow:0 0 8px #ffe65a;animation:bfSpin 3s linear infinite}'+
     '.bf-decor-bubble{font-size:18px;animation:bfRise 4s ease-in-out infinite}'+
     '.bf-decor-spiral{font-size:22px;animation:bfSpin 2.4s linear infinite}'+
+    // Escarcha de nieve cayendo por toda la escena (congelado)
+    '.bf-decor-flake{color:#dffaff;text-shadow:0 0 8px #75e8ff,0 1px 2px #000;animation:bfFallLoop 3.8s linear infinite}'+
+    // Calaveras ascendiendo por la escena (maldito)
+    '.bf-decor-skullrise{filter:drop-shadow(0 0 8px #ff45c8) drop-shadow(0 2px 4px #000);animation:bfRiseLoop 4.6s ease-in infinite}'+
+    '@keyframes bfFallLoop{0%{opacity:0;transform:translate(-50%,-50%) translateY(-125px) rotate(0)}10%{opacity:1}90%{opacity:.8}100%{opacity:0;transform:translate(-50%,-50%) translateY(140px) rotate(220deg)}}'+
+    '@keyframes bfRiseLoop{0%{opacity:0;transform:translate(-50%,-50%) translateY(85px) scale(.7)}14%{opacity:.95}86%{opacity:.7}100%{opacity:0;transform:translate(-50%,-50%) translateY(-135px) scale(1.1)}}'+
     '@keyframes bfCrawl{0%,100%{transform:translate(-50%,-50%) rotate(0)}25%{transform:translate(calc(-50% + 10px),calc(-50% + 5px)) rotate(18deg)}50%{transform:translate(calc(-50% + 5px),calc(-50% + 12px)) rotate(-12deg)}75%{transform:translate(calc(-50% - 8px),calc(-50% + 7px)) rotate(22deg)}}'+
     '@keyframes bfBug{0%,100%{transform:translate(-50%,-50%) rotate(0)}33%{transform:translate(calc(-50% + 14px),calc(-50% - 8px)) rotate(20deg)}66%{transform:translate(calc(-50% - 6px),calc(-50% + 10px)) rotate(-15deg)}}'+
     '@keyframes bfFlicker{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)}45%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}55%{opacity:.8;transform:translate(-50%,-50%) scale(.95)}}'+
@@ -134,7 +142,7 @@ export const STATUS_AURA_PATCH = `
   // es el efecto chulo. Lo que se congela es el retrato y la escena.
   // Capas de efecto que SÍ pueden animarse (decoraciones de estado, velo y
   // gotas de sangre, ráfagas de habilidad): quedan excluidas del congelado.
-  var FXOK=':not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-blood-veil):not(.bf-blood-veil *)';
+  var FXOK=':not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-epic-foil)';
   css+=''+
        // Un solo indicador por estado: el rótulo de este parche (::after). El
        // emblema flotante nativo (.bf-status-badge, con su parpadeo) se oculta
@@ -185,6 +193,7 @@ export const STATUS_AURA_PATCH = `
       el.style.left=d.x; el.style.top=d.y;
       if(d.sz) el.style.fontSize=d.sz+'px';
       if(d.d) el.style.animationDelay=d.d+'s';
+      if(d.dur) el.style.animationDuration=d.dur+'s';
       layer.appendChild(el);
     });
   }
