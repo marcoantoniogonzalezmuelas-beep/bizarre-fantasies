@@ -60,49 +60,25 @@ export const STATUS_AURA_PATCH = `
     // La capa de nieve se aísla del resto: el retrato del héroe no se toca.
     + 'html body .bhero.s-frozen .bf-decor-layer{isolation:isolate;contain:paint}'
     + 'html body .bhero.s-frozen,html body .bhero.s-frozen *:not(.bf-decor-layer):not(.bf-decor){filter:none!important;box-shadow:none!important;backdrop-filter:none!important}'
-    // Escarcha cayendo por toda la escena (congelado) — bucle continuo, sin
-    // apagarse: opacidad plena de principio a fin para que no parpadee.
-    // CONGELADO: velo degradado azul ESTÁTICO por encima del retrato (sin
-    // animación, sin filtros sobre el arte) + un muñeco de nieve quieto.
-    + 'html body .bhero.s-frozen .bf-decor-frostveil{position:absolute;inset:0!important;left:0;top:0;width:100%;height:100%;transform:none!important;background:linear-gradient(180deg,rgba(150,220,255,.55) 0%,rgba(90,170,255,.35) 45%,rgba(40,90,200,.5) 100%);mix-blend-mode:normal;opacity:.82;animation:none!important;filter:none!important}'
-    + 'html body .bhero.s-frozen .bf-decor-snowman{position:absolute;transform:translate(-50%,-50%);color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6),0 0 14px rgba(180,230,255,.9);animation:none!important;filter:none!important;opacity:.95}'
-    // Velitas NEGRAS (maldito): cera oscura + llama que titila
-    + '.bf-decor-blackcandle{filter:brightness(.35) saturate(.2) drop-shadow(0 0 6px rgba(255,69,200,.7)) drop-shadow(0 2px 4px #000);animation:bfCandleFlicker 1.4s ease-in-out infinite}'
-    // Muñecos vudú: se balancean lentamente con brillo mágico
-    + '.bf-decor-voodoo{filter:drop-shadow(0 0 8px #ff45c8) drop-shadow(0 2px 4px #000);animation:bfSway 3.6s ease-in-out infinite}'
-    + '@keyframes bfCandleFlicker{0%,100%{opacity:.85}50%{opacity:1}}'
-    + '.bf-decor-skullrise{filter:drop-shadow(0 0 8px #ff45c8) drop-shadow(0 2px 4px #000);animation:bfRiseLoop 4.8s linear infinite}'
-    + '@keyframes bfRiseLoop{0%{transform:translate(-50%,-50%) translateY(80px) scale(.75)}100%{transform:translate(-50%,-50%) translateY(-130px) scale(1.1)}}'
-    // PARALIZADO: cadenas colgando por toda la escena + chispazos eléctricos
-    + '.bf-decor-chain{transform-origin:top center;color:#dff2ff;text-shadow:0 0 8px #bde8ff;animation:bfSway 3.2s ease-in-out infinite}'
-    + '@keyframes bfSway{0%,100%{transform:translate(-50%,-50%) rotate(-7deg)}50%{transform:translate(-50%,-50%) rotate(7deg)}}'
-    + '.bf-decor-shackle{animation:bfSway 2.6s ease-in-out infinite}'
-    + '.bf-decor-spark{color:#fff;text-shadow:0 0 10px #bde8ff,0 0 20px #6cc8ff;animation:bfZap 1.7s steps(2,end) infinite}'
-    + '@keyframes bfZap{0%,45%{opacity:0}50%,62%{opacity:1}70%,100%{opacity:0}}'
-    // DORMIDO: ovejitas cruzando la escena, ZZZ ascendiendo y luna
-    + '.bf-decor-sheep{animation:bfWalk 9s linear infinite}'
-    + '@keyframes bfWalk{0%{transform:translate(-50%,-50%) translateX(0) scaleX(1)}100%{transform:translate(-50%,-50%) translateX(320px) scaleX(1)}}'
-    + '.bf-decor-zzz{font-weight:900;color:#fff;text-shadow:0 0 8px #c792ff,0 2px 4px #000;animation:bfFloatZ 3.4s ease-out infinite}'
-    + '@keyframes bfFloatZ{0%{transform:translate(-50%,-50%) scale(.6);opacity:0}25%{opacity:1}100%{transform:translate(-50%,calc(-50% - 44px)) scale(1.3);opacity:0}}'
-    + '.bf-decor-moon{filter:drop-shadow(0 0 10px #c792ff)}'
-    + '.bf-decor-bear{animation:bfSway 3.4s ease-in-out infinite}'
-    // BENDITO / TANQUEANDO
-    + '.bf-decor-sparkle,.bf-decor-shield,.bf-decor-clang,.bf-decor-halo{animation:bfTwinkle 2.2s ease-in-out infinite}'
-    + '@keyframes bfTwinkle{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.9)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}'
-    + '.bf-decor-feather{animation:bfFallLoop 6s linear infinite}'
-    // CONFUSO: neones de interrogación parpadeando por la escena
-    + '.bf-decor-neon{font-family:Cinzel,serif;font-weight:1000;color:#fffbe0;text-shadow:0 0 6px #ffe65a,0 0 16px #ff7ae0,0 0 30px #6cf;animation:bfNeon 1.8s ease-in-out infinite}'
-    + '@keyframes bfNeon{0%,100%{opacity:.35;filter:hue-rotate(0)}40%{opacity:1;filter:hue-rotate(60deg)}55%{opacity:.5}70%{opacity:1;filter:hue-rotate(-60deg)}}'
-    + '.bf-decor-star,.bf-decor-spiral{animation:bfSpin 3s linear infinite}'
-    + '@keyframes bfSpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}'
-    // BORRACHO: luces de discoteca (focos de color) + burbujas y jarras
-    + '.bf-decor-disco{color:#ff3ad0;text-shadow:0 0 14px currentColor,0 0 34px currentColor;animation:bfDisco 2.4s linear infinite}'
-    + '@keyframes bfDisco{0%{color:#ff3ad0;opacity:.45;transform:translate(-50%,-50%) scale(.8)}25%{color:#3ad0ff;opacity:1;transform:translate(-50%,-50%) scale(1.25)}50%{color:#b8ec72;opacity:.6;transform:translate(-50%,-50%) scale(.95)}75%{color:#ffe65a;opacity:1;transform:translate(-50%,-50%) scale(1.2)}100%{color:#ff3ad0;opacity:.45;transform:translate(-50%,-50%) scale(.8)}}'
-    + '.bf-decor-ball{animation:bfSpin 4s linear infinite;filter:drop-shadow(0 0 12px #b8ec72)}'
-    + '.bf-decor-bubble{animation:bfRise 4s ease-in-out infinite}'
-    + '@keyframes bfRise{0%{transform:translate(-50%,-50%);opacity:.5}50%{opacity:1}100%{transform:translate(-50%,calc(-50% - 40px));opacity:0}}'
-    // MAREADO: nubes tóxicas flotando
-    + '.bf-decor-toxic{color:#9dffcf;text-shadow:0 0 12px #72f0b5;animation:bfRise 5s ease-in-out infinite}'
+    // TODO ESTÁTICO: sin velos, sin animaciones que parpadeen. Solo emojis
+    // quietos con una sombra suave para darles volumen sobre la escena.
+    + 'html body .bhero .bf-decor{transform:translate(-50%,-50%)!important;animation:none!important;transition:none!important;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
+    // CONGELADO: muñeco de nieve + Papa Noel + cubitos de hielo + copos, quietos
+    + 'html body .bhero.s-frozen .bf-decor{color:#eaf6ff;text-shadow:0 2px 6px rgba(0,0,0,.6),0 0 14px rgba(180,230,255,.85)}'
+    // CONFUSO: interrogaciones con brillo neón (estáticas)
+    + 'html body .bhero.bf-state-confused .bf-decor-neon{font-family:Cinzel,serif;font-weight:1000;color:#fffbe0;text-shadow:0 0 6px #ffe65a,0 0 16px #ff7ae0,0 0 30px #6cf}'
+    // BORRACHO: bola de discoteca con brillo fijo
+    + 'html body .bhero.bf-state-drunk .bf-decor-ball{filter:drop-shadow(0 0 12px #b8ec72)}'
+    // MAREADO: nubes tóxicas con brillo fijo
+    + 'html body .bhero.bf-state-dizzy .bf-decor-toxic{color:#9dffcf;text-shadow:0 0 12px #72f0b5}'
+    // PARALIZADO: cadenas y candados con brillo eléctrico fijo
+    + 'html body .bhero.s-paralyzed .bf-decor{color:#dff2ff;text-shadow:0 0 8px #bde8ff}'
+    // DORMIDO: luna y ZZZ con brillo suave fijo
+    + 'html body .bhero.s-sleeping .bf-decor-moon{filter:drop-shadow(0 0 10px #c792ff)}'
+    + 'html body .bhero.s-sleeping .bf-decor-zzz{font-weight:900;color:#fff;text-shadow:0 0 8px #c792ff,0 2px 4px #000}'
+    // MALDITO: velitas negras y muñecos vudú con brillo mágico fijo
+    + 'html body .bhero.s-cursed .bf-decor-blackcandle{filter:brightness(.35) saturate(.2) drop-shadow(0 0 6px rgba(255,69,200,.7)) drop-shadow(0 2px 4px #000)}'
+    + 'html body .bhero.s-cursed .bf-decor-voodoo{filter:drop-shadow(0 0 8px #ff45c8) drop-shadow(0 2px 4px #000)}'
     // Marcador de AGONÍA
     + '.bhero.bf-agonizing .bf-agonize-badge{position:absolute;left:150px;bottom:7px;z-index:17;display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-family:Cinzel,serif;font-size:10px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;color:#ffd0d0;background:linear-gradient(180deg,#3a0606f2,#1a0202e6);border:1.5px solid #ff4040}'
     // Ráfaga de habilidad
