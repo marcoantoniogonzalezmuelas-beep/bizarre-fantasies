@@ -43,6 +43,11 @@ export const STATUS_AURA_PATCH = `
     + 'html body .bhero .bhero-hpnum,html body .bhero .bhero-stats,html body .bhero .bhero-hp,html body .bhero .bhero-mana{font-variant-numeric:tabular-nums!important;font-feature-settings:"tnum" 1!important}'
     + 'html body .bhero .bhero-hpnum{display:inline-block!important;min-width:62px!important;text-align:center!important}'
     + 'html body .bhero .bhero-stats{display:flex!important;align-items:center!important;height:16px!important;line-height:16px!important;white-space:nowrap!important;overflow:hidden!important}'
+    // La BARRA de vida/maná: mismo hueco y mismo grosor durante TODA la batalla.
+    // Siempre visible (aunque el juego la vacíe) y sin transiciones al cambiar
+    // el relleno: así deja de aparecer/desaparecer y de dar el salto.
+    + 'html body .bhero .bhero-hp,html body .bhero .bhero-mana{display:block!important;visibility:visible!important;opacity:1!important;height:8px!important;min-height:8px!important;max-height:8px!important;margin:3px 0!important;flex:0 0 8px!important;overflow:hidden!important;animation:none!important;transition:none!important}'
+    + 'html body .bhero .bhero-hp>*,html body .bhero .bhero-mana>*{height:100%!important;animation:none!important;transition:none!important}'
     // Capa de partículas sobre la escena de batalla
     + 'html body .bhero .bf-decor-layer{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none;overflow:hidden;border-radius:inherit;display:block!important;opacity:1!important;visibility:visible!important}'
     + '.bf-decor{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
