@@ -55,9 +55,12 @@ export const STATUS_LABEL_PATCH = `
     // AGONIZANDO: velo rojo oscuro (sangre), sin "screen" para que no ilumine.
     '.bf-status-veil.bf-veil-agony{mix-blend-mode:normal!important;background:linear-gradient(180deg,rgba(140,0,0,.85) 0%,rgba(70,0,0,.25) 65%),radial-gradient(circle at 50% 20%,rgba(185,10,10,.7),transparent 60%)!important;animation:bfStatusVeilAgony 1.15s ease-in-out infinite!important}' +
     '@keyframes bfStatusVeilAgony{0%,100%{opacity:.34}50%{opacity:.6}}' +
-    // La fila de chips de estado del juego crecía y encogía (y con ella la
-    // carta), moviendo el nombre y los atributos. Se le fija la altura.
-    '.bhero .bhero-status{height:20px!important;min-height:20px!important;max-height:20px!important;flex-wrap:nowrap!important;overflow:hidden!important;align-items:center!important;contain:layout style!important}' +
+    // La fila de chips de estado del juego ocupaba sitio EN EL FLUJO de la carta:
+    // al aparecer un estado (dormido, maldito, silenciado…) empujaba el nombre y
+    // la barra de atributos hacia abajo. Ahora es una capa ABSOLUTA pegada al
+    // borde inferior derecho: aparezca o no, la maquetación de la carta no cambia.
+    '.bhero{padding-bottom:10px!important}' +
+    '.bhero .bhero-status{position:absolute!important;right:9px!important;bottom:6px!important;left:auto!important;top:auto!important;margin:0!important;height:18px!important;min-height:18px!important;max-height:18px!important;width:auto!important;max-width:62%!important;justify-content:flex-end!important;flex-wrap:nowrap!important;overflow:hidden!important;align-items:center!important;z-index:16!important;pointer-events:none!important;contain:layout style!important}' +
     // El rótulo/borde nativo del juego (que salía en otro sitio y solo en algunos
     // estados) se desactiva: este sistema es el único que pinta estados.
     '.bhero .bf-status-badge{display:none!important}' +
