@@ -20,6 +20,7 @@ export const STATUS_LABEL_PATCH = `
     { key:'sleep',    icon:'\\ud83d\\udca4', label:'DORMIDO',    c1:'#6aa9ff', c2:'#10285e', test:function(h){ return h.sleep > 0; } },
     { key:'para',     icon:'\\u26a1',        label:'PARALIZADO', c1:'#ffe14a', c2:'#6b5000', test:function(h){ return h.para > 0; } },
     { key:'silence',  icon:'\\ud83d\\udd07', label:'SILENCIADO', c1:'#c9b6ff', c2:'#2e1a63', test:function(h){ return h.silence > 0; } },
+    { key:'frozen',   icon:'\\u2744',        label:'CONGELADO',  c1:'#8fe6ff', c2:'#0b3a5e', test:function(h){ return (h._mods || []).some(function(m){ return m && (m.turns === undefined || m.turns > 0) && Number(m.vel) < 0; }); } },
     { key:'confuse',  icon:'\\u2605',        label:'CONFUSO',    c1:'#ff9ae6', c2:'#5c0d4b', test:function(h){ return h._bfConfused > 0; } },
     { key:'drunk',    icon:'\\u25c9',        label:'BORRACHO',   c1:'#ffb45c', c2:'#5e2f00', test:function(h){ return h._bfDrunk > 0; } },
     { key:'dizzy',    icon:'\\ud83c\\udf00', label:'MAREADO',    c1:'#7ee8e0', c2:'#0b4a46', test:function(h){ return h._bfDizzy > 0; } },
@@ -41,7 +42,16 @@ export const STATUS_LABEL_PATCH = `
     '.bf-status-labels{position:absolute!important;left:5px!important;bottom:5px!important;right:5px!important;z-index:14!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;pointer-events:none!important;contain:layout style!important}' +
     '.bf-status-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:999px;font-family:Cinzel,serif;font-weight:900;font-size:9.5px;letter-spacing:.6px;line-height:1.35;white-space:nowrap;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.45);box-shadow:0 2px 8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.25);animation:bfStatusTagIn .28s ease-out both}' +
     '.bf-status-tag i{font-style:normal;font-size:11px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}' +
-    '@keyframes bfStatusTagIn{from{opacity:0;transform:translateX(-8px) scale(.9)}to{opacity:1;transform:none}}';
+    '@keyframes bfStatusTagIn{from{opacity:0;transform:translateX(-8px) scale(.9)}to{opacity:1;transform:none}}' +
+    // Borde parpadeante del retrato: MISMO comportamiento para todos los estados,
+    // con el color del estado más importante. Vive dentro de .bf-battle-art, así
+    // que no puede mover el nombre ni la barra de atributos.
+    '.bf-status-ring{position:absolute!important;inset:0!important;z-index:13!important;pointer-events:none!important;border-radius:inherit;border:3px solid var(--bfsc,#fff);animation:bfStatusRing 1.15s ease-in-out infinite;contain:layout style!important}' +
+    '@keyframes bfStatusRing{0%,100%{opacity:.35;box-shadow:0 0 6px var(--bfsc),inset 0 0 8px var(--bfsc)}50%{opacity:1;box-shadow:0 0 20px var(--bfsc),inset 0 0 18px var(--bfsc)}}' +
+    // El rótulo/borde nativo del juego (que salía en otro sitio y solo en algunos
+    // estados) se desactiva: este sistema es el único que pinta estados.
+    '.bhero .bf-status-badge{display:none!important}' +
+    '.bhero.s-frozen{box-shadow:none!important}';
 
   var st = document.createElement('style');
   st.textContent = css;
@@ -63,7 +73,10 @@ export const STATUS_LABEL_PATCH = `
     var active = [];
     if(hero && hero.alive) STATES.forEach(function(s){ try { if(s.test(hero)) active.push(s); } catch(e){} });
 
-    if(!active.length){ if(box) box.remove(); return; }
+    var ring = host.querySelector('.bf-status-ring');
+    if(!active.length){ if(box) box.remove(); if(ring) ring.remove(); return; }
+    if(!ring){ ring = document.createElement('div'); ring.className = 'bf-status-ring'; host.appendChild(ring); }
+    if(ring.dataset.bfKey !== active[0].key){ ring.dataset.bfKey = active[0].key; ring.style.setProperty('--bfsc', active[0].c1); }
 
     var signature = active.map(function(s){ return s.key; }).join('|');
     if(box && box.dataset.bfSig === signature) return; // sin cambios: no repintar
