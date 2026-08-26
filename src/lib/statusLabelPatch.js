@@ -51,7 +51,12 @@ export const STATUS_LABEL_PATCH = `
     // El rótulo/borde nativo del juego (que salía en otro sitio y solo en algunos
     // estados) se desactiva: este sistema es el único que pinta estados.
     '.bhero .bf-status-badge{display:none!important}' +
-    '.bhero.s-frozen{box-shadow:none!important}';
+    '.bhero.s-frozen{box-shadow:none!important}' +
+    // Las capas de efecto que el juego añade al aplicar un estado (escarcha,
+    // runas, chispas…) se insertaban como contenido normal de la carta: durante
+    // ese instante empujaban el nombre y la barra de atributos, y al quitarse
+    // volvían a su sitio. Se fuerzan como capas absolutas superpuestas.
+    '.bhero>.bf-fx-overlay,.bhero>.bf-frost,.bhero>.bf-combat-fx{position:absolute!important;inset:0!important;margin:0!important;z-index:15!important;pointer-events:none!important;contain:layout style!important}';
 
   var st = document.createElement('style');
   st.textContent = css;
