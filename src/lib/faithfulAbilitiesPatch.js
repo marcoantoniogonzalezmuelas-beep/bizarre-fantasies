@@ -329,6 +329,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
       var a = c.el ? 6 : 4;
       mods(c.h).push({cc:a, ad:a, he:a, vel:a, turns:99});
       fx({k:'status', side:c.side, id:c.h.id, txt:'\\u25b2'});
+      // Marcador flotante con el + y el número (igual que daño/curación).
+      lossPop(c.h, '\\u25b2 +' + a + ' A TODOS SUS STATS', '#7dffb0');
       var extra = '';
       if(c.el){ var g = heal(c.h, 10); extra = ' y se cura +' + g; }
       log('lg', c.h.name + ' muta: +' + a + ' a todos sus stats' + extra + '.');
