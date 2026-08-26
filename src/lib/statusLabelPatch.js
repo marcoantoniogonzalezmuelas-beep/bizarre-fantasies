@@ -3,10 +3,11 @@
 // Regla: mientras el héroe tenga el estado, el rótulo está visible; en cuanto
 // deja de tenerlo, desaparece.
 //
-// Colocación segura: los rótulos viven en una columna propia anclada a la
-// esquina INFERIOR IZQUIERDA del retrato (los primeros ~190px de la carta),
-// zona que no ocupan ni el nombre del héroe ni la barra de atributos (que van
-// a la derecha, tras el padding-left de la carta). Así nunca se solapan.
+// Colocación segura: los rótulos NO se añaden como hijo de la carta (eso podía
+// reordenar y hacer parpadear el nombre y los stats en héroes de nombre largo).
+// Viven DENTRO del contenedor del retrato (.bf-battle-art), que ya es una capa
+// absoluta e independiente, y con `contain` para que su contenido no pueda
+// provocar ningún recálculo de la maquetación de la carta.
 export const STATUS_LABEL_PATCH = `
 <script>
 (function(){
@@ -37,7 +38,7 @@ export const STATUS_LABEL_PATCH = `
 
   var css =
     // Columna de rótulos: pegada al borde inferior izquierdo, sobre el retrato.
-    '.bf-status-labels{position:absolute!important;left:6px!important;bottom:6px!important;z-index:14!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;pointer-events:none!important;max-width:184px!important}' +
+    '.bf-status-labels{position:absolute!important;left:5px!important;bottom:5px!important;right:5px!important;z-index:14!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;pointer-events:none!important;contain:layout style!important}' +
     '.bf-status-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:999px;font-family:Cinzel,serif;font-weight:900;font-size:9.5px;letter-spacing:.6px;line-height:1.35;white-space:nowrap;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.45);box-shadow:0 2px 8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.25);animation:bfStatusTagIn .28s ease-out both}' +
     '.bf-status-tag i{font-style:normal;font-size:11px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}' +
     '@keyframes bfStatusTagIn{from{opacity:0;transform:translateX(-8px) scale(.9)}to{opacity:1;transform:none}}';
@@ -54,7 +55,11 @@ export const STATUS_LABEL_PATCH = `
 
   function paint(card){
     var hero = heroFromCard(card);
-    var box = card.querySelector('.bf-status-labels');
+    // Host = el contenedor del retrato. Es una capa absoluta propia, así que
+    // meter los rótulos aquí no puede alterar la maquetación del nombre ni de
+    // la barra de atributos, ni en héroes con nombres muy largos.
+    var host = card.querySelector('.bf-battle-art') || card;
+    var box = host.querySelector('.bf-status-labels');
     var active = [];
     if(hero && hero.alive) STATES.forEach(function(s){ try { if(s.test(hero)) active.push(s); } catch(e){} });
 
@@ -65,7 +70,7 @@ export const STATUS_LABEL_PATCH = `
     if(!box){
       box = document.createElement('div');
       box.className = 'bf-status-labels';
-      card.appendChild(box);
+      host.appendChild(box);
     }
     box.dataset.bfSig = signature;
     box.innerHTML = active.map(function(s){
