@@ -25,11 +25,22 @@ export const FOIL_SHINE_PATCH = `
   if(window.__bfBattleFoil) return;
   window.__bfBattleFoil = true;
 
+  // En móvil/tablet el compositor no aplica bien mix-blend-mode:screen sobre el
+  // documento escalado y el destello se pintaba plano (mucho más acusado que en
+  // PC). Ahí se usa el mismo destello pero SIN blend y con la opacidad bajada,
+  // que es como se ve el foil fundido en escritorio.
+  var TOUCH = /iPad|iPhone|iPod|Android|Mobile/i.test(navigator.userAgent || '')
+    || (navigator.maxTouchPoints > 1 && /Macintosh|Mac OS/i.test(navigator.userAgent || ''));
+  var SHINE = TOUCH
+    ? 'background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.16) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:normal;opacity:.85'
+    : 'background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75';
+  var BODY = 'content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;' + SHINE + ';animation:bfBattleFoilShine 4.5s ease-in-out infinite!important';
+
   var css = ''
     + '@keyframes bfBattleFoilShine{0%{background-position:130% 0%}100%{background-position:-50% 0%}}'
     + 'html body .bhero{position:relative!important}'
     // Regla base (clase) por si el ID no se ha generado todavía.
-    + 'html body .bhero.bf-foil-on::after{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
+    + 'html body .bhero.bf-foil-on::after{' + BODY + '}';
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
@@ -84,7 +95,7 @@ export const FOIL_SHINE_PATCH = `
   function emitRule(ids){
     if(!ids.length) return;
     var selectors = ids.map(function(id){ return '#' + cssEscape(id) + '::after'; });
-    var rule = selectors.join(',') + '{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
+    var rule = selectors.join(',') + '{' + BODY + '}';
     var s = document.createElement('style');
     s.textContent = rule;
     document.head.appendChild(s);
