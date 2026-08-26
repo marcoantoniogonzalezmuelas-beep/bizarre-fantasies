@@ -57,12 +57,28 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       // Ping frecuente al servidor de señalización para que no cierre el socket.
       if (!opts.pingInterval || opts.pingInterval > 3000) opts.pingInterval = 3000;
       opts.config = opts.config || {};
-      var ice = METERED_ICE_SERVERS.concat((opts.config.iceServers || []).slice());
-      ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:global.stun.twilio.com:3478'].forEach(function(u){
-        var has = ice.some(function(s){ return s && (s.urls === u || (Array.isArray(s.urls) && s.urls.indexOf(u) !== -1)); });
-        if (!has) ice.push({ urls: u });
+      // TURN primero (relay). En operadores móviles con CGNAT (Vodafone y
+      // similares) los candidatos host/STUN abren la conexión pero la tiran al
+      // segundo: el NAT simétrico rompe el mapeo en cuanto cambia el puerto.
+      // Forzar relay enruta TODO el tráfico por el servidor TURN, que es estable
+      // a través de cualquier NAT. Los STUN se conservan como respaldo.
+      var turn = [], stun = [];
+      METERED_ICE_SERVERS.concat((opts.config.iceServers || []).slice()).forEach(function(s){
+        if (!s || !s.urls) return;
+        var u = Array.isArray(s.urls) ? s.urls.join(' ') : String(s.urls);
+        if (/turn/i.test(u)) turn.push(s); else stun.push(s);
       });
-      opts.config.iceServers = ice;
+      ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:global.stun.twilio.com:3478'].forEach(function(u){
+        var has = stun.some(function(s){ return s && (s.urls === u || (Array.isArray(s.urls) && s.urls.indexOf(u) !== -1)); });
+        if (!has) stun.push({ urls: u });
+      });
+      opts.config.iceServers = turn.concat(stun);
+      // Forzar relay cuando hay servidores TURN: es el camino más robusto a
+      // través de cualquier NAT (incluido el CGNAT de Vodafone). Sin esto, ICE
+      // elige un candidato host/STUN que funciona un instante y luego cae.
+      if (turn.length) opts.config.iceTransportPolicy = 'relay';
+      opts.config.iceCandidatePoolSize = 4;
+      opts.config.sdpSemantics = 'unified-plan';
       // PeerJS interpreta un objeto en el primer argumento como un ID inválido.
       // Para clientes sin ID hay que reservar explícitamente ese argumento.
       var p = (id === undefined) ? new P(undefined, opts) : new P(id, opts);
