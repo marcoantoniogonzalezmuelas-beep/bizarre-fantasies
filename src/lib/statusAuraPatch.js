@@ -7,9 +7,10 @@ import { STATUS_STATES } from '@/lib/statusSceneFx';
 //
 // Este parche también conserva la lógica de los estados propios (confuso,
 // borracho, mareado) y su consumo por turnos, además del marcador de AGONÍA.
-const LABEL_CSS = STATUS_STATES.map((s) => (
-  `.bhero.${s.cls}::after{content:"${s.ic} ${s.lb}";position:absolute;top:6px;right:8px;z-index:16;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);border:2px solid ${s.c};color:${s.c};font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;text-shadow:0 0 10px ${s.c},0 2px 4px #000;box-shadow:0 2px 10px rgba(0,0,0,.6);white-space:nowrap}`
-)).join('');
+// El rótulo es una CAPA ABSOLUTA propia (antes era un ::after del recuadro y,
+// al ser este un contenedor flex, el pseudo-elemento entraba en el flujo y
+// empujaba todos los textos del héroe hacia abajo).
+const LABEL_CSS = 'html body .bhero .bf-state-label{position:absolute!important;top:6px;right:8px;z-index:22;display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;background:linear-gradient(180deg,#141026f2,#05040be6);font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.4px;text-transform:uppercase;box-shadow:0 2px 10px rgba(0,0,0,.6);white-space:nowrap;pointer-events:none;animation:none!important;transition:none!important}';
 
 const CLS_LIST = STATUS_STATES.map((s) => s.cls);
 
@@ -43,7 +44,7 @@ export const STATUS_AURA_PATCH = `
     + 'html body .bhero .bhero-hpnum{display:inline-block!important;min-width:62px!important;text-align:center!important}'
     + 'html body .bhero .bhero-stats{display:flex!important;align-items:center!important;height:16px!important;line-height:16px!important;white-space:nowrap!important;overflow:hidden!important}'
     // Capa de partículas sobre la escena de batalla
-    + '.bf-decor-layer{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;border-radius:inherit}'
+    + 'html body .bhero .bf-decor-layer{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none;overflow:hidden;border-radius:inherit;display:block!important;opacity:1!important;visibility:visible!important}'
     + '.bf-decor{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
     // Escarcha cayendo por toda la escena (congelado) — bucle continuo, sin
     // apagarse: opacidad plena de principio a fin para que no parpadee.
@@ -51,6 +52,8 @@ export const STATUS_AURA_PATCH = `
     + '@keyframes bfFallLoop{0%{transform:translate(-50%,-50%) translateY(-20px) rotate(0)}100%{transform:translate(-50%,-50%) translateY(150px) rotate(220deg)}}'
     // Velitas NEGRAS (maldito): cera oscura + llama que titila
     + '.bf-decor-blackcandle{filter:brightness(.35) saturate(.2) drop-shadow(0 0 6px rgba(255,69,200,.7)) drop-shadow(0 2px 4px #000);animation:bfCandleFlicker 1.4s ease-in-out infinite}'
+    // Muñecos vudú: se balancean lentamente con brillo mágico
+    + '.bf-decor-voodoo{filter:drop-shadow(0 0 8px #ff45c8) drop-shadow(0 2px 4px #000);animation:bfSway 3.6s ease-in-out infinite}'
     + '@keyframes bfCandleFlicker{0%,100%{opacity:.85}50%{opacity:1}}'
     + '.bf-decor-skullrise{filter:drop-shadow(0 0 8px #ff45c8) drop-shadow(0 2px 4px #000);animation:bfRiseLoop 4.8s linear infinite}'
     + '@keyframes bfRiseLoop{0%{transform:translate(-50%,-50%) translateY(80px) scale(.75)}100%{transform:translate(-50%,-50%) translateY(-130px) scale(1.1)}}'
@@ -155,10 +158,24 @@ export const STATUS_AURA_PATCH = `
       if(odd && !card.classList.contains(odd)) card.classList.add(odd);
 
       var cls = activeCls(card, h);
-      // El rótulo se pinta con la clase, así que se reaplica si el juego la
-      // borró en su refresco de números.
       if(cls && !card.classList.contains(cls)) card.classList.add(cls);
       ORDER.forEach(function(c){ if(c !== cls && card.classList.contains(c)) card.classList.remove(c); });
+
+      // Rótulo del estado: capa absoluta propia (no empuja los textos).
+      var lbl = card.querySelector('.bf-state-label');
+      var st = cls ? BY_CLS[cls] : null;
+      if(!st){ if(lbl) lbl.remove(); }
+      else {
+        if(!lbl){ lbl = document.createElement('div'); lbl.className = 'bf-state-label'; card.appendChild(lbl); }
+        var txt = st.ic + ' ' + st.lb;
+        if(lbl.textContent !== txt) lbl.textContent = txt;
+        if(lbl.dataset.bfC !== st.c){
+          lbl.dataset.bfC = st.c;
+          lbl.style.border = '2px solid ' + st.c;
+          lbl.style.color = st.c;
+          lbl.style.textShadow = '0 0 10px ' + st.c + ',0 2px 4px #000';
+        }
+      }
       var layer = card.querySelector('.bf-decor-layer');
       // Solo se reconstruye cuando cambia el estado: así las partículas nunca
       // se reinician a media animación (era otra fuente de parpadeo).
