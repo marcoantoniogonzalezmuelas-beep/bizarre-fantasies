@@ -64,7 +64,10 @@ export const FOIL_SHINE_PATCH = `
   }
   function checkFoil(h){
     if(!h) return false;
-    if(h.foil === true || h.gold_border === true || h.rainbow_border === true) return true;
+    // Mismo criterio que el Oráculo (HeroCardFace): foil = foil:true O clan
+    // Épicas. gold_border/rainbow_border son efectos de BORDE distintos,
+    // no foil (Juniana tiene gold_border pero no es foil).
+    if(h.foil === true) return true;
     var cl = String(h.clan || '').toLowerCase();
     if(cl === 'épicas' || cl === 'epicas') return true;
     return false;
