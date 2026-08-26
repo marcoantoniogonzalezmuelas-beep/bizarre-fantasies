@@ -1,51 +1,58 @@
 // Cartas FOIL en BATALLA: el mismo efecto holográfico que en el Oráculo y en la
-// fase de equipamiento — capa de tinte multicolor girando (bfFoilShift) + el
-// destello diagonal que recorre la carta (bfFoilShine).
+// fase de equipamiento — destello diagonal que recorre la carta (bfFoilShine).
 //
-// El juego no marcaba las cartas foil en batalla, así que aquí se recibe del
-// padre la lista de card_id foil (postMessage bfFoilCards) y se inyecta la capa
-// sobre el recuadro de cada héroe foil en cada repintado del tablero.
+// ANTES se inyectaba una capa hija (.bf-epic-foil) sobre el recuadro del héroe
+// en cada repintado del tablero. Pero el juego RE-RENDERIZA las cartas (sobre
+// todo las rivales en cada acción de la IA) y borraba la capa; el hook de
+// renderBattle no intercepta las llamadas del juego (el binding global
+// renderBattle y window.renderBattle no son el mismo cuando se reasigna), así
+// que la capa solo se volvía a poner cada 800 ms → el foil del rival parpadeaba
+// o no aparecía.
+//
+// AHORA el foil se aplica con CSS ::after por ID de carta (#b_p_<id>::after,
+// #b_o_<id>::after). El navegador recrea el ::after solo tras cada repintado,
+// así que el efecto PERSISTE sin necesidad de re-inyectar nada. La regla se
+// genera desde la lista de card_id foil que envía el padre (bfFoilCards) y,
+// además, se detecta de forma autónoma cada carta foil en el DOM (por sus datos
+// de héroe) por si el mensaje no llegó.
+//
+// El ::after usa selector por ID (especificidad 1,0,0,1) que GANA a las reglas
+// de noHeroMotionPatch/statusFreezePatch que anulan animaciones (son por clase),
+// así que el brillo foil sigue animándose aunque el retrato esté quieto.
 export const FOIL_SHINE_PATCH = `
 <script>
 (function(){
   if(window.__bfBattleFoil) return;
   window.__bfBattleFoil = true;
 
-  // Los fotogramas se declaran AQUÍ: dentro del juego no existen los del
-  // Oráculo (viven en la hoja de la web), y sin ellos la capa quedaba estática
-  // e invisible.
   var css = ''
     + '@keyframes bfBattleFoilShine{0%{background-position:130% 0%}100%{background-position:-50% 0%}}'
-    + 'html body .bhero .bf-epic-foil{position:absolute!important;inset:0!important;z-index:14!important;pointer-events:none!important;border-radius:inherit;overflow:hidden;display:block!important;opacity:1!important}'
-    + 'html body .bhero .bf-epic-foil-shine{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75!important;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
+    + 'html body .bhero{position:relative!important}'
+    // Regla base (clase) por si el ID no se ha generado todavía.
+    + 'html body .bhero.bf-foil-on::after{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
+  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1000);
 
-  var FOIL = {};
+  var FOIL = {};       // base card_id -> 1 (lista del padre)
+  var addedIds = {};   // id DOM ya con regla CSS generada
+
   window.addEventListener('message', function(e){
     if(e.data && e.data.bfFoilCards){
       FOIL = {};
       (e.data.bfFoilCards || []).forEach(function(id){ FOIL[String(id)] = 1; });
-      apply();
     }
   });
 
   function baseId(id){ return String(id || '').replace(/_\\d{6,}$/, ''); }
 
-  // Detección autónoma de foil. Funca para AMBOS lados (propio y rival):
-  // 1. La lista enviada por el padre (bfFoilCards) — card_id foil/épicas.
-  // 2. El héroe vivo en el estado del juego (G.team[side]) — tiene clan/foil
-  //    reales sea cual sea su id, así el rival también se detecta aunque su
-  //    card_id no coincida con la lista del padre.
-  // 3. El array global HEROES del juego (referencia léxica directa, no window:
-  //    es un const top-level y por eso no aparece en window.HEROES).
   function gameHero(side, id){
     try {
       if(typeof G === 'undefined' || !G || !G.team) return null;
       var team = G.team[side] || [];
       for(var i = 0; i < team.length; i++){
-        if(team[i] && team[i].id === id) return team[i];
+        if(team[i] && (team[i].id === id || baseId(team[i].id) === id)) return team[i];
       }
     } catch(e){}
     return null;
@@ -65,51 +72,46 @@ export const FOIL_SHINE_PATCH = `
   function checkFoil(h){
     if(!h) return false;
     // Mismo criterio que el Oráculo (HeroCardFace): foil = foil:true O clan
-    // Épicas. gold_border/rainbow_border son efectos de BORDE distintos,
-    // no foil (Juniana tiene gold_border pero no es foil).
+    // Épicas. gold_border/rainbow_border son efectos de BORDE distintos.
     if(h.foil === true) return true;
     var cl = String(h.clan || '').toLowerCase();
     if(cl === 'épicas' || cl === 'epicas') return true;
     return false;
   }
-  function isFoilHero(side, id){
-    var key = baseId(id);
-    if(FOIL[key]) return true;
-    if(checkFoil(gameHero(side, key))) return true;
-    if(checkFoil(heroData(key))) return true;
-    return false;
+
+  // Genera una regla CSS con los IDs de carta foil reales del DOM (con o sin
+  // sufijo de multiplayer). El ::after persiste tras cada repintado del juego.
+  function emitRule(ids){
+    if(!ids.length) return;
+    var selectors = ids.map(function(id){ return '#' + cssEscape(id) + '::after'; });
+    var rule = selectors.join(',') + '{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
+    var s = document.createElement('style');
+    s.textContent = rule;
+    document.head.appendChild(s);
+  }
+  function cssEscape(id){
+    return String(id).replace(/([^a-zA-Z0-9_-])/g, '\\\\$1');
   }
 
-  function apply(){
+  function detect(){
+    var toAdd = [];
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
       var m = String(card.id || '').match(/^b_([po])_(.+)$/);
-      var isFoil = m && isFoilHero(m[1], m[2]);
-      var layer = card.querySelector('.bf-epic-foil');
-      if(isFoil && !layer){
-        layer = document.createElement('div');
-        layer.className = 'bf-epic-foil';
-        layer.innerHTML = '<div class="bf-epic-foil-shine"></div>';
-        card.appendChild(layer);
-      } else if(!isFoil && layer){
-        layer.remove();
-      } else if(isFoil && layer && card.lastChild !== layer){
-        // El juego repinta el recuadro: la capa debe quedar siempre encima.
-        card.appendChild(layer);
+      if(!m) return;
+      var side = m[1], raw = m[2], key = baseId(raw);
+      if(addedIds[card.id]) return;
+      var foil = !!FOIL[key] || checkFoil(gameHero(side, key)) || checkFoil(heroData(key));
+      if(foil){
+        addedIds[card.id] = 1;
+        toAdd.push(card.id);
+        card.classList.add('bf-foil-on');
       }
     });
+    if(toAdd.length) emitRule(toAdd);
   }
 
-  function hookRender(){
-    if(typeof window.renderBattle !== 'function' || window.renderBattle.__bfFoil) return;
-    var o = window.renderBattle;
-    window.renderBattle = function(){ o.apply(this, arguments); try{ apply(); }catch(e){} };
-    window.renderBattle.__bfFoil = 1;
-  }
-  var t = 0, iv = setInterval(function(){ hookRender(); apply(); if(t++ > 40) clearInterval(iv); }, 300);
-  setInterval(apply, 800);
-  // Los parches de "congelado" se reinsertan al final del <head>: esta hoja se
-  // recoloca después para que el brillo foil no quede anulado por ellos.
-  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1000);
+  var t = 0, iv = setInterval(function(){ detect(); if(t++ > 60) clearInterval(iv); }, 250);
+  setInterval(detect, 1200);
 })();
 </script>
 `;
