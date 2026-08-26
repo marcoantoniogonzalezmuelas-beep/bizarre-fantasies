@@ -28,6 +28,12 @@ export const STATUS_AURA_PATCH = `
     + ${JSON.stringify(LABEL_CSS)}
     // El emblema nativo intermitente se retira: un solo indicador por estado.
     + '.bhero .bf-status-badge{display:none!important}'
+    // Fila nativa de chapas de estado: es la que crecía al activarse un estado
+    // y empujaba TODOS los textos y marcadores del héroe hacia abajo. Se queda
+    // con altura fija (2px, como cuando no hay estado) y sin chapas: el estado
+    // ya se indica con el rótulo flotante.
+    + 'html body .bhero .bhero-status{height:2px!important;min-height:2px!important;max-height:2px!important;margin-top:6px!important;padding:0!important;overflow:hidden!important;gap:0!important}'
+    + 'html body .bhero .bhero-status .status-badge{display:none!important}'
     // Overlays nativos del juego (placa de hielo, patrones, velos): fuera.
     + 'html body .bhero .bf-pat,html body .bhero .bf-frost,html body .bhero .bf-fx-overlay{display:none!important}'
     // Filtros/bordes de color de los estados nativos: fuera (distorsionaban).
