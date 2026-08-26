@@ -21,25 +21,9 @@ export const BATTLE_ANIME_PATCH = `
   // sin eso top/bottom no dan altura (quedaba en 0 → invisible).
   '.bf-bhero-bgart{position:absolute!important;left:122px!important;right:0!important;top:0!important;bottom:0!important;z-index:1;pointer-events:none;background-size:cover!important;background-position:center 18%!important;background-repeat:no-repeat!important;filter:blur(3px) saturate(1.3) brightness(.82);opacity:.9}'+
   '.bf-bhero-bgart::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,9,22,.82) 0%,rgba(14,9,22,.12) 26%,rgba(14,9,22,.12) 74%,rgba(14,9,22,.8) 100%),linear-gradient(180deg,rgba(14,9,22,.1),rgba(14,9,22,.45))}'+
-  // Tinte de estado anime (::before del bgart) — siempre pinta.
-  '.bf-bhero-bgart::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .35s ease;mix-blend-mode:screen}'+
-  '.bhero.s-cursed .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(176,108,255,.5),rgba(78,6,59,.55)),repeating-linear-gradient(48deg,transparent 0 8px,rgba(255,69,200,.22) 8px 9px)}'+
-  '.bhero.s-paralyzed .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(120,200,255,.5),rgba(8,18,32,.55)),repeating-linear-gradient(90deg,transparent 0 10px,rgba(189,232,255,.28) 10px 11px)}'+
-  '.bhero.s-sleeping .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(199,146,255,.45),rgba(20,10,40,.55)),radial-gradient(circle at 72% 28%,rgba(199,146,255,.35),transparent 62%)}'+
-  '.bhero.s-blessed .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,229,138,.48),rgba(40,30,5,.42)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,229,138,.18),transparent 24deg)}'+
-  '.bhero.s-frozen .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(117,232,255,.5),rgba(7,58,83,.55)),repeating-linear-gradient(58deg,transparent 0 7px,rgba(160,230,255,.26) 7px 8px)}'+
-  '.bhero.s-tank .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,180,58,.48),rgba(80,40,5,.5)),repeating-linear-gradient(45deg,transparent 0 8px,rgba(255,180,58,.2) 8px 9px)}'+
-  '.bhero.bf-state-confused .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,230,90,.42),rgba(54,44,5,.5)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,230,90,.16),transparent 30deg)}'+
-  '.bhero.bf-state-drunk .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(184,236,114,.42),rgba(29,47,11,.5)),repeating-linear-gradient(65deg,transparent 0 9px,rgba(184,236,114,.18) 9px 10px)}'+
-  '.bhero.bf-state-dizzy .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(114,240,181,.42),rgba(11,73,52,.5)),repeating-conic-gradient(from 0deg at 50% 50%,rgba(114,240,181,.14),transparent 20deg)}'+
-  // Agonizando: velo de sangre anime sobre el retrato + pulso rojo del rectángulo.
-  // Agonía SIN sacudida: el retrato se queda quieto (solo borde rojo).
-  '.bhero.bf-agonizing{box-shadow:0 0 0 2px rgba(255,30,30,.85),0 0 26px rgba(255,0,0,.6)!important;animation:none!important}'+
-  '.bhero.bf-agonizing .bf-battle-art{filter:saturate(1.1) brightness(.7) drop-shadow(0 0 10px rgba(255,0,0,.7))!important}'+
-  // (El velo de sangre real lo gestiona heroBloodFxPatch con un elemento dedicado)
-  '@keyframes bfAgonShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}'+
-  '.bhero.bf-agonizing .bf-bhero-bgart::before{opacity:1;background:linear-gradient(135deg,rgba(255,30,30,.5),rgba(60,0,0,.6)),repeating-linear-gradient(90deg,transparent 0 12px,rgba(255,0,0,.16) 12px 13px)}'+
-  '@keyframes bfBloodPulse{0%,100%{opacity:.5}50%{opacity:.85}}';
+  // NADA de tintes de color por estado: los estados se indican solo con su
+  // rótulo y con las partículas de la escena (statusAuraPatch).
+  '.bf-bhero-bgart::before{display:none!important}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   // Lee la URL del retrato de forma robusta: primero el estilo inline (lo que
