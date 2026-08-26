@@ -212,6 +212,21 @@ export const STATUS_AURA_PATCH = `
       else if(layer.dataset.bfFor !== cls){ layer.remove(); buildLayer(card, cls); }
 
       var alive = h ? h.alive : !card.classList.contains('dead');
+      // AUTO-REPARACIÓN del "héroe fantasma": el efecto de muerte se dispara
+      // leyendo el texto de vida del recuadro y una lectura transitoria (0 o
+      // vacío durante un repintado) dejaba a un héroe VIVO pintado en gris con
+      // el humo de muerte para siempre. Aquí se contrasta con el estado real
+      // del juego (h.alive) y, si está vivo, se le devuelve su retrato.
+      if(h && h.alive && (card.classList.contains('bf-dead') || card.classList.contains('bf-truedead'))){
+        card.classList.remove('bf-dead', 'bf-truedead', 'dead');
+        card.querySelectorAll('.bf-fx-death-smoke,.bf-fx-skull,.bf-fx-grave,.bf-fx-grave-shade').forEach(function(n){
+          var w = n.closest('.bf-combat-fx'); if(w && w.parentNode) w.remove(); else if(n.parentNode) n.remove();
+        });
+        var deadArt = card.querySelector('.bf-battle-art');
+        if(deadArt) deadArt.style.filter = '';
+        card.style.filter = '';
+        card.dataset.bfPrevHp = String(Math.max(1, Math.round((h.hp != null ? h.hp : 1))));
+      }
       var r = hpRatio(card), agon = alive && r > 0 && r <= 0.10;
       if(agon) card.classList.add('bf-agonizing'); else card.classList.remove('bf-agonizing');
       var ab = card.querySelector('.bf-agonize-badge');
