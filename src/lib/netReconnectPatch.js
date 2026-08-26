@@ -293,6 +293,8 @@ export const NET_RECONNECT_PATCH = `
     // espera es el host o el cliente. Probamos primero como cliente y, si en
     // ~12 s no hay conexión, pasamos a abrir la sala nosotros como host.
     rec.tries=(rec.tries||0)+1;
+    // Tras 2 intentos fallidos de reconexión con relay, caer a conexión directa.
+    if(rec.tries>=2) window.__bfIceFallback=true;
     if(rec.anyRole&&!rec.hostTried&&rec.tries>=4&&!(NET.conn&&NET.conn.open)){switchToHost();return;}
     rec.timer=setTimeout(clientRetry,RETRY_MS);
   }

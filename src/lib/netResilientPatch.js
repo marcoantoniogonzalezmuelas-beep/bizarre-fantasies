@@ -74,9 +74,10 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       });
       opts.config.iceServers = turn.concat(stun);
       // Forzar relay cuando hay servidores TURN: es el camino más robusto a
-      // través de cualquier NAT (incluido el CGNAT de Vodafone). Sin esto, ICE
-      // elige un candidato host/STUN que funciona un instante y luego cae.
-      if (turn.length) opts.config.iceTransportPolicy = 'relay';
+      // través de cualquier NAT (incluido el CGNAT de cualquier operador). Si
+      // el relay falla dos veces (red que bloquea TURN, p. ej. corporativa), se
+      // activa el fallback a conexión directa para no dejar a nadie fuera.
+      if (turn.length) opts.config.iceTransportPolicy = window.__bfIceFallback ? 'all' : 'relay';
       opts.config.iceCandidatePoolSize = 4;
       opts.config.sdpSemantics = 'unified-plan';
       // PeerJS interpreta un objeto en el primer argumento como un ID inválido.
@@ -136,6 +137,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       NET.code = makeCode();
       var attempt = 0;
       var retryTimer = null;
+      // Nueva partida: arranca con relay (robusto en cualquier operador). Si
+      // el relay falla dos veces, se cae al fallback de conexión directa.
+      window.__bfIceFallback = false;
 
       renderLobby('hostwait');
       lobbyStatus('Preparando conexión segura…');
@@ -172,6 +176,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
             clearTimeout(watchdog);
             try { failedPeer.destroy(); } catch (e) {}
             attempt += 1;
+            // Tras 2 intentos fallidos con relay, caer a conexión directa (red que
+            // bloquea TURN). Así funciona en cualquier operador y cualquier red.
+            if (attempt >= 2) window.__bfIceFallback = true;
             lobbyStatus('Recuperando conexión de la sala…');
             clearTimeout(retryTimer);
             retryTimer = setTimeout(startAttempt, Math.min(5000, 700 * attempt));
@@ -217,6 +224,8 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       var originalClientJoin = window.clientJoin;
       window.clientJoin = function(){
         var self = this, args = arguments;
+        // Nueva partida: arranca con relay (robusto en cualquier operador).
+        window.__bfIceFallback = false;
         // Guarda los datos de la sala para poder reconectar automáticamente.
         try{
           var jc=String(args[0]||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
