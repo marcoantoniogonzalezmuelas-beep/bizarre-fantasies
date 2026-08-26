@@ -165,14 +165,15 @@ export const FAITHFUL_ABILITIES_PATCH = `
       var tgt = t;
       setTimeout(function(){
         var card = document.getElementById('b_' + side_(tgt) + '_' + tgt.id);
-        if(!card) return;
-        var r = card.getBoundingClientRect();
+        var r = card ? card.getBoundingClientRect() : null;
         var el = document.createElement('div');
         el.className = 'bf-loss-pop';
         el.style.color = color || '#ff7a7a';
         el.textContent = txt;
-        el.style.left = (r.left + r.width / 2) + 'px';
-        el.style.top = (r.top + r.height * 0.42) + 'px';
+        // Si no se encuentra la carta o su rect es 0 (repintado en curso),
+        // se muestra en el centro de la pantalla para no perder el aviso.
+        if(r && r.width > 0){ el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = (r.top + r.height * 0.42) + 'px'; }
+        else { el.style.left = '50%'; el.style.top = '42%'; }
         document.body.appendChild(el);
         setTimeout(function(){ if(el.parentNode) el.remove(); }, 2100);
       }, 140);
@@ -446,7 +447,10 @@ export const FAITHFUL_ABILITIES_PATCH = `
       if(typeof humanCtl === 'function' && humanCtl(c.side)){
         blockElite = window.confirm('COMPRESOR ROTO sobre ' + c.t.name + ':\\n\\nAceptar = anular su FASE \\u00c9LITE\\nCancelar = anular su HABILIDAD');
       } else {
-        blockElite = !c.t.eliteMode && !c.t.eliteUsed;
+        // IA: por defecto ANULA LA HABILIDAD (es el efecto principal de la carta
+        // y el que el jugador espera ver). Solo bloquea la FASE ÉLITE si el
+        // objetivo ya está en forma élite (así, al caer, no resucita otra vez).
+        blockElite = !!c.t.eliteMode && !c.t.eliteUsed;
       }
       if(blockElite){
         c.t.eliteUsed = true; c.t._bfNoElite = 1;

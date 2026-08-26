@@ -56,7 +56,12 @@ export const STATUS_AURA_PATCH = `
     // se queda exactamente igual, sin saltos ni recolocaciones.
     + 'html body .bhero .bhero-hpnum,html body .bhero .bhero-stats,html body .bhero .bhero-hp,html body .bhero .bhero-mana{font-variant-numeric:tabular-nums!important;font-feature-settings:"tnum" 1!important}'
     + 'html body .bhero .bhero-hpnum{display:inline-block!important;min-width:62px!important;text-align:center!important}'
-    + 'html body .bhero .bhero-stats{display:flex!important;align-items:center!important;height:16px!important;line-height:16px!important;white-space:nowrap!important;overflow:hidden!important}'
+    // BARRA DE STATS (CC/AD/HE): TOTALMENTE ESTÁTICA y SIEMPRE visible.
+    // El juego la ocultaba/mostraba según el estado del héroe y eso hacía que
+    // apareciera y desapareciera. Ahora se queda fija: misma altura, siempre
+    // visible, sin transiciones ni animaciones (ni ella ni sus números).
+    + 'html body .bhero .bhero-stats{display:flex!important;align-items:center!important;visibility:visible!important;opacity:1!important;height:16px!important;min-height:16px!important;max-height:16px!important;line-height:16px!important;white-space:nowrap!important;overflow:hidden!important;animation:none!important;transition:none!important}'
+    + 'html body .bhero .bhero-stats *{visibility:visible!important;opacity:1!important;animation:none!important;transition:none!important}'
     // La BARRA de vida/maná: mismo hueco y mismo grosor durante TODA la batalla.
     // Siempre visible (aunque el juego la vacíe) y sin transiciones al cambiar
     // el relleno: así deja de aparecer/desaparecer y de dar el salto.
