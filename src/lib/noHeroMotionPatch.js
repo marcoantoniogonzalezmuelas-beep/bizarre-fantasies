@@ -57,9 +57,15 @@ export const NO_HERO_MOTION_PATCH = `
     'html body .bhero.bhero .bf-curse-rune{bottom:34%!important;opacity:.9!important}'+
     'html body .bhero.bhero .bf-curse-rune.r2{bottom:52%!important}'+
     'html body .bhero.bhero .bf-curse-rune.r3{bottom:20%!important}'+
-    // Rótulo "★ SU TURNO": quieto, pero con un brillo dorado fijo bien visible.
-    'html body .bhero.bhero.active-turn .bf-active-tag{'+
+    // Rótulo "★ SU TURNO": TOTALMENTE estático (sin pulso, sin balanceo, sin
+    // escala), un poco más ancho para que se lea mejor, y con brillo dorado fijo.
+    'html body .bhero.bhero.active-turn .bf-active-tag,'+
+    'html body .bhero.bhero.active-turn .bf-active-tag::before,'+
+    'html body .bhero.bhero.active-turn .bf-active-tag::after{'+
+      'animation:none!important;-webkit-animation:none!important;'+
+      'transition:none!important;transform:none!important;'+
       'opacity:1!important;'+
+      'min-width:78px!important;padding:3px 14px!important;'+
       'box-shadow:0 0 10px rgba(255,210,74,.85),0 0 22px rgba(255,180,40,.55)!important;'+
       'text-shadow:0 0 8px rgba(255,225,140,.95),0 1px 2px #000!important;'+
     '}';
