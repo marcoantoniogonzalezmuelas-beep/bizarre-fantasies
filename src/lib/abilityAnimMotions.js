@@ -772,6 +772,7 @@ export const MOTIONS = [
 // Etiquetas en español para el selector del editor (backoffice).
 export const MOTION_LABELS = {
   auto: '🎲 Automático (según la descripción)',
+  cross_loop: '🔁 Cruzar con vuelta de 360° a mitad',
   default: '✨ Entrada 3D clásica',
   fly: '🕊️ Volar cruzando la pantalla',
   spin: '🌀 Girar / dar vueltas',
@@ -811,7 +812,6 @@ export const MOTION_LABELS = {
   walk_downhill: '🏔️ Caminar cuesta abajo',
   diagonal: '↗️ Movimiento en diagonal',
   rollercoaster: '🎢 Montaña rusa',
-  cross_loop: '🔁 Cruzar con vuelta de 360° a mitad',
 };
 
 // Orden en el que se muestran en el selector.
