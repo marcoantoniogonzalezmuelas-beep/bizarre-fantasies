@@ -28,8 +28,10 @@ export const FOIL_SHINE_PATCH = `
   var css = ''
     + '@keyframes bfBattleFoilShine{0%{background-position:130% 0%}100%{background-position:-50% 0%}}'
     + 'html body .bhero{position:relative!important}'
-    // Regla base (clase) por si el ID no se ha generado todavía.
-    + 'html body .bhero.bf-foil-on::after{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
+    // Brillo foil: SOLO el destello blanco diagonal. Sin mix-blend-mode (no
+    // altera los colores originales del arte) — el brillo pasa por encima
+    // como un reflejo luminoso sin lavar ni teñir la imagen.
+    + 'html body .bhero.bf-foil-on::after{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.5) 48%,rgba(255,255,255,.85) 50%,rgba(255,255,255,.5) 52%,transparent 58%);background-size:250% 250%;opacity:.55;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
@@ -84,7 +86,7 @@ export const FOIL_SHINE_PATCH = `
   function emitRule(ids){
     if(!ids.length) return;
     var selectors = ids.map(function(id){ return '#' + cssEscape(id) + '::after'; });
-    var rule = selectors.join(',') + '{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
+    var rule = selectors.join(',') + '{content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.5) 48%,rgba(255,255,255,.85) 50%,rgba(255,255,255,.5) 52%,transparent 58%);background-size:250% 250%;opacity:.55;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
     var s = document.createElement('style');
     s.textContent = rule;
     document.head.appendChild(s);
