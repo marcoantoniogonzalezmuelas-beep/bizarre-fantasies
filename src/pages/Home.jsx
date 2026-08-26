@@ -423,6 +423,8 @@ export default function Home() {
   const passiveMarkersRef = useRef(null);
   // Velocidad real de cada carta (campo velocidad / elite_velocidad).
   const heroVelRef = useRef(null);
+  // card_id de las cartas foil (holográficas) para el efecto en batalla.
+  const foilCardsRef = useRef(null);
   const avatarCatalogRef = useRef(null);
   const playerAvatarsRef = useRef(null);
   const nickCredsRef = useRef({});
@@ -626,6 +628,9 @@ export default function Home() {
         }
         if (heroVelRef.current) {
           iframeRef.current?.contentWindow?.postMessage({ bfHeroVel: heroVelRef.current }, '*');
+        }
+        if (foilCardsRef.current) {
+          iframeRef.current?.contentWindow?.postMessage({ bfFoilCards: foilCardsRef.current }, '*');
         }
         // Reanudar la demo: el juego acaba de cargar y señaló su pantalla
         // inicial. Si volvíamos de "Conocer las cartas", arrancamos la demo.
@@ -898,6 +903,15 @@ export default function Home() {
         if (c.name) velMap[String(c.name).toLowerCase()] = entry;
       });
       heroVelRef.current = velMap;
+      // Cartas FOIL (holográficas): card_id de los héroes con foil o del clan
+      // Épicas, para que en batalla luzcan el mismo efecto que en el Oráculo.
+      const foilIds = [];
+      (cards || []).forEach(c => {
+        if (!c.card_id) return;
+        if (c.foil === true || c.clan === 'Épicas') foilIds.push(c.card_id);
+      });
+      foilCardsRef.current = foilIds;
+      try { iframeRef.current?.contentWindow?.postMessage({ bfFoilCards: foilIds }, '*'); } catch (e) {}
       try { iframeRef.current?.contentWindow?.postMessage({ bfHeroVel: velMap }, '*'); } catch (e) {}
       try { iframeRef.current?.contentWindow?.postMessage({ bfCardArt: cardArt }, '*'); } catch (e) {}
       try { iframeRef.current?.contentWindow?.postMessage({ bfPassiveMarkers: passiveMarkers }, '*'); } catch (e) {}
