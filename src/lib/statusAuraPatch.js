@@ -29,6 +29,14 @@ export const STATUS_AURA_PATCH = `
     + '.bhero .bf-status-badge{display:none!important}'
     // Overlays nativos del juego (placa de hielo, patrones, velos): fuera.
     + 'html body .bhero .bf-pat,html body .bhero .bf-frost,html body .bhero .bf-fx-overlay{display:none!important}'
+    // Filtros/bordes de color de los estados nativos: fuera (distorsionaban).
+    + 'html body .bhero.s-cursed .bf-battle-art,html body .bhero.s-frozen .bf-battle-art,html body .bhero.s-paralyzed .bf-battle-art,html body .bhero.s-sleeping .bf-battle-art,html body .bhero.s-blessed .bf-battle-art,html body .bhero.s-tank .bf-battle-art{filter:none!important}'
+    + 'html body .bhero.s-cursed,html body .bhero.s-frozen,html body .bhero.s-paralyzed,html body .bhero.s-sleeping,html body .bhero.s-blessed,html body .bhero.s-tank{filter:none!important;box-shadow:none!important}'
+    // Nombre del héroe: SIEMPRE en una sola línea (aunque sea largo, tipo
+    // "Fas Everest Panzer"), con altura fija para que el retrato no se mueva
+    // al refrescarse los números.
+    + 'html body .bhero .bhero-name{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;height:18px!important;line-height:18px!important;font-size:12.5px!important;letter-spacing:0!important}'
+    + 'html body .bhero .bhero-hpnum,html body .bhero .bhero-stats{font-variant-numeric:tabular-nums!important}'
     // Capa de partículas sobre la escena de batalla
     + '.bf-decor-layer{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;border-radius:inherit}'
     + '.bf-decor{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
@@ -97,7 +105,22 @@ export const STATUS_AURA_PATCH = `
     if(m) return Math.max(0, Math.min(1, parseInt(m[1],10) / Math.max(1, parseInt(m[2],10))));
     return 1;
   }
-  function activeCls(card){
+  // Estado activo del héroe. Se calcula a partir de SUS DATOS (no solo de las
+  // clases del recuadro): el juego borra las clases de estado en algunos
+  // refrescos y por eso el efecto de MALDITO no llegaba a verse nunca.
+  function activeCls(card, h){
+    if(h){
+      var mods = h._mods || [];
+      if(h._bfConfused > 0) return 'bf-state-confused';
+      if(h._bfDrunk > 0) return 'bf-state-drunk';
+      if(h._bfDizzy > 0) return 'bf-state-dizzy';
+      if(h.freeze > 0 || h.frozen > 0) return 's-frozen';
+      if(h.para > 0) return 's-paralyzed';
+      if(h.sleep > 0) return 's-sleeping';
+      if(mods.some(function(m){ return m && (m.cc < 0 || m.ad < 0 || m.he < 0); })) return 's-cursed';
+      if(mods.some(function(m){ return m && (m.cc > 0 || m.ad > 0 || m.he > 0); })) return 's-blessed';
+      if(h._bfTank) return 's-tank';
+    }
     for(var i = 0; i < ORDER.length; i++) if(card.classList.contains(ORDER[i])) return ORDER[i];
     return '';
   }
@@ -126,7 +149,11 @@ export const STATUS_AURA_PATCH = `
       ['bf-state-confused','bf-state-drunk','bf-state-dizzy'].forEach(function(c){ if(c !== odd && card.classList.contains(c)) card.classList.remove(c); });
       if(odd && !card.classList.contains(odd)) card.classList.add(odd);
 
-      var cls = activeCls(card);
+      var cls = activeCls(card, h);
+      // El rótulo se pinta con la clase, así que se reaplica si el juego la
+      // borró en su refresco de números.
+      if(cls && !card.classList.contains(cls)) card.classList.add(cls);
+      ORDER.forEach(function(c){ if(c !== cls && card.classList.contains(c)) card.classList.remove(c); });
       var layer = card.querySelector('.bf-decor-layer');
       // Solo se reconstruye cuando cambia el estado: así las partículas nunca
       // se reinician a media animación (era otra fuente de parpadeo).
