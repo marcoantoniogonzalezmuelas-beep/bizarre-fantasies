@@ -154,6 +154,14 @@ export const FAITHFUL_ABILITIES_PATCH = `
   // FUERA del recuadro (fixed en el body) para que los parches de congelado
   // del héroe no le quiten la animación.
   function lossPop(t, txt, color){
+    // La cinemática 3D de la habilidad arranca justo DESPUÉS de aplicar el
+    // efecto, así que el marcador salía debajo de ella y no se veía. Se delega
+    // en bfStatusPop, que espera a que la cinemática termine antes de pintarlo.
+    if(window.bfStatusPop){
+      var tg = t;
+      setTimeout(function(){ window.bfStatusPop(side_(tg), tg.id, txt); }, 700);
+      return;
+    }
     try{
       if(!window.__bfLossPopCss){
         window.__bfLossPopCss = 1;
