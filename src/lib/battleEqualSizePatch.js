@@ -13,7 +13,11 @@ export const BATTLE_EQUAL_SIZE_PATCH = `
 
   var css = [
     'html body .b-grid{grid-template-columns:1fr auto 1fr!important;align-items:start!important}',
-    'html body .b-grid .army-panel{width:100%!important;min-width:0!important;max-width:none!important}',
+    'html body .b-grid .army-panel{width:100%!important;min-width:0!important;max-width:none!important;align-self:start!important;padding-top:0!important;margin-top:0!important}',
+    // Las dos columnas arrancan EXACTAMENTE a la misma altura: el primer
+    // recuadro de cada ejército queda alineado con el del rival.
+    'html body .b-grid .army-panel > *:first-child{margin-top:0!important}',
+    'html body .b-grid .army-panel .bhero{margin-top:0!important;margin-bottom:10px!important}',
     // Recuadro del héroe: mismo ancho (el de su columna) y ALTO FIJO siempre.
     'html body .bhero{width:100%!important;min-width:0!important;height:240px!important;min-height:240px!important;max-height:240px!important;box-sizing:border-box!important}'
   ].join('');
