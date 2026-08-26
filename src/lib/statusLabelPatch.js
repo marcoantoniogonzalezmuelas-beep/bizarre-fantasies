@@ -48,6 +48,13 @@ export const STATUS_LABEL_PATCH = `
     // que no puede mover el nombre ni la barra de atributos.
     '.bf-status-ring{position:absolute!important;inset:0!important;z-index:13!important;pointer-events:none!important;border-radius:inherit;border:3px solid var(--bfsc,#fff);animation:bfStatusRing 1.15s ease-in-out infinite;contain:layout style!important}' +
     '@keyframes bfStatusRing{0%,100%{opacity:.35;box-shadow:0 0 6px var(--bfsc),inset 0 0 8px var(--bfsc)}50%{opacity:1;box-shadow:0 0 20px var(--bfsc),inset 0 0 18px var(--bfsc)}}' +
+    // Velo de color sobre TODO el retrato (mismo efecto que el congelado) con
+    // el color del estado. Es una capa absoluta: no toca la maquetación.
+    '.bf-status-veil{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important;border-radius:inherit;background:linear-gradient(180deg,var(--bfsc,#fff) 0%,transparent 62%),radial-gradient(circle at 50% 18%,var(--bfsc,#fff),transparent 58%);mix-blend-mode:screen;animation:bfStatusVeil 1.15s ease-in-out infinite;contain:layout style!important}' +
+    '@keyframes bfStatusVeil{0%,100%{opacity:.16}50%{opacity:.34}}' +
+    // La fila de chips de estado del juego crecía y encogía (y con ella la
+    // carta), moviendo el nombre y los atributos. Se le fija la altura.
+    '.bhero .bhero-status{height:20px!important;min-height:20px!important;max-height:20px!important;flex-wrap:nowrap!important;overflow:hidden!important;align-items:center!important;contain:layout style!important}' +
     // El rótulo/borde nativo del juego (que salía en otro sitio y solo en algunos
     // estados) se desactiva: este sistema es el único que pinta estados.
     '.bhero .bf-status-badge{display:none!important}' +
@@ -79,9 +86,12 @@ export const STATUS_LABEL_PATCH = `
     if(hero && hero.alive) STATES.forEach(function(s){ try { if(s.test(hero)) active.push(s); } catch(e){} });
 
     var ring = host.querySelector('.bf-status-ring');
-    if(!active.length){ if(box) box.remove(); if(ring) ring.remove(); return; }
+    var veil = host.querySelector('.bf-status-veil');
+    if(!active.length){ if(box) box.remove(); if(ring) ring.remove(); if(veil) veil.remove(); return; }
     if(!ring){ ring = document.createElement('div'); ring.className = 'bf-status-ring'; host.appendChild(ring); }
+    if(!veil){ veil = document.createElement('div'); veil.className = 'bf-status-veil'; host.appendChild(veil); }
     if(ring.dataset.bfKey !== active[0].key){ ring.dataset.bfKey = active[0].key; ring.style.setProperty('--bfsc', active[0].c1); }
+    if(veil.dataset.bfKey !== active[0].key){ veil.dataset.bfKey = active[0].key; veil.style.setProperty('--bfsc', active[0].c1); }
 
     var signature = active.map(function(s){ return s.key; }).join('|');
     if(box && box.dataset.bfSig === signature) return; // sin cambios: no repintar
