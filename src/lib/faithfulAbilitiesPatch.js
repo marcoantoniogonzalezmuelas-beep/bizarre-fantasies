@@ -462,6 +462,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
         var fin = c.finish;
         window.bfChoiceModal({
           icon: '\\u2699\\ufe0f',
+          bg: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/764492aee_generated_image.png',
           title: 'Compresor Roto',
           text: 'Sabotaje contra <b>' + c.t.name + '</b>. Elige qu\\u00e9 le rompes:',
           options: [

@@ -11,8 +11,12 @@ export const CHOICE_MODAL_PATCH = `
   if(window.bfChoiceModal) return;
 
   var st = document.createElement('style');
-  st.textContent = '#bf-choice{position:fixed;inset:0;z-index:100600;display:flex;align-items:center;justify-content:center;padding:18px;'
+  st.textContent = '#bf-choice{position:fixed;inset:0;z-index:100600;display:flex;align-items:center;justify-content:center;padding:18px;pointer-events:auto!important;'
     + 'background:radial-gradient(circle at 50% 42%,rgba(28,14,48,.82),rgba(6,4,12,.94));backdrop-filter:blur(5px);animation:bfChoiceIn .22s ease-out}'
+    + '#bf-choice *{pointer-events:auto!important}'
+    + '#bf-choice .bf-ch-art{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;opacity:.5;filter:saturate(1.1)}'
+    + '#bf-choice .bf-ch-art:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(8,4,16,.35),rgba(6,4,12,.9) 72%)}'
+    + '#bf-choice .bf-ch-box{position:relative;z-index:1}'
     + '@keyframes bfChoiceIn{from{opacity:0}to{opacity:1}}'
     + '#bf-choice .bf-ch-box{width:min(94vw,430px);padding:20px 20px 18px;border-radius:20px;text-align:center;'
     + 'background:linear-gradient(180deg,#1e1433,#120c1f 60%,#0d0817);border:2px solid rgba(255,210,74,.7);'
@@ -37,7 +41,8 @@ export const CHOICE_MODAL_PATCH = `
   window.bfChoiceModal = function(cfg, cb){
     var ov = document.createElement('div');
     ov.id = 'bf-choice';
-    var html = '<div class="bf-ch-box">'
+    var html = (cfg.bg ? '<div class="bf-ch-art" style="background-image:url(\\'' + cfg.bg + '\\')"></div>' : '')
+      + '<div class="bf-ch-box">'
       + (cfg.icon ? '<div class="bf-ch-ico">' + cfg.icon + '</div>' : '')
       + '<div class="bf-ch-t">' + (cfg.title || '') + '</div>'
       + (cfg.text ? '<p class="bf-ch-s">' + cfg.text + '</p>' : '');
@@ -46,13 +51,16 @@ export const CHOICE_MODAL_PATCH = `
         + (o.note ? '<small>' + o.note + '</small>' : '') + '</span></button>';
     });
     ov.innerHTML = html + '</div>';
-    ov.addEventListener('click', function(e){
-      var b = e.target.closest && e.target.closest('.bf-ch-op');
-      if(!b) return;
-      ov.remove();
-      cb(b.getAttribute('data-k'));
+    // Se cuelga SIEMPRE de <body> (no de la capa de efectos, que no recibe
+    // clics) y cada botón lleva su propio manejador.
+    document.body.appendChild(ov);
+    ov.querySelectorAll('.bf-ch-op').forEach(function(b){
+      b.addEventListener('click', function(e){
+        e.preventDefault(); e.stopPropagation();
+        ov.remove();
+        cb(b.getAttribute('data-k'));
+      });
     });
-    (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
   };
 })();
 </script>
