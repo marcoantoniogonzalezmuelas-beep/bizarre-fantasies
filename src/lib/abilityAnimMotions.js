@@ -745,6 +745,27 @@ export const MOTIONS = [
       '<span class="bf-aa-coastspark" style="left:28%;top:34%;--dx:-40px;--dy:50px;animation-delay:.3s"></span><span class="bf-aa-coastspark" style="left:44%;top:46%;--dx:50px;--dy:40px;animation-delay:.6s"></span><span class="bf-aa-coastspark" style="left:62%;top:38%;--dx:-30px;--dy:60px;animation-delay:.9s"></span><span class="bf-aa-coastspark" style="left:52%;top:58%;--dx:45px;--dy:35px;animation-delay:1.2s"></span>' +
       '<span class="bf-aa-scream" style="left:34%;top:30%;--dx:24px;animation-delay:.5s">😱</span><span class="bf-aa-scream" style="left:60%;top:36%;--dx:-22px;animation-delay:1.1s">🎢</span>',
   },
+  // VUELTA A MEDIO CAMINO: cruza toda la pantalla de lado a lado y, justo en
+  // la mitad del recorrido, da una vuelta completa de 360° sobre sí misma sin
+  // detenerse, continuando después hasta el centro. Estelas y anillo de giro.
+  {
+    id: 'cross_loop',
+    keywords: ['vuelta a medio camino', 'giro a mitad', '360 a mitad', 'vuelta completa cruzando', 'loop a mitad'],
+    anim: 'bfAaCrossLoop',
+    keyframes:
+      '@keyframes bfAaCrossLoop{0%{transform:translate(-62vw,6vh) rotate(0) scale(.45);opacity:0}10%{opacity:1}26%{transform:translate(-28vw,-4vh) rotate(0) scale(.7)}40%{transform:translate(-4vw,2vh) rotate(140deg) scale(.9)}50%{transform:translate(6vw,-2vh) rotate(360deg) scale(1)}64%{transform:translate(34vw,4vh) rotate(360deg) scale(1.08)}80%{transform:translate(14vw,-2vh) rotate(360deg) scale(1.16)}100%{transform:translate(0,-8vh) rotate(360deg) scale(1.25);opacity:1}}',
+    fxCss:
+      '.bf-aa-clstreak{position:absolute;height:4px;width:36vw;background:linear-gradient(90deg,transparent,#fff,var(--aa-color,#fff),transparent);border-radius:4px;filter:drop-shadow(0 0 12px var(--aa-glow,#fff));opacity:0;animation:bfAaClStreak 1s ease-out forwards}' +
+      '@keyframes bfAaClStreak{0%{opacity:0;transform:translateX(var(--from,-46vw)) scaleX(.2)}35%{opacity:.95}100%{opacity:0;transform:translateX(var(--to,46vw)) scaleX(1.3)}}' +
+      '.bf-aa-clring{position:absolute;top:46%;left:50%;width:44vmin;height:44vmin;margin:-22vmin 0 0 -22vmin;border-radius:50%;border:3px dashed var(--aa-color,#fff);box-shadow:0 0 20px var(--aa-glow,#fff);opacity:0;animation:bfAaClRing 1.1s linear forwards}' +
+      '@keyframes bfAaClRing{0%{opacity:0;transform:scale(.3) rotate(0)}35%{opacity:.85}100%{opacity:0;transform:scale(1.5) rotate(360deg)}}' +
+      '.bf-aa-clmote{position:absolute;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#fff,var(--aa-color,#fff));box-shadow:0 0 16px var(--aa-glow,#fff);opacity:0;animation:bfAaClMote 1.1s ease-out forwards}' +
+      '@keyframes bfAaClMote{0%{opacity:0;transform:translate(0,0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:translate(var(--dx,50px),var(--dy,-40px)) scale(1.5)}}',
+    fxTag:
+      '<div class="bf-aa-clstreak" style="top:32%;--from:-46vw;--to:46vw;animation-delay:.1s"></div><div class="bf-aa-clstreak" style="top:52%;--from:-40vw;--to:44vw;animation-delay:.35s"></div><div class="bf-aa-clstreak" style="top:66%;--from:-36vw;--to:40vw;animation-delay:.6s"></div>' +
+      '<div class="bf-aa-clring" style="animation-delay:.9s"></div><div class="bf-aa-clring" style="width:28vmin;height:28vmin;margin:-14vmin 0 0 -14vmin;animation-delay:1.05s"></div>' +
+      '<span class="bf-aa-clmote" style="left:46%;top:44%;--dx:-60px;--dy:-40px;animation-delay:1s"></span><span class="bf-aa-clmote" style="left:52%;top:48%;--dx:60px;--dy:-30px;animation-delay:1.1s"></span><span class="bf-aa-clmote" style="left:50%;top:52%;--dx:-40px;--dy:45px;animation-delay:1.2s"></span><span class="bf-aa-clmote" style="left:54%;top:42%;--dx:50px;--dy:40px;animation-delay:1.3s"></span>',
+  },
   DEFAULT_MOTION,
 ];
 
@@ -790,6 +811,7 @@ export const MOTION_LABELS = {
   walk_downhill: '🏔️ Caminar cuesta abajo',
   diagonal: '↗️ Movimiento en diagonal',
   rollercoaster: '🎢 Montaña rusa',
+  cross_loop: '🔁 Cruzar con vuelta de 360° a mitad',
 };
 
 // Orden en el que se muestran en el selector.
