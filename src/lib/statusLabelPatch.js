@@ -16,7 +16,7 @@ export const STATUS_LABEL_PATCH = `
 
   // Definición de cada estado: cómo se detecta, su icono, su texto y su color.
   var STATES = [
-    { key:'agony',    icon:'\\ud83e\\ude78', label:'AGONIZANDO', c1:'#ff3b30', c2:'#7a0000', test:function(h){ return h.alive && h.hp > 0 && h.maxHp > 0 && h.hp <= Math.ceil(h.maxHp * .1); } },
+    { key:'agony',    icon:'\\ud83e\\ude78', label:'AGONIZANDO', c1:'#ff3b30', c2:'#7a0000', test:function(h){ return h.alive && h.hp > 0 && h.maxHp >= 15 && h.hp <= Math.ceil(h.maxHp * .1); } },
     { key:'sleep',    icon:'\\ud83d\\udca4', label:'DORMIDO',    c1:'#6aa9ff', c2:'#10285e', test:function(h){ return h.sleep > 0; } },
     { key:'para',     icon:'\\u26a1',        label:'PARALIZADO', c1:'#ffe14a', c2:'#6b5000', test:function(h){ return h.para > 0; } },
     { key:'silence',  icon:'\\ud83d\\udd07', label:'SILENCIADO', c1:'#c9b6ff', c2:'#2e1a63', test:function(h){ return h.silence > 0; } },
@@ -52,6 +52,9 @@ export const STATUS_LABEL_PATCH = `
     // el color del estado. Es una capa absoluta: no toca la maquetación.
     '.bf-status-veil{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important;border-radius:inherit;background:linear-gradient(180deg,var(--bfsc,#fff) 0%,transparent 62%),radial-gradient(circle at 50% 18%,var(--bfsc,#fff),transparent 58%);mix-blend-mode:screen;animation:bfStatusVeil 1.15s ease-in-out infinite;contain:layout style!important}' +
     '@keyframes bfStatusVeil{0%,100%{opacity:.16}50%{opacity:.34}}' +
+    // AGONIZANDO: velo rojo oscuro (sangre), sin "screen" para que no ilumine.
+    '.bf-status-veil.bf-veil-agony{mix-blend-mode:normal!important;background:linear-gradient(180deg,rgba(140,0,0,.85) 0%,rgba(70,0,0,.25) 65%),radial-gradient(circle at 50% 20%,rgba(185,10,10,.7),transparent 60%)!important;animation:bfStatusVeilAgony 1.15s ease-in-out infinite!important}' +
+    '@keyframes bfStatusVeilAgony{0%,100%{opacity:.34}50%{opacity:.6}}' +
     // La fila de chips de estado del juego crecía y encogía (y con ella la
     // carta), moviendo el nombre y los atributos. Se le fija la altura.
     '.bhero .bhero-status{height:20px!important;min-height:20px!important;max-height:20px!important;flex-wrap:nowrap!important;overflow:hidden!important;align-items:center!important;contain:layout style!important}' +
@@ -91,7 +94,11 @@ export const STATUS_LABEL_PATCH = `
     if(!ring){ ring = document.createElement('div'); ring.className = 'bf-status-ring'; host.appendChild(ring); }
     if(!veil){ veil = document.createElement('div'); veil.className = 'bf-status-veil'; host.appendChild(veil); }
     if(ring.dataset.bfKey !== active[0].key){ ring.dataset.bfKey = active[0].key; ring.style.setProperty('--bfsc', active[0].c1); }
-    if(veil.dataset.bfKey !== active[0].key){ veil.dataset.bfKey = active[0].key; veil.style.setProperty('--bfsc', active[0].c1); }
+    if(veil.dataset.bfKey !== active[0].key){
+      veil.dataset.bfKey = active[0].key;
+      veil.style.setProperty('--bfsc', active[0].c1);
+      veil.classList.toggle('bf-veil-agony', active[0].key === 'agony');
+    }
 
     var signature = active.map(function(s){ return s.key; }).join('|');
     if(box && box.dataset.bfSig === signature) return; // sin cambios: no repintar
