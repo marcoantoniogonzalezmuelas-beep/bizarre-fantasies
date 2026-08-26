@@ -255,9 +255,17 @@ export function buildFumbleRollPatch(lang) {
     try{
       var foe = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
       var mine = (G.team[side] || []);
-      var moved = mine.filter(function(x){ return before.indexOf(x.id) < 0; });
+      // Solo se pasan al bando rival las CRIATURAS INVOCADAS de verdad: héroes
+      // nuevos que además son tokens (patitos, grulla…). Antes bastaba con que
+      // el id no estuviera en la lista previa y, si el motor recreaba las
+      // instancias del equipo durante la habilidad, se marchaban los TRES
+      // héroes del jugador y su ejército se quedaba vacío.
+      function isToken(x){ return !!(x && (x._bfDuck || x._bfCrane || String(x._token || x.id || '').indexOf('tk_') === 0 || String(x.id || '').indexOf('duck_') === 0)); }
+      var moved = mine.filter(function(x){ return before.indexOf(x.id) < 0 && isToken(x); });
       if(!moved.length) return;
-      G.team[side] = mine.filter(function(x){ return before.indexOf(x.id) >= 0; });
+      var keep = mine.filter(function(x){ return moved.indexOf(x) < 0; });
+      if(!keep.length) return; // nunca dejar un bando sin héroes
+      G.team[side] = keep;
       G.team[foe] = (G.team[foe] || []).concat(moved);
       log('lx', '\\u{1F480} ' + moved.map(function(x){ return x.name; }).join(', ') + ' ${en ? 'turn against their summoner and join the rival army!' : '\\u00a1se vuelven contra quien los invoc\\u00f3 y se unen al ej\\u00e9rcito rival!'}');
       moved.forEach(function(x){ if(typeof pushFx === 'function') pushFx({k:'status', side:foe, id:x.id, txt:'\\u{1F480}'}); });
