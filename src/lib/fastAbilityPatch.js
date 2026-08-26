@@ -89,6 +89,7 @@ export const FAST_ABILITY_PATCH = `
             if(typeof pushLog === 'function') pushLog('li', h.name + ' anula la habilidad de ' + foe.name + ' en su forma actual.');
           }
           if(typeof pushFx === 'function') pushFx({ k:'status', side: foesSide, id: foe.id, txt:'\\u2699\\ufe0f' });
+          if(window.bfStatusPop) window.bfStatusPop(foesSide, foe.id, kind === 'elite' ? '\\u26D4 SIN \\u00c9LITE' : '\\u2728 SIN HABILIDAD');
           finish();
         }
 
