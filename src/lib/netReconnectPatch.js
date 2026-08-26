@@ -375,6 +375,13 @@ export const NET_RECONNECT_PATCH = `
   }
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
+    // Falsa alarma: el canal con el rival sigue abierto (solo se ha caído el
+    // servidor de señalización, muy habitual en redes móviles). No se corta
+    // nada: PeerJS se reconecta solo al servidor y la partida continúa.
+    if(typeof NET!=='undefined'&&NET.conn&&NET.conn.open){
+      try{if(NET.peer&&NET.peer.disconnected&&!NET.peer.destroyed)NET.peer.reconnect();}catch(e){}
+      return;
+    }
     // Sala libre (sin contraseña): no hay reanudación manual, pero SÍ una
     // ventana de recuperación automática de 90 s. Antes se expulsaba al
     // instante, y en operadores móviles con CGNAT (Vodafone y similares) el
@@ -656,7 +663,7 @@ export const NET_RECONNECT_PATCH = `
     if(typeof NET==='undefined'||typeof G==='undefined'||!G.online||G._gameOver||rec.active)return;
     var c=NET.conn;
     if(!c){connLost();return;}
-    if(c.open&&c.__bfLastSeen&&Date.now()-c.__bfLastSeen>15000){try{c.close();}catch(e){}return;}
+    if(c.open&&c.__bfLastSeen&&Date.now()-c.__bfLastSeen>25000){try{c.close();}catch(e){}return;}
     if(!c.open)connLost();
   },6000);
 })();
