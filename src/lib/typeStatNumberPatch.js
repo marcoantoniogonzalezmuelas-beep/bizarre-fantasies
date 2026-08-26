@@ -1,7 +1,13 @@
 // Batalla: junto a las iniciales del tipo (CC / AD / HE) de cada héroe se
-// muestra el NÚMERO del stat efectivo, igual que ya se hace con la velocidad.
+// muestra el NÚMERO del stat efectivo, más los otros dos stats y la velocidad.
 // El valor se calcula con stat() del motor, así que refleja en vivo los
 // cambios que las habilidades, equipo y estados aplican sobre los stats.
+//
+// SIN REPINTADOS: toda la barra se construye de UNA SOLA VEZ (un único nodo
+// con todo el contenido) y se pinta en el mismo instante en que el motor
+// dibuja el tablero (hook de renderBattle), no en ticks sucesivos. Así al
+// empezar la partida la barra aparece ya completa y no se ve crecer por
+// partes. Después solo se reescribe si el texto cambia de verdad.
 export const TYPE_STAT_NUMBER_PATCH = `
 <script>
 (function(){
@@ -11,10 +17,10 @@ export const TYPE_STAT_NUMBER_PATCH = `
   var COLORS = { cc:'#ff6a5f', ad:'#54e876', he:'#b06cff' };
 
   var st = document.createElement('style');
-  st.textContent = '.bf-type-num{display:inline-block;margin-left:3px;font-family:Rubik,sans-serif;font-weight:900;font-size:15px;line-height:1;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}'+
-    '.bf-more-stats{display:inline-block;margin-left:4px;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;color:#d8cfae;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}'+
-    '.bf-more-stats b{font-weight:900}'+
-    '.bf-vel-num{display:inline-block;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;color:#ffd24a;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6);white-space:nowrap}';
+  st.textContent = '.bf-stats-block{display:inline-block;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;white-space:nowrap;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6)}'+
+    '.bf-stats-block .bf-type-num{font-size:15px}'+
+    // Alto fijo de la barra: aunque el contenido cambie, nunca mueve la carta.
+    '.bhero .vel-tag{min-height:17px!important;height:17px!important;display:flex!important;align-items:center!important;white-space:nowrap!important;overflow:hidden!important;contain:layout style!important}';
   document.head.appendChild(st);
 
   function keyOf(t){
@@ -28,7 +34,23 @@ export const TYPE_STAT_NUMBER_PATCH = `
     return h && h[k] != null ? h[k] : null;
   }
 
-  function tick(){
+  function buildHtml(h){
+    var k = keyOf(h.type);
+    var v = effStat(h, k);
+    if(v == null) return null;
+    var html = '<span class="bf-type-num" style="color:' + (COLORS[k] || '#ffe49a') + '">' + v + '</span>';
+    ['cc','ad','he'].forEach(function(x){
+      if(x === k) return;
+      var vv = effStat(h, x);
+      if(vv == null) return;
+      html += ' · <span style="color:' + COLORS[x] + '">' + x.toUpperCase() + ' ' + vv + '</span>';
+    });
+    var vel = (typeof velocity === 'function') ? velocity(h) : null;
+    if(vel != null) html += ' · <span style="color:#ffd24a">⚡' + vel + '</span>';
+    return html;
+  }
+
+  function paint(){
     if(typeof G === 'undefined' || !G || !G.team) return;
     document.querySelectorAll('.bhero[id^="b_"] .vel-tag').forEach(function(tag){
       var card = tag.closest('.bhero');
@@ -36,12 +58,11 @@ export const TYPE_STAT_NUMBER_PATCH = `
       if(!m) return;
       var h = (G.team[m[1]] || []).find(function(x){ return x && x.id === m[2]; });
       if(!h) return;
-      var k = keyOf(h.type);
-      var v = effStat(h, k);
-      if(v == null) return;
-      var num = tag.querySelector('.bf-type-num');
-      if(!num){
-        // Insertar justo después de las iniciales del tipo (nodo de texto "CC ·").
+      var html = buildHtml(h);
+      if(html == null) return;
+      var block = tag.querySelector('.bf-stats-block');
+      if(!block){
+        // Punto de inserción: justo después de las iniciales del tipo.
         var w = document.createTreeWalker(tag, NodeFilter.SHOW_TEXT, null);
         var node, hit = null;
         while((node = w.nextNode())){
@@ -49,49 +70,33 @@ export const TYPE_STAT_NUMBER_PATCH = `
           if(mm){ hit = { node: node, end: mm.index + mm[0].length }; break; }
         }
         if(!hit) return;
-        num = document.createElement('span');
-        num.className = 'bf-type-num';
-        num.style.color = COLORS[k] || '#ffe49a';
+        block = document.createElement('span');
+        block.className = 'bf-stats-block';
+        // Se rellena ANTES de insertarlo: entra en el DOM ya completo.
+        block.innerHTML = ' ' + html;
+        block.__bfHtml = html;
         var rest = hit.node.splitText(hit.end);
-        rest.parentNode.insertBefore(num, rest);
+        rest.parentNode.insertBefore(block, rest);
+        return;
       }
-      var txt = String(v);
-      if(num.textContent !== txt) num.textContent = txt;
-      // TODOS los stats, no solo el propio del tipo: tras el número principal
-      // se muestran también los otros dos (CC/AD/HE), cada uno con su color.
-      var more = tag.querySelector('.bf-more-stats');
-      if(!more){
-        more = document.createElement('span');
-        more.className = 'bf-more-stats';
-        num.parentNode.insertBefore(more, num.nextSibling);
-      }
-      var html = '';
-      ['cc','ad','he'].forEach(function(x){
-        if(x === k) return;
-        var vv = effStat(h, x);
-        if(vv == null) return;
-        html += ' · <b style="color:' + COLORS[x] + '">' + x.toUpperCase() + ' ' + vv + '</b>';
-      });
-      if(more.__bfHtml !== html){ more.__bfHtml = html; more.innerHTML = html; }
-      // VELOCIDAD en el retrato: si el sello ⚡ no está presente (ni el "vX"
-      // original del motor), se añade aquí con la velocidad real del héroe.
-      var vv = (typeof velocity === 'function') ? velocity(h) : null;
-      if(vv != null && !tag.querySelector('.bf-vel-mini')){
-        var vel = tag.querySelector('.bf-vel-num');
-        if(!vel){
-          vel = document.createElement('span');
-          vel.className = 'bf-vel-num';
-          more.parentNode.insertBefore(vel, more.nextSibling);
-        }
-        var vt = ' · ⚡' + vv;
-        if(vel.textContent !== vt) vel.textContent = vt;
-      }
+      if(block.__bfHtml !== html){ block.__bfHtml = html; block.innerHTML = ' ' + html; }
     });
   }
 
-  setInterval(tick, 300);
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
-  else tick();
+  // Se pinta en el mismo ciclo en el que el motor redibuja el tablero, para que
+  // la barra nunca se vea "a medias" ni aparezca un instante después.
+  function hookRender(){
+    if(typeof window.renderBattle !== 'function' || window.renderBattle.__bfTypeStat) return false;
+    var orig = window.renderBattle;
+    window.renderBattle = function(){ var r = orig.apply(this, arguments); paint(); return r; };
+    window.renderBattle.__bfTypeStat = 1;
+    return true;
+  }
+
+  var tries = 0, iv = setInterval(function(){ if(hookRender() || tries++ > 200) clearInterval(iv); }, 150);
+  // Red de seguridad (cambios de stats sin repintado del tablero).
+  setInterval(paint, 500);
+  paint();
 })();
 </script>
 `;
