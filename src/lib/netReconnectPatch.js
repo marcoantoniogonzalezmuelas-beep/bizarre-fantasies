@@ -135,7 +135,7 @@ export const NET_RECONNECT_PATCH = `
       var rem=Math.max(0,Math.ceil((rec.until-Date.now())/1000));
       var m=Math.floor(rem/60),s=rem%60;
       if(tEl)tEl.textContent=m+':'+(s<10?'0':'')+s;
-      if(arc)arc.setAttribute('stroke-dashoffset',String(295.3*(1-rem/(MAX_WAIT/1000))));
+      if(arc)arc.setAttribute('stroke-dashoffset',String(295.3*(1-rem/((rec.span||MAX_WAIT)/1000))));
       if(rem<=0){clearInterval(rec.tickInterval);}
     };
     draw();
@@ -218,6 +218,8 @@ export const NET_RECONNECT_PATCH = `
     if(was&&typeof notif==='function')notif('✔ Conexión restablecida. ¡La partida continúa!');
   }
   function giveUp(msg){
+    // Sala pública: agotada la ventana de recuperación automática, se cierra.
+    if(rec.noResume){rec.noResume=false;endMatchNoResume();return;}
     rec.active=false;clearTimeout(rec.timer);if(rec.tickInterval)clearInterval(rec.tickInterval);hideOverlay();clearResume();
     if(window.__bfResumeTouchIv){clearInterval(window.__bfResumeTouchIv);window.__bfResumeTouchIv=null;}
     window.__bfRoomMarkedPlaying=false;
@@ -373,9 +375,19 @@ export const NET_RECONNECT_PATCH = `
   }
   function connLost(){
     if(rec.active||typeof G==='undefined'||G._gameOver||quitting)return;
-    // Sala libre (sin contraseña): sin reanudación. Se acaba la partida.
-    if(typeof NET!=='undefined'&&!NET.pass){endMatchNoResume();return;}
-    rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;rec.anyRole=false;rec.hostTried=false;rec.tries=0;
+    // Sala libre (sin contraseña): no hay reanudación manual, pero SÍ una
+    // ventana de recuperación automática de 90 s. Antes se expulsaba al
+    // instante, y en operadores móviles con CGNAT (Vodafone y similares) el
+    // primer cambio de ruta de red echaba al jugador nada más conectar.
+    var freeRoom=(typeof NET!=='undefined'&&!NET.pass);
+    rec.noResume=freeRoom;
+    rec.span=freeRoom?90000:MAX_WAIT;
+    rec.active=true;rec.until=Date.now()+rec.span;rec.waiting=false;rec.anyRole=false;rec.hostTried=false;rec.tries=0;
+    if(freeRoom){
+      overlay('Recuperando la conexión','La partida sigue en curso: estamos restableciendo la conexión con tu rival…');
+      if(NET.role==='client')clientRetry();else hostWait();
+      return;
+    }
     markLeft();
     try{if(typeof notif==='function')notif('🔄 La partida sigue en curso. Tu rival puede reanudar desde Salas online.');}catch(e){}
     var sub='La sala sigue abierta: tu rival tiene 5 minutos para volver y pulsar «Reanudar». Si no vuelve, la partida se cancelará.';

@@ -72,6 +72,18 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         var has = stun.some(function(s){ return s && (s.urls === u || (Array.isArray(s.urls) && s.urls.indexOf(u) !== -1)); });
         if (!has) stun.push({ urls: u });
       });
+      // Orden de preferencia del relay: TLS/443 TCP primero (atraviesa
+      // cortafuegos y CGNAT de operadores móviles como Vodafone), luego 443,
+      // luego TCP/80 y por último UDP.
+      function rank(s){
+        var u = Array.isArray(s.urls) ? s.urls.join(' ') : String(s.urls || '');
+        if (/^turns:/i.test(u)) return 0;
+        if (/:443/.test(u) && /transport=tcp/i.test(u)) return 1;
+        if (/:443/.test(u)) return 2;
+        if (/transport=tcp/i.test(u)) return 3;
+        return 4;
+      }
+      turn.sort(function(a, b){ return rank(a) - rank(b); });
       opts.config.iceServers = turn.concat(stun);
       // Forzar relay cuando hay servidores TURN: es el camino más robusto a
       // través de cualquier NAT (incluido el CGNAT de cualquier operador). Si
@@ -262,8 +274,34 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     if (typeof NET === 'undefined' || !NET.conn) return;
     var c = NET.conn;
     bindHeartbeat(c);
+    watchIce(c);
     if (c.open) { try { c.send({ t: 'bfPing' }); } catch (e) {} }
   }, 4000);
+
+  // ---- (3) Vigilancia del transporte ICE ----
+  // Si la ruta de red se rompe (cambio de celda, NAT que expira, Wi-Fi↔datos),
+  // se pide un reinicio de ICE en caliente: recupera la conexión sin cortar la
+  // partida. Solo si ICE falla del todo se cierra para que actúe la reconexión.
+  function watchIce(c){
+    var pc = c && c.peerConnection;
+    if (!pc || pc.__bfIceWatch) return;
+    pc.__bfIceWatch = 1;
+    pc.addEventListener('iceconnectionstatechange', function(){
+      var st = pc.iceConnectionState;
+      if (st === 'disconnected') {
+        setTimeout(function(){
+          if (pc.iceConnectionState !== 'disconnected') return;
+          try { if (pc.restartIce) pc.restartIce(); } catch (e) {}
+        }, 2000);
+      } else if (st === 'failed') {
+        try { if (pc.restartIce) pc.restartIce(); } catch (e) {}
+        setTimeout(function(){
+          if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') return;
+          try { c.close(); } catch (e) {}
+        }, 4000);
+      }
+    });
+  }
 })();
 </script>
 `;
