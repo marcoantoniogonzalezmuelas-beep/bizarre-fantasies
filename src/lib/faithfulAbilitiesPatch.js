@@ -175,7 +175,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
         if(r && r.width > 0){ el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = (r.top + r.height * 0.42) + 'px'; }
         else { el.style.left = '50%'; el.style.top = '42%'; }
         document.body.appendChild(el);
-        setTimeout(function(){ if(el.parentNode) el.remove(); }, 2100);
+        setTimeout(function(){ if(el.parentNode) el.remove(); }, 2600);
       }, 140);
     }catch(e){}
   }
@@ -447,10 +447,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
       if(typeof humanCtl === 'function' && humanCtl(c.side)){
         blockElite = window.confirm('COMPRESOR ROTO sobre ' + c.t.name + ':\\n\\nAceptar = anular su FASE \\u00c9LITE\\nCancelar = anular su HABILIDAD');
       } else {
-        // IA: por defecto ANULA LA HABILIDAD (es el efecto principal de la carta
-        // y el que el jugador espera ver). Solo bloquea la FASE ÉLITE si el
-        // objetivo ya está en forma élite (así, al caer, no resucita otra vez).
-        blockElite = !!c.t.eliteMode && !c.t.eliteUsed;
+        // IA: aleatorio 50/50 — anula la HABILIDAD o bloquea la FASE ÉLITE.
+        blockElite = Math.random() < 0.5;
       }
       if(blockElite){
         c.t.eliteUsed = true; c.t._bfNoElite = 1;
