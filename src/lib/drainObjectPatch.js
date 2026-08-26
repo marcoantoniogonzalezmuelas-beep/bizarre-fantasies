@@ -13,7 +13,7 @@ export const DRAIN_OBJECT_PATCH = `
   if (window.__bfDrainObject) return;
   window.__bfDrainObject = true;
 
-  var CINE_ART = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/62a798996_generated_image.png';
+  var CINE_ART = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/2f1d55b92_generated_image.png';
 
   // Recorta el fondo negro de la imagen (transparente con canvas).
   var CUT = {};
