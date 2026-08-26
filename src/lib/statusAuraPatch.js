@@ -57,9 +57,9 @@ export const STATUS_AURA_PATCH = `
     // Capa de partículas sobre la escena de batalla
     + 'html body .bhero .bf-decor-layer{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none;overflow:hidden;border-radius:inherit;display:block!important;opacity:1!important;visibility:visible!important}'
     + '.bf-decor{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
-    // La capa de nieve se aísla del resto: el retrato del héroe no se toca.
-    + 'html body .bhero.s-frozen .bf-decor-layer{isolation:isolate;contain:paint}'
-    + 'html body .bhero.s-frozen,html body .bhero.s-frozen *:not(.bf-decor-layer):not(.bf-decor){filter:none!important;box-shadow:none!important;backdrop-filter:none!important}'
+    // CONGELADO: mismo tratamiento que MALDITO — sin aislar la capa de
+    // partículas (isolation/contain provoca parpadeo al repintar el recuadro)
+    // y sin un filter:none general sobre todo el héroe. Solo emojis quietos.
     // TODO ESTÁTICO: sin velos, sin animaciones que parpadeen. Solo emojis
     // quietos con una sombra suave para darles volumen sobre la escena.
     + 'html body .bhero .bf-decor{transform:translate(-50%,-50%)!important;animation:none!important;transition:none!important;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
