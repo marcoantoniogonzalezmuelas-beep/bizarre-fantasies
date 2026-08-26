@@ -21,7 +21,17 @@ export const STATUS_POP_PATCH = `
     + '100%{opacity:0;transform:translate(-50%,-112%) scale(1.04)}}';
   document.head.appendChild(st);
 
-  window.bfStatusPop = function(side, id, text){
+  function cineOn(){
+    return !!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov');
+  }
+
+  window.bfStatusPop = function(side, id, text, waited){
+    // Con una cinemática 3D en pantalla el marcador quedaría tapado: se espera
+    // a que termine (máx. ~8 s) y entonces se muestra sobre el retrato.
+    if(cineOn() && (waited || 0) < 32){
+      setTimeout(function(){ window.bfStatusPop(side, id, text, (waited || 0) + 1); }, 250);
+      return;
+    }
     var el = document.getElementById('b_' + side + '_' + id);
     if(!el) return;
     var r = el.getBoundingClientRect();
