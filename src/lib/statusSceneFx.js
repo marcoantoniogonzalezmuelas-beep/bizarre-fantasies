@@ -28,13 +28,10 @@ export const STATUS_STATES = [
   {
     cls: 's-frozen', c: '#75e8ff', ic: '❄', lb: 'CONGELADO',
     decor: [
-      { t: 'flake', e: '❄', x: '8%', y: '8%', sz: 13, d: 0, dur: 4 },
-      { t: 'flake', e: '❅', x: '22%', y: '8%', sz: 17, d: 1.3, dur: 4.6 },
-      { t: 'flake', e: '❄', x: '36%', y: '8%', sz: 12, d: 2.4, dur: 4.2 },
-      { t: 'flake', e: '❆', x: '50%', y: '8%', sz: 19, d: 0.7, dur: 5 },
-      { t: 'flake', e: '❄', x: '64%', y: '8%', sz: 14, d: 2, dur: 4.4 },
-      { t: 'flake', e: '❅', x: '78%', y: '8%', sz: 16, d: 3.1, dur: 4.8 },
-      { t: 'flake', e: '❄', x: '92%', y: '8%', sz: 12, d: 1, dur: 4.1 },
+      // Velo degradado azul estático que cubre todo el retrato (sin animación).
+      { t: 'frostveil', e: '', x: '50%', y: '50%', sz: 0 },
+      // Muñeco de nieve quieto en la parte baja (dibujo estático, sin filtro).
+      { t: 'snowman', e: '⛄', x: '50%', y: '74%', sz: 42 },
     ],
   },
   {

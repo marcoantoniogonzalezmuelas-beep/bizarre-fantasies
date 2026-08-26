@@ -62,10 +62,10 @@ export const STATUS_AURA_PATCH = `
     + 'html body .bhero.s-frozen,html body .bhero.s-frozen *:not(.bf-decor-layer):not(.bf-decor){filter:none!important;box-shadow:none!important;backdrop-filter:none!important}'
     // Escarcha cayendo por toda la escena (congelado) — bucle continuo, sin
     // apagarse: opacidad plena de principio a fin para que no parpadee.
-    // Nieve: SOLO copos cayendo (igual que la sangre de la agonía). Sin filtros
-    // ni sombras animadas sobre el retrato: eran las que provocaban el parpadeo.
-    + '.bf-decor-flake{color:#eaf9ff;filter:none!important;text-shadow:0 1px 2px rgba(0,0,0,.7);opacity:.92;will-change:transform;animation:bfFallLoop 5s linear infinite}'
-    + '@keyframes bfFallLoop{0%{transform:translate(-50%,-50%) translateY(-24px)}100%{transform:translate(-50%,-50%) translateY(160px)}}'
+    // CONGELADO: velo degradado azul ESTÁTICO por encima del retrato (sin
+    // animación, sin filtros sobre el arte) + un muñeco de nieve quieto.
+    + 'html body .bhero.s-frozen .bf-decor-frostveil{position:absolute;inset:0!important;left:0;top:0;width:100%;height:100%;transform:none!important;background:linear-gradient(180deg,rgba(150,220,255,.55) 0%,rgba(90,170,255,.35) 45%,rgba(40,90,200,.5) 100%);mix-blend-mode:normal;opacity:.82;animation:none!important;filter:none!important}'
+    + 'html body .bhero.s-frozen .bf-decor-snowman{position:absolute;transform:translate(-50%,-50%);color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6),0 0 14px rgba(180,230,255,.9);animation:none!important;filter:none!important;opacity:.95}'
     // Velitas NEGRAS (maldito): cera oscura + llama que titila
     + '.bf-decor-blackcandle{filter:brightness(.35) saturate(.2) drop-shadow(0 0 6px rgba(255,69,200,.7)) drop-shadow(0 2px 4px #000);animation:bfCandleFlicker 1.4s ease-in-out infinite}'
     // Muñecos vudú: se balancean lentamente con brillo mágico
