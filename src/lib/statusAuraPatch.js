@@ -57,10 +57,15 @@ export const STATUS_AURA_PATCH = `
     // Capa de partículas sobre la escena de batalla
     + 'html body .bhero .bf-decor-layer{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none;overflow:hidden;border-radius:inherit;display:block!important;opacity:1!important;visibility:visible!important}'
     + '.bf-decor{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'
+    // La capa de nieve se aísla del resto: el retrato del héroe no se toca.
+    + 'html body .bhero.s-frozen .bf-decor-layer{isolation:isolate;contain:paint}'
+    + 'html body .bhero.s-frozen,html body .bhero.s-frozen *:not(.bf-decor-layer):not(.bf-decor){filter:none!important;box-shadow:none!important;backdrop-filter:none!important}'
     // Escarcha cayendo por toda la escena (congelado) — bucle continuo, sin
     // apagarse: opacidad plena de principio a fin para que no parpadee.
-    + '.bf-decor-flake{color:#dffaff;text-shadow:0 0 8px #75e8ff,0 1px 2px #000;animation:bfFallLoop 4s linear infinite}'
-    + '@keyframes bfFallLoop{0%{transform:translate(-50%,-50%) translateY(-20px) rotate(0)}100%{transform:translate(-50%,-50%) translateY(150px) rotate(220deg)}}'
+    // Nieve: SOLO copos cayendo (igual que la sangre de la agonía). Sin filtros
+    // ni sombras animadas sobre el retrato: eran las que provocaban el parpadeo.
+    + '.bf-decor-flake{color:#eaf9ff;filter:none!important;text-shadow:0 1px 2px rgba(0,0,0,.7);opacity:.92;will-change:transform;animation:bfFallLoop 5s linear infinite}'
+    + '@keyframes bfFallLoop{0%{transform:translate(-50%,-50%) translateY(-24px)}100%{transform:translate(-50%,-50%) translateY(160px)}}'
     // Velitas NEGRAS (maldito): cera oscura + llama que titila
     + '.bf-decor-blackcandle{filter:brightness(.35) saturate(.2) drop-shadow(0 0 6px rgba(255,69,200,.7)) drop-shadow(0 2px 4px #000);animation:bfCandleFlicker 1.4s ease-in-out infinite}'
     // Muñecos vudú: se balancean lentamente con brillo mágico
