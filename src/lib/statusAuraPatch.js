@@ -26,6 +26,14 @@ export const STATUS_AURA_PATCH = `
 
   var css = '.bhero{position:relative!important}'
     + ${JSON.stringify(LABEL_CSS)}
+    // BARRA DE ARMAS/EQUIPO del héroe de batalla: el backdrop-filter:blur
+    // recomputa el fondo en cada repintado del recuadro (sobre todo con
+    // CONGELADO, que cambia el filter del arte) y eso es lo que parpadea.
+    // Se deja estática: fondo opaco (sin blur), sin animaciones ni
+    // transiciones (también en los iconos de las armas).
+    + 'html body .bhero .bf-battle-gear{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(8,5,14,.82)!important;animation:none!important;transition:none!important}'
+    + 'html body .bhero .bf-battle-gear .bf-gear-icon{transition:none!important;animation:none!important}'
+    + 'html body .bhero .bf-battle-gear .bf-gear-icon:hover{transform:none!important}'
     // El emblema nativo intermitente se retira: un solo indicador por estado.
     + '.bhero .bf-status-badge{display:none!important}'
     // Fila nativa de chapas de estado: es la que crecía al activarse un estado
