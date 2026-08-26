@@ -133,7 +133,9 @@ export const CRANE_SUMMON_PATCH = `
       var inst = typeof makeInstance === 'function' ? makeInstance(token) : Object.assign({}, token);
       inst.id = 'crane_' + Date.now();
       inst._token = token.id; inst._bfCrane = true;
-      inst.eliteUsed = true; inst.eliteMode = false;
+      // Como el resto de cartas: al morir evoluciona a su versión élite (por eso
+      // eliteUsed queda en false; el motor la revive en modo élite).
+      inst.eliteUsed = false; inst.eliteMode = false;
       // Su habilidad es pasiva: marcada como usada para que no se pueda activar.
       inst.abilityUsed = true;
       inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
