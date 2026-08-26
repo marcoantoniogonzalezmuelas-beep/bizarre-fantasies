@@ -445,24 +445,34 @@ export const FAITHFUL_ABILITIES_PATCH = `
         log('li', c.h.name + ' rompe el monedero de ' + c.t.name + ': -' + r.cc + ' CC, -' + r.ad + ' AD y -' + r.he + ' HE.');
         return;
       }
-      var blockElite;
-      if(typeof humanCtl === 'function' && humanCtl(c.side)){
-        blockElite = window.confirm('COMPRESOR ROTO sobre ' + c.t.name + ':\\n\\nAceptar = anular su FASE \\u00c9LITE\\nCancelar = anular su HABILIDAD');
-      } else {
-        // IA: aleatorio 50/50 — anula la HABILIDAD o bloquea la FASE ÉLITE.
-        blockElite = Math.random() < 0.5;
+      var apply = function(blockElite){
+        if(blockElite){
+          c.t.eliteUsed = true; c.t._bfNoElite = 1;
+          fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u26d4'});
+          lossPop(c.t, '\\u26d4 FASE \\u00c9LITE ANULADA', '#c79bff');
+          log('li', c.h.name + ' desactiva la FASE \\u00c9LITE de ' + c.t.name + ': ya no podr\\u00e1 renacer.');
+        } else {
+          c.t.silence = 99; c.t.abilityUsed = true;
+          fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
+          lossPop(c.t, '\\ud83d\\udeab HABILIDAD ANULADA', '#ff7a7a');
+          log('li', c.h.name + ' desactiva la habilidad de ' + c.t.name + '.');
+        }
+      };
+      if(typeof humanCtl === 'function' && humanCtl(c.side) && window.bfChoiceModal){
+        var fin = c.finish;
+        window.bfChoiceModal({
+          icon: '\\u2699\\ufe0f',
+          title: 'Compresor Roto',
+          text: 'Sabotaje contra <b>' + c.t.name + '</b>. Elige qu\\u00e9 le rompes:',
+          options: [
+            { key:'elite', icon:'\\u26d4', label:'Bloquear su FASE \\u00c9LITE', note:'Cuando caiga, morir\\u00e1 para siempre' },
+            { key:'abil', icon:'\\ud83d\\udeab', label:'Anular su HABILIDAD', note:'No podr\\u00e1 usarla en su forma actual' }
+          ]
+        }, function(k){ apply(k === 'elite'); if(typeof fin === 'function') fin(); });
+        return 'async';
       }
-      if(blockElite){
-        c.t.eliteUsed = true; c.t._bfNoElite = 1;
-        fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u26d4'});
-        lossPop(c.t, '\\u26d4 FASE \\u00c9LITE ANULADA', '#c79bff');
-        log('li', c.h.name + ' desactiva la FASE \\u00c9LITE de ' + c.t.name + ': ya no podr\\u00e1 renacer.');
-      } else {
-        c.t.silence = 99; c.t.abilityUsed = true;
-        fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
-        lossPop(c.t, '\\ud83d\\udeab HABILIDAD ANULADA', '#ff7a7a');
-        log('li', c.h.name + ' desactiva la habilidad de ' + c.t.name + '.');
-      }
+      // IA: aleatorio 50/50 — anula la HABILIDAD o bloquea la FASE ÉLITE.
+      apply(Math.random() < 0.5);
     },
     // Coffetath — normal: golpe mágico brutal a un objetivo.
     // Élite: golpe mágico que además bloquea la mano rival un turno.
@@ -510,15 +520,22 @@ export const FAITHFUL_ABILITIES_PATCH = `
       var ctx = { side:side, h:h, el:!!h.eliteMode, foes:foes, allies:allies, t:null };
       var run = function(t){
         ctx.t = t;
+        ctx.finish = finish;
         var res;
         try { res = impl(ctx); } catch(e){ res = false; }
         if(res === false){ orig.apply(self, args); return; }
+        // 'async': la habilidad termina ella misma (llama a ctx.finish) porque
+        // necesita una elección del jugador en un modal.
+        if(res === 'async') return;
+        finish();
+      };
+      function finish(){
         h.abilityUsed = true;
         if(typeof window.__bfPlayAbilityAnim === 'function') window.__bfPlayAbilityAnim(side, h);
         if(typeof renderBattle === 'function') renderBattle();
         if(typeof netSync === 'function') netSync('s-battle');
         if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct();
-      };
+      }
       var need = NEEDS_ENEMY[id] ? foes : NEEDS_ALLY[id] ? allies : null;
       if(!need){ run(null); return; }
       if(typeof humanCtl === 'function' && humanCtl(side)){
