@@ -494,11 +494,19 @@ export const FAITHFUL_ABILITIES_PATCH = `
     },
     // El Rolero — conjuro aleatorio (élite: crítico garantizado)
     rol: function(c){
-      var roll = c.el ? 20 : (1 + Math.floor(Math.random() * 20));
+      // Tirada de dado DE LA HABILIDAD (no confundir con el d30 de pifia): un
+      // d20 marca el multiplicador de potencia. En élite el dado está cargado
+      // (siempre 20) y el golpe es CRÍTICO: atraviesa la defensa.
+      var roll = c.el ? 20 : (typeof window.__bfDie === 'function' ? window.__bfDie(20) : (1 + Math.floor(Math.random() * 20)));
       var mult = 0.9 + (roll / 20) * 1.1;
+      var multTxt = mult.toFixed(2);
+      var crit = !!c.el;
+      log('li', '\\ud83c\\udfb2 Tirada de habilidad de ' + c.h.name + ' (' + (c.el ? 'Dado Cargado' : 'Tirada Cr\\u00edtica') + '): ' + roll + '/20 \\u2192 potencia \\u00d7' + multTxt + ' sobre su HE' + (crit ? ' \\u2014 \\u00a1CR\\u00cdTICO! atraviesa escudo y armadura.' : '.'));
+      if(typeof window.__bfHeroDicePop === 'function') setTimeout(function(){ window.__bfHeroDicePop({ faces:20, roll:roll, mult:multTxt, crit:crit, label: c.el ? 'DADO CARGADO' : 'TIRADA CR\\u00cdTICA' }); }, 700);
+      fx({k:'bfherodice', cfg:{ faces:20, roll:roll, mult:multTxt, crit:crit, label: c.el ? 'DADO CARGADO' : 'TIRADA CR\\u00cdTICA' }});
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
-      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * mult) + (c.el ? 6 : 0), {type:'spell', element:'rayo', pierce: c.el ? 1 : 0});
-      log('ld', c.h.name + ' tira el dado (' + roll + '/20) y su conjuro golpea a ' + c.t.name + ' (-' + d + ')' + (c.el ? ' \\u00a1CR\\u00cdTICO!' : '') + '.');
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * mult) + (c.el ? 6 : 0), {type:'spell', element:'rayo', pierce: crit ? 1 : 0});
+      log('ld', c.h.name + ' golpea a ' + c.t.name + ' con su conjuro (-' + d + ')' + (crit ? ' \\u00a1CR\\u00cdTICO: ignora su defensa!' : '') + '.');
     }
   };
 

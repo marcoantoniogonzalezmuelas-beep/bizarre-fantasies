@@ -4,6 +4,7 @@ import { BookOpen, Target } from 'lucide-react';
 import { t, getLang } from '@/lib/i18n';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
 import FumbleRulesSection from '@/components/rules/FumbleRulesSection';
+import HeroDiceRulesSection from '@/components/rules/HeroDiceRulesSection';
 import MobileHandRulesSection from '@/components/rules/MobileHandRulesSection';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
@@ -205,6 +206,8 @@ export default function Reglas() {
           </div>
 
           <FumbleRulesSection />
+
+          <HeroDiceRulesSection />
 
           <MobileHandRulesSection />
 
