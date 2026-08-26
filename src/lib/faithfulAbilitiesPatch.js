@@ -317,7 +317,10 @@ export const FAITHFUL_ABILITIES_PATCH = `
       c.h._bfLifestealCC = 1;
       var pool = L(c.foes);
       if(!pool.length) return;
-      var t = pool[Math.floor(Math.random() * pool.length)];
+      var dr = window.__bfHeroRoll
+        ? window.__bfHeroRoll({ faces:pool.length, hero:c.h.name, label:'Drenaje al azar', note:'el dado elige a la v\\u00edctima' })
+        : (1 + Math.floor(Math.random() * pool.length));
+      var t = pool[Math.min(pool.length, Math.max(1, dr)) - 1];
       fx({k:'slash', toSide:side_(t), toId:t.id});
       var d = dealDamage(t, Math.round(stat(c.h,'cc') * 0.6), {type:'melee'});
       var g = heal(c.h, d);
@@ -472,8 +475,11 @@ export const FAITHFUL_ABILITIES_PATCH = `
         }, function(k){ apply(k === 'elite'); if(typeof fin === 'function') fin(); });
         return 'async';
       }
-      // IA: aleatorio 50/50 — anula la HABILIDAD o bloquea la FASE ÉLITE.
-      apply(Math.random() < 0.5);
+      // IA: lo decide un dado de 2 caras — anula la HABILIDAD o la FASE ÉLITE.
+      var dr = window.__bfHeroRoll
+        ? window.__bfHeroRoll({ faces:2, hero:c.h.name, label:'Compresor Roto', note:'1 = Fase \\u00c9lite, 2 = Habilidad' })
+        : (1 + Math.floor(Math.random() * 2));
+      apply(dr === 1);
     },
     // Coffetath — normal: golpe mágico brutal a un objetivo.
     // Élite: golpe mágico que además bloquea la mano rival un turno.
@@ -497,13 +503,13 @@ export const FAITHFUL_ABILITIES_PATCH = `
       // Tirada de dado DE LA HABILIDAD (no confundir con el d30 de pifia): un
       // d20 marca el multiplicador de potencia. En élite el dado está cargado
       // (siempre 20) y el golpe es CRÍTICO: atraviesa la defensa.
-      var roll = c.el ? 20 : (typeof window.__bfDie === 'function' ? window.__bfDie(20) : (1 + Math.floor(Math.random() * 20)));
-      var mult = 0.9 + (roll / 20) * 1.1;
-      var multTxt = mult.toFixed(2);
+      var pre = c.el ? 20 : (typeof window.__bfDie === 'function' ? window.__bfDie(20) : (1 + Math.floor(Math.random() * 20)));
+      var multTxt = (0.9 + (pre / 20) * 1.1).toFixed(2);
       var crit = !!c.el;
-      log('li', '\\ud83c\\udfb2 Tirada de habilidad de ' + c.h.name + ' (' + (c.el ? 'Dado Cargado' : 'Tirada Cr\\u00edtica') + '): ' + roll + '/20 \\u2192 potencia \\u00d7' + multTxt + ' sobre su HE' + (crit ? ' \\u2014 \\u00a1CR\\u00cdTICO! atraviesa escudo y armadura.' : '.'));
-      if(typeof window.__bfHeroDicePop === 'function') setTimeout(function(){ window.__bfHeroDicePop({ faces:20, roll:roll, mult:multTxt, crit:crit, label: c.el ? 'DADO CARGADO' : 'TIRADA CR\\u00cdTICA' }); }, 700);
-      fx({k:'bfherodice', cfg:{ faces:20, roll:roll, mult:multTxt, crit:crit, label: c.el ? 'DADO CARGADO' : 'TIRADA CR\\u00cdTICA' }});
+      var roll = window.__bfHeroRoll
+        ? window.__bfHeroRoll({ faces:20, forced:pre, crit:crit, mult:multTxt, hero:c.h.name, label: c.el ? 'Dado Cargado' : 'Tirada Cr\\u00edtica', note:'potencia sobre su HE' })
+        : pre;
+      var mult = 0.9 + (roll / 20) * 1.1;
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
       var d = dealDamage(c.t, Math.round(stat(c.h,'he') * mult) + (c.el ? 6 : 0), {type:'spell', element:'rayo', pierce: crit ? 1 : 0});
       log('ld', c.h.name + ' golpea a ' + c.t.name + ' con su conjuro (-' + d + ')' + (crit ? ' \\u00a1CR\\u00cdTICO: ignora su defensa!' : '') + '.');
