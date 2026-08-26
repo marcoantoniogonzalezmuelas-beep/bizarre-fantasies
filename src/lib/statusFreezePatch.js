@@ -17,7 +17,7 @@ const sel = (suffix) =>
 // Las capas de efecto (decoraciones de estado, velo de sangre, ráfagas) quedan
 // FUERA del congelado: sus animaciones son el efecto visual que se quiere ver.
 const FXOK =
-  ':not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-epic-foil)';
+  ':not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-epic-foil):not(.bf-epic-foil *)';
 
 const selAll = (suffix) => [sel(suffix), sel(suffix + '::before'), sel(suffix + '::after')].join(',');
 

@@ -14,7 +14,7 @@ export const HERO_FULL_FREEZE_PATCH = `
 
   var HOST = 'html body .bhero.bhero';
   // Capas de efecto que SÍ se animan.
-  var OK = ':not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-epic-foil)';
+  var OK = ':not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-epic-foil):not(.bf-epic-foil *)';
   var css = ''
     // Cero animaciones y cero transiciones en el recuadro del héroe (salvo las
     // capas de efecto permitidas).

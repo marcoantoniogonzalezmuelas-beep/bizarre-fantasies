@@ -36,7 +36,12 @@ export const STATUS_AURA_PATCH = `
     // "Fas Everest Panzer"), con altura fija para que el retrato no se mueva
     // al refrescarse los números.
     + 'html body .bhero .bhero-name{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;height:18px!important;line-height:18px!important;font-size:12.5px!important;letter-spacing:0!important}'
-    + 'html body .bhero .bhero-hpnum,html body .bhero .bhero-stats{font-variant-numeric:tabular-nums!important}'
+    // Los números (vida, atributos) se refrescan constantemente: con cifras de
+    // ancho fijo y altura reservada, al cambiar solo repintan ellos y el retrato
+    // se queda exactamente igual, sin saltos ni recolocaciones.
+    + 'html body .bhero .bhero-hpnum,html body .bhero .bhero-stats,html body .bhero .bhero-hp,html body .bhero .bhero-mana{font-variant-numeric:tabular-nums!important;font-feature-settings:"tnum" 1!important}'
+    + 'html body .bhero .bhero-hpnum{display:inline-block!important;min-width:62px!important;text-align:center!important}'
+    + 'html body .bhero .bhero-stats{display:flex!important;align-items:center!important;height:16px!important;line-height:16px!important;white-space:nowrap!important;overflow:hidden!important}'
     // Capa de partículas sobre la escena de batalla
     + '.bf-decor-layer{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;border-radius:inherit}'
     + '.bf-decor{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.75))}'

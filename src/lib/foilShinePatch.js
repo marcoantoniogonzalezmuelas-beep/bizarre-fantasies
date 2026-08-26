@@ -11,10 +11,15 @@ export const FOIL_SHINE_PATCH = `
   if(window.__bfBattleFoil) return;
   window.__bfBattleFoil = true;
 
+  // Los fotogramas se declaran AQUÍ: dentro del juego no existen los del
+  // Oráculo (viven en la hoja de la web), y sin ellos la capa quedaba estática
+  // e invisible.
   var css = ''
-    + '.bf-epic-foil{position:absolute;inset:0;z-index:9;pointer-events:none;border-radius:inherit;overflow:hidden}'
-    + '.bf-epic-foil-tint{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;mix-blend-mode:soft-light;opacity:.4;animation:bfFoilShift 9s linear infinite}'
-    + '.bf-epic-foil-shine{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.35) 49%,rgba(255,255,255,.5) 50%,rgba(255,255,255,.35) 51%,transparent 58%);background-size:250% 250%;mix-blend-mode:screen;opacity:.6;animation:bfFoilShine 5.5s ease-in-out infinite}';
+    + '@keyframes bfBattleFoilShift{0%{background-position:0% 0%}100%{background-position:300% 300%}}'
+    + '@keyframes bfBattleFoilShine{0%{background-position:130% 0%}100%{background-position:-50% 0%}}'
+    + 'html body .bhero .bf-epic-foil{position:absolute!important;inset:0!important;z-index:14!important;pointer-events:none!important;border-radius:inherit;overflow:hidden;display:block!important;opacity:1!important}'
+    + 'html body .bhero .bf-epic-foil-tint{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(125deg,#ffd24a,#ff7adf 18%,#7ad6ff 38%,#9dff8a 56%,#ffe27a 72%,#ff7adf 88%,#ffd24a);background-size:300% 300%;mix-blend-mode:soft-light;opacity:.45!important;animation:bfBattleFoilShift 9s linear infinite!important}'
+    + 'html body .bhero .bf-epic-foil-shine{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75!important;animation:bfBattleFoilShine 4.5s ease-in-out infinite!important}';
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
@@ -57,6 +62,9 @@ export const FOIL_SHINE_PATCH = `
   }
   var t = 0, iv = setInterval(function(){ hookRender(); apply(); if(t++ > 40) clearInterval(iv); }, 300);
   setInterval(apply, 2000);
+  // Los parches de "congelado" se reinsertan al final del <head>: esta hoja se
+  // recoloca después para que el brillo foil no quede anulado por ellos.
+  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1000);
 })();
 </script>
 `;
