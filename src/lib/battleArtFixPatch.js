@@ -23,30 +23,13 @@ export const BATTLE_ART_FIX_PATCH = `
 
   var lastGood = {};
 
-  // Resuelve el arte del héroe desde los DATOS del juego (ART_BY_ID/ELITE_BY_ID),
-  // para poder restaurar un retrato borrado aunque no haya "última imagen buena"
-  // memorizada (p. ej. si la tarjeta se reconstruyó ya sin imagen).
-  function resolveArt(card){
-    var m = String(card.id || '').match(/^b_([po])_(.+)$/);
-    if(!m) return null;
-    var h = (typeof G !== 'undefined' && G && G.team && G.team[m[1]] || []).find(function(x){ return x && x.id === m[2]; });
-    var aid = (h && h._token) || m[2];
-    var elite = card.classList.contains('elite-mode') || card.classList.contains('bf-auto-elite');
-    var byId = typeof ART_BY_ID !== 'undefined' ? ART_BY_ID : {};
-    var byIdE = typeof ELITE_BY_ID !== 'undefined' ? ELITE_BY_ID : {};
-    var u = elite ? (byIdE[aid] || byId[aid]) : (byId[aid] || byIdE[aid]);
-    if(!u) return null;
-    var pos = typeof window.__bfHeroBgPos === 'function' ? window.__bfHeroBgPos(aid) : 'center 18%';
-    return { url: u, pos: pos };
-  }
-
   function guard(){
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
       var art = card.querySelector('.bf-battle-art');
       if(!art){
         // Capa perdida en el render: se recrea al momento con la última imagen
-        // buena — o, si no hay memoria, con el arte resuelto desde los datos.
-        var prev = lastGood[card.id] || resolveArt(card);
+        // buena, sin esperar al ciclo del observador.
+        var prev = lastGood[card.id];
         if(!prev) return;
         var a = document.createElement('div');
         a.className = 'bf-battle-art';
@@ -69,11 +52,8 @@ export const BATTLE_ART_FIX_PATCH = `
           img.src = u;
         }
       } else {
-        // Retrato BORRADO (imagen vacía): se restaura desde la memoria o,
-        // si no la hay, desde los datos del héroe. Se limpia la marca de
-        // "arte ya puesto" para que el inyector normal también lo reponga.
-        var p = lastGood[card.id] || resolveArt(card);
-        if(p){ art.style.backgroundImage = 'url("' + p.url + '")'; art.style.backgroundSize = 'cover'; art.style.backgroundPosition = p.pos || 'center 18%'; delete card.dataset.bfBattleArt; }
+        var p = lastGood[card.id];
+        if(p){ art.style.backgroundImage = 'url("' + p.url + '")'; art.style.backgroundSize = 'cover'; art.style.backgroundPosition = p.pos || 'center 18%'; }
       }
     });
   }

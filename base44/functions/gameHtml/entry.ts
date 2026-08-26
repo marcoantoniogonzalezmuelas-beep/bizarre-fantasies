@@ -785,7 +785,7 @@ function buildArtScript(dbCards) {
       if (hp !== null) {
         if (card.dataset.bfPrevHp !== undefined) {
           var oldHp = parseInt(card.dataset.bfPrevHp, 10);
-          if (!isNaN(oldHp) && oldHp > 0 && hp <= 0) { var dhId = heroIdFromCard(card), dhSide = (String(card.id || '').split('_')[1]) || 'p'; var dh = (typeof G !== 'undefined' && G.team && G.team[dhSide] || []).find(function(x) { return x && x.id === dhId; }); if (!dh || !dh.alive) playHeroFx(card, 'death', oldHp); }
+          if (!isNaN(oldHp) && oldHp > 0 && hp <= 0) playHeroFx(card, 'death', oldHp);
           else if (!isNaN(oldHp) && oldHp <= 0 && hp > 0) { playHeroFx(card, 'revive', hp); var rvId = heroIdFromCard(card), rvSide = (String(card.id || '').split('_')[1]) || 'p'; var rh = (typeof G !== 'undefined' && G.team && G.team[rvSide] || []).find(function(x) { return x && x.id === rvId; }); if (rh) { rh._bfTank = false; rh.sleep = 0; rh.para = 0; rh.skip = 0; rh.silence = 0; rh.evade = 0; rh.shield = 0; rh._mods = []; rh._bfConfused = 0; rh._bfDrunk = 0; rh.mark = null; } card.classList.remove('s-tank', 's-paralyzed', 's-sleeping', 's-cursed', 's-frozen', 's-blessed'); }
           else if (!isNaN(oldHp) && hp < oldHp) playHeroFx(card, 'damage', oldHp - hp);
           else if (!isNaN(oldHp) && hp > oldHp) playHeroFx(card, 'heal', hp - oldHp);
