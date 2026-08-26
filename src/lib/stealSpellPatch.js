@@ -66,7 +66,24 @@ export const STEAL_SPELL_PATCH = `
   '.bf-st-ring{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid #7affc0;box-shadow:0 0 22px rgba(120,255,190,.8);opacity:0;animation:bfStRing 1.5s ease-out forwards}'+
   '@keyframes bfStRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}'+
   '#bf-steal-cine .bf-st-loot{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);padding:7px 18px;border-radius:999px;background:rgba(8,5,14,.9);border:2px solid #7affc0;color:#eafff5;font-family:Cinzel,serif;font-weight:1000;font-size:clamp(12px,2.4vw,18px);letter-spacing:.6px;white-space:nowrap;opacity:0;animation:bfStLoot 2.6s ease-out .55s forwards;text-shadow:0 2px 6px #000}'+
-  '@keyframes bfStLoot{0%{opacity:0;transform:translateX(-50%) translateY(14px) scale(.85)}18%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}84%{opacity:1}100%{opacity:0}}';
+  '@keyframes bfStLoot{0%{opacity:0;transform:translateX(-50%) translateY(14px) scale(.85)}18%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}84%{opacity:1}100%{opacity:0}}'+
+  // VUELO de la carta robada: sale de la mano del rival (arriba) y aterriza en
+  // la tuya (abajo). Trayectoria en arco, rotación, estela verde y destello al
+  // llegar. Se reproduce DESPUÉS de la cinemática principal.
+  '#bf-steal-fly{position:fixed;inset:0;z-index:100007;pointer-events:none;overflow:hidden}'+
+  '#bf-steal-fly .bf-stf-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(8,5,14,.35),transparent 60%);animation:bfStfVeil 1.8s ease-out forwards}'+
+  '@keyframes bfStfVeil{0%{opacity:0}30%{opacity:1}100%{opacity:0}}'+
+  '#bf-steal-fly .bf-stf-card{position:absolute;left:50%;top:9%;width:64px;height:90px;border-radius:8px;transform:translateX(-50%);background:linear-gradient(160deg,#2b1c4a,#120a20);border:2px solid #7affc0;box-shadow:0 0 26px rgba(120,255,190,.95),0 10px 22px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;text-align:center;font-family:Cinzel,serif;font-weight:900;font-size:9px;color:#eafff5;padding:5px 4px;letter-spacing:.3px;animation:bfStFly 1.5s cubic-bezier(.42,.05,.58,.95) forwards}'+
+  '@media(max-width:900px){#bf-steal-fly .bf-stf-card{width:52px;height:74px;font-size:8px}}'+
+  '@keyframes bfStFly{0%{left:50%;top:9%;transform:translateX(-50%) rotate(0) scale(.7);opacity:0}12%{opacity:1;transform:translateX(-50%) rotate(-12deg) scale(1)}45%{left:50%;top:48%;transform:translateX(-50%) rotate(190deg) scale(1.18)}85%{left:50%;top:88%;transform:translateX(-50%) rotate(380deg) scale(1);opacity:1}100%{left:50%;top:94%;transform:translateX(-50%) rotate(400deg) scale(.5);opacity:0}}'+
+  // Estela: pequeños destellos que siguen la carta en su caída
+  '#bf-steal-fly .bf-stf-spark{position:absolute;left:50%;width:6px;height:6px;border-radius:50%;background:#c7ffe6;box-shadow:0 0 14px #8affc4;opacity:0;animation:bfStfSpark 1.5s ease-out forwards}'+
+  '@keyframes bfStfSpark{0%{opacity:0;top:9%}15%{opacity:1}50%{top:48%;opacity:.9}85%{top:88%;opacity:.4}100%{top:94%;opacity:0}}'+
+  // Destello de aterrizaje en la mano del jugador
+  '#bf-steal-fly .bf-stf-burst{position:absolute;left:50%;top:90%;transform:translate(-50%,-50%);width:0;height:0;border-radius:50%;border:3px solid #7affc0;box-shadow:0 0 26px rgba(120,255,190,.85);opacity:0;animation:bfStfBurst .9s ease-out 1.35s forwards}'+
+  '@keyframes bfStfBurst{0%{width:0;height:0;opacity:1;border-width:4px}100%{width:240px;height:240px;opacity:0;border-width:1px}}'+
+  '#bf-steal-fly .bf-stf-label{position:absolute;left:50%;top:90%;transform:translate(-50%,16px);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(11px,2.3vw,17px);color:#8affc4;text-shadow:0 0 16px rgba(120,255,190,.95),0 2px 6px #000;white-space:nowrap;letter-spacing:.5px;opacity:0;animation:bfStfLabel 1.7s ease-out 1.35s forwards}'+
+  '@keyframes bfStfLabel{0%{opacity:0;transform:translate(-50%,30px) scale(.8)}22%{opacity:1;transform:translate(-50%,16px) scale(1)}80%{opacity:1}100%{opacity:0}}';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
   function playStealCine(loot){
@@ -85,6 +102,22 @@ export const STEAL_SPELL_PATCH = `
     document.body.appendChild(ov);
     setTimeout(function(){ ov.classList.add('bf-st-out'); }, 2700);
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3150);
+    // Al acabar la cinemática: la carta robada vuela de la mano rival a la tuya.
+    setTimeout(function(){ playStealFly(loot); }, 2750);
+  }
+
+  function playStealFly(loot){
+    if(document.getElementById('bf-steal-fly')) return;
+    var ov = document.createElement('div'); ov.id = 'bf-steal-fly';
+    var html = '<div class="bf-stf-veil"></div>';
+    // Estela de destellos que acompañan la caída de la carta
+    for(var s = 0; s < 7; s++) html += '<span class="bf-stf-spark" style="animation-delay:' + (s*0.12).toFixed(2) + 's"></span>';
+    html += '<div class="bf-stf-card">' + (loot ? ('\\ud83c\\udccf ' + loot) : '\\ud83c\\udccf') + '</div>';
+    html += '<div class="bf-stf-burst"></div>';
+    html += '<div class="bf-stf-label">\\u2192 Tu mano</div>';
+    ov.innerHTML = html;
+    document.body.appendChild(ov);
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3300);
   }
   window.__bfPlayStealCine = playStealCine;
 
