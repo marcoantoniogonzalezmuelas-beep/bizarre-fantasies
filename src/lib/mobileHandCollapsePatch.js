@@ -46,13 +46,32 @@ export const MOBILE_HAND_COLLAPSE_PATCH = `
         b.onclick=function(e){ e.preventDefault(); e.stopPropagation(); apply(hand,hand.classList.contains('bf-hand-collapsed')); };
         title.appendChild(b);
       }
-      // Tras cada repintado del juego se vuelve a aplicar el estado guardado
-      // (recogidas por defecto).
+      // Reaplica el estado guardado (recogidas por defecto). Se llama en el
+      // hook de renderBattle y en el MutationObserver, NUNCA por intervalo:
+      // el intervalo provocaba que, tras cada repintado del juego (que
+      // reconstruye la mano SIN la clase de recogida), las cartas se vieran
+      // desplegadas hasta el siguiente tick (parpadeo cada 4-5 s).
       apply(hand,isOpen(hand));
     });
   }
 
-  setInterval(function(){ try{ decorate(); }catch(e){} },500);
+  // Aplica el estado de forma SINCRONA tras cada repintado del juego: la clase
+  // de "recogida" se añade antes de que el navegador pinte, así la mano nunca
+  // llega a verse desplegada salvo que el jugador la haya abierto.
+  function hookRender(){
+    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfHandCollapse)return false;
+    var original=window.renderBattle;
+    window.renderBattle=function(){ var r=original.apply(this,arguments); try{decorate();}catch(e){} return r; };
+    window.renderBattle.__bfHandCollapse=1;
+    return true;
+  }
+
+  // Fallback: si el juego reconstruye la mano fuera de renderBattle, el
+  // MutationObserver la recoge en cuanto aparece (microtask, antes de pintar).
+  var _bfHcObs=new MutationObserver(function(){ try{decorate();}catch(e){} });
+  try{ _bfHcObs.observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+
+  var _bfHcT=0; (function wait(){ if(hookRender()||_bfHcT++>120)return; setTimeout(wait,200); })();
   decorate();
 })();
 </script>
