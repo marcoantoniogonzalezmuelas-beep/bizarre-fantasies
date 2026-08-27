@@ -25,6 +25,13 @@ export const FOIL_SHINE_PATCH = `
   if(window.__bfBattleFoil) return;
   window.__bfBattleFoil = true;
 
+  // Foil en tablet/móvil no se ve igual que en PC (el contexto de apilado del
+  // iframe escalado altera el destello). Se quita en táctil; en PC se mantiene.
+  var _ua = navigator.userAgent || '';
+  var _isTablet = /iPad/i.test(_ua) || (/Macintosh|Mac OS/i.test(_ua) && navigator.maxTouchPoints > 1) || (/Android/i.test(_ua) && !/Mobile/i.test(_ua));
+  var _isPhone = !_isTablet && /Android|iPhone|iPod|Mobile/i.test(_ua);
+  if(_isTablet || _isPhone) return;
+
   // Destello foil SUAVE en el retrato de batalla, idéntico en PC, móvil y tablet.
   // CAUSA del desajuste anterior: el brillo usaba mix-blend-mode:screen. En
   // móvil/tablet el parche antiparpadeo aplica transform:translateZ(0) a .bhero,

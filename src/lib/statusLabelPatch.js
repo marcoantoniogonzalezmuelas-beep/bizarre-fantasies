@@ -46,15 +46,12 @@ export const STATUS_LABEL_PATCH = `
     // Borde parpadeante del retrato: MISMO comportamiento para todos los estados,
     // con el color del estado más importante. Vive dentro de .bf-battle-art, así
     // que no puede mover el nombre ni la barra de atributos.
-    '.bf-status-ring{position:absolute!important;inset:0!important;z-index:13!important;pointer-events:none!important;border-radius:inherit;border:3px solid var(--bfsc,#fff);animation:bfStatusRing 1.15s ease-in-out infinite;contain:layout style!important}' +
-    '@keyframes bfStatusRing{0%,100%{opacity:.12;box-shadow:0 0 2px var(--bfsc)}50%{opacity:.3;box-shadow:0 0 5px var(--bfsc),inset 0 0 4px var(--bfsc)}}' +
+    '.bf-status-ring{position:absolute!important;inset:0!important;z-index:13!important;pointer-events:none!important;border-radius:inherit;border:3px solid var(--bfsc,#fff);opacity:.16;box-shadow:0 0 3px var(--bfsc);contain:layout style!important}' +
     // Velo de color sobre TODO el retrato (mismo efecto que el congelado) con
     // el color del estado. Es una capa absoluta: no toca la maquetación.
-    '.bf-status-veil{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important;border-radius:inherit;background:linear-gradient(180deg,var(--bfsc,#fff) 0%,transparent 62%),radial-gradient(circle at 50% 18%,var(--bfsc,#fff),transparent 58%);mix-blend-mode:screen;animation:bfStatusVeil 1.15s ease-in-out infinite;contain:layout style!important}' +
-    '@keyframes bfStatusVeil{0%,100%{opacity:.04}50%{opacity:.09}}' +
+    '.bf-status-veil{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important;border-radius:inherit;background:linear-gradient(180deg,var(--bfsc,#fff) 0%,transparent 62%),radial-gradient(circle at 50% 18%,var(--bfsc,#fff),transparent 58%);mix-blend-mode:screen;opacity:.045;contain:layout style!important}' +
     // AGONIZANDO: velo rojo oscuro (sangre), sin "screen" para que no ilumine.
-    '.bf-status-veil.bf-veil-agony{mix-blend-mode:normal!important;background:linear-gradient(180deg,rgba(140,0,0,.85) 0%,rgba(70,0,0,.25) 65%),radial-gradient(circle at 50% 20%,rgba(185,10,10,.7),transparent 60%)!important;animation:bfStatusVeilAgony 1.15s ease-in-out infinite!important}' +
-    '@keyframes bfStatusVeilAgony{0%,100%{opacity:.12}50%{opacity:.22}}' +
+    '.bf-status-veil.bf-veil-agony{mix-blend-mode:normal!important;background:linear-gradient(180deg,rgba(140,0,0,.5) 0%,rgba(70,0,0,.15) 65%),radial-gradient(circle at 50% 20%,rgba(185,10,10,.4),transparent 60%)!important;opacity:.14}' +
     // La fila de chips de estado del juego ocupaba sitio EN EL FLUJO de la carta:
     // al aparecer un estado (dormido, maldito, silenciado…) empujaba el nombre y
     // la barra de atributos hacia abajo. Ahora es una capa ABSOLUTA pegada al
