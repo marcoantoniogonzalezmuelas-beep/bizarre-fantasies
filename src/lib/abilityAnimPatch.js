@@ -114,6 +114,15 @@ export const ABILITY_ANIM_PATCH = `
           if(cy>0)push(i0-W);
           if(cy<H-1)push(i0+W);
         }
+        // SEGURO ANTI-BORRADO: si la escena es MUY oscura en su conjunto (p.ej.
+        // el drenaje de la bruja: figura negra sobre fondo negro), el relleno
+        // desde los bordes se come casi toda la figura y la cinemática se veía
+        // transparente / no se veía. Si queda menos del 15% de la imagen, se
+        // descarta el recorte y se usa la imagen ORIGINAL (con su fondo), que
+        // siempre se ve. Vale para esta y para cualquier animación futura.
+        var kept=0;
+        for(var ci=0;ci<W*H;ci++)if(p[ci*4+3]>8)kept++;
+        if(kept<W*H*0.15){CUT[url]=false;done();return;}
         // AFINADO DE BORDES: tras el relleno conservador (TOL 30) suele quedar
         // una franja oscura de 1-4 px pegada al contorno de la figura (el halo
         // negro que se ve alrededor del personaje). Se erosiona SOLO esa franja:
@@ -226,6 +235,10 @@ export const ABILITY_ANIM_PATCH = `
   // color. Solo una sombra negra de apoyo y opacidad forzada al 100%. z-index
   // alto para que la imagen SIEMPRE esté encima del dim/glowdisc/veil/flash.
   '#bf-abil-anim .bf-aa-img{position:absolute;top:50%;left:50%;transform-origin:center;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;mix-blend-mode:normal;z-index:5;filter:drop-shadow(0 16px 38px rgba(0,0,0,.8))}'+
+  // Imagen SIN recorte (escenas muy oscuras que no se pueden recortar sin
+  // borrar la figura): se muestra con un realce de brillo/contraste y un marco
+  // sutil para que se distinga del fondo oscuro del overlay.
+  '#bf-abil-anim .bf-aa-img.bf-aa-raw{filter:brightness(1.35) contrast(1.12) drop-shadow(0 16px 38px rgba(0,0,0,.8));border-radius:18px;box-shadow:0 0 0 2px rgba(255,255,255,.14),0 18px 46px rgba(0,0,0,.75)}'+
   '@media(max-width:900px){#bf-abil-anim .bf-aa-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}'+
   '#bf-abil-anim .bf-aa-ttl{position:absolute;top:7%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfAaTtl 4.2s ease-out .3s forwards;color:var(--aa-color,#fff);text-shadow:0 0 28px var(--aa-glow,#fff),0 4px 12px #000}'+
   '@keyframes bfAaTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}'+
@@ -379,7 +392,7 @@ export const ABILITY_ANIM_PATCH = `
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
     var cu=CUT[url];
-    html+='<img class="bf-aa-img" style="animation:'+motion.anim+' 4.5s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
+    html+='<img class="bf-aa-img'+(cu?'':' bf-aa-raw')+'" style="animation:'+motion.anim+' 4.5s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
@@ -392,7 +405,7 @@ export const ABILITY_ANIM_PATCH = `
       var swp=setInterval(function(){
         if(!ov.parentNode){clearInterval(swp);return;}
         var c2=CUT[url];
-        if(c2){imEl.src=c2;clearInterval(swp);}
+        if(c2){imEl.src=c2;imEl.classList.remove('bf-aa-raw');clearInterval(swp);}
       },250);
       setTimeout(function(){clearInterval(swp);},5000);
     }
