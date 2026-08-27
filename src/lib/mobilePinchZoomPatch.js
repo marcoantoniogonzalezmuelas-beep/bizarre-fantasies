@@ -74,7 +74,10 @@ export const MOBILE_PINCH_PATCH = `
     var marginY = H * z - H;
     // Sin zoom (z=1): margen 0, tx y ty deben ser 0.
     // Con zoom: tx puede ir de -marginX a 0, ty de -marginY a 0.
-    if (marginX <= 0) tx = 0;
+    // Con alejamiento (z<1) el contenido es más estrecho que la pantalla: se
+    // centra horizontalmente en vez de dejarlo pegado al borde izquierdo.
+    if (marginX < 0) tx = -marginX / 2;
+    else if (marginX === 0) tx = 0;
     else tx = Math.min(0, Math.max(-marginX, tx));
     if (marginY <= 0) ty = 0;
     else ty = Math.min(0, Math.max(-marginY, ty));
@@ -132,7 +135,9 @@ export const MOBILE_PINCH_PATCH = `
     // Zoom máximo x2,5: por encima de eso la capa escalada del juego (1280px)
     // es tan grande que el navegador móvil no puede repintarla entera y la
     // pantalla se rompe/descuadra al desplazarse.
-    var nz = Math.min(2.5, Math.max(1, pinch.z0 * (d / pinch.d0)));
+    // Se permite ALEJAR hasta x0,6 (para ver el tablero entero en horizontal)
+    // y acercar hasta x2,5.
+    var nz = Math.min(2.5, Math.max(0.6, pinch.z0 * (d / pinch.d0)));
     var px = (pinch.c0.x - pinch.tx0) / pinch.z0;
     var py = (pinch.c0.y - pinch.ty0) / pinch.z0;
     z = nz;
@@ -156,7 +161,9 @@ export const MOBILE_PINCH_PATCH = `
     }, 300);
     var b = document.body;
     b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
-    if (z < 1.05) { z = 1; tx = 0; ty = 0; }
+    // Solo se reencuadra a x1 si el usuario se quedó muy cerca de x1; si ha
+    // alejado a propósito (z<0,97) se respeta su zoom.
+    if (z >= 0.97 && z < 1.05) { z = 1; tx = 0; ty = 0; }
     clampT();
     applyNow();
     flushMsg();

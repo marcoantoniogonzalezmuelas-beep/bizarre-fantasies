@@ -472,9 +472,8 @@ export default function Home() {
     const calc = () => {
       const w = document.documentElement.clientWidth || 360;
       const h = document.documentElement.clientHeight || 640;
-      const land = w > h;
-      setIsLandscape(land);
-      setMobScale(Math.min(1, land ? Math.min(w / 1280, h / 800) : w / 1280));
+      setIsLandscape(w > h);
+      setMobScale(Math.min(1, w / 1280));
     };
     calc();
     window.addEventListener('resize', calc);
@@ -1133,9 +1132,7 @@ export default function Home() {
           // El documento del juego se maqueta SIEMPRE a 1280px (paridad con PC)
           // y en móvil/tablet se encoge con CSS para que quepa entero.
           style={IS_MOBILE
-            ? (isLandscape
-              ? { width: 1280, height: 800, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
-              : { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' })
+            ? { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
             : { width: '100%', height: '100%' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
