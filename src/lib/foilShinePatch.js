@@ -25,8 +25,15 @@ export const FOIL_SHINE_PATCH = `
   if(window.__bfBattleFoil) return;
   window.__bfBattleFoil = true;
 
-  // Mismo destello foil en PC, móvil y tablet (idéntico al de escritorio).
-  var SHINE = 'background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.45) 48%,rgba(255,255,255,.75) 50%,rgba(255,255,255,.45) 52%,transparent 60%);background-size:250% 250%;mix-blend-mode:screen;opacity:.75';
+  // Destello foil SUAVE en el retrato de batalla, idéntico en PC, móvil y tablet.
+  // CAUSA del desajuste anterior: el brillo usaba mix-blend-mode:screen. En
+  // móvil/tablet el parche antiparpadeo aplica transform:translateZ(0) a .bhero,
+  // lo que crea un contexto de apilado que AISLA la mezcla screen → el destello
+  // se veía distinto que en PC (donde .bhero no tiene transform ni contexto).
+  // Con mix-blend-mode:normal el destello se compone igual en todas las
+  // plataformas (no depende del contexto de apilado del padre). Color original
+  // (blanco), solo destello suave, sin nada más.
+  var SHINE = 'background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.18) 48%,rgba(255,255,255,.34) 50%,rgba(255,255,255,.18) 52%,transparent 58%);background-size:250% 250%;mix-blend-mode:normal;opacity:.85';
   var BODY = 'content:"";position:absolute;inset:0;z-index:14;pointer-events:none;border-radius:inherit;overflow:hidden;' + SHINE + ';animation:bfBattleFoilShine 4.5s ease-in-out infinite!important';
 
   var css = ''
