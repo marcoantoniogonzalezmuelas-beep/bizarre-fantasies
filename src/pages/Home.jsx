@@ -493,13 +493,6 @@ export default function Home() {
   // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
   // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
   const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
-  // Móvil en vertical y en batalla: el campo se ve más grande SIN crear ninguna
-  // capa GPU nueva. Se reutiliza el mismo transform que el iframe ya lleva
-  // (scale(mobScale)) cambiando solo su factor; el jugador se desplaza en
-  // horizontal con el dedo (overflow-x del contenedor). Transformar el
-  // documento del juego desde dentro colgaba el navegador al entrar en batalla.
-  const battleZoom = IS_PHONE && battleActive && isPortrait;
-  const iframeScale = battleZoom ? mobScale * 1.4 : mobScale;
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -1091,10 +1084,7 @@ export default function Home() {
   }
 
   return (
-    <div
-      className={`fixed inset-0 bg-[#0e0a16] ${IS_MOBILE ? 'bf-mobile-home' : ''}`}
-      style={{ overflowX: battleZoom ? 'auto' : 'hidden', overflowY: 'hidden', WebkitOverflowScrolling: 'touch' }}
-    >
+    <div className={`fixed inset-0 overflow-hidden bg-[#0e0a16] ${IS_MOBILE ? 'bf-mobile-home' : ''}`}>
       {/* El cartel de Actualidad viaja CON el juego: aplica el mismo zoom y
         desplazamiento del pellizco, así no flota sobre la pantalla. */}
       {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} pinch={IS_MOBILE ? pinchState : { z: 1, tx: 0, ty: 0 }} />}
@@ -1149,7 +1139,7 @@ export default function Home() {
           // El documento del juego se maqueta SIEMPRE a 1280px (paridad con PC)
           // y en móvil/tablet se encoge con CSS para que quepa entero.
           style={IS_MOBILE
-            ? { width: 1280, height: `${100 / iframeScale}%`, maxWidth: 'none', transform: `scale(${iframeScale})`, transformOrigin: '0 0' }
+            ? { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
             : { width: '100%', height: '100%' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
