@@ -493,20 +493,6 @@ export default function Home() {
   // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
   // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
   const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
-  // Zoom automático al entrar en batalla en móvil vertical: el campo se ve más
-  // grande sin girar el iframe. Al salir o al girar a horizontal, se quita.
-  useEffect(() => {
-    if (!IS_PHONE) return;
-    const iw = iframeRef.current?.contentWindow;
-    if (!iw) return;
-    if (battleActive && isPortrait) {
-      iw.postMessage({ bfSetZoom: { z: 1.4 } }, '*');
-    } else if (battleActive && !isPortrait) {
-      iw.postMessage({ bfSetZoom: { z: 1 } }, '*');
-    } else if (!battleActive) {
-      iw.postMessage({ bfSetZoom: { z: 1 } }, '*');
-    }
-  }, [battleActive, isPortrait]);
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
