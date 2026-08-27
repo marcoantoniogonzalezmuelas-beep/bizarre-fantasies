@@ -174,13 +174,13 @@ export const END_HEROES_PATCH = `
     } catch(e){}
     if(!name) { try { name = (G.names && G.names[side]) || ''; } catch(e){} }
     if(!url && !name) return null;
-    var head = el('div', 'display:flex;align-items:center;gap:7px');
+    var head = el('div', 'display:flex;align-items:center;gap:10px');
     if(url){
       // Mismo tratamiento que los retratos de héroe: vencedor con corona,
       // halo dorado y destello; perdedor en gris con tinieblas y velo de sangre.
-      var box = el('div', 'position:relative;width:clamp(32px,4.6vw,52px);height:clamp(32px,4.6vw,52px);' +
+      var box = el('div', 'position:relative;width:clamp(52px,8vw,96px);height:clamp(52px,8vw,96px);' +
         'border-radius:50%;overflow:hidden;background-color:#07050c;flex:0 0 auto;' +
-        'border:2px solid ' + (isWin ? '#ffd24a' : '#2b2b33') + ';' +
+        'border:3px solid ' + (isWin ? '#ffd24a' : '#2b2b33') + ';' +
         (isWin
           ? 'animation:bfEhRing 1.6s ease-in-out infinite;'
           : 'box-shadow:0 4px 14px rgba(0,0,0,.7),inset 0 0 18px rgba(0,0,0,.9);'));
@@ -209,18 +209,18 @@ export const END_HEROES_PATCH = `
       var holder = el('div', 'position:relative;display:flex;align-items:center');
       holder.appendChild(box);
       if(isWin){
-        holder.appendChild(el('div', 'position:absolute;top:-12px;left:50%;transform:translateX(-50%);z-index:3;' +
-          'font-size:clamp(13px,2.6vw,22px);filter:drop-shadow(0 0 7px rgba(255,210,74,.95));' +
+        holder.appendChild(el('div', 'position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:3;' +
+          'font-size:clamp(20px,3.6vw,32px);filter:drop-shadow(0 0 10px rgba(255,210,74,.95));' +
           'animation:bfEhCrown 1.8s ease-in-out infinite', '👑'));
       } else {
-        holder.appendChild(el('div', 'position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);z-index:3;' +
-          'font-size:clamp(10px,2vw,15px);color:#ff4444;text-shadow:0 0 8px rgba(220,30,30,.9),0 1px 2px #000',
+        holder.appendChild(el('div', 'position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);z-index:3;' +
+          'font-size:clamp(15px,2.8vw,24px);color:#ff4444;text-shadow:0 0 8px rgba(220,30,30,.9),0 1px 2px #000',
           '\\u2620\\uFE0E'));
       }
       head.appendChild(holder);
     }
     if(name){
-      head.appendChild(el('span', 'font-family:\\'Cinzel\\',serif;font-weight:1000;font-size:clamp(11px,2.2vw,17px);' +
+      head.appendChild(el('span', 'font-family:\\'Cinzel\\',serif;font-weight:1000;font-size:clamp(14px,2.8vw,22px);' +
         'letter-spacing:1px;text-shadow:0 2px 4px #000;color:' + (isWin ? '#ffe9a8' : '#9a8f8f'), name));
     }
     return head;
