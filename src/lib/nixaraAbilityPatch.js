@@ -52,9 +52,9 @@ export const NIXARA_ABILITY_PATCH = `
           var drained = 0;
           try {
             if (typeof pushFx === 'function') {
-              pushFx({ k: 'spell', toSide: (typeof tSide === 'function' ? tSide(foe) : foesSide), toId: foe.id, el: 'agua' });
+              pushFx({ k: 'spell', toSide: (typeof tSide === 'function' ? tSide(foe) : foesSide), toId: foe.id, el: 'arcano' });
             }
-            drained = dealDamage(foe, power, { type: 'spell', element: 'agua' }) || 0;
+            drained = dealDamage(foe, power, { type: 'spell', element: 'arcano' }) || 0;
             if (typeof pushLog === 'function') {
               pushLog('ld', h.name + ' drena la vida de ' + foe.name + ' (-' + drained + ').');
             }

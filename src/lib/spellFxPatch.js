@@ -41,7 +41,16 @@ export const SPELL_FX_PATCH = `
     '.bf-bolt{position:fixed;pointer-events:none;z-index:90025;width:80px;transform:translateX(-50%);background:linear-gradient(180deg,#fff,#ffe14a 30%,#fff 60%,#bfe0ff);filter:drop-shadow(0 0 8px rgba(255,225,74,1)) drop-shadow(0 0 20px rgba(120,200,255,.85));clip-path:polygon(55% 0,78% 16%,45% 30%,70% 48%,38% 64%,62% 80%,38% 100%,28% 80%,52% 64%,28% 48%,55% 30%,28% 16%);animation:bfBolt 1.7s ease-out forwards}',
     '@keyframes bfBolt{0%{opacity:0}8%{opacity:1}18%{opacity:.3}28%{opacity:1}42%{opacity:.5}100%{opacity:0}}',
     '.bf-flash{position:fixed;pointer-events:none;z-index:90020;border-radius:50%;background:radial-gradient(circle,rgba(255,225,120,.55),rgba(180,220,255,.22) 50%,transparent 75%);animation:bfFlash 1.5s ease-out forwards}',
-    '@keyframes bfFlash{0%{opacity:0}15%{opacity:.55}100%{opacity:0}}'
+    '@keyframes bfFlash{0%{opacity:0}15%{opacity:.55}100%{opacity:0}}',
+    // ---- Arcano: explosión mágica violeta + anillo + orbes que ascienden + runas ----
+    '.bf-arcane-burst{position:fixed;pointer-events:none;z-index:90022;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#f4d6ff,#c084ff 42%,#7a2cff 68%,transparent 78%);animation:bfArcaneBurst 2s ease-out forwards;filter:drop-shadow(0 0 20px rgba(180,90,255,.95))}',
+    '@keyframes bfArcaneBurst{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}18%{opacity:1}55%{transform:translate(-50%,-50%) scale(5)}72%{transform:translate(-50%,-50%) scale(6.4);opacity:.9}100%{transform:translate(-50%,-50%) scale(7.2);opacity:0}}',
+    '.bf-arcane-ring{position:fixed;pointer-events:none;z-index:90021;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);border:4px solid rgba(190,120,255,.9);animation:bfArcaneRing 1.9s ease-out forwards}',
+    '@keyframes bfArcaneRing{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}25%{opacity:1}100%{transform:translate(-50%,-50%) scale(12);opacity:0;border-width:1px}}',
+    '.bf-arcane-orb{position:fixed;pointer-events:none;z-index:90023;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#f0c8ff,#a85cff 55%,transparent 72%);box-shadow:0 0 14px rgba(180,90,255,.9);animation:bfArcaneOrb 1.9s ease-out forwards}',
+    '@keyframes bfArcaneOrb{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-120px))) scale(.3);opacity:0}}',
+    '.bf-arcane-rune{position:fixed;pointer-events:none;z-index:90024;font-size:22px;color:#e0b8ff;text-shadow:0 0 12px rgba(190,120,255,.95),0 0 20px rgba(140,60,220,.6);animation:bfArcaneRune 2.2s ease-out forwards}',
+    '@keyframes bfArcaneRune{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-90px))) scale(1.3) rotate(60deg)}}'
   ].join('');
   document.head.appendChild(st);
 
@@ -80,6 +89,15 @@ export const SPELL_FX_PATCH = `
     var fl=document.createElement('div'); fl.className='bf-flash'; fl.style.left=(c.x-210)+'px'; fl.style.top=(c.y-210)+'px'; fl.style.width='420px'; fl.style.height='420px'; spawn(fl,1500);
   }
 
+  function fxArcane(side,id){
+    var c=centerOf(side,id); if(!c)return;
+    var b=document.createElement('div'); b.className='bf-arcane-burst'; b.style.left=c.x+'px'; b.style.top=c.y+'px'; spawn(b,2000);
+    var ring=document.createElement('div'); ring.className='bf-arcane-ring'; ring.style.left=c.x+'px'; ring.style.top=c.y+'px'; spawn(ring,1900);
+    for(var i=0;i<16;i++){ var o=document.createElement('div'); o.className='bf-arcane-orb'; o.style.left=c.x+'px'; o.style.top=c.y+'px'; var ang=Math.random()*Math.PI*2, dist=50+Math.random()*100; o.style.setProperty('--dx',(Math.cos(ang)*dist)+'px'); o.style.setProperty('--dy',(-60-Math.random()*100)+'px'); o.style.animationDelay=(Math.random()*0.15)+'s'; spawn(o,1950); }
+    var runes=['\\u2726','\\u2727','\\u2731','\\u2734','\\u2735','\\u2748'];
+    for(var r=0;r<10;r++){ var ru=document.createElement('div'); ru.className='bf-arcane-rune'; ru.textContent=runes[Math.floor(Math.random()*runes.length)]; ru.style.left=c.x+'px'; ru.style.top=c.y+'px'; var ang2=Math.random()*Math.PI*2, dist2=40+Math.random()*80; ru.style.setProperty('--dx',(Math.cos(ang2)*dist2)+'px'); ru.style.setProperty('--dy',(-50-Math.random()*90)+'px'); ru.style.animationDelay=(Math.random()*0.2)+'s'; spawn(ru,2100); }
+  }
+
   function hook(){
     if (typeof window.flushFx !== 'function' || window.flushFx.__bfSpellFx) return;
     var orig = window.flushFx;
@@ -94,6 +112,7 @@ export const SPELL_FX_PATCH = `
             else if (el === 'fuego') fxFire(ev.toSide, ev.toId);
             else if (el === 'hielo') fxIce(ev.toSide, ev.toId);
             else if (el === 'rayo') fxLightning(ev.toSide, ev.toId);
+            else if (el === 'arcano') fxArcane(ev.toSide, ev.toId);
             // Remate anime: sprite del hechizo (ola, bola de fuego, cristal,
             // rayo) + estrella de impacto + sacudida del objetivo.
             var A=window.__bfAnime;
@@ -111,7 +130,12 @@ export const SPELL_FX_PATCH = `
           });
         }
       } catch(e) {}
-      return orig.apply(this, arguments);
+      // Filtra los hechizos ARCANOS antes de pasarlos al motor nativo: el nativo
+      // no conoce 'arcano' y lo renderiza como AGUA por defecto. Así solo se ve
+      // nuestro FX mágico violeta (orbes + runas + anillo), sin el agua nativa.
+      var args = Array.prototype.slice.call(arguments);
+      args[0] = (list || []).filter(function(ev){ return !(ev && ev.k === 'spell' && ev.el === 'arcano'); });
+      return orig.apply(this, args);
     };
     window.flushFx.__bfSpellFx = 1;
   }
