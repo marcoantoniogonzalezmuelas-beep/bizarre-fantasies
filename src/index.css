@@ -204,6 +204,9 @@ video, canvas { max-width: 100%; }
 /* Sello de velocidad ⚡ (Oráculo / carta): pulso dorado para los más veloces */
 @keyframes bfVelPulse { 0%,100% { filter: drop-shadow(0 0 4px rgba(255,210,74,.5)); } 50% { filter: drop-shadow(0 0 10px rgba(255,210,74,.95)); } }
 
+/* Aviso "Gira el móvil" en batalla: balanceo suave del icono de rotación. */
+@keyframes bfRotateWiggle { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
+
 /* Intro cinemática en móvil/tablet: elimina el parpadeo GPU que provoca la
    combinación de filter:blur() + mix-blend-mode:screen dentro de un escenario
    escalado con transform. Aislando el contexto de composición (isolation:

@@ -267,6 +267,24 @@ export const MOBILE_PINCH_PATCH = `
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', checkScreenTop);
   else checkScreenTop();
 
+  // API externa (padre): el padre pide un nivel de zoom (p.ej. al entrar en
+  // batalla en móvil vertical para que el campo se vea más grande). Centra el
+  // encuadre por defecto. No actúa si hay un pellizco en curso.
+  window.addEventListener('message', function(e){
+    var d = e.data && e.data.bfSetZoom;
+    if (!d) return;
+    if (pinch) return;
+    z = Math.min(2.5, Math.max(1, Number(d.z) || 1));
+    var W = window.innerWidth, H = window.innerHeight;
+    var marginX = W * z - W, marginY = H * z - H;
+    tx = (d.tx != null) ? Number(d.tx) : -marginX / 2;
+    ty = (d.ty != null) ? Number(d.ty) : -marginY / 2;
+    clampT();
+    document.body.style.transition = 'transform .3s ease';
+    applyNow();
+    flushMsg();
+  });
+
   // capture:true + passive:false para adelantarnos a los handlers del juego
   // y poder hacer preventDefault del gesto de 2 dedos.
   document.addEventListener('touchstart', onStart, { capture: true, passive: false });
