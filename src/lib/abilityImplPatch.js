@@ -45,6 +45,9 @@ export const ABILITY_IMPL_PATCH = `
     return team(other).filter(function(h){ return h && h.alive; });
   }
   function num(v, d){ var n = Number(v); return isNaN(n) ? d : n; }
+  // FX arcano (mágico) para las habilidades de héroes arcanos (HE): orbes + runas
+  // violetas en vez del agua/fuego/rayo por defecto del motor nativo.
+  function arcaneFx(t){ try{ if(t && typeof pushFx==='function') pushFx({k:'spell', toSide:(typeof tSide==='function'?tSide(t):'o'), toId:t.id, el:'arcano'}); }catch(e){} }
 
   // Daño escalado con el stat del héroe: con params.min/params.max el golpe
   // va del mínimo al máximo según el stat indicado (por defecto HE), tomando
@@ -117,9 +120,9 @@ export const ABILITY_IMPL_PATCH = `
     var mods = function(x){ return (x._mods = x._mods || []); };
     var mark = function(x, txt){ try{ pushFx({k:'status', side:tSide(x), id:x.id, txt:txt}); }catch(e){} };
     switch(st.action){
-      case 'damage': { var d = dealDamage(t, a, { type: hitType(hero), pierce: st.pierce ? 1 : 0 }); log(hero.name + ' golpea a ' + t.name + ' (-' + d + ').'); return true; }
-      case 'true_damage': { var dt = dealDamage(t, a, { type:'true' }); log(hero.name + ' hiere a ' + t.name + ' ignorando su defensa (-' + dt + ').'); return true; }
-      case 'drain': { var dd = dealDamage(t, a, { type: hitType(hero) }); var g = heal(hero, dd); log(hero.name + ' drena a ' + t.name + ' (-' + dd + ') y absorbe esa vida (+' + g + ').'); return true; }
+      case 'damage': { var d = dealDamage(t, a, { type: hitType(hero), pierce: st.pierce ? 1 : 0 }); if(hitType(hero)==='spell') arcaneFx(t); log(hero.name + ' golpea a ' + t.name + ' (-' + d + ').'); return true; }
+      case 'true_damage': { var dt = dealDamage(t, a, { type:'true' }); if(primStat(hero)==='he') arcaneFx(t); log(hero.name + ' hiere a ' + t.name + ' ignorando su defensa (-' + dt + ').'); return true; }
+      case 'drain': { var dd = dealDamage(t, a, { type: hitType(hero) }); if(hitType(hero)==='spell') arcaneFx(t); var g = heal(hero, dd); log(hero.name + ' drena a ' + t.name + ' (-' + dd + ') y absorbe esa vida (+' + g + ').'); return true; }
       case 'heal': { var gh = heal(t, a); log(t.name + ' recupera +' + gh + ' de vida.'); return true; }
       case 'heal_full': { var gf = heal(t, t.maxHp); log(t.name + ' recupera toda su vida (+' + gf + ').'); return true; }
       case 'shield': { t.shield = (t.shield || 0) + a; try{ pushFx({k:'shieldup', toSide:tSide(t), toId:t.id}); }catch(e){} log(t.name + ' gana un escudo de ' + a + '.'); return true; }
@@ -264,6 +267,7 @@ export const ABILITY_IMPL_PATCH = `
         var list = foes(side);
         if(!p.all) list = list.slice(0, Math.max(1, num(p.targets, 1)));
         list.forEach(function(t){ if(typeof dealDamage === 'function') dealDamage(t, dmg, { type:'true' }); });
+        if(primStat(hero)==='he') list.forEach(function(t){ arcaneFx(t); });
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': ' + dmg + ' de da\\u00f1o a ' + (p.all ? 'todos los rivales' : (list.length > 1 ? list.length + ' rivales' : (list[0] ? list[0].name : 'un rival'))) + '.');
         acted = list.length > 0;
       } else if(kind === 'buff_self'){

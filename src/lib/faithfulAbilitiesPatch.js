@@ -351,8 +351,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
       var targets = [c.t];
       if(c.el){ var o2 = L(c.foes).filter(function(x){ return x !== c.t; })[0]; if(o2) targets.push(o2); }
       targets.forEach(function(x){
-        fx({k:'spell', toSide:side_(x), toId:x.id, el:'fuego'});
-        var d = dealDamage(x, Math.round(stat(c.h,'he') * 1.5) + (c.el ? 6 : 0), {type:'spell', element:'fuego'});
+        fx({k:'spell', toSide:side_(x), toId:x.id, el:'arcano'});
+        var d = dealDamage(x, Math.round(stat(c.h,'he') * 1.5) + (c.el ? 6 : 0), {type:'spell', element:'arcano'});
         var cc = stat(x,'cc'), he = stat(x,'he');
         mods(x).push({cc: he - cc, he: cc - he, turns:99});
         fx({k:'status', side:side_(x), id:x.id, txt:'\\ud83d\\udd04'});
@@ -370,8 +370,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
     // Nixara — drena vida del rival y ESA vida se la suma ella misma.
     // Élite: drena más y, además de curarse, reparte la mitad entre sus aliados.
     nix: function(c){
-      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'agua'});
-      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * (c.el ? 1.25 : 1.1)) + (c.el ? 6 : 0), {type:'spell', element:'agua'});
+      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * (c.el ? 1.25 : 1.1)) + (c.el ? 6 : 0), {type:'spell', element:'arcano'});
       var g = heal(c.h, d);
       if(g) fx({k:'heal', side:c.side, id:c.h.id, amt:g});
       log('ld', c.h.name + ' drena a ' + c.t.name + ' (-' + d + ') y absorbe esa vida (+' + g + ').');
@@ -395,8 +395,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
     },
     // Pacopiton — golpe mágico que además maldice (-stats)
     pac: function(c){
-      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'fuego'});
-      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + (c.el ? 6 : 0), {type:'spell', element:'fuego'});
+      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + (c.el ? 6 : 0), {type:'spell', element:'arcano'});
       var a = c.el ? 6 : 4;
       mods(c.t).push({cc:-a, ad:-a, he:-a, turns: c.el ? 99 : 2});
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u25bc'});
@@ -405,7 +405,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
     // Reverendo Sapis — golpe mágico y -3 a los stats del objetivo
     rev: function(c){
       if(c.el) return false;
-      var d = dealDamage(c.t, Math.round(stat(c.h, primKey(c.h.type)) * 0.6), {type: c.h.type === 'HE' ? 'spell' : c.h.type === 'AD' ? 'ranged' : 'melee', element:'agua'});
+      if(c.h.type === 'HE') fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+      var d = dealDamage(c.t, Math.round(stat(c.h, primKey(c.h.type)) * 0.6), {type: c.h.type === 'HE' ? 'spell' : c.h.type === 'AD' ? 'ranged' : 'melee', element:'arcano'});
       mods(c.t).push({cc:-3, ad:-3, he:-3, turns:2});
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u25bc'});
       log('li', c.h.name + ' maldice a ' + c.t.name + ' (-' + d + ', -3).');
@@ -499,8 +500,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
         log('ld', c.h.name + ' provoca un colapso mental en ' + c.t.name + ' (-' + dn + ') y le sirve un cortado.');
         return;
       }
-      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
-      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + 6, {type:'spell', element:'rayo'});
+      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * 1.5) + 6, {type:'spell', element:'arcano'});
       c.t._bfHandBlock = 2;
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
       coffeeFx(c.t, true);
@@ -518,8 +519,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
         ? window.__bfHeroRoll({ faces:20, forced:pre, crit:crit, mult:multTxt, hero:c.h.name, label: c.el ? 'Dado Cargado' : 'Tirada Cr\\u00edtica', note:'potencia sobre su HE' })
         : pre;
       var mult = 0.9 + (roll / 20) * 1.1;
-      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'rayo'});
-      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * mult) + (c.el ? 6 : 0), {type:'spell', element:'rayo', pierce: crit ? 1 : 0});
+      fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
+      var d = dealDamage(c.t, Math.round(stat(c.h,'he') * mult) + (c.el ? 6 : 0), {type:'spell', element:'arcano', pierce: crit ? 1 : 0});
       log('ld', c.h.name + ' golpea a ' + c.t.name + ' con su conjuro (-' + d + ')' + (crit ? ' \\u00a1CR\\u00cdTICO: ignora su defensa!' : '') + '.');
     }
   };
