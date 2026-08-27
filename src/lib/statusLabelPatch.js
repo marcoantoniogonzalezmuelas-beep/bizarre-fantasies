@@ -61,6 +61,11 @@ export const STATUS_LABEL_PATCH = `
     // borde inferior derecho: aparezca o no, la maquetación de la carta no cambia.
     '.bhero{padding-bottom:10px!important}' +
     '.bhero .bhero-status{position:absolute!important;right:9px!important;bottom:6px!important;left:auto!important;top:auto!important;margin:0!important;height:18px!important;min-height:18px!important;max-height:18px!important;width:auto!important;max-width:62%!important;justify-content:flex-end!important;flex-wrap:nowrap!important;overflow:hidden!important;align-items:center!important;z-index:16!important;pointer-events:none!important;contain:layout style!important}' +
+    // El icono grande de estado del juego (.bhero-ov) estaba quedando EN FLUJO
+    // (otro parche fuerza position:relative en los hijos de la carta), así que
+    // empujaba 52 px hacia abajo el nombre y la barra de atributos. Se devuelve
+    // a capa absoluta centrada, igual que en el congelado.
+    '.bhero>.bhero-ov{position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;margin:0!important;z-index:11!important;pointer-events:none!important}' +
     // El rótulo/borde nativo del juego (que salía en otro sitio y solo en algunos
     // estados) se desactiva: este sistema es el único que pinta estados.
     '.bhero .bf-status-badge{display:none!important}' +
