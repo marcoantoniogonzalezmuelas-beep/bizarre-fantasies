@@ -73,12 +73,10 @@ export const NO_HERO_MOTION_PATCH = `
       // estaba por encima: así no puede solaparse con las chapas de arma y
       // armadura ni con los rótulos de estado. Sin transform (anulado arriba),
       // el centrado se hace con margen negativo.
-      'top:auto!important;bottom:-13px!important;left:50%!important;margin-left:-53px!important;z-index:20!important;'+
+      'top:auto!important;bottom:2px!important;left:50%!important;margin-left:-53px!important;z-index:20!important;'+
       'box-shadow:0 0 10px rgba(255,210,74,.85),0 0 22px rgba(255,180,40,.55)!important;'+
       'text-shadow:0 0 8px rgba(255,225,140,.95),0 1px 2px #000!important;'+
     '}'+
-    // El rótulo sobresale por debajo del recuadro: la carta no debe recortarlo.
-    'html body .bhero.bhero.active-turn{overflow:visible!important}'+
     // Respaldo: el rótulo puede heredar top:-11px del juego si otra hoja gana;
     // se anula aquí con la misma especificidad que el resto del bloque.
     'html body .bhero.bhero.active-turn .bf-active-tag{top:auto!important}';
@@ -93,7 +91,7 @@ export const NO_HERO_MOTION_PATCH = `
     var s=tag.style;
     s.setProperty('position','absolute','important');
     s.setProperty('top','auto','important');
-    s.setProperty('bottom','-13px','important');
+    s.setProperty('bottom','2px','important');
     s.setProperty('left','50%','important');
     s.setProperty('transform','none','important');
     s.setProperty('margin-left','-53px','important');
