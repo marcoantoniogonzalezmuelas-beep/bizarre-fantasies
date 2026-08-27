@@ -394,6 +394,8 @@ const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
 // modo que el móvil: vista de escritorio (1200px) escalada + zoom de pellizco.
 const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
 const IS_MOBILE = IS_TABLET || /Android|iPhone|iPod|Mobile/i.test(UA) || (typeof window !== 'undefined' && Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 1024);
+// Móvil estricto (excluye tablet): para forzar el giro a horizontal en batalla.
+const IS_PHONE = IS_MOBILE && !IS_TABLET;
 
 export default function Home() {
   useEffect(() => {
@@ -467,6 +469,22 @@ export default function Home() {
     window.addEventListener('orientationchange', calc);
     return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
   }, []);
+  // Móvil (no tablet) en vertical + pantalla de batalla activa: para forzar el
+  // giro a horizontal del iframe solo durante el combate.
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [vp, setVp] = useState({ w: 0, h: 0 });
+  const [battleActive, setBattleActive] = useState(false);
+  useEffect(() => {
+    if (!IS_PHONE) return;
+    const calc = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+      setVp({ w: document.documentElement.clientWidth || 360, h: window.innerHeight || 640 });
+    };
+    calc();
+    window.addEventListener('resize', calc);
+    window.addEventListener('orientationchange', calc);
+    return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
+  }, []);
   // Los accesos flotantes (Oráculo, Reglas, Razas) y el cartel de actualidad se
   // encogen con el juego, pero con un mínimo para que sigan siendo legibles y
   // se puedan pulsar con el dedo.
@@ -479,6 +497,15 @@ export default function Home() {
   // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
   // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
   const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
+  // Batalla en móvil (no tablet) con el móvil en vertical: se gira el iframe a
+  // horizontal para que el tablero se vea el doble de grande. Solo en #s-battle.
+  const forceLandscape = IS_PHONE && isPortrait && battleActive;
+  let battleStyle = null;
+  if (forceLandscape && vp.w && vp.h) {
+    const s = Math.max(vp.h / 1280, vp.w / 720);
+    const tx = (720 * s + vp.w) / 2;
+    battleStyle = { width: 1280, height: 720, position: 'absolute', top: 0, left: 0, maxWidth: 'none', transformOrigin: '0 0', transform: `translateX(${tx}px) scale(${s}) rotate(90deg)` };
+  }
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -591,6 +618,7 @@ export default function Home() {
     const onMessage = (e) => {
       if (e.data && typeof e.data.bfScreen === 'string') {
         setShowOracle(e.data.bfScreen === 's-title');
+        setBattleActive(e.data.bfScreen === 's-battle');
         // El juego ya inicializó su CSS/layout: se puede quitar el spinner
         // (evita el flash de iconos enormes tras recargar el iframe).
         // Pequeño retardo antes de ocultar el overlay: da tiempo al juego a
@@ -1118,12 +1146,12 @@ export default function Home() {
           // El documento del juego se maqueta SIEMPRE a 1280px (paridad con PC)
           // y en móvil/tablet se encoge con CSS para que quepa entero.
           style={IS_MOBILE
-            ? { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
+            ? (battleStyle || { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' })
             : { width: '100%', height: '100%' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
       )}
-      {IS_MOBILE && !showOracle && (
+      {IS_MOBILE && !showOracle && !forceLandscape && (
         <MobileExitButton scale={mobScale * pinchZ} onQuit={() => {
           setLoading(true);
           try { iframeRef.current?.contentWindow?.postMessage({ bfQuitHome: true }, '*'); } catch (e) {}
