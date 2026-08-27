@@ -19,7 +19,10 @@ export const AI_WAIT_CINE_PATCH = `
   function fxBusy(){
     var l=document.getElementById('bf-fx-layer');
     if(l&&l.children.length)return true;
-    return !!document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop');
+    // Marcadores flotantes de la acción anterior: pifia, pierde turno, sin
+    // élite / habilidad anulada y cambios de stats. La IA espera a que se lean
+    // igual que espera el humano antes de pulsar.
+    return !!document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop,.bf-status-pop,.bf-fumble-pop,.bf-stat-pop');
   }
   function busy(){ return !!document.querySelector(CINE_SEL)||fxBusy(); }
 

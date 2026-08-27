@@ -361,7 +361,12 @@ export const ABILITY_ANIM_PATCH = `
     var fxOn=false;
     try{
       var fxl=document.getElementById('bf-fx-layer');
-      fxOn=!!((fxl&&fxl.children.length)||document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop'));
+      // También cuentan los MARCADORES flotantes (pifia, pierde turno, sin
+      // élite, habilidad anulada, cambios de stats): si alguno está en pantalla,
+      // la cinemática 3D espera su turno en vez de taparlo. Esto pasaba cuando
+      // jugaba la IA (encadena su acción al instante) y no cuando jugaba el
+      // humano (su clic llega después de los marcadores).
+      fxOn=!!((fxl&&fxl.children.length)||document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop,.bf-status-pop,.bf-fumble-pop,.bf-stat-pop'));
     }catch(e){}
     if(fxOn||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')){
       // Si la cinemática en curso o ya en cola es la MISMA (misma URL), no la
