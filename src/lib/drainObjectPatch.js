@@ -66,6 +66,11 @@ export const DRAIN_OBJECT_PATCH = `
     var now = Date.now();
     if(document.getElementById('bf-drain-cine') || (window.__bfDrainLast && now - window.__bfDrainLast < 3000)) return;
     window.__bfDrainLast = now;
+    // El objeto se resuelve en este parche (no pasa por el hook de useItem), así
+    // que la cinemática 3D de la BD no se lanzaba sola: se pide al motor común
+    // (la misma que se ve en el editor). Si no está disponible, se usa el
+    // overlay propio como respaldo.
+    try{ if(typeof window.__bfPlayItemCine === 'function' && window.__bfPlayItemCine('Drenaje')) return; }catch(e){}
     var ov = document.createElement('div'); ov.id = 'bf-drain-cine';
     var html = '<div class="bf-dr-veil"></div>';
     for(var n = 0; n < 12; n++) html += '<span class="bf-dr-note" style="left:' + (6 + Math.random()*88) + '%;top:' + (25 + Math.random()*50) + '%;animation-delay:' + (Math.random()*1.6).toFixed(2) + 's">' + (Math.random() < 0.5 ? '\\u266a' : '\\u266b') + '</span>';

@@ -458,6 +458,14 @@ export const ABILITY_ANIM_PATCH = `
     window.__bfCardCineName=item?item.name:null;
     setTimeout(function(){window.__bfCardCineName=null;},5200);
   }
+  // API pública: reproduce la cinemática 3D de la BD de un hechizo/objeto por
+  // NOMBRE. La usan los parches que resuelven un objeto por su cuenta (p. ej.
+  // Drenaje) y por tanto no pasan por el hook de useItem.
+  window.__bfPlayItemCine=function(name){
+    var e=spellByName[String(name||'').toLowerCase()];
+    if(e&&e.base){playItemCinematic({name:name},e);return true;}
+    return false;
+  };
   function installSpell(){
     if(typeof window.castSpell!=='function'||window.__bfAbilityAnimSpellHooked)return false;
     window.__bfAbilityAnimSpellHooked=true;
