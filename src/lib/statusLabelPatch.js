@@ -25,7 +25,7 @@ export const STATUS_LABEL_PATCH = `
     { key:'drunk',    icon:'\\u25c9',        label:'BORRACHO',   c1:'#ffb45c', c2:'#5e2f00', test:function(h){ return h._bfDrunk > 0; } },
     { key:'dizzy',    icon:'\\ud83c\\udf00', label:'MAREADO',    c1:'#7ee8e0', c2:'#0b4a46', test:function(h){ return h._bfDizzy > 0; } },
     { key:'curse',    icon:'\\u25bc',        label:'MALDITO',    c1:'#b06bff', c2:'#2b0a52', test:function(h){ return modSum(h) < 0; } },
-    { key:'bless',    icon:'\\u25b2',        label:'BENDECIDO',  c1:'#8affb0', c2:'#0b4a22', test:function(h){ return modSum(h) > 0; } }
+    { key:'bless',    icon:'\\u25b2',        label:'BENDECIDO',  c1:'#ffe14a', c2:'#6b5000', test:function(h){ return modSum(h) > 0; } }
   ];
 
   function modSum(h){
@@ -40,21 +40,21 @@ export const STATUS_LABEL_PATCH = `
   var css =
     // Columna de rótulos: pegada al borde inferior izquierdo, sobre el retrato.
     '.bf-status-labels{position:absolute!important;left:5px!important;bottom:5px!important;right:5px!important;z-index:14!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;pointer-events:none!important;contain:layout style!important}' +
-    '.bf-status-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:999px;font-family:Cinzel,serif;font-weight:900;font-size:9.5px;letter-spacing:.6px;line-height:1.35;white-space:nowrap;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.45);box-shadow:0 2px 8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.25);animation:bfStatusTagIn .28s ease-out both}' +
+    '.bf-status-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:999px;font-family:Cinzel,serif;font-weight:900;font-size:9.5px;letter-spacing:.6px;line-height:1.35;white-space:nowrap;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.3);box-shadow:0 1px 4px rgba(0,0,0,.5);animation:bfStatusTagIn .28s ease-out both}' +
     '.bf-status-tag i{font-style:normal;font-size:11px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}' +
     '@keyframes bfStatusTagIn{from{opacity:0;transform:translateX(-8px) scale(.9)}to{opacity:1;transform:none}}' +
     // Borde parpadeante del retrato: MISMO comportamiento para todos los estados,
     // con el color del estado más importante. Vive dentro de .bf-battle-art, así
     // que no puede mover el nombre ni la barra de atributos.
     '.bf-status-ring{position:absolute!important;inset:0!important;z-index:13!important;pointer-events:none!important;border-radius:inherit;border:3px solid var(--bfsc,#fff);animation:bfStatusRing 1.15s ease-in-out infinite;contain:layout style!important}' +
-    '@keyframes bfStatusRing{0%,100%{opacity:.22;box-shadow:0 0 4px var(--bfsc)}50%{opacity:.55;box-shadow:0 0 10px var(--bfsc),inset 0 0 8px var(--bfsc)}}' +
+    '@keyframes bfStatusRing{0%,100%{opacity:.12;box-shadow:0 0 2px var(--bfsc)}50%{opacity:.3;box-shadow:0 0 5px var(--bfsc),inset 0 0 4px var(--bfsc)}}' +
     // Velo de color sobre TODO el retrato (mismo efecto que el congelado) con
     // el color del estado. Es una capa absoluta: no toca la maquetación.
     '.bf-status-veil{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important;border-radius:inherit;background:linear-gradient(180deg,var(--bfsc,#fff) 0%,transparent 62%),radial-gradient(circle at 50% 18%,var(--bfsc,#fff),transparent 58%);mix-blend-mode:screen;animation:bfStatusVeil 1.15s ease-in-out infinite;contain:layout style!important}' +
-    '@keyframes bfStatusVeil{0%,100%{opacity:.07}50%{opacity:.15}}' +
+    '@keyframes bfStatusVeil{0%,100%{opacity:.04}50%{opacity:.09}}' +
     // AGONIZANDO: velo rojo oscuro (sangre), sin "screen" para que no ilumine.
     '.bf-status-veil.bf-veil-agony{mix-blend-mode:normal!important;background:linear-gradient(180deg,rgba(140,0,0,.85) 0%,rgba(70,0,0,.25) 65%),radial-gradient(circle at 50% 20%,rgba(185,10,10,.7),transparent 60%)!important;animation:bfStatusVeilAgony 1.15s ease-in-out infinite!important}' +
-    '@keyframes bfStatusVeilAgony{0%,100%{opacity:.2}50%{opacity:.36}}' +
+    '@keyframes bfStatusVeilAgony{0%,100%{opacity:.12}50%{opacity:.22}}' +
     // La fila de chips de estado del juego ocupaba sitio EN EL FLUJO de la carta:
     // al aparecer un estado (dormido, maldito, silenciado…) empujaba el nombre y
     // la barra de atributos hacia abajo. Ahora es una capa ABSOLUTA pegada al
