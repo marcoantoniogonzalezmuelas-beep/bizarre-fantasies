@@ -69,10 +69,16 @@ export const NO_HERO_MOTION_PATCH = `
       // Se baja al borde INFERIOR del recuadro (centrado) para que no se
       // solape con las chapas de arma y armadura. Sin transform (anulado
       // arriba), el centrado se hace con margin negativo.
-      'top:auto!important;bottom:5px!important;left:50%!important;margin-left:-53px!important;'+
+      // Se coloca POR DEBAJO del recuadro (fuera de la carta), igual que antes
+      // estaba por encima: así no puede solaparse con las chapas de arma y
+      // armadura ni con los rótulos de estado. Sin transform (anulado arriba),
+      // el centrado se hace con margen negativo.
+      'top:auto!important;bottom:-13px!important;left:50%!important;margin-left:-53px!important;z-index:20!important;'+
       'box-shadow:0 0 10px rgba(255,210,74,.85),0 0 22px rgba(255,180,40,.55)!important;'+
       'text-shadow:0 0 8px rgba(255,225,140,.95),0 1px 2px #000!important;'+
-    '}';
+    '}'+
+    // El rótulo sobresale por debajo del recuadro: la carta no debe recortarlo.
+    'html body .bhero.bhero.active-turn{overflow:visible!important}';
 
   var st=document.createElement('style');
   st.textContent=css;
