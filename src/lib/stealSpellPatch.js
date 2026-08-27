@@ -56,8 +56,11 @@ export const STEAL_SPELL_PATCH = `
   '#bf-steal-cine{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;perspective:900px;animation:bfStIn .3s ease-out}'+
   '#bf-steal-cine.bf-st-out{transition:opacity .4s;opacity:0}'+
   '@keyframes bfStIn{from{opacity:0}to{opacity:1}}'+
-  '#bf-steal-cine .bf-st-img{position:absolute;top:22%;left:50%;width:min(48vmin,400px);height:min(48vmin,400px);object-fit:contain;transform-style:preserve-3d;margin:0 0 0 calc(min(48vmin,400px)/-2);filter:drop-shadow(0 0 60px rgba(120,255,190,.8)) saturate(1.3) brightness(1.12);animation:bfStImg 3s cubic-bezier(.2,.85,.3,1) forwards}'+
-  '@media(max-width:900px){#bf-steal-cine .bf-st-img{width:min(40vmin,300px);height:min(40vmin,300px);margin:0 0 0 calc(min(40vmin,300px)/-2)}}'+
+  '#bf-steal-cine .bf-st-dim{position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(10,40,30,.35) 20%,rgba(0,0,0,.72) 70%,rgba(0,0,0,.88) 100%);animation:bfStFadeIn .4s ease-out both}'+
+  '@keyframes bfStFadeIn{from{opacity:0}to{opacity:1}}'+
+  '#bf-steal-cine .bf-st-img{position:absolute;top:16%;left:50%;width:min(64vmin,540px);height:min(64vmin,540px);object-fit:contain;z-index:6;opacity:1;transform-style:preserve-3d;margin:0 0 0 calc(min(64vmin,540px)/-2);filter:drop-shadow(0 0 46px rgba(120,255,190,.55)) drop-shadow(0 16px 34px rgba(0,0,0,.8));animation:bfStImg 3s cubic-bezier(.2,.85,.3,1) forwards}'+
+  '#bf-steal-cine .bf-st-img.bf-st-raw{filter:brightness(1.3) contrast(1.1) drop-shadow(0 16px 34px rgba(0,0,0,.8));border-radius:18px;box-shadow:0 0 0 2px rgba(150,255,205,.35),0 18px 44px rgba(0,0,0,.75)}'+
+  '@media(max-width:900px){#bf-steal-cine .bf-st-img{width:min(72vmin,420px);height:min(72vmin,420px);margin:0 0 0 calc(min(72vmin,420px)/-2)}}'+
   '@keyframes bfStImg{0%{transform:translateX(-60vw) rotateY(38deg) scale(.5);opacity:0}18%{opacity:1}42%{transform:translateX(0) rotateY(-12deg) scale(1.12)}64%{transform:translateX(3vw) rotateY(6deg) scale(1.16)}100%{transform:translateX(0) rotateY(0) scale(1.2);opacity:1}}'+
   '#bf-steal-cine .bf-st-ttl{position:absolute;top:4%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(20px,4.6vw,44px);letter-spacing:3px;white-space:nowrap;opacity:0;animation:bfStTtl 2.8s ease-out .3s forwards;color:#8affc4;text-shadow:0 0 28px rgba(90,255,180,.9),0 4px 12px #000}'+
   '@keyframes bfStTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0}}'+
@@ -97,15 +100,16 @@ export const STEAL_SPELL_PATCH = `
     if(document.getElementById('bf-steal-cine') || (window.__bfStealLast && now - window.__bfStealLast < 3000)) return;
     window.__bfStealLast = now;
     var ov = document.createElement('div'); ov.id = 'bf-steal-cine';
-    var html = '<div class="bf-st-veil"></div><div class="bf-st-flash"></div>';
+    var html = '<div class="bf-st-dim"></div><div class="bf-st-veil"></div><div class="bf-st-flash"></div>';
     for(var r = 0; r < 4; r++) html += '<div class="bf-st-ring" style="animation-delay:' + (r*0.22).toFixed(2) + 's"></div>';
     for(var c = 0; c < 12; c++) html += '<span class="bf-st-card" style="left:' + (8+Math.random()*84) + '%;top:' + (35+Math.random()*40) + '%;--dx:' + ((Math.random()*260-130)|0) + 'px;--dy:-' + (30+Math.random()*40) + 'vh;--rot:' + ((Math.random()*520-260)|0) + 'deg;animation-delay:' + (Math.random()*1.1).toFixed(2) + 's"></span>';
     for(var s = 0; s < 16; s++) html += '<span class="bf-st-spark" style="left:' + (4+Math.random()*92) + '%;bottom:6%;--dx:' + ((Math.random()*120-60)|0) + 'px;animation-delay:' + (Math.random()*1.2).toFixed(2) + 's"></span>';
-    html += '<img class="bf-st-img" src="' + (CUT[CINE_ART] || CINE_ART) + '" alt="">';
+    var cut = CUT[CINE_ART];
+    html += '<img class="bf-st-img' + (cut ? '' : ' bf-st-raw') + '" src="' + (cut || CINE_ART) + '" alt="">';
     html += '<div class="bf-st-ttl">\\u00a1EL LADR\\u00d3N ENMASCARADO!</div>';
     if(loot) html += '<div class="bf-st-loot">\\ud83c\\udccf Carta robada: ' + loot + '</div>';
     ov.innerHTML = html;
-    document.body.appendChild(ov);
+    (window.__bfAppend || function(x){ document.body.appendChild(x); })(ov);
     setTimeout(function(){ ov.classList.add('bf-st-out'); }, 2700);
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3150);
     // Al acabar la cinemática: la carta robada vuela de la mano rival a la tuya.
@@ -122,7 +126,7 @@ export const STEAL_SPELL_PATCH = `
     html += '<div class="bf-stf-burst"></div>';
     html += '<div class="bf-stf-label">\\u2192 Tu mano</div>';
     ov.innerHTML = html;
-    document.body.appendChild(ov);
+    (window.__bfAppend || function(x){ document.body.appendChild(x); })(ov);
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3300);
   }
   window.__bfPlayStealCine = playStealCine;
