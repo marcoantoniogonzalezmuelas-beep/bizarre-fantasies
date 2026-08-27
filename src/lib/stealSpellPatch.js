@@ -109,7 +109,7 @@ export const STEAL_SPELL_PATCH = `
     html += '<div class="bf-st-ttl">\\u00a1EL LADR\\u00d3N ENMASCARADO!</div>';
     if(loot) html += '<div class="bf-st-loot">\\ud83c\\udccf Carta robada: ' + loot + '</div>';
     ov.innerHTML = html;
-    (window.__bfAppend || function(x){ document.body.appendChild(x); })(ov);
+    document.body.appendChild(ov);
     setTimeout(function(){ ov.classList.add('bf-st-out'); }, 2700);
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3150);
     // Al acabar la cinemática: la carta robada vuela de la mano rival a la tuya.
@@ -126,7 +126,7 @@ export const STEAL_SPELL_PATCH = `
     html += '<div class="bf-stf-burst"></div>';
     html += '<div class="bf-stf-label">\\u2192 Tu mano</div>';
     ov.innerHTML = html;
-    (window.__bfAppend || function(x){ document.body.appendChild(x); })(ov);
+    document.body.appendChild(ov);
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3300);
   }
   window.__bfPlayStealCine = playStealCine;
