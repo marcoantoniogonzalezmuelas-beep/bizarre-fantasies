@@ -66,10 +66,10 @@ export const MOBILE_HAND_COLLAPSE_PATCH = `
     return true;
   }
 
-  // Fallback: si el juego reconstruye la mano fuera de renderBattle, el
-  // MutationObserver la recoge en cuanto aparece (microtask, antes de pintar).
-  var _bfHcObs=new MutationObserver(function(){ try{decorate();}catch(e){} });
-  try{ _bfHcObs.observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
+  // Red de seguridad ligera (por si el juego reconstruye la mano fuera de
+  // renderBattle). No se usa MutationObserver: decorate() modifica el DOM, así
+  // que el observador se disparaba a sí mismo en bucle y colgaba la batalla.
+  setInterval(function(){ try{ decorate(); }catch(e){} },500);
 
   var _bfHcT=0; (function wait(){ if(hookRender()||_bfHcT++>120)return; setTimeout(wait,200); })();
   decorate();
