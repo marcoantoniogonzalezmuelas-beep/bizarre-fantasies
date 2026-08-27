@@ -78,7 +78,36 @@ export const NO_HERO_MOTION_PATCH = `
       'text-shadow:0 0 8px rgba(255,225,140,.95),0 1px 2px #000!important;'+
     '}'+
     // El rótulo sobresale por debajo del recuadro: la carta no debe recortarlo.
-    'html body .bhero.bhero.active-turn{overflow:visible!important}';
+    'html body .bhero.bhero.active-turn{overflow:visible!important}'+
+    // Respaldo: el rótulo puede heredar top:-11px del juego si otra hoja gana;
+    // se anula aquí con la misma especificidad que el resto del bloque.
+    'html body .bhero.bhero.active-turn .bf-active-tag{top:auto!important}';
+
+  // Forzado en vivo (inline !important): ningún CSS del juego puede ganar
+  // contra estilos inline con !important. Se aplica cada vez que aparece un
+  // rótulo de turno y en cada repintado del tablero. Así el rótulo queda
+  // SIEMPRE centrado y por debajo del recuadro, sin solapar las chapas.
+  function pinTag(tag){
+    if(!tag || tag.dataset.bfPinned==='1') return;
+    tag.dataset.bfPinned='1';
+    var s=tag.style;
+    s.setProperty('position','absolute','important');
+    s.setProperty('top','auto','important');
+    s.setProperty('bottom','-13px','important');
+    s.setProperty('left','50%','important');
+    s.setProperty('transform','none','important');
+    s.setProperty('margin-left','-53px','important');
+    s.setProperty('margin-top','0','important');
+    s.setProperty('margin-right','0','important');
+    s.setProperty('z-index','20','important');
+    s.setProperty('opacity','1','important');
+  }
+  function pinAll(){
+    document.querySelectorAll('.bhero.active-turn .bf-active-tag').forEach(pinTag);
+  }
+  setInterval(pinAll, 250);
+  var _bfMo=new MutationObserver(pinAll);
+  try{ _bfMo.observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
 
   var st=document.createElement('style');
   st.textContent=css;
