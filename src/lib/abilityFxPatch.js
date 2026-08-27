@@ -204,9 +204,12 @@ export const ABILITY_FX_PATCH = `
     if(A){
       var rc=card.getBoundingClientRect(),cc={x:rc.left+rc.width/2,y:rc.top+rc.height/2};
       A.speedLines(cc);
-      // Sprite anime grande de la habilidad: el efecto más espectacular.
-      if(A.spriteBurst)A.spriteBurst('ab_'+fam,cc,260,2150);
-      if(fam==='melee'||fam==='ranged'||fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
+      // Si la habilidad es un ATAQUE CC o AD, el efecto visual lo pone el ARMA
+      // que lleve el héroe (attackFxPatch, mismo efecto que en el golpe normal):
+      // no se pinta el sprite genérico para no taparlo ni uniformarlo todo.
+      var weaponDriven=(fam==='melee'||fam==='ranged');
+      if(A.spriteBurst&&!weaponDriven)A.spriteBurst('ab_'+fam,cc,260,2150);
+      if(fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
     }
     card.classList.add(theme.shake?'bf-abx-shake':'bf-abx-glow');
     setTimeout(function(){card.classList.remove('bf-abx-shake','bf-abx-glow');},1000);
