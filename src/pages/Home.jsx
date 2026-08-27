@@ -159,6 +159,7 @@ import FlashNewsMarquee from '@/components/home/FlashNewsMarquee';
 import HomeSecondaryLinks from '@/components/home/HomeSecondaryLinks';
 import ChatOverlay from '@/components/chat/ChatOverlay';
 import MobileExitButton from '@/components/home/MobileExitButton';
+import RotateHint from '@/components/home/RotateHint';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
@@ -451,6 +452,9 @@ export default function Home() {
   const [dbCount, setDbCount] = useState(107);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showOracle, setShowOracle] = useState(true);
+  // Pantalla actual del juego (para el aviso de girar en equipamiento/batalla).
+  const [screen, setScreen] = useState('s-title');
+  const [rotateHintClosed, setRotateHintClosed] = useState(false);
   // El modal de "Aprender a jugar" (demo) se abre sobre la portada: mientras
   // esté visible, ocultamos el cartel de flash news para que no tape el modal.
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -459,9 +463,19 @@ export default function Home() {
   // CSS para que quepa entero en la pantalla. El pellizco sigue funcionando
   // dentro del iframe (MOBILE_PINCH_PATCH).
   const [mobScale, setMobScale] = useState(1);
+  // Móvil en horizontal: el tablero se salía por abajo. Se trata el juego como
+  // un escenario fijo de 1280×800 y se ajusta también a la ALTURA (zoom out),
+  // así se ve entero. En vertical se mantiene el ajuste por ancho.
+  const [isLandscape, setIsLandscape] = useState(false);
   useEffect(() => {
     if (!IS_MOBILE) return;
-    const calc = () => setMobScale(Math.min(1, (document.documentElement.clientWidth || 360) / 1280));
+    const calc = () => {
+      const w = document.documentElement.clientWidth || 360;
+      const h = document.documentElement.clientHeight || 640;
+      const land = w > h;
+      setIsLandscape(land);
+      setMobScale(Math.min(1, land ? Math.min(w / 1280, h / 800) : w / 1280));
+    };
     calc();
     window.addEventListener('resize', calc);
     window.addEventListener('orientationchange', calc);
@@ -591,6 +605,7 @@ export default function Home() {
     const onMessage = (e) => {
       if (e.data && typeof e.data.bfScreen === 'string') {
         setShowOracle(e.data.bfScreen === 's-title');
+        setScreen(e.data.bfScreen);
         // El juego ya inicializó su CSS/layout: se puede quitar el spinner
         // (evita el flash de iconos enormes tras recargar el iframe).
         // Pequeño retardo antes de ocultar el overlay: da tiempo al juego a
@@ -1118,7 +1133,9 @@ export default function Home() {
           // El documento del juego se maqueta SIEMPRE a 1280px (paridad con PC)
           // y en móvil/tablet se encoge con CSS para que quepa entero.
           style={IS_MOBILE
-            ? { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
+            ? (isLandscape
+              ? { width: 1280, height: 800, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
+              : { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' })
             : { width: '100%', height: '100%' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
@@ -1128,6 +1145,9 @@ export default function Home() {
           setLoading(true);
           try { iframeRef.current?.contentWindow?.postMessage({ bfQuitHome: true }, '*'); } catch (e) {}
         }} />
+      )}
+      {IS_MOBILE && !isLandscape && !rotateHintClosed && /equip|battle/.test(screen) && (
+        <RotateHint onClose={() => setRotateHintClosed(true)} />
       )}
       <ChatOverlay />
     </div>
