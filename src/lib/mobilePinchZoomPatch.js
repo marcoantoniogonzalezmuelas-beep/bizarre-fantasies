@@ -79,7 +79,10 @@ export const MOBILE_PINCH_PATCH = `
     if (marginX < 0) tx = -marginX / 2;
     else if (marginX === 0) tx = 0;
     else tx = Math.min(0, Math.max(-marginX, tx));
-    if (marginY <= 0) ty = 0;
+    // Alejado (z<1): también se centra en vertical, así el hueco no queda todo
+    // abajo en una franja negra.
+    if (marginY < 0) ty = -marginY / 2;
+    else if (marginY === 0) ty = 0;
     else ty = Math.min(0, Math.max(-marginY, ty));
   }
 
@@ -111,6 +114,23 @@ export const MOBILE_PINCH_PATCH = `
   var pzStyle = document.createElement('style');
   pzStyle.textContent = 'html.bf-pinching *,html.bf-pinching *::before,html.bf-pinching *::after{animation-play-state:paused!important;transition:none!important}';
   (document.head || document.documentElement).appendChild(pzStyle);
+
+  // Al ALEJAR (z<1) el contenido es más pequeño que la pantalla y alrededor se
+  // veía el negro del navegador. Se copia el fondo del juego al elemento raíz
+  // para que ese margen tenga el mismo fondo y no se vea un hueco negro.
+  function syncRootBg(){
+    try{
+      var cs = getComputedStyle(document.body);
+      var d = document.documentElement.style;
+      d.backgroundColor = cs.backgroundColor;
+      d.backgroundImage = cs.backgroundImage;
+      d.backgroundSize = 'cover';
+      d.backgroundPosition = 'center';
+      d.backgroundRepeat = 'no-repeat';
+    }catch(e){}
+  }
+  syncRootBg();
+  setInterval(syncRootBg, 1500);
 
   function onStart(e){
     if (e.touches.length < 2) return;

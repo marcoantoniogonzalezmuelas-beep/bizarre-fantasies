@@ -26,11 +26,17 @@ export const STEAL_SPELL_PATCH = `
         var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
         var x = c.getContext('2d'); x.drawImage(img, 0, 0);
         var d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+        // Solo se borra el negro del FONDO (casi negro puro). El degradado de
+        // alfa anterior volvía translúcidas las zonas oscuras del propio ladrón
+        // (capa, sombrero, sombras) y la figura casi no se veía.
+        var kept = 0, total = p.length / 4;
         for(var i = 0; i < p.length; i += 4){
           var m = Math.max(p[i], p[i+1], p[i+2]);
-          if(m < 32) p[i+3] = 0;
-          else if(m < 90) p[i+3] = Math.round(p[i+3] * (m - 32) / 58);
+          if(m < 22) p[i+3] = 0; else kept++;
         }
+        // Escena muy oscura: si el recorte se come casi todo, se usa la imagen
+        // original (con su fondo) para que siempre se vea.
+        if(kept < total * 0.15){ CUT[url] = false; return; }
         x.putImageData(d, 0, 0);
         CUT[url] = c.toDataURL('image/png');
       }catch(e){ CUT[url] = false; }
