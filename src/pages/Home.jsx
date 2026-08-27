@@ -394,8 +394,6 @@ const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
 // modo que el móvil: vista de escritorio (1200px) escalada + zoom de pellizco.
 const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
 const IS_MOBILE = IS_TABLET || /Android|iPhone|iPod|Mobile/i.test(UA) || (typeof window !== 'undefined' && Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 1024);
-// Móvil estricto (excluye tablet): para forzar el giro a horizontal en batalla.
-const IS_PHONE = IS_MOBILE && !IS_TABLET;
 
 export default function Home() {
   useEffect(() => {
@@ -478,18 +476,6 @@ export default function Home() {
   // Zoom + desplazamiento del pellizco dentro del juego: el cartel de
   // actualidad los aplica igual para quedarse pegado a su sitio del juego.
   const [pinchState, setPinchState] = useState({ z: 1, tx: 0, ty: 0 });
-  // Batalla activa y orientación (solo móvil) para el zoom automático y el
-  // aviso de girar el móvil.
-  const [battleActive, setBattleActive] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(true);
-  useEffect(() => {
-    if (!IS_PHONE) return;
-    const calc = () => setIsPortrait(window.innerHeight > window.innerWidth);
-    calc();
-    window.addEventListener('resize', calc);
-    window.addEventListener('orientationchange', calc);
-    return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
-  }, []);
   // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
   // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
   const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
@@ -605,7 +591,6 @@ export default function Home() {
     const onMessage = (e) => {
       if (e.data && typeof e.data.bfScreen === 'string') {
         setShowOracle(e.data.bfScreen === 's-title');
-        setBattleActive(e.data.bfScreen === 's-battle');
         // El juego ya inicializó su CSS/layout: se puede quitar el spinner
         // (evita el flash de iconos enormes tras recargar el iframe).
         // Pequeño retardo antes de ocultar el overlay: da tiempo al juego a
@@ -1088,12 +1073,6 @@ export default function Home() {
       {/* El cartel de Actualidad viaja CON el juego: aplica el mismo zoom y
         desplazamiento del pellizco, así no flota sobre la pantalla. */}
       {showOracle && !demoModalOpen && <FlashNewsMarquee mobScale={IS_MOBILE ? mobScale : 1} pinch={IS_MOBILE ? pinchState : { z: 1, tx: 0, ty: 0 }} />}
-      {IS_PHONE && battleActive && isPortrait && (
-        <div className="bf-rotate-hint" style={{ position: 'fixed', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 50, display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(8,5,14,.82)', border: '1px solid rgba(255,210,74,.6)', boxShadow: '0 2px 12px rgba(0,0,0,.5)', color: '#ffe49a', fontWeight: 700, fontSize: 12, letterSpacing: '.3px', pointerEvents: 'none', maxWidth: '92vw', whiteSpace: 'nowrap' }}>
-          <span style={{ fontSize: 16, animation: 'bfRotateWiggle 1.6s ease-in-out infinite' }}>↻</span>
-          <span>{t('Gira el móvil para ver el campo más grande')}</span>
-        </div>
-      )}
       {showIntro && <IntroCinematic onClose={() => {
         setShowIntro(false);
         if (introAutoDemoRef.current) {
