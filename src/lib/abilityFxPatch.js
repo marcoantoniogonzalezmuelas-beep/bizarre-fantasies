@@ -207,7 +207,10 @@ export const ABILITY_FX_PATCH = `
       // Si la habilidad es un ATAQUE CC o AD, el efecto visual lo pone el ARMA
       // que lleve el héroe (attackFxPatch, mismo efecto que en el golpe normal):
       // no se pinta el sprite genérico para no taparlo ni uniformarlo todo.
-      var weaponDriven=(fam==='melee'||fam==='ranged');
+      // Igual con los ataques HE ofensivos: el efecto lo pone el hechizo por
+      // elemento (spellFxPatch), el mismo que ya se ve al lanzar un hechizo.
+      var SPELL_DRIVEN={'aoe-he':1,'big-he':1,'drain':1};
+      var weaponDriven=(fam==='melee'||fam==='ranged'||SPELL_DRIVEN[hero.akind]);
       if(A.spriteBurst&&!weaponDriven)A.spriteBurst('ab_'+fam,cc,260,2150);
       if(fam==='debuff')setTimeout(function(){A.hitStar(cc);},180);
     }
