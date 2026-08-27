@@ -20,7 +20,7 @@ export const STATUS_LABEL_PATCH = `
     { key:'sleep',    icon:'\\ud83d\\udca4', label:'DORMIDO',    c1:'#6aa9ff', c2:'#10285e', test:function(h){ return h.sleep > 0; } },
     { key:'para',     icon:'\\u26a1',        label:'PARALIZADO', c1:'#ffe14a', c2:'#6b5000', test:function(h){ return h.para > 0; } },
     { key:'silence',  icon:'\\ud83d\\udd07', label:'SILENCIADO', c1:'#c9b6ff', c2:'#2e1a63', test:function(h){ return h.silence > 0; } },
-    { key:'frozen',   icon:'\\u2744',        label:'CONGELADO',  c1:'#8fe6ff', c2:'#0b3a5e', test:function(h){ return (h._mods || []).some(function(m){ return m && (m.turns === undefined || m.turns > 0) && Number(m.vel) < 0; }); } },
+    { key:'frozen',   icon:'\\u2744',        label:'CONGELADO',  c1:'#8fe6ff', c2:'#0b3a5e', test:function(h){ return h.frozen > 0 || (h._mods || []).some(function(m){ return m && (m.turns === undefined || m.turns > 0) && Number(m.vel) < 0; }); } },
     { key:'confuse',  icon:'\\u2605',        label:'CONFUSO',    c1:'#ff9ae6', c2:'#5c0d4b', test:function(h){ return h._bfConfused > 0; } },
     { key:'drunk',    icon:'\\u25c9',        label:'BORRACHO',   c1:'#ffb45c', c2:'#5e2f00', test:function(h){ return h._bfDrunk > 0; } },
     { key:'dizzy',    icon:'\\ud83c\\udf00', label:'MAREADO',    c1:'#7ee8e0', c2:'#0b4a46', test:function(h){ return h._bfDizzy > 0; } },
@@ -39,7 +39,7 @@ export const STATUS_LABEL_PATCH = `
 
   var css =
     // Columna de rótulos: pegada al borde inferior izquierdo, sobre el retrato.
-    '.bf-status-labels{position:absolute!important;left:5px!important;bottom:5px!important;right:5px!important;z-index:14!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;pointer-events:none!important;contain:layout style!important}' +
+    '.bf-status-labels{position:absolute!important;left:5px!important;bottom:5px!important;right:5px!important;z-index:20!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;pointer-events:none!important;contain:layout style!important}' +
     '.bf-status-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:999px;font-family:Cinzel,serif;font-weight:900;font-size:9.5px;letter-spacing:.6px;line-height:1.35;white-space:nowrap;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.3);box-shadow:0 1px 4px rgba(0,0,0,.5);animation:bfStatusTagIn .28s ease-out both}' +
     '.bf-status-tag i{font-style:normal;font-size:11px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}' +
     '@keyframes bfStatusTagIn{from{opacity:0;transform:translateX(-8px) scale(.9)}to{opacity:1;transform:none}}' +
@@ -92,7 +92,7 @@ export const STATUS_LABEL_PATCH = `
     // meter los rótulos aquí no puede alterar la maquetación del nombre ni de
     // la barra de atributos, ni en héroes con nombres muy largos.
     var host = card.querySelector('.bf-battle-art') || card;
-    var box = host.querySelector('.bf-status-labels');
+    var box = card.querySelector('.bf-status-labels');
     var active = [];
     if(hero && hero.alive) STATES.forEach(function(s){ try { if(s.test(hero)) active.push(s); } catch(e){} });
 
@@ -113,7 +113,11 @@ export const STATUS_LABEL_PATCH = `
     if(!box){
       box = document.createElement('div');
       box.className = 'bf-status-labels';
-      host.appendChild(box);
+      // Se ancla a la carta (.bhero) y no al retrato (.bf-battle-art): así queda
+      // POR ENCIMA de las capas de efecto del juego (escarcha del congelado,
+      // z-index 15) y el rótulo no queda tapado. Es absolute + contain, así que
+      // no altera el flujo del nombre ni de la barra de atributos.
+      card.appendChild(box);
     }
     box.dataset.bfSig = signature;
     box.innerHTML = active.map(function(s){
