@@ -344,9 +344,13 @@ export const ABILITY_ANIM_PATCH = `
     // salen SIEMPRE que se juegan (once=false).
     if(once&&played[url])return;
     // Antirrebote POR IMAGEN: evita que el mismo disparo se duplique (varios
-    // hooks a la vez). Largo para héroes, corto para hechizos/objetos, que sí
-    // pueden repetirse en la misma partida.
-    var deb=once?9000:2000;
+    // hooks a la vez). Largo para héroes (una vez por partida).
+    // REGLA PARA HECHIZOS/OBJETOS: la cinemática 3D se reproduce UNA sola vez por
+    // cada acción jugada. El antirrebote cubre toda la duración del overlay (5 s)
+    // + colas, así aunque varios ganchos disparen la misma acción (castSpell,
+    // __bfPlayItemCine, reenvíos de red…), solo se ve una vez. La acción
+    // siguiente (ya pasado ese margen) sí vuelve a sonar.
+    var deb=once?9000:5500;
     if(lastUrlPlay[url]&&Date.now()-lastUrlPlay[url]<deb)return;
     // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
     // termine la actual. Solo se guarda la última pendiente (no acumula cola).
@@ -444,10 +448,17 @@ export const ABILITY_ANIM_PATCH = `
   // directamente a castSpell / useItem (y sus versiones IA) en vez de usar el
   // escaneo. Marca window.__bfCardCineName para que cardPlayRevealPatch NO
   // muestre la carta revelada al mismo tiempo (sin solapar ambas animaciones).
+  // REGLA: una sola cinemática 3D por acción de hechizo/objeto. Candado por
+  // nombre que dura lo que se ve el overlay (5 s) + margen de cola: aunque
+  // varios ganchos disparen la misma acción a la vez, solo el primero pasa.
+  var itemActionLock={};
   function playItemCinematic(item,entry){
     // Cinemáticas 3D desactivadas: se salta el overlay 3D y NO se fija
     // __bfCardCineName, así la carta revelada sí se muestra en el centro.
     if(window.__bfNoCinematics)return;
+    var lockKey=String(item&&item.name||'').toLowerCase();
+    if(lockKey&&itemActionLock[lockKey]&&Date.now()-itemActionLock[lockKey]<5500)return;
+    if(lockKey)itemActionLock[lockKey]=Date.now();
     var url=entry.base;
     if(!url)return;
     var cc=(item&&item.element&&SPELL_COLORS[item.element])||'#ffd24a';
