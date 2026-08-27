@@ -56,10 +56,12 @@ export const DRAIN_OBJECT_PATCH = `
   '@keyframes bfDrFly{0%{transform:translate(0,0) rotate(-14deg) scale(.6);opacity:0}12%{opacity:1}30%{transform:translate(45vw,16vh) rotate(-6deg) scale(1.05)}52%{transform:translate(78vw,2vh) rotate(6deg) scale(1.15)}72%{transform:translate(48vw,22vh) rotate(-8deg) scale(1.1)}100%{transform:translate(150vw,6vh) rotate(-3deg) scale(.85);opacity:0}}'+
   '#bf-drain-cine .bf-dr-ttl{position:absolute;top:5%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:3px;white-space:nowrap;color:#ff6ad5;text-shadow:0 0 30px rgba(220,60,200,.95),0 4px 12px #000;opacity:0;animation:bfDrTtl 2.9s ease-out .3s forwards}'+
   '@keyframes bfDrTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0}}'+
-  '#bf-drain-cine .bf-dr-note{position:absolute;font-size:26px;color:#ffb8f0;opacity:0;text-shadow:0 0 12px rgba(255,120,230,.9);animation:bfDrNote 2.4s ease-out forwards}'+
-  '@keyframes bfDrNote{0%{opacity:0;transform:translateY(0) rotate(0) scale(.5)}25%{opacity:1}100%{opacity:0;transform:translateY(-42vh) rotate(30deg) scale(1.2)}}'+
-  '#bf-drain-cine .bf-dr-drop{position:absolute;width:9px;height:14px;border-radius:50% 50% 55% 55%/40% 40% 60% 60%;background:#c8134f;box-shadow:0 0 14px rgba(255,40,110,.9);opacity:0;animation:bfDrDrop 2.2s ease-in forwards}'+
-  '@keyframes bfDrDrop{0%{opacity:0;transform:translateY(-20px) scale(.5)}20%{opacity:1}100%{opacity:0;transform:translateY(46vh) scale(1.15)}}';
+  // Partículas MÁGICAS (orbes arcanos violetas que ascienden + runas brillantes)
+  // en vez de gotas de agua/sangre cayendo: el drenaje es un hechizo, no líquido.
+  '#bf-drain-cine .bf-dr-rune{position:absolute;font-size:24px;color:#d9a8ff;opacity:0;text-shadow:0 0 14px rgba(180,90,255,.95),0 0 22px rgba(140,50,220,.6);animation:bfDrRune 2.6s ease-out forwards}'+
+  '@keyframes bfDrRune{0%{opacity:0;transform:translateY(10px) rotate(0) scale(.4)}22%{opacity:1}60%{transform:translateY(-20vh) rotate(40deg) scale(1.25)}100%{opacity:0;transform:translateY(-44vh) rotate(80deg) scale(.8)}}'+
+  '#bf-drain-cine .bf-dr-spark{position:absolute;width:11px;height:11px;border-radius:50%;background:radial-gradient(circle,#f0c8ff,#b06bff 52%,#7a2cff 72%,transparent 78%);box-shadow:0 0 16px rgba(180,90,255,.95),0 0 30px rgba(140,50,220,.55);opacity:0;animation:bfDrSpark 2.4s ease-out forwards}'+
+  '@keyframes bfDrSpark{0%{opacity:0;transform:translateY(18px) scale(.4)}18%{opacity:1}55%{transform:translateY(-18vh) scale(1.35)}100%{opacity:0;transform:translateY(-42vh) scale(.7)}}';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
   function playDrainCine(){
@@ -73,8 +75,8 @@ export const DRAIN_OBJECT_PATCH = `
     try{ if(typeof window.__bfPlayItemCine === 'function' && window.__bfPlayItemCine('Drenaje')) return; }catch(e){}
     var ov = document.createElement('div'); ov.id = 'bf-drain-cine';
     var html = '<div class="bf-dr-veil"></div>';
-    for(var n = 0; n < 12; n++) html += '<span class="bf-dr-note" style="left:' + (6 + Math.random()*88) + '%;top:' + (25 + Math.random()*50) + '%;animation-delay:' + (Math.random()*1.6).toFixed(2) + 's">' + (Math.random() < 0.5 ? '\\u266a' : '\\u266b') + '</span>';
-    for(var d = 0; d < 18; d++) html += '<span class="bf-dr-drop" style="left:' + (4 + Math.random()*92) + '%;top:' + (10 + Math.random()*40) + '%;animation-delay:' + (Math.random()*1.5).toFixed(2) + 's"></span>';
+    for(var n = 0; n < 14; n++) html += '<span class="bf-dr-rune" style="left:' + (6 + Math.random()*88) + '%;top:' + (28 + Math.random()*46) + '%;animation-delay:' + (Math.random()*1.6).toFixed(2) + 's">' + (Math.random() < 0.5 ? '\\u2726' : '\\u2727') + '</span>';
+    for(var d = 0; d < 22; d++) html += '<span class="bf-dr-spark" style="left:' + (4 + Math.random()*92) + '%;top:' + (16 + Math.random()*44) + '%;animation-delay:' + (Math.random()*1.5).toFixed(2) + 's"></span>';
     html += '<img class="bf-dr-witch" src="' + (CUT[CINE_ART] || CINE_ART) + '" alt="">';
     html += '<div class="bf-dr-ttl">\\u00a1DRENAJE!</div>';
     ov.innerHTML = html;
