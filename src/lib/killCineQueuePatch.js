@@ -21,6 +21,9 @@ export const KILL_CINE_QUEUE_PATCH = `
       var fx = document.getElementById('bf-fx-layer');
       if(fx && fx.children.length) return true;
       if(document.querySelector('.bf-combat-fx,.bf-fx-projectile,.bf-fx-magic-orb,.bf-cast-flash,.bf-cast-runes')) return true;
+      // Números de daño en cola: se están esperando a que acabe una cinemática,
+      // así que el golpe mortal NO puede adelantarse a ellos.
+      if(window.__bfDmgPending > 0) return true;
       // Marcadores de daño / curación / estado flotantes.
       if(document.querySelector('.bf-dmg-pop,.bf-heal-pop,.bf-absorb-pop,.bf-stat-pop,.bf-status-pop,.bf-loss-pop,.bf-fx-float')) return true;
     }catch(e){}
@@ -45,6 +48,9 @@ export const KILL_CINE_QUEUE_PATCH = `
         // Pequeño margen para que el último fotograma del efecto anterior
         // termine de desaparecer antes de entrar el remate.
         setTimeout(function(){
+          // Reintento: si en ese margen ha aparecido el número de daño (se pinta
+          // unas décimas después), se vuelve a esperar en vez de solaparse.
+          if(busy() && waited < 9000){ waited += 200; setTimeout(wait, 200); return; }
           var i = pending.indexOf(card); if(i !== -1) pending.splice(i, 1);
           try { orig(card); } catch(e){}
         }, 260);

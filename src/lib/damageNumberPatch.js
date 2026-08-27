@@ -43,14 +43,19 @@ export const DAMAGE_NUMBER_PATCH = `
   function cineOpen(){
     return !!(document.getElementById('bf-abil-anim') || document.getElementById('bf-spec-cine'));
   }
+  // Contador de números de daño PENDIENTES (esperando a que acabe una
+  // cinemática). El golpe mortal lo consulta para no adelantarse a ellos.
+  window.__bfDmgPending = 0;
   function pop(side, id, amt){
     if(cineOpen()){
+      window.__bfDmgPending++;
       var waited = 0, iv = setInterval(function(){
-        waited += 300;
+        waited += 120;
         if(cineOpen() && waited < 20000) return;
         clearInterval(iv);
+        window.__bfDmgPending = Math.max(0, window.__bfDmgPending - 1);
         paint(side, id, amt);
-      }, 300);
+      }, 120);
       return;
     }
     paint(side, id, amt);
