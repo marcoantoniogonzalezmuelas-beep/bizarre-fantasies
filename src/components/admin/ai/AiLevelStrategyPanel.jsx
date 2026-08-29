@@ -5,7 +5,7 @@ import AiLevelAvatar from '@/components/admin/ai/AiLevelAvatar';
 // Panel con la estrategia aprendida por cada nivel de IA.
 export default function AiLevelStrategyPanel({ strategies }) {
   return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {AI_LEVELS.map((lvl) => {
         const rec = strategies[lvl.id];
         const s = rec?.strategy || {};

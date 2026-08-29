@@ -25,6 +25,7 @@ export const AI_LEVEL_PATCH = `
     { id: 'berserker',  name: 'IA Bersérker', name_en: 'AI Berserker', desc: 'Agresiva al máximo, sin piedad',           desc_en: 'Max aggression, no mercy',                 bidAggression: 0.90, abilityUsage: 0.95, targetPriority: 'strongest', purchaseTiming: 'early',    unlockReq: 2, prevId: 'novice', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/274f7a3e2_generated_image.png' },
     { id: 'strategist', name: 'IA Estratega', name_en: 'AI Strategist', desc: 'Equilibrada y táctica (recomendada)',       desc_en: 'Balanced and tactical (recommended)',       bidAggression: 0.70, abilityUsage: 0.75, targetPriority: 'balanced',  purchaseTiming: 'balanced', unlockReq: 3, prevId: 'berserker', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/88ab0dd62_generated_image.png' },
     { id: 'nemesis',    name: 'IA Némesis',   name_en: 'AI Nemesis',   desc: 'Roba tus héroes, juega casi perfecto',      desc_en: 'Steals your heroes, near-perfect play',      bidAggression: 1.0,  abilityUsage: 1.0,  targetPriority: 'healer',    purchaseTiming: 'balanced', unlockReq: 5, prevId: 'strategist', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/fd6b3a75e_generated_image.png' },
+    { id: 'bizarra',    name: 'IA Bizarra',   name_en: 'Bizarre AI',   desc: 'El caos hecho IA: junta todo lo aprendido. Gánale 10 veces para pasarte el juego', desc_en: 'Chaos made AI: all knowledge combined. Beat it 10 times to beat the game', bidAggression: 1.0, abilityUsage: 1.0, targetPriority: 'healer', purchaseTiming: 'balanced', unlockReq: 5, prevId: 'nemesis', avatar: 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c2af32041_generated_image.png' },
   ];
 
   var KEY = 'bfAiLevel';
@@ -227,6 +228,14 @@ export const AI_LEVEL_PATCH = `
                 var nm = isEn() ? nextLvl.name_en : nextLvl.name;
                 setTimeout(function(){ notif((isEn() ? 'Unlocked: ' : 'Desbloqueada: ') + nm + ' ⚡'); }, 1200);
               }
+              // Cinemática bizarra al completar TODAS las IAs (5ª victoria vs Némesis → IA Bizarra).
+              if (lvl.id === 'nemesis' && typeof window.__bfBizarreCelebration === 'function') {
+                setTimeout(function(){ window.__bfBizarreCelebration('nemesis_complete'); }, 1600);
+              }
+            }
+            // Fin del juego: 10 victorias vs IA Bizarra.
+            if (lvl.id === 'bizarra' && newWins === 10 && typeof window.__bfBizarreCelebration === 'function') {
+              setTimeout(function(){ window.__bfBizarreCelebration('game_complete'); }, 1600);
             }
           }
         }
@@ -272,7 +281,7 @@ export const AI_LEVEL_PATCH = `
   // Avisa al padre del nivel actual y las victorias (para posible persistencia).
   function notifyParent(){
     try {
-      var payload = { bfAiProgress: { level: getLevelId(), wins: {} } };
+      var payload = { bfAiProgress: { level: getLevelId(), nick: getCurrentNick(), wins: {} } };
       LEVELS.forEach(function(l){ payload.bfAiProgress.wins[l.id] = getWins(l.id); });
       window.parent.postMessage(payload, '*');
     } catch(e) {}

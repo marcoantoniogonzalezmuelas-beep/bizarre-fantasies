@@ -46,9 +46,9 @@ export default function AdminAiLogs() {
     setLearningKey('');
   }
 
-  // "Analizar con las 4 IAs": lanza el aprendizaje de los cuatro niveles sobre
+  // "Analizar con las 5 IAs": lanza el aprendizaje de los cinco niveles sobre
   // la misma partida, uno detrás de otro. Cada nivel mantiene su techo de
-  // dificultad, así que la escalera Novata → Némesis se conserva.
+  // dificultad, así que la escalera Novata → Bizarra se conserva.
   async function learnAll(logId) {
     setMessage('');
     for (const lvl of AI_LEVELS) {
@@ -64,7 +64,7 @@ export default function AdminAiLogs() {
       }
     }
     setLearningKey('');
-    setMessage('✓ Las 4 IAs han analizado esta partida, cada una dentro de su nivel de dificultad.');
+    setMessage('✓ Las 5 IAs han analizado esta partida, cada una dentro de su nivel de dificultad.');
     await loadAll();
   }
 
@@ -88,7 +88,7 @@ export default function AdminAiLogs() {
           <div>
             <h1 className="font-heading text-3xl font-black text-[#fff5dc]">Aprendizaje de las IAs</h1>
             <p className="mt-1 text-sm text-[#cfc6dd]">Logs de partidas y estrategia aprendida por cada nivel. Pulsa un nivel en una partida para que la lea y aprenda, o «Las 4 IAs» para que la analicen todas.</p>
-            <p className="mt-1 text-[11px] text-[#9a8ba8]">Cada análisis consume 1 crédito de integración (analizar con las 4 IAs = 4 créditos).</p>
+            <p className="mt-1 text-[11px] text-[#9a8ba8]">Cada análisis consume 1 crédito de integración (analizar con las 5 IAs = 5 créditos).</p>
           </div>
           <Link to="/admin" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">← Backoffice</Link>
         </div>

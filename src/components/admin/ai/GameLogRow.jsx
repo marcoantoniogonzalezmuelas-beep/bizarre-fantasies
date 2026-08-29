@@ -28,10 +28,10 @@ export default function GameLogRow({ log, learningKey, onLearn, onLearnAll }) {
           <button
             disabled={busyAny}
             onClick={() => onLearnAll(log.id)}
-            title="Que las 4 IAs analicen esta partida (4 créditos de integración)"
+            title="Que las 5 IAs analicen esta partida (5 créditos de integración)"
             className="flex items-center gap-1 rounded-lg border border-[#ffd24a] bg-[#ffd24a] px-2.5 py-1 text-[10px] font-black text-[#3a2600] transition-opacity hover:brightness-110 disabled:opacity-60"
           >
-            {busyAny ? '⏳' : '⚡'} Las 4 IAs
+            {busyAny ? '⏳' : '⚡'} Las 5 IAs
           </button>
           <span className="text-[#ffd24a33]">|</span>
           {AI_LEVELS.map((lvl) => {

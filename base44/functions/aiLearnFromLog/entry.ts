@@ -26,6 +26,11 @@ const LEVEL_META = {
     persona: 'Casi perfecta: roba los mejores héroes al jugador y no comete errores. bidAggression entre 0.85 y 1.0, abilityUsage entre 0.85 y 1.0.',
     min: { bid: 0.85, ab: 0.85 }, max: { bid: 1.0, ab: 1.0 },
   },
+  bizarra: {
+    name: 'IA Bizarra',
+    persona: 'La IA DEFINITIVA: combina TODO el conocimiento aprendido por Novata, Bersérker, Estratega y Némesis. Juega a la perfección, sin piedad, con la creatividad bizarra de los héroes más absurdos. bidAggression entre 0.95 y 1.0, abilityUsage entre 0.95 y 1.0.',
+    min: { bid: 0.95, ab: 0.95 }, max: { bid: 1.0, ab: 1.0 },
+  },
 };
 
 export default async function (req: Request): Promise<Response> {
@@ -44,6 +49,18 @@ export default async function (req: Request): Promise<Response> {
     const existing = await base44.asServiceRole.entities.AiLevelStrategy.filter({ level_id });
     const current = existing && existing[0];
     const currentStrategy = (current && current.strategy) || {};
+
+    // IA Bizarra: junta el conocimiento de todos los niveles anteriores para
+    // que sea la que mejor juega de todas, combinando lo aprendido por cada uno.
+    let combinedKnowledge = '';
+    if (level_id === 'bizarra') {
+      const allStrats = await base44.asServiceRole.entities.AiLevelStrategy.list('-updated_date', 20).catch(() => []);
+      const others = (allStrats || []).filter(r => r.level_id && r.level_id !== 'bizarra' && r.strategy);
+      if (others.length) {
+        combinedKnowledge = '\n\nCONOCIMIENTO ACUMULADO DE LOS DEMÁS NIVELES (combínalo con lo que aprendas de esta partida, sin perder nada de lo bueno):\n' +
+          others.map(r => `- ${r.level_id}: ${JSON.stringify(r.strategy)}`).join('\n');
+      }
+    }
 
     // Resumen compacto de la partida para el LLM.
     const matchSummary = {
@@ -66,6 +83,7 @@ export default async function (req: Request): Promise<Response> {
         'La IA juega como "opponente"; player_won=false significa que la IA ganó.\n\n' +
         `Estás entrenando al nivel "${meta.name}" (${level_id}). Personalidad del nivel (OBLIGATORIA): ${meta.persona}\n\n` +
         'Estrategia actual aprendida por este nivel:\n' + JSON.stringify(currentStrategy) + '\n\n' +
+        combinedKnowledge + '\n\n' +
         'Partida a analizar (eventos turno a turno, héroes, compras, resultado):\n' + JSON.stringify(matchSummary) + '\n\n' +
         'Analiza qué hizo bien y mal la IA en esta partida y AJUSTA la estrategia del nivel ' +
         '(mezcla lo ya aprendido con las lecciones nuevas de esta partida, sin descartarlo todo). Devuelve JSON:\n' +

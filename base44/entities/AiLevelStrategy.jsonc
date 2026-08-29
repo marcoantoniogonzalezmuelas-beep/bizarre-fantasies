@@ -8,7 +8,8 @@
         "novice",
         "berserker",
         "strategist",
-        "nemesis"
+        "nemesis",
+        "bizarra"
       ],
       "description": "Nivel de IA al que pertenece esta estrategia aprendida"
     },
