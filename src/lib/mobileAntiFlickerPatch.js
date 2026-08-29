@@ -83,12 +83,32 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 /* Sacudida del héroe agonizante: sin filtros animados encima del arte. */
 .bhero.bf-agonizing .bf-battle-art{filter:none!important}
 /* Overlays de cinemática: capa propia y aislada. */
-#bf-abil-anim,#bf-spec-cine,#bf-kill-ov{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
+#bf-abil-anim,#bf-spec-cine,#bf-kill-ov{isolation:isolate!important;contain:layout style!important;transform:translateZ(0)!important}
 /* Hijos animados de los overlays de cinemática 3D: cada uno su propia capa GPU
    para que sus fotogramas no repinten la textura a pantalla completa del overlay
    (eso es lo que parpadea en tablet). will-change promociona sin pisar el
    transform de la animación. */
 #bf-abil-anim>*,#bf-spec-cine>*,#bf-kill-ov>*{will-change:transform,opacity!important}
+/* Móvil/tablet: la cinemática 3D a pantalla completa (perspective +
+   preserve-3d + filter drop-shadow + backdrop-filter) fuerza a la GPU a
+   recomponer TODO el documento (body + batalla) en cada fotograma →
+   parpadeo intenso, héroes en negro, pantalla descompuesta. Se simplifica a
+   un overlay 2D plano: la imagen sale grande y nítida con fade+scale, sin
+   perspectiva ni filtros pesados. Se ve igual de clara y no parpadea. */
+#bf-abil-anim{perspective:none!important}
+#bf-abil-anim .bf-aa-img{
+  transform-style:flat!important;
+  filter:none!important;
+  animation:bfAaMobileImg 4.5s ease-out forwards!important;
+}
+#bf-abil-anim .bf-aa-desc{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#bf-abil-anim .bf-aa-ring{display:none!important}
+@keyframes bfAaMobileImg{
+  0%{opacity:0;transform:scale(.72)}
+  15%{opacity:1;transform:scale(1)}
+  82%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.08)}
+}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
