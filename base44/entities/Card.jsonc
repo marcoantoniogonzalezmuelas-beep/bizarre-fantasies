@@ -191,6 +191,15 @@
         "label": {
           "type": "string",
           "description": "Texto del marcador"
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "conditional",
+            "permanent"
+          ],
+          "default": "conditional",
+          "description": "conditional = el marcador se quita cuando se cumple la condici\u00f3n (se dispara una vez); permanent = la pasiva est\u00e1 activa toda la partida."
         }
       }
     },
