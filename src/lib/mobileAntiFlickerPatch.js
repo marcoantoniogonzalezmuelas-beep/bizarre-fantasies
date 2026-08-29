@@ -90,8 +90,11 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    transform de la animación. */
 #bf-abil-anim>*,#bf-spec-cine>*,#bf-kill-ov>*{will-change:transform,opacity!important}
 /* Las cinemáticas 3D se dejan EXACTAMENTE igual que en escritorio (perspectiva,
-   movimiento temático, anillos y filtros incluidos): ahí se ven perfectas y
-   simplificarlas a un fundido 2D las dejaba estáticas. */
+   movimiento temático y filtros incluidos): ahí se ven perfectas y
+   simplificarlas a un fundido 2D las dejaba estáticas. Lo único que se quita
+   son los anillos expansivos, que son puro adorno y de lo que más cuesta pintar
+   en táctil (bordes enormes con halo animándose sobre toda la pantalla). */
+#bf-abil-anim .bf-aa-ring{display:none!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
