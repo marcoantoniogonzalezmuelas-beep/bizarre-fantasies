@@ -17,10 +17,12 @@ export const TYPE_STAT_NUMBER_PATCH = `
   var COLORS = { cc:'#ff6a5f', ad:'#54e876', he:'#b06cff' };
 
   var st = document.createElement('style');
-  st.textContent = '.bf-stats-block{display:inline-block;font-family:Rubik,sans-serif;font-weight:900;font-size:14px;line-height:1;white-space:nowrap;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6)}'+
-    '.bf-stats-block .bf-type-num{font-size:15px}'+
-    // Alto fijo de la barra: aunque el contenido cambie, nunca mueve la carta.
-    '.bhero .vel-tag{min-height:17px!important;height:17px!important;display:flex!important;align-items:center!important;white-space:nowrap!important;overflow:hidden!important;contain:layout style!important}';
+  st.textContent = '.bf-stats-block{display:inline-block;font-family:Rubik,sans-serif;font-weight:900;font-size:17px;line-height:1;letter-spacing:.3px;white-space:nowrap;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.6)}'+
+    '.bf-stats-block .bf-type-num{font-size:19px}'+
+    // Barra más ancha y con más cuerpo (antes era una tira de 17px con letra de
+    // 14px, y se veía muy estrecha). Alto FIJO: aunque el contenido cambie,
+    // nunca mueve la carta.
+    '.bhero .vel-tag{min-height:28px!important;height:28px!important;display:flex!important;align-items:center!important;padding:0 10px!important;border-radius:8px!important;background:rgba(8,5,14,.55)!important;border:1px solid rgba(255,210,74,.22)!important;white-space:nowrap!important;overflow:hidden!important;contain:layout style!important}';
   document.head.appendChild(st);
 
   function keyOf(t){
