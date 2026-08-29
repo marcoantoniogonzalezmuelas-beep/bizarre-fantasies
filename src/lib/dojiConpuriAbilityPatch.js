@@ -84,31 +84,42 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
       var dealt = orig.apply(this, arguments);
       try{
         // Normal: la próxima vez que reciba daño → dado de 2 caras.
+        // Se usa el motor compartido de dados (__bfHeroRoll) para que salga la
+        // misma cinemática que en el resto de habilidades, y se espera a que el
+        // dado se fije antes de resolver el efecto (matar / no hacer nada).
         if(armedThreat && target._bfDojiThreat && hpBefore > (target.hp||0)){
           target._bfDojiThreat = false; // se consume (una sola vez por partida)
-          var roll = 1 + Math.floor(Math.random()*2); // 1 o 2
-          if(typeof pushLog === 'function') pushLog('li', '\\u{1F3B2} '+target.name+' lanza el dado de la amenaza: '+roll+'.');
-          if(roll === 1){
-            var tSideF = (typeof tSide === 'function') ? tSide : null;
-            var foeSide = tSideF ? (tSideF(target) === 'p' ? 'o' : 'p') : 'o';
-            var foes = ((typeof G!=='undefined'&&G.team&&G.team[foeSide])||[]).filter(function(f){ return f && f.alive; });
-            // Preferir al atacante si es rival; si no, el rival con menos vida.
-            var attacker = (typeof B!=='undefined'&&B&&B.current&&typeof getHero==='function') ? getHero(B.current.side, B.current.id) : null;
-            var victim = null;
-            if(attacker && attacker.alive && attacker !== target && tSideF && tSideF(attacker) === foeSide) victim = attacker;
-            if(!victim && foes.length) victim = foes.slice().sort(function(a,b){ return (a.hp||0)-(b.hp||0); })[0];
-            if(victim){
-              if(typeof pushLog === 'function') pushLog('ld', '\\u2620 '+target.name+': \\u00a1el dado sale 1! '+victim.name+' cae fulminado.');
-              orig.call(window, victim, 9999, {type:'spell', element:'arcano', bfDojiKill:true});
-              if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id});
-            } else if(typeof pushLog === 'function'){
-              pushLog('lx', target.name+': no hay rivales vivos a los que fulminar.');
-            }
-          } else if(typeof pushLog === 'function'){
-            pushLog('lx', target.name+': el dado sale 2. No ocurre nada.');
+          var dr = 1 + Math.floor(Math.random()*2); // 1 o 2 (una sola tirada real)
+          if(typeof window.__bfHeroRoll === 'function'){
+            window.__bfHeroRoll({ faces:2, forced:dr, hero: target.name, label:'PEQUE\\u00d1A AMENAZA',
+              note: dr === 1 ? '\\u00a1FULMINA A UN RIVAL!' : 'NO OCURRE NADA' });
           }
-          if(typeof renderBattle === 'function') renderBattle();
-          if(typeof netSync === 'function') netSync('s-battle');
+          // Resolver el efecto tras la cinemática del dado (~2.2s).
+          setTimeout(function(){
+            try{
+              if(dr === 1){
+                var tSideF = (typeof tSide === 'function') ? tSide : null;
+                var foeSide = tSideF ? (tSideF(target) === 'p' ? 'o' : 'p') : 'o';
+                var foes = ((typeof G!=='undefined'&&G.team&&G.team[foeSide])||[]).filter(function(f){ return f && f.alive; });
+                // Preferir al atacante si es rival; si no, el rival con menos vida.
+                var attacker = (typeof B!=='undefined'&&B&&B.current&&typeof getHero==='function') ? getHero(B.current.side, B.current.id) : null;
+                var victim = null;
+                if(attacker && attacker.alive && attacker !== target && tSideF && tSideF(attacker) === foeSide) victim = attacker;
+                if(!victim && foes.length) victim = foes.slice().sort(function(a,b){ return (a.hp||0)-(b.hp||0); })[0];
+                if(victim){
+                  if(typeof pushLog === 'function') pushLog('ld', '\\u2620 '+target.name+': \\u00a1el dado sale 1! '+victim.name+' cae fulminado.');
+                  orig.call(window, victim, 9999, {type:'spell', element:'arcano', bfDojiKill:true});
+                  if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id});
+                } else if(typeof pushLog === 'function'){
+                  pushLog('lx', target.name+': no hay rivales vivos a los que fulminar.');
+                }
+              } else if(typeof pushLog === 'function'){
+                pushLog('lx', target.name+': el dado sale 2. No ocurre nada.');
+              }
+              if(typeof renderBattle === 'function') renderBattle();
+              if(typeof netSync === 'function') netSync('s-battle');
+            }catch(e){}
+          }, 2200);
         }
         // Élite: al morir → resucita a todos los aliados caídos a vida completa.
         if(armedRevive && target._bfDojiRevive && wasAlive && !target.alive){
