@@ -90,12 +90,7 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
         if(armedThreat && target._bfDojiThreat && hpBefore > (target.hp||0)){
           target._bfDojiThreat = false; // se consume (una sola vez por partida)
           var dr = 1 + Math.floor(Math.random()*2); // 1 o 2 (una sola tirada real)
-          if(typeof window.__bfHeroRoll === 'function'){
-            window.__bfHeroRoll({ faces:2, forced:dr, hero: target.name, label:'PEQUE\\u00d1A AMENAZA',
-              note: dr === 1 ? '\\u00a1FULMINA A UN RIVAL!' : 'NO OCURRE NADA' });
-          }
-          // Resolver el efecto tras la cinemática del dado (~2.2s).
-          setTimeout(function(){
+          var resolveThreat = function(){
             try{
               if(dr === 1){
                 var tSideF = (typeof tSide === 'function') ? tSide : null;
@@ -119,7 +114,16 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
               if(typeof renderBattle === 'function') renderBattle();
               if(typeof netSync === 'function') netSync('s-battle');
             }catch(e){}
-          }, 2200);
+          };
+          // El dado se lanza tras la cinemática 3D del ataque (regla general) y
+          // el efecto se resuelve al asentarse el dado (onSettled), no a ciegas.
+          if(typeof window.__bfHeroRoll === 'function'){
+            window.__bfHeroRoll({ faces:2, forced:dr, hero: target.name, label:'PEQUE\\u00d1A AMENAZA',
+              note: dr === 1 ? '\\u00a1FULMINA A UN RIVAL!' : 'NO OCURRE NADA',
+              onSettled: resolveThreat });
+          } else {
+            setTimeout(resolveThreat, 1200);
+          }
         }
         // Élite: al morir → resucita a todos los aliados caídos a vida completa.
         if(armedRevive && target._bfDojiRevive && wasAlive && !target.alive){

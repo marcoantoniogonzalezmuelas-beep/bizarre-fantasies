@@ -416,6 +416,13 @@ export const ABILITY_ANIM_PATCH = `
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
     setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);playingUrl=null;},5000);
   }
+  // Devuelve true mientras hay una cinemática 3D en curso o en cola. Lo usa
+  // el motor de dados (__bfHeroRoll) para que cualquier tirada espere a que
+  // termine la animación 3D anterior (p.ej. la del ataque que generó el daño
+  // que disparó el dado) antes de lanzarse. Así nunca se solapan.
+  window.__bfCinematicBusy=function(){
+    return !!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')||playingUrl||queuedCine||cineTimer);
+  };
   // Una sola cinemática por héroe y acción: las habilidades que piden objetivo
   // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso
   // lanzaba la misma animación dos veces.

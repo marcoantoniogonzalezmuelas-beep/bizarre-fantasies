@@ -127,6 +127,22 @@ export const HERO_DICE_PATCH = `
     }, 3750);
   }
 
+  // Lanza la cinemática del dado esperando a que termine la cinemática 3D que
+  // haya en cola (la de la acción anterior). REGLA GENERAL: cualquier tirada
+  // de dado sale DESPUÉS de la animación 3D en curso, nunca solapada.
+  function launchPop(payload, onSettled){
+    var start = Date.now();
+    function tick(){
+      if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()){
+        if(Date.now() - start < 12000){ setTimeout(tick, 200); return; }
+      }
+      pop(payload);
+      if(typeof onSettled === 'function') setTimeout(onSettled, 3800);
+    }
+    tick();
+  }
+  window.__bfHeroDiceLaunch = launchPop;
+
   // Motor compartido: cualquier habilidad (actual o futura) tira aquí su dado.
   function roll(cfg){
     cfg = cfg || {};
@@ -141,8 +157,9 @@ export const HERO_DICE_PATCH = `
         + (cfg.note ? ' \\u2014 ' + cfg.note : '')
         + (cfg.crit ? ' \\u2014 \\u00a1CR\\u00cdTICO! atraviesa escudo y armadura.' : '.'));
     }
-    // Se muestra tras el arranque de la cinemática 3D de la habilidad.
-    setTimeout(function(){ pop(payload); }, cfg.delay != null ? cfg.delay : 700);
+    // El dado se lanza tras un breve retardo (arranque de la cinemática de la
+    // habilidad) y SIEMPRE después de que termine la cinemática 3D en cola.
+    setTimeout(function(){ launchPop(payload, cfg.onSettled); }, cfg.delay != null ? cfg.delay : 700);
     if(typeof pushFx === 'function') pushFx({ k:'bfherodice', cfg:payload });
     return value;
   }
@@ -155,7 +172,7 @@ export const HERO_DICE_PATCH = `
     if(typeof window.flushFx === 'function' && !window.flushFx.__bfHdice){
       var orig = window.flushFx;
       window.flushFx = function(list){
-        try{ (list || []).forEach(function(ev){ if(ev && ev.k === 'bfherodice') pop(ev.cfg || ev); }); }catch(e){}
+        try{ (list || []).forEach(function(ev){ if(ev && ev.k === 'bfherodice') launchPop(ev.cfg || ev); }); }catch(e){}
         return orig.apply(this, arguments);
       };
       window.flushFx.__bfHdice = 1;
