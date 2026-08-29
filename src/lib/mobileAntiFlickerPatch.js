@@ -83,7 +83,7 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 /* Sacudida del héroe agonizante: sin filtros animados encima del arte. */
 .bhero.bf-agonizing .bf-battle-art{filter:none!important}
 /* Overlays de cinemática: capa propia y aislada. */
-#bf-abil-anim,#bf-spec-cine{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
+#bf-abil-anim,#bf-spec-cine,#bf-kill-ov{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
@@ -154,7 +154,7 @@ export const MOBILE_ANTIFLICKER_PATCH = `
     if(typeof window.renderBattle!=='function'||window.renderBattle.__bfFxFreeze)return false;
     var original=window.renderBattle, pending=false;
     function frozen(){
-      return !!document.getElementById('bf-abil-anim')||!!document.getElementById('bf-spec-cine')||Date.now()<(window.__bfDeathDelayUntil||0);
+      return !!document.getElementById('bf-abil-anim')||!!document.getElementById('bf-spec-cine')||!!document.getElementById('bf-kill-ov')||Date.now()<(window.__bfDeathDelayUntil||0);
     }
     function flush(){
       if(!pending||frozen())return;
