@@ -28,10 +28,22 @@ export const MOBILE_HAND_COLLAPSE_PATCH = `
   function key(hand){ return 'bfHandOpen_'+hand.id; }
   function isOpen(hand){ try{ return sessionStorage.getItem(key(hand))==='1'; }catch(e){ return false; } }
 
+  // Nº de cartas en la mano. Antes se buscaba ".card", una clase que el motor no
+  // usa en la mano, así que el contador salía siempre 0. Se cuentan los hijos
+  // reales de la mano (descartando el rótulo) y, si el motor las envuelve en un
+  // contenedor, los hijos de ese contenedor.
+  function countCards(hand){
+    var kids=Array.prototype.filter.call(hand.children,function(c){
+      return !c.classList.contains('hand-under-title');
+    });
+    if(kids.length===1&&kids[0].children.length)return kids[0].children.length;
+    return kids.length;
+  }
+
   function apply(hand,open){
     hand.classList.toggle('bf-hand-collapsed',!open);
     var b=hand.querySelector('.bf-hand-toggle');
-    if(b)b.innerHTML=open?'▲ Recoger cartas':'▼ Ver cartas ('+Math.max(0,hand.querySelectorAll('.hand .card, .card').length)+')';
+    if(b)b.innerHTML=open?'▲ Recoger cartas':'▼ Ver cartas ('+countCards(hand)+')';
     try{ sessionStorage.setItem(key(hand),open?'1':'0'); }catch(e){}
   }
 
