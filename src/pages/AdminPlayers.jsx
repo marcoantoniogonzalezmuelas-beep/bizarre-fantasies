@@ -29,6 +29,7 @@ export default function AdminPlayers() {
             <p className="mt-1 text-sm text-[#cfc6dd]">Quién ha jugado, cuándo y con qué resultados. Puedes resetear el histórico de un nick o el marcador de un enfrentamiento.</p>
           </div>
           <div className="flex gap-2">
+            <Link to="/admin/estadisticas-heroes" className="rounded-xl border border-[#66ffaa66] px-4 py-2 text-sm font-black text-[#9dffcf] hover:bg-[#66ffaa] hover:text-[#0a1f0e]">Stats héroes</Link>
             <Link to="/admin" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Backoffice de cartas</Link>
             <Link to="/" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Volver al juego</Link>
           </div>
