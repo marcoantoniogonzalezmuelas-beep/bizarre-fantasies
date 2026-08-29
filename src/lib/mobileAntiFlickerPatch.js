@@ -109,6 +109,29 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   82%{opacity:1;transform:scale(1)}
   100%{opacity:0;transform:scale(1.08)}
 }
+/* ===== SOLUCIÓN DEFINITIVA AL PARPADEO / RETRATOS QUE DESAPARECEN =====
+   CAUSA: cada retrato (.bhero) es su propia capa GPU y el tablero mantiene
+   decenas de capas vivas. Al insertar el overlay de la cinemática a pantalla
+   completa, la GPU del móvil/tablet se queda sin memoria de texturas y EXPULSA
+   esas capas: el navegador las vuelve a rasterizar una por una y eso es
+   exactamente lo que se ve como "los retratos desaparecen y aparecen" y como
+   parpadeo general.
+   SOLUCIÓN: mientras la cinemática 3D está en pantalla, el tablero NO se pinta
+   (lo tapa el overlay de todos modos). Sin nada que pintar detrás, la GPU no
+   tiene que mantener ni recuperar esas capas: no hay expulsión, no hay
+   re-rasterizado y no hay parpadeo. El layout se conserva intacto
+   (visibility, no display), así que al terminar la cinemática todo reaparece
+   exactamente igual y en su sitio, sin recalcular nada. */
+html.bf-cine-on #s-battle{visibility:hidden!important}
+/* Ya no se pinta nada del tablero: se retira también la promoción a capa GPU de
+   cada retrato para liberar esa memoria durante la cinemática. */
+html.bf-cine-on .bhero{transform:none!important;isolation:auto!important}
+/* Al ocultar el tablero, el degradado del overlay ya no puede dejar ver el
+   fondo: se hace opaco para que la cinemática tenga su propio fondo oscuro. */
+html.bf-cine-on #bf-abil-anim .bf-aa-dim,
+html.bf-cine-on #bf-spec-cine .bf-sc-dim{
+  background:radial-gradient(circle at 50% 52%,#170e26 22%,#0b0612 68%,#050308 100%)!important;
+}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
@@ -198,6 +221,23 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   var freezeTries=0,freezeTimer=setInterval(function(){
     if(installBattleFreeze()||freezeTries++>160)clearInterval(freezeTimer);
   },150);
+
+  // Marca html.bf-cine-on mientras hay una cinemática 3D a pantalla completa.
+  // Con esa clase el tablero deja de pintarse (ver CSS arriba), así la GPU no
+  // se queda sin memoria de texturas y los retratos ya no desaparecen ni
+  // parpadean. Sondeo simple: un MutationObserver aquí provocaba bucles de
+  // repintado, así que se comprueba por intervalo.
+  // Solo en táctil (móvil/tablet): en escritorio no hay presión de GPU y el
+  // tablero debe seguir viéndose detrás de la cinemática como hasta ahora.
+  var touch=false;
+  try{ touch=window.matchMedia('(pointer:coarse)').matches; }catch(e){}
+  var cineOn=false;
+  if(touch) setInterval(function(){
+    var on=!!(document.getElementById('bf-abil-anim')||document.getElementById('bf-spec-cine'));
+    if(on===cineOn)return;
+    cineOn=on;
+    document.documentElement.classList.toggle('bf-cine-on',on);
+  },100);
 })();
 </script>
 `;
