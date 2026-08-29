@@ -84,6 +84,11 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 .bhero.bf-agonizing .bf-battle-art{filter:none!important}
 /* Overlays de cinemática: capa propia y aislada. */
 #bf-abil-anim,#bf-spec-cine,#bf-kill-ov{isolation:isolate!important;contain:layout style paint!important;transform:translateZ(0)!important}
+/* Hijos animados de los overlays de cinemática 3D: cada uno su propia capa GPU
+   para que sus fotogramas no repinten la textura a pantalla completa del overlay
+   (eso es lo que parpadea en tablet). will-change promociona sin pisar el
+   transform de la animación. */
+#bf-abil-anim>*,#bf-spec-cine>*,#bf-kill-ov>*{will-change:transform,opacity!important}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
