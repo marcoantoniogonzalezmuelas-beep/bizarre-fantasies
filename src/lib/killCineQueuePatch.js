@@ -14,6 +14,12 @@ export const KILL_CINE_QUEUE_PATCH = `
   // ¿Hay algo reproduciéndose ahora mismo?
   function busy(){
     try{
+      // Cola de cinemáticas 3D (habilidad/hechizo EN CURSO o ENCOLADA): si la
+      // animación que genera la muerte aún no ha salido o está encolada, el
+      // golpe mortal la espera. Sin esto, el remate veía la escena "limpia"
+      // (la cinemática aún no estaba en pantalla, solo encolada) y se
+      // adelantaba, solapándose con ella cuando por fin salía.
+      if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) return true;
       // Cinemáticas a pantalla completa (habilidad 3D, carta especial, otro remate).
       if(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')) return true;
       if(document.body.classList.contains('bf-cine-active')) return true;

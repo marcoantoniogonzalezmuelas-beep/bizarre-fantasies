@@ -19,9 +19,10 @@ export const FINAL_CINEMATIC_PATCH = `
   function whenActionEnds(cb){
     var start=Date.now();
     (function tick(){
-      // Espera a que no quede ninguna cinemática de acción en pantalla (con
-      // techo de 6 s por seguridad) y deja 700 ms para leer el daño.
-      if(document.querySelector(CINE_SEL)&&Date.now()-start<6000)return setTimeout(tick,150);
+      // Espera a que no quede ninguna cinemática de acción en pantalla NI EN
+      // COLA (con techo de 6 s por seguridad) y deja 700 ms para leer el daño.
+      var busy=(typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy())||document.querySelector(CINE_SEL);
+      if(busy&&Date.now()-start<6000)return setTimeout(tick,150);
       setTimeout(cb,700);
     })();
   }
