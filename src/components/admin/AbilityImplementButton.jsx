@@ -5,12 +5,20 @@ import { base44 } from '@/api/base44Client';
 // habilidad a una de las mecánicas que el motor del juego sabe ejecutar y la
 // guarda (entidad AbilityImpl). Si la habilidad no encaja en ninguna, se marca
 // como manual y se indica por qué no es posible automatizarla.
+//
+// IMPORTANTE: la ficha guardada la ejecuta el motor REAL del juego (parche
+// abilityImplPatch, inyectado en el iframe de batalla). Si la IA no puede
+// descomponer la habilidad en pasos válidos del catálogo, NO se guarda como
+// implementada (haría nada en el juego): se marca 'manual' y se explica.
+const VALID_ACTIONS = ['damage','true_damage','drain','heal','heal_full','shield','cleanse','buff','debuff','debuff_all_stats','paralyze','skip_turn','sleep','silence','confuse','drunk','mark','evade','mana','lifesteal','recover_card','steal_card'];
+const VALID_TARGETS = ['self','ally','all_allies','enemy','all_enemies','weakest_enemy','strongest_enemy'];
+
 const EFFECTS = `
 - attack_bonus_per_ally: al atacar inflige daño extra por cada aliado vivo. params: { bonus:number, clan?:string }
 - heal_allies_per_turn: mientras el héroe viva, cura X de vida a todo su equipo al inicio de cada ronda. params: { amount:number }
 - heal_allies_now: al usar la habilidad cura X de vida a todo su equipo. params: { amount:number }
-- damage_enemy: al usar la habilidad inflige X de daño directo a un rival, o a todos si all=true. params: { amount:number, all?:boolean }
-- buff_self: al usar la habilidad sube un stat propio (cc, ad o he). params: { stat:'cc'|'ad'|'he', amount:number }
+- damage_enemy: al usar la habilidad inflige X de daño directo a un rival, o a todos si all=true. params: { amount:number, all?:boolean, targets?:number, min?:number, max?:number, stat?:'cc'|'ad'|'he' }
+- buff_self: al usar la habilidad sube un stat propio (cc, ad o he). params: { stat:'cc'|'ad'|'he', amount:number, turns?:number }
 - shield_self: al usar la habilidad se otorga un escudo de X puntos. params: { amount:number }
 - custom_steps: MECÁNICA A MEDIDA (la opción PREFERIDA en casi todos los casos, porque respeta el texto al pie de la letra).
     params: { steps: [ { action, target, amount?, stat_mult?, stat?, turns?, pierce? } ] }
@@ -34,8 +42,28 @@ const EFFECTS = `
     · pierce: true si el texto dice que ignora la defensa/armadura.
     NOTA: con estos pasos puedes reproducir CUALQUIER efecto de hechizo u objeto del juego (daño, curación, escudo, estados, recuperar del descarte, robar cartas al rival) como habilidad de un héroe nuevo.
     Combina varios pasos para reproducir el texto COMPLETO (p.ej. "hace 6 de daño y lo emborracha 2 turnos" = paso damage + paso drunk).
-- unsupported: RESERVADO. Solo si la habilidad exige cambiar las reglas del juego, el orden de turnos o la subasta.
+- unsupported: RESERVADO. Devuélvelo SI Y SOLO SI la habilidad exige mecánicas que NO están en la lista de actions de custom_steps (p.ej. lanzar un dado, resucitar al morir, efectos que dependen de una condición externa, cambiar el orden de turnos o la subasta). Explica el motivo en note.
 `;
+
+// Valida la respuesta de la IA. Si elige custom_steps, params.steps DEBE ser
+// un array no vacío con acciones y targets válidos. Si no, la habilidad no es
+// automatizable con el catálogo y se marca 'manual' (no 'implemented').
+function validateSpec(res) {
+  const et = (res && res.effect_type) || 'unsupported';
+  if (et === 'unsupported') return { ok: false, status: 'manual' };
+  if (!['attack_bonus_per_ally','heal_allies_per_turn','heal_allies_now','damage_enemy','buff_self','shield_self','custom_steps'].includes(et)) {
+    return { ok: false, status: 'manual', reason: 'effect_type desconocido' };
+  }
+  if (et === 'custom_steps') {
+    const steps = res?.params?.steps;
+    if (!Array.isArray(steps) || steps.length === 0) return { ok: false, status: 'manual', reason: 'la IA no pudo descomponer la habilidad en pasos del catálogo' };
+    for (const s of steps) {
+      if (!s || !s.action || VALID_ACTIONS.indexOf(s.action) < 0) return { ok: false, status: 'manual', reason: 'un paso usa una acción no soportada' };
+      if (s.target && VALID_TARGETS.indexOf(s.target) < 0) return { ok: false, status: 'manual', reason: 'un paso usa un objetivo no soportado' };
+    }
+  }
+  return { ok: true, status: 'implemented' };
+}
 
 export default function AbilityImplementButton({ cardId, elite, abilityName, abilityText }) {
   const [busy, setBusy] = useState(false);
@@ -60,7 +88,8 @@ REGLAS OBLIGATORIAS:
 1. Usa custom_steps siempre que el texto tenga números concretos, estados (borracho, confuso, dormido, paralizado, marcado, silenciado), drenaje de vida, robo de cartas del descarte o varios efectos a la vez. Los efectos concretos de arriba solo para textos que encajen literalmente en ellos.
 2. Copia los NÚMEROS EXACTOS del texto (daño, curación, escudo, penalización, turnos). Nunca los inventes ni los redondees.
 3. Reproduce TODOS los efectos del texto, cada uno como un paso. Si el texto afecta a todos los rivales usa 'all_enemies'; si es a uno, 'enemy'.
-4. unsupported está prohibido salvo que sea imposible con los pasos de arriba; explica el motivo en note.`,
+4. Si eliges custom_steps, params.steps DEBE ser un array NO VACÍO con pasos válidos del catálogo. NUNCA devuelvas custom_steps con steps vacío o sin pasos.
+5. Si la habilidad exige mecánicas que NO están en la lista de actions (lanzar un dado, resucitar al morir, efectos condicionales a un evento externo, cambiar el orden de turnos o la subasta), devuelve effect_type='unsupported' y explica el motivo en note. Es mejor 'unsupported' honesto que un custom_steps vacío que no haría nada en el juego.`,
         response_json_schema: {
           type: 'object',
           properties: {
@@ -70,9 +99,12 @@ REGLAS OBLIGATORIAS:
           },
         },
       });
-      const effect_type = res?.effect_type || 'unsupported';
-      const status = effect_type === 'unsupported' ? 'manual' : 'implemented';
-      const payload = { card_id: cardId, elite: !!elite, ability_name: abilityName || '', ability_text: abilityText, status, effect_type, params: res?.params || {}, note: res?.note || '' };
+      const v = validateSpec(res);
+      const status = v.status;
+      const effect_type = v.ok ? (res?.effect_type || 'unsupported') : 'unsupported';
+      let note = res?.note || '';
+      if (!v.ok && v.reason) note = (note ? note + ' — ' : '') + 'No automatizable: ' + v.reason + '.';
+      const payload = { card_id: cardId, elite: !!elite, ability_name: abilityName || '', ability_text: abilityText, status, effect_type, params: v.ok ? (res?.params || {}) : {}, note };
       const existing = await base44.entities.AbilityImpl.filter({ card_id: cardId, elite: !!elite }, '-created_date', 1);
       if (existing?.length) await base44.entities.AbilityImpl.update(existing[0].id, payload);
       else await base44.entities.AbilityImpl.create(payload);
