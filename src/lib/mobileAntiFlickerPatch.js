@@ -89,26 +89,9 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    (eso es lo que parpadea en tablet). will-change promociona sin pisar el
    transform de la animación. */
 #bf-abil-anim>*,#bf-spec-cine>*,#bf-kill-ov>*{will-change:transform,opacity!important}
-/* Móvil/tablet: la cinemática 3D a pantalla completa (perspective +
-   preserve-3d + filter drop-shadow + backdrop-filter) fuerza a la GPU a
-   recomponer TODO el documento (body + batalla) en cada fotograma →
-   parpadeo intenso, héroes en negro, pantalla descompuesta. Se simplifica a
-   un overlay 2D plano: la imagen sale grande y nítida con fade+scale, sin
-   perspectiva ni filtros pesados. Se ve igual de clara y no parpadea. */
-#bf-abil-anim{perspective:none!important}
-#bf-abil-anim .bf-aa-img{
-  transform-style:flat!important;
-  filter:none!important;
-  animation:bfAaMobileImg 4.5s ease-out forwards!important;
-}
-#bf-abil-anim .bf-aa-desc{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-#bf-abil-anim .bf-aa-ring{display:none!important}
-@keyframes bfAaMobileImg{
-  0%{opacity:0;transform:scale(.72)}
-  15%{opacity:1;transform:scale(1)}
-  82%{opacity:1;transform:scale(1)}
-  100%{opacity:0;transform:scale(1.08)}
-}
+/* Las cinemáticas 3D se dejan EXACTAMENTE igual que en escritorio (perspectiva,
+   movimiento temático, anillos y filtros incluidos): ahí se ven perfectas y
+   simplificarlas a un fundido 2D las dejaba estáticas. */
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
