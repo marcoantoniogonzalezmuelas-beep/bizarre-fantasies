@@ -154,10 +154,15 @@ export default function AdminCards() {
         } 
       });
       
-      // El rol manda: el stat primario (CC/AD/HE) queda siempre como el más
-      // alto, tanto en la versión normal como en la élite.
-      const resData = balanceHeroStats(response || {}, (response && response.type) || form.type);
-      // Velocidad: refleja el stat primario (CC/AD/HE) generado por la IA.
+      // El rol del ADMIN manda: si eligió CC/AD/HE, los stats se balancean a
+      // ESE rol (stat primario el más alto) y el campo "type" se respeta — la
+      // IA no puede sobreescribirlo (antes lo cambiaba y "le quitaba el rol").
+      // Si no eligió rol, decide la IA.
+      const chosenRole = form.type || (response && response.type) || '';
+      const resData = balanceHeroStats(response || {}, chosenRole);
+      if (form.type) resData.type = form.type;
+      else if (resData.type == null) resData.type = chosenRole || '';
+      // Velocidad: refleja el stat primario (CC/AD/HE) del rol definitivo.
       const _v = resData.type === 'CC' ? resData.cc : resData.type === 'AD' ? resData.ad : resData.he;
       const _ev = resData.type === 'CC' ? resData.elite_cc : resData.type === 'AD' ? resData.elite_ad : resData.elite_he;
       // Maná: se calcula con la fórmula (MANA_BASE[tipo] + clan.manaBonus), no
