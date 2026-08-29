@@ -32,9 +32,24 @@ export const MOBILE_HAND_COLLAPSE_PATCH = `
   // usa en la mano, así que el contador salía siempre 0. Se cuentan los hijos
   // reales de la mano (descartando el rótulo) y, si el motor las envuelve en un
   // contenedor, los hijos de ese contenedor.
+  // Nº de cartas EN LA MANO ahora mismo: solo los chips de carta reales dentro
+  // de .hand-chips. Se excluyen la pila de descartes (.bf-discard-pile, que
+  // vive dentro del mismo panel) y los huecos vacíos ("—"), que antes inflaban
+  // el contador del jugador.
   function countCards(hand){
+    var chips=hand.querySelectorAll('.hand-chips .chip');
+    if(chips.length){
+      var n=0;
+      chips.forEach(function(c){
+        if(c.closest('.bf-discard-pile'))return;
+        var t=(c.textContent||'').trim();
+        if(t==='—'||t==='-')return;
+        n++;
+      });
+      return n;
+    }
     var kids=Array.prototype.filter.call(hand.children,function(c){
-      return !c.classList.contains('hand-under-title');
+      return !c.classList.contains('hand-under-title')&&!c.classList.contains('bf-discard-pile');
     });
     if(kids.length===1&&kids[0].children.length)return kids[0].children.length;
     return kids.length;

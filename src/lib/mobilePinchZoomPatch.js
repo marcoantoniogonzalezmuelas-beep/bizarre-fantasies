@@ -121,9 +121,22 @@ export const MOBILE_PINCH_PATCH = `
   function syncRootBg(){
     try{
       var cs = getComputedStyle(document.body);
+      var col = cs.backgroundColor, img = cs.backgroundImage;
+      // Si el body no tiene fondo propio (transparente o sin imagen), se toma
+      // el de la PANTALLA ACTIVA del juego (la portada pinta su fondo ahí):
+      // antes el margen del zoom-out quedaba negro.
+      if (!img || img === 'none') {
+        var scr = document.querySelector('.screen.active');
+        if (scr) {
+          var cs2 = getComputedStyle(scr);
+          if (cs2.backgroundImage && cs2.backgroundImage !== 'none') img = cs2.backgroundImage;
+          if (col === 'rgba(0, 0, 0, 0)' || col === 'transparent') col = cs2.backgroundColor;
+        }
+      }
+      if (col === 'rgba(0, 0, 0, 0)' || col === 'transparent') col = '#0e0a16';
       var d = document.documentElement.style;
-      d.backgroundColor = cs.backgroundColor;
-      d.backgroundImage = cs.backgroundImage;
+      d.backgroundColor = col;
+      d.backgroundImage = (img && img !== 'none') ? img : '';
       d.backgroundSize = 'cover';
       d.backgroundPosition = 'center';
       d.backgroundRepeat = 'no-repeat';

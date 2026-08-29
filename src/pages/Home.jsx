@@ -496,7 +496,10 @@ export default function Home() {
   const [pinchState, setPinchState] = useState({ z: 1, tx: 0, ty: 0 });
   // Los accesos flotantes y el cartel crecen EN PROPORCIÓN al juego (mismo
   // factor de pellizco), con un mínimo para que sigan siendo legibles/pulsables.
-  const overlayScale = IS_MOBILE ? Math.max(mobScale * pinchZ, 0.62) : 1;
+  // Tamaño base legible (mínimo 0,62) multiplicado por el factor de pellizco:
+  // así los accesos crecen Y se encogen con el zoom del juego (antes el mínimo
+  // de 0,62 se comía todo el rango del pellizco y parecían de tamaño fijo).
+  const overlayScale = IS_MOBILE ? Math.min(2, Math.max(0.35, Math.max(mobScale, 0.62) * pinchZ)) : 1;
   const aiStrategyRef = useRef(null);
   const aiLevelStratRef = useRef(null);
   // Habilidades implementadas desde el editor (entidad AbilityImpl): el motor
@@ -709,7 +712,9 @@ export default function Home() {
       // Pellizco dentro del juego: congela también las animaciones de los
       // elementos que viven fuera del iframe (cartel de actualidad, accesos).
       if (e.data && e.data.bfPinch && typeof e.data.bfPinch.z === 'number') {
-        const z = Math.max(1, Math.min(4, e.data.bfPinch.z));
+        // También al ALEJAR (z<1): los accesos y el cartel se encogen igual
+        // que el juego, en vez de quedarse a tamaño fijo flotando encima.
+        const z = Math.max(0.6, Math.min(2.5, e.data.bfPinch.z));
         setPinchZ(z);
         setPinchState({ z, tx: e.data.bfPinch.tx || 0, ty: e.data.bfPinch.ty || 0 });
       }
