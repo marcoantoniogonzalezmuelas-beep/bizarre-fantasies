@@ -463,7 +463,12 @@ export const ABILITY_ANIM_PATCH = `
     if(!url)return;
     var cc=(item&&item.element&&SPELL_COLORS[item.element])||'#ffd24a';
     var isEn=!!window.__bfLangEn;
-    var descText=isEn?(entry.textEn||entry.text):(entry.text);
+    // El Drenaje y el Ladrón Enmascarado tienen cinemáticas propias con título
+    // pero SIN texto de carta: aquí se omite la descripción para que no salga
+    // el bloque de texto que sí llevan el resto de hechizos/objetos.
+    var nm=String(item&&item.name||'').toLowerCase();
+    var noDesc=nm==='drenaje'||nm.indexOf('ladr')!==-1;
+    var descText=noDesc?null:(isEn?(entry.textEn||entry.text):(entry.text));
     showCinematic(url,item?item.name:'Objeto',cc,entry.desc||(item?item.name:''),entry.motion,descText,false);
     // Suprime la carta revelada de este hechizo/objeto durante la cinemática 3D.
     window.__bfCardCineName=item?item.name:null;
