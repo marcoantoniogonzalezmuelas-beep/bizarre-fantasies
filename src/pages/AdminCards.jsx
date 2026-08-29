@@ -89,28 +89,28 @@ export default function AdminCards() {
       ${bizarroLine}
       ${artLine}
 
-      REGLAS DE STATS — el stat PRIMARIO del rol debe ser el MÁS ALTO:
-      - CC (Cuerpo a cuerpo): el stat "cc" debe ser el más alto de los tres (cc > ad, cc > he). Refleja fuerza bruta.
-      - AD (A distancia): el stat "ad" debe ser el más alto (ad > cc, ad > he). Refleja puntería y disparos.
-      - HE (Hechicero): el stat "he" debe ser el más alto (he > cc, he > ad). Refleja poder mágico.
-      - Los otros dos stats secundarios deben ser claramente más bajos (1-2 puntos por debajo del primario).
+      REGLAS DE STATS — el stat PRIMARIO del rol debe ser el MÁS ALTO, y los secundarios al menos 8 puntos por debajo. Estos rangos se basan en los héroes REALES ya en la BD (mediana de cada rol):
 
-      INFLUENCIA DE LA RAZA en los stats (ajusta dentro del rol):
+      RANGOS POR ROL (stat primario / secundarios / hp / coste):
+      - CC (Cuerpo a cuerpo): stat primario "cc" entre 15 y 24 (tanques y épicas hasta 28). Secundarios "ad" y "he" entre 2 y 7. HP entre 30 y 50 (tanques hasta 65). Coste entre 18 y 30. Refleja fuerza bruta y aguante.
+      - AD (A distancia): stat primario "ad" entre 14 y 20. Secundarios "cc" y "he" entre 3 y 7. HP entre 18 y 32. Coste entre 16 y 26. Refleja puntería y disparos.
+      - HE (Hechicero): stat primario "he" entre 14 y 22 (épicas hasta 26). Secundarios "cc" y "ad" entre 3 y 7. HP entre 17 y 30. Coste entre 16 y 28. Refleja poder mágico.
+      - El stat primario debe ser SIEMPRE al menos 8 puntos superior a cada secundario.
+
+      INFLUENCIA DE LA RAZA (ajusta dentro del rango del rol):
       - Guerreros: cc alto, hp alto (tanques), velocidad media-baja. Coste alto.
       - Vaqueros: ad alto, velocidad alta (rápidos disparando), hp medio-bajo. Coste medio.
       - Elfos: ad o he alto, velocidad alta (ágiles), hp bajo. Coste medio.
-      - Magos: he muy alto, hp bajo, velocidad baja (frágiles). Mana alto. Coste medio-alto.
+      - Magos: he muy alto (cerca del techo del rango), hp bajo, velocidad baja (frágiles). Coste medio-alto.
       - Druidas: he medio-alto, hp medio, habilidades de curación/naturaleza. Coste medio.
       - No-muertos: stats equilibrados, hp medio-alto, habilidades siniestras. Coste medio.
-      - Épicas: todos los stats más altos de lo normal, coste alto (suelen rondar 25-30).
-      - Cotidianos: stats bajos (1-5), coste bajo (10-15), habilidades sencillas.
+      - Épicas: todos los stats por la parte ALTA del rango (primario puede superar el techo en +2/+4), coste alto (25-35).
+      - Cotidianos: stats bajos (primario 8-12, secundarios 1-4), coste bajo (10-15), habilidades sencillas.
       - Bizarros: stats impredecibles y desequilibrados (puede tener un stat rarísimo), habilidades absurdas.
 
-      Rangos de balance:
-      - Stats (cc, ad, he, power): 1 a 10 (Épicas pueden llegar a 12).
-      - Hp: 15 a 45 (tanques hasta 45, frágiles desde 15).
-      - Cost: 10 a 30 (tokens o cotidianos pueden bajar a 8).
-      - Mana: 8 a 15 (hechiceros alto, CC/AD bajo).
+      Otros:
+      - Power: 6 a 12 (CC tiende a alto, AD/HE suelen 6).
+      - Mana: NO lo generes, se calcula automáticamente por fórmula (ignora el campo mana).
 
       HABILIDADES — DEBEN ser implementables por el motor del juego.
       Solo puedes usar UNA de estas mecánicas (elige la que mejor encaje con el nombre, raza, tipo e imagen):
@@ -159,7 +159,7 @@ export default function AdminCards() {
       // IA no puede sobreescribirlo (antes lo cambiaba y "le quitaba el rol").
       // Si no eligió rol, decide la IA.
       const chosenRole = form.type || (response && response.type) || '';
-      const resData = balanceHeroStats(response || {}, chosenRole);
+      const resData = balanceHeroStats(response || {}, chosenRole, form.clan);
       if (form.type) resData.type = form.type;
       else if (resData.type == null) resData.type = chosenRole || '';
       // Velocidad: refleja el stat primario (CC/AD/HE) del rol definitivo.
