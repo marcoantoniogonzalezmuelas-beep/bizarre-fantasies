@@ -57,9 +57,15 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    pequeñas que cambian (el héroe que pulsa, el FX), no todo el tablero.
    isolation:isolate basta para que los FX de #bf-fx-layer no afecten al body. */
 #s-battle,.army-panel,.action-panel{isolation:isolate!important}
-/* Cada retrato (.bhero) es su propia capa GPU pequeña: las auras y pulsos de
-   estado repintan solo ese recuadro, no el tablero entero. */
-.bhero{transform:translateZ(0)!important;isolation:isolate!important;backface-visibility:hidden!important;-webkit-backface-visibility:hidden!important}
+/* Los retratos (.bhero) NO se promueven a capa GPU. Tenía sentido cuando sus
+   auras y halos latían, pero justo debajo esas animaciones se congelan: los
+   retratos son estáticos, así que su capa no evita ningún repintado y solo gasta
+   memoria de texturas. Con 8 retratos grandes (en tablet, a escala ~0,7, son
+   texturas enormes) se agota la memoria de la GPU, que empieza a EXPULSAR capas
+   y a re-rasterizarlas: eso es el parpadeo de la tablet. Sin promoción, el
+   navegador pinta los retratos en la capa del tablero y no hay nada que
+   expulsar. isolation basta para que los FX no se mezclen con ellos. */
+.bhero{isolation:isolate!important}
 /* CAUSA REAL DEL PARPADEO EN BATALLA (móvil y tablet): los estados de los
    héroes animan propiedades que NO se pueden componer en GPU y obligan a
    repintar el tablero en cada fotograma:
@@ -84,11 +90,14 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 .bhero.bf-agonizing .bf-battle-art{filter:none!important}
 /* Overlays de cinemática: capa propia y aislada. */
 #bf-abil-anim,#bf-spec-cine,#bf-kill-ov{isolation:isolate!important;contain:layout style!important;transform:translateZ(0)!important}
-/* Hijos animados de los overlays de cinemática 3D: cada uno su propia capa GPU
-   para que sus fotogramas no repinten la textura a pantalla completa del overlay
-   (eso es lo que parpadea en tablet). will-change promociona sin pisar el
-   transform de la animación. */
-#bf-abil-anim>*,#bf-spec-cine>*,#bf-kill-ov>*{will-change:transform,opacity!important}
+/* Solo se promueve lo que REALMENTE se mueve dentro de la cinemática: la imagen
+   del héroe, el título y las chispas. Promover todos los hijos (como se hacía
+   antes) creaba de golpe cuatro capas MÁS a pantalla completa —oscurecido, velo,
+   fogonazo y disco de luz— que ni se mueven: solo hacen fundido de opacidad, que
+   la GPU ya compone sin capa propia. Eran cuatro texturas de pantalla completa
+   reservadas justo en el instante del parpadeo. */
+#bf-abil-anim .bf-aa-img,#bf-abil-anim .bf-aa-ttl,#bf-abil-anim .bf-aa-spark,
+#bf-spec-cine .bf-sc-img,#bf-kill-ov img{will-change:transform,opacity!important}
 /* Las cinemáticas 3D se dejan EXACTAMENTE igual que en escritorio (perspectiva,
    movimiento temático y filtros incluidos): ahí se ven perfectas y
    simplificarlas a un fundido 2D las dejaba estáticas. Lo único que se quita
@@ -156,34 +165,11 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   if(document.body)fxLayer();
   else window.addEventListener('DOMContentLoaded',fxLayer);
 
-  // Durante una cinemática 3D o la pausa de muerte, el motor puede pedir varios
-  // renderBattle aunque el estado jugable no cambie. Reconstruir los retratos y
-  // sus escenas de fondo bajo un overlay compuesto es el destello que quedaba
-  // en tablet. Guardamos solo el último repintado y lo aplicamos al terminar la
-  // capa visual; la lógica de combate no se toca.
-  function installBattleFreeze(){
-    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfFxFreeze)return false;
-    var original=window.renderBattle, pending=false;
-    function frozen(){
-      return !!document.getElementById('bf-abil-anim')||!!document.getElementById('bf-spec-cine')||!!document.getElementById('bf-kill-ov')||Date.now()<(window.__bfDeathDelayUntil||0);
-    }
-    function flush(){
-      if(!pending||frozen())return;
-      pending=false;
-      original.call(window);
-    }
-    function wrapped(){
-      if(frozen()){pending=true;return;}
-      return original.apply(this,arguments);
-    }
-    wrapped.__bfFxFreeze=1;
-    window.renderBattle=wrapped;
-    setInterval(flush,180);
-    return true;
-  }
-  var freezeTries=0,freezeTimer=setInterval(function(){
-    if(installBattleFreeze()||freezeTries++>160)clearInterval(freezeTimer);
-  },150);
+  // NO se toca renderBattle. Interceptarlo para "congelar" el tablero durante
+  // las cinemáticas rompía las habilidades que piden objetivo: el modo "elige
+  // objetivo" se pinta con ese mismo repintado, así que los retratos se quedaban
+  // sin su estado seleccionable y el toque no hacía nada en móvil/tablet. El
+  // parpadeo se ataca solo con CSS (arriba), nunca bloqueando el repintado.
 
 })();
 </script>
