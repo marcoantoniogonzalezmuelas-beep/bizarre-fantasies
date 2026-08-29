@@ -912,9 +912,11 @@ export default function Home() {
       // Marcadores de habilidades pasivas configurados desde el editor
       const passiveMarkers = {};
       (cards || []).forEach(c => {
-        if (c.card_id && c.passive_marker && c.passive_marker.flag) {
-          passiveMarkers[c.card_id] = c.passive_marker;
-        }
+        if (!c.card_id) return;
+        const entry = {};
+        if (c.passive_marker && c.passive_marker.flag) entry.normal = c.passive_marker;
+        if (c.passive_marker_elite && c.passive_marker_elite.flag) entry.elite = c.passive_marker_elite;
+        if (entry.normal || entry.elite) passiveMarkers[c.card_id] = entry;
       });
       passiveMarkersRef.current = passiveMarkers;
       // Velocidad de la carta (por card_id y por nombre en minúsculas).

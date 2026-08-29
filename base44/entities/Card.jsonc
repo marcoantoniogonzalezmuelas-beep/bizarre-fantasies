@@ -174,7 +174,7 @@
     },
     "passive_marker": {
       "type": "object",
-      "description": "Marcador de habilidad pasiva en batalla. Se muestra sobre el retrato cuando el flag est\u00e1 activo.",
+      "description": "Marcador de la habilidad pasiva NORMAL en batalla. Se muestra sobre el retrato cuando el flag est\u00e1 activo.",
       "properties": {
         "flag": {
           "type": "string",
@@ -182,7 +182,15 @@
         },
         "icon": {
           "type": "string",
-          "description": "Icono/emoji del marcador"
+          "description": "Icono/emoji del marcador (fallback si no hay icon_url)"
+        },
+        "icon_url": {
+          "type": "string",
+          "description": "URL del icono generado por IA (badge circular). Si est\u00e1 presente se usa en vez del emoji."
+        },
+        "icon_prompt": {
+          "type": "string",
+          "description": "Prompt usado para generar el icono adaptado a la habilidad concreta."
         },
         "color": {
           "type": "string",
@@ -190,7 +198,7 @@
         },
         "label": {
           "type": "string",
-          "description": "Texto del marcador"
+          "description": "Texto del r\u00f3tulo del marcador"
         },
         "tipo": {
           "type": "string",
@@ -200,6 +208,45 @@
           ],
           "default": "conditional",
           "description": "conditional = el marcador se quita cuando se cumple la condici\u00f3n (se dispara una vez); permanent = la pasiva est\u00e1 activa toda la partida."
+        }
+      }
+    },
+    "passive_marker_elite": {
+      "type": "object",
+      "description": "Marcador de la habilidad pasiva \u00c9LITE en batalla. Se muestra sobre el retrato (en modo \u00e9lite) cuando el flag est\u00e1 activo.",
+      "properties": {
+        "flag": {
+          "type": "string",
+          "description": "Flag del estado pasivo \u00e9lite en el juego"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Icono/emoji del marcador (fallback si no hay icon_url)"
+        },
+        "icon_url": {
+          "type": "string",
+          "description": "URL del icono generado por IA (badge circular). Si est\u00e1 presente se usa en vez del emoji."
+        },
+        "icon_prompt": {
+          "type": "string",
+          "description": "Prompt usado para generar el icono adaptado a la habilidad \u00e9lite concreta."
+        },
+        "color": {
+          "type": "string",
+          "description": "Color del marcador (hex)"
+        },
+        "label": {
+          "type": "string",
+          "description": "Texto del r\u00f3tulo del marcador"
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "conditional",
+            "permanent"
+          ],
+          "default": "conditional",
+          "description": "conditional = el marcador se quita cuando se cumple la condici\u00f3n; permanent = la pasiva est\u00e1 activa toda la partida."
         }
       }
     },

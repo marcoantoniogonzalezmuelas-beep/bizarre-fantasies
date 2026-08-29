@@ -32,10 +32,14 @@ export const PASSIVE_MARKER_PATCH = `
 
   var css =
   // ---- Marcador permanente de habilidad pasiva sobre el retrato ----
-  '.bf-passive-mark{position:absolute;left:8px;bottom:8px;z-index:15;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-family:Cinzel,serif;font-size:11px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;animation:bfPassivePulse 2.4s ease-in-out infinite;white-space:nowrap}' +
-  // El marcador se ve igual, pero QUIETO: el latido repintaba el retrato sin
-  // parar y provocaba parpadeo de pantalla.
-  '.bf-passive-mark{animation:none!important;opacity:1;box-shadow:0 0 10px var(--bf-pc,#fff),0 2px 6px rgba(0,0,0,.5)}' +
+  // Badge MÁS GRANDE y chulo: icono (emoji o imagen IA) en círculo + rótulo
+  // siempre visible. Igual de claro que el de Refracción de Juniana.
+  '.bf-passive-mark{position:absolute;left:8px;bottom:8px;z-index:15;display:flex;align-items:center;gap:7px;padding:4px 13px 4px 4px;border-radius:999px;font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;white-space:nowrap;background:rgba(8,5,14,.92);border:1.5px solid var(--bf-pc,#fff);color:var(--bf-pc,#fff);box-shadow:0 0 14px var(--bf-pc,#fff),0 3px 9px rgba(0,0,0,.6)}' +
+  '.bf-passive-mark .bf-pm-ico{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:radial-gradient(circle at 38% 28%, rgba(255,255,255,.28), rgba(0,0,0,.4) 70%);border:2px solid var(--bf-pc,#fff);box-shadow:0 0 10px var(--bf-pc,#fff),inset 0 0 8px rgba(255,255,255,.2)}' +
+  '.bf-passive-mark .bf-pm-ico img{width:100%;height:100%;object-fit:cover;display:block}' +
+  '.bf-passive-mark .bf-pm-emoji{font-size:18px;line-height:1;text-shadow:0 0 8px var(--bf-pc,#fff)}' +
+  '.bf-passive-mark .bf-pm-label{font-size:12px;line-height:1;text-shadow:0 1px 3px #000,0 0 8px var(--bf-pc,#fff)}' +
+  '@media(max-width:640px){.bf-passive-mark{font-size:10px;padding:3px 10px 3px 3px;gap:5px}.bf-passive-mark .bf-pm-ico{width:26px;height:26px}.bf-passive-mark .bf-pm-emoji{font-size:15px}.bf-passive-mark .bf-pm-label{font-size:10px}}' +
   // ---- Banner de ACCIÓN DEFINITIVA (solo cuando termina la partida) ----
   '#bf-final-blow{position:fixed;inset:0;z-index:999999;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfFbIn .3s ease-out}' +
   '#bf-final-blow.bf-fb-out{transition:opacity .6s;opacity:0}' +
@@ -67,12 +71,16 @@ export const PASSIVE_MARKER_PATCH = `
       var badge = card.querySelector('.bf-passive-mark');
       var found = null;
       if(h){
-        // Primero mira el mapa del editor (card_id → {flag, icon, color, label})
+        // Mapa del editor: card_id → {normal:{...}, elite:{...}}. En modo élite
+        // se usa la variante élite (si la hay); si no, la normal.
         var cfg = markersMap[h.id] || markersMap[h.cid] || markersMap[h.card_id];
-        if(cfg && cfg.flag && h[cfg.flag]){
-          found = { icon: cfg.icon || '\\u2726', color: cfg.color || '#ffd24a', label: cfg.label || 'Pasiva' };
+        if(cfg){
+          var variant = h.eliteMode ? (cfg.elite || cfg.normal) : (cfg.normal || cfg.elite);
+          if(variant && variant.flag && h[variant.flag]){
+            found = { icon: variant.icon || '\\u2726', icon_url: variant.icon_url || '', color: variant.color || '#ffd24a', label: variant.label || 'Pasiva' };
+          }
         }
-        // Fallback al mapa hardcoded
+        // Fallback al mapa hardcoded (Refracción, Protección…)
         if(!found){
           for(var flag in PASSIVES){
             if(h[flag]){ found = PASSIVES[flag]; break; }
@@ -86,10 +94,10 @@ export const PASSIVE_MARKER_PATCH = `
           card.appendChild(badge);
         }
         badge.style.setProperty('--bf-pc', found.color);
-        badge.style.background = 'rgba(8,5,14,.88)';
-        badge.style.border = '1.5px solid ' + found.color;
-        badge.style.color = found.color;
-        badge.innerHTML = '<span>' + found.icon + '</span><span>' + found.label + '</span>';
+        var icoHtml = found.icon_url
+          ? '<span class="bf-pm-ico"><img src="' + found.icon_url + '" alt=""></span>'
+          : '<span class="bf-pm-ico"><span class="bf-pm-emoji">' + (found.icon || '\\u2726') + '</span></span>';
+        badge.innerHTML = icoHtml + '<span class="bf-pm-label">' + found.label + '</span>';
       } else if(badge){
         badge.remove();
       }
