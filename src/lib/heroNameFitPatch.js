@@ -10,8 +10,10 @@
 // que los nombres largos entren completos).
 export const HERO_NAME_FIT_PATCH = `
 <style>
-.bhero .bhero-top{min-height:34px!important;contain:layout style}
-.bhero .bhero-name{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;font-size:12.5px!important;line-height:16px!important;height:16px!important}
+/* El nombre acompaña al tamaño de la barra de atributos (que ahora es más
+   ancha): mismo cuerpo de letra, sigue en UNA sola línea de altura fija. */
+.bhero .bhero-top{min-height:44px!important;contain:layout style}
+.bhero .bhero-name{display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;font-size:18px!important;line-height:24px!important;height:24px!important}
 .bhero .vel-tag{white-space:nowrap!important;display:inline-flex!important;align-items:center}
 </style>
 `;

@@ -22,7 +22,9 @@ export const TYPE_STAT_NUMBER_PATCH = `
     // Barra más ancha y con más cuerpo (antes era una tira de 17px con letra de
     // 14px, y se veía muy estrecha). Alto FIJO: aunque el contenido cambie,
     // nunca mueve la carta.
-    '.bhero .vel-tag{min-height:28px!important;height:28px!important;display:flex!important;align-items:center!important;padding:0 10px!important;border-radius:8px!important;background:rgba(8,5,14,.55)!important;border:1px solid rgba(255,210,74,.22)!important;white-space:nowrap!important;overflow:hidden!important;contain:layout style!important}';
+    // El borde y el fondo de la barra toman el COLOR DEL TIPO del héroe (rojo
+    // CC, verde AD, púrpura HE), que se fija en --bf-tc al pintarla.
+    '.bhero .vel-tag{min-height:28px!important;height:28px!important;display:flex!important;align-items:center!important;padding:0 10px!important;border-radius:8px!important;background:rgba(8,5,14,.55)!important;border:1.5px solid var(--bf-tc,#ffd24a)!important;box-shadow:inset 0 0 16px -6px var(--bf-tc,#ffd24a),0 0 8px -4px var(--bf-tc,#ffd24a)!important;white-space:nowrap!important;overflow:hidden!important;contain:layout style!important}';
   document.head.appendChild(st);
 
   function keyOf(t){
@@ -60,6 +62,8 @@ export const TYPE_STAT_NUMBER_PATCH = `
       if(!m) return;
       var h = (G.team[m[1]] || []).find(function(x){ return x && x.id === m[2]; });
       if(!h) return;
+      // Color de la barra según el tipo del héroe (rojo CC, verde AD, púrpura HE).
+      tag.style.setProperty('--bf-tc', COLORS[keyOf(h.type)] || '#ffd24a');
       var html = buildHtml(h);
       if(html == null) return;
       var block = tag.querySelector('.bf-stats-block');
