@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { Skull } from 'lucide-react';
 import RankList from '@/components/ranking/RankList';
 import RankingPrizeBanner from '@/components/ranking/RankingPrizeBanner';
 import { t, getLang } from '@/lib/i18n';
@@ -74,7 +75,7 @@ export default function Ranking() {
   const SUMMON_TOKENS = ['Patito de Goma'];
   // IAs y jugadores comparten ranking: se cuentan todas las victorias y
   // derrotas sin filtrar por winner_is_ai / loser_is_ai.
-  const wins = {}, losses = {}, heroWins = {}, heroLosses = {}, heroDeaths = {}, heroElites = {};
+  const wins = {}, losses = {}, heroWins = {}, heroLosses = {}, heroDeaths = {}, heroElites = {}, heroKills = {};
   // Mapa nick → avatar: se construye con el avatar MÁS RECIENTE de cada nick
   // (results viene ordenado por -created_date). Así, aunque un jugador cambie
   // de avatar entre partidas, el ranking muestra siempre el último que usó.
@@ -87,16 +88,24 @@ export default function Ranking() {
     losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
     if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
     if (r.loser_avatar && !playerArtMap[r.loser_nick]) playerArtMap[r.loser_nick] = { art: r.loser_avatar };
+    // Bajas (kills): cada héroe VIVO suma una baja por cada héroe caído del
+    // bando contrario, gane o pierda la partida. Los héroes que caen no
+    // reciben crédito de baja (no sobrevivieron para cobrarla).
+    var wDead = 0, lDead = 0;
+    (r.winner_heroes || []).forEach(h => { if (h && h.died && h.name && !SUMMON_TOKENS.includes(h.name)) wDead++; });
+    (r.loser_heroes || []).forEach(h => { if (h && h.died && h.name && !SUMMON_TOKENS.includes(h.name)) lDead++; });
     (r.winner_heroes || []).forEach(h => {
       if (!h.name || SUMMON_TOKENS.includes(h.name)) return;
       heroWins[h.name] = (heroWins[h.name] || 0) + 1;
       if (h.died) heroDeaths[h.name] = (heroDeaths[h.name] || 0) + 1;
+      else if (lDead) heroKills[h.name] = (heroKills[h.name] || 0) + lDead;
       if (h.elite) heroElites[h.name] = (heroElites[h.name] || 0) + 1;
     });
     (r.loser_heroes || []).forEach(h => {
       if (!h.name || SUMMON_TOKENS.includes(h.name)) return;
       heroLosses[h.name] = (heroLosses[h.name] || 0) + 1;
       if (h.died) heroDeaths[h.name] = (heroDeaths[h.name] || 0) + 1;
+      else if (wDead) heroKills[h.name] = (heroKills[h.name] || 0) + wDead;
       if (h.elite) heroElites[h.name] = (heroElites[h.name] || 0) + 1;
     });
   });
@@ -161,6 +170,11 @@ export default function Ranking() {
             </div>
             <div className="md:col-span-2">
               <RankList title={t('Mejores de ') + monthLabel} iconImg={ICON_MONTHLY} rows={top(monthWins, 10, monthExtra)} valueLabel={t('victorias')} accent="#ff9a3c" empty={t('Nadie ha ganado todavía este mes. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
+            </div>
+            <div className="md:col-span-2">
+              <div className="rounded-2xl p-[2px] shadow-[0_0_36px_-6px_rgba(255,59,59,.45)]" style={{ background: 'linear-gradient(135deg, rgba(255,59,59,.55), rgba(255,59,59,.08) 40%, rgba(255,59,59,.55))' }}>
+                <RankList title={t('Top Kills')} icon={Skull} rows={top(heroKills, 8)} valueLabel={t('bajas')} accent="#ff3b3b" empty={t('Ningún héroe ha causado baja todavía. ¡Derrama sangre en el campo de batalla!')} artMap={artMap} />
+              </div>
             </div>
             <RankList title={t('Héroes más victoriosos')} iconImg={ICON_VICTORY} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
             <RankList title={t('Héroes más derrotados')} iconImg={ICON_DEFEAT} rows={top(heroLosses, 8)} valueLabel={t('batallas perdidas')} accent="#ff7d7d" artMap={artMap} />
