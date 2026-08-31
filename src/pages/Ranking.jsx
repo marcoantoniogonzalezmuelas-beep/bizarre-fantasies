@@ -124,7 +124,7 @@ export default function Ranking() {
   const curMonth = now.getMonth();
   const curYear = now.getFullYear();
   const monthLabel = MONTH_NAMES()[curMonth];
-  const monthWins = {}, monthLosses = {};
+  const monthWins = {}, monthLosses = {}, monthHeroKills = {};
   (results || []).forEach(r => {
     if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
     const d = new Date(r.created_date);
@@ -133,6 +133,19 @@ export default function Ranking() {
     monthLosses[r.loser_nick] = (monthLosses[r.loser_nick] || 0) + 1;
     if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
     if (r.loser_avatar && !playerArtMap[r.loser_nick]) playerArtMap[r.loser_nick] = { art: r.loser_avatar };
+    // Bajas del mes: mismo criterio que el Top Kills global (héroes vivos
+    // cobran una baja por cada héroe caído del bando contrario).
+    var mwDead = 0, mlDead = 0;
+    (r.winner_heroes || []).forEach(h => { if (h && h.died && h.name && !SUMMON_TOKENS.includes(h.name)) mwDead++; });
+    (r.loser_heroes || []).forEach(h => { if (h && h.died && h.name && !SUMMON_TOKENS.includes(h.name)) mlDead++; });
+    (r.winner_heroes || []).forEach(h => {
+      if (!h || !h.name || SUMMON_TOKENS.includes(h.name) || h.died) return;
+      if (mlDead) monthHeroKills[h.name] = (monthHeroKills[h.name] || 0) + mlDead;
+    });
+    (r.loser_heroes || []).forEach(h => {
+      if (!h || !h.name || SUMMON_TOKENS.includes(h.name) || h.died) return;
+      if (mwDead) monthHeroKills[h.name] = (monthHeroKills[h.name] || 0) + mwDead;
+    });
   });
   const monthExtra = (nick) => {
     const w = monthWins[nick] || 0, l = monthLosses[nick] || 0;
@@ -174,6 +187,11 @@ export default function Ranking() {
             <div className="md:col-span-2">
               <div className="rounded-2xl p-[2px] shadow-[0_0_36px_-6px_rgba(255,59,59,.45)]" style={{ background: 'linear-gradient(135deg, rgba(255,59,59,.55), rgba(255,59,59,.08) 40%, rgba(255,59,59,.55))' }}>
                 <RankList title={t('Top Kills')} iconImg={ICON_KILLS} rows={top(heroKills, 8)} valueLabel={t('bajas')} accent="#ff3b3b" empty={t('Ningún héroe ha causado baja todavía. ¡Derrama sangre en el campo de batalla!')} artMap={artMap} />
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <div className="rounded-2xl p-[2px] shadow-[0_0_36px_-6px_rgba(255,59,59,.45)]" style={{ background: 'linear-gradient(135deg, rgba(255,59,59,.55), rgba(255,59,59,.08) 40%, rgba(255,59,59,.55))' }}>
+                <RankList title={t('Top Kills de ') + monthLabel} iconImg={ICON_KILLS} rows={top(monthHeroKills, 8)} valueLabel={t('bajas')} accent="#ff3b3b" empty={t('Ningún héroe ha causado baja todavía este mes. ¡Derrama sangre en el campo de batalla!')} artMap={artMap} />
               </div>
             </div>
             <RankList title={t('Héroes más victoriosos')} iconImg={ICON_VICTORY} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
