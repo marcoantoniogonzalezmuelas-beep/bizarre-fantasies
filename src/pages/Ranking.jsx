@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Skull } from 'lucide-react';
 import RankList from '@/components/ranking/RankList';
 import RankingPrizeBanner from '@/components/ranking/RankingPrizeBanner';
 import { t, getLang } from '@/lib/i18n';
@@ -16,6 +15,7 @@ const ICON_VICTORY = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d
 const ICON_DEFEAT = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/33e4e22fd_generated_image.png';
 const ICON_FALLEN = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/89adeedea_generated_image.png';
 const ICON_REBIRTH = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/19a275621_generated_image.png';
+const ICON_KILLS = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/c773db422_generated_image.png';
 const MONTH_NAMES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const MONTH_NAMES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTH_NAMES = () => (getLang() === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ES);
@@ -173,7 +173,7 @@ export default function Ranking() {
             </div>
             <div className="md:col-span-2">
               <div className="rounded-2xl p-[2px] shadow-[0_0_36px_-6px_rgba(255,59,59,.45)]" style={{ background: 'linear-gradient(135deg, rgba(255,59,59,.55), rgba(255,59,59,.08) 40%, rgba(255,59,59,.55))' }}>
-                <RankList title={t('Top Kills')} icon={Skull} rows={top(heroKills, 8)} valueLabel={t('bajas')} accent="#ff3b3b" empty={t('Ningún héroe ha causado baja todavía. ¡Derrama sangre en el campo de batalla!')} artMap={artMap} />
+                <RankList title={t('Top Kills')} iconImg={ICON_KILLS} rows={top(heroKills, 8)} valueLabel={t('bajas')} accent="#ff3b3b" empty={t('Ningún héroe ha causado baja todavía. ¡Derrama sangre en el campo de batalla!')} artMap={artMap} />
               </div>
             </div>
             <RankList title={t('Héroes más victoriosos')} iconImg={ICON_VICTORY} rows={top(heroWins, 8)} valueLabel={t('batallas ganadas')} accent="#7ddf7d" artMap={artMap} />
