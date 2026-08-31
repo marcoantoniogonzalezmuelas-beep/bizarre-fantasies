@@ -32,6 +32,27 @@ export const MATCH_RECOVERY_PATCH = `
   }
   setInterval(save,3000);
 
+  // Guarda el estado INMEDIATAMENTE tras cada cambio de turno: stepTurn arranca
+  // el turno del héroe que apunta B.qi (B.current=B.queue[B.qi]); endTurn hace
+  // B.qi++ para pasar al siguiente. El guardado periódico (cada 3 s) dejaba un
+  // margen en el que B.qi podía estar anticuado y, al reanudar, el héroe cuyo
+  // turno ya había terminado "repetía" su turno. Enganchando el guardado a
+  // stepTurn y endTurn, B.qi/B.current siempre reflejan el turno exacto del
+  // momento de la desconexión → la reanudación respetar a quién le tocaba.
+  function hookIfReady(fnName){
+    if(typeof window[fnName]!=='function')return false;
+    if(window[fnName].__bfSaveHook)return true;
+    var orig=window[fnName];
+    window[fnName]=function(){var r=orig.apply(this,arguments);try{save();}catch(e){}return r;};
+    window[fnName].__bfSaveHook=1;
+    return true;
+  }
+  var _bfHsT=0;(function w(){
+    var s=hookIfReady('stepTurn'), e=hookIfReady('endTurn');
+    if((s&&e)||_bfHsT++>120)return;
+    setTimeout(w,200);
+  })();
+
   function getSave(){
     try{
       var d=JSON.parse(localStorage.getItem(KEY)||'null');
@@ -84,7 +105,8 @@ export const MATCH_RECOVERY_PATCH = `
   // opción de reanudar + un reloj de cuenta atrás de 5 minutos. Si no
   // reanuda en ese tiempo, los datos caducan y la opción desaparece.
   var st=document.createElement('style');
-  st.textContent='#bf-resume{position:fixed;inset:0;z-index:100600;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(4px)}#bf-resume .bf-res-box{text-align:center;max-width:360px;padding:26px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.6);box-shadow:0 18px 50px rgba(0,0,0,.7)}#bf-resume .bf-res-ico{font-size:40px;margin-bottom:8px}#bf-resume .bf-res-t{font-family:Cinzel,serif;font-weight:900;font-size:19px;color:#ffe49a}#bf-resume .bf-res-s{margin-top:8px;font-size:13px;line-height:1.45;color:#cfc6dd}#bf-resume .bf-res-clock{margin-top:16px;font-family:Cinzel,serif;font-weight:900;font-size:36px;color:#FFD24A;text-shadow:0 0 18px rgba(255,210,74,.5)}#bf-resume .bf-res-clock-lbl{margin-top:4px;font-size:11px;color:#9a8fb5;letter-spacing:.5px}#bf-resume .bf-res-go{margin-top:14px;font-family:Cinzel,serif;font-weight:900;font-size:15px;border-radius:12px;padding:13px 22px;cursor:pointer;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}';
+  st.textContent='#bf-resume{position:fixed;inset:0;z-index:100600;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(4px)}#bf-resume .bf-res-box{text-align:center;max-width:360px;padding:26px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.6);box-shadow:0 18px 50px rgba(0,0,0,.7)}#bf-resume .bf-res-ico{font-size:40px;margin-bottom:8px}#bf-resume .bf-res-t{font-family:Cinzel,serif;font-weight:900;font-size:19px;color:#ffe49a}#bf-resume .bf-res-s{margin-top:8px;font-size:13px;line-height:1.45;color:#cfc6dd}#bf-resume .bf-res-clock{margin-top:16px;font-family:Cinzel,serif;font-weight:900;font-size:36px;color:#FFD24A;text-shadow:0 0 18px rgba(255,210,74,.5)}#bf-resume .bf-res-clock-lbl{margin-top:4px;font-size:11px;color:#9a8fb5;letter-spacing:.5px}#bf-resume .bf-res-go{margin-top:14px;font-family:Cinzel,serif;font-weight:900;font-size:15px;border-radius:12px;padding:13px 22px;cursor:pointer;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600}'+
+    '#bf-resume .bf-res-quit{margin-top:10px;width:100%;font-family:Cinzel,serif;font-weight:900;font-size:13px;border-radius:12px;padding:11px 18px;cursor:pointer;border:1px solid rgba(255,90,90,.6);background:linear-gradient(180deg,rgba(120,30,30,.55),rgba(80,16,16,.7));color:#ffb0a0;letter-spacing:.3px;transition:filter .14s ease,transform .12s ease}#bf-resume .bf-res-quit:hover{filter:brightness(1.12)}#bf-resume .bf-res-quit:active{transform:scale(.97)}';
   document.head.appendChild(st);
 
   function maybePrompt(){
@@ -99,7 +121,7 @@ export const MATCH_RECOVERY_PATCH = `
     window.__bfResumeAsked=true;
     var ov=document.createElement('div');
     ov.id='bf-resume';
-    ov.innerHTML='<div class="bf-res-box"><div class="bf-res-ico">⚔️</div><div class="bf-res-t">Reanudar partida</div><div class="bf-res-s">Tienes una partida online sin terminar.<br>Puedes reanudarla donde estaba.</div><div class="bf-res-clock">5:00</div><div class="bf-res-clock-lbl">TIEMPO RESTANTE</div><button class="bf-res-go">Reanudar partida</button></div>';
+    ov.innerHTML='<div class="bf-res-box"><div class="bf-res-ico">⚔️</div><div class="bf-res-t">Reanudar partida</div><div class="bf-res-s">Tienes una partida online sin terminar.<br>Puedes reanudarla donde estaba.</div><div class="bf-res-clock">5:00</div><div class="bf-res-clock-lbl">TIEMPO RESTANTE</div><button class="bf-res-go">Reanudar partida</button><button class="bf-res-quit">Salir definitivamente de la partida</button></div>';
     document.body.appendChild(ov);
     // Reloj de cuenta atrás de 5 minutos: cuando llega a 0, el aviso se cierra
     // (los datos ya han caducado, el rival ya no estará esperando).
@@ -117,6 +139,20 @@ export const MATCH_RECOVERY_PATCH = `
       ov.remove();
       if(host)restoreHost(host);
       else if(window.bfResumeMatch)window.bfResumeMatch();
+    };
+    // "Salir definitivamente": borra la sala del backend, borra las copias
+    // locales de reanudación (host y cliente) y vuelve a la portada. La
+    // partida ya no se puede reanudar: la sala desaparece del lobby y los
+    // datos guardados se eliminan del dispositivo.
+    ov.querySelector('.bf-res-quit').onclick=function(){
+      clearInterval(tickIv);
+      if(d.code&&window.bfLobbyRequest){
+        window.bfLobbyRequest('unregister',{code:d.code,password:d.pass||'',resume_token:d.token||''}).catch(function(){});
+      }
+      if(window.__bfClearSave)window.__bfClearSave();
+      try{localStorage.removeItem('bfResumeMatch');}catch(e){}
+      ov.remove();
+      setTimeout(function(){try{location.reload();}catch(e){}},250);
     };
   }
   setInterval(maybePrompt,1000);
