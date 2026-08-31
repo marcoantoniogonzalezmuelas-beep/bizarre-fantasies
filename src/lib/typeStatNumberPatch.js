@@ -49,8 +49,8 @@ export const TYPE_STAT_NUMBER_PATCH = `
       if(vv == null) return;
       html += ' · <span style="color:' + COLORS[x] + '">' + x.toUpperCase() + ' ' + vv + '</span>';
     });
-    var vel = (typeof velocity === 'function') ? velocity(h) : null;
-    if(vel != null) html += ' · <span style="color:#ffd24a">⚡' + vel + '</span>';
+    // Velocidad omitida aquí: speedGaugePatch.js ya la muestra en la misma
+    // barra (con sello "RÁPIDO" para el más veloz). Antes se duplicaba.
     return html;
   }
 
