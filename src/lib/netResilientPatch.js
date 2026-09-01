@@ -85,11 +85,15 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       }
       turn.sort(function(a, b){ return rank(a) - rank(b); });
       opts.config.iceServers = turn.concat(stun);
-      // Forzar relay cuando hay servidores TURN: es el camino más robusto a
-      // través de cualquier NAT (incluido el CGNAT de cualquier operador). Si
-      // el relay falla dos veces (red que bloquea TURN, p. ej. corporativa), se
-      // activa el fallback a conexión directa para no dejar a nadie fuera.
-      if (turn.length) opts.config.iceTransportPolicy = window.__bfIceFallback ? 'all' : 'relay';
+      // Política ICE 'all' por defecto: ICE prueba directo Y relay a la vez y
+      // elige el par que funcione, así el TURN solo consume tráfico cuando la
+      // red lo necesita de verdad. Antes se forzaba 'relay' SIEMPRE: TODO el
+      // tráfico de TODAS las partidas pasaba por el TURN gratuito de Metered
+      // (cuota mensual limitada) y, al agotarse la cuota a mitad de mes, las
+      // conexiones caían para todos. Para el caso CGNAT (la conexión directa
+      // "abre" y se cae al segundo), watchIce detecta esas caídas tempranas y
+      // activa __bfForceRelay: a partir de ahí la sesión usa solo relay.
+      if (turn.length) opts.config.iceTransportPolicy = window.__bfForceRelay ? 'relay' : 'all';
       opts.config.iceCandidatePoolSize = 4;
       opts.config.sdpSemantics = 'unified-plan';
       // PeerJS interpreta un objeto en el primer argumento como un ID inválido.
@@ -149,9 +153,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       NET.code = makeCode();
       var attempt = 0;
       var retryTimer = null;
-      // Nueva partida: arranca con relay (robusto en cualquier operador). Si
-      // el relay falla dos veces, se cae al fallback de conexión directa.
-      window.__bfIceFallback = false;
+      // La política ICE la decide __bfForceRelay (relay pegajoso si la red de
+      // este jugador ya demostró que la conexión directa no aguanta). No se
+      // resetea al crear sala: si la red necesitaba relay, lo sigue necesitando.
 
       renderLobby('hostwait');
       lobbyStatus('Preparando conexión segura…');
@@ -188,9 +192,6 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
             clearTimeout(watchdog);
             try { failedPeer.destroy(); } catch (e) {}
             attempt += 1;
-            // Tras 2 intentos fallidos con relay, caer a conexión directa (red que
-            // bloquea TURN). Así funciona en cualquier operador y cualquier red.
-            if (attempt >= 2) window.__bfIceFallback = true;
             lobbyStatus('Recuperando conexión de la sala…');
             clearTimeout(retryTimer);
             retryTimer = setTimeout(startAttempt, Math.min(5000, 700 * attempt));
@@ -236,8 +237,6 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       var originalClientJoin = window.clientJoin;
       window.clientJoin = function(){
         var self = this, args = arguments;
-        // Nueva partida: arranca con relay (robusto en cualquier operador).
-        window.__bfIceFallback = false;
         // Guarda los datos de la sala para poder reconectar automáticamente.
         try{
           var jc=String(args[0]||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -286,14 +285,27 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     var pc = c && c.peerConnection;
     if (!pc || pc.__bfIceWatch) return;
     pc.__bfIceWatch = 1;
+    var connectedAt = 0;
+    // Caída temprana = la conexión directa "abrió" pero murió en <20s (patrón
+    // típico del CGNAT de operadores móviles). A la segunda caída temprana de
+    // la sesión se fuerza relay para todos los peers siguientes: la red de
+    // este jugador no soporta conexión directa estable.
+    function noteEarlyDrop(){
+      if (!connectedAt || Date.now() - connectedAt > 20000) return;
+      window.__bfEarlyDrops = (window.__bfEarlyDrops || 0) + 1;
+      if (window.__bfEarlyDrops >= 2) window.__bfForceRelay = 1;
+    }
     pc.addEventListener('iceconnectionstatechange', function(){
       var st = pc.iceConnectionState;
-      if (st === 'disconnected') {
+      if (st === 'connected' || st === 'completed') {
+        if (!connectedAt) connectedAt = Date.now();
+      } else if (st === 'disconnected') {
         setTimeout(function(){
           if (pc.iceConnectionState !== 'disconnected') return;
           try { if (pc.restartIce) pc.restartIce(); } catch (e) {}
         }, 2000);
       } else if (st === 'failed') {
+        noteEarlyDrop();
         try { if (pc.restartIce) pc.restartIce(); } catch (e) {}
         setTimeout(function(){
           if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') return;

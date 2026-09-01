@@ -1,5 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 
+// Throttle de las limpiezas de BD, compartido entre peticiones del mismo
+// isolate: cada cliente del lobby refresca cada ~8s y cada visitante de la
+// Habitación Bizarra late cada pocos segundos, así que ejecutar el escaneo
+// completo (200 filas + borrados) en CADA petición multiplicaba la carga
+// sobre la BD y provocaba errores de rate-limit (el origen real de la
+// inestabilidad del entorno). Las filas caducadas ya se filtran al responder,
+// así que retrasar su borrado físico no cambia nada visible.
+let lastRoomCleanup = 0;
+let lastBizarreCleanup = 0;
+const ROOM_CLEANUP_EVERY = 60000;
+const BIZARRE_CLEANUP_EVERY = 30000;
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -26,19 +38,25 @@ Deno.serve(async (req) => {
     // algún cliente no llegara a llamar a 'unregister'.
     async function cleanupStaleLeft() {
       try {
+        const nowT = Date.now();
+        if (nowT - lastRoomCleanup < ROOM_CLEANUP_EVERY) return;
+        lastRoomCleanup = nowT;
         const all = await base44.asServiceRole.entities.GameRoom.list('-updated_date', 200);
         const now = Date.now();
-        for (const room of all) {
+        const stale = all.filter((room) => {
           const upd = Date.parse(room.updated_date || room.created_date || 0);
           const created = Date.parse(room.created_date || room.updated_date || 0);
           const leftAt = room.left_at || room.state?.left_at;
-          const stale =
+          return (
             room.status === 'finished' ||
             (leftAt && now - leftAt > LEFT_TTL) ||
             (room.status === 'waiting' && now - created > WAITING_TTL) ||
-            ((room.status === 'playing' || room.status === 'resuming') && now - upd > 10800000);
-          if (stale) await deleteRoomFully(room);
-        }
+            ((room.status === 'playing' || room.status === 'resuming') && now - upd > 10800000)
+          );
+        });
+        // Borrados en paralelo: en serie, una lista con muchas salas caducadas
+        // mantenía la petición abierta varios segundos.
+        await Promise.all(stale.map((room) => deleteRoomFully(room)));
       } catch (e) {}
     }
 
@@ -48,21 +66,26 @@ Deno.serve(async (req) => {
     const SPIN_TIMEOUT = 20000; // 20 s máximo de ruleta antes de cancelar
     async function cleanupBizarre() {
       try {
+        const nowT = Date.now();
+        if (nowT - lastBizarreCleanup < BIZARRE_CLEANUP_EVERY) return;
+        lastBizarreCleanup = nowT;
         const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
         const now = Date.now();
+        const jobs: Promise<unknown>[] = [];
         for (const v of all) {
           if (now - (v.last_heartbeat || 0) > BIZARRE_TIMEOUT) {
-            await base44.asServiceRole.entities.ChatMessage.deleteMany({ room_code: 'BIZARRE_ROOM', sender_nick: v.nick });
-            await base44.asServiceRole.entities.BizarreVisitor.delete(v.id);
+            jobs.push(base44.asServiceRole.entities.ChatMessage.deleteMany({ room_code: 'BIZARRE_ROOM', sender_nick: v.nick }).catch(() => {}));
+            jobs.push(base44.asServiceRole.entities.BizarreVisitor.delete(v.id).catch(() => {}));
           } else if (v.match_code && String(v.match_code).startsWith(SPIN_PREFIX)) {
             // Ruleta caducada: limpia el estado de spin para desbloquear el botón
             const parts = String(v.match_code).split('-');
             const spinStart = parseInt(parts[1] || '0', 36);
             if (now - spinStart > SPIN_TIMEOUT) {
-              await base44.asServiceRole.entities.BizarreVisitor.update(v.id, { match_code: '', match_role: '', match_pass: '' });
+              jobs.push(base44.asServiceRole.entities.BizarreVisitor.update(v.id, { match_code: '', match_role: '', match_pass: '' }).catch(() => {}));
             }
           }
         }
+        await Promise.all(jobs);
       } catch (e) {}
     }
     async function countWins(nick: string): Promise<number> {
@@ -119,7 +142,16 @@ Deno.serve(async (req) => {
       const matches = await base44.asServiceRole.entities.BizarreVisitor.filter({ session_token: sessionToken }, '-created_date', 1);
       const v = matches[0];
       if (!v) return Response.json({ ok: false, error: 'session_expired' });
-      await base44.asServiceRole.entities.BizarreVisitor.update(v.id, { last_heartbeat: Date.now() });
+      // Auto-reparación: si mi ruleta caducó (SPIN- de hace más de SPIN_TIMEOUT),
+      // se limpia aquí mismo, sin esperar al escaneo global (que va con throttle).
+      let spinExpired = false;
+      if (v.match_code && String(v.match_code).startsWith(SPIN_PREFIX)) {
+        const spinStart = parseInt(String(v.match_code).split('-')[1] || '0', 36);
+        if (Date.now() - spinStart > SPIN_TIMEOUT) { spinExpired = true; v.match_code = ''; v.match_role = ''; v.match_pass = ''; }
+      }
+      await base44.asServiceRole.entities.BizarreVisitor.update(v.id, spinExpired
+        ? { match_code: '', match_role: '', match_pass: '', last_heartbeat: Date.now() }
+        : { last_heartbeat: Date.now() });
       const all = await base44.asServiceRole.entities.BizarreVisitor.list('-created_date', 200);
       const now = Date.now();
       const visitors = all

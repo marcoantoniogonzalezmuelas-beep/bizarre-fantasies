@@ -295,8 +295,9 @@ export const NET_RECONNECT_PATCH = `
     // espera es el host o el cliente. Probamos primero como cliente y, si en
     // ~12 s no hay conexión, pasamos a abrir la sala nosotros como host.
     rec.tries=(rec.tries||0)+1;
-    // Tras 2 intentos fallidos de reconexión con relay, caer a conexión directa.
-    if(rec.tries>=2) window.__bfIceFallback=true;
+    // Tras 2 intentos fallidos de reconexión, forzar relay (TURN): si la
+    // conexión directa no vuelve, la red probablemente la está rompiendo.
+    if(rec.tries>=2) window.__bfForceRelay=1;
     if(rec.anyRole&&!rec.hostTried&&rec.tries>=4&&!(NET.conn&&NET.conn.open)){switchToHost();return;}
     rec.timer=setTimeout(clientRetry,RETRY_MS);
   }
@@ -658,12 +659,16 @@ export const NET_RECONNECT_PATCH = `
 
   // Vigilante: detecta conexiones "zombi" (abiertas pero mudas >90s, margen
   // amplio para pestañas en segundo plano) y las cierra para forzar la
-  // reconexión en lugar de dejar la partida colgada.
+  // reconexión en lugar de dejar la partida colgada. Con la pestaña oculta NO
+  // se cierra nada: el navegador congela los timers en segundo plano, así que
+  // el silencio es del propio dispositivo, no de la red (al volver a la
+  // pestaña, visibilitychange ya comprueba y recupera la conexión).
   setInterval(function(){
     if(typeof NET==='undefined'||typeof G==='undefined'||!G.online||G._gameOver||rec.active)return;
+    if(document.hidden)return;
     var c=NET.conn;
     if(!c){connLost();return;}
-    if(c.open&&c.__bfLastSeen&&Date.now()-c.__bfLastSeen>25000){try{c.close();}catch(e){}return;}
+    if(c.open&&c.__bfLastSeen&&Date.now()-c.__bfLastSeen>90000){try{c.close();}catch(e){}return;}
     if(!c.open)connLost();
   },6000);
 })();

@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-08-19-duck-elite-v207';
+const GAME_PATCH_VERSION = 'bf-2026-09-01-cache-online-v208';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -2472,11 +2472,19 @@ function buildArtScript(dbCards) {
 </script>
 `;
 }
-// In-memory cache of the fully assembled HTML, keyed by patch version. The
-// upstream file only changes when we bump GAME_PATCH_VERSION, so we fetch +
-// assemble once per deploy and serve every later request straight from memory.
+// Caché en memoria del HTML ya ensamblado, con TTL corto (60s). Sin caché,
+// CADA carga del juego descargaba el HTML base del CDN (184 KB), consultaba
+// las 1000 cartas de la BD y reensamblaba ~500 KB: cargas lentas, timeouts y
+// reintentos en cadena desde el cliente (MAX_LOAD_ATTEMPTS) que sobrecargaban
+// el backend. Con 60s de TTL las ediciones de cartas siguen llegando en menos
+// de un minuto (el motivo por el que se quitó la caché original) y el resto
+// de peticiones se sirven al instante desde memoria.
+let cachedHtml = '';
+let cachedAt = 0;
+let cachedVersion = '';
+const HTML_CACHE_TTL = 60000;
 async function buildGameHtml(req) {
-  // CACHE removed so cards reload on refresh
+  if (cachedHtml && cachedVersion === GAME_PATCH_VERSION && Date.now() - cachedAt < HTML_CACHE_TTL) return cachedHtml;
   const SRC = 'https://media.base44.com/files/public/6a39c9aee54efe3a86d6d69a/2b855b7c8_bizarre_fantasies_v5-4.html';
   const upstream = await fetch(SRC + '?bfv=' + GAME_PATCH_VERSION, { cache: 'no-store' });
   let html = await upstream.text();
@@ -2485,8 +2493,8 @@ async function buildGameHtml(req) {
   const base44 = createClientFromRequest(req);
   const dbCards = await base44.asServiceRole.entities.Card.list('number', 1000);
   const artScript = buildArtScript(dbCards || []);
- html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
-  // caching disabled: always regenerate fresh HTML
+  html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
+  cachedHtml = html; cachedAt = Date.now(); cachedVersion = GAME_PATCH_VERSION;
   return html;
 }
 Deno.serve(async (req) => {

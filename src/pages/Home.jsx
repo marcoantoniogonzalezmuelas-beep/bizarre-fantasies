@@ -16,6 +16,7 @@ import { STAT_NUMBER_PATCH } from '@/lib/statNumberPatch';
 import { CARD_ART_MAP_PATCH } from '@/lib/cardArtMapPatch';
 import { PERF_BOOST_PATCH } from '@/lib/perfBoostPatch';
 import { MOBILE_ANTIFLICKER_PATCH } from '@/lib/mobileAntiFlickerPatch';
+import { MOBILE_RESPONSIVE_PATCH } from '@/lib/mobileResponsivePatch';
 import { MOBILE_PINCH_PATCH } from '@/lib/mobilePinchZoomPatch';
 import { MOBILE_EXIT_PATCH } from '@/lib/mobileExitPatch';
 import { MODAL_FOCUS_PATCH } from '@/lib/modalFocusPatch';
@@ -165,7 +166,7 @@ import RotateHint from '@/components/home/RotateHint';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-08-20-turnos-v217';
+const EXPECTED_PATCH_VERSION = 'bf-2026-09-01-responsive-online-v218';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `
@@ -397,6 +398,13 @@ const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
 // modo que el móvil: vista de escritorio (1200px) escalada + zoom de pellizco.
 const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
 const IS_MOBILE = IS_TABLET || /Android|iPhone|iPod|Mobile/i.test(UA) || (typeof window !== 'undefined' && Math.min(window.screen.width || 9999, window.screen.height || 9999) <= 1024);
+// Teléfonos (no tablets): en VERTICAL el juego se maqueta a un lienzo de 860px
+// en vez de 1280. Así la escala en un móvil de 360px pasa de ~0,28 a ~0,42
+// (todo un 50% más grande) y se activan las media queries responsive que el
+// propio juego trae (≤880px: rejillas a una columna), apagadas con el lienzo
+// de 1280. En horizontal se mantiene 1280 (paridad con PC).
+const IS_PHONE = IS_MOBILE && !IS_TABLET;
+const PHONE_DESIGN_W = 860;
 
 export default function Home() {
   useEffect(() => {
@@ -472,13 +480,19 @@ export default function Home() {
   // un escenario fijo de 1280×800 y se ajusta también a la ALTURA (zoom out),
   // así se ve entero. En vertical se mantiene el ajuste por ancho.
   const [isLandscape, setIsLandscape] = useState(false);
+  // Ancho del lienzo del juego: 860px en teléfonos en vertical (responsive
+  // real, ver PHONE_DESIGN_W), 1280px en horizontal, tablets y PC.
+  const [designW, setDesignW] = useState(IS_PHONE ? PHONE_DESIGN_W : 1280);
   useEffect(() => {
     if (!IS_MOBILE) return;
     const calc = () => {
       const w = document.documentElement.clientWidth || 360;
       const h = document.documentElement.clientHeight || 640;
-      setIsLandscape(w > h);
-      setMobScale(Math.min(1, w / 1280));
+      const landscape = w > h;
+      setIsLandscape(landscape);
+      const dw = (IS_PHONE && !landscape) ? PHONE_DESIGN_W : 1280;
+      setDesignW(dw);
+      setMobScale(Math.min(1, w / dw));
     };
     calc();
     window.addEventListener('resize', calc);
@@ -1060,7 +1074,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = PERF_BOOST_PATCH + CHOICE_MODAL_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + DAMAGE_NUMBER_PATCH + STAT_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + ODD_STATES_LOGIC_PATCH + STATUS_LABEL_PATCH + NO_HERO_MOTION_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + HOME_MENU_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + ACTION_PANEL_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + TRANSFORM_FIX_PATCH + DUCK_ABILITY_PATCH + DUCK_ABSORB_FX_PATCH + CRANE_SUMMON_PATCH + EPIC_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + FAST_ABILITY_PATCH + RETROPOETA_ABILITY_PATCH + JUNIANA_ABILITY_PATCH + DOJI_CONPURI_ABILITY_PATCH + FAITHFUL_ABILITIES_PATCH + ABILITY_ANIM_PATCH + PASSIVE_MARKER_PATCH + TABLE_MAT_PATCH + EQ_HERO_SCENE_BG_PATCH + BATTLE_SCENE_BG_PATCH + BATTLE_ART_FIX_PATCH + BATTLE_ZOOM_PATCH + CHROME_PERF_PATCH + TURN_UNSTICK_PATCH + STALL_GUARD_PATCH + AI_WAIT_CINE_PATCH + MP_TURN_SEQUENCE_PATCH + KILL_ACTOR_PATCH + FINAL_ACTION_RECAP_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + BIZARRE_ROOM_PATCH + BIZARRE_RETURN_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + RECOVERED_EQUIP_PATCH + STEAL_SPELL_PATCH + DRAIN_OBJECT_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + BATTLE_LOG_ORDER_PATCH + SKIP_REASON_LOG_PATCH + SKIP_TURN_POP_PATCH + SPEED_GAUGE_PATCH + TYPE_STAT_NUMBER_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + THINK_BOX_SKIN_PATCH + EQUIP_BADGE_BIG_PATCH + AI_LEVEL_PATCH + AI_VICTORY_CINEMATIC_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_GAME_SYNC_PATCH + END_GAME_RESCUE_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + buildFumbleRollPatch(getLang()) + HERO_DICE_PATCH + ABILITY_TARGET_FLOW_PATCH + HERO_CARD_SPEED_PATCH + HERO_VEL_PATCH + BATTLE_SIZE_STABLE_PATCH + (IS_MOBILE ? MOBILE_EXIT_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + MOBILE_PINCH_PATCH + MODAL_FOCUS_PATCH + MOBILE_HAND_COLLAPSE_PATCH : '') + HERO_FULL_FREEZE_PATCH + BATTLE_EQUAL_SIZE_PATCH + FOIL_SHINE_PATCH + HERO_NAME_FIT_PATCH + STATUS_POP_PATCH + RENDER_BATTLE_DEDUPE_PATCH + KILL_CINE_QUEUE_PATCH + HERO_GEAR_CHIPS_PATCH + ARMY_ALIGN_PATCH;
+        const INJECT = PERF_BOOST_PATCH + CHOICE_MODAL_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + DAMAGE_NUMBER_PATCH + STAT_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + buildNetResilientPatch(turnIceServers) + CENTRAL_LOBBY_PATCH + NET_RECONNECT_PATCH + FINAL_CINEMATIC_PATCH + ODD_STATES_LOGIC_PATCH + STATUS_LABEL_PATCH + NO_HERO_MOTION_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + HOME_MENU_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + ACTION_PANEL_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + MATCH_RECOVERY_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + TRANSFORM_FIX_PATCH + DUCK_ABILITY_PATCH + DUCK_ABSORB_FX_PATCH + CRANE_SUMMON_PATCH + EPIC_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + FAST_ABILITY_PATCH + RETROPOETA_ABILITY_PATCH + JUNIANA_ABILITY_PATCH + DOJI_CONPURI_ABILITY_PATCH + FAITHFUL_ABILITIES_PATCH + ABILITY_ANIM_PATCH + PASSIVE_MARKER_PATCH + TABLE_MAT_PATCH + EQ_HERO_SCENE_BG_PATCH + BATTLE_SCENE_BG_PATCH + BATTLE_ART_FIX_PATCH + BATTLE_ZOOM_PATCH + CHROME_PERF_PATCH + TURN_UNSTICK_PATCH + STALL_GUARD_PATCH + AI_WAIT_CINE_PATCH + MP_TURN_SEQUENCE_PATCH + KILL_ACTOR_PATCH + FINAL_ACTION_RECAP_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + BIZARRE_ROOM_PATCH + BIZARRE_RETURN_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + RECOVERED_EQUIP_PATCH + STEAL_SPELL_PATCH + DRAIN_OBJECT_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + BATTLE_LOG_ORDER_PATCH + SKIP_REASON_LOG_PATCH + SKIP_TURN_POP_PATCH + SPEED_GAUGE_PATCH + TYPE_STAT_NUMBER_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + THINK_BOX_SKIN_PATCH + EQUIP_BADGE_BIG_PATCH + AI_LEVEL_PATCH + AI_VICTORY_CINEMATIC_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_GAME_SYNC_PATCH + END_GAME_RESCUE_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + buildFumbleRollPatch(getLang()) + HERO_DICE_PATCH + ABILITY_TARGET_FLOW_PATCH + HERO_CARD_SPEED_PATCH + HERO_VEL_PATCH + BATTLE_SIZE_STABLE_PATCH + (IS_MOBILE ? MOBILE_EXIT_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + MOBILE_PINCH_PATCH + MODAL_FOCUS_PATCH + MOBILE_HAND_COLLAPSE_PATCH : '') + (IS_PHONE ? MOBILE_RESPONSIVE_PATCH : '') + HERO_FULL_FREEZE_PATCH + BATTLE_EQUAL_SIZE_PATCH + FOIL_SHINE_PATCH + HERO_NAME_FIT_PATCH + STATUS_POP_PATCH + RENDER_BATTLE_DEDUPE_PATCH + KILL_CINE_QUEUE_PATCH + HERO_GEAR_CHIPS_PATCH + ARMY_ALIGN_PATCH;
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = data.replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus').replace(/Despertar/g, 'Sanar').replace(/despertar/g, 'sanar');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,
@@ -1160,10 +1174,12 @@ export default function Home() {
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}
           className="border-0"
-          // El documento del juego se maqueta SIEMPRE a 1280px (paridad con PC)
-          // y en móvil/tablet se encoge con CSS para que quepa entero.
+          // El lienzo del juego es dinámico: 860px en teléfonos en vertical
+          // (activa el responsive nativo del juego y agranda toda la interfaz),
+          // 1280px en horizontal/tablet (paridad con PC). Se encoge con CSS
+          // para que quepa entero en la pantalla.
           style={IS_MOBILE
-            ? { width: 1280, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
+            ? { width: designW, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
             : { width: '100%', height: '100%' }}
           allow="autoplay; fullscreen; clipboard-read; clipboard-write"
         />
