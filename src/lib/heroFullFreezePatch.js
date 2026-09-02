@@ -36,9 +36,12 @@ export const HERO_FULL_FREEZE_PATCH = `
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
-  // El juego (y otros parches) inyectan hojas después: la mantenemos siempre la
-  // última del <head> para que gane por orden.
-  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1200);
+  // El orden de cascada lo garantiza el coordinador de styleOrderPatch: esta
+  // hoja va casi al final (solo el destello foil de batalla queda por detrás,
+  // porque es una de las excepciones que SÍ deben animarse). Antes cada parche
+  // re-añadía su hoja al final del head en bucle, en guerra con los demás:
+  // recálculos de estilo constantes = parpadeo en tablet.
+  if(window.__bfStyleOrder) window.__bfStyleOrder(st, 50);
 
   // El CSS no puede parar lo que hace el JavaScript del juego: aquí se cancelan
   // las animaciones creadas por código y se limpian los transform/opacity que

@@ -39,6 +39,26 @@ export const MOBILE_ANTIFLICKER_PATCH = `
   -webkit-backface-visibility:hidden!important;
   mix-blend-mode:normal!important;
 }
+/* ===== FOIL EN TÁCTIL: atenuado al nivel de PC =====
+   La regla mix-blend-mode:normal de arriba convierte el arcoíris soft-light de
+   la capa .bf-epic-foil del juego (estilos inline, opacidad .4) en un LAVADO
+   OPACO de colores que tapa el retrato y la escena de batalla en móvil/tablet.
+   En PC no pasa (el blend soft-light sí se aplica y el efecto es sutil).
+   Aquí se sustituye en táctil por el MISMO destello blanco diagonal y suave
+   que usa el foil de batalla en PC (foilShinePatch): la carta brilla, pero el
+   retrato y la escena quedan 100% visibles. Los !important ganan a los estilos
+   inline del juego. */
+.bf-epic-foil{
+  opacity:.16!important;
+  background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.35) 48%,rgba(255,255,255,.6) 50%,rgba(255,255,255,.35) 52%,transparent 58%)!important;
+  background-size:250% 250%!important;
+  animation:bfTouchFoilShine 4.5s ease-in-out infinite!important;
+}
+@keyframes bfTouchFoilShine{0%{background-position:130% 0%}100%{background-position:-50% 0%}}
+/* Foil del Oráculo/equipamiento: sin blend (regla de arriba) el velo arcoíris
+   y el barrido quedaban demasiado densos en táctil; se bajan a brillo sutil. */
+.bf-foil-shine{opacity:.25!important}
+.bf-foil-card::before{opacity:.14!important}
 /* Capas de impacto nativas del juego: sin blend en táctil (parpadean sobre el
    iframe escalado). Sus fondos ya son translúcidos (whiteFlashFixPatch), así
    que en modo normal se ven bien y sin cuadros blancos. */
@@ -111,14 +131,13 @@ export const MOBILE_ANTIFLICKER_PATCH = `
 (function(){
   if(window.__bfAntiFlicker)return;window.__bfAntiFlicker=true;
 
-  // Una sola reubicación del <style> al final del head (mover un <style>
-  // invalida todos los estilos: hacerlo en bucle era parpadeo constante).
-  function toEnd(){
-    var s=document.getElementById('bf-antiflicker');
-    if(s&&document.head.lastElementChild!==s)document.head.appendChild(s);
-  }
-  if(document.readyState==='complete')setTimeout(toEnd,1500);
-  else window.addEventListener('load',function(){setTimeout(toEnd,1500)});
+  // El orden de la hoja lo mantiene el coordinador de styleOrderPatch con la
+  // prioridad MÁS BAJA: los parches de batalla (quietud, tamaños, foil) van
+  // detrás y ganan la cascada. Antes esta hoja se movía al final del head por
+  // su cuenta y entraba en guerra con los intervalos de los otros parches
+  // (recálculos de estilo constantes = parpadeo).
+  var s=document.getElementById('bf-antiflicker');
+  if(s&&window.__bfStyleOrder)window.__bfStyleOrder(s,10);
 
   // ---- Capa única de FX ----
   // Todo lo que los parches añaden al body y es un efecto temporal (clases

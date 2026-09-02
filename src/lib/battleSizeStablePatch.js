@@ -30,9 +30,10 @@ export const BATTLE_SIZE_STABLE_PATCH = `
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
-  // El juego inyecta estilos durante la batalla: mantenemos esta hoja al final
-  // del <head> para que siempre gane por orden.
-  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1500);
+  // El orden de cascada lo garantiza el coordinador de styleOrderPatch (antes
+  // esta hoja se re-añadía al final del head en bucle, en guerra con otros
+  // parches: recálculos de estilo constantes = parpadeo en tablet).
+  if(window.__bfStyleOrder) window.__bfStyleOrder(st, 30);
 })();
 </script>
 `;

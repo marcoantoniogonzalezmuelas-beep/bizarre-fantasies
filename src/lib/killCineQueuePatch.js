@@ -11,6 +11,14 @@ export const KILL_CINE_QUEUE_PATCH = `
   if(window.__bfKillCineQueue) return;
   window.__bfKillCineQueue = true;
 
+  // Última vez que se ha VISTO una cinemática de acción en pantalla. Sirve para
+  // saber si la habilidad que causó la muerte llegó ya a reproducirse o si su
+  // cinemática todavía está por salir.
+  var lastCineSeen = 0;
+  setInterval(function(){
+    try{ if(document.querySelector('#bf-abil-anim,#bf-spec-cine')) lastCineSeen = Date.now(); }catch(e){}
+  }, 120);
+
   // ¿Hay algo reproduciéndose ahora mismo?
   function busy(){
     try{
@@ -20,6 +28,14 @@ export const KILL_CINE_QUEUE_PATCH = `
       // (la cinemática aún no estaba en pantalla, solo encolada) y se
       // adelantaba, solapándose con ella cuando por fin salía.
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) return true;
+      // GRACIA: la acción que mata (habilidad/hechizo/objeto, registrada en
+      // __bfActionCtx por killActorPatch) puede NO tener su cinemática en
+      // pantalla todavía, ni siquiera encolada. Si la acción es reciente y
+      // desde entonces no se ha visto NINGUNA cinemática, se considera ocupado:
+      // PRIMERO la animación de la habilidad del atacante, DESPUÉS sus efectos
+      // y el número de daño, y SOLO AL FINAL el golpe mortal.
+      var ctx = window.__bfActionCtx;
+      if(ctx && ctx.ts && (Date.now() - ctx.ts) < 2500 && lastCineSeen < ctx.ts) return true;
       // Cinemáticas a pantalla completa (habilidad 3D, carta especial, otro remate).
       if(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')) return true;
       if(document.body.classList.contains('bf-cine-active')) return true;

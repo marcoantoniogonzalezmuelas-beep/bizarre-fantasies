@@ -25,7 +25,10 @@ export const BATTLE_EQUAL_SIZE_PATCH = `
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
-  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1500);
+  // El orden de cascada lo garantiza el coordinador de styleOrderPatch (antes
+  // esta hoja se re-añadía al final del head en bucle, en guerra con otros
+  // parches: recálculos de estilo constantes = parpadeo en tablet).
+  if(window.__bfStyleOrder) window.__bfStyleOrder(st, 40);
 })();
 </script>
 `;

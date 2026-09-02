@@ -449,7 +449,20 @@ export const END_GAME_FIX_PATCH = `
         var side = m[1], hid = m[2];
         var h = (G.team[side]||[]).find(function(hh){ return hh && hh.id === hid; });
         if(!h || h._token || h._bfDuck) return;
-        if(!h.alive) card.classList.add('bf-truedead');
+        if(!h.alive){
+          // RETÉN VISUAL (secuencia del golpe mortal): mientras el remate de
+          // este héroe esté pendiente (habilidad del atacante → efectos →
+          // número de daño → cinemática), NO se aplica el estado de muerto:
+          // lo añade bfKillCinematic al reproducirse de verdad. Un retén de
+          // más de 15 s se considera caducado (la cinemática nunca llegó) y
+          // el marcador vuelve a actuar como red de seguridad.
+          var hold = (window.__bfDeathVisHold||{})[side+'_'+hid];
+          if(hold){
+            if(Date.now()-hold < 15000) return;
+            try{ delete window.__bfDeathVisHold[side+'_'+hid]; }catch(e){}
+          }
+          card.classList.add('bf-truedead');
+        }
         else card.classList.remove('bf-truedead');
       });
     } catch(e) {}
@@ -476,7 +489,21 @@ export const END_GAME_FIX_PATCH = `
   // ---- 2) CINEMÁTICA DE MUERTE en batalla ----
   // Animación que se reproduce sobre la carta del héroe cuando cae en combate.
   window.bfKillCinematic = function(card) {
-    if(!card || !card.isConnected) return;
+    if(!card) return;
+    // La cola (killCineQueuePatch) puede retrasar el remate varios segundos y
+    // el juego repinta el tablero en medio: si la carta original quedó fuera
+    // del DOM, se vuelve a localizar por id.
+    if(!card.isConnected && card.id) card = document.getElementById(card.id) || card;
+    var m = String(card.id||'').match(/^b_([po])_(.+)$/);
+    function releaseHold(){
+      if(m){ try{ if(window.__bfDeathVisHold) delete window.__bfDeathVisHold[m[1]+'_'+m[2]]; }catch(e){} }
+    }
+    if(!card.isConnected){ releaseHold(); return; }
+    // AHORA (y no antes) el héroe pasa al estado de muerto: la lápida y el
+    // gris entran junto con la cinemática de remate, nunca por encima de la
+    // animación de la habilidad que lo mató (ver __bfDeathVisHold en 1b).
+    card.classList.add('bf-truedead');
+    releaseHold();
     // Evita duplicar el FX si ya tiene uno
     var existing = card.querySelector('.bf-kill-fx');
     if(existing) existing.remove();

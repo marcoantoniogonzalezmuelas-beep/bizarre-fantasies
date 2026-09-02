@@ -14,6 +14,20 @@ export const MOBILE_PINCH_PATCH = `
   if (window.__bfPinchZoom) return;
   window.__bfPinchZoom = true;
 
+  // ==========================================================================
+  // FONDO DEL ZOOM-OUT: imagen que rellena el margen alrededor del juego
+  // cuando el jugador ALEJA con el pellizco (antes se veía negro).
+  //
+  //   >>> PLACEHOLDER: pega aquí la URL de la imagen de fondo generada por IA.
+  //   >>> Recomendado: arte temático del juego (tapete/mazmorra), oscuro y sin
+  //   >>> texto, mínimo 1920x1080, formato JPG o WebP.
+  //   >>> Ejemplo:  var ZOOM_BG_URL = 'https://mi-cdn.com/fondo-bizarre.webp';
+  //
+  // Mientras la URL esté vacía ('') se usa el comportamiento actual: copiar el
+  // fondo de la pantalla activa del juego (y un morado oscuro de respaldo).
+  // ==========================================================================
+  var ZOOM_BG_URL = '';
+
   var z = 1, tx = 0, ty = 0;   // escala y desplazamiento actuales
   var pinch = null;            // estado del gesto en curso
   var lastZ = 1, lastTx = 0, lastTy = 0;  // evita postMessage redundantes
@@ -116,10 +130,23 @@ export const MOBILE_PINCH_PATCH = `
   (document.head || document.documentElement).appendChild(pzStyle);
 
   // Al ALEJAR (z<1) el contenido es más pequeño que la pantalla y alrededor se
-  // veía el negro del navegador. Se copia el fondo del juego al elemento raíz
-  // para que ese margen tenga el mismo fondo y no se vea un hueco negro.
+  // veía el negro del navegador. El margen se rellena con la imagen temática
+  // ZOOM_BG_URL (ver placeholder arriba) o, si no está configurada, copiando
+  // el fondo del juego al elemento raíz para que no se vea un hueco negro.
   function syncRootBg(){
     try{
+      var d = document.documentElement.style;
+      // Imagen temática fija configurada: fondo estable, se aplica una vez.
+      if (ZOOM_BG_URL) {
+        if (d.backgroundImage.indexOf(ZOOM_BG_URL) === -1) {
+          d.backgroundColor = '#0e0a16';
+          d.backgroundImage = 'url("' + ZOOM_BG_URL + '")';
+          d.backgroundSize = 'cover';
+          d.backgroundPosition = 'center';
+          d.backgroundRepeat = 'no-repeat';
+        }
+        return;
+      }
       var cs = getComputedStyle(document.body);
       var col = cs.backgroundColor, img = cs.backgroundImage;
       // Si el body no tiene fondo propio (transparente o sin imagen), se toma
@@ -134,7 +161,6 @@ export const MOBILE_PINCH_PATCH = `
         }
       }
       if (col === 'rgba(0, 0, 0, 0)' || col === 'transparent') col = '#0e0a16';
-      var d = document.documentElement.style;
       d.backgroundColor = col;
       d.backgroundImage = (img && img !== 'none') ? img : '';
       d.backgroundSize = 'cover';

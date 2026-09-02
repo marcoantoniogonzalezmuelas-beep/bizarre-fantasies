@@ -104,15 +104,23 @@ export const NO_HERO_MOTION_PATCH = `
     document.querySelectorAll('.bhero.active-turn .bf-active-tag').forEach(pinTag);
   }
   setInterval(pinAll, 250);
-  var _bfMo=new MutationObserver(pinAll);
+  // Observer con debounce por frame: en tablet las animaciones disparan cientos
+  // de mutaciones por segundo y ejecutar pinAll en cada una contribuía al
+  // parpadeo. Como mucho una pasada por frame.
+  var _bfPinRaf=0;
+  var _bfMo=new MutationObserver(function(){
+    if(_bfPinRaf)return;
+    _bfPinRaf=requestAnimationFrame(function(){_bfPinRaf=0;pinAll();});
+  });
   try{ _bfMo.observe(document.documentElement,{childList:true,subtree:true}); }catch(e){}
 
   var st=document.createElement('style');
   st.textContent=css;
   document.head.appendChild(st);
-  // El juego inyecta estilos durante la batalla: mantenemos esta hoja siempre
-  // al final del <head> para que gane en especificidad de orden.
-  setInterval(function(){ if(document.head.lastChild!==st) document.head.appendChild(st); },1500);
+  // El orden de cascada lo mantiene el coordinador de styleOrderPatch (antes
+  // cada parche re-añadía su hoja al final del head en bucle y ese vaivén
+  // forzaba recálculos de estilo constantes: el parpadeo de tablet).
+  if(window.__bfStyleOrder)window.__bfStyleOrder(st,20);
 
   // Cancela cualquier animación ya en marcha sobre el retrato o la escena
   // (Web Animations API), sin tocar las capas de efectos de combate.

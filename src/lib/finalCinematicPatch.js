@@ -12,9 +12,10 @@ export const FINAL_CINEMATIC_PATCH = `
   window.__bfFinalCinematicPatch=true;
 
   // ORDEN de una muerte: 1) termina la animación de la acción (habilidad,
-  // hechizo, objeto…), 2) se ve el número de daño sobre el retrato, 3) recién
-  // entonces arranca la cinemática de golpe mortal. Antes el golpe mortal se
-  // lanzaba a los 60 ms y se comía la animación que había provocado la muerte.
+  // hechizo, objeto…), 2) sus efectos visuales, 3) el número de daño sobre el
+  // objetivo, 4) recién entonces la cinemática de golpe mortal Y el estado de
+  // muerto (lápida/gris). Antes el golpe mortal se lanzaba a los 60 ms y se
+  // comía la animación que había provocado la muerte.
   var CINE_SEL='#bf-abil-anim,#bf-spec-cine';
   function whenActionEnds(cb){
     var start=Date.now();
@@ -27,6 +28,10 @@ export const FINAL_CINEMATIC_PATCH = `
     })();
   }
 
+  function releaseHold(side,id){
+    try{ if(window.__bfDeathVisHold) delete window.__bfDeathVisHold[side+'_'+id]; }catch(e){}
+  }
+
   function installDeath(){
     if(typeof window.flushFx!=='function')return false;
     if(window.flushFx.__bfFinalKill)return true;
@@ -36,11 +41,28 @@ export const FINAL_CINEMATIC_PATCH = `
       (events||[]).forEach(function(ev){
         if(!ev||ev.k!=='death')return;
         hasDeath=true;
+        // RETÉN VISUAL (síncrono, ANTES de que el juego repinte): mientras el
+        // golpe mortal esté pendiente, el marcador instantáneo de muerto
+        // (bf-truedead, aplicado por endGameFixPatch cada 400 ms) NO se pone.
+        // La carta se ve "viva" hasta que la cinemática de remate se reproduce
+        // de verdad; es bfKillCinematic quien añade la clase y libera el retén.
+        (window.__bfDeathVisHold=window.__bfDeathVisHold||{})[ev.side+'_'+ev.id]=Date.now();
         whenActionEnds(function(){
           var card=document.getElementById('b_'+ev.side+'_'+ev.id);
           if(card){
-            if(typeof window.bfKillCinematic==='function')window.bfKillCinematic(card);
-            card.classList.add('bf-truedead');
+            if(typeof window.bfKillCinematic==='function'){
+              // La cinemática (encolada por killCineQueuePatch tras habilidad,
+              // efectos y daño) añadirá bf-truedead al reproducirse.
+              window.bfKillCinematic(card);
+            }else{
+              // Sin cinemática disponible: estado de muerto directo.
+              card.classList.add('bf-truedead');
+              releaseHold(ev.side,ev.id);
+            }
+          }else{
+            // La carta no está en el DOM: se libera el retén para que el
+            // marcador normal actúe cuando reaparezca.
+            releaseHold(ev.side,ev.id);
           }
           // El turno no avanza hasta que termine la cinemática de muerte.
           window.__bfDeathDelayUntil=Date.now()+3700;

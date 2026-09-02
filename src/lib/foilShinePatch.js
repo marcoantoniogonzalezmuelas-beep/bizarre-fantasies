@@ -51,7 +51,11 @@ export const FOIL_SHINE_PATCH = `
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
-  setInterval(function(){ if(document.head.lastChild !== st) document.head.appendChild(st); }, 1000);
+  // El orden de cascada lo garantiza el coordinador de styleOrderPatch: esta
+  // hoja va la ÚLTIMA (el destello debe ganar incluso al congelador total, que
+  // ya lo exceptúa por diseño). Antes se re-añadía al final del head en bucle,
+  // en guerra con otros parches: recálculos constantes = parpadeo en tablet.
+  if(window.__bfStyleOrder) window.__bfStyleOrder(st, 60);
 
   var FOIL = {};       // base card_id -> 1 (lista del padre)
   var addedIds = {};   // id DOM ya con regla CSS generada
