@@ -15,6 +15,16 @@ export const HERO_FULL_FREEZE_PATCH = `
   var HOST = 'html body .bhero.bhero';
   // Capas de efecto que SÍ se animan.
   var OK = ':not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-epic-foil):not(.bf-epic-foil *)';
+  // Transform con el que se "clava" el recuadro. En MÓVIL/TABLET no puede ser
+  // translateZ(0): eso promueve cada retrato a su propia capa GPU y, con 8
+  // retratos grandes (en tablet son texturas enormes), se agota la memoria de
+  // la GPU, que empieza a expulsar capas y a re-rasterizarlas — el parpadeo de
+  // tablet que mobileAntiFlickerPatch documenta y evita a propósito con
+  // .bhero{isolation:isolate}. Esta hoja va después en la cascada, así que lo
+  // reactivaba. transform:none congela igual el recuadro (que ya es
+  // position:relative por battlePortraitPatch, así que el arte absoluto sigue
+  // anclado) y no crea ninguna capa. En PC no hay presión de GPU: se mantiene.
+  var HOST_TF = window.__bfAntiFlicker ? 'none' : 'translateZ(0)';
   var css = ''
     // Cero animaciones y cero transiciones en el recuadro del héroe (salvo las
     // capas de efecto permitidas).
@@ -26,7 +36,7 @@ export const HERO_FULL_FREEZE_PATCH = `
     + '}'
     // Nada de desplazamientos ni escalados: el recuadro, el arte y los rótulos
     // se quedan exactamente en su sitio y con su tamaño.
-    + HOST + '{transform:translateZ(0)!important}'
+    + HOST + '{transform:' + HOST_TF + '!important}'
     + HOST + ' .bf-battle-art,' + HOST + ' .bf-bscene-portrait,' + HOST + ' .bhero-art,'
     + HOST + ' img,' + HOST + ' .bf-active-ring,'
     + HOST + ' .bf-active-tag,' + HOST + ' .bhero-aura,' + HOST + ' .bf-agonize-badge{transform:none!important}'

@@ -14,10 +14,17 @@ export const KILL_CINE_QUEUE_PATCH = `
   // Última vez que se ha VISTO una cinemática de acción en pantalla. Sirve para
   // saber si la habilidad que causó la muerte llegó ya a reproducirse o si su
   // cinemática todavía está por salir.
-  var lastCineSeen = 0;
-  setInterval(function(){
+  //
+  // Solo se vigila MIENTRAS hay un remate en cola: fuera de eso no hay nada que
+  // ordenar, y un intervalo permanente estaría consultando el DOM en la portada
+  // y en todos los menús durante toda la sesión sin ningún uso.
+  var pending = [];
+  var lastCineSeen = 0, pollId = 0;
+  function seeCine(){
     try{ if(document.querySelector('#bf-abil-anim,#bf-spec-cine')) lastCineSeen = Date.now(); }catch(e){}
-  }, 120);
+  }
+  function startWatch(){ if(!pollId){ seeCine(); pollId = setInterval(seeCine, 120); } }
+  function stopWatch(){ if(pollId && !pending.length){ clearInterval(pollId); pollId = 0; } }
 
   // ¿Hay algo reproduciéndose ahora mismo?
   function busy(){
@@ -55,10 +62,10 @@ export const KILL_CINE_QUEUE_PATCH = `
   function install(){
     var orig = window.bfKillCinematic;
     if(typeof orig !== 'function' || orig.__bfQueued) return false;
-    var pending = [];
     var wrapped = function(card){
       if(!card || pending.indexOf(card) !== -1) return;
       pending.push(card);
+      startWatch();
       var waited = 0;
       // Margen inicial: el marcador de daño se pinta unas décimas DESPUÉS del
       // evento de muerte. Sin esta espera, la escena parecía limpia y el remate
@@ -74,6 +81,7 @@ export const KILL_CINE_QUEUE_PATCH = `
           // unas décimas después), se vuelve a esperar en vez de solaparse.
           if(busy() && waited < 9000){ waited += 200; setTimeout(wait, 200); return; }
           var i = pending.indexOf(card); if(i !== -1) pending.splice(i, 1);
+          stopWatch();
           try { orig(card); } catch(e){}
         }, 260);
       }
