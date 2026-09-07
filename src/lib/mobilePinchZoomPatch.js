@@ -194,9 +194,10 @@ export const MOBILE_PINCH_PATCH = `
     // Zoom máximo x2,5: por encima de eso la capa escalada del juego (1280px)
     // es tan grande que el navegador móvil no puede repintarla entera y la
     // pantalla se rompe/descuadra al desplazarse.
-    // Se permite ALEJAR hasta x0,6 (para ver el tablero entero en horizontal)
-    // y acercar hasta x2,5.
-    var nz = Math.min(2.5, Math.max(0.6, pinch.z0 * (d / pinch.d0)));
+    // NO se permite alejar (mínimo x1): al alejar (z<1) el contenido es más
+    // pequeño que la pantalla y el margen se veía negro (la pantalla negra que
+    // persistía aunque se rellenara el fondo). Solo se puede acercar.
+    var nz = Math.min(2.5, Math.max(1, pinch.z0 * (d / pinch.d0)));
     var px = (pinch.c0.x - pinch.tx0) / pinch.z0;
     var py = (pinch.c0.y - pinch.ty0) / pinch.z0;
     z = nz;
