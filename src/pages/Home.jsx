@@ -640,7 +640,19 @@ export default function Home() {
         // Pequeño retardo antes de ocultar el overlay: da tiempo al juego a
         // aplicar su CSS/layout para que no se vea el flash de iconos enormes.
         if (loadTimerRef.current) { clearTimeout(loadTimerRef.current); loadTimerRef.current = null; }
-        loadTimerRef.current = setTimeout(() => setLoading(false), 400);
+        // Subasta en teléfono vertical: el juego pinta la subasta a 860px (lienzo
+        // responsive) y luego avisa; al cambiar a 1280px (lienzo de PC) ese primer
+        // pintado a 860px se ve un instante = flash de "la subasta de antes del
+        // cambio responsivo". Se tapa el iframe con el overlay hasta que el
+        // lienzo pase a 1280px y el juego refluje al layout de PC.
+        var _w = document.documentElement.clientWidth || 360;
+        var _h = document.documentElement.clientHeight || 640;
+        if (IS_PHONE && _w <= _h && e.data.bfScreen === 's-recruit') {
+          setLoading(true);
+          loadTimerRef.current = setTimeout(() => setLoading(false), 600);
+        } else {
+          loadTimerRef.current = setTimeout(() => setLoading(false), 400);
+        }
         // Envía el mapa de escenas de batalla al iframe (lo reenvía en cada
         // cambio de pantalla para asegurar que arrive aunque el iframe recargue).
         if (battleArtRef.current) {
