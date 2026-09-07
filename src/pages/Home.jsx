@@ -491,13 +491,13 @@ export default function Home() {
       const h = document.documentElement.clientHeight || 640;
       const landscape = w > h;
       setIsLandscape(landscape);
-      // FASE DE SUBASTA en teléfono: la maquetación móvil (lienzo de 860px, que
-      // activa las media queries ≤880px del juego) recortaba las habilidades de
-      // las cartas y no era usable. Se fuerza el lienzo de PC (1280px) también
-      // en vertical: la vista es EXACTAMENTE la de escritorio, encogida para
-      // caber, y el jugador amplía con el pellizco (MOBILE_PINCH_PATCH) para
-      // leer las habilidades y moverse por la pantalla.
-      const pcAuction = screen === 's-recruit';
+      // FASE DE SUBASTA y EQUIPAMIENTO en teléfono: la maquetación móvil (lienzo
+      // de 860px, que activa las media queries ≤880px del juego) recortaba las
+      // habilidades de las cartas y alargaba los héroes. Se fuerza el lienzo de
+      // PC (1280px) también en vertical: la vista es EXACTAMENTE la de
+      // escritorio, encogida para caber, y el jugador amplía con el pellizco
+      // (MOBILE_PINCH_PATCH) para leer las habilidades y moverse por la pantalla.
+      const pcAuction = screen === 's-recruit' || screen === 's-equip';
       const dw = (IS_PHONE && !landscape && !pcAuction) ? PHONE_DESIGN_W : 1280;
       setDesignW(dw);
       setMobScale(Math.min(1, w / dw));
@@ -647,7 +647,7 @@ export default function Home() {
         // lienzo pase a 1280px y el juego refluje al layout de PC.
         var _w = document.documentElement.clientWidth || 360;
         var _h = document.documentElement.clientHeight || 640;
-        if (IS_PHONE && _w <= _h && e.data.bfScreen === 's-recruit') {
+        if (IS_PHONE && _w <= _h && (e.data.bfScreen === 's-recruit' || e.data.bfScreen === 's-equip')) {
           setLoading(true);
           loadTimerRef.current = setTimeout(() => setLoading(false), 600);
         } else {
