@@ -15,7 +15,12 @@ export const HERO_GEAR_CHIPS_PATCH = `
     '.bf-gear-chips{position:absolute!important;right:9px!important;bottom:32px!important;top:auto!important;left:auto!important;z-index:15!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important;max-width:70%!important;pointer-events:none!important;contain:layout style!important}' +
     '.bf-gear-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-family:Rubik,sans-serif;font-weight:900;font-size:12.5px;line-height:1.2;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;background:linear-gradient(180deg,#4a3208,#1d1304);border:2px solid #ffd24a;color:#ffe9a8;text-shadow:0 1px 2px rgba(0,0,0,.9);box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 10px rgba(255,210,74,.3)}' +
     '.bf-gear-chip.arm{background:linear-gradient(180deg,#0e2c4d,#04121f);border-color:#7fd0ff;color:#d6f0ff;box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 10px rgba(127,208,255,.3)}' +
-    '.bf-gear-chip i{font-style:normal;font-size:14px;line-height:1}';
+    '.bf-gear-chip i{font-style:normal;font-size:14px;line-height:1}' +
+    // Móvil vertical (lienzo 860px): las chapas con el nombre del equipo se
+    // solapan con los iconos de arma/armadura del juego y con los marcadores
+    // de habilidades pasivas (refracción, protección…). Se ocultan en vertical;
+    // en horizontal y escritorio siguen visibles.
+    '@media (max-width:880px){.bf-gear-chips{display:none!important}}';
   document.head.appendChild(st);
 
   function esc(s){ return String(s == null ? '' : s).replace(/[<>&]/g, function(c){ return c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;'; }); }
