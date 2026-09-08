@@ -34,7 +34,7 @@ export const PASSIVE_MARKER_PATCH = `
   // ---- Marcador permanente de habilidad pasiva sobre el retrato ----
   // Badge MÁS GRANDE y chulo: icono (emoji o imagen IA) en círculo + rótulo
   // siempre visible. Igual de claro que el de Refracción de Juniana.
-  '.bf-passive-mark{position:absolute;left:8px;bottom:8px;z-index:15;display:flex;align-items:center;gap:7px;padding:4px 13px 4px 4px;border-radius:999px;font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;white-space:nowrap;background:rgba(8,5,14,.92);border:1.5px solid var(--bf-pc,#fff);color:var(--bf-pc,#fff);box-shadow:0 0 14px var(--bf-pc,#fff),0 3px 9px rgba(0,0,0,.6)}' +
+  '.bf-passive-mark{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);z-index:15;display:flex;align-items:center;gap:7px;padding:4px 13px 4px 4px;border-radius:999px;font-family:Cinzel,serif;font-size:12px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;backdrop-filter:blur(4px);pointer-events:none;white-space:nowrap;background:rgba(8,5,14,.92);border:1.5px solid var(--bf-pc,#fff);color:var(--bf-pc,#fff);box-shadow:0 0 14px var(--bf-pc,#fff),0 3px 9px rgba(0,0,0,.6)}' +
   '.bf-passive-mark .bf-pm-ico{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;background:radial-gradient(circle at 38% 28%, rgba(255,255,255,.28), rgba(0,0,0,.4) 70%);border:2px solid var(--bf-pc,#fff);box-shadow:0 0 10px var(--bf-pc,#fff),inset 0 0 8px rgba(255,255,255,.2)}' +
   '.bf-passive-mark .bf-pm-ico img{width:100%;height:100%;object-fit:cover;display:block}' +
   '.bf-passive-mark .bf-pm-emoji{font-size:18px;line-height:1;text-shadow:0 0 8px var(--bf-pc,#fff)}' +
@@ -88,10 +88,15 @@ export const PASSIVE_MARKER_PATCH = `
         }
       }
       if(found){
-        if(!badge){
+        // Se ancla al contenedor del retrato (.bf-battle-art) y no a la carta:
+        // así queda en la parte más inferior de la escena de batalla, sin
+        // solaparse con las chapas de equipo (que viven en la carta a la derecha).
+        var host = card.querySelector('.bf-battle-art') || card;
+        if(badge && badge.parentElement !== host) badge.remove();
+        if(!badge || !badge.parentElement){
           badge = document.createElement('div');
           badge.className = 'bf-passive-mark';
-          card.appendChild(badge);
+          host.appendChild(badge);
         }
         badge.style.setProperty('--bf-pc', found.color);
         var icoHtml = found.icon_url
