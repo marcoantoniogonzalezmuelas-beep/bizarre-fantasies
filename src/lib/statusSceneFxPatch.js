@@ -162,13 +162,13 @@ export const STATUS_SCENE_FX_PATCH = `
     if(hero&&hero.alive)STATES.forEach(function(s){try{if(s.test(hero))active.push(s.key);}catch(e){}});
     var key=active[0]||'';
     if(!key){if(fx)fx.remove();return;}
+    if(!fx){fx=document.createElement('div');fx.className='bf-scene-fx bf-fx-'+key;fx.dataset.bfKey=key;fx.innerHTML=HTML[key]||'';host.appendChild(fx);return;}
     var cls='bf-scene-fx bf-fx-'+key;
     if(fx.className!==cls||fx.dataset.bfKey!==key){
       fx.className=cls;
       fx.dataset.bfKey=key;
       fx.innerHTML=HTML[key]||'';
     }
-    if(!fx.parentNode){host.appendChild(fx);}
   }
 
   function update(){document.querySelectorAll('.bhero[id^="b_"]').forEach(paint);}
