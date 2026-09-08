@@ -40,9 +40,11 @@ export const KILL_CINE_QUEUE_PATCH = `
     '#bf-kill-ov .bf-kill-att-cool{position:absolute;top:-8%;right:-6%;font-size:clamp(40px,8vw,64px);z-index:6;animation:bfKillCool .6s ease-out .5s both,bfKillCoolBob 2s ease-in-out 1s infinite;filter:drop-shadow(0 0 12px rgba(255,210,74,.8))}',
     '@keyframes bfKillCool{0%{opacity:0;transform:scale(0) rotate(-180deg)}100%{opacity:1;transform:scale(1) rotate(0)}}',
     '@keyframes bfKillCoolBob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-8px) rotate(8deg)}}',
-    // Víctima: retrato GRANDE a la derecha (solo UNA), inclinada, derrotada
-    '#bf-kill-ov .bf-kill-vic{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:min(38vw,360px);height:min(54vw,480px);border-radius:18px;overflow:hidden;border:4px solid #ff3b30;box-shadow:0 0 34px rgba(255,59,48,.5),0 10px 28px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;filter:saturate(.3) brightness(.5);animation:bfKillVic .7s cubic-bezier(.2,.8,.3,1) .15s both}',
-    '@keyframes bfKillVic{0%{opacity:0;transform:translateY(-50%) translateX(80px) scale(.7) rotate(8deg)}60%{transform:translateY(-50%) translateX(-10px) scale(1.05) rotate(-6deg)}100%{opacity:1;transform:translateY(-50%) translateX(0) scale(1) rotate(-6deg)}}',
+    // Contenedor de víctimas (derecha): apila varias si hay multi-kill
+    '#bf-kill-ov .bf-kill-vics{position:absolute;right:4%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;align-items:flex-end;max-height:88vh}',
+    // Cada víctima: retrato GRANDE, inclinada, derrotada
+    '#bf-kill-ov .bf-kill-vic{position:relative;width:min(38vw,360px);height:min(54vw,480px);border-radius:18px;overflow:hidden;border:4px solid #ff3b30;box-shadow:0 0 34px rgba(255,59,48,.5),0 10px 28px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;filter:saturate(.3) brightness(.5);animation:bfKillVic .7s cubic-bezier(.2,.8,.3,1) .15s both}',
+    '@keyframes bfKillVic{0%{opacity:0;transform:translateX(80px) scale(.7) rotate(8deg)}60%{transform:translateX(-10px) scale(1.05) rotate(-6deg)}100%{opacity:1;transform:translateX(0) scale(1) rotate(-6deg)}}',
     // Lágrimas 💧 cayendo del héroe caído
     '#bf-kill-ov .bf-kill-tears{position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:clamp(22px,5vw,36px);animation:bfKillTears 1.6s ease-in .5s infinite;z-index:3;filter:drop-shadow(0 0 8px rgba(100,180,255,.7))}',
     '@keyframes bfKillTears{0%{opacity:0;transform:translateX(-50%) translateY(0)}15%{opacity:1}80%{opacity:.7}100%{opacity:0;transform:translateX(-50%) translateY(60px)}}',
@@ -63,8 +65,12 @@ export const KILL_CINE_QUEUE_PATCH = `
     '#bf-kill-ov .bf-kill-aname{position:absolute;bottom:2%;left:4%;font-family:Cinzel,serif;font-weight:900;font-size:clamp(14px,3.5vw,24px);color:#ffd24a;text-shadow:0 2px 8px #000,0 0 14px rgba(255,210,74,.5);text-align:left;max-width:44vw;animation:bfKillFade .5s ease-out .4s both;z-index:5}',
     // Nombre de la víctima (abajo derecha)
     '#bf-kill-ov .bf-kill-vname{position:absolute;bottom:2%;right:4%;font-family:Cinzel,serif;font-weight:900;font-size:clamp(14px,3.5vw,24px);color:#ff8a8a;text-shadow:0 2px 8px #000,0 0 14px rgba(255,59,48,.5);text-align:right;max-width:44vw;animation:bfKillFade .5s ease-out .4s both;z-index:5}',
+    // Multi-kill: cuando hay varias víctimas, se encogen para que quepan
+    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(30vw,280px);height:min(42vw,380px)}',
+    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(24vw,220px);height:min(34vw,300px)}',
+    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(4)) .bf-kill-vic{width:min(20vw,180px);height:min(28vw,250px)}',
     // Tablet/móvil: héroes aún más grandes relativamente
-    '@media(max-width:880px){#bf-kill-ov .bf-kill-att{left:2%;width:min(48vw,240px);height:min(68vw,340px);border-width:3px}#bf-kill-ov .bf-kill-vic{right:2%;width:min(42vw,210px);height:min(60vw,300px);border-width:3px}#bf-kill-ov .bf-kill-pow-txt{font-size:clamp(32px,12vw,56px)}#bf-kill-ov .bf-kill-ko{font-size:clamp(24px,9vw,44px);bottom:4%}#bf-kill-ov .bf-kill-aname{left:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-vname{right:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-att-cool{font-size:clamp(32px,7vw,48px)}}'
+    '@media(max-width:880px){#bf-kill-ov .bf-kill-att{left:2%;width:min(48vw,240px);height:min(68vw,340px);border-width:3px}#bf-kill-ov .bf-kill-vic{width:min(42vw,210px);height:min(60vw,300px);border-width:3px}#bf-kill-ov .bf-kill-vics{right:2%;gap:8px}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(34vw,170px);height:min(48vw,240px)}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(28vw,140px);height:min(40vw,200px)}#bf-kill-ov .bf-kill-pow-txt{font-size:clamp(32px,12vw,56px)}#bf-kill-ov .bf-kill-ko{font-size:clamp(24px,9vw,44px);bottom:4%}#bf-kill-ov .bf-kill-aname{left:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-vname{right:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-att-cool{font-size:clamp(32px,7vw,48px)}}'
   ].join('\\n');
   var st = document.createElement('style');
   st.textContent = css;
@@ -143,7 +149,8 @@ export const KILL_CINE_QUEUE_PATCH = `
   }
 
   // ---- Nueva cinemática bizarra ----
-  function showKillCinematic(actor, victim, multiKill){
+  function showKillCinematic(actor, victims){
+    var multiKill = victims.length > 1;
     var ov = document.createElement('div');
     ov.id = 'bf-kill-ov';
     ov.dataset.bfNew = '1';
@@ -180,11 +187,15 @@ export const KILL_CINE_QUEUE_PATCH = `
       ov.appendChild(aname);
     }
 
-    // ---- Víctima (héroe que muere, solo UNA) ----
-    if(victim && victim.art){
+    // ---- Víctimas (todos los héroes que mueren, apilados a la derecha) ----
+    var vicWrap = document.createElement('div');
+    vicWrap.className = 'bf-kill-vics';
+    victims.forEach(function(v, i){
+      if(!v.art) return;
       var vic = document.createElement('div');
       vic.className = 'bf-kill-vic';
-      vic.style.backgroundImage = 'url("' + victim.art + '")';
+      vic.style.backgroundImage = 'url("' + v.art + '")';
+      vic.style.animationDelay = (0.15 + i * 0.12) + 's';
       // Estrellitas 💫 de mareo
       var star = document.createElement('div');
       star.className = 'bf-kill-star';
@@ -198,14 +209,17 @@ export const KILL_CINE_QUEUE_PATCH = `
       // Fantasma 👻 elevándose
       var ghost = document.createElement('div');
       ghost.className = 'bf-kill-ghost';
-      ghost.textContent = '\\ud83d\\udc7b';
       vic.appendChild(ghost);
-      ov.appendChild(vic);
-    }
-    if(victim && victim.name){
+      vicWrap.appendChild(vic);
+    });
+    ov.appendChild(vicWrap);
+
+    // Nombres de todas las víctimas
+    var vnames = victims.map(function(v){ return v.name; }).filter(Boolean).join(' \\u00b7 ');
+    if(vnames){
       var vname = document.createElement('div');
       vname.className = 'bf-kill-vname';
-      vname.textContent = victim.name;
+      vname.textContent = vnames;
       ov.appendChild(vname);
     }
 
@@ -246,9 +260,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     }
 
     var actor = pendingActor;
-    var multiKill = pendingVictims.length > 1;
-    // Solo se muestra la ÚLTIMA víctima (una sola en la escena)
-    var victim = pendingVictims[pendingVictims.length - 1];
+    var victims = pendingVictims.slice();
     pendingVictims = [];
     pendingActor = null;
 
@@ -263,7 +275,7 @@ export const KILL_CINE_QUEUE_PATCH = `
       setTimeout(function(){
         if(gameEnded()){ stopWatch(); return; }
         if(busy()){ setTimeout(proceed, 200); return; }
-        showKillCinematic(actor, victim, multiKill);
+        showKillCinematic(actor, victims);
         stopWatch();
       }, 260);
     }
