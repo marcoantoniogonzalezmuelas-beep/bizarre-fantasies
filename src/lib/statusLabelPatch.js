@@ -156,6 +156,9 @@ export const STATUS_LABEL_PATCH = `
   }
 
   var tries = 0, timer = setInterval(function(){ if(hookRender() || tries++ > 120) clearInterval(timer); }, 200);
+  // Sondeo periódico: la acción de tanquear no siempre dispara renderBattle,
+  // así que sin esto el banner TANQUEANDO no aparecía hasta el siguiente render.
+  setInterval(update, 500);
   update();
 })();
 </script>
