@@ -317,6 +317,28 @@ const DRAGGABLE_GUIDE_PATCH = `
 
   // Avisa a la página padre de qué pantalla del juego está activa, para que
   // pueda mostrar/ocultar el botón del Oráculo Bizarro (solo en la portada).
+  // Teléfono vertical: al entrar en subasta/equipamiento el juego pinta a
+  // 860 px (lienzo responsive) ANTES de que el padre cambie el lienzo a 1280
+  // px. Ese primer pintado a 860 px es el "flash de la subasta en modo móvil".
+  // Se tapa el iframe con un overlay opaco DENTRO del propio juego, en el
+  // mismo frame en el que se detecta el cambio de pantalla (antes del render
+  // del juego), para que el layout de 860 px nunca llegue a verse.
+  function showAuctionCover(){
+    var c = document.getElementById('bf-auction-cover');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = 'bf-auction-cover';
+      c.style.cssText = 'position:fixed;inset:0;z-index:99999;background:#0e0a16;pointer-events:none;opacity:1';
+      document.body.appendChild(c);
+    }
+    c.style.transition = 'none';
+    c.style.opacity = '1';
+    clearTimeout(window.__bfAuctionCoverTimer);
+    window.__bfAuctionCoverTimer = setTimeout(function(){
+      c.style.transition = 'opacity .3s ease-out';
+      c.style.opacity = '0';
+    }, 500);
+  }
   function notifyActiveScreen(){
     var active = document.querySelector('.screen.active');
     // No avisamos hasta que el juego tenga SU pantalla activa real: antes de
@@ -326,16 +348,35 @@ const DRAGGABLE_GUIDE_PATCH = `
     var id = active.id || 's-title';
     if (window.__bfLastScreenId === id) return;
     window.__bfLastScreenId = id;
-    // Doble requestAnimationFrame: garantiza que el navegador ya PINTÓ la
-    // pantalla del juego con su CSS aplicado antes de avisar al padre para
-    // que quite el overlay. Sin esto, el padre oculta el overlay cuando el
-    // DOM del juego ya existe pero el CSS aún no se ha pintado (flash).
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        try { window.parent.postMessage({ bfScreen: id }, '*'); } catch (e) {}
-      });
-    });
+    // Teléfono vertical (lienzo 860 px): al entrar en subasta/equipamiento se
+    // tapa el iframe por dentro ANTES del pintado para evitar el flash del
+    // layout móvil de 860 px.
+    if ((id === 's-recruit' || id === 's-equip') && window.innerWidth <= 880) {
+      showAuctionCover();
+    }
+    var isFirst = !window.__bfScreenNotified;
+    window.__bfScreenNotified = true;
+    function send(){ try { window.parent.postMessage({ bfScreen: id }, '*'); } catch (e) {} }
+    if (isFirst) {
+      // Primera notificación: espera a que el juego pinte su CSS para que el
+      // padre no quite el overlay antes de tiempo (flash de iconos enormes).
+      requestAnimationFrame(function(){ requestAnimationFrame(send); });
+    } else {
+      // Transiciones: avisa INMEDIATAMENTE para que el padre tape el iframe y
+      // cambie el lienzo a 1280 px cuanto antes.
+      send();
+    }
   }
+  // Detecta el cambio de pantalla activa INMEDIATAMENTE (sin esperar al
+  // intervalo de 1 s) observando solo el atributo class. Añadir el overlay
+  // de cobertura es un nodo nuevo (no un cambio de clase), así que no dispara
+  // el observer → sin bucle de re-render.
+  var moPending = false;
+  new MutationObserver(function(){
+    if (moPending) return;
+    moPending = true;
+    Promise.resolve().then(function(){ moPending = false; notifyActiveScreen(); });
+  }).observe(document.documentElement, { attributes:true, attributeFilter:['class'], subtree:true });
   setInterval(notifyActiveScreen, 1000);
   notifyActiveScreen();
 
