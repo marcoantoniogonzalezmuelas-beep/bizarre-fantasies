@@ -225,14 +225,21 @@ export const FAITHFUL_ABILITIES_PATCH = `
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\u25bc'});
       log('li', c.h.name + ' enreda a ' + c.t.name + ' (-' + a + (c.el ? ' permanente' : ' durante 2 turnos') + ').');
     },
-    // Boskimano — cura 12 (élite: 18 y +2 stats a los aliados)
+    // Boskimano — Raíces Ancestrales: cura TODA la vida a un aliado elegido.
+    // Élite — Árbol Eterno: cura TODA la vida a todo su ejército (incluido él).
     boski: function(c){
-      var g = heal(c.h, c.el ? 18 : 12);
-      log('lh', c.h.name + ' se cura (+' + g + ').');
       if(c.el){
-        L(c.allies).forEach(function(x){ if(x !== c.h){ mods(x).push({cc:2, ad:2, he:2, turns:99}); fx({k:'status', side:side_(x), id:x.id, txt:'\\u25b2'}); } });
-        log('lg', c.h.name + ' otorga +2 a sus aliados.');
+        L(c.allies).forEach(function(x){
+          var g = heal(x, x.maxHp);
+          if(g) fx({k:'heal', side:side_(x), id:x.id, amt:g});
+        });
+        log('lh', c.h.name + ' invoca al \\u00c1rbol Eterno: todo su ej\\u00e9rcito recupera la vida completa.');
+        return;
       }
+      var t = (c.t && c.t.alive) ? c.t : c.h;
+      var g = heal(t, t.maxHp);
+      if(g) fx({k:'heal', side:side_(t), id:t.id, amt:g});
+      log('lh', c.h.name + ' despierta sus ra\\u00edces ancestrales y cura por completo a ' + t.name + ' (+' + g + ').');
     },
     // Morthex élite — roba toda la vida infligida y +3 CC
     mor: function(c){
@@ -527,6 +534,10 @@ export const FAITHFUL_ABILITIES_PATCH = `
 
   var NEEDS_ENEMY = { edre:1, vex:1, Faseve:1, caoffe:1, bos:0, nar:1, hil:0, renhu:1, boski:0, mor:1, hannai:0, pij:1, pat:1, elder:1, zar:1, alf:1, dix:1, syx:0, ser:1, bat:0, nix:1, man:0, pac:1, rev:1, rol:1 };
   var NEEDS_ALLY = { bat:1 };
+  // Héroes que solo piden objetivo ALIADO en su versión NORMAL (la élite no
+  // necesita elegir: afecta a todo el equipo). Boskimano normal cura a un
+  // aliado elegido; la élite cura a todo el ejército automáticamente.
+  var NEEDS_ALLY_NORMAL = { boski:1 };
 
   function hook(){
     if(window.__bfFaHooked || typeof window.useAbility !== 'function') return false;
@@ -560,7 +571,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
         if(typeof netSync === 'function') netSync('s-battle');
         if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct();
       }
-      var need = NEEDS_ENEMY[id] ? foes : NEEDS_ALLY[id] ? allies : null;
+      var need = NEEDS_ENEMY[id] ? foes : (NEEDS_ALLY[id] || (NEEDS_ALLY_NORMAL[id] && !h.eliteMode)) ? allies : null;
       if(!need){ run(null); return; }
       if(typeof humanCtl === 'function' && humanCtl(side)){
         pendTarget('Objetivo de ' + (h.eliteMode ? h.eAbility : h.ability), need, run);
