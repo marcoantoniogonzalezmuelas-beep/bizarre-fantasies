@@ -23,7 +23,10 @@ export const MODAL_FOCUS_PATCH = `
 
   // Selectores conocidos de ventanas centradas del juego y los parches.
   // .mo = modales nativos del juego (compra, zoom de carta, confirmaciones…)
-  var KNOWN = '.mo, .bf-confirm-overlay, #bf-bizarre-overlay';
+  // #modalRoot = contenedor de los menús de hechizos/objetos en batalla
+  //   (window.modal() del motor). En móvil quedaban fuera de la vista y el
+  //   jugador tenía que hacer scroll a ciegas para localizarlos.
+  var KNOWN = '.mo, .bf-confirm-overlay, #bf-bizarre-overlay, #modalRoot';
 
   function visible(el){
     if(!el) return false;
@@ -108,6 +111,25 @@ export const MODAL_FOCUS_PATCH = `
     }
   }
 
+  // Hook del modal() del motor: los menús de hechizos/objetos en batalla se
+  // abren con window.modal() y pintan su contenido dentro de #modalRoot. En
+  // móvil ese contenido queda fuera de la vista (debajo del área visible por
+  // el escalado del iframe). Al enganchar modal(), nada más abrirse se lleva
+  // el scroll y el foco hasta la ventanita.
+  function hookGameModal(){
+    if(typeof window.modal !== 'function' || window.modal.__bfFocusHooked) return;
+    var orig = window.modal;
+    window.modal = function(){
+      var r = orig.apply(this, arguments);
+      setTimeout(function(){
+        var root = document.getElementById('modalRoot');
+        if(root && visible(root)) focusDialog(root);
+      }, 60);
+      return r;
+    };
+    window.modal.__bfFocusHooked = 1;
+  }
+
   // Observa el DOM: cuando se añade una ventanita, lleva el foco hasta ella.
   var mo = new MutationObserver(function(muts){
     for(var i=0;i<muts.length;i++){
@@ -118,6 +140,14 @@ export const MODAL_FOCUS_PATCH = `
   function install(){ try{ mo.observe(document.body, {childList:true, subtree:true}); }catch(e){} }
   if(document.body) install();
   else document.addEventListener('DOMContentLoaded', install);
+
+  // Hook del modal() del motor: se instala en cuanto el motor lo defina.
+  var _mfHookTries = 0;
+  var _mfHookTimer = setInterval(function(){
+    hookGameModal();
+    if((window.modal && window.modal.__bfFocusHooked) || _mfHookTries++ > 120) clearInterval(_mfHookTimer);
+  }, 150);
+  hookGameModal();
 
   // Sondeo periódico: algunas ventanitas se muestran/ocultan sin añadirse de
   // nuevo (display:none → block). Si hay una ventanita visible y el zoom no
