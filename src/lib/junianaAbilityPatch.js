@@ -25,8 +25,11 @@ export const JUNIANA_ABILITY_PATCH = `
     // enganchamos antes, el motor queda por fuera y la habilidad de Juniana nunca
     // se lanzaba.
     if(!window.__bfDuckPatched) return false;
-    if(typeof window.useAbility !== 'function' || window.__bfJunianaHooked) return false;
-    window.__bfJunianaHooked = true;
+    if(typeof window.useAbility !== 'function') return false;
+    // Re-engancha si useAbility fue sobrescrito por otro parche después del
+    // primer hook (pierde el código de Juniana y _bfRefract nunca se activa).
+    var currentSrc = window.useAbility.toString();
+    if(window.__bfJunianaHooked && currentSrc.indexOf('isJun') >= 0) return true;
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
       if(!isJun(h)) return orig.apply(this, arguments);
@@ -183,7 +186,7 @@ export const JUNIANA_ABILITY_PATCH = `
   var timer = setInterval(function(){
     installAbility();
     installReflect();
-    if((window.__bfJunianaHooked && window.dealDamage && window.dealDamage.__bfRefract) || tries++ > 300) clearInterval(timer);
+    if(tries++ > 300) clearInterval(timer);
   }, 150);
   setInterval(markPassiveButton, 250);
 })();
