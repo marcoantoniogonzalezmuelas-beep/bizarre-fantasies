@@ -3,7 +3,7 @@
 // habilidades no hacían nada. Ahora cada bizarro se resuelve por su card_id:
 //
 //   tk_caj (La Caja de Zapatos) — normal: PIFIA (gag, no pasa nada);
-//                                 élite:  4 de daño que ignora defensa a TODOS los rivales.
+//                                 élite:  1 de daño imparable a un rival + HUMILLAR (-4 stats, 2 turnos).
 //   tk_buf (La Butifarra)       — normal: PIFIA; élite: -4 a los stats de todos los rivales (2 turnos).
 //   tk_lav (La Lavadora)        — normal: PIFIA; élite: aturde por completo a un rival 2 turnos.
 //   tk_ban (El Bañador)         — deja Confuso a un rival (pierde 2 / 3 turnos).
@@ -48,22 +48,25 @@ export const TOKEN_ABILITIES_PATCH = `
         if(typeof netSync === 'function') netSync('s-battle');
       }
 
-      // Gag intencional: la habilidad no produce ningún efecto → letras y
-      // efecto visual de PIFIA sobre el bizarro.
+      // Gag intencional: la habilidad no produce ningún efecto → cinemática 3D
+      // + letras y efecto visual de PIFIA sobre el bizarro.
       function applyNone(){
+        if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
         pushLog('lx', '\\u{1F3B2} ' + h.name + ' \\u2014 ' + name + ': PIFIA, no produce ning\\u00fan efecto.');
         if(typeof window.__bfFumblePop === 'function') window.__bfFumblePop(side, h.id, false, 0);
         else pushFx({k:'status', side:side, id:h.id, txt:'\\u{1F4A9}'});
         sync(); finish();
       }
 
-      // Caja de Zapatos élite — Zapatillazo: 4 de daño que ignora defensa a UN
-      // rival tarjeteado, y lo humilla (MALDITO: -4 a sus stats, 2 turnos).
+      // Caja de Zapatos élite — Zapatillazo: cinemática 3D + 1 de daño que
+      // ignora defensa a UN rival tarjeteado, y lo humilla (HUMILLAR: -4 a
+      // todos sus stats, 2 turnos, igual que la habilidad del Pijo).
       function applyShoe(t){
+        if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
         pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F45E}'});
-        var d = dealDamage(t, 4, {type:'true'});
+        var d = dealDamage(t, 1, {type:'true'});
         t._mods.push({cc:-4, ad:-4, he:-4, vel:-4, turns:2});
-        pushLog('ld', name + ' \\u2192 ' + t.name + ' (-' + d + ', ignora defensa) y queda MALDITO (-4 stats, 2 turnos).');
+        pushLog('ld', name + ' \\u2192 ' + t.name + ' (-' + d + ', ignora defensa) y queda HUMILLADO (-4 stats, 2 turnos).');
         sync(); finish();
       }
 
