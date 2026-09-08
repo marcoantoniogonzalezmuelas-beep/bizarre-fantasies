@@ -72,12 +72,15 @@ export const STATUS_LABEL_PATCH = `
     // ese instante empujaban el nombre y la barra de atributos, y al quitarse
     // volvían a su sitio. Se fuerzan como capas absolutas superpuestas.
     '.bhero>.bf-fx-overlay,.bhero>.bf-frost,.bhero>.bf-combat-fx{position:absolute!important;inset:0!important;margin:0!important;z-index:15!important;pointer-events:none!important;contain:layout style!important}' +
-    // Rótulo TANQUEANDO: banner dorado en la parte ALTA del retrato, visible
-    // solo mientras el héroe tenga _bfTank (acción de tanquear del panel).
-    // Vive dentro del retrato arriba, lejos de la columna de estados (abajo
-    // izquierda), del marcador pasivo (abajo izquierda) y de las chapas de
-    // equipo (abajo derecha): no se solapa con nada.
-    '.bf-tank-banner{position:absolute!important;top:5px!important;left:50%!important;transform:translateX(-50%)!important;z-index:21!important;display:inline-flex!important;align-items:center!important;gap:5px!important;padding:4px 13px!important;border-radius:999px!important;font-family:Cinzel,serif!important;font-weight:1000!important;font-size:11px!important;letter-spacing:.7px!important;text-transform:uppercase!important;white-space:nowrap!important;background:linear-gradient(180deg,#ffd06a,#b06a00)!important;border:2px solid #ffd24a!important;color:#3a1a00!important;text-shadow:0 1px 2px rgba(255,255,255,.45)!important;box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 14px rgba(255,180,70,.75)!important;pointer-events:none!important;contain:layout style!important;animation:bfTankPulse 1.6s ease-in-out infinite!important}' +
+    // Rótulo TANQUEANDO: banner dorado en la parte INFERIOR del retrato, visible
+    // solo mientras el héroe tenga _bfTank (acción de tanquear del panel). Va
+    // centrado horizontalmente y a 30 px del borde inferior: POR ENCIMA de la
+    // fila de rótulos de estado (abajo izquierda, bottom:5px) y de los chips de
+    // estado del juego (abajo derecha, bottom:6px, ~24px de alto), y libre del
+    // marcador pasivo (abajo izquierda, ~48px) y de las chapas de equipo (abajo
+    // derecha, bottom:32px) al estar centrado y ser estrecho. No tapa el nombre
+    // del héroe (cabecera superior) ni se solapa con ningún elemento.
+    '.bf-tank-banner{position:absolute!important;bottom:30px!important;left:50%!important;transform:translateX(-50%)!important;z-index:21!important;display:inline-flex!important;align-items:center!important;gap:5px!important;padding:4px 13px!important;border-radius:999px!important;font-family:Cinzel,serif!important;font-weight:1000!important;font-size:11px!important;letter-spacing:.7px!important;text-transform:uppercase!important;white-space:nowrap!important;background:linear-gradient(180deg,#ffd06a,#b06a00)!important;border:2px solid #ffd24a!important;color:#3a1a00!important;text-shadow:0 1px 2px rgba(255,255,255,.45)!important;box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 14px rgba(255,180,70,.75)!important;pointer-events:none!important;contain:layout style!important;animation:bfTankPulse 1.6s ease-in-out infinite!important}' +
     '.bf-tank-banner .bf-tank-ico{font-style:normal;font-size:14px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}' +
     '@keyframes bfTankPulse{0%,100%{box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 14px rgba(255,180,70,.75)}50%{box-shadow:0 3px 10px rgba(0,0,0,.6),0 0 22px rgba(255,180,70,1)}}' +
     '@media(max-width:880px){.bf-tank-banner{font-size:10px!important;padding:3px 10px!important;gap:4px!important}.bf-tank-banner .bf-tank-ico{font-size:12px}}';
