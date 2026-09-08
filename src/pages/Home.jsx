@@ -49,6 +49,7 @@ import { bindTurnBridge } from '@/lib/turnBridge';
 import { FINAL_CINEMATIC_PATCH } from '@/lib/finalCinematicPatch';
 import { ODD_STATES_LOGIC_PATCH } from '@/lib/oddStatesLogicPatch';
 import { STATUS_LABEL_PATCH } from '@/lib/statusLabelPatch';
+import { STATUS_SCENE_FX_PATCH } from '@/lib/statusSceneFxPatch';
 import { NO_HERO_MOTION_PATCH } from '@/lib/noHeroMotionPatch';
 import { HERO_NAME_SIGIL_PATCH } from '@/lib/heroNameSigilPatch';
 import { HERO_NAME_FIT_PATCH } from '@/lib/heroNameFitPatch';
