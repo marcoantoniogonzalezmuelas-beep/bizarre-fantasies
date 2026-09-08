@@ -24,7 +24,7 @@ export const JUNIANA_ABILITY_PATCH = `
     // que intercepta 'reflect-damage' y solo muestra un aviso sin cinemática. Si
     // enganchamos antes, el motor queda por fuera y la habilidad de Juniana nunca
     // se lanzaba.
-    if(!window.__bfDuckPatched) return false;
+    if(!window.__bfDuckAbilHooked) return false;
     if(typeof window.useAbility !== 'function') return false;
     // Re-engancha si useAbility fue sobrescrito por otro parche después del
     // primer hook (pierde el código de Juniana y _bfRefract nunca se activa).
@@ -67,6 +67,7 @@ export const JUNIANA_ABILITY_PATCH = `
       }catch(e){}
       if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct();
     };
+    window.__bfJunianaHooked = true;
     return true;
   }
 
@@ -137,7 +138,7 @@ export const JUNIANA_ABILITY_PATCH = `
   function installReflect(){
     // Espera a que el motor haya instalado su propio dealDamage para envolverlo
     // por fuera (así podemos anular su reflejo y aplicar el nuestro).
-    if(!window.__bfDuckPatched) return false;
+    if(!window.__bfDuckAbilHooked) return false;
     if(typeof window.dealDamage!=='function' || window.dealDamage.__bfRefract) return false;
     var orig=window.dealDamage;
     window.dealDamage=function(target,amount,opts){
