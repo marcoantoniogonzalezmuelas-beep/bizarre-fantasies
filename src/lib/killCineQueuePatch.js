@@ -35,9 +35,12 @@ export const KILL_CINE_QUEUE_PATCH = `
     // Cada víctima: retrato más pequeño, inclinado, con ojos de X
     '#bf-kill-ov .bf-kill-vic{position:relative;width:min(26vw,200px);height:min(36vw,300px);border-radius:14px;overflow:hidden;border:3px solid #ff3b30;box-shadow:0 0 22px rgba(255,59,48,.45),0 8px 22px rgba(0,0,0,.7);background-size:cover;background-position:center 10%;background-color:#0a0710;filter:saturate(.35) brightness(.55);animation:bfKillVic .6s cubic-bezier(.2,.8,.3,1) .15s both}',
     '@keyframes bfKillVic{0%{opacity:0;transform:translateX(50px) scale(.75) rotate(0)}100%{opacity:1;transform:translateX(0) scale(1) rotate(-4deg)}}',
-    // Ojos de X sobre la víctima
-    '#bf-kill-ov .bf-kill-vic::before{content:"\\u274C \\u274C";position:absolute;top:28%;left:50%;transform:translateX(-50%);font-size:clamp(28px,6vw,44px);letter-spacing:8px;filter:drop-shadow(0 0 8px #ff3b30);animation:bfKillX .7s ease-out .3s both;z-index:2}',
+    // Héroe caído llorando con un kleenex 🤧 (uno solo, no dos)
+    '#bf-kill-ov .bf-kill-vic::before{content:"\\ud83e\\udd27";position:absolute;top:20%;left:50%;transform:translateX(-50%);font-size:clamp(44px,10vw,68px);filter:drop-shadow(0 0 12px rgba(120,190,255,.7));animation:bfKillX .7s ease-out .3s both;z-index:2}',
     '@keyframes bfKillX{0%{opacity:0;transform:translateX(-50%) scale(.3) rotate(-15deg)}100%{opacity:1;transform:translateX(-50%) scale(1) rotate(0)}}',
+    // Lágrimas 💧 cayendo del héroe llorando
+    '#bf-kill-ov .bf-kill-vic .bf-kill-tears{position:absolute;top:38%;left:50%;transform:translateX(-50%);font-size:clamp(18px,4vw,28px);animation:bfKillTears 1.6s ease-in .5s infinite;z-index:3;filter:drop-shadow(0 0 6px rgba(100,180,255,.6))}',
+    '@keyframes bfKillTears{0%{opacity:0;transform:translateX(-50%) translateY(0)}15%{opacity:1}80%{opacity:.7}100%{opacity:0;transform:translateX(-50%) translateY(50px)}}',
     // Estrellitas mareando encima de la víctima
     '#bf-kill-ov .bf-kill-vic .bf-kill-star{position:absolute;top:12%;left:50%;transform:translateX(-50%);font-size:clamp(20px,4vw,28px);animation:bfKillStar 1.4s linear infinite;z-index:3;filter:drop-shadow(0 0 6px #ffd24a)}',
     '@keyframes bfKillStar{from{transform:translateX(-50%) rotate(0)}to{transform:translateX(-50%) rotate(360deg)}}',
@@ -119,6 +122,7 @@ export const KILL_CINE_QUEUE_PATCH = `
   function showKillCinematic(actor, victims){
     var ov = document.createElement('div');
     ov.id = 'bf-kill-ov';
+    ov.dataset.bfNew = '1';
 
     var bg = document.createElement('div');
     bg.className = 'bf-kill-bg';
@@ -158,6 +162,10 @@ export const KILL_CINE_QUEUE_PATCH = `
       star.className = 'bf-kill-star';
       star.textContent = '\\u2b50\\u2b50\\u2b50';
       vic.appendChild(star);
+      var tears = document.createElement('div');
+      tears.className = 'bf-kill-tears';
+      tears.textContent = '\\ud83d\\udca7 \\ud83d\\udca7';
+      vic.appendChild(tears);
       var ghost = document.createElement('div');
       ghost.className = 'bf-kill-ghost';
       ghost.textContent = '\\ud83d\\udc7b';
@@ -255,6 +263,20 @@ export const KILL_CINE_QUEUE_PATCH = `
 
   var tries = 0, t = setInterval(function(){ if(install() || tries++ > 200) clearInterval(t); }, 150);
   install();
+
+  // ---- Supresión de la cinemática original del juego ----
+  // El juego tiene su propia cinemática de golpe mortal que crea elementos
+  // con id="bf-kill-ov" (u otros overlays de muerte). Como no podemos evitar
+  // que se ejecute (la llama por referencia interno), los eliminamos del DOM
+  // inmediatamente. Nuestra cinemática lleva data-bf-new="1" y no se toca.
+  setInterval(function(){
+    document.querySelectorAll('[id="bf-kill-ov"]').forEach(function(el){
+      if(el.dataset.bfNew !== '1') el.remove();
+    });
+    // También elimina overlays de muerte residuales del juego original
+    var old = document.querySelector('.bf-kill-cine,.bf-death-cine,.bf-mortal-cine');
+    if(old) old.remove();
+  }, 100);
 })();
 </script>
 `;
