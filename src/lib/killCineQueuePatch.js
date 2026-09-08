@@ -261,6 +261,17 @@ export const KILL_CINE_QUEUE_PATCH = `
 
     var actor = pendingActor;
     var victims = pendingVictims.slice();
+    // Quita víctimas duplicadas y a la que tenga el mismo ID que el atacante
+    // (un héroe no se mata a sí mismo: si aparece como víctima es un error
+    // del motor y se elimina para que no salga dos veces el mismo héroe).
+    var seen = {};
+    victims = victims.filter(function(v){
+      if(!v.id) return true;
+      if(seen[v.id]) return false;
+      if(actor && v.id === actor.id) return false;
+      seen[v.id] = true;
+      return true;
+    });
     pendingVictims = [];
     pendingActor = null;
 
@@ -289,14 +300,19 @@ export const KILL_CINE_QUEUE_PATCH = `
     var wrapped = function(card){
       if(!card) return;
 
-      // Recoge la víctima
+      // Recoge la víctima (sin duplicar: si el mismo héroe ya está en la
+      // lista de víctimas pendientes, no se añade otra vez)
       var vHero = heroFromCard(card);
       var vArt = artFromCard(card);
-      pendingVictims.push({
-        id: vHero ? vHero.id : '',
-        name: vHero ? vHero.name : '',
-        art: vArt
-      });
+      var vId = vHero ? vHero.id : ('dom_' + (card.id || ''));
+      var dup = pendingVictims.some(function(p){ return p.id === vId; });
+      if(!dup){
+        pendingVictims.push({
+          id: vId,
+          name: vHero ? vHero.name : '',
+          art: vArt
+        });
+      }
 
       // Anota el atacante
       var ka = window.__bfKillActor;
