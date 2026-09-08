@@ -58,10 +58,13 @@ export const PASSIVE_MARKER_PATCH = `
   st.textContent = css;
   document.head.appendChild(st);
 
-  // Busca el hero data desde el card del DOM (mismo patr\\u00f3n que statusAuraPatch)
+  // Busca el hero data desde el card del DOM: usa getHero (igual que
+  // statusLabelPatch y statusSceneFxPatch) para garantizar que el objeto
+  // devuelto es el mismo que tiene los flags de pasivas (_bfRefract, etc.).
   function heroFor(card){
-    var m = String(card.id || '').match(/^b_([po])_(.+)$/);
-    return m && typeof G !== 'undefined' && G.team ? (G.team[m[1]] || []).find(function(h){ return h && h.id === m[2]; }) : null;
+    var parts = String(card.id || '').split('_');
+    if(parts.length < 3 || typeof getHero !== 'function') return null;
+    try{ return getHero(parts[1], parts.slice(2).join('_')); }catch(e){ return null; }
   }
 
   // Inyecta/actualiza el marcador pasivo en cada retrato de batalla
