@@ -274,13 +274,13 @@ export const AVATAR_PATCH = `
       window.__bfAvReqWrapped[name]=1;
       var orig=window[name];
       window[name]=function(){
+        // El avatar NO es obligatorio para empezar a jugar: si el jugador no
+        // eligió uno, se auto-asigna el primero del catálogo (para que el
+        // ranking siga mostrando un avatar) y se prosigue directo a la subasta,
+        // sin abrir el modal que bloqueaba el inicio.
         if(!window.bfMyAvatar||!window.bfMyAvatar.url){
-          var msg=L('Elige tu avatar para continuar','Choose your avatar to continue');
-          try{if(typeof notif==='function')notif(msg);else alert(msg);}catch(e){}
-          var input=getInput();
-          if(input){try{input.focus();}catch(e){}}
-          openModal();
-          return;
+          var pool=(window.__bfAvatarCatalog||[]).length?window.__bfAvatarCatalog:(window.__bfHeroAvatars||[]);
+          if(pool.length&&pool[0]&&pool[0].url){ saveAv({url:pool[0].url,name:pool[0].name||''}); }
         }
         return orig.apply(this,arguments);
       };
