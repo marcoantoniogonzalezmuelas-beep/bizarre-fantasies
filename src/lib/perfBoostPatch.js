@@ -10,6 +10,26 @@ export const PERF_BOOST_PATCH = `
   if(window.__bfPerfBoost) return;
   window.__bfPerfBoost = true;
 
+  // 0) Optimizaciones CSS universales (todos los navegadores):
+  //  - Aislar cada carta de hero y el tablero con contain para que repintar
+  //    una carta no fuerce recalcular el layout de las vecinas.
+  //  - content-visibility:auto en el registro de batalla (lista larga): el
+  //    navegador salta su renderizado cuando esta fuera de la vista.
+  //  - Reemplazar las animaciones de background-position (fondo del panel de
+  //    accion y brasas) por animaciones de solo transform: animar
+  //    background-position fuerza re-rasterizar la imagen en cada frame en
+  //    TODOS los navegadores; transform es GPU-acelerado.
+  var st = document.createElement('style');
+  st.textContent = ''
+    + '#s-battle{contain:layout style paint}'
+    + '.bhero{contain:layout style paint}'
+    + '.b-log,#battle-log,.log-list{content-visibility:auto;contain-intrinsic-size:auto 200px}'
+    + '.bf-action-bg{will-change:transform!important}'
+    + '@keyframes bfActionZoom{0%{transform:scale(1.02) translateY(0)}100%{transform:scale(1.3) translateY(-6%)}}'
+    + '.bf-action-embers{will-change:transform!important}'
+    + '@keyframes bfEmbers{0%{transform:translateY(0)}100%{transform:translateY(-32px)}}';
+  document.head.appendChild(st);
+
   // 1) Coalescer de renders: varias llamadas en el mismo frame = un solo pintado.
   function coalesce(name){
     var orig = window[name];
