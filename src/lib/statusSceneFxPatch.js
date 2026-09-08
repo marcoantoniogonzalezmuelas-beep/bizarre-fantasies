@@ -15,7 +15,7 @@ export const STATUS_SCENE_FX_PATCH = `
   window.__bfStatusSceneFx = true;
 
   var css = [
-    '.bf-scene-fx{position:absolute!important;inset:0!important;z-index:14!important;pointer-events:none!important;overflow:hidden!important;border-radius:inherit;contain:layout style paint!important}',
+    '.bf-scene-fx{position:absolute!important;inset:0!important;z-index:18!important;pointer-events:none!important;overflow:hidden!important;border-radius:inherit;contain:layout style paint!important}',
     '',
     '/* AGONÍA — sangre goteando desde el borde superior + charco oscuro abajo */',
     '.bf-fx-agony{background:linear-gradient(180deg,rgba(100,0,0,.28) 0%,transparent 40%),radial-gradient(ellipse at 50% 100%,rgba(70,0,0,.4) 0%,transparent 55%)}',
@@ -171,7 +171,11 @@ export const STATUS_SCENE_FX_PATCH = `
 
   function paint(card){
     var hero=heroFromCard(card);
-    var host=card.querySelector('.bf-battle-art')||card;
+    // Se ancla a la carta completa (.bhero) y no al retrato (.bf-battle-art):
+    // antes el efecto se inyectaba dentro del retrato y quedaba oculto detrás
+    // del arte de batalla. En la carta, con z-index:18, el efecto se ve por
+    // encima del retrato y por debajo de los rótulos de estado (z-index:20).
+    var host=card;
     var fx=host.querySelector('.bf-scene-fx');
     var active=[];
     if(hero&&hero.alive)STATES.forEach(function(s){try{if(s.test(hero))active.push(s.key);}catch(e){}});
