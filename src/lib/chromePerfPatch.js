@@ -21,7 +21,25 @@ export const CHROME_PERF_PATCH = `
     + '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}'
     // El tablero de batalla se aísla en su propia capa: los repintados de las
     // tarjetas ya no obligan a rehacer toda la pantalla.
-    + '#s-battle{contain:paint}'
+    + '#s-battle{contain:layout style paint}'
+    // Cada carta de héroe se aísla en su propia capa de layout/paint: repintar
+    // una carta no fuerza recalcular el layout de sus vecinas.
+    + '.bhero{contain:layout style paint}'
+    // El registro de batalla (lista larga y scrollable) se salta su renderizado
+    // cuando está fuera de la vista: content-visibility:auto es el mayor ahorro
+    // de pintado en Chrome para listas largas.
+    + '.b-log,#battle-log,.log-list{content-visibility:auto;contain-intrinsic-size:auto 200px}'
+    // ANIMACIÓN DEL FONDO DEL PANEL DE ACCIÓN: el juego original anima
+    // background-position, que en Chrome fuerza re-rasterizar la imagen de
+    // fondo en CADA frame (la causa nº1 de tirones en batalla). Se sustituye
+    // por una animación de solo transform (scale+translate), que es
+    // GPU-acelerada y no toca el fondo.
+    + '.bf-action-bg{will-change:transform!important}'
+    + '@keyframes bfActionZoom{0%{transform:scale(1.02) translateY(0)}100%{transform:scale(1.3) translateY(-6%)}}'
+    // Las brasas del panel (bfEmbers) también animaban background-position: lo
+    // mismo, se reemplaza por un desplazamiento con transform.
+    + '.bf-action-embers{will-change:transform!important}'
+    + '@keyframes bfEmbers{0%{transform:translateY(0)}100%{transform:translateY(-32px)}}'
     // Animaciones decorativas pausadas mientras están fuera de la vista.
     + '.bf-offscreen,.bf-offscreen *{animation-play-state:paused!important}';
   document.head.appendChild(st);
