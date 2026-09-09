@@ -43,6 +43,13 @@ export const TOKEN_ABILITIES_PATCH = `
       var name = el ? (h.eAbility || h.ability) : (h.ability || h.name);
       var finish = function(){ h.abilityUsed = true; if(typeof done === 'function') done(); };
 
+      // Cinemática 3D del bizarro. El hook genérico de abilityAnimPatch ignora
+      // los tokens (akind tk_*), así que cada habilidad la lanza aquí al
+      // aplicarse (después de elegir objetivo, no antes).
+      function cine(){
+        if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
+      }
+
       function sync(){
         if(typeof renderBattle === 'function') renderBattle();
         if(typeof netSync === 'function') netSync('s-battle');
@@ -51,7 +58,7 @@ export const TOKEN_ABILITIES_PATCH = `
       // Gag intencional: la habilidad no produce ningún efecto → cinemática 3D
       // + letras y efecto visual de PIFIA sobre el bizarro.
       function applyNone(){
-        if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
+        cine();
         pushLog('lx', '\\u{1F3B2} ' + h.name + ' \\u2014 ' + name + ': PIFIA, no produce ning\\u00fan efecto.');
         if(typeof window.__bfFumblePop === 'function') window.__bfFumblePop(side, h.id, false, 0);
         else pushFx({k:'status', side:side, id:h.id, txt:'\\u{1F4A9}'});
@@ -62,7 +69,7 @@ export const TOKEN_ABILITIES_PATCH = `
       // ignora defensa a UN rival tarjeteado, y lo humilla (HUMILLAR: -4 a
       // todos sus stats, 2 turnos, igual que la habilidad del Pijo).
       function applyShoe(t){
-        if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
+        cine();
         pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F45E}'});
         var d = dealDamage(t, 1, {type:'true'});
         t._mods.push({cc:-4, ad:-4, he:-4, vel:-4, turns:2});
@@ -72,6 +79,7 @@ export const TOKEN_ABILITIES_PATCH = `
 
       // Butifarra élite — Gases Tóxicos: -4 stats a todos los rivales (2 turnos).
       function applyDizzyAll(){
+        cine();
         living(foes).forEach(function(x){
           x._mods.push({cc:-4, ad:-4, he:-4, vel:-4, turns:2});
           pushFx({k:'status', side:tSide(x), id:x.id, txt:'\\u{1F635}'});
@@ -82,6 +90,7 @@ export const TOKEN_ABILITIES_PATCH = `
 
       // Lavadora élite — Programa Delicado: aturdimiento total 2 turnos.
       function applyStun(t){
+        cine();
         t.skip = Math.max(t.skip || 0, 2);
         t.para = Math.max(t.para || 0, 2);
         pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u{1F300}'});
@@ -93,6 +102,7 @@ export const TOKEN_ABILITIES_PATCH = `
       // acción). Usa el campo _bfConfused, que es el que pinta el rótulo
       // "★ CONFUSO" en el retrato y aplica el fallo por turno.
       function applyConfuse(t){
+        cine();
         var turns = el ? 3 : 2;
         t._bfConfused = Math.max(t._bfConfused || 0, turns);
         pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u2605'});
@@ -103,6 +113,7 @@ export const TOKEN_ABILITIES_PATCH = `
       // Pez Espada — Licor: estado BORRACHO (rótulo ◉ BORRACHO en el retrato,
       // 35% de fallar cada acción) + -3 stats y 3 de daño (2 / 3 turnos).
       function applyDrunk(t){
+        cine();
         var turns = el ? 3 : 2;
         t._bfDrunk = Math.max(t._bfDrunk || 0, turns);
         t._mods.push({cc:-3, ad:-3, he:-3, vel:-3, turns:turns});

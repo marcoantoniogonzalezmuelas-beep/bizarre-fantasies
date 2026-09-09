@@ -241,14 +241,16 @@ export const FAITHFUL_ABILITIES_PATCH = `
       if(g) fx({k:'heal', side:side_(t), id:t.id, amt:g});
       log('lh', c.h.name + ' despierta sus ra\\u00edces ancestrales y cura por completo a ' + t.name + ' (+' + g + ').');
     },
-    // Morthex élite — roba toda la vida infligida y +3 CC
+    // Morthex — Absorción Oscura: golpe al rival ELEGIDO que roba la MITAD del
+    // daño infligido. Élite (Festín de Almas): roba TODA la vida y +3 CC.
     mor: function(c){
-      if(!c.el) return false;
+      if(!c.t || !c.t.alive) return;
       fx({k:'slash', toSide:side_(c.t), toId:c.t.id});
       var d = dealDamage(c.t, stat(c.h,'cc'), {type:'melee'});
-      var g = heal(c.h, d);
-      mods(c.h).push({cc:3, turns:99});
-      log('ld', c.h.name + ' drena a ' + c.t.name + ' (-' + d + ', +' + g + ') y gana +3 CC.');
+      var g = heal(c.h, c.el ? d : Math.round(d * 0.5));
+      if(g) fx({k:'heal', side:c.side, id:c.h.id, amt:g});
+      if(c.el) mods(c.h).push({cc:3, turns:99});
+      log('ld', c.h.name + ' drena a ' + c.t.name + ' (-' + d + ', +' + g + ')' + (c.el ? ' y gana +3 CC.' : '.'));
     },
     // Hannai Boa élite — esquiva 2 ataques y +5 solo al siguiente golpe
     hannai: function(c){
