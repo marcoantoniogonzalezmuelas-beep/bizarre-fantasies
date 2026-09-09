@@ -291,7 +291,7 @@ export const KILL_CINE_QUEUE_PATCH = `
         if(busy()){ setTimeout(proceed, 200); return; }
         showKillCinematic(actor, victims);
         stopWatch();
-      }, 260);
+      }, 150);
     }
     proceed();
   }
@@ -328,11 +328,11 @@ export const KILL_CINE_QUEUE_PATCH = `
       // Si no hay timer, arranca el retraso
       if(!killTimer){
         var ctx = window.__bfActionCtx;
-        var delay = 900; // kill de ataque normal: espera corta
-        // Kill por habilidad/hechizo/objeto: retrasa 5 s (duración de la
+        var delay = 600; // kill de ataque normal: espera corta
+        // Kill por habilidad/hechizo/objeto: retrasa 3.5 s (duración de la
         // animación 3D de la habilidad) para que NUNCA se solapen.
         if(ctx && (ctx.kind === 'useAbility' || ctx.kind === 'castSpell' || ctx.kind === 'useItem') && Date.now() - ctx.ts < 6000){
-          delay = 5000;
+          delay = 3500;
         }
         killTimer = setTimeout(flushPending, delay);
       }
