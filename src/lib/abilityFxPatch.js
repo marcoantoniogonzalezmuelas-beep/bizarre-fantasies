@@ -271,7 +271,11 @@ export const ABILITY_FX_PATCH = `
       });
     });
   }
-  new MutationObserver(scanSummons).observe(document.documentElement,{childList:true,subtree:true});
+  // Polling por intervalo (NO MutationObserver): durante la batalla el DOM
+  // cambia constantemente y el MutationObserver se disparaba en cada cambio,
+  // iterando sobre todos los hérores. Un intervalo de 500ms es mucho más
+  // ligero y suficiente para detectar invocaciones nuevas.
+  setInterval(scanSummons, 500);
 
   // Deduplicación: evita que la animación se dispare dos veces si tanto el
   // hook de useAbility como el escaneo periódico detectan el mismo uso.
