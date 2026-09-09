@@ -16,12 +16,15 @@ export const AI_AUCTION_PATCH = `
   function needsHero(s){
     // No queda ningún héroe disponible que pujar: la IA no puede reclutar y la
     // fase debe poder cerrarse (si no, se repuja indefinidamente).
-    if (G.bfAiNoCands && G.bfAiNoCands[s]) return false;
+    if (G.bfAiNoCands && G.bfAiNoCands[s] && !pool(s).length) return false;
+    // La IA necesita un héroe simplemente si su equipo no está completo (3).
+    // Antes se fiaba de G.curType / G.phaseNeeds / G.aIndex, pero esas variables
+    // a veces estaban desactualizadas al cambiar de fase (p. ej. la fase 3
+    // arrancaba con curType todavía en 'AD' de la fase 2, o phaseNeeds=false
+    // del reclutamiento anterior), y la IA creía que ya tenía el héroe correcto
+    // y no pujaba → se quedaba con 2 héroes y la partida se bloqueaba.
     var team = (G.team && G.team[s]) || [];
-    var currentRole = G.curType || ['CC','AD','HE'][Number(G.aIndex || 0)];
-    if (!team.some(function(h){ return h && h.type === currentRole; })) return true;
-    if (G.phaseNeeds && typeof G.phaseNeeds[s] === 'boolean') return G.phaseNeeds[s];
-    return team.length < (Number(G.aIndex || 0) + 1);
+    return team.length < 3;
   }
   function mods(s){ try { return window.bidMods ? window.bidMods(s) : { add: 0, sub: 0 }; } catch(e){ return { add: 0, sub: 0 }; } }
   // Héroes ya adjudicados a cualquier equipo: nunca son candidatos de puja.

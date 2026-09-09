@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-09-09-ducks-half-v215';
+const GAME_PATCH_VERSION = 'bf-2026-09-09-auct-fix-v216';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -1281,10 +1281,10 @@ function buildArtScript(dbCards) {
       var sv=G.cands;if(G.epicCands&&G.epicCands[s])G.cands=G.epicCands[s];
       try{originalAiBid.apply(this,arguments);}catch(e){}
       if(!G.bids)G.bids={};var b=G.bids[s];
-      if(!b){if(G.acq&&G.acq[s])G.bids[s]={pass:true};else bfAiNoCoin(s);}
+      var bfAiTl=(G.team&&G.team[s]&&G.team[s].length)||0;if(!b){if(bfAiTl>=3)G.bids[s]={pass:true};else bfAiNoCoin(s);}
       else if(!b.pass){
         var amt=adjustBid(s,b.heroId,b.amount);
-        if(amt===null){if(G.acq&&G.acq[s])G.bids[s]={pass:true};else bfAiNoCoin(s);}
+        if(amt===null){if(bfAiTl>=3)G.bids[s]={pass:true};else bfAiNoCoin(s);}
         else{
           var c=Number((G.coins&&G.coins[s])||0),mc=minPoolCost(s),m=window.bidMods(s),mx=Math.max(mc,c-mc*Math.max(0,roundsLeft(s)-1)),h=findHero(b.heroId),mr=window.minRawBid(s,h),cap=mx+m.add-m.sub,bid=Math.min(amt,cap);if(bid<=mr)bid=Math.min(cap,mr+Math.max(1,Math.min(4,Math.floor(mx/15))));G.bids[s].amount=Math.max(mr,bid);
         }
