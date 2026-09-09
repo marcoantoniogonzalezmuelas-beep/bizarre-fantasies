@@ -21,7 +21,7 @@ export const MP_ABILITY_CINE_PATCH = `
   function serializeHero(h){
     if(!h)return null;
     return {
-      id:h.id, cid:h.cid, card_id:h.card_id,
+      id:h.id, cid:h.cid, card_id:h.card_id, _token:h._token,
       name:h.name, eliteMode:!!h.eliteMode,
       ability:h.ability, eAbility:h.eAbility,
       akind:h.akind,

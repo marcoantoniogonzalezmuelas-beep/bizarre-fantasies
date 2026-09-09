@@ -295,7 +295,7 @@ export const ABILITY_ANIM_PATCH = `
     // Fallback por nombre: si el card_id cambió en el editor (p.ej. un héroe
     // editado que antes era otro), el lookup por id falla. El nombre es estable
     // y permite encontrar la animación aunque el card_id haya cambiado.
-    return animMap[hero.id]||animMap[hero.cid]||animMap[hero.card_id]||(hero.name?spellByName[String(hero.name).toLowerCase()]:null)||null;
+    return animMap[hero.id]||animMap[hero.cid]||animMap[hero.card_id]||animMap[hero._token]||(hero.name?spellByName[String(hero.name).toLowerCase()]:null)||null;
   }
 
   // Devuelve el lado ('p' u 'o') de un héroe, buscándolo en G.team.

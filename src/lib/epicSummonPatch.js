@@ -46,7 +46,7 @@ export const EPIC_SUMMON_PATCH = `
     // Unicornio: sin versión élite real — se elige al azar una de sus dos
     // ilustraciones (los stats y la habilidad son idénticos).
     inst.eliteMode = el ? true : (Math.random() < 0.5);
-    inst.eliteUsed = true;
+    inst.eliteUsed = false;
     inst.abilityUsed = false;
     inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
     inst.maxHp = Number(el ? (tpl.eHp || tpl.hp) : tpl.hp) || 15;
