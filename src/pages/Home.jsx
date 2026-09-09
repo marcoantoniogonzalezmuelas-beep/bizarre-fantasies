@@ -1110,6 +1110,9 @@ export default function Home() {
         setError(false);
         setLoading(true);
 
+        // El TURN NO puede tumbar la carga del juego: antes iba en el mismo
+        // Promise.all y un fallo/caída del servidor TURN hacía fracasar los 6
+        // intentos y mostraba la pantalla de error del juego completo.
         const [res, turnRes] = await Promise.all([
           base44.functions.invoke('gameHtml', {
             version: EXPECTED_PATCH_VERSION,
@@ -1117,12 +1120,12 @@ export default function Home() {
             r: Math.random().toString(36).slice(2),
             attempt,
           }),
-          base44.functions.invoke('getTurnCredentials', {}),
+          base44.functions.invoke('getTurnCredentials', {}).catch(() => null),
         ]);
 
         if (cancelled) return;
         const data = typeof res.data === 'string' ? res.data : String(res.data);
-        const turnIceServers = Array.isArray(turnRes.data?.iceServers) ? turnRes.data.iceServers : [];
+        const turnIceServers = Array.isArray(turnRes?.data?.iceServers) ? turnRes.data.iceServers : [];
         if (!data || data.length < 1000) throw new Error('empty');
 
         const textList = await base44.entities.HomeText.list('key', 50).catch(() => []);

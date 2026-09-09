@@ -14,6 +14,28 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
   var turnRequestSeq = 0;
   var turnPending = {};
 
+  // Relay de respaldo embebido en el propio juego: si el puente de credenciales
+  // falla (servidor TURN caído, cuota agotada, red que bloquea la petición), el
+  // navegador SIGUE teniendo un relay TCP/443 + TLS/443 que probar. Sin relay,
+  // en operadores con CGNAT (Vodafone, Orange, datos móviles) la partida no
+  // arranca nunca: la conexión directa es imposible.
+  var FALLBACK_ICE = [
+    { urls:'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject' },
+    { urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject' },
+    { urls:'turns:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject' },
+    { urls:'turn:openrelay.metered.ca:80', username:'openrelayproject', credential:'openrelayproject' }
+  ];
+
+  // Redes que ya demostraron necesitar relay: se recuerda ENTRE PARTIDAS y
+  // sesiones. Antes solo se detectaba durante la partida en curso y a la
+  // segunda caída, así que el primer intento en Vodafone/Orange fallaba
+  // siempre y el jugador no llegaba ni a empezar.
+  try { if (localStorage.getItem('bfForceRelay') === '1') window.__bfForceRelay = 1; } catch (e) {}
+  window.__bfMarkForceRelay = function(){
+    window.__bfForceRelay = 1;
+    try { localStorage.setItem('bfForceRelay', '1'); } catch (e) {}
+  };
+
   window.__bfSetMeteredIceServers = function(servers){
     if (Array.isArray(servers) && servers.length) METERED_ICE_SERVERS = servers;
   };
@@ -63,7 +85,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       // Forzar relay enruta TODO el tráfico por el servidor TURN, que es estable
       // a través de cualquier NAT. Los STUN se conservan como respaldo.
       var turn = [], stun = [];
-      METERED_ICE_SERVERS.concat((opts.config.iceServers || []).slice()).forEach(function(s){
+      METERED_ICE_SERVERS.concat(FALLBACK_ICE).concat((opts.config.iceServers || []).slice()).forEach(function(s){
         if (!s || !s.urls) return;
         var u = Array.isArray(s.urls) ? s.urls.join(' ') : String(s.urls);
         if (/turn/i.test(u)) turn.push(s); else stun.push(s);
@@ -165,6 +187,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         if (typeof dirUnregister === 'function' && typeof LOBBY !== 'undefined' && LOBBY._reg) dirUnregister();
         if (NET.peer) { try { NET.peer.destroy(); } catch (e) {} }
         if (attempt > 0) NET.code = makeCode();
+        // Si el primer intento de abrir la sala falló, esta red tampoco va a
+        // aguantar la conexión directa con el invitado: se pasa a relay.
+        if (attempt > 0 && window.__bfMarkForceRelay) window.__bfMarkForceRelay();
         renderLobby('hostwait');
         lobbyStatus(attempt ? 'Reconectando la sala (' + attempt + ')…' : 'Creando sala…');
 
@@ -231,22 +256,81 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     if (window.hostCreate && window.hostCreate.__bfReliableHost) clearInterval(reliableHostTimer);
   }, 200);
 
-  // Al unirse también se renuevan las credenciales TURN antes de abrir PeerJS.
+  // Al unirse: credenciales TURN frescas + VIGILANTE DE INTENTO. El anfitrión
+  // ya tenía reintentos y watchdog, pero al UNIRSE solo se llamaba una vez a
+  // clientJoin: si la negociación se quedaba colgada (lo normal en operadores
+  // con CGNAT como Vodafone u Orange, donde el primer intento directo no llega
+  // a abrir el canal), el jugador se quedaba en «Conectando…» para siempre y no
+  // llegaba a empezar la partida. Ahora cada intento tiene 9s; si no abre, se
+  // fuerza relay (TURN) y se reintenta, hasta 4 veces.
   function installFreshRoomCredentials(){
     if (typeof window.clientJoin === 'function' && !window.clientJoin.__bfFreshTurn) {
       var originalClientJoin = window.clientJoin;
-      window.clientJoin = function(){
-        var self = this, args = arguments;
-        // Guarda los datos de la sala para poder reconectar automáticamente.
+      window.clientJoin = function(code, pass, name){
+        var self = this;
+        var joined = false;
+        var attempt = 0;
+        var watchdog = null;
+
         try{
-          var jc=String(args[0]||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-          if(typeof NET!=='undefined'&&jc){NET._bfJoin={code:jc,pass:args[1]||'',name:args[2]||''};NET.code=jc;}
+          var jc=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+          if(typeof NET!=='undefined'&&jc){NET._bfJoin={code:jc,pass:pass||'',name:name||''};NET.code=jc;}
         }catch(e){}
-        requestFreshIceServers().catch(function(){}).then(function(){
-          ensurePeerJs().then(function(){ originalClientJoin.apply(self, args); }).catch(function(){
-            if (typeof lobbyError === 'function') lobbyError('No se pudo cargar la conexión online. Inténtalo de nuevo.');
+
+        function connected(){
+          try { return !!(typeof NET !== 'undefined' && NET.conn && NET.conn.open); } catch (e) { return false; }
+        }
+        // El jugador canceló o volvió al lobby: no seguimos reintentando.
+        function abandoned(){
+          try { return typeof NET === 'undefined' || NET.role !== 'client'; } catch (e) { return true; }
+        }
+
+        function tryJoin(){
+          if (joined || connected()) return;
+          attempt += 1;
+          // Del segundo intento en adelante TODO va por relay: si el directo no
+          // abrió, esta red no lo permite.
+          if (attempt > 1 && window.__bfMarkForceRelay) window.__bfMarkForceRelay();
+          if (attempt > 1) {
+            try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
+            NET.peer = null;
+            if (typeof lobbyStatus === 'function') lobbyStatus('Conexión directa bloqueada por tu operador. Reintentando por servidor seguro (' + (attempt - 1) + ')…');
+          }
+
+          requestFreshIceServers().catch(function(){}).then(function(){
+            if (joined || connected() || abandoned()) return;
+            return ensurePeerJs();
+          }).then(function(){
+            if (joined || connected() || abandoned()) return;
+            originalClientJoin.call(self, code, pass, name);
+            clearTimeout(watchdog);
+            watchdog = setTimeout(function(){
+              if (joined || connected() || abandoned()) { joined = connected(); return; }
+              if (attempt >= 4) {
+                if (typeof lobbyError === 'function') lobbyError('No se ha podido conectar con la sala. Tu red puede estar bloqueando las partidas online: prueba con otra red (Wi-Fi en vez de datos, o al contrario) y vuelve a intentarlo.');
+                return;
+              }
+              tryJoin();
+            }, 9000);
+          }).catch(function(){
+            if (joined || connected() || abandoned()) return;
+            if (attempt >= 4) {
+              if (typeof lobbyError === 'function') lobbyError('No se pudo cargar la conexión online. Inténtalo de nuevo.');
+              return;
+            }
+            clearTimeout(watchdog);
+            watchdog = setTimeout(tryJoin, 800 * attempt);
           });
-        });
+        }
+
+        // En cuanto el canal con el rival abre, se cancela el vigilante.
+        var openWatch = setInterval(function(){
+          if (connected()) { joined = true; clearTimeout(watchdog); clearInterval(openWatch); }
+          else if (abandoned()) { clearTimeout(watchdog); clearInterval(openWatch); }
+        }, 500);
+        setTimeout(function(){ clearInterval(openWatch); }, 60000);
+
+        tryJoin();
       };
       window.clientJoin.__bfFreshTurn = 1;
     }
@@ -293,7 +377,9 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     function noteEarlyDrop(){
       if (!connectedAt || Date.now() - connectedAt > 20000) return;
       window.__bfEarlyDrops = (window.__bfEarlyDrops || 0) + 1;
-      if (window.__bfEarlyDrops >= 2) window.__bfForceRelay = 1;
+      // Una sola caída temprana ya basta: es la firma inequívoca del CGNAT.
+      // Esperar a la segunda dejaba al jugador con la partida cortada.
+      if (window.__bfMarkForceRelay) window.__bfMarkForceRelay();
     }
     pc.addEventListener('iceconnectionstatechange', function(){
       var st = pc.iceConnectionState;

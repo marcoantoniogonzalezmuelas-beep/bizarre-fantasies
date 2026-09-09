@@ -297,7 +297,7 @@ export const NET_RECONNECT_PATCH = `
     rec.tries=(rec.tries||0)+1;
     // Tras 2 intentos fallidos de reconexión, forzar relay (TURN): si la
     // conexión directa no vuelve, la red probablemente la está rompiendo.
-    if(rec.tries>=2) window.__bfForceRelay=1;
+    if(rec.tries>=2){if(window.__bfMarkForceRelay)window.__bfMarkForceRelay();else window.__bfForceRelay=1;}
     if(rec.anyRole&&!rec.hostTried&&rec.tries>=4&&!(NET.conn&&NET.conn.open)){switchToHost();return;}
     rec.timer=setTimeout(clientRetry,RETRY_MS);
   }
