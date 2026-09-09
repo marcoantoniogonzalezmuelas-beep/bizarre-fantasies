@@ -99,7 +99,8 @@ export const SPELL_FX_PATCH = `
   }
 
   function hook(){
-    if (typeof window.flushFx !== 'function' || window.flushFx.__bfSpellFx) return;
+    if (typeof window.flushFx !== 'function' || window.__bfSpellFxDone) return;
+    window.__bfSpellFxDone = 1;
     var orig = window.flushFx;
     window.flushFx = function(list){
       try {
@@ -140,7 +141,8 @@ export const SPELL_FX_PATCH = `
     window.flushFx.__bfSpellFx = 1;
   }
 
-  var iv=setInterval(function(){ hook(); if(window.flushFx&&window.flushFx.__bfSpellFx)clearInterval(iv); },200);
+  var sTries=0;
+  var iv=setInterval(function(){ hook(); if(window.__bfSpellFxDone||sTries++>150)clearInterval(iv); },200);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook); else hook();
 })();
 </script>

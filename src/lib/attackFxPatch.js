@@ -286,14 +286,16 @@ export const ATTACK_FX_PATCH = `
 
   // 1) Enriquecer 'slash' con el atacante (B.current) al encolar.
   function hookPush(){
-    if(typeof window.pushFx!=='function'||window.pushFx.__bfAfx)return;
+    if(typeof window.pushFx!=='function'||window.__bfAfxPushDone)return;
+    window.__bfAfxPushDone=1;
     var orig=window.pushFx;
     window.pushFx=function(ev){ try{ if(ev&&ev.k==='slash'&&!ev.fromSide&&typeof B!=='undefined'&&B.current){ ev.fromSide=B.current.side; ev.fromId=B.current.id; } }catch(e){} return orig.apply(this,arguments); };
     window.pushFx.__bfAfx=1;
   }
   // 2) flushFx: renderizar proyectiles/golpes propios y filtrar arrow/slash simple.
   function hookFlush(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfAfx)return;
+    if(typeof window.flushFx!=='function'||window.__bfAfxFlushDone)return;
+    window.__bfAfxFlushDone=1;
     var orig=window.flushFx;
     window.flushFx=function(list){
       try{ if(list&&list.length){ var filtered=[]; list.forEach(function(ev){ if(!ev)return; if(ev.k==='arrow'){rangedFx(ev);return;} if(ev.k==='slash'){meleeFx(ev);return;} filtered.push(ev); }); if(filtered.length)return orig.call(this,filtered); return; } }catch(e){}
@@ -302,7 +304,8 @@ export const ATTACK_FX_PATCH = `
     window.flushFx.__bfAfx=1;
   }
   function hook(){ hookPush(); hookFlush(); }
-  var iv=setInterval(function(){ hook(); if(window.pushFx&&window.pushFx.__bfAfx&&window.flushFx&&window.flushFx.__bfAfx)clearInterval(iv); },200);
+  var aTries=0;
+  var iv=setInterval(function(){ hook(); if((window.__bfAfxPushDone&&window.__bfAfxFlushDone)||aTries++>150)clearInterval(iv); },200);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook); else hook();
 })();
 </script>

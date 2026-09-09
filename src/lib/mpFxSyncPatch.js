@@ -52,8 +52,13 @@ export const MP_FX_SYNC_PATCH = `
   // Hook flushFx en el HOST: captura los eventos de la lista antes de que
   // el juego los procese y los envie al cliente por PeerJS (batch 30ms).
   // Los eventos ya tienen fromSide/fromId porque pushFx los enriqueció.
+  // Bandera GLOBAL de instalación: comprobar window.flushFx.__bfMpFxSync fallaba
+  // cuando otro parche envolvía flushFx después (la bandera queda en la capa
+  // interna), así que este intervalo la reenvolvía sin parar y cada evento se
+  // renderizaba y ENVIABA al invitado tantas veces como capas hubiera.
   function hookFlush() {
-    if (typeof window.flushFx !== 'function' || window.flushFx.__bfMpFxSync) return;
+    if (typeof window.flushFx !== 'function' || window.__bfMpFxSyncDone) return;
+    window.__bfMpFxSyncDone = 1;
     var orig = window.flushFx;
     window.flushFx = function(list) {
       try {
@@ -69,7 +74,11 @@ export const MP_FX_SYNC_PATCH = `
     window.flushFx.__bfMpFxSync = 1;
   }
   hookFlush();
-  setInterval(function() { if (!window.flushFx || !window.flushFx.__bfMpFxSync) hookFlush(); }, 300);
+  var fxTries = 0;
+  var fxIv = setInterval(function() {
+    hookFlush();
+    if (window.__bfMpFxSyncDone || fxTries++ > 150) clearInterval(fxIv);
+  }, 300);
 
   // CLIENTE: escucha los mensajes bfFxSync en la conexión de datos y
   // reprocesa los eventos con el flushFx local (que tiene los hooks de

@@ -36,7 +36,22 @@ export const FX_ROOT_PATCH = `
   // FX (hechizos, ataques, cinemáticas) con position:fixed, así que es seguro.
   // Los nodos que deben vivir en body (guía, pujas…) se añaden con appendChild
   // directo y no pasan por aquí.
-  window.__bfAppend=function(node){ ensure().appendChild(node); };
+  window.__bfAppend=function(node){ try{ node.dataset.bfT=Date.now(); }catch(e){} ensure().appendChild(node); };
+
+  // Red de seguridad: si un efecto se queda colgado (animación congelada, un
+  // setTimeout de borrado que no llegó a ejecutarse, un lote de FX duplicado…)
+  // el turno se quedaba bloqueado para siempre, porque la comprobación de
+  // "escena ocupada" ve hijos en la capa de FX. Todo nodo de FX con más de 8s
+  // se elimina: ninguna animación del juego dura tanto.
+  setInterval(function(){
+    var r=document.getElementById('bf-fx-root');
+    if(!r||!r.children.length)return;
+    var now=Date.now();
+    Array.prototype.slice.call(r.children).forEach(function(n){
+      var t=Number(n.dataset&&n.dataset.bfT||0);
+      if(t&&now-t>8000&&n.parentNode)n.parentNode.removeChild(n);
+    });
+  },1500);
   // Re-crea el contenedor si alguien lo borra (el juego reconstruye el DOM).
   var _t=setInterval(function(){ ensure(); },2000);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure);

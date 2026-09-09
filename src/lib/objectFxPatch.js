@@ -86,8 +86,15 @@ export const OBJECT_FX_PATCH = `
   function markPending(o){
     if(o&&o.name)window.__bfPendItem={name:o.name,kind:o.kind,until:Date.now()+8000};
   }
+  // Banderas GLOBALES de instalación (no propiedades de la función). Antes se
+  // comprobaba window.pushLog.__bfOfx: si otro parche envolvía pushLog después,
+  // la bandera dejaba de estar en la función externa y este parche volvía a
+  // envolverla cada 200ms, apilando cientos de capas durante la partida hasta
+  // bloquear el juego (sobre todo al invitado en multiplayer).
+  window.__bfOfxDone = window.__bfOfxDone || {};
   function hookUse(fnName,getObj){
-    if(typeof window[fnName]!=='function'||window[fnName].__bfOfx)return;
+    if(typeof window[fnName]!=='function'||window.__bfOfxDone[fnName])return;
+    window.__bfOfxDone[fnName]=1;
     var orig=window[fnName];
     window[fnName]=function(){
       try{markPending(getObj(arguments));}catch(e){}
@@ -97,7 +104,8 @@ export const OBJECT_FX_PATCH = `
   }
 
   function hookLog(){
-    if(typeof window.pushLog!=='function'||window.pushLog.__bfOfx)return;
+    if(typeof window.pushLog!=='function'||window.__bfOfxDone.pushLog)return;
+    window.__bfOfxDone.pushLog=1;
     var orig=window.pushLog;
     window.pushLog=function(type,msg){
       try{
@@ -124,9 +132,11 @@ export const OBJECT_FX_PATCH = `
     hookUse('useItem_AI',function(args){return (typeof G!=='undefined')?G.items[args[0]][args[1]]:null;});
     hookLog();
   }
+  var oTries=0;
   var iv=setInterval(function(){
     hook();
-    if(window.useItem&&window.useItem.__bfOfx&&window.useItem_AI&&window.useItem_AI.__bfOfx&&window.pushLog&&window.pushLog.__bfOfx)clearInterval(iv);
+    var d=window.__bfOfxDone;
+    if((d.useItem&&d.useItem_AI&&d.pushLog)||oTries++>150)clearInterval(iv);
   },200);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hook); else hook();
 })();
