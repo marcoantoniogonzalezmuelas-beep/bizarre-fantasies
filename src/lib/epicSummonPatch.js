@@ -63,6 +63,7 @@ export const EPIC_SUMMON_PATCH = `
   function kamikaze(side, h, finish){
     var foes = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
     function blow(t){
+      if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
       if(t && typeof dealDamage === 'function'){
         fx({ k:'spell', toSide:sideOf(t), toId:t.id, el:'fuego' });
         var d = dealDamage(t, 20, { type:'true', pierce:1, ignoreArmor:true });
@@ -84,6 +85,7 @@ export const EPIC_SUMMON_PATCH = `
   function pegasus(side, h, finish){
     var el = !!h.eliteMode, dmg = el ? 10 : 5;
     var foes = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
+    if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
     // Pasa a ser el más rápido de todos los héroes.
     (h._mods = h._mods || []).push({ vel:99, turns:99 });
     fx({ k:'status', side:side, id:h.id, txt:'\\u26A1' });
@@ -109,6 +111,13 @@ export const EPIC_SUMMON_PATCH = `
     window.useAbility = function(side, h, done){
       var k = h && h.akind;
       if(k !== 'epic-summon' && k !== 'kamikaze-token' && k !== 'pegasus-token') return orig.apply(this, arguments);
+      // Multiplayer: el invitado NO resuelve la habilidad en local (aplicaría
+      // un daño que el anfitrión sobrescribe y el turno se queda colgado).
+      // Envía el intent y espera el estado autoritativo del anfitrión.
+      if(typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function'){
+        sendIntent('useAbility', {});
+        return;
+      }
       var finish = function(){
         if(typeof done === 'function') done();
         else if(typeof finishAct === 'function') finishAct();

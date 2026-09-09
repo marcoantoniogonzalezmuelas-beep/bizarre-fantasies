@@ -38,6 +38,14 @@ export const TOKEN_ABILITIES_PATCH = `
       var id = tokId(h);
       if(!id) return orig.apply(this, arguments);
 
+      // Multiplayer: el invitado NO resuelve la habilidad en local (aplicaría
+      // estados y daño que el anfitrión sobrescribe, dejando el turno colgado).
+      // Envía el intent y espera el estado autoritativo del anfitrión.
+      if(typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function'){
+        sendIntent('useAbility', {});
+        return;
+      }
+
       var el = !!h.eliteMode;
       var foes = enemySide(side);
       var name = el ? (h.eAbility || h.ability) : (h.ability || h.name);
