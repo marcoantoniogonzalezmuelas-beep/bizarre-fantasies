@@ -166,20 +166,20 @@ export const SHOP_SPELL_ART_PATCH = `
         // 1) Asegura que item.num = nº de BD (lo usa handArtByName)
         if (item.num !== info.number) { item.num = info.number; changed = true; }
         // 2) Asegura que CARD_NO[id] = nº de BD padded (lo usa cardNo → injectEquipArt, numFor, bfConfirm)
-        if (item.id && typeof CARD_NO !== 'undefined') {
+        if (item.id && typeof CARD_NO !== 'undefined' && CARD_NO) {
           var padded = String(info.number).padStart(3, '0');
           if (CARD_NO[item.id] !== padded) { CARD_NO[item.id] = padded; changed = true; }
         }
         // 3) Si el juego no tiene el arte en NUM_ART (carta nueva dinámica), lo registra por nº de BD
         var art = ART_BY_NAME[item.name];
-        if (art && typeof NUM_ART !== 'undefined' && !NUM_ART[String(info.number)]) {
+        if (art && typeof NUM_ART !== 'undefined' && NUM_ART && !NUM_ART[String(info.number)]) {
           try { NUM_ART[String(info.number)] = art; changed = true; } catch (e) {}
         }
         // 4) SPELL_ART[idx] — la PRIMERA vía de lookup de injectHandArt para
         //    hechizos. Sin esto, los hechizos inyectados dinámicamente no
         //    muestran arte en la mano (el fallback NUM_ART[s.num] puede fallar
         //    si s.num aún es 0 o si el índice no coincide).
-        if (a === 0 && art && typeof SPELL_ART !== 'undefined') {
+        if (a === 0 && art && typeof SPELL_ART !== 'undefined' && SPELL_ART) {
           if (SPELL_ART[i] !== art) { try { SPELL_ART[i] = art; changed = true; } catch (e) {} }
         }
       }

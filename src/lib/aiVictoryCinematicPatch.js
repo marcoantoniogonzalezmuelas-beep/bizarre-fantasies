@@ -28,7 +28,7 @@ export const AI_VICTORY_CINEMATIC_PATCH = `
       color: '#7ec97e',
       title: '¡PASASTE A LA IA NOVATA!',
       sub: 'Ya no eres un novato del todo. La Bersérker te espera.',
-      joke: '“La Novata aún cree que 'puya' es una estrategia.” 🌱',
+      joke: '“La Novata aún cree que ‘puya’ es una estrategia.” 🌱',
       badge: '⚡ BERSÉRKER DESBLOQUEADA',
       duration: 4200, confetti: 40, emojis: 12
     },
