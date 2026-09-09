@@ -118,14 +118,47 @@ export const STATUS_SCENE_FX_PATCH = `
     '.bf-fx-drunk .bf-bubble:nth-child(4){left:35%;width:6px;height:6px;animation-delay:2.5s;animation-duration:5.5s}',
     '@keyframes bfBubbleRise{0%{transform:translateY(0);opacity:0}12%{opacity:.8}85%{opacity:.7}100%{transform:translateY(-180px);opacity:0}}',
     '',
-    '/* MAREADO — espirales girando */',
+    '/* MAREADO — espirales girando + pajaritos dando vueltas */',
     '.bf-fx-dizzy{background:radial-gradient(circle at 50% 50%,rgba(120,230,220,.08) 0%,transparent 55%)}',
     '.bf-fx-dizzy .bf-spiral{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:2px dashed rgba(120,220,210,.5);animation:bfSpiralSpin 4s linear infinite}',
     '.bf-fx-dizzy .bf-spiral:nth-child(1){animation-delay:0s}',
     '.bf-fx-dizzy .bf-spiral:nth-child(2){width:60px;height:60px;margin:-30px 0 0 -30px;animation-delay:1s;animation-direction:reverse}',
+    '.bf-fx-dizzy .bf-spiral:nth-child(3){width:24px;height:24px;margin:-12px 0 0 -12px;animation-delay:2s}',
+    '.bf-fx-dizzy .bf-bird{position:absolute;top:18%;font-size:14px;filter:drop-shadow(0 0 5px rgba(120,220,210,.6));animation:bfBirdOrbit 5s linear infinite}',
+    '.bf-fx-dizzy .bf-bird:nth-child(4){left:50%;animation-delay:0s}',
+    '.bf-fx-dizzy .bf-bird:nth-child(5){left:50%;animation-delay:2.5s;font-size:11px}',
     '@keyframes bfSpiralSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}',
+    '@keyframes bfBirdOrbit{from{transform:rotate(0deg) translateX(48px) rotate(0deg)}to{transform:rotate(360deg) translateX(48px) rotate(-360deg)}}',
     '',
-    '@media(max-width:880px){.bf-fx-agony .bf-blood{height:18px;width:4px}.bf-fx-frozen .bf-snow{font-size:11px}.bf-fx-frozen .bf-stalactite{border-top-width:20px!important}.bf-fx-curse .bf-skull{font-size:14px}.bf-fx-curse .bf-candle{height:22px}.bf-fx-bless .bf-spark{font-size:10px}.bf-fx-confuse .bf-star{font-size:11px}}'
+    '/* AGONÍA — charco de sangre abajo (elemento fijo) */',
+    '.bf-fx-agony .bf-pool{position:absolute;left:0;right:0;bottom:0;height:14px;background:radial-gradient(ellipse at 50% 100%,rgba(120,0,0,.55),transparent 70%);animation:bfPoolPulse 3s ease-in-out infinite}',
+    '@keyframes bfPoolPulse{0%,100%{opacity:.5;transform:scaleX(.95)}50%{opacity:.8;transform:scaleX(1.05)}}',
+    '',
+    '/* MALDITO — calabaza de Halloween + araña + telaraña */',
+    '.bf-fx-curse .bf-pumpkin{position:absolute;bottom:4px;font-size:20px;filter:drop-shadow(0 0 8px rgba(255,120,0,.7));animation:bfPumpkinGlow 3s ease-in-out infinite}',
+    '.bf-fx-curse .bf-pumpkin:nth-child(6){left:25%;animation-delay:0s}',
+    '.bf-fx-curse .bf-pumpkin:nth-child(7){right:20%;animation-delay:1.5s;font-size:16px}',
+    '@keyframes bfPumpkinGlow{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}',
+    '.bf-fx-curse .bf-spider{position:absolute;top:10%;font-size:16px;filter:drop-shadow(0 0 5px rgba(80,0,120,.7));animation:bfSpiderDrop 5s ease-in-out infinite}',
+    '.bf-fx-curse .bf-spider:nth-child(8){left:35%;animation-delay:0s}',
+    '.bf-fx-curse .bf-spider:nth-child(9){right:30%;animation-delay:2.5s;font-size:13px}',
+    '@keyframes bfSpiderDrop{0%{transform:translateY(-10px);opacity:0}20%{opacity:.8}80%{opacity:.7}100%{transform:translateY(60px);opacity:0}}',
+    '.bf-fx-curse .bf-web{position:absolute;top:0;left:0;width:34px;height:34px;opacity:.5;background:radial-gradient(circle at 0 0,transparent 30%,rgba(200,200,220,.4) 31%,transparent 33%,rgba(200,200,220,.35) 50%,transparent 52%,rgba(200,200,220,.3) 70%,transparent 72%);border-radius:0 0 50% 0}',
+    '.bf-fx-curse .bf-web:nth-child(10){left:auto;right:0;border-radius:0 0 0 50%}',
+    '',
+    '/* DORMIDO — luna creciente fija */',
+    '.bf-fx-sleep .bf-moon{position:absolute;top:10px;right:10px;font-size:18px;color:rgba(200,215,255,.85);text-shadow:0 0 10px rgba(150,180,255,.7);animation:bfMoonGlow 4s ease-in-out infinite}',
+    '@keyframes bfMoonGlow{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:.9;transform:scale(1.06)}}',
+    '',
+    '/* BENDITO — halo dorado flotando sobre la cabeza */',
+    '.bf-fx-bless .bf-halo{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:46px;height:14px;border:2.5px solid rgba(255,225,120,.8);border-bottom:none;border-radius:50% 50% 0 0;box-shadow:0 0 12px rgba(255,210,74,.6);animation:bfHaloFloat 3.5s ease-in-out infinite}',
+    '@keyframes bfHaloFloat{0%,100%{opacity:.6;transform:translateX(-50%) translateY(0)}50%{opacity:1;transform:translateX(-50%) translateY(-4px)}}',
+    '',
+    '/* BORRACHO — botella tumbada + burbujas extra */',
+    '.bf-fx-drunk .bf-bottle{position:absolute;bottom:6px;left:8px;font-size:18px;filter:drop-shadow(0 0 6px rgba(255,200,100,.5));animation:bfBottleSway 4s ease-in-out infinite}',
+    '@keyframes bfBottleSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(6deg)}}',
+    '',
+    '@media(max-width:880px){.bf-fx-agony .bf-blood{height:18px;width:4px}.bf-fx-frozen .bf-snow{font-size:11px}.bf-fx-frozen .bf-stalactite{border-top-width:20px!important}.bf-fx-curse .bf-skull{font-size:14px}.bf-fx-curse .bf-candle{height:22px}.bf-fx-curse .bf-pumpkin{font-size:16px}.bf-fx-curse .bf-spider{font-size:13px}.bf-fx-bless .bf-spark{font-size:10px}.bf-fx-confuse .bf-star{font-size:11px}.bf-fx-dizzy .bf-bird{font-size:11px}.bf-fx-drunk .bf-bottle{font-size:15px}}'
   ].join('\\n');
 
   var st = document.createElement('style');
@@ -151,16 +184,16 @@ export const STATUS_SCENE_FX_PATCH = `
   ];
 
   var HTML={
-    agony:'<div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-splatter"></div><div class="bf-splatter"></div><div class="bf-splatter"></div>',
-    frozen:'<div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-snow">\\u2744</div><div class="bf-snow">\\u2745</div><div class="bf-snow">\\u2744</div><div class="bf-snow">\\u2745</div><div class="bf-snow">\\u2744</div>',
-    curse:'<div class="bf-skull">\\ud83d\\udc80</div><div class="bf-skull">\\ud83d\\udc80</div><div class="bf-skull">\\ud83d\\udc80</div><div class="bf-candle"></div><div class="bf-candle"></div>',
-    sleep:'<div class="bf-zzz">Z</div><div class="bf-zzz">Z</div><div class="bf-zzz">Z</div>',
-    bless:'<div class="bf-ray"></div><div class="bf-ray"></div><div class="bf-ray"></div><div class="bf-spark">\\u2728</div><div class="bf-spark">\\u2726</div><div class="bf-spark">\\u2728</div><div class="bf-spark">\\u2726</div><div class="bf-spark">\\u2728</div>',
-    para:'<div class="bf-bolt">\\u26a1</div><div class="bf-bolt">\\u26a1</div><div class="bf-bolt">\\u26a1</div>',
-    confuse:'<div class="bf-star">\\u2b50</div><div class="bf-star">\\u2b50</div><div class="bf-star">\\u2b50</div>',
-    silence:'<div class="bf-rune">\\ud83d\\udd07</div><div class="bf-rune">\\ud83d\\udd07</div><div class="bf-rune">\\ud83d\\udd07</div>',
-    drunk:'<div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bubble"></div>',
-    dizzy:'<div class="bf-spiral"></div><div class="bf-spiral"></div>'
+    agony:'<div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-blood"></div><div class="bf-splatter"></div><div class="bf-splatter"></div><div class="bf-splatter"></div><div class="bf-pool"></div>',
+    frozen:'<div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-stalactite"></div><div class="bf-snow">\\u2744</div><div class="bf-snow">\\u2745</div><div class="bf-snow">\\u2744</div><div class="bf-snow">\\u2745</div><div class="bf-snow">\\u2744</div><div class="bf-snow">\\u2745</div><div class="bf-snow">\\u2744</div>',
+    curse:'<div class="bf-skull">\\ud83d\\udc80</div><div class="bf-skull">\\ud83d\\udc80</div><div class="bf-skull">\\ud83d\\udc80</div><div class="bf-skull">\\ud83d\\udc80</div><div class="bf-skull">\\ud83d\\udc80</div><div class="bf-candle"></div><div class="bf-candle"></div><div class="bf-pumpkin">\\ud83c\\udf83</div><div class="bf-pumpkin">\\ud83c\\udf83</div><div class="bf-spider">\\ud83d\\udd77</div><div class="bf-spider">\\ud83d\\udd77</div><div class="bf-web"></div><div class="bf-web"></div>',
+    sleep:'<div class="bf-zzz">Z</div><div class="bf-zzz">Z</div><div class="bf-zzz">Z</div><div class="bf-zzz">Z</div><div class="bf-moon">\\ud83c\\udf19</div>',
+    bless:'<div class="bf-ray"></div><div class="bf-ray"></div><div class="bf-ray"></div><div class="bf-spark">\\u2728</div><div class="bf-spark">\\u2726</div><div class="bf-spark">\\u2728</div><div class="bf-spark">\\u2726</div><div class="bf-spark">\\u2728</div><div class="bf-spark">\\u2726</div><div class="bf-spark">\\u2728</div><div class="bf-halo"></div>',
+    para:'<div class="bf-bolt">\\u26a1</div><div class="bf-bolt">\\u26a1</div><div class="bf-bolt">\\u26a1</div><div class="bf-bolt">\\u26a1</div><div class="bf-bolt">\\u26a1</div>',
+    confuse:'<div class="bf-star">\\u2b50</div><div class="bf-star">\\u2b50</div><div class="bf-star">\\u2b50</div><div class="bf-star">\\u2b50</div><div class="bf-star">\\u2b50</div>',
+    silence:'<div class="bf-rune">\\ud83d\\udd07</div><div class="bf-rune">\\ud83d\\udd07</div><div class="bf-rune">\\ud83d\\udd07</div><div class="bf-rune">\\ud83d\\udd07</div><div class="bf-rune">\\ud83d\\udd07</div>',
+    drunk:'<div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bubble"></div><div class="bf-bottle">\\ud83c\\udf7a</div>',
+    dizzy:'<div class="bf-spiral"></div><div class="bf-spiral"></div><div class="bf-spiral"></div><div class="bf-bird">\\ud83d\\udde3</div><div class="bf-bird">\\ud83d\\udde3</div>'
   };
 
   function heroFromCard(card){
