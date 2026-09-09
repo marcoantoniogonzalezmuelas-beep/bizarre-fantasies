@@ -24,10 +24,11 @@ export const MP_TURN_SEQUENCE_PATCH = `
         || !!document.getElementById('bf-kill-ov')
         || document.body.classList.contains('bf-cine-active');
   }
-  function busy(){ return cineBusy() || fxBusy(); }
+  function killPending(){ return typeof window.__bfKillCinePending === 'function' && window.__bfKillCinePending(); }
+  function busy(){ return cineBusy() || fxBusy() || killPending(); }
 
   window.bfStepWhenCalm = function(next){
-    var min = 400, max = 9000, quiet = 900, step = 150, elapsed = 0, quietFrom = 0;
+    var min = 400, max = 12000, quiet = 900, step = 150, elapsed = 0, quietFrom = 0;
     function tick(){
       elapsed += step;
       if(busy()) quietFrom = 0;

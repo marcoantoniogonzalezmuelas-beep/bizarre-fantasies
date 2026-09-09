@@ -81,6 +81,9 @@ export const KILL_CINE_QUEUE_PATCH = `
   var pendingActor = null;
   var killTimer = null;
   var lastCineSeen = 0, pollId = 0;
+  // Expone el estado de la cola para que bfStepWhenCalm sepa que hay un
+  // golpe mortal pendiente de mostrarse (aún en el retardo antes de aparecer).
+  window.__bfKillCinePending = function(){ return pendingVictims.length > 0; };
 
   function seeCine(){
     try{ if(document.querySelector('#bf-abil-anim,#bf-spec-cine')) lastCineSeen = Date.now(); }catch(e){}
