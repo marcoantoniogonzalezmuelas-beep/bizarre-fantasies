@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-09-01-cache-online-v208';
+const GAME_PATCH_VERSION = 'bf-2026-09-09-nomutob-v209';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -2342,19 +2342,12 @@ function buildArtScript(dbCards) {
     injectTitleIcons();
     injectActionPanelBg();
     bfAutoFitHeroCards(); bfAutoFitThumbs(); bfBindHandPlay();
-    syncBattleFx();
-    bfSyncGuideLook();
-    bfWatchGuideEvents();
   }
-  function startObserver() {
-    var scheduled = false;
-    var observer = new MutationObserver(function() {
-      if (scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(function() { scheduled = false; injectArtIntoDOM(); });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
+  // syncBattleFx + guide events run on their OWN interval, NOT inside
+  // injectArtIntoDOM. Before, the MutationObserver fired injectArtIntoDOM
+  // on every DOM change, and syncBattleFx inside it created a feedback loop
+  // on the guest (every received message → DOM change → injectArtIntoDOM →
+  // syncBattleFx → more DOM changes → …) that blocked the main thread.
   // ---- Screen background on a dedicated full-screen layer ----
   function ensureCoverLayer() {
     var layer = document.getElementById('bf-cover-layer');
@@ -2454,8 +2447,7 @@ function buildArtScript(dbCards) {
       injectArtIntoDOM();
       if ((patchedFace && attempts > 8) || attempts > 60) clearInterval(interval);
     }, 150);
-    startObserver();
-    // Re-sync the cover background on screen transitions, throttled.
+    setInterval(function(){syncBattleFx();bfSyncGuideLook();bfWatchGuideEvents();},350);
     var lastScreenId = '';
     setInterval(function() {
       var active = document.querySelector('.screen.active');
