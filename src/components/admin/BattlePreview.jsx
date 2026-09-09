@@ -7,14 +7,14 @@ import React, { useState } from 'react';
 export default function BattlePreview({ form }) {
   const [elite, setElite] = useState(false);
 
-  const artUrl = form.art_url || '';
+  const artUrl = elite ? (form.elite_art_url || form.art_url || '') : (form.art_url || '');
   const battleUrl = elite ? (form.elite_battle_art_url || form.battle_art_url || '') : (form.battle_art_url || '');
 
   return (
     <div className="mt-3 rounded-2xl border border-[#ffd24a33] bg-[#0e0816]/80 p-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-[11px] font-black uppercase tracking-wider text-[#ffd24a]">👁️ Vista previa del rectángulo de batalla</span>
-        {form.elite_battle_art_url && (
+        {(form.elite_battle_art_url || form.elite_art_url) && (
           <button
             type="button"
             onClick={() => setElite(!elite)}
