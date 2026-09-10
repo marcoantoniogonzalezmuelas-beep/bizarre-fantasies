@@ -50,7 +50,10 @@ export const SPELL_FX_PATCH = `
     '.bf-arcane-orb{position:fixed;pointer-events:none;z-index:90023;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#f0c8ff,#a85cff 55%,transparent 72%);box-shadow:0 0 14px rgba(180,90,255,.9);animation:bfArcaneOrb 1.9s ease-out forwards}',
     '@keyframes bfArcaneOrb{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-120px))) scale(.3);opacity:0}}',
     '.bf-arcane-rune{position:fixed;pointer-events:none;z-index:90024;font-size:22px;color:#e0b8ff;text-shadow:0 0 12px rgba(190,120,255,.95),0 0 20px rgba(140,60,220,.6);animation:bfArcaneRune 2.2s ease-out forwards}',
-    '@keyframes bfArcaneRune{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-90px))) scale(1.3) rotate(60deg)}}'
+    '@keyframes bfArcaneRune{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-90px))) scale(1.3) rotate(60deg)}}',
+    // ---- Luz: destello blanco-amarillo a pantalla completa (1s) ----
+    '.bf-light-flash{position:fixed;pointer-events:none;z-index:90030;inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,250,210,.88),rgba(255,235,150,.5) 35%,rgba(255,220,90,.18) 60%,transparent 80%);animation:bfLightFlash 1s ease-out forwards}',
+    '@keyframes bfLightFlash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}'
   ].join('');
   document.head.appendChild(st);
 
@@ -98,6 +101,12 @@ export const SPELL_FX_PATCH = `
     for(var r=0;r<10;r++){ var ru=document.createElement('div'); ru.className='bf-arcane-rune'; ru.textContent=runes[Math.floor(Math.random()*runes.length)]; ru.style.left=c.x+'px'; ru.style.top=c.y+'px'; var ang2=Math.random()*Math.PI*2, dist2=40+Math.random()*80; ru.style.setProperty('--dx',(Math.cos(ang2)*dist2)+'px'); ru.style.setProperty('--dy',(-50-Math.random()*90)+'px'); ru.style.animationDelay=(Math.random()*0.2)+'s'; spawn(ru,2100); }
   }
 
+  function fxLight(){
+    var ov=document.createElement('div'); ov.className='bf-light-flash';
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },1100);
+  }
+
   function hook(){
     if (typeof window.flushFx !== 'function' || window.__bfSpellFxDone) return;
     window.__bfSpellFxDone = 1;
@@ -114,6 +123,7 @@ export const SPELL_FX_PATCH = `
             else if (el === 'hielo') fxIce(ev.toSide, ev.toId);
             else if (el === 'rayo') fxLightning(ev.toSide, ev.toId);
             else if (el === 'arcano') fxArcane(ev.toSide, ev.toId);
+            else if (el === 'luz') fxLight();
             // Remate anime: sprite del hechizo (ola, bola de fuego, cristal,
             // rayo) + estrella de impacto + sacudida del objetivo.
             var A=window.__bfAnime;

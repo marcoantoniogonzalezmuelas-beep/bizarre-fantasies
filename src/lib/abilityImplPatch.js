@@ -182,6 +182,7 @@ export const ABILITY_IMPL_PATCH = `
         log(t.name + ' no lleva armas.');
         return false;
       }
+      case 'fx': { try{ pushFx({k:'spell', toSide:(typeof tSide==='function'?tSide(t):'o'), toId:t.id, el:st.element||'arcano'}); }catch(e){} return true; }
       default: return false;
     }
   }
