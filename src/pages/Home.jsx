@@ -974,9 +974,6 @@ export default function Home() {
   }, [navigate]);
 
   useEffect(() => {
-    base44.entities.Card.list('number', 200).then(cards => {
-      if (cards?.length) setDbCount(cards.length);
-    });
     base44.auth.me().then(user => setIsAdmin(user?.role === 'admin')).catch(() => setIsAdmin(false));
   }, []);
 
@@ -985,6 +982,7 @@ export default function Home() {
   // del retrato, cambiando a la versión élite cuando el héroe entra en modo élite.
   useEffect(() => {
     base44.entities.Card.list('number', 300).then(cards => {
+      if (cards?.length) setDbCount(cards.length);
       const map = {};
       (cards || []).forEach(c => {
         if (c.card_id && c.battle_art_url) {
