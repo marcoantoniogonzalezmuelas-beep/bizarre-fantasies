@@ -4,7 +4,7 @@ const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69
 const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
 const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
 const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
-const GAME_PATCH_VERSION = 'bf-2026-09-09-auct-fix-v216';
+const GAME_PATCH_VERSION = 'bf-2026-09-10-new-equip-sync-v217';
 const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
 const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
 const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
@@ -76,7 +76,7 @@ function buildArtScript(dbCards) {
   // coste y maná de hechizos/armas/armaduras/objetos se sincronizan desde la BD
   // al juego (igual que ya ocurría con héroes y arte). Sin esto, editar una
   // carta de equipo en el admin se veía en el Oráculo pero no en la partida.
-  const DB_EQUIP = (dbCards || []).filter(c => c && ['melee_weapon','ranged_weapon','armor','spell','object'].includes(c.category)).map(c => ({ num: Number(c.number), cat: c.category, name: c.name, cost: c.cost, txt: c.ability_text || c.description || '', cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, power: c.power, mana: c.mana, element: c.type || '' }));
+  const DB_EQUIP = (dbCards || []).filter(c => c && ['melee_weapon','ranged_weapon','armor','spell','object'].includes(c.category)).map(c => ({ num: Number(c.number), cat: c.category, card_id: c.card_id, name: c.name, cost: c.cost, txt: c.ability_text || c.description || '', cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, power: c.power, mana: c.mana, element: c.type || '' }));
   return `
 <script>
 (function() {
