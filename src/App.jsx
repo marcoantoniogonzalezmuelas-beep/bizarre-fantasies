@@ -25,6 +25,7 @@ import ResetPassword from './pages/ResetPassword';
 import AdminChat from './pages/AdminChat';
 import AdminPlayers from './pages/AdminPlayers';
 import AdminHeroStats from './pages/AdminHeroStats';
+import AdminNetwork from './pages/AdminNetwork';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/chat" element={<AdminChat />} />
       <Route path="/admin/jugadores" element={<AdminPlayers />} />
       <Route path="/admin/estadisticas-heroes" element={<AdminHeroStats />} />
+      <Route path="/admin/red" element={<AdminNetwork />} />
       <Route path="/cards" element={<Cards />} />
       <Route path="/guiacartas" element={<CardGuide />} />
       <Route path="/races" element={<RacesPage />} />
