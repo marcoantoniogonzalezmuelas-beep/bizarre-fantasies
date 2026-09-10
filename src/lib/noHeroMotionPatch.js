@@ -122,25 +122,9 @@ export const NO_HERO_MOTION_PATCH = `
   // forzaba recálculos de estilo constantes: el parpadeo de tablet).
   if(window.__bfStyleOrder)window.__bfStyleOrder(st,20);
 
-  // Cancela cualquier animación ya en marcha sobre el retrato o la escena
-  // (Web Animations API), sin tocar las capas de efectos de combate.
-  //
-  // Una sola consulta por carta (getAnimations con subtree) en vez de recorrer
-  // nodo por nodo: con 8 héroes en el tablero eran ~400 llamadas a
-  // getAnimations() más ~400 closest() cada 700 ms, un coste de CPU real en
-  // tablet justo mientras se reproducen las animaciones.
-  setInterval(function(){
-    document.querySelectorAll(HOST).forEach(function(host){
-      if(!host.getAnimations)return;
-      try{
-        host.getAnimations({subtree:true}).forEach(function(a){
-          var t=a.effect&&a.effect.target;
-          if(t&&t.closest&&t.closest(KEEP))return;
-          try{ a.cancel(); }catch(e){}
-        });
-      }catch(e){}
-    });
-  },700);
+  // No se hace ninguna revisión periódica del recuadro: cancelar animaciones
+  // cada cierto tiempo podía provocar un pequeño salto visual. Las reglas CSS
+  // anteriores y los helpers de combate estáticos mantienen el cuadro quieto.
 })();
 </script>
 `;

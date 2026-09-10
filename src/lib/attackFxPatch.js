@@ -98,7 +98,7 @@ export const ATTACK_FX_PATCH = `
   var WPN_EMOJI={sling:'🪨',bolt:'🎯',bullet:'🔫',cannon:'💣',plasma:'🔫',arrow:'🏹',photon:'🔫',sword:'⚔️',dagger:'🗡️',axe:'🪓',mace:'🔨',psword:'⚔️',thunder:'🔨'};
   // Sable láser de juguete (estilo Star Wars cutre/cómico): se muestra cuando
   // un héroe ataca SIN arma. Generado por IA para sustituir el emoji ⚔️ cutre.
-  var NO_WPN_SPRITE='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e354340f3_generated_image.png';
+  var NO_WPN_SPRITE='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/343fc2bc5_generated_image.png';
   { var ni=new Image(); ni.src=NO_WPN_SPRITE; }
   // Sprites de arma dibujados en estilo anime: el arma en sí se anima haciendo
   // el ataque (apuntar + retroceso a distancia, tajo en cuerpo a cuerpo).
@@ -179,16 +179,10 @@ export const ATTACK_FX_PATCH = `
   function speedLines(a){ var l=document.createElement('div'); l.className='bf-afx bf-lines'; l.style.left=a.x+'px'; l.style.top=a.y+'px'; spawn(l,1470); }
   function hitStar(b){ var s=document.createElement('div'); s.className='bf-afx bf-hitstar'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1440); }
   function streak(b,col,rotv,len){ var s=document.createElement('div'); s.className='bf-afx bf-streak'; s.style.color=col||'#fff'; s.style.width=(len||240)+'px'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; s.style.setProperty('--rot',rotv+'deg'); spawn(s,1360); }
-  function shake(side,id){
-    var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
-    el.animate([{transform:'translate(0,0)'},{transform:'translate(-7px,3px)'},{transform:'translate(6px,-4px)'},{transform:'translate(-4px,2px)'},{transform:'translate(3px,-1px)'},{transform:'translate(0,0)'}],{duration:340,easing:'ease-out'});
-  }
-  function lunge(side,id,to){
-    var el=document.getElementById('b_'+side+'_'+id); if(!el||!el.animate)return;
-    var r=el.getBoundingClientRect(); var dx=to.x-(r.left+r.width/2), dy=to.y-(r.top+r.height/2);
-    var d=Math.hypot(dx,dy)||1; var f=Math.min(54,d*.3)/d;
-    el.animate([{transform:'translate(0,0)'},{transform:'translate('+(dx*f)+'px,'+(dy*f)+'px) rotate('+(dx>=0?4:-4)+'deg)',offset:.45},{transform:'translate(0,0)'}],{duration:400,easing:'cubic-bezier(.3,1.3,.4,1)'});
-  }
+  // Los recuadros de héroe permanecen totalmente estáticos durante toda la
+  // batalla; solo se animan las capas visuales superpuestas del golpe.
+  function shake(){}
+  function lunge(){}
   // Sprites anime para habilidades, hechizos, objetos e invocaciones.
   var FX_SPRITE={
     ab_melee:SPR+'c220f1fe2_ab_melee_sprite.png',
