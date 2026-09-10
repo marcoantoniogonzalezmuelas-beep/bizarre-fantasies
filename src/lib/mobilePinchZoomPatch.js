@@ -122,11 +122,17 @@ export const MOBILE_PINCH_PATCH = `
     return pinch && t[0].identifier === pinch.id0 && t[1].identifier === pinch.id1;
   }
 
-  // Congela animaciones y transiciones mientras se pellizca: repintarlas sobre
-  // la capa escalada es lo que provoca el parpadeo (portada, equipamiento y
-  // batalla tienen muchas animaciones activas a la vez).
+  // Congela animaciones mientras se pellizca: repintarlas sobre la capa
+  // escalada es lo que provoca el parpadeo (portada, equipamiento y batalla
+  // tienen muchas animaciones activas a la vez).
+  // PERO el body necesita su propia transición de snap-back al soltar el
+  // pellizco: antes el transition:none!important del bf-pinching bloqueaba
+  // la transición del body y este saltaba a x1 sin animar = flicker al alejar.
+  // Se excluye al body del transition:none para que el snap-back sea fluido.
+  // #s-recruit (subasta) aísla su pintura con contain: el compositor no repinta
+  // todo el documento al transformar el body, solo la pantalla de subasta.
   var pzStyle = document.createElement('style');
-  pzStyle.textContent = 'html.bf-pinching *,html.bf-pinching *::before,html.bf-pinching *::after{animation-play-state:paused!important;transition:none!important}';
+  pzStyle.textContent = 'html.bf-pinching *,html.bf-pinching *::before,html.bf-pinching *::after{animation-play-state:paused!important}html.bf-pinching *:not(body),html.bf-pinching *:not(body)::before,html.bf-pinching *:not(body)::after{transition:none!important}#s-recruit{contain:layout style paint}';
   (document.head || document.documentElement).appendChild(pzStyle);
 
   // Al ALEJAR (z<1) el contenido es más pequeño que la pantalla y alrededor se
@@ -134,6 +140,9 @@ export const MOBILE_PINCH_PATCH = `
   // ZOOM_BG_URL (ver placeholder arriba) o, si no está configurada, copiando
   // el fondo del juego al elemento raíz para que no se vea un hueco negro.
   function syncRootBg(){
+    // No tocar el fondo durante el pellizco: getComputedStyle + cambio de
+    // estilo en documentElement fuerza un reflow en mitad del gesto = flicker.
+    if (pinch) return;
     try{
       var d = document.documentElement.style;
       // Imagen temática fija configurada: fondo estable, se aplica una vez.
@@ -309,6 +318,9 @@ export const MOBILE_PINCH_PATCH = `
     return a ? (a.id || '') : '';
   }
   function checkScreenTop(){
+    // No comprobar pantallas durante el pellizco: querySelector + lectura de
+    // atributos fuerza reflow en mitad del gesto = flicker.
+    if (pinch) return;
     var sid = activeScreenId();
     if (sid !== lastScreen) {
       lastScreen = sid;
