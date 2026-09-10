@@ -52,14 +52,8 @@ export default function FlashNewsAdmin() {
   // para que el cartel se muestre siempre en el idioma activo del juego.
   // El admin sólo escribe en castellano; la versión inglesa se genera sola.
   async function autoTranslateEn(esText) {
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a professional English translator for the dark-fantasy card game "Bizarre Fantasies".
-Translate the following Spanish news headline into natural, punchy English game-marketing copy.
-Preserve proper nouns (hero/card names stay as-is). Return ONLY the English translation, nothing else.
-
-${esText}`,
-    });
-    return (typeof res === 'string' ? res : (res?.translation || res?.text || '')).trim();
+    const res = await base44.functions.invoke('translateFlashNews', { text: esText });
+    return (res?.data?.en || '').trim();
   }
 
   async function save() {

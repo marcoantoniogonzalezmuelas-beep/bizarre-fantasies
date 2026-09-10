@@ -39,8 +39,8 @@ export default function PassiveMarkerVariant({ variant, value, onChange, card })
       const abilityText = variant === 'elite' ? (card.elite_ability_text || '') : (card.ability_text || '');
       const clanColor = card.clan_color || '#c79bff';
       const prompt = `Icono de habilidad para el juego de cartas Bizarre Fantasies. Héroe "${card.name}" (${card.clan || ''}), habilidad ${variant === 'elite' ? 'ÉLITE' : 'normal'} "${abilityName}". Descripción: ${abilityText}. ${v.icon_prompt ? 'Indicaciones del admin: ' + v.icon_prompt + '.' : ''} Estilo: icono cuadrado centrado, símbolo mágico brillante y detallado sobre fondo NEGRO PURO (#000000), color dominante ${v.color || clanColor}, sin texto ni letras, apto para recortar como badge circular. Estilo dark fantasy, marcado, con brillo y aura del color dominante.`;
-      const res = await base44.integrations.Core.GenerateImage({ prompt });
-      if (res?.url) update('icon_url', res.url);
+      const res = await base44.functions.invoke('generateCardImage', { prompt });
+      if (res?.data?.url) update('icon_url', res.data.url);
     } catch (err) {
       console.error(err);
       alert('No se pudo generar el icono: ' + (err?.message || 'error'));

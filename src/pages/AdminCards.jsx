@@ -146,16 +146,11 @@ export default function AdminCards() {
       IMPORTANTE: No devuelvas ningún texto extra, solo un JSON estricto con las siguientes claves (si no aplican usa null o vacío):
       "cost", "cc", "ad", "he", "hp", "mana", "power", "type", "ability_name", "ability_text", "elite_cc", "elite_ad", "elite_he", "elite_hp", "elite_ability_name", "elite_ability_text", "description", "title"`;
       
-      const response = await base44.integrations.Core.InvokeLLM({ 
+      const llmRes = await base44.functions.invoke('generateHeroStats', { 
         prompt, 
-        ...(aiModel !== 'automatic' ? { model: aiModel } : {}),
-        response_json_schema: { 
-          type: "object", 
-          properties: {
-            cost: { type: "number" }, cc: { type: "number" }, ad: { type: "number" }, he: { type: "number" }, hp: { type: "number" }, mana: { type: "number" }, power: { type: "number" }, type: { type: "string" }, ability_name: { type: "string" }, ability_text: { type: "string" }, elite_cc: { type: "number" }, elite_ad: { type: "number" }, elite_he: { type: "number" }, elite_hp: { type: "number" }, elite_ability_name: { type: "string" }, elite_ability_text: { type: "string" }, description: { type: "string" }, title: { type: "string" }
-          }
-        } 
+        ...(aiModel !== 'automatic' ? { model: aiModel } : {})
       });
+      const response = llmRes?.data || {};
       
       // El rol del ADMIN manda: si eligió CC/AD/HE, los stats se balancean a
       // ESE rol (stat primario el más alto) y el campo "type" se respeta — la
@@ -286,12 +281,12 @@ export default function AdminCards() {
       if (res?.data?.error) throw new Error(res.data.error);
       return res?.data;
     }
-    if (!refs.length) return base44.integrations.Core.GenerateImage({ prompt });
+    if (!refs.length) return (await base44.functions.invoke('generateCardImage', { prompt }))?.data;
     try {
-      return await base44.integrations.Core.GenerateImage({ prompt, existing_image_urls: refs });
+      return (await base44.functions.invoke('generateCardImage', { prompt, reference_urls: refs }))?.data;
     } catch (err) {
       console.error('Generación con referencia fallida, reintento sin referencia', err);
-      return base44.integrations.Core.GenerateImage({ prompt });
+      return (await base44.functions.invoke('generateCardImage', { prompt }))?.data;
     }
   }
 

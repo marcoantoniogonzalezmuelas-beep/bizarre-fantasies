@@ -75,7 +75,7 @@ export default function AbilityImplementButton({ cardId, elite, abilityName, abi
     setBusy(true);
     setResult(null);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await base44.functions.invoke('implementAbility', {
         prompt: `Eres el motor de reglas del juego de cartas Bizarre Fantasies. Traduce esta habilidad al efecto del catálogo que la reproduzca con mayor fidelidad.
 
 Habilidad: "${abilityName || ''}"
@@ -91,21 +91,14 @@ REGLAS OBLIGATORIAS:
 3. Reproduce TODOS los efectos del texto, cada uno como un paso. Si el texto afecta a todos los rivales usa 'all_enemies'; si es a uno, 'enemy'.
 4. Si eliges custom_steps, params.steps DEBE ser un array NO VACÍO con pasos válidos del catálogo. NUNCA devuelvas custom_steps con steps vacío o sin pasos.
 5. Si la habilidad exige mecánicas que NO están en la lista de actions (lanzar un dado, resucitar al morir, efectos condicionales a un evento externo, cambiar el orden de turnos o la subasta), devuelve effect_type='unsupported' y explica el motivo en note. Es mejor 'unsupported' honesto que un custom_steps vacío que no haría nada en el juego.`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            effect_type: { type: 'string' },
-            params: { type: 'object' },
-            note: { type: 'string' },
-          },
-        },
       });
-      const v = validateSpec(res);
+      const data = res?.data || {};
+      const v = validateSpec(data);
       const status = v.status;
-      const effect_type = v.ok ? (res?.effect_type || 'unsupported') : 'unsupported';
-      let note = res?.note || '';
+      const effect_type = v.ok ? (data?.effect_type || 'unsupported') : 'unsupported';
+      let note = data?.note || '';
       if (!v.ok && v.reason) note = (note ? note + ' — ' : '') + 'No automatizable: ' + v.reason + '.';
-      const payload = { card_id: cardId, elite: !!elite, ability_name: abilityName || '', ability_text: abilityText, status, effect_type, params: v.ok ? (res?.params || {}) : {}, note };
+      const payload = { card_id: cardId, elite: !!elite, ability_name: abilityName || '', ability_text: abilityText, status, effect_type, params: v.ok ? (data?.params || {}) : {}, note };
       const existing = await base44.entities.AbilityImpl.filter({ card_id: cardId, elite: !!elite }, '-created_date', 1);
       if (existing?.length) await base44.entities.AbilityImpl.update(existing[0].id, payload);
       else await base44.entities.AbilityImpl.create(payload);
