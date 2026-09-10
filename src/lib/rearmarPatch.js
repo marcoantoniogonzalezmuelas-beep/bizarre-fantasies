@@ -144,8 +144,17 @@ export const REARMAR_PATCH = `
   function playRearmarCinematic(cb){
     // Si hay una cinemática ya en curso, espera.
     if(document.querySelector('#bf-rearm-cine')){ setTimeout(function(){ playRearmarCinematic(cb); }, 500); return; }
-    // Respeta el flag global de cinemáticas desactivadas.
-    if(window.__bfNoCinematics){ cb(); return; }
+    // Respeta el flag global de cinemáticas desactivadas: sin cinemática 3D,
+    // se muestra la carta revelada en el centro del tablero (como cualquier
+    // otra carta jugada) antes de continuar con la elección de héroe.
+    if(window.__bfNoCinematics){
+      try{
+        var side = (typeof B!=='undefined' && B && B.current) ? B.current.side : 'p';
+        if(typeof pushFx==='function') pushFx({ k:'bfcard', name:'Rearmar', kind:'object', side:side });
+      }catch(e){}
+      setTimeout(cb, 1100);
+      return;
+    }
     var ov = document.createElement('div');
     ov.id = 'bf-rearm-cine';
     var html = '<div class="bf-rc-dim"></div><div class="bf-rc-glow"></div><div class="bf-rc-flash"></div>';
