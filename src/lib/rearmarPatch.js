@@ -20,11 +20,22 @@ export const REARMAR_PATCH = `
     OBJECTS.push({
       id: 'ob_rearm',
       name: 'Rearmar',
+      kind: 'bf_rearm',
+      element: 'arcano',
+      type: 'arcano',
+      tag: 'arcano',
       cost: 8,
       num: 118,
       txt: 'Coge un arma de tu pila de descartes y la equipa en el h\\u00e9roe que elijas.',
       desc: 'Coge un arma de tu pila de descartes y la equipa en el h\\u00e9roe que elijas.'
     });
+    // Fuerza un re-render de la tienda de equipamiento para que el objeto
+    // aparezca inmediatamente sin esperar a que el jugador cambie de pestaña.
+    try {
+      if (typeof G !== 'undefined' && G && G.eqSide && typeof window.renderEquip === 'function') {
+        window.renderEquip(G.eqSide);
+      }
+    } catch(e){}
     return true;
   }
   var objTries = 0, objIv = setInterval(function(){ if(ensureRearmarObject() || objTries++ > 160) clearInterval(objIv); }, 200);
