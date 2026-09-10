@@ -106,6 +106,7 @@ export const SPELL_FX_PATCH = `
     (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },1100);
   }
+  window.__bfFxLight=fxLight;
 
   function hook(){
     if (typeof window.flushFx !== 'function' || window.__bfSpellFxDone) return;

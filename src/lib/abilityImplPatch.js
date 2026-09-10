@@ -182,7 +182,20 @@ export const ABILITY_IMPL_PATCH = `
         log(t.name + ' no lleva armas.');
         return false;
       }
-      case 'fx': { try{ pushFx({k:'spell', toSide:(typeof tSide==='function'?tSide(t):'o'), toId:t.id, el:st.element||'arcano'}); }catch(e){} return true; }
+      case 'fx': {
+        // La luz se dispara DESPUÉS de la cinemática 3D (5s) para que no la tapen.
+        if(st.element === 'luz'){
+          setTimeout(function(){
+            try{
+              if(typeof window.__bfFxLight === 'function') window.__bfFxLight();
+              else if(typeof pushFx === 'function') pushFx({k:'spell', el:'luz'});
+            }catch(e){}
+          }, 5000);
+        } else {
+          try{ pushFx({k:'spell', toSide:(typeof tSide==='function'?tSide(t):'o'), toId:t.id, el:st.element||'arcano'}); }catch(e){}
+        }
+        return true;
+      }
       default: return false;
     }
   }
