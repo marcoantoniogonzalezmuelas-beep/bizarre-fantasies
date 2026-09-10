@@ -1,8 +1,9 @@
 // Parche inyectado en el iframe: objeto "Rearmar".
-// - Si NO hay armas en la pila de descartes del jugador, la carta Rearmar de
-//   la mano se muestra en gris y no se puede jugar.
-// - Si las hay, al hacer clic se lanza una cinemática 3D (imagen spectral
-//   armory) y luego se elige al héroe que la equipará.
+// - Solo se puede jugar si hay armas en la pila de descartes Y al menos un
+//   héroe vivo con el hueco libre para alguna de esas armas. Si no cumple
+//   ambas condiciones, la carta se muestra en gris y no se puede jugar.
+// - Al hacer clic se lanza una cinemática 3D (imagen spectral armory) y luego
+//   se elige al héroe que la equipará.
 // - Al elegir héroe: efecto visual de la carta del arma recuperada volando
 //   desde el centro hasta el recuadro del héroe y un flash de equipamiento.
 export const REARMAR_PATCH = `
@@ -104,16 +105,34 @@ export const REARMAR_PATCH = `
     return false;
   }
 
+  // ¿Se PUEDE jugar Rearmar? Necesita: armas en el descarte Y al menos un
+  // héroe vivo con el hueco libre para alguna de esas armas.
+  function canRearmar(side){
+    try{
+      var pile = (G.itemDescarte && G.itemDescarte[side]) || [];
+      var heroes = alive(side);
+      if(!pile.length || !heroes.length) return false;
+      for(var i = 0; i < pile.length; i++){
+        var entry = pile[i];
+        if(!entry || (entry.kind !== 'mwep' && entry.kind !== 'rwep')) continue;
+        for(var j = 0; j < heroes.length; j++){
+          if(freeSlot(heroes[j], entry.kind)) return true;
+        }
+      }
+    }catch(e){}
+    return false;
+  }
+
   // ---- GRISEARLO: marca el chip Rearmar de la mano como deshabilitado ----
   function updateChipState(){
     try{
       var side = (typeof B!=='undefined' && B && B.current) ? B.current.side : 'p';
-      var hasW = discardHasWeapons(side);
+      var can = canRearmar(side);
       var chips = document.querySelectorAll('.hand-chips .chip-object, .chip.chip-object');
       chips.forEach(function(chip){
         var name = (chip.textContent || '').trim();
         if(REARMAR_NAMES.indexOf(name) >= 0){
-          if(hasW) chip.classList.remove('bf-chip-disabled');
+          if(can) chip.classList.remove('bf-chip-disabled');
           else chip.classList.add('bf-chip-disabled');
         }
       });
@@ -240,10 +259,13 @@ export const REARMAR_PATCH = `
           // El invitado no resuelve nada: el original manda la intención al host.
           if(typeof NET!=='undefined' && NET && NET.role==='client') return orig.apply(this, arguments);
 
-          // Sin armas en el descarte: no se puede jugar (doble check por si el
-          // grisearlo falló al renderizar la mano).
+          // Doble check: necesita armas en el descarte Y un héroe con hueco libre.
           if(!discardHasWeapons(side)){
             if(typeof notif==='function') notif('No hay armas en tu pila de descartes.');
+            return;
+          }
+          if(!canRearmar(side)){
+            if(typeof notif==='function') notif('Todos tus h\\u00e9roes vivos ya llevan armas.');
             return;
           }
           var entry = popWeaponFromDiscard(side);
