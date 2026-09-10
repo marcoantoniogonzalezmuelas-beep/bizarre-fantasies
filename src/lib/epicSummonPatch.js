@@ -43,13 +43,16 @@ export const EPIC_SUMMON_PATCH = `
     inst.id = id + '_' + Date.now();
     inst._token = id;
     inst.akind = el ? 'pegasus-token' : 'kamikaze-token';
+    // Pegaso: entra en su versión NORMAL (como cualquier carta). Al morir
+    // evoluciona a élite (el motor lo revive en modo élite) y entonces puede
+    // jugar su habilidad élite.
     // Unicornio: sin versión élite real — se elige al azar una de sus dos
     // ilustraciones (los stats y la habilidad son idénticos).
-    inst.eliteMode = el ? true : (Math.random() < 0.5);
+    inst.eliteMode = el ? false : (Math.random() < 0.5);
     inst.eliteUsed = false;
     inst.abilityUsed = false;
     inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
-    inst.maxHp = Number(el ? (tpl.eHp || tpl.hp) : tpl.hp) || 15;
+    inst.maxHp = Number(inst.eliteMode ? (tpl.eHp || tpl.hp) : tpl.hp) || 15;
     inst.hp = inst.maxHp; inst.alive = true;
     (G.team[side] || (G.team[side] = [])).push(inst);
     hero.abilityUsed = true;
@@ -99,7 +102,8 @@ export const EPIC_SUMMON_PATCH = `
       if(g) log('lh', h.name + ' se cura +' + g + '.');
     }
     log('li', h.name + ' se vuelve el m\\u00e1s r\\u00e1pido de todos los h\\u00e9roes.');
-    h.abilityUsed = true;
+    // Marca la habilidad correcta como usada según el modo (normal vs élite).
+    if(h.eliteMode) h.eliteUsed = true; else h.abilityUsed = true;
     sync();
     finish();
   }
