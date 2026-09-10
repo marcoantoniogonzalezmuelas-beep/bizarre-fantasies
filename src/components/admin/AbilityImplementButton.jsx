@@ -10,7 +10,7 @@ import { base44 } from '@/api/base44Client';
 // abilityImplPatch, inyectado en el iframe de batalla). Si la IA no puede
 // descomponer la habilidad en pasos válidos del catálogo, NO se guarda como
 // implementada (haría nada en el juego): se marca 'manual' y se explica.
-const VALID_ACTIONS = ['damage','true_damage','drain','heal','heal_full','shield','cleanse','buff','debuff','debuff_all_stats','paralyze','skip_turn','sleep','silence','confuse','drunk','mark','evade','mana','lifesteal','recover_card','steal_card'];
+const VALID_ACTIONS = ['damage','true_damage','drain','heal','heal_full','shield','cleanse','buff','debuff','debuff_all_stats','paralyze','skip_turn','sleep','silence','confuse','drunk','mark','evade','mana','lifesteal','recover_card','steal_card','disarm'];
 const VALID_TARGETS = ['self','ally','all_allies','enemy','all_enemies','weakest_enemy','strongest_enemy'];
 
 const EFFECTS = `
@@ -35,6 +35,7 @@ const EFFECTS = `
         'mana' (suma/resta maná) | 'lifesteal' (roba vida en cada golpe cuerpo a cuerpo el resto del combate)
         'recover_card' (roba una carta de la pila de descartes/usados y la devuelve a la mano)
         'steal_card' (roba amount cartas al azar de la MANO del rival y las pasa a tu mano)
+        'disarm' (quita TODAS las armas —cuerpo a cuerpo y a distancia— del héroe objetivo y las envía a su pila de descartes)
     · target: 'self' | 'ally' | 'all_allies' | 'enemy' | 'all_enemies' | 'weakest_enemy' | 'strongest_enemy'
       (con 'enemy' o 'ally' el jugador elige el objetivo en la batalla)
     · amount: número EXACTO del texto de la carta. Si el texto habla de "el doble de su ataque" o similar, usa stat_mult (1.5 = 1,5 veces su stat principal) en vez de amount.

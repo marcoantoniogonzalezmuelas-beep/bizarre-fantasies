@@ -156,6 +156,32 @@ export const ABILITY_IMPL_PATCH = `
         log(hero.name + ' roba de la mano del rival: ' + robadas.join(', ') + '.');
         return true;
       }
+      case 'disarm': {
+        // Quita TODAS las armas (cuerpo a cuerpo y a distancia) del héroe
+        // objetivo y las manda a la pila de descartes de su dueño.
+        var removedW = [];
+        ['mwep','rwep'].forEach(function(slot){
+          if(t[slot]){
+            var arr = slot==='mwep' ? (typeof MELEE!=='undefined'?MELEE:[]) : (typeof RANGED!=='undefined'?RANGED:[]);
+            var it = typeof byId==='function' ? byId(arr, t[slot].id) : null;
+            removedW.push({ id: t[slot].id, kind: slot, name: it ? it.name : 'Arma', num: (it && it.num) || 0 });
+            t[slot] = null;
+          }
+        });
+        if(removedW.length && typeof G!=='undefined' && G.itemDescarte){
+          var ds = typeof tSide==='function' ? tSide(t) : (side==='p'?'o':'p');
+          if(!G.itemDescarte[ds]) G.itemDescarte[ds] = [];
+          removedW.forEach(function(r){ G.itemDescarte[ds].push(r); });
+          window.__bfDiscardJust = ds;
+        }
+        if(removedW.length){
+          try{ pushFx({k:'status', side:(typeof tSide==='function'?tSide(t):'o'), id:t.id, txt:' disarmado'}); }catch(e){}
+          log(t.name + ' pierde sus armas (' + removedW.map(function(r){return r.name;}).join(', ') + ').');
+          return true;
+        }
+        log(t.name + ' no lleva armas.');
+        return false;
+      }
       default: return false;
     }
   }
