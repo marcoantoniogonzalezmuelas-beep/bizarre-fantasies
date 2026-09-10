@@ -78,6 +78,15 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
       opts = opts || {};
       // Ping frecuente al servidor de señalización para que no cierre el socket.
       if (!opts.pingInterval || opts.pingInterval > 3000) opts.pingInterval = 3000;
+      // Fuerza el MISMO servidor de señalización que usa el host
+      // (0.peerjs.com:443). El clientJoin nativo del juego podría no
+      // especificar servidor y usar un default distinto, lo que impediría
+      // que host y cliente se encontraran. Solo se aplica si el llamador
+      // no especificó uno explícitamente.
+      if (!opts.host) opts.host = '0.peerjs.com';
+      if (!opts.port) opts.port = 443;
+      if (!opts.path) opts.path = '/';
+      if (opts.secure === undefined) opts.secure = true;
       opts.config = opts.config || {};
       // TURN primero (relay). En operadores móviles con CGNAT (Vodafone y
       // similares) los candidatos host/STUN abren la conexión pero la tiran al
@@ -272,6 +281,13 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         var attempt = 0;
         var watchdog = null;
 
+        // Establece NET.role='client' INMEDIATAMENTE, antes de pedir las
+        // credenciales TURN (que son asíncronas). Sin esto, el intervalo
+        // openWatch (500ms) comprobaba abandoned() antes de que el
+        // clientJoin nativo tuviera tiempo de fijar NET.role, lo cancelaba
+        // todo y el invitado se quedaba en "Conectando…" sin reintentos.
+        try { if (typeof NET !== 'undefined' && !NET.role) NET.role = 'client'; } catch (e) {}
+
         try{
           var jc=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
           if(typeof NET!=='undefined'&&jc){NET._bfJoin={code:jc,pass:pass||'',name:name||''};NET.code=jc;}
@@ -281,8 +297,15 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
           try { return !!(typeof NET !== 'undefined' && NET.conn && NET.conn.open); } catch (e) { return false; }
         }
         // El jugador canceló o volvió al lobby: no seguimos reintentando.
+        // Solo se considera abandonado si NET.role es explícitamente 'host'
+        // (el jugador volvió atrás y creó una sala). Si NET.role es
+        // undefined/null/'client', seguimos esperando (puede que el
+        // clientJoin nativo aún no lo haya fijado).
         function abandoned(){
-          try { return typeof NET === 'undefined' || NET.role !== 'client'; } catch (e) { return true; }
+          try {
+            if (typeof NET === 'undefined') return true;
+            return NET.role === 'host';
+          } catch (e) { return true; }
         }
 
         function tryJoin(){
