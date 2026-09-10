@@ -98,7 +98,7 @@ export const ATTACK_FX_PATCH = `
   var WPN_EMOJI={sling:'🪨',bolt:'🎯',bullet:'🔫',cannon:'💣',plasma:'🔫',arrow:'🏹',photon:'🔫',sword:'⚔️',dagger:'🗡️',axe:'🪓',mace:'🔨',psword:'⚔️',thunder:'🔨'};
   // Sable láser de juguete (estilo Star Wars cutre/cómico): se muestra cuando
   // un héroe ataca SIN arma. Generado por IA para sustituir el emoji ⚔️ cutre.
-  var NO_WPN_SPRITE='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/343fc2bc5_generated_image.png';
+  var NO_WPN_SPRITE='https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/b8f538eb7_no_weapon_sprite_clean.png';
   { var ni=new Image(); ni.src=NO_WPN_SPRITE; }
   // Sprites de arma dibujados en estilo anime: el arma en sí se anima haciendo
   // el ataque (apuntar + retroceso a distancia, tajo en cuerpo a cuerpo).
