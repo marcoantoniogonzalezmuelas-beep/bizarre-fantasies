@@ -213,13 +213,40 @@ export const CENTRAL_LOBBY_PATCH = `
   }
   function revealLobby(){var s=document.getElementById('s-lobby');if(s)s.classList.add('bf-lobby-ready');}
   function renderCentralList(){
-    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){renderRoomList();decorateHostedRoom();decorateRoomAvatars();decorateResumeRooms();injectResumeCard();injectLobbyInstructions();}
+    if(typeof renderRoomList==='function'&&typeof isLobby==='function'&&isLobby()&&canShowList()){
+      // Preserva el scroll del lobby al re-renderar la lista (cada 8 s):
+      // renderRoomList() reemplaza el HTML y el scroll saltaba arriba.
+      var box=document.querySelector('#s-lobby .setup-box');
+      var savedScroll=box?box.scrollTop:0;
+      var savedWindowScroll=window.pageYOffset||document.documentElement.scrollTop||0;
+      renderRoomList();
+      decorateHostedRoom();
+      decorateRoomAvatars();
+      decorateResumeRooms();
+      injectResumeCard();
+      injectLobbyInstructions();
+      if(box)box.scrollTop=savedScroll;
+      if(savedWindowScroll>0)window.scrollTo(0,savedWindowScroll);
+    }
     revealLobby();
   }
   function centralList(){
     if(typeof LOBBY==='undefined')return;
     LOBBY.role='central';
-    request('list').then(function(data){LOBBY.rooms=data.rooms||[];renderCentralList();}).catch(renderCentralList);
+    request('list').then(function(data){
+      var rooms=data.rooms||[];
+      // La sala del host SIEMPRE está en la lista, aunque el backend no la
+      // devuelva (timing del registro, caída momentánea del servidor…).
+      // Sin esto, al refrescar cada 8 s la tarjeta de "TU SALA" desaparecía.
+      if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code){
+        var hasOwn=rooms.some(function(r){return r&&r.id===NET.code;});
+        if(!hasOwn){
+          rooms.unshift({id:NET.code,name:(NET.names_self||NET.name||''),hasPass:!!NET.pass,pass:NET.pass||'',avatar:avatarFor(NET.names_self),isOwn:true});
+        }
+      }
+      LOBBY.rooms=rooms;
+      renderCentralList();
+    }).catch(renderCentralList);
   }
 
   function install(){
