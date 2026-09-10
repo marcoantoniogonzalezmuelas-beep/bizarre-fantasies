@@ -51,9 +51,17 @@ export const SPELL_FX_PATCH = `
     '@keyframes bfArcaneOrb{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-120px))) scale(.3);opacity:0}}',
     '.bf-arcane-rune{position:fixed;pointer-events:none;z-index:90024;font-size:22px;color:#e0b8ff;text-shadow:0 0 12px rgba(190,120,255,.95),0 0 20px rgba(140,60,220,.6);animation:bfArcaneRune 2.2s ease-out forwards}',
     '@keyframes bfArcaneRune{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0)),calc(-50% + var(--dy,-90px))) scale(1.3) rotate(60deg)}}',
-    // ---- Luz: destello blanco-amarillo a pantalla completa (1s) ----
-    '.bf-light-flash{position:fixed;pointer-events:none;z-index:90030;inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,250,210,.88),rgba(255,235,150,.5) 35%,rgba(255,220,90,.18) 60%,transparent 80%);animation:bfLightFlash 1s ease-out forwards}',
-    '@keyframes bfLightFlash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}'
+    // ---- Luz: IMPACTO BESTIA de luz blanca-amarilla a pantalla completa ----
+    '.bf-light-flash{position:fixed;pointer-events:none;z-index:100008;inset:0;animation:bfLightFlash 1.4s ease-out forwards}',
+    '.bf-light-flash::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,255,245,1),rgba(255,250,210,.95) 18%,rgba(255,235,150,.7) 38%,rgba(255,220,90,.3) 60%,transparent 82%);animation:bfLightCore 1.4s ease-out forwards}',
+    '.bf-light-flash::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.5) 48%,rgba(255,250,210,.85) 50%,rgba(255,255,255,.5) 52%,transparent 100%);background-size:300% 100%;animation:bfLightSweep .6s ease-out forwards}',
+    '.bf-light-rays{position:fixed;pointer-events:none;z-index:100008;left:50%;top:50%;width:200vmax;height:200vmax;transform:translate(-50%,-50%);background:conic-gradient(from 0deg,transparent 0deg,rgba(255,250,210,.35) 6deg,transparent 12deg,rgba(255,235,150,.28) 20deg,transparent 28deg,rgba(255,255,240,.32) 38deg,transparent 46deg,rgba(255,250,210,.3) 56deg,transparent 64deg,rgba(255,235,150,.25) 74deg,transparent 82deg,rgba(255,255,240,.3) 92deg,transparent 100deg,rgba(255,250,210,.28) 110deg,transparent 120deg,rgba(255,235,150,.22) 130deg,transparent 140deg,rgba(255,255,240,.26) 150deg,transparent 160deg,rgba(255,250,210,.2) 170deg,transparent 180deg);opacity:0;animation:bfLightRays 1.4s ease-out forwards;mix-blend-mode:screen}',
+    '.bf-light-ring{position:fixed;pointer-events:none;z-index:100008;left:50%;top:50%;width:10vmin;height:10vmin;border-radius:50%;border:6px solid rgba(255,250,210,.9);box-shadow:0 0 60px rgba(255,235,150,.8),inset 0 0 40px rgba(255,255,255,.6);transform:translate(-50%,-50%) scale(.2);opacity:0;animation:bfLightRing 1s ease-out forwards}',
+    '@keyframes bfLightFlash{0%{opacity:0}8%{opacity:1}15%{opacity:.85}100%{opacity:0}}',
+    '@keyframes bfLightCore{0%{opacity:0;transform:scale(.6)}10%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.4)}}',
+    '@keyframes bfLightSweep{0%{opacity:0;background-position:200% 0}20%{opacity:1}100%{opacity:0;background-position:-100% 0}}',
+    '@keyframes bfLightRays{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2) rotate(40deg)}}',
+    '@keyframes bfLightRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(8)}}'
   ].join('');
   document.head.appendChild(st);
 
@@ -102,9 +110,17 @@ export const SPELL_FX_PATCH = `
   }
 
   function fxLight(){
+    var rays=document.createElement('div'); rays.className='bf-light-rays';
+    var ring=document.createElement('div'); ring.className='bf-light-ring';
     var ov=document.createElement('div'); ov.className='bf-light-flash';
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(rays);
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ring);
     (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
-    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },1100);
+    setTimeout(function(){
+      if(rays.parentNode) rays.parentNode.removeChild(rays);
+      if(ring.parentNode) ring.parentNode.removeChild(ring);
+      if(ov.parentNode) ov.parentNode.removeChild(ov);
+    },1500);
   }
   window.__bfFxLight=fxLight;
 
