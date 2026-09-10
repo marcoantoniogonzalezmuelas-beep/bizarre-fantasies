@@ -140,7 +140,7 @@ export const REARMAR_PATCH = `
     return true;
   }
 
-  var tries = 0, iv = setInterval(function(){ if(hook() || tries++ > 160) clearInterval(iv); }, 200);
+  var tries = 0, iv = setInterval(function(){ if(hook() || tries++ > 400) clearInterval(iv); }, 200);
 })();
 </script>
 `;
