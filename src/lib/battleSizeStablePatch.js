@@ -18,8 +18,13 @@ export const BATTLE_SIZE_STABLE_PATCH = `
   var css = [
     // Arte de batalla con alto FIJO: no depende del alto del recuadro.
     'html body .bhero .bf-battle-art{top:-18px!important;bottom:auto!important;height:276px!important;width:216px!important}',
+    // El retrato NO cambia de tamaño al volverse activo: battleUiPatch pone
+    // width:144px para .active-turn (especificidad 0,3,0) que pisa nuestro
+    // 216px (0,2,2). Esta regla (0,3,2) restaura el 216px también en activo,
+    // así el retrato no "se mueve" al desplegarse el panel de acciones.
+    'html body .bhero.active-turn .bf-battle-art{width:216px!important;top:-18px!important;bottom:auto!important;height:276px!important;left:-22px!important}',
     // Recuadro del héroe: alto estable y fondo OPACO (sin transparencias que
-    // dejen ver el tapete al repintar).
+    // dejan ver el tapete al repintar).
     'html body .bhero{min-height:240px!important;background:linear-gradient(180deg,#170f28,#0a0612)!important}',
     // Durante el pellizco: sin filtros de color sobre el arte (evita el
     // repintado que provocaba los cuadros marrones) y sin sombras animadas.

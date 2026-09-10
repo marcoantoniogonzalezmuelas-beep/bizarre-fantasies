@@ -96,6 +96,10 @@ export const ATTACK_FX_PATCH = `
   window.addEventListener('message',function(e){ if(e.data&&e.data.bfArtMap){ for(var k in e.data.bfArtMap)__bfWpnArt[k]=e.data.bfArtMap[k]; } });
   try{ window.parent.postMessage({bfArtMapRequest:1},'*'); }catch(e){}
   var WPN_EMOJI={sling:'🪨',bolt:'🎯',bullet:'🔫',cannon:'💣',plasma:'🔫',arrow:'🏹',photon:'🔫',sword:'⚔️',dagger:'🗡️',axe:'🪓',mace:'🔨',psword:'⚔️',thunder:'🔨'};
+  // Sable láser de juguete (estilo Star Wars cutre/cómico): se muestra cuando
+  // un héroe ataca SIN arma. Generado por IA para sustituir el emoji ⚔️ cutre.
+  var NO_WPN_SPRITE='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e354340f3_generated_image.png';
+  { var ni=new Image(); ni.src=NO_WPN_SPRITE; }
   // Sprites de arma dibujados en estilo anime: el arma en sí se anima haciendo
   // el ataque (apuntar + retroceso a distancia, tajo en cuerpo a cuerpo).
   var SPR='https://base44.app/api/apps/6a39c9aee54efe3a86d6d69a/files/mp/public/6a39c9aee54efe3a86d6d69a/';
@@ -120,7 +124,7 @@ export const ATTACK_FX_PATCH = `
   // Arma a distancia: aparece junto al atacante apuntando al objetivo y da un
   // culatazo (retroceso) en el momento del disparo.
   function showRangedWeapon(a,b,wid){
-    var url=WPN_SPRITE[wid]; if(!url)return false;
+    var url=WPN_SPRITE[wid]||(!wid?NO_WPN_SPRITE:null); if(!url)return false;
     var ang=angle(a,b);
     var flip=(b.x<a.x)?' scaleY(-1)':'';
     var rad=ang*Math.PI/180, rx=-Math.cos(rad)*14, ry=-Math.sin(rad)*14;
@@ -140,7 +144,7 @@ export const ATTACK_FX_PATCH = `
   // Arma cuerpo a cuerpo: viaja del atacante al objetivo describiendo un tajo
   // (giro de -80° a +55°) y se desvanece en el impacto.
   function showMeleeWeapon(a,b,wid){
-    var url=WPN_SPRITE[wid]; if(!url)return false;
+    var url=WPN_SPRITE[wid]||(!wid?NO_WPN_SPRITE:null); if(!url)return false;
     var t=(b.x>=a.x)?1:-1;
     var flip=(t<0)?' scaleX(-1)':'';
     var mx=a.x+(b.x-a.x)*.82, my=a.y+(b.y-a.y)*.82;
@@ -159,6 +163,7 @@ export const ATTACK_FX_PATCH = `
     var w=document.createElement('div'); w.className='bf-afx bf-wpn';
     var url=wname&&__bfWpnArt[wname];
     if(url) w.style.backgroundImage='url("'+url+'")';
+    else if(!wname){ w.style.backgroundImage='url("'+NO_WPN_SPRITE+'")'; w.style.backgroundSize='cover'; w.style.backgroundPosition='center'; }
     else { w.classList.add('bf-wpn-emoji'); w.textContent=WPN_EMOJI[kind]||'⚔️'; }
     var dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||1;
     w.style.left=(a.x+dx/d*46)+'px'; w.style.top=(a.y+dy/d*46-26)+'px';
