@@ -251,6 +251,26 @@ export const CENTRAL_LOBBY_PATCH = `
 
   function install(){
     if(typeof LOBBY==='undefined'||typeof window.hostCreate!=='function'||typeof window.renderRoomList!=='function')return false;
+    // Envuelve renderRoomList para preservar el scroll en TODA llamada (la
+    // nuestra vía centralList y las del juego nativo). Sin esto, al re-pintar
+    // la lista de salas cada 8 s el scroll saltaba arriba — sobre todo cuando
+    // el host tiene sala creada, porque canShowList()=true y se repinta.
+    if(!window.__bfRenderRoomListWrapped){
+      window.__bfRenderRoomListWrapped=true;
+      var origRRL=window.renderRoomList;
+      window.renderRoomList=function(){
+        var lobby=document.getElementById('s-lobby');
+        var box=lobby?lobby.querySelector('.setup-box'):null;
+        var sLobby=lobby?lobby.scrollTop:0;
+        var sBox=box?box.scrollTop:0;
+        var sWin=window.pageYOffset||document.documentElement.scrollTop||0;
+        var r=origRRL.apply(this,arguments);
+        if(lobby)lobby.scrollTop=sLobby;
+        if(box)box.scrollTop=sBox;
+        if(sWin>0)window.scrollTo(0,sWin);
+        return r;
+      };
+    }
     window.lobbyConnect=function(){
       // Oculta el primer pintado nativo hasta que la lista central esté lista.
       var s=document.getElementById('s-lobby');if(s)s.classList.remove('bf-lobby-ready');
