@@ -1,19 +1,54 @@
 // Parche inyectado en el iframe: objeto "Rearmar".
-// Al usarlo, coge automáticamente un ARMA de la pila de descartes del jugador
-// y la equipa en el héroe que se elija (gratis, sin gastar acción de compra).
-// Si no hay armas en el descarte, avisa y no consume el objeto.
+// - Si NO hay armas en la pila de descartes del jugador, la carta Rearmar de
+//   la mano se muestra en gris y no se puede jugar.
+// - Si las hay, al hacer clic se lanza una cinemática 3D (imagen spectral
+//   armory) y luego se elige al héroe que la equipará.
+// - Al elegir héroe: efecto visual de la carta del arma recuperada volando
+//   desde el centro hasta el recuadro del héroe y un flash de equipamiento.
 export const REARMAR_PATCH = `
 <script>
 (function(){
   if (window.__bfRearmarPatch) return;
   window.__bfRearmarPatch = true;
 
+  // Imagen 3D de la cinemática de Rearmar (armería espectral).
+  var CINE_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5e19f1cf9_generated_image.png';
+  { var pi = new Image(); pi.src = CINE_URL; }
+
   var REARMAR_NAMES = ['Rearmar', 'Rearmar'];
 
-  // Añade el objeto "Rearmar" al array OBJECTS del juego para que aparezca en
-  // la tienda de equipamiento. El juego solo sincroniza por número dentro del
-  // rango predefinido (83-91), así que los objetos nuevos con números fuera de
-  // ese rango hay que añadirlos explícitamente (igual que Transformer/Reanimación).
+  // ---- CSS: chip grisearlo + cinemática 3D + efecto de carta volando ----
+  var css = [
+    // Chip Rearmar deshabilitado: gris, sin brillo, cursor no permitido.
+    '.bf-chip-disabled.chip-object,.chip-object.bf-chip-disabled{filter:grayscale(1) brightness(.45)!important;opacity:.5!important;cursor:not-allowed!important;pointer-events:auto!important}',
+    '.bf-chip-disabled.chip-object:hover,.chip-object.bf-chip-disabled:hover{filter:grayscale(1) brightness(.45)!important;opacity:.5!important;transform:none!important}',
+    // Cinemática 3D de Rearmar (mismo estilo que abilityAnimPatch).
+    '#bf-rearm-cine{position:fixed;inset:0;z-index:100007;pointer-events:none;overflow:hidden;perspective:900px;animation:bfRcIn .3s ease-out}',
+    '#bf-rearm-cine.bf-rc-out{transition:opacity .4s;opacity:0}',
+    '@keyframes bfRcIn{from{opacity:0}to{opacity:1}}',
+    '#bf-rearm-cine .bf-rc-dim{position:absolute;inset:0;background:radial-gradient(circle at 50% 52%,transparent 24%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.78) 100%);animation:bfRcDim .5s ease-out both}',
+    '@keyframes bfRcDim{from{opacity:0}to{opacity:1}}',
+    '#bf-rearm-cine .bf-rc-glow{position:absolute;top:50%;left:50%;width:min(80vmin,700px);height:min(80vmin,700px);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,210,74,.22) 0%,transparent 68%);opacity:0;animation:bfRcGlow .6s ease-out .05s both}',
+    '@keyframes bfRcGlow{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}',
+    '#bf-rearm-cine .bf-rc-img{position:absolute;top:50%;left:50%;width:min(74vmin,640px);height:min(78vmin,680px);object-fit:contain;transform-origin:center;transform-style:preserve-3d;margin:calc(min(78vmin,680px)/-2) 0 0 calc(min(74vmin,640px)/-2);opacity:1;z-index:5;filter:drop-shadow(0 16px 38px rgba(0,0,0,.8));animation:bfRcImg 4.5s cubic-bezier(.2,.85,.3,1) forwards}',
+    '@keyframes bfRcImg{0%{opacity:0;transform:translateZ(-400px) rotateY(-25deg) scale(.5)}15%{opacity:1;transform:translateZ(0) rotateY(0deg) scale(1.1)}30%{transform:translateZ(0) rotateY(0deg) scale(1)}82%{opacity:1;transform:translateZ(0) rotateY(0deg) scale(1.02)}100%{opacity:0;transform:translateZ(-200px) rotateY(15deg) scale(1.15)}}',
+    '@media(max-width:900px){#bf-rearm-cine .bf-rc-img{width:min(60vmin,460px);height:min(64vmin,480px);margin:calc(min(64vmin,480px)/-2) 0 0 calc(min(60vmin,460px)/-2)}}',
+    '#bf-rearm-cine .bf-rc-ttl{position:absolute;top:7%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(22px,5vw,48px);letter-spacing:4px;white-space:nowrap;opacity:0;animation:bfRcTtl 4.2s ease-out .3s forwards;color:#ffd24a;text-shadow:0 0 28px rgba(255,210,74,.6),0 4px 12px #000}',
+    '@keyframes bfRcTtl{0%{opacity:0;transform:translateX(-50%) scale(2)}15%{opacity:1;transform:translateX(-50%) scale(1)}82%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.1)}}',
+    '#bf-rearm-cine .bf-rc-flash{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,210,74,.7),transparent 65%);animation:bfRcFlash .7s ease-out .25s both}',
+    '@keyframes bfRcFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}',
+    '.bf-rc-spark{position:absolute;bottom:10%;width:4px;height:4px;border-radius:50%;background:#ffd24a;box-shadow:0 0 8px #ffd24a,0 0 14px rgba(255,210,74,.6);opacity:0;animation:bfRcSpark 2s ease-out forwards}',
+    '@keyframes bfRcSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-85vh) scale(1.4) translateX(var(--dx,0px))}}',
+    // Carta del arma volando hacia el héroe.
+    '.bf-fly-card{position:fixed;z-index:100008;pointer-events:none;width:140px;height:196px;border-radius:14px;border:3px solid #ffd24a;background:#0b0714 center/cover no-repeat;box-shadow:0 0 28px rgba(255,210,74,.9),0 12px 30px rgba(0,0,0,.8);transform:translate(-50%,-50%)}',
+    '.bf-equip-flash{position:fixed;z-index:100006;pointer-events:none;width:200px;height:200px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,210,74,.85),transparent 65%);animation:bfEquipFlash 1.2s ease-out forwards}',
+    '@keyframes bfEquipFlash{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}'
+  ].join('');
+  var st = document.createElement('style');
+  st.textContent = css;
+  document.head.appendChild(st);
+
+  // Añade el objeto "Rearmar" al array OBJECTS del juego.
   function ensureRearmarObject(){
     if (typeof OBJECTS === 'undefined' || !OBJECTS) return false;
     if (OBJECTS.some(function(o){ return o && o.id === 'ob_rearm'; })) return true;
@@ -29,8 +64,6 @@ export const REARMAR_PATCH = `
       txt: 'Coge un arma de tu pila de descartes y la equipa en el h\\u00e9roe que elijas.',
       desc: 'Coge un arma de tu pila de descartes y la equipa en el h\\u00e9roe que elijas.'
     });
-    // Fuerza un re-render de la tienda de equipamiento para que el objeto
-    // aparezca inmediatamente sin esperar a que el jugador cambie de pestaña.
     try {
       if (typeof G !== 'undefined' && G && G.eqSide && typeof window.renderEquip === 'function') {
         window.renderEquip(G.eqSide);
@@ -60,8 +93,112 @@ export const REARMAR_PATCH = `
     }catch(e){}
   }
 
+  // ¿Hay armas en la pila de descartes del lado?
+  function discardHasWeapons(side){
+    try{
+      var pile = (G.itemDescarte && G.itemDescarte[side]) || [];
+      for(var i = 0; i < pile.length; i++){
+        if(pile[i] && (pile[i].kind === 'mwep' || pile[i].kind === 'rwep')) return true;
+      }
+    }catch(e){}
+    return false;
+  }
+
+  // ---- GRISEARLO: marca el chip Rearmar de la mano como deshabilitado ----
+  function updateChipState(){
+    try{
+      var side = (typeof B!=='undefined' && B && B.current) ? B.current.side : 'p';
+      var hasW = discardHasWeapons(side);
+      var chips = document.querySelectorAll('.hand-chips .chip-object, .chip.chip-object');
+      chips.forEach(function(chip){
+        var name = (chip.textContent || '').trim();
+        if(REARMAR_NAMES.indexOf(name) >= 0){
+          if(hasW) chip.classList.remove('bf-chip-disabled');
+          else chip.classList.add('bf-chip-disabled');
+        }
+      });
+    }catch(e){}
+  }
+  setInterval(updateChipState, 400);
+
+  // ---- Cinemática 3D de Rearmar ----
+  function playRearmarCinematic(cb){
+    // Si hay una cinemática ya en curso, espera.
+    if(document.querySelector('#bf-rearm-cine')){ setTimeout(function(){ playRearmarCinematic(cb); }, 500); return; }
+    // Respeta el flag global de cinemáticas desactivadas.
+    if(window.__bfNoCinematics){ cb(); return; }
+    var ov = document.createElement('div');
+    ov.id = 'bf-rearm-cine';
+    var html = '<div class="bf-rc-dim"></div><div class="bf-rc-glow"></div><div class="bf-rc-flash"></div>';
+    for(var sp = 0; sp < 14; sp++) html += '<span class="bf-rc-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
+    html += '<img class="bf-rc-img" src="'+CINE_URL+'" alt="">';
+    html += '<div class="bf-rc-ttl">RETROARMAR</div>';
+    ov.innerHTML = html;
+    (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
+    // Fija __bfCardCineName para que cardPlayRevealPatch no solape la carta revelada.
+    window.__bfCardCineName = 'Rearmar';
+    setTimeout(function(){ window.__bfCardCineName = null; }, 4200);
+    setTimeout(function(){ ov.classList.add('bf-rc-out'); }, 4000);
+    setTimeout(function(){
+      if(ov.parentNode) ov.parentNode.removeChild(ov);
+      cb();
+    }, 4500);
+  }
+
+  // ---- Efecto visual: carta del arma volando hacia el héroe + flash ----
+  function weaponArtUrl(entry){
+    try{
+      // Busca el arte del arma en el mapa de arte del padre o en los arrays del juego.
+      if(window.__bfWpnArt && window.__bfWpnArt[entry.name]) return window.__bfWpnArt[entry.name];
+      var slot = entry.kind;
+      var arr = slot==='mwep' ? (typeof MELEE!=='undefined'?MELEE:[]) : (typeof RANGED!=='undefined'?RANGED:[]);
+      var tpl = (typeof byId==='function') ? byId(arr, entry.id) : null;
+      if(tpl && tpl.art_url) return tpl.art_url;
+      // Fallback: mapa de arte de cartas (art_url por nombre).
+      if(window.__bfCardArtMap && window.__bfCardArtMap[entry.name]) return window.__bfCardArtMap[entry.name];
+    }catch(e){}
+    return null;
+  }
+  function flyWeaponToHero(side, hero, entry, onDone){
+    var art = weaponArtUrl(entry);
+    var target = document.getElementById('b_' + side + '_' + hero.id);
+    if(!target){ onDone(); return; }
+    var tr = target.getBoundingClientRect();
+    var tx = tr.left + tr.width/2, ty = tr.top + tr.height/2;
+    var cx = window.innerWidth/2, cy = window.innerHeight/2;
+
+    var card = document.createElement('div');
+    card.className = 'bf-fly-card';
+    if(art){ card.style.backgroundImage = 'url("'+art+'")'; }
+    else { card.style.background = 'linear-gradient(135deg,#3c3158,#1a0f2e)'; card.style.display = 'flex'; card.style.alignItems = 'center'; card.style.justifyContent = 'center'; card.style.fontSize = '40px'; card.textContent = entry.kind==='mwep' ? '⚔️' : '🏹'; }
+    card.style.left = cx + 'px';
+    card.style.top = cy + 'px';
+    (window.__bfAppend || function(n){ document.body.appendChild(n); })(card);
+
+    // Animación: la carta crece, gira y vuela hacia el héroe.
+    card.animate([
+      { left: cx+'px', top: cy+'px', opacity: 0, transform: 'translate(-50%,-50%) scale(.3) rotate(-20deg)' },
+      { left: cx+'px', top: cy+'px', opacity: 1, transform: 'translate(-50%,-50%) scale(1.2) rotate(8deg)', offset: .2 },
+      { left: cx+'px', top: cy+'px', opacity: 1, transform: 'translate(-50%,-50%) scale(1) rotate(0deg)', offset: .35 },
+      { left: tx+'px', top: ty+'px', opacity: 1, transform: 'translate(-50%,-50%) scale(.7) rotate(15deg)', offset: .85 },
+      { left: tx+'px', top: ty+'px', opacity: 0, transform: 'translate(-50%,-50%) scale(.5) rotate(25deg)' }
+    ], { duration: 1800, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+
+    setTimeout(function(){
+      if(card.parentNode) card.parentNode.removeChild(card);
+      // Flash de equipamiento en el héroe.
+      var flash = document.createElement('div');
+      flash.className = 'bf-equip-flash';
+      flash.style.left = tx + 'px';
+      flash.style.top = ty + 'px';
+      (window.__bfAppend || function(n){ document.body.appendChild(n); })(flash);
+      setTimeout(function(){ if(flash.parentNode) flash.parentNode.removeChild(flash); }, 1200);
+      onDone();
+    }, 1800);
+  }
+
   function equipOn(side, hero, entry){
-    var slot = entry.kind; // 'mwep' o 'rwep'
+    var slot = entry.kind;
     var tpl = tplFor(slot, entry.id);
     var gear = tpl ? clone(tpl) : null;
     if(!gear){ if(typeof notif==='function') notif('No se pudo equipar el arma recuperada.'); return false; }
@@ -80,7 +217,6 @@ export const REARMAR_PATCH = `
     try{
       if(typeof window.bfDiscardPop !== 'function') return null;
       var pile = (G.itemDescarte && G.itemDescarte[side]) || [];
-      // Busca la primera arma en la pila.
       var idx = -1;
       for(var i = 0; i < pile.length; i++){
         if(pile[i] && (pile[i].kind === 'mwep' || pile[i].kind === 'rwep')){ idx = i; break; }
@@ -104,6 +240,12 @@ export const REARMAR_PATCH = `
           // El invitado no resuelve nada: el original manda la intención al host.
           if(typeof NET!=='undefined' && NET && NET.role==='client') return orig.apply(this, arguments);
 
+          // Sin armas en el descarte: no se puede jugar (doble check por si el
+          // grisearlo falló al renderizar la mano).
+          if(!discardHasWeapons(side)){
+            if(typeof notif==='function') notif('No hay armas en tu pila de descartes.');
+            return;
+          }
           var entry = popWeaponFromDiscard(side);
           if(!entry){
             if(typeof notif==='function') notif('No hay armas en tu pila de descartes.');
@@ -114,33 +256,38 @@ export const REARMAR_PATCH = `
           var cands = alive(side).filter(function(h){ return freeSlot(h, slot); });
           if(!cands.length){
             if(typeof notif==='function') notif('Todos tus h\\u00e9roes vivos ya llevan ' + (slot==='mwep'?'arma cuerpo a cuerpo':'arma a distancia') + '.');
-            // Devolver el arma a la pila si no se puede equipar a nadie.
             if(G.itemDescarte && G.itemDescarte[side]) G.itemDescarte[side].push(entry);
             return;
           }
-          var done = function(t){
+
+          // Resuelve la equipación (con efecto visual de carta volando).
+          var resolveEquip = function(t){
             if(!t || !freeSlot(t, slot)){
               if(typeof notif==='function') notif((t?t.name:'Ese h\\u00e9roe') + ' ya lleva esa arma.');
               if(G.itemDescarte && G.itemDescarte[side]) G.itemDescarte[side].push(entry);
               return;
             }
-            if(equipOn(side, t, entry)){
-              // Consumir el objeto Rearmar de la mano.
-              var arr = (G.items && G.items[side]) || [];
-              var i2 = arr.indexOf(item);
-              if(i2 >= 0) arr.splice(i2, 1);
-              if(typeof finishAct==='function') finishAct();
-            }
+            flyWeaponToHero(side, t, entry, function(){
+              if(equipOn(side, t, entry)){
+                var arr = (G.items && G.items[side]) || [];
+                var i2 = arr.indexOf(item);
+                if(i2 >= 0) arr.splice(i2, 1);
+                if(typeof finishAct==='function') finishAct();
+              }
+            });
           };
-          // El héroe activo tiene el hueco libre → se equipa él mismo.
-          if(hero && freeSlot(hero, slot)){ done(hero); return; }
-          // Si no, se elige a quién armar (o lo decide la IA).
-          if(cands.length === 1){ done(cands[0]); return; }
-          if(typeof humanCtl==='function' && humanCtl(side) && typeof pendTarget==='function'){
-            pendTarget('\\u00bfA qui\\u00e9n le pones el arma recuperada?', side, done);
-          } else {
-            done(cands.sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
-          }
+
+          // Lanza la cinemática 3D PRIMERO, luego elige héroe.
+          playRearmarCinematic(function(){
+            // El héroe activo tiene el hueco libre → se equipa él mismo.
+            if(hero && freeSlot(hero, slot)){ resolveEquip(hero); return; }
+            if(cands.length === 1){ resolveEquip(cands[0]); return; }
+            if(typeof humanCtl==='function' && humanCtl(side) && typeof pendTarget==='function'){
+              pendTarget('\\u00bfA qui\\u00e9n le pones el arma recuperada?', side, resolveEquip);
+            } else {
+              resolveEquip(cands.sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
+            }
+          });
           return;
         }
       }catch(e){}
