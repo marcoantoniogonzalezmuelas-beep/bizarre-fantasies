@@ -78,6 +78,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
         np.addEventListener('click',function(e){
           e.stopPropagation();e.preventDefault();
           if(chip.classList.contains('bf-chip-no-mana')){ if(typeof notif==='function') notif('Maná insuficiente para lanzar este hechizo.'); return; }
+          if(chip.classList.contains('bf-chip-no-rearm')){ if(typeof notif==='function') notif('No hay armas en tu pila de descartes para Rearmar.'); return; }
           var f2=findByName(name);var id=f2&&f2.item?f2.item.id:'';
           flyChip(chip);
           if(kind==='spell'&&typeof window.castSpell==='function'){

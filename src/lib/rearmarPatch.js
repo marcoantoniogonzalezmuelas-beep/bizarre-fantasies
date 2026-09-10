@@ -20,9 +20,12 @@ export const REARMAR_PATCH = `
 
   // ---- CSS: chip grisearlo + cinemática 3D + efecto de carta volando ----
   var css = [
-    // Chip Rearmar deshabilitado: gris, sin brillo, cursor no permitido.
-    '.bf-chip-disabled.chip-object,.chip-object.bf-chip-disabled{filter:grayscale(1) brightness(.45)!important;opacity:.5!important;cursor:not-allowed!important;pointer-events:auto!important}',
-    '.bf-chip-disabled.chip-object:hover,.chip-object.bf-chip-disabled:hover{filter:grayscale(1) brightness(.45)!important;opacity:.5!important;transform:none!important}',
+    // Chip Rearmar deshabilitado: mismo estilo que bf-chip-no-mana (gris + sin
+    // botón de jugar). El selector coincide con los chips reales del juego
+    // (.chip.bf-chip-card) y se aplica solo cuando la pila de descartes no
+    // tiene armas o ningún héroe vivo con hueco libre.
+    '.chip.bf-chip-card.bf-chip-no-rearm{filter:grayscale(.9) brightness(.5)!important;opacity:.55!important}',
+    '.chip.bf-chip-card.bf-chip-no-rearm .bf-chip-play{display:none!important}',
     // Cinemática 3D de Rearmar (mismo estilo que abilityAnimPatch).
     '#bf-rearm-cine{position:fixed;inset:0;z-index:100007;pointer-events:none;overflow:hidden;perspective:900px;animation:bfRcIn .3s ease-out}',
     '#bf-rearm-cine.bf-rc-out{transition:opacity .4s;opacity:0}',
@@ -126,18 +129,20 @@ export const REARMAR_PATCH = `
   // ---- GRISEARLO: marca el chip Rearmar de la mano como deshabilitado ----
   function updateChipState(){
     try{
-      var side = (typeof B!=='undefined' && B && B.current) ? B.current.side : 'p';
+      var side = (pSide)();
       var can = canRearmar(side);
-      var chips = document.querySelectorAll('.hand-chips .chip-object, .chip.chip-object');
+      var chips = document.querySelectorAll('#hand_'+side+' .chip.bf-chip-card');
       chips.forEach(function(chip){
-        var name = (chip.textContent || '').trim();
+        var nameEl = chip.querySelector('.bf-chip-name');
+        var name = nameEl ? nameEl.textContent.trim() : '';
         if(REARMAR_NAMES.indexOf(name) >= 0){
-          if(can) chip.classList.remove('bf-chip-disabled');
-          else chip.classList.add('bf-chip-disabled');
+          if(can) chip.classList.remove('bf-chip-no-rearm');
+          else chip.classList.add('bf-chip-no-rearm');
         }
       });
     }catch(e){}
   }
+  function pSide(){ try{ if(typeof NET!=='undefined'&&NET&&NET.role==='client'&&NET.mySide) return NET.mySide; }catch(e){} return (typeof B!=='undefined'&&B&&B.current)?B.current.side:'p'; }
   setInterval(updateChipState, 400);
 
   // ---- Cinemática 3D de Rearmar ----
@@ -264,7 +269,7 @@ export const REARMAR_PATCH = `
       try{
         var side = (typeof B!=='undefined' && B && B.current) ? B.current.side : 'p';
         var item = ((typeof G!=='undefined' && G.items && G.items[side]) || [])[idx];
-        if(item && REARMAR_NAMES.indexOf(item.name) >= 0){
+        if(item && item.kind === 'bf_rearm'){
           // El invitado no resuelve nada: el original manda la intención al host.
           if(typeof NET!=='undefined' && NET && NET.role==='client') return orig.apply(this, arguments);
 
