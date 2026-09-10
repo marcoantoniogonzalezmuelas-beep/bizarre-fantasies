@@ -120,7 +120,7 @@ export const ABILITY_IMPL_PATCH = `
     var mods = function(x){ return (x._mods = x._mods || []); };
     var mark = function(x, txt){ try{ pushFx({k:'status', side:tSide(x), id:x.id, txt:txt}); }catch(e){} };
     switch(st.action){
-      case 'damage': { var d = dealDamage(t, a, { type: hitType(hero), pierce: st.pierce ? 1 : 0 }); if(hitType(hero)==='spell') arcaneFx(t); log(hero.name + ' golpea a ' + t.name + ' (-' + d + ').'); return true; }
+      case 'damage': { var d = dealDamage(t, a, { type: st.element ? 'spell' : hitType(hero), pierce: st.pierce ? 1 : 0 }); if(st.element){ try{ pushFx({k:'spell', toSide:(typeof tSide==='function'?tSide(t):'o'), toId:t.id, el:st.element}); }catch(e){} } else if(hitType(hero)==='spell') arcaneFx(t); log(hero.name + ' golpea a ' + t.name + ' (-' + d + ').'); return true; }
       case 'true_damage': { var dt = dealDamage(t, a, { type:'true' }); if(primStat(hero)==='he') arcaneFx(t); log(hero.name + ' hiere a ' + t.name + ' ignorando su defensa (-' + dt + ').'); return true; }
       case 'drain': { var dd = dealDamage(t, a, { type: hitType(hero) }); if(hitType(hero)==='spell') arcaneFx(t); var g = heal(hero, dd); log(hero.name + ' drena a ' + t.name + ' (-' + dd + ') y absorbe esa vida (+' + g + ').'); return true; }
       case 'heal': { var gh = heal(t, a); log(t.name + ' recupera +' + gh + ' de vida.'); return true; }
