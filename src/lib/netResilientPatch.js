@@ -294,7 +294,11 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         }catch(e){}
 
         function connected(){
-          try { return !!(typeof NET !== 'undefined' && NET.conn && NET.conn.open); } catch (e) { return false; }
+          // Solo se considera "conectado" si la conexión está abierta Y hemos
+          // recibido datos. Entre ISPs distintos (Jazztel↔Vodafone) la conexión
+          // abre (signaling) pero el CGNAT bloquea los datos: sin esta
+          // verificación, el juego arranca y se cae a los pocos segundos.
+          try { return !!(typeof NET !== 'undefined' && NET.conn && NET.conn.open && NET.conn.__bfEverReceivedData); } catch (e) { return false; }
         }
         // El jugador canceló o volvió al lobby: no seguimos reintentando.
         // Solo se considera abandonado si NET.role es explícitamente 'host'
@@ -315,9 +319,13 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
           // abrió, esta red no lo permite.
           if (attempt > 1 && window.__bfMarkForceRelay) window.__bfMarkForceRelay();
           if (attempt > 1) {
+            // Cierra la conexión anterior antes de reintentar: entre ISPs
+            // distintos la conexión "abre" pero no pasa nada, y si no la
+            // cerramos el reintento no puede crear una nueva.
+            try { if (NET.conn) NET.conn.close(); } catch (e) {}
             try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
-            NET.peer = null;
-            if (typeof lobbyStatus === 'function') lobbyStatus('Conexión directa bloqueada por tu operador. Reintentando por servidor seguro (' + (attempt - 1) + ')…');
+            NET.conn = null; NET.peer = null;
+            if (typeof lobbyStatus === 'function') lobbyStatus('Conexión directa bloqueada entre operadores. Reintentando por servidor seguro (' + (attempt - 1) + ')…');
           }
 
           requestFreshIceServers().catch(function(){}).then(function(){
@@ -327,6 +335,10 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
             if (joined || connected() || abandoned()) return;
             originalClientJoin.call(self, code, pass, name);
             clearTimeout(watchdog);
+            // El primer intento (directo) tiene 6 s: si no abre o no fluyen
+            // datos, se reintenta con relay. Los reintentos (relay) necesitan
+            // más tiempo: la negociación TURN es más lenta.
+            var watchdogMs = attempt === 1 ? 6000 : 12000;
             watchdog = setTimeout(function(){
               if (joined || connected() || abandoned()) { joined = connected(); return; }
               if (attempt >= 4) {
@@ -334,7 +346,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
                 return;
               }
               tryJoin();
-            }, 6000);
+            }, watchdogMs);
           }).catch(function(){
             if (joined || connected() || abandoned()) return;
             if (attempt >= 4) {
@@ -346,8 +358,11 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
           });
         }
 
-        // En cuanto el canal con el rival abre, se cancela el vigilante.
+        // En cuanto el canal con el rival abre Y los datos fluyen, se cancela
+        // el vigilante. Si la conexión abre pero no llegan datos (cross-ISP con
+        // CGNAT), el vigilante sigue activo y el watchdog reintenta con relay.
         var openWatch = setInterval(function(){
+          if (typeof NET !== 'undefined' && NET.conn) bindHeartbeat(NET.conn);
           if (connected()) { joined = true; clearTimeout(watchdog); clearInterval(openWatch); }
           else if (abandoned()) { clearTimeout(watchdog); clearInterval(openWatch); }
         }, 500);
@@ -365,13 +380,22 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
   }, 200);
 
   // ---- (2) Heartbeat sobre la conexión de datos jugador↔jugador ----
+  // Además del latido, verifica que los DATOS realmente fluyen. Entre ISPs
+  // distintos (Jazztel ↔ Vodafone) el signaling de PeerJS abre la conexión
+  // (iceConnectionState='connected') pero el CGNAT bloquea el tráfico de datos
+  // entre las dos redes: la conexión aparece "abierta" pero ningún paquete
+  // llega al otro lado. Sin esta verificación, el juego arranca y a los pocos
+  // segundos se cae sin que el jugador entienda por qué.
   function bindHeartbeat(c){
     if (!c || c.__bfHb === 1) return;
     c.__bfHb = 1;
     c.__bfLastSeen = Date.now();
+    c.__bfEverReceivedData = false;
+    c.__bfOpenedAt = Date.now();
     try {
       c.on('data', function(m){
         c.__bfLastSeen = Date.now();
+        c.__bfEverReceivedData = true;
         if (m && m.t === 'bfPing') { try { c.send({ t: 'bfPong' }); } catch (e) {} }
       });
     } catch (e) {}
@@ -381,7 +405,26 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     var c = NET.conn;
     bindHeartbeat(c);
     watchIce(c);
-    if (c.open) { try { c.send({ t: 'bfPing' }); } catch (e) {} }
+    if (c.open) {
+      // Verificación de flujo de datos: si la conexión lleva abierta más de 8 s
+      // y NO hemos recibido NINGÚN dato, el canal está roto (cross-ISP con
+      // CGNAT: el signaling abre pero los datos no pasan). Se fuerza relay y
+      // se cierra para que el reintento use solo TURN.
+      if (!c.__bfEverReceivedData && c.__bfOpenedAt && Date.now() - c.__bfOpenedAt > 8000) {
+        if (window.__bfMarkForceRelay) window.__bfMarkForceRelay();
+        try { c.close(); } catch (e) {}
+        return;
+      }
+      // Si recibíamos datos pero llevamos 12 s sin NINGÚN paquete (ni siquiera
+      // el pong del latido), la ruta de red se rompió silenciosamente. Se
+      // fuerza relay y se cierra para reconectar por TURN.
+      if (c.__bfEverReceivedData && c.__bfLastSeen && Date.now() - c.__bfLastSeen > 12000) {
+        if (window.__bfMarkForceRelay) window.__bfMarkForceRelay();
+        try { c.close(); } catch (e) {}
+        return;
+      }
+      try { c.send({ t: 'bfPing' }); } catch (e) {}
+    }
   }, 4000);
 
   // ---- (3) Vigilancia del transporte ICE ----
@@ -393,12 +436,12 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
     if (!pc || pc.__bfIceWatch) return;
     pc.__bfIceWatch = 1;
     var connectedAt = 0;
-    // Caída temprana = la conexión directa "abrió" pero murió en <20s (patrón
-    // típico del CGNAT de operadores móviles). A la segunda caída temprana de
-    // la sesión se fuerza relay para todos los peers siguientes: la red de
-    // este jugador no soporta conexión directa estable.
+    // Caída temprana = la conexión directa "abrió" pero murió en <12s (patrón
+    // típico del cross-ISP con CGNAT: Jazztel↔Vodafone, móvil↔fija…). El
+    // signaling abre la conexión pero el CGNAT bloquea el tráfico entre las
+    // dos redes a los pocos segundos. Se fuerza relay cuanto antes.
     function noteEarlyDrop(){
-      if (!connectedAt || Date.now() - connectedAt > 20000) return;
+      if (!connectedAt || Date.now() - connectedAt > 12000) return;
       window.__bfEarlyDrops = (window.__bfEarlyDrops || 0) + 1;
       // Una sola caída temprana ya basta: es la firma inequívoca del CGNAT.
       // Esperar a la segunda dejaba al jugador con la partida cortada.
