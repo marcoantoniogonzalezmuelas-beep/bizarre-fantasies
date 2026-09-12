@@ -401,6 +401,33 @@ export const ABILITY_ANIM_PATCH = `
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
     (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
+    // CONGELAR EL TABLERO RIVAL durante la cinemática 3D: la GPU del tablet no
+    // puede repintar el tablero de batalla (retratos, auras, estados animados)
+    // Y componer la cinemática 3D a la vez — eso era el parpadeo. Se oculta el
+    // panel del rival con visibility:hidden (no toda la pantalla: el overlay
+    // ya la cubre con el dim). Al terminar la cinemática se restaura.
+    var frozen=[];
+    try{
+      var battle=document.getElementById('s-battle');
+      if(battle){
+        var panels=battle.querySelectorAll('.army-panel');
+        panels.forEach(function(p){
+          // Solo se congela el panel que NO es el del jugador local.
+          // El panel local sigue visible por si el jugador necesita ver su
+          // estado. El rival no actúa durante la cinemática del jugador.
+          if(p.getAttribute('data-side')!=='p'){
+            p.style.visibility='hidden';
+            frozen.push(p);
+          }
+        });
+        // Si no hay data-side (estructura del juego sin atributo), se
+        // congela el segundo panel (el rival suele ser el segundo).
+        if(!frozen.length&&panels.length>=2){
+          panels[1].style.visibility='hidden';
+          frozen.push(panels[1]);
+        }
+      }
+    }catch(e){}
     // Si el recorte de fondo aún no estaba listo al abrir la cinemática, la
     // imagen original (con fondo negro) se sustituye por la recortada en
     // cuanto termina de procesarse.
@@ -414,7 +441,12 @@ export const ABILITY_ANIM_PATCH = `
       setTimeout(function(){clearInterval(swp);},5000);
     }
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);
-    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);playingUrl=null;},5000);
+    setTimeout(function(){
+      if(ov.parentNode)ov.parentNode.removeChild(ov);
+      playingUrl=null;
+      // Restaurar el panel rival congelado.
+      frozen.forEach(function(p){try{p.style.visibility='';}catch(e){}});
+    },5000);
   }
   // Devuelve true mientras hay una cinemática 3D en curso o en cola. Lo usa
   // el motor de dados (__bfHeroRoll) para que cualquier tirada espere a que
