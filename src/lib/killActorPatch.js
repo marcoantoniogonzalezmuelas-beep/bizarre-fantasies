@@ -98,6 +98,33 @@ export const KILL_ACTOR_PATCH = `
       try{
         var death = (events || []).filter(function(ev){ return ev && ev.k === 'death'; })[0];
         var a = window.__bfKillActor;
+        // MULTIPLAYER (cliente): dealDamage NO se ejecuta en el lado del
+        // invitado — solo el host simula el combate. __bfKillActor nunca se
+        // establece, así que la cinemática de golpe mortal no mostraba al
+        // atacante (solo al héroe caído). Fallback: deducir el atacante del
+        // turno activo (B.current o .bhero.active-turn), que SÍ llega sincronizado
+        // al cliente. Solo si no hay un __bfKillActor válido ya fijado.
+        if(death && (!a || Date.now() - a.ts > 6000 || a.victim !== death.id)){
+          var fallbackActor = null;
+          // 1) B.current: el héroe cuyo turno está en curso (el atacante).
+          if(typeof B !== 'undefined' && B && B.current){
+            fallbackActor = { side: B.current.side, id: B.current.id, victim: death.id, kind: 'attack', ts: Date.now() };
+          }
+          // 2) .bhero.active-turn: respaldo del DOM si B.current no está.
+          if(!fallbackActor){
+            var activeCard = document.querySelector('.bhero.active-turn');
+            if(activeCard && activeCard.id){
+              var m = /^b_([po])_(.+)$/.exec(activeCard.id);
+              if(m) fallbackActor = { side: m[1], id: m[2], victim: death.id, kind: 'attack', ts: Date.now() };
+            }
+          }
+          // Solo lo usa si el atacante deducido NO es la propia víctima (un
+          // héroe no se mata a sí mismo).
+          if(fallbackActor && fallbackActor.id !== death.id){
+            a = fallbackActor;
+            window.__bfKillActor = a;
+          }
+        }
         if(death && a && Date.now() - a.ts < 6000 && a.victim === death.id){
           var card = document.getElementById('b_' + a.side + '_' + a.id);
           if(card && !card.classList.contains('active-turn')){

@@ -322,6 +322,28 @@ export const KILL_CINE_QUEUE_PATCH = `
       if(ka && Date.now() - ka.ts < 6000){
         if(!pendingActor) pendingActor = { side: ka.side, id: ka.id, ts: ka.ts };
       }
+      // MULTIPLAYER (cliente): si __bfKillActor no se fijó (dealDamage no
+      // corre en el invitado), deduce el atacante del turno activo. Es el
+      // respaldo si bfKillCinematic se llama antes que flushFx.
+      if(!pendingActor){
+        var fbActor = null;
+        try{
+          if(typeof B !== 'undefined' && B && B.current){
+            fbActor = { side: B.current.side, id: B.current.id, ts: Date.now() };
+          }
+          if(!fbActor){
+            var ac = document.querySelector('.bhero.active-turn');
+            if(ac && ac.id){
+              var m = /^b_([po])_(.+)$/.exec(ac.id);
+              if(m) fbActor = { side: m[1], id: m[2], ts: Date.now() };
+            }
+          }
+          // Solo si el atacante no es la propia víctima
+          if(fbActor && fbActor.id !== vId){
+            pendingActor = fbActor;
+          }
+        }catch(e){}
+      }
 
       startWatch();
 
