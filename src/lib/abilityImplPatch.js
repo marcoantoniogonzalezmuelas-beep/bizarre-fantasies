@@ -74,6 +74,7 @@ export const ABILITY_IMPL_PATCH = `
       case 'ally': return byHp(a.filter(function(h){ return h !== hero; }), true).slice(0, 1);
       case 'all_allies': return a;
       case 'all_enemies': return f;
+      case 'random_enemy': { var rf = f.filter(function(h){ return h && h.alive; }); return rf.length ? [rf[Math.floor(Math.random() * rf.length)]] : []; }
       case 'weakest_enemy': return byHp(f, true).slice(0, 1);
       case 'strongest_enemy': return byHp(f, false).slice(0, 1);
       default: return f.slice(0, 1);
