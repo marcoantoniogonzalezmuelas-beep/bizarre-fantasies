@@ -131,12 +131,6 @@ export const SPELL_FX_PATCH = `
     window.flushFx = function(list){
       try {
         if (list && list.length) {
-          // En móvil/tablet, si hay una cinemática 3D en pantalla (hechizo con
-          // animación asignada), se saltan los FX 2D del hechizo: la combinación
-          // de ambos satura la GPU del tablet y provoca parpadeo, distorsión y
-          // borrado del retrato. La cinemática 3D ya es el efecto principal.
-          var skipSpellFx = window.__bfAntiFlicker && !!document.getElementById('bf-abil-anim');
-          if (skipSpellFx) return orig.apply(this, (list || []).filter(function(ev){ return !(ev && ev.k === 'spell' && ev.el === 'arcano'); }));
           var seen = {};
           list.forEach(function(ev){
             if (!ev || ev.k !== 'spell') return;
