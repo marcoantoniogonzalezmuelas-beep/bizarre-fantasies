@@ -21,7 +21,7 @@ export const NET_RECONNECT_PATCH = `
   // botón "Reconectar" y retomar la partida donde estaba.
   var RESUME_KEY='bfResumeMatch';
   function saveResume(){
-    try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:(NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'',name:NET.names_self||'',side:NET.mySide||'g',role:NET.role||'client',ts:Date.now(),token:window.__bfResumeToken||''}));}catch(e){}
+    try{localStorage.setItem(RESUME_KEY,JSON.stringify({code:NET.code,pass:String((NET._bfJoin&&NET._bfJoin.pass)||NET.pass||'').trim(),name:NET.names_self||'',side:NET.mySide||'g',role:NET.role||'client',ts:Date.now(),token:window.__bfResumeToken||''}));}catch(e){}
   }
   function clearResume(){try{localStorage.removeItem(RESUME_KEY);localStorage.removeItem('bfSavedMatch');}catch(e){}}
   // Libera del todo la sala en la BD (y su caché) y borra el token local.
@@ -295,9 +295,10 @@ export const NET_RECONNECT_PATCH = `
     // espera es el host o el cliente. Probamos primero como cliente y, si en
     // ~12 s no hay conexión, pasamos a abrir la sala nosotros como host.
     rec.tries=(rec.tries||0)+1;
-    // Tras 2 intentos fallidos de reconexión, forzar relay (TURN): si la
-    // conexión directa no vuelve, la red probablemente la está rompiendo.
-    if(rec.tries>=2){if(window.__bfMarkForceRelay)window.__bfMarkForceRelay();else window.__bfForceRelay=1;}
+    // Tras 1 intento fallido de reconexión, forzar relay (TURN): si la
+    // conexión directa no vuelve, la red (CGNAT de Vodafone y similares) la
+    // está rompiendo y reintentar en directo solo pierde tiempo.
+    if(rec.tries>=1){if(window.__bfMarkForceRelay)window.__bfMarkForceRelay();else window.__bfForceRelay=1;}
     if(rec.anyRole&&!rec.hostTried&&rec.tries>=4&&!(NET.conn&&NET.conn.open)){switchToHost();return;}
     rec.timer=setTimeout(clientRetry,RETRY_MS);
   }
@@ -514,9 +515,9 @@ export const NET_RECONNECT_PATCH = `
     var nick=chosenNick||'';
     try{nick=nick||(info&&info.name)||localStorage.getItem('bfNick')||'';}catch(e){}
     quitting=false;
-    NET.code=code;NET.pass=pass;NET.names_self=nick||'Jugador';
+    NET.code=code;NET.pass=String(pass||'').trim();NET.names_self=nick||'Jugador';
     NET.mySide=(info&&info.code===code&&info.side)||NET.mySide||'g';
-    NET._bfJoin={code:code,pass:pass,name:NET.names_self};
+    NET._bfJoin={code:code,pass:String(pass||'').trim(),name:NET.names_self};
     G.online=true;G._gameOver=false;
     if(!window.__bfResumeToken){try{window.__bfResumeToken=localStorage.getItem('bfResumeToken_'+code)||'';}catch(e){}}
     rec.active=true;rec.until=Date.now()+MAX_WAIT;rec.waiting=false;

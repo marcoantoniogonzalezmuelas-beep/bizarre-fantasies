@@ -16,10 +16,17 @@
 const FALLBACK_ICE = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
+  { urls: "stun:stun2.l.google.com:19302" },
+  { urls: "stun:stun3.l.google.com:19302" },
+  { urls: "stun:stun4.l.google.com:19302" },
   { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
   { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
   { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" },
   { urls: "turns:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443?transport=udp", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:numb.viagenie.ca:80", username: "webrtc@live.com", credential: "muazkh" },
+  { urls: "turn:numb.viagenie.ca:3478", username: "webrtc@live.com", credential: "muazkh" },
+  { urls: "turns:numb.viagenie.ca:443", username: "webrtc@live.com", credential: "muazkh" },
 ];
 
 let cached: unknown[] | null = null;

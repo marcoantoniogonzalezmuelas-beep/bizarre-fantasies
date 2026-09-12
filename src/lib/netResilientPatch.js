@@ -99,7 +99,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
         var u = Array.isArray(s.urls) ? s.urls.join(' ') : String(s.urls);
         if (/turn/i.test(u)) turn.push(s); else stun.push(s);
       });
-      ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:global.stun.twilio.com:3478'].forEach(function(u){
+      ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302','stun:stun3.l.google.com:19302','stun:stun4.l.google.com:19302','stun:global.stun.twilio.com:3478','stun:stun.sipgate.net:3478','stun:stun.ekiga.net:3478'].forEach(function(u){
         var has = stun.some(function(s){ return s && (s.urls === u || (Array.isArray(s.urls) && s.urls.indexOf(u) !== -1)); });
         if (!has) stun.push({ urls: u });
       });
@@ -179,7 +179,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
   function installReliableHostCreate(){
     if (typeof window.hostCreate !== 'function' || window.hostCreate.__bfReliableHost) return;
     window.hostCreate = function(name, pass, roomName){
-      NET.role = 'host'; NET.mySide = 'p'; NET.pass = pass || ''; NET.names_self = name || 'Jugador 1';
+      NET.role = 'host'; NET.mySide = 'p'; NET.pass = String(pass || '').trim(); NET.names_self = name || 'Jugador 1';
       NET.roomName = (roomName && roomName.trim()) || randomRoomName();
       NET.code = makeCode();
       var attempt = 0;
@@ -290,7 +290,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
 
         try{
           var jc=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-          if(typeof NET!=='undefined'&&jc){NET._bfJoin={code:jc,pass:pass||'',name:name||''};NET.code=jc;}
+          if(typeof NET!=='undefined'&&jc){NET._bfJoin={code:jc,pass:String(pass||'').trim(),name:name||''};NET.code=jc;NET.pass=String(pass||'').trim();}
         }catch(e){}
 
         function connected(){
@@ -334,7 +334,7 @@ export const buildNetResilientPatch = (meteredIceServers = []) => {
                 return;
               }
               tryJoin();
-            }, 9000);
+            }, 6000);
           }).catch(function(){
             if (joined || connected() || abandoned()) return;
             if (attempt >= 4) {
