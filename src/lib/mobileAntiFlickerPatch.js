@@ -118,12 +118,31 @@ export const MOBILE_ANTIFLICKER_PATCH = `
    reservadas justo en el instante del parpadeo. */
 #bf-abil-anim .bf-aa-img,#bf-abil-anim .bf-aa-ttl,#bf-abil-anim .bf-aa-spark,
 #bf-spec-cine .bf-sc-img,#bf-kill-ov img{will-change:transform,opacity!important}
-/* Las cinemáticas 3D se dejan EXACTAMENTE igual que en escritorio (perspectiva,
-   movimiento temático y filtros incluidos): ahí se ven perfectas y
-   simplificarlas a un fundido 2D las dejaba estáticas. Lo único que se quita
-   son los anillos expansivos, que son puro adorno y de lo que más cuesta pintar
-   en táctil (bordes enormes con halo animándose sobre toda la pantalla). */
+/* Los anillos expansivos son puro adorno y de lo que más cuesta pintar en
+  táctil (bordes enormes con halo animándose sobre toda la pantalla). */
 #bf-abil-anim .bf-aa-ring{display:none!important}
+/* TABLET (≤1024px): la cinemática 3D de hechizos (bola de fuego, tormenta
+  ígnea…) distorsiona la pantalla, parpadea y borra el retrato. La causa es
+  la perspectiva 3D (perspective:900px) + 4 capas de gradiente a pantalla
+  completa + decenas de partículas del motion: la GPU del tablet no da para
+  tanto y expulsa capas → parpadeo y borrado del retrato.
+  Se simplifica a una entrada 2D suave (zoom + fade) sin perspectiva, y se
+  ocultan TODAS las capas y partículas no esenciales: solo quedan el
+  oscurecido de fondo (dim), la imagen, el título y la descripción. */
+@media (max-width:1024px){
+  #bf-abil-anim{perspective:none!important}
+  #bf-abil-anim > *:not(.bf-aa-dim):not(.bf-aa-img):not(.bf-aa-ttl):not(.bf-aa-desc){display:none!important}
+  #bf-abil-anim .bf-aa-img{
+    transform-style:flat!important;
+    animation:bfAaTabletSimple 4.5s ease-out forwards!important;
+  }
+}
+@keyframes bfAaTabletSimple{
+  0%{transform:scale(.3) translateY(15vh);opacity:0}
+  15%{opacity:1;transform:scale(1) translateY(0)}
+  82%{opacity:1;transform:scale(1.1) translateY(-2vh)}
+  100%{opacity:0;transform:scale(1.15) translateY(-4vh)}
+}
 /* El "cuadrado blanco" de los impactos se corrige en whiteFlashFixPatch.js
    (se aplica en todo el juego, móvil y escritorio). */
 </style>
