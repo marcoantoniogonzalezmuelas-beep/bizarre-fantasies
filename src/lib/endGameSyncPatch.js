@@ -14,6 +14,10 @@ export const END_GAME_SYNC_PATCH = `
     var s = document.getElementById('s-battle');
     return !!(s && s.classList.contains('active'));
   }
+  function resultShown(){
+    var r = document.getElementById('s-result');
+    return !!(r && r.classList.contains('active'));
+  }
   function mySide(){
     try{ if(typeof NET!=='undefined'&&NET&&NET.role) return NET.mySide||(NET.role==='client'?'o':'p'); }catch(e){}
     return 'p';
@@ -39,7 +43,11 @@ export const END_GAME_SYNC_PATCH = `
 
   // Recibe el aviso del rival y muestra la pantalla final correcta.
   function handle(msg){
-    if(!msg || msg.t !== 'bfEndSync' || !inBattle()) return;
+    if(!msg || msg.t !== 'bfEndSync') return;
+    // Solo actúa en batalla o en la propia pantalla de resultado (para
+    // corregir el vídeo si el cliente ya transicionó con un resultado local
+    // equivocado). Nunca durante subastas ni equipamiento.
+    if(!inBattle() && !resultShown()) return;
     window.__bfEndSyncGot = true;
     try{
       if(typeof G !== 'undefined' && G) G._result = { pWin: !!msg.pWin };
@@ -47,6 +55,17 @@ export const END_GAME_SYNC_PATCH = `
         var el = document.getElementById(id);
         if(el && el.parentNode) el.parentNode.removeChild(el);
       });
+      // Si la pantalla de resultado YA está activa, no la relanzamos: solo
+      // actualizamos G._result (arriba) y reseteamos el guardián de la
+      // cinemática para que bfEndCinematic relea el resultado correcto en
+      // su próximo ciclo de 400ms y muestre el vídeo adecuado (victoria
+      // o derrota) aunque ya hubiera proyectado el equivocado.
+      if(resultShown()){
+        window.__bfEndCine = 0;
+        var oldCine = document.getElementById('bf-end-cine');
+        if(oldCine && oldCine.parentNode) oldCine.parentNode.removeChild(oldCine);
+        return;
+      }
       var youWin = (!!msg.pWin === (mySide() === 'p'));
       if(typeof showResult === 'function') showResult(youWin);
       else if(typeof show === 'function') show('s-result');
