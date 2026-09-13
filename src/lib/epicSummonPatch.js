@@ -115,13 +115,8 @@ export const EPIC_SUMMON_PATCH = `
     window.useAbility = function(side, h, done){
       var k = h && h.akind;
       if(k !== 'epic-summon' && k !== 'kamikaze-token' && k !== 'pegasus-token') return orig.apply(this, arguments);
-      // Multiplayer: el invitado NO resuelve la habilidad en local (aplicaría
-      // un daño que el anfitrión sobrescribe y el turno se queda colgado).
-      // Envía el intent y espera el estado autoritativo del anfitrión.
-      if(typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function'){
-        sendIntent('useAbility', {});
-        return;
-      }
+      // Se resuelve localmente en ambos lados (igual que faithfulAbilitiesPatch):
+      // el anfitrión es la autoridad y netSync envía el estado final al invitado.
       var finish = function(){
         if(typeof done === 'function') done();
         else if(typeof finishAct === 'function') finishAct();
