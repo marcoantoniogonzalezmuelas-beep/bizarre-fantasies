@@ -15,10 +15,30 @@ export const AVATAR_PATCH = `
   // ---- Catálogo de avatares (recibido del padre) ----
   window.__bfAvatarCatalog = window.__bfAvatarCatalog || [];
 
+  // ---- Emblemas de IA: NUNCA pueden ser avatar de un jugador ----
+  // Estas URLs son los emblemas oficiales de los niveles de IA. Si un jugador
+  // las selecciona (o le llegan por auto-relleno / sincronización), se rechazan
+  // para que el ranking no muestre un jugador con el avatar de una IA.
+  var AI_EMBLEM = [
+    'ac6f97a53_generated_image.png', // IA Novata
+    '274f7a3e2_generated_image.png', // IA Bersérker
+    '88ab0dd62_generated_image.png', // IA Estratega
+    'fd6b3a75e_generated_image.png', // IA Némesis
+    'c2af32041_generated_image.png'  // IA Bizarra
+  ];
+  function isAiEmblem(url){
+    if (!url) return false;
+    var u = String(url);
+    for (var i = 0; i < AI_EMBLEM.length; i++) { if (u.indexOf(AI_EMBLEM[i]) !== -1) return true; }
+    return false;
+  }
+
   // ---- Avatar guardado (sesión actual) ----
   var KEY = 'bfMyAvatar';
   function loadAv(){ try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e) {} return null; }
   function saveAv(av){
+    // Rechaza emblemas de IA: no se guardan ni en localStorage ni en la BD.
+    if (av && isAiEmblem(av.url)) return;
     try { localStorage.setItem(KEY, JSON.stringify(av)); } catch(e) {}
     window.bfMyAvatar = av;
     // Si hay un nick escrito en cualquiera de los campos, avisa al padre para
@@ -79,6 +99,8 @@ export const AVATAR_PATCH = `
     grid.className = 'bf-av-grid';
     items.forEach(function(av) {
       if (!av || !av.url) return;
+      // Filtra emblemas de IA: no se ofrecen como avatar seleccionable.
+      if (isAiEmblem(av.url)) return;
       var item = document.createElement('div');
       item.className = 'bf-av-item' + (cur && cur.url === av.url ? ' selected' : '');
       var img = document.createElement('img');
@@ -215,6 +237,8 @@ export const AVATAR_PATCH = `
       for (var k in pa) { if (k.toLowerCase() === nick.toLowerCase()) { avUrl = pa[k]; break; } }
     }
     if (avUrl) {
+      // No auto-rellena con un emblema de IA (datos corruptos en la BD).
+      if (isAiEmblem(avUrl)) { clearAv(); return; }
       saveAv({ url: avUrl, name: '' });
       document.querySelectorAll('.bf-av-pick').forEach(function(b){
         var av = window.bfMyAvatar;
