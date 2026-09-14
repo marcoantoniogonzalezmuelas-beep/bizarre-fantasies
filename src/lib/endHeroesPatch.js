@@ -164,6 +164,10 @@ export const END_HEROES_PATCH = `
   // desde el punto de vista de este dispositivo).
   function buildPlayerHead(side, mySide, isWin){
     var mine = (side === mySide);
+    // Recarga el avatar desde localStorage si se perdió durante la partida.
+    if (mine && !window.bfMyAvatar) {
+      try { var s = localStorage.getItem('bfMyAvatar'); if (s) window.bfMyAvatar = JSON.parse(s); } catch(e) {}
+    }
     var av = mine ? window.bfMyAvatar : window.bfOppAvatar;
     var url = (av && av.url) || '';
     var name = '';

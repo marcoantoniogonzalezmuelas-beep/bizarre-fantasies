@@ -343,6 +343,13 @@ export function buildFumbleRollPatch(lang) {
     wrapAction('actRanged', '${en ? 'ranged' : 'disparo'}');
     wrapAction('castSpell', '${en ? 'spell' : 'hechizo'}');
     wrapAction('useItem', '${en ? 'item' : 'objeto'}');
+    // La IA usa funciones separadas para hechizos y objetos (castSpell_AI,
+    // useItem_AI). Sin envolverlas, la IA NUNCA pifia con hechizos ni objetos
+    // — solo el jugador sí. Ahora ambos bandos tienen el mismo dado d30.
+    wrapAction('castSpell_AI', '${en ? 'AI spell' : 'IA hechizo'}');
+    wrapAction('useItem_AI', '${en ? 'AI item' : 'IA objeto'}');
+    wrapAction('actMelee_AI', '${en ? 'AI melee' : 'IA cuerpo a cuerpo'}');
+    wrapAction('actRanged_AI', '${en ? 'AI ranged' : 'IA disparo'}');
     wrapAbility();
     if(tries++ > 200) clearInterval(iv);
   }, 200);

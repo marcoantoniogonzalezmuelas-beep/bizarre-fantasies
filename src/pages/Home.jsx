@@ -173,7 +173,7 @@ import RotateHint from '@/components/home/RotateHint';
 import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
-const EXPECTED_PATCH_VERSION = 'bf-2026-09-01-responsive-online-v218';
+const EXPECTED_PATCH_VERSION = 'bf-2026-09-14-fumble-ai-avatar-v219';
 const MAX_LOAD_ATTEMPTS = 6;
 
 const DRAGGABLE_GUIDE_PATCH = `

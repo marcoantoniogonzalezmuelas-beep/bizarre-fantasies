@@ -301,6 +301,12 @@ export const AVATAR_PATCH = `
   var _bfAvReqTries=0,_bfAvReqIv=setInterval(function(){hookRequired();if(_bfAvReqTries++>100)clearInterval(_bfAvReqIv);},200);
 
   // ---- Avatares en la barra de marcador ----
+  // Recarga el avatar desde localStorage si se perdió durante la partida
+  // (bizarreRoomPatch lo puede limpiar al sincronizar por nick).
+  function ensureMyAvatar() {
+    if (!window.bfMyAvatar) window.bfMyAvatar = loadAv();
+    return window.bfMyAvatar;
+  }
   function injectScoreAvatars() {
     var bar = document.getElementById('bf-score-bar');
     if (!bar) return;
@@ -314,26 +320,53 @@ export const AVATAR_PATCH = `
       img.className = 'bf-av-score'; img.src = av.url;
       sideEl.insertBefore(img, sideEl.firstChild);
     }
-    if (window.bfMyAvatar) addToSide(pName ? pName.parentElement : null, window.bfMyAvatar);
+    var myAv = ensureMyAvatar();
+    if (myAv) addToSide(pName ? pName.parentElement : null, myAv);
     if (window.bfOppAvatar) addToSide(oName ? oName.parentElement : null, window.bfOppAvatar);
   }
 
   // ---- Avatares en la pantalla de resultado ----
+  // El juego muestra un trofeo 🏆 y el texto de victoria/derrota, pero NO
+  // muestra el avatar del jugador. Se inyecta el avatar del jugador (y del
+  // rival si existe) justo encima del trofeo para que se vea quién ha ganado.
   function injectResultAvatars() {
     var rs = document.getElementById('s-result');
-    if (!rs) return;
-    var cols = rs.querySelectorAll('.bf-score-col');
-    if (cols.length < 2) return;
-    var avs = [window.bfMyAvatar, window.bfOppAvatar];
-    for (var i = 0; i < 2; i++) {
-      var col = cols[i]; var av = avs[i];
-      if (!col || !av) continue;
-      var existing = col.querySelector('.bf-av-result');
-      if (existing) { existing.src = av.url; continue; }
-      var img = document.createElement('img');
-      img.className = 'bf-av-result'; img.src = av.url;
-      col.insertBefore(img, col.firstChild);
+    if (!rs || !rs.classList.contains('active')) return;
+    var myAv = ensureMyAvatar();
+    if (!myAv && !window.bfOppAvatar) return;
+    // Si ya están inyectados, solo actualiza el src.
+    var existing = rs.querySelector('.bf-av-result');
+    if (existing) {
+      if (myAv) { var p = rs.querySelector('.bf-av-result-p'); if (p) p.src = myAv.url; }
+      if (window.bfOppAvatar) { var o = rs.querySelector('.bf-av-result-o'); if (o) o.src = window.bfOppAvatar.url; }
+      return;
     }
+    var inner = rs.firstElementChild;
+    if (!inner) return;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:clamp(16px,5vw,50px);margin-bottom:14px';
+    function avBox(av, isMe) {
+      if (!av || !av.url) return null;
+      var box = document.createElement('img');
+      box.className = 'bf-av-result ' + (isMe ? 'bf-av-result-p' : 'bf-av-result-o');
+      box.src = av.url;
+      box.style.cssText = 'width:clamp(56px,12vw,96px);height:clamp(56px,12vw,96px);border-radius:50%;' +
+        'border:3px solid rgba(255,210,74,.6);object-fit:cover;box-shadow:0 4px 18px rgba(0,0,0,.6),0 0 16px rgba(255,210,74,.3)';
+      return box;
+    }
+    var pAv = avBox(myAv, true);
+    var oAv = avBox(window.bfOppAvatar, false);
+    if (pAv && oAv) {
+      var vs = document.createElement('span');
+      vs.style.cssText = 'font-family:Cinzel,serif;font-weight:900;font-size:clamp(18px,4vw,32px);color:#ffd24a;text-shadow:0 0 14px rgba(255,210,74,.6),0 2px 6px #000';
+      vs.textContent = 'VS';
+      wrap.appendChild(pAv); wrap.appendChild(vs); wrap.appendChild(oAv);
+    } else if (pAv) {
+      wrap.appendChild(pAv);
+    } else if (oAv) {
+      wrap.appendChild(oAv);
+    }
+    if (wrap.children.length) inner.insertBefore(wrap, inner.firstChild);
   }
   setInterval(function(){ injectScoreAvatars(); injectResultAvatars(); }, 800);
 
