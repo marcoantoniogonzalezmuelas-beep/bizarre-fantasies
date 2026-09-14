@@ -411,21 +411,16 @@ export const ABILITY_ANIM_PATCH = `
       var battle=document.getElementById('s-battle');
       if(battle){
         var panels=battle.querySelectorAll('.army-panel');
+        // Se congelan AMBOS paneles (jugador local + rival): la cinemática 3D
+        // cubre toda la pantalla con su overlay oscuro durante 5 s, así que el
+        // jugador no ve ninguno de los dos paneles. Si quedan visibles, la GPU
+        // repinta retratos, auras y estados animados por debajo del overlay —
+        // eso era el parpadeo en tablet. visibility:hidden preserva el layout
+        // (sin saltos) y se restaura al terminar la cinemática.
         panels.forEach(function(p){
-          // Solo se congela el panel que NO es el del jugador local.
-          // El panel local sigue visible por si el jugador necesita ver su
-          // estado. El rival no actúa durante la cinemática del jugador.
-          if(p.getAttribute('data-side')!=='p'){
-            p.style.visibility='hidden';
-            frozen.push(p);
-          }
+          p.style.visibility='hidden';
+          frozen.push(p);
         });
-        // Si no hay data-side (estructura del juego sin atributo), se
-        // congela el segundo panel (el rival suele ser el segundo).
-        if(!frozen.length&&panels.length>=2){
-          panels[1].style.visibility='hidden';
-          frozen.push(panels[1]);
-        }
       }
     }catch(e){}
     // Si el recorte de fondo aún no estaba listo al abrir la cinemática, la
