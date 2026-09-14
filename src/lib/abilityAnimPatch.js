@@ -252,7 +252,13 @@ export const ABILITY_ANIM_PATCH = `
   '@keyframes bfAaSpark{0%{opacity:0;transform:translateY(0) scale(.3)}15%{opacity:1}100%{opacity:0;transform:translateY(-85vh) scale(1.4) translateX(var(--dx,0px))}}'+
   '.bf-aa-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid var(--aa-color,#fff);box-shadow:0 0 20px var(--aa-glow,#fff);opacity:0;animation:bfAaRing 1.5s ease-out forwards}'+
   '@keyframes bfAaRing{0%{width:10%;height:10%;opacity:1;border-width:4px}100%{width:250%;height:250%;opacity:0;border-width:1px}}'+
-  ${JSON.stringify(ALL_MOTION_CSS)};
+  ${JSON.stringify(ALL_MOTION_CSS)}+
+  // Congelación real de los paneles de batalla durante la cinemática 3D:
+  // pausa TODAS las animaciones y transiciones de los paneles (auras, pulsos,
+  // estados animados, retratos con respiración…) para que la GPU no los
+  // repinte fotograma a fotograma mientras compone la cinemática. Los retratos
+  // SIGUEN VISIBLES como fotograma estático — no desaparecen.
+  '.bf-cine-frozen,.bf-cine-frozen *,.bf-cine-frozen *::before,.bf-cine-frozen *::after{animation-play-state:paused!important;transition:none!important}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
   // Variantes de movimiento temático (tajo, fogonazo, etc.) elegidas por
@@ -411,14 +417,12 @@ export const ABILITY_ANIM_PATCH = `
       var battle=document.getElementById('s-battle');
       if(battle){
         var panels=battle.querySelectorAll('.army-panel');
-        // Se congelan AMBOS paneles (jugador local + rival): la cinemática 3D
-        // cubre toda la pantalla con su overlay oscuro durante 5 s, así que el
-        // jugador no ve ninguno de los dos paneles. Si quedan visibles, la GPU
-        // repinta retratos, auras y estados animados por debajo del overlay —
-        // eso era el parpadeo en tablet. visibility:hidden preserva el layout
-        // (sin saltos) y se restaura al terminar la cinemática.
+        // Se CONGELAN ambos paneles (jugador + rival): pausando todas sus
+        // animaciones y transiciones la GPU no repinta auras, pulsos ni estados
+        // animados mientras compone la cinemática 3D. Los retratos siguen
+        // visibles como fotograma estático — no desaparecen en ningún momento.
         panels.forEach(function(p){
-          p.style.visibility='hidden';
+          p.classList.add('bf-cine-frozen');
           frozen.push(p);
         });
       }
@@ -439,8 +443,8 @@ export const ABILITY_ANIM_PATCH = `
     setTimeout(function(){
       if(ov.parentNode)ov.parentNode.removeChild(ov);
       playingUrl=null;
-      // Restaurar el panel rival congelado.
-      frozen.forEach(function(p){try{p.style.visibility='';}catch(e){}});
+      // Restaurar los paneles congelados (reanudar animaciones).
+      frozen.forEach(function(p){try{p.classList.remove('bf-cine-frozen');}catch(e){}});
     },5000);
   }
   // Devuelve true mientras hay una cinemática 3D en curso o en cola. Lo usa
