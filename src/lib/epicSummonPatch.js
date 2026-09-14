@@ -129,8 +129,43 @@ export const EPIC_SUMMON_PATCH = `
     return true;
   }
 
-  var tries = 0, iv = setInterval(function(){ if(install() || tries++ > 160) clearInterval(iv); }, 150);
+  // ---- IA: forzar el uso de habilidad de los tokens ----
+  // El motor del juego no reconoce 'pegasus-token' ni 'kamikaze-token' como
+  // héroes con habilidad, así que la IA no llama a useAbility para ellos: los
+  // manda a golpe melee y sus habilidades nunca se disparan. Se intercepta
+  // aiTurn para que, cuando le toque el turno a uno de estos tokens, la IA
+  // use su habilidad automáticamente (igual que haría un jugador humano).
+  function installAiTurnHook(){
+    if(window.__bfEpicAiTurnHooked || typeof window.aiTurn !== 'function') return false;
+    window.__bfEpicAiTurnHooked = true;
+    var orig = window.aiTurn;
+    window.aiTurn = function(h, side){
+      var k = h && h.akind;
+      if((k === 'pegasus-token' || k === 'kamikaze-token') && !h.abilityUsed && h.alive){
+        // Espera a que terminen las animaciones en pantalla antes de lanzar
+        // la habilidad (igual que aiWaitCinePatch, pero solo para estos tokens).
+        var t0 = Date.now();
+        (function tick(){
+          if(typeof B !== 'undefined' && B && B.over) return;
+          var busy = document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop,.bf-status-pop,.bf-fumble-pop,.bf-stat-pop');
+          if(busy && Date.now() - t0 < 6000){
+            try { if(typeof window.armWatchdog === 'function'){ if(typeof window.clearWatchdog === 'function') window.clearWatchdog(); window.armWatchdog(); } } catch(e){}
+            return setTimeout(tick, 200);
+          }
+          setTimeout(function(){
+            if(typeof window.useAbility === 'function' && !h.abilityUsed && h.alive) window.useAbility(side, h);
+          }, 200);
+        })();
+        return;
+      }
+      return orig.apply(this, arguments);
+    };
+    return true;
+  }
+
+  var tries = 0, iv = setInterval(function(){ if(install() || installAiTurnHook() || tries++ > 160) clearInterval(iv); }, 150);
   install();
+  installAiTurnHook();
 })();
 </script>
 `;
