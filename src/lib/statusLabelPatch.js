@@ -91,8 +91,18 @@ export const STATUS_LABEL_PATCH = `
 
   function heroFromCard(card){
     var parts = String(card.id || '').split('_');
-    if(parts.length < 3 || typeof getHero !== 'function') return null;
-    try { return getHero(parts[1], parts.slice(2).join('_')); } catch(e){ return null; }
+    if(parts.length < 3) return null;
+    var side = parts[1], id = parts.slice(2).join('_');
+    // Primero intenta con getHero (función nativa del juego).
+    if(typeof getHero === 'function'){ try { var h = getHero(side, id); if(h) return h; } catch(e){} }
+    // Fallback: busca directamente en G.team (igual que heroIsTank del juego
+    // nativo). A veces getHero no está disponible aún o devuelve null.
+    try {
+      if(typeof G !== 'undefined' && G && G.team && G.team[side]) {
+        return (G.team[side] || []).find(function(x) { return x && x.id === id; }) || null;
+      }
+    } catch(e){}
+    return null;
   }
 
   function paint(card){
@@ -107,8 +117,11 @@ export const STATUS_LABEL_PATCH = `
     // gestiona aparte de la columna de estados y ANTES del return temprano para
     // que un héroe que solo esté tanqueando (sin otros estados) también lo
     // muestre. No se solapa con el marcador pasivo ni con las chapas de equipo.
+    // Detección doble: por el flag _bfTank del héroe (fuente real) y por la
+    // clase s-tank de la carta (que el motor nativo togglea en decorateBattle).
+    var isTank = (hero && hero.alive && hero._bfTank) || card.classList.contains('s-tank');
     var tank = host.querySelector('.bf-tank-banner');
-    if(hero && hero.alive && hero._bfTank){
+    if(isTank){
       if(!tank){ tank = document.createElement('div'); tank.className = 'bf-tank-banner'; tank.innerHTML = '<span class="bf-tank-ico">🛡️</span>TANQUEANDO'; host.appendChild(tank); }
     } else if(tank){ tank.remove(); }
 
