@@ -70,6 +70,9 @@ export const DUCK_ABILITY_PATCH = `
       }
 
       // NORMAL — Picotazo: pequeño ataque a distancia y queda en juego bloqueando.
+      // Se marca _bfDuckBlock para que el sistema de marcadores pasivos muestre
+      // el rótulo "Picotazo" en el retrato y en el panel de acciones mientras
+      // el patito siga vivo (la pasiva de bloqueo permanece armada).
       var shoot = function(t){
         if(typeof window.__bfPlayAbilityAnim === 'function'){
           try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){}
@@ -77,6 +80,7 @@ export const DUCK_ABILITY_PATCH = `
         var d = dealDamage(t, 2, { type:'ranged' });
         pushFx({ k:'arrow', fromSide:side, fromId:h.id, toSide:tSide(t), toId:t.id, hits:1 });
         pushFx({ k:'status', side:side, id:h.id, txt:'\\u{1F986}' });
+        h._bfDuckBlock = true;
         pushLog('ld', h.name + ' da un Picotazo a ' + t.name + ' (-' + d + ') y queda EN JUEGO bloqueando los golpes de sus aliados.');
         finish();
       };

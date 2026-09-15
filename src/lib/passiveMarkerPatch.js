@@ -20,7 +20,8 @@ export const PASSIVE_MARKER_PATCH = `
   // Para a\\u00f1adir una nueva habilidad pasiva, registra su flag aqu\\u00ed.
   var PASSIVES = {
     _bfRefract: { icon: '\\u2726', color: '#c79bff', label: 'Refracci\\u00f3n' },
-    _bfCrane: { icon: '\\u{1F6E1}\\uFE0F', color: '#9dffcf', label: 'Protecci\\u00f3n' }
+    _bfCrane: { icon: '\\u{1F6E1}\\uFE0F', color: '#9dffcf', label: 'Protecci\\u00f3n' },
+    _bfDuckBlock: { icon: '\\u{1F986}', color: '#9dffcf', label: 'Picotazo' }
   };
   // Mapa din\u00e1mico desde el editor: card_id \u2192 {flag, icon, color, label}
   var markersMap = {};
@@ -40,6 +41,14 @@ export const PASSIVE_MARKER_PATCH = `
   '.bf-passive-mark .bf-pm-emoji{font-size:18px;line-height:1;text-shadow:0 0 8px var(--bf-pc,#fff)}' +
   '.bf-passive-mark .bf-pm-label{font-size:12px;line-height:1;text-shadow:0 1px 3px #000,0 0 8px var(--bf-pc,#fff)}' +
   '@media(max-width:640px){.bf-passive-mark{font-size:10px;padding:3px 10px 3px 3px;gap:5px}.bf-passive-mark .bf-pm-ico{width:26px;height:26px}.bf-passive-mark .bf-pm-emoji{font-size:15px}.bf-passive-mark .bf-pm-label{font-size:10px}}' +
+  // ---- Marcador de habilidad pasiva en el PANEL DE ACCIONES ----
+  // Igual que el de Doji Conpuri: un badge con punto pulsante que indica que
+  // la pasiva está ARMADA (latente, esperando su condición). Visible solo en
+  // el panel del héroe activo que tenga la pasiva armada.
+  '.bf-passive-panel-mark{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-family:Cinzel,serif;font-size:11px;font-weight:1000;letter-spacing:.5px;text-transform:uppercase;background:rgba(8,5,14,.92);border:1.5px solid var(--bf-pc,#fff);color:var(--bf-pc,#fff);box-shadow:0 0 12px var(--bf-pc,#fff),0 2px 6px rgba(0,0,0,.5);margin:6px 0 0;vertical-align:middle;pointer-events:none;white-space:nowrap}' +
+  '.bf-passive-panel-mark .bf-ppm-dot{width:8px;height:8px;border-radius:50%;background:var(--bf-pc,#fff);box-shadow:0 0 8px var(--bf-pc,#fff);animation:bfPpmBlink 1.4s ease-in-out infinite}' +
+  '.bf-passive-panel-mark .bf-ppm-ico{font-size:14px;line-height:1}' +
+  '@keyframes bfPpmBlink{0%,100%{opacity:1}50%{opacity:.4}}' +
   // ---- Banner de ACCIÓN DEFINITIVA (solo cuando termina la partida) ----
   '#bf-final-blow{position:fixed;inset:0;z-index:999999;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:bfFbIn .3s ease-out}' +
   '#bf-final-blow.bf-fb-out{transition:opacity .6s;opacity:0}' +
@@ -73,7 +82,7 @@ export const PASSIVE_MARKER_PATCH = `
       var h = heroFor(card);
       var badge = card.querySelector('.bf-passive-mark');
       var found = null;
-      if(h){
+      if(h && h.alive){
         // Mapa del editor: card_id → {normal:{...}, elite:{...}}. En modo élite
         // se usa la variante élite (si la hay); si no, la normal.
         var cfg = markersMap[h.id] || markersMap[h.cid] || markersMap[h.card_id];
@@ -83,7 +92,7 @@ export const PASSIVE_MARKER_PATCH = `
             found = { icon: variant.icon || '\\u2726', icon_url: variant.icon_url || '', color: variant.color || '#ffd24a', label: variant.label || 'Pasiva' };
           }
         }
-        // Fallback al mapa hardcoded (Refracción, Protección…)
+        // Fallback al mapa hardcoded (Refracción, Protección, Picotazo…)
         if(!found){
           for(var flag in PASSIVES){
             if(h[flag]){ found = PASSIVES[flag]; break; }
@@ -113,13 +122,46 @@ export const PASSIVE_MARKER_PATCH = `
     });
   }
 
+  // Marcador en el PANEL DE ACCIONES del héroe activo: igual que Doji Conpuri,
+  // muestra un badge con el nombre de la pasiva mientras esté armada. Funciona
+  // para TODAS las pasivas (editor config + fallback hardcoded).
+  function updatePanelMarker(){
+    try{
+      if(typeof B==='undefined'||!B||!B.current) return;
+      var h = (typeof getHero==='function') ? getHero(B.current.side, B.current.id) : null;
+      var panel = document.querySelector('.bf-action-host');
+      if(!panel) return;
+      var mark = panel.querySelector('.bf-passive-panel-mark');
+      var found = null;
+      if(h && h.alive){
+        var cfg = markersMap[h.id] || markersMap[h.cid] || markersMap[h.card_id];
+        if(cfg){
+          var variant = h.eliteMode ? (cfg.elite || cfg.normal) : (cfg.normal || cfg.elite);
+          if(variant && variant.flag && h[variant.flag]){
+            found = { icon: variant.icon || '\\u2726', color: variant.color || '#ffd24a', label: variant.label || 'Pasiva' };
+          }
+        }
+        if(!found){
+          for(var flag in PASSIVES){
+            if(h[flag]){ found = PASSIVES[flag]; break; }
+          }
+        }
+      }
+      if(found){
+        if(!mark){ mark = document.createElement('div'); mark.className='bf-passive-panel-mark'; panel.appendChild(mark); }
+        mark.style.setProperty('--bf-pc', found.color);
+        mark.innerHTML = '<span class="bf-ppm-dot"></span><span class="bf-ppm-ico">' + (found.icon || '\\u2726') + '</span>' + found.label;
+      } else if(mark){ mark.remove(); }
+    }catch(e){}
+  }
+
   // (El resumen de la ACCIÓN DEFINITIVA se rehará como repaso de la jugada;
   //  el cartel anterior y su espera al final de partida se han retirado.)
 
   function hookRender(){
     if(typeof window.renderBattle !== 'function' || window.renderBattle.__bfPassiveMarker) return false;
     var original = window.renderBattle;
-    window.renderBattle = function(){ var result = original.apply(this, arguments); updateMarkers(); return result; };
+    window.renderBattle = function(){ var result = original.apply(this, arguments); updateMarkers(); updatePanelMarker(); return result; };
     window.renderBattle.__bfPassiveMarker = 1;
     return true;
   }
@@ -128,13 +170,15 @@ export const PASSIVE_MARKER_PATCH = `
   var timer = setInterval(function(){
     hookRender();
     updateMarkers();
+    updatePanelMarker();
     if((window.renderBattle && window.renderBattle.__bfPassiveMarker) || tries++ > 120) clearInterval(timer);
   }, 200);
   // Vigilancia permanente: otros parches redibujan los retratos y el marcador
-  // podr\\u00eda perderse; as\\u00ed el estado (Refracci\\u00f3n, Protecci\\u00f3n\\u2026) se mantiene
+  // podr\\u00eda perderse; as\\u00ed el estado (Refracci\\u00f3n, Protecci\\u00f3n, Picotazo\\u2026) se mantiene
   // visible todo el tiempo que la pasiva siga activa.
-  setInterval(updateMarkers, 500);
+  setInterval(function(){ updateMarkers(); updatePanelMarker(); }, 500);
   updateMarkers();
+  updatePanelMarker();
 })();
 </script>
 `;
