@@ -120,9 +120,11 @@ export const STATUS_LABEL_PATCH = `
     // Detección doble: por el flag _bfTank del héroe (fuente real) y por la
     // clase s-tank de la carta (que el motor nativo togglea en decorateBattle).
     var isTank = (hero && hero.alive && hero._bfTank) || card.classList.contains('s-tank');
-    var tank = host.querySelector('.bf-tank-banner');
+    // El banner va en la CARTA (.bhero), no dentro de .bf-battle-art: esa capa
+    // tiene overflow:hidden y recorta el banner. En la carta se ve completo.
+    var tank = card.querySelector('.bf-tank-banner');
     if(isTank){
-      if(!tank){ tank = document.createElement('div'); tank.className = 'bf-tank-banner'; tank.innerHTML = '<span class="bf-tank-ico">🛡️</span>TANQUEANDO'; host.appendChild(tank); }
+      if(!tank){ tank = document.createElement('div'); tank.className = 'bf-tank-banner'; tank.innerHTML = '<span class="bf-tank-ico">🛡️</span>TANQUEANDO'; card.appendChild(tank); }
     } else if(tank){ tank.remove(); }
 
     var box = card.querySelector('.bf-status-labels');

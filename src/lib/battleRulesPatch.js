@@ -165,24 +165,29 @@ export const BATTLE_RULES_PATCH = `
     var hero=(typeof getHero==='function')?getHero(side,B.current.id):null;
     if(!hero)return;
     var nUsed=!!hero._bfNormalUsed,eUsed=!!hero._bfEliteUsed;
+    // El panel de acciones muestra UN solo botón de habilidad para el héroe
+    // activo, que corresponde a su modo actual (normal o élite). Se usa
+    // hero.eliteMode como criterio principal: si el héroe está en modo élite,
+    // el botón es la habilidad élite (se grisée solo si _bfEliteUsed); si no,
+    // es la normal (se grisée solo si _bfNormalUsed). Antes se detectaba por
+    // el texto del botón ("élite"/"elite"), pero los tokens invocados (Patito,
+    // Pegaso…) no ponen "élite" en el texto y el botón se grisaba por error
+    // tras usar la versión normal, impidiendo jugar la élite tras renacer.
+    var heroIsElite=!!hero.eliteMode;
     battle.querySelectorAll('.bf-abil-used').forEach(function(b){b.classList.remove('bf-abil-used');});
     if(!nUsed&&!eUsed)return;
-    // Busca botones de habilidad por onclick o por texto
     battle.querySelectorAll('[onclick]').forEach(function(btn){
       var oc=btn.getAttribute('onclick')||'';
       if(oc.indexOf('useAbility')<0&&oc.indexOf('ability')<0)return;
-      var txt=(btn.textContent||'').toLowerCase();
-      var isElite=txt.indexOf('élite')>=0||txt.indexOf('elite')>=0||oc.indexOf('elite')>=0;
-      if(isElite&&eUsed)btn.classList.add('bf-abil-used');
-      if(!isElite&&nUsed)btn.classList.add('bf-abil-used');
+      if(heroIsElite&&eUsed)btn.classList.add('bf-abil-used');
+      if(!heroIsElite&&nUsed)btn.classList.add('bf-abil-used');
     });
     battle.querySelectorAll('button,.btn,[class*="action"],[class*="abil"]').forEach(function(btn){
       if(btn.classList.contains('bf-abil-used'))return;
       var txt=(btn.textContent||'').toLowerCase();
-      if(txt.indexOf('habilidad')<0&&txt.indexOf('ability')<0)return;
-      var isElite=txt.indexOf('élite')>=0||txt.indexOf('elite')>=0;
-      if(isElite&&eUsed)btn.classList.add('bf-abil-used');
-      if(!isElite&&nUsed)btn.classList.add('bf-abil-used');
+      if(txt.indexOf('habilidad')<0&&txt.indexOf('ability')<0&&txt.indexOf('useAbility')<0)return;
+      if(heroIsElite&&eUsed)btn.classList.add('bf-abil-used');
+      if(!heroIsElite&&nUsed)btn.classList.add('bf-abil-used');
     });
   }
 

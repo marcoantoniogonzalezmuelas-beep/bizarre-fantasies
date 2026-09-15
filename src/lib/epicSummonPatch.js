@@ -48,11 +48,27 @@ export const EPIC_SUMMON_PATCH = `
     // jugar su habilidad élite.
     // Unicornio: sin versión élite real — se elige al azar una de sus dos
     // ilustraciones (los stats y la habilidad son idénticos).
-    inst.eliteMode = el ? false : (Math.random() < 0.5);
-    inst.eliteUsed = false;
+    // Pegaso: entra en su versión NORMAL (como cualquier carta). Al morir
+    // evoluciona a élite (el motor lo revive en modo élite) y entonces puede
+    // jugar su habilidad élite.
+    // Unicornio (Kamikaze): NO tiene versión élite. Se le pone eliteUsed=true
+    // para que el motor NO lo reviva en modo élite al morir. El arte de
+    // batalla se elige al azar entre las dos ilustraciones (normal y élite),
+    // pero los stats y la habilidad son siempre los de la versión normal.
+    if(el){
+      inst.eliteMode = false;
+      inst.eliteUsed = false;
+    } else {
+      inst.eliteMode = false;
+      inst.eliteUsed = true; // sin renacer élite
+      // Arte aleatorio entre las dos versiones
+      var normArt = (typeof ART_BY_ID !== 'undefined') ? ART_BY_ID[id] : '';
+      var eliteArt = (typeof ELITE_BY_ID !== 'undefined') ? ELITE_BY_ID[id] : '';
+      inst._bfArtUrl = Math.random() < 0.5 ? (normArt || eliteArt) : (eliteArt || normArt);
+    }
     inst.abilityUsed = false;
     inst._mods = []; inst.shield = 0; inst.wardTurns = 0; inst.evade = 0; inst.defending = false;
-    inst.maxHp = Number(inst.eliteMode ? (tpl.eHp || tpl.hp) : tpl.hp) || 15;
+    inst.maxHp = Number(tpl.hp) || 15;
     inst.hp = inst.maxHp; inst.alive = true;
     (G.team[side] || (G.team[side] = [])).push(inst);
     hero.abilityUsed = true;
@@ -102,8 +118,12 @@ export const EPIC_SUMMON_PATCH = `
       if(g) log('lh', h.name + ' se cura +' + g + '.');
     }
     log('li', h.name + ' se vuelve el m\\u00e1s r\\u00e1pido de todos los h\\u00e9roes.');
-    // Marca la habilidad correcta como usada según el modo (normal vs élite).
-    if(h.eliteMode) h.eliteUsed = true; else h.abilityUsed = true;
+    // Marca la habilidad como usada (abilityUsed) para que scanAbilityUsage
+    // del battleRulesPatch detecte la transición y fije _bfNormalUsed o
+    // _bfEliteUsed según el modo actual. Antes se ponía eliteUsed=true para
+    // la versión élite, pero ese flag no lo detecta scanAbilityUsage y la
+    // habilidad élite se podía usar repetidas veces.
+    h.abilityUsed = true;
     sync();
     finish();
   }
@@ -162,6 +182,30 @@ export const EPIC_SUMMON_PATCH = `
     };
     return true;
   }
+
+  // ---- Arte aleatorio del Kamikaze en batalla ----
+  // El Unicornio no tiene versión élite, pero tiene dos ilustraciones. Se
+  // elige una al azar al invocarlo (inst._bfArtUrl) y se aplica sobre la
+  // capa .bf-battle-art de su carta. El juego re-renderiza la carta en cada
+  // ciclo, así que hay que reaplicar el arte periódicamente.
+  setInterval(function(){
+    if(typeof G === 'undefined' || !G || !G.team) return;
+    ['p','o'].forEach(function(side){
+      (G.team[side] || []).forEach(function(h){
+        if(!h || !h._bfArtUrl || !h.alive) return;
+        var card = document.getElementById('b_' + side + '_' + h.id);
+        if(!card) return;
+        var art = card.querySelector('.bf-battle-art');
+        if(!art) return;
+        var cur = (art.style.backgroundImage || '').match(/url\(["']?([^"')]+)["']?\)/);
+        cur = cur ? cur[1] : '';
+        if(cur !== h._bfArtUrl){
+          art.style.backgroundImage = 'url("' + h._bfArtUrl + '")';
+          art.style.backgroundSize = 'cover';
+        }
+      });
+    });
+  }, 300);
 
   var tries = 0, iv = setInterval(function(){ if(install() || installAiTurnHook() || tries++ > 160) clearInterval(iv); }, 150);
   install();
