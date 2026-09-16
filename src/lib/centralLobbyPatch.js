@@ -130,7 +130,7 @@ export const CENTRAL_LOBBY_PATCH = `
   function decorateResumeRooms(){
     if(typeof LOBBY==='undefined'||!LOBBY.rooms)return;
     LOBBY.rooms.forEach(function(r){
-      if(!r.isResume||!r.hasPass)return;
+      if(!r.isResume)return;
       var cards=document.querySelectorAll('.room-card');
       var card=null;
       cards.forEach(function(c){var codeEl=c.querySelector('.room-sub b');if(codeEl&&codeEl.textContent.trim()===r.id)card=c;});
@@ -141,7 +141,7 @@ export const CENTRAL_LOBBY_PATCH = `
       var ico=card.querySelector('.room-ico');if(ico)ico.textContent='🔄';
       var name=card.querySelector('.room-name');if(name)name.textContent='Partida en curso';
       var sub=card.querySelector('.room-sub');
-      if(sub){var nicks=(r.nicks||[]).join(' vs ');sub.innerHTML='código <b>'+r.id+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':'');}
+      if(sub){var nicks=(r.nicks||[]).join(' vs ');sub.innerHTML='código <b>'+r.id+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':' · 🆓');}
       var btn=card.querySelector('button');
       if(btn){
         // Clonar el botón para eliminar cualquier listener nativo del juego que
@@ -155,17 +155,22 @@ export const CENTRAL_LOBBY_PATCH = `
       });
       }
   // Reanudar partida con relay por servidor: el estado está en el servidor,
-  // así que reanudar = pedir la contraseña y llamar a clientJoin (que hace
-  // gameRelay.join y recibe el estado actual). Sin localStorage, sin tokens.
+  // así que reanudar = pedir la contraseña (si la hay) y llamar a
+  // bfRelayResumeGame (que hace gameRelay.resume y recibe el estado actual).
+  // Funciona para salas públicas y privadas, y para host e invitado.
   window.bfRelayResume=function(code,hasPass,nicks){
     var nick='';
     try{nick=localStorage.getItem('bfMyNick')||localStorage.getItem('bfNick')||'';}catch(e){}
     // Si el nick coincide con uno de los originales, usa esa grafía exacta.
     var matchNick=(nicks||[]).find(function(n){return String(n).toLowerCase()===String(nick).toLowerCase();});
     if(matchNick)nick=matchNick;
+    function doResume(pass){
+      if(window.bfRelayResumeGame)window.bfRelayResumeGame(code,pass,nick,nicks||[]);
+      else if(typeof window.clientJoin==='function')window.clientJoin(code,nick,pass);
+    }
     if(!hasPass){
-      // Sala pública: unirse directamente.
-      if(typeof window.clientJoin==='function')window.clientJoin(code,nick,'');
+      // Sala pública: reanudar directamente (sin contraseña).
+      doResume('');
       return;
     }
     // Sala privada: pedir la contraseña.
@@ -183,7 +188,7 @@ export const CENTRAL_LOBBY_PATCH = `
         var pass=String(input.value||'').trim();
         if(!pass){el.querySelector('.bf-rp-err').style.display='block';el.querySelector('.bf-rp-err').textContent='⚠️ Escribe la contraseña de la sala.';return;}
         el.style.display='none';
-        if(typeof window.clientJoin==='function')window.clientJoin(code,nick,pass);
+        doResume(pass);
       };
       el.querySelector('.bf-rp-ok').onclick=go;
       input.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
@@ -204,17 +209,17 @@ export const CENTRAL_LOBBY_PATCH = `
     div.innerHTML=
       '<div style="font-family:Cinzel,serif;font-weight:900;color:#ffd24a;font-size:14px;margin-bottom:8px;letter-spacing:.3px">🎮 ¿Cómo jugar online?</div>'+
       '<div style="margin-bottom:10px">'+
-        '<div style="font-weight:800;color:#ffe49a;margin-bottom:3px">🏠 Crear sala privada</div>'+
-        'Tú creas la sala con una <b style="color:#ffe49a">contraseña</b> y compartes el <b style="color:#ffe49a">código</b> con tu rival. Si alguien se desconecta, la partida se puede <b style="color:#ffe49a">reanudar</b> en 5 minutos.</div>'+
+        '<div style="font-weight:800;color:#ffe49a;margin-bottom:3px">🔒 Sala privada (con contraseña)</div>'+
+        'Creas la sala con una <b style="color:#ffe49a">contraseña</b> y compartes el <b style="color:#ffe49a">código</b> con tu rival. Solo quien tenga la contraseña puede unirse.</div>'+
       '<div style="margin-bottom:10px">'+
-        '<div style="font-weight:800;color:#a8c4ff;margin-bottom:3px">🆓 Crear sala pública</div>'+
-        'Sala abierta <b style="color:#a8c4ff">sin contraseña</b>: cualquiera con el código puede entrar. Si alguien se cae, la partida <b style="color:#a8c4ff">termina</b> (sin reanudación).</div>'+
+        '<div style="font-weight:800;color:#a8c4ff;margin-bottom:3px">🆓 Sala pública (sin contraseña)</div>'+
+        'Sala abierta <b style="color:#a8c4ff">sin contraseña</b>: cualquiera con el código puede entrar directamente.</div>'+
+      '<div style="margin-bottom:10px">'+
+        '<div style="font-weight:800;color:#9adf9a;margin-bottom:3px">🔌 Reanudar una partida</div>'+
+        'Si se cae tu conexión, la sala sigue abierta como "Partida en curso" durante <b style="color:#ffe49a">10 minutos</b>. Busca tu sala y pulsa <b style="color:#ffe49a">Reanudar</b>. Funciona en <b>salas públicas y privadas</b>.</div>'+
       '<div style="margin-bottom:10px">'+
         '<div style="font-weight:800;color:#e2b0ff;margin-bottom:3px">🃏 Habitación Bizarra</div>'+
         'Entras con tu nick y pulsas el <b style="color:#e2b0ff">Botón de Pánico</b>: te empareja al azar con otro visitante. Mínimo <b style="color:#e2b0ff">3 jugadores</b> dentro.</div>'+
-      '<div style="margin-bottom:10px">'+
-        '<div style="font-weight:800;color:#9adf9a;margin-bottom:3px">🔌 Reanudar una partida</div>'+
-        'Si se cae tu conexión, la sala sigue abierta como "Partida en curso" durante <b style="color:#ffe49a">5 minutos</b>. Busca tu sala y pulsa <b style="color:#ffe49a">Reanudar</b>.</div>'+
       '<div style="padding-top:8px;border-top:1px solid rgba(255,210,74,.18);font-size:11.5px;color:#b8aacb">'+
         '💡 También puedes jugar <b style="color:#ffe49a">Local</b> (2 jugadores en este dispositivo) o contra la <b style="color:#ffe49a">IA</b> (4 niveles) desde el menú principal.</div>';
     box.insertBefore(div,box.firstChild);
@@ -396,7 +401,7 @@ export const CENTRAL_LOBBY_PATCH = `
     lp.dataset.bfReq='1';
     var ig=lp.closest('.ig');
     if(ig){var lbl=ig.querySelector('label');if(lbl)lbl.textContent='Contraseña';}
-    lp.placeholder='Obligatoria (partida privada)';
+    lp.placeholder='Contraseña de la sala';
     // Inyecta el selector de tipo de sala sobre el campo de contraseña.
     if(!document.getElementById('bf-room-mode')){
       var modeCss=document.createElement('style');
@@ -405,12 +410,12 @@ export const CENTRAL_LOBBY_PATCH = `
       var toggle=document.createElement('div');
       toggle.id='bf-room-mode';
       toggle.style.cssText='display:flex;gap:8px;margin:10px 0';
-      toggle.innerHTML='<button type="button" data-mode="private" class="bf-mode-pill active">🔒 Privada (con reanudación)</button><button type="button" data-mode="free" class="bf-mode-pill">🆓 Pública (sin reanudación)</button>';
+      toggle.innerHTML='<button type="button" data-mode="private" class="bf-mode-pill active">🔒 Privada (con contraseña)</button><button type="button" data-mode="free" class="bf-mode-pill">🆓 Pública (sin contraseña)</button>';
       ig.parentNode.insertBefore(toggle,ig);
       var freeNote=document.createElement('div');
       freeNote.id='bf-free-note';
       freeNote.style.cssText='display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:rgba(20,40,80,.4);border:1px solid rgba(90,150,255,.4);font-size:12px;color:#a8c4ff;line-height:1.4';
-      freeNote.innerHTML='⚠️ <b>Sala pública</b>: sin contraseña. Si <b>cualquier jugador</b> pierde la conexión, la partida <b>termina y se cierra la sala</b> (no hay reanudación).';
+      freeNote.innerHTML='🆓 <b>Sala pública</b>: sin contraseña. Cualquiera con el código puede unirse. Si alguien se desconecta, la partida se puede <b>reanudar</b> en 10 minutos.';
       ig.parentNode.insertBefore(freeNote,ig);
       toggle.querySelectorAll('.bf-mode-pill').forEach(function(btn){
         btn.onclick=function(){
@@ -426,7 +431,7 @@ export const CENTRAL_LOBBY_PATCH = `
     }
     var note=document.querySelector('#s-lobby .setup-box .note-box');
     if(note&&note.innerHTML.indexOf('La <b>contraseña</b> es opcional')!==-1){
-      note.innerHTML=note.innerHTML.replace('La <b>contraseña</b> es opcional (vacía = sala abierta).','La <b>contraseña</b> es <b>obligatoria</b> en salas privadas (solo quien la sepa puede unirse y reanudar la partida). Elige <b>Pública</b> arriba para una sala abierta sin reanudación.');
+      note.innerHTML=note.innerHTML.replace('La <b>contraseña</b> es opcional (vacía = sala abierta).','La <b>contraseña</b> es <b>obligatoria</b> en salas privadas. Elige <b>Pública</b> arriba para una sala abierta sin contraseña.');
     }
     bfGuardCreateButton();
   }
@@ -443,14 +448,13 @@ export const CENTRAL_LOBBY_PATCH = `
     if(s.classList.contains('bf-lobby-ready')){lobbyTicks=0;return;}
     if(++lobbyTicks>5)revealLobby();
   },500);
-  // Refresco frecuente (8s) para que las salas nuevas aparezcan enseguida;
-  // el "toque" del host mantiene su sala visible en el servidor cada ~24s.
+  // Refresco frecuente (3s) para que las salas nuevas aparezcan enseguida.
   var tick=0;
   setInterval(function(){
     tick++;
-    if(tick%3===0&&typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&NET.peer&&NET.peer.open&&!(NET.conn&&NET.conn.open))request('touch',{code:NET.code}).catch(function(){});
+    if(tick%8===0&&typeof NET!=='undefined'&&NET.role==='host'&&NET.code&&NET.peer&&NET.peer.open&&!(NET.conn&&NET.conn.open))request('touch',{code:NET.code}).catch(function(){});
     if(typeof isLobby==='function'&&isLobby()&&canShowList())centralList();
-  },8000);
+  },3000);
 })();
 </script>
 `;

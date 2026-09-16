@@ -121,23 +121,16 @@ export const SERVER_RELAY_PATCH = `
           res.msgs.forEach(function(m) { if (NET.conn) NET.conn._dispatch(m.data); });
           lastMsgSeq = res.msg_seq;
         }
-        // Host: detectar que el invitado se ha unido
+        // Host: detectar que el invitado se ha unido. gameRelay.join ya
+        // puso status='playing' y guest_name en la sala, así que NO hay que
+        // llamar a register_playing (destruiría el estado del relay: snap,
+        // msgs, guest_nick…).
         if (NET.role === 'host' && res.guest_joined && !guestJoinedFired) {
           guestJoinedFired = true;
           if (!NET.conn) {
             NET.conn = createVirtualConn('p', NET.code);
             if (typeof window.onHostConn === 'function') window.onHostConn(NET.conn);
             NET.conn._open();
-            // Marcar la sala como 'playing' en el lobby
-            if (window.bfLobbyRequest) {
-              window.bfLobbyRequest('register_playing', {
-                code: NET.code,
-                nicks: [NET.names_self || 'Jugador 1', (typeof G !== 'undefined' && G.names && G.names.o) || 'Jugador 2'],
-                hasPass: !!NET.pass,
-                pass: NET.pass || '',
-                resume_token: ''
-              }).catch(function(){});
-            }
           }
         }
         // El otro jugador se ha desconectado
@@ -177,7 +170,15 @@ export const SERVER_RELAY_PATCH = `
           code: NET.code, name: name, hasPass: !!NET.pass,
           pass: NET.pass, avatar: avUrl
         }).then(function() {
+          // Setea LOBBY._reg para que canShowList() devuelva true y el host
+          // vea la lista de salas (sin esto, el lobby queda en blanco).
+          if (typeof LOBBY !== 'undefined') {
+            LOBBY._reg = { code: NET.code, name: name, hasPass: !!NET.pass, confirmed: true };
+          }
           renderLobby('browse');
+          // Refresca la lista INMEDIATAMENTE para que la sala aparezca sin
+          // esperar al intervalo de 3 s.
+          if (typeof window.refreshList === 'function') window.refreshList();
           NET.peer = new FakePeer();
           guestJoinedFired = false;
           lastSnapSeq = 0;
@@ -192,6 +193,46 @@ export const SERVER_RELAY_PATCH = `
     window.hostCreate.__bfRelay = 1;
     return true;
   }
+
+  // ---- Reanudar partida: el host (side 'p') o el invitado (side 'g') pueden
+  // reanudar. Se detecta cuál es cada uno comparando su nick con resume_nicks.
+  window.bfRelayResumeGame = function(code, password, nick, nicks) {
+    var isHost = nicks && nicks[0] && String(nicks[0]).toLowerCase() === String(nick || '').toLowerCase();
+    var side = isHost ? 'p' : 'g';
+
+    NET.role = isHost ? 'host' : 'client';
+    NET.mySide = side;
+    NET.code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    NET.pass = String(password || '').trim();
+    NET.names_self = nick || (isHost ? 'Jugador 1' : 'Jugador 2');
+
+    if (typeof renderLobby === 'function') renderLobby('hostwait');
+    if (typeof lobbyStatus === 'function') lobbyStatus('Reanudando partida…');
+
+    var avUrl = '';
+    try { if (window.bfMyAvatar && window.bfMyAvatar.url) avUrl = window.bfMyAvatar.url; } catch(e) {}
+
+    relayRequest('resume', { code: NET.code, side: side, password: NET.pass, nick: nick, avatar: avUrl }).then(function(res) {
+      if (!res || res.error || !res.ok) {
+        if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo reanudar la partida.');
+        return;
+      }
+      NET.peer = new FakePeer();
+      NET.conn = createVirtualConn(side, NET.code);
+      NET.conn._open();
+      if (res.snap) {
+        NET.conn._dispatch(res.snap);
+      }
+      lastSnapSeq = res.snap_seq || 0;
+      lastMsgSeq = res.msg_seq || 0;
+      guestJoinedFired = true;
+      otherLeftShown = false;
+      startPolling();
+      if (typeof leaveLobbyForGame === 'function') leaveLobbyForGame();
+    }).catch(function() {
+      if (typeof lobbyError === 'function') lobbyError('No se pudo reanudar la partida.');
+    });
+  };
 
   // ---- Intercept clientJoin: el invitado se une vía relay ----
   function installClientJoin() {

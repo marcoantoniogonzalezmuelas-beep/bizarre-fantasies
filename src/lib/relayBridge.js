@@ -13,7 +13,8 @@ export function bindRelayBridge(iframeRef) {
       const response = await base44.functions.invoke('gameRelay', payload || {});
       frameWindow.postMessage({ bfRelayResult: { requestId, data: response.data } }, '*');
     } catch (error) {
-      frameWindow.postMessage({ bfRelayResult: { requestId, error: error.message || 'Relay error' } }, '*');
+      const errMsg = error.response?.data?.error || error.message || 'Relay error';
+      frameWindow.postMessage({ bfRelayResult: { requestId, error: errMsg } }, '*');
     }
   };
   window.addEventListener('message', onMessage);

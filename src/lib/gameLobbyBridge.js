@@ -11,7 +11,8 @@ export function bindGameLobbyBridge(iframeRef) {
       const response = await base44.functions.invoke('gameLobby', payload || {});
       frameWindow.postMessage({ bfLobbyResult: { requestId, data: response.data } }, '*');
     } catch (error) {
-      frameWindow.postMessage({ bfLobbyResult: { requestId, error: error.message || 'Lobby unavailable' } }, '*');
+      const errMsg = error.response?.data?.error || error.message || 'Lobby unavailable';
+      frameWindow.postMessage({ bfLobbyResult: { requestId, error: errMsg } }, '*');
     }
   };
   window.addEventListener('message', onMessage);

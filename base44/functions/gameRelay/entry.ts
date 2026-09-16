@@ -61,6 +61,9 @@ export default async function(req: Request): Promise<Response> {
       state.guest_avatar = String(body.avatar || '').slice(0, 600);
       state.guest_last_seen = now;
       state.guest_left_at = null;
+      // resume_nicks para que la sala aparezca como "Partida en curso" con
+      // los nicks correctos si alguien se desconecta.
+      state.resume_nicks = [room.host_name || state.room_name || '', state.guest_nick].filter(Boolean);
       await base44.asServiceRole.entities.GameRoom.update(room.id, {
         status: 'playing',
         guest_name: state.guest_nick,
@@ -91,6 +94,9 @@ export default async function(req: Request): Promise<Response> {
 
       const updates: any = { state };
       if (otherStale && !room.left_at) updates.left_at = now;
+      // Si el otro jugador ha vuelto (ya no está stale), quita left_at para
+      // que la sala deje de aparecer como "Partida en curso" en el lobby.
+      if (!otherStale && room.left_at) updates.left_at = null;
       await base44.asServiceRole.entities.GameRoom.update(room.id, updates);
 
       return Response.json({
@@ -126,6 +132,34 @@ export default async function(req: Request): Promise<Response> {
       else state.guest_last_seen = now;
       await base44.asServiceRole.entities.GameRoom.update(room.id, { state });
       return Response.json({ ok: true, msg_seq: state.msg_seq });
+    }
+
+    // ---- RESUME: un jugador reanuda una partida en curso ----
+    // A diferencia de 'join', no crea una nueva partida: recupera el estado
+    // existente. El host (side='p') y el invitado (side='g') pueden reanudar.
+    if (action === 'resume') {
+      if (state.password && String(body.password || '') !== state.password) {
+        return Response.json({ error: 'Wrong password' }, { status: 403 });
+      }
+      const side = String(body.side || 'g');
+      if (side === 'p') {
+        state.host_last_seen = now;
+        state.host_left_at = null;
+      } else {
+        state.guest_last_seen = now;
+        state.guest_left_at = null;
+        if (!state.guest_nick) state.guest_nick = String(body.nick || '').slice(0, 28);
+      }
+      await base44.asServiceRole.entities.GameRoom.update(room.id, { left_at: null, state });
+      return Response.json({
+        ok: true,
+        snap: state.snap,
+        snap_seq: state.snap_seq,
+        msgs: (state.msgs || []).slice(-50),
+        msg_seq: state.msg_seq,
+        role: side === 'p' ? 'host' : 'client',
+        side,
+      });
     }
 
     // ---- LEAVE: un jugador abandona ----
