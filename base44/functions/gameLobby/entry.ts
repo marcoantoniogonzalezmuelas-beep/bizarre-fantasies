@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     const token = String(body.token || '').slice(0, 80);
     const cutoff = Date.now() - 90000;
-    const LEFT_TTL = 300000; // 5 minutos tras salir un jugador
+    const LEFT_TTL = 600000; // 10 minutos tras salir un jugador (igual que el ROOM_TTL del relay)
     // Una sala creada y en espera vive SIEMPRE 5 minutos (visible sin
     // intermitencias). Pasados los 5 minutos sin que nadie se una, se borra.
     const WAITING_TTL = 300000;

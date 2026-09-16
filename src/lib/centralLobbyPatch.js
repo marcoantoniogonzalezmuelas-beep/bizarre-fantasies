@@ -26,8 +26,8 @@ export const CENTRAL_LOBBY_PATCH = `
     var task=pending[result.requestId];delete pending[result.requestId];
     if(result.error)task.reject(new Error(result.error));else task.resolve(result.data||{});
   });
-  // Expone la función de petición al lobby para que otros parches (p. ej.
-  // netReconnectPatch) puedan registrar la sala como "partida en curso".
+  // Expone la función de petición al lobby para que el parche de relay pueda
+  // registrar la sala como "partida en curso".
   window.bfLobbyRequest=request;
 
   // Mapa nick → avatar (lo envía la página padre desde la BD). Se usa para
@@ -82,19 +82,6 @@ export const CENTRAL_LOBBY_PATCH = `
       var sub=own.querySelector('.room-sub');if(sub&&!sub.querySelector('.bf-own-room'))sub.insertAdjacentHTML('beforeend',' · <b class="bf-own-room" style="color:'+(isFree?'#a8c4ff':'#FFD24A')+'">TU SALA '+(isFree?'PÚBLICA':'PRIVADA')+'</b>');
     }
     Array.from(document.querySelectorAll('#s-lobby button')).forEach(function(button){if(/Crear sala/i.test(button.textContent)){button.disabled=true;button.textContent='🏠 Tu sala está activa';}});
-  }
-  function injectResumeCard(){
-    // Si hay una partida en curso guardada en este dispositivo, mostrar una
-    // tarjeta destacada para volver a entrar y retomarla. Las salas PÚBLICAS no
-    // guardan reanudación (no hay contraseña), así que no se muestra.
-    var info=window.__bfGetResume&&window.__bfGetResume();
-    if(!info||!info.pass||document.getElementById('bf-resume-card'))return;
-    if(typeof NET!=='undefined'&&NET.role)return;
-    var box=document.querySelector('#s-lobby .setup-box');if(!box)return;
-    var html='<div id="bf-resume-card" class="room-card" style="border:2px solid #7ddf7d;box-shadow:0 0 18px rgba(90,220,120,.35)"><div class="room-ico">🔌</div><div class="room-info"><div class="room-name">Tienes una partida en curso</div><div class="room-sub">código <b>'+info.code+'</b> · puedes volver a entrar y continuar</div></div><button class="btn primary sm" onclick="bfResumeMatch()">Reconectar</button></div>';
-    var first=box.querySelector('.room-card');
-    if(first)first.insertAdjacentHTML('beforebegin',html);
-    else box.insertAdjacentHTML('beforeend',html);
   }
   function decorateRoomAvatars(){
     // Para cada tarjeta de sala visible, sustituye el icono genérico por el
@@ -162,30 +149,51 @@ export const CENTRAL_LOBBY_PATCH = `
         var clone=btn.cloneNode(true);
         clone.textContent='Reanudar';
         clone.className='btn primary sm';
-        clone.onclick=function(){if(window.bfRejoinResumeRoom)window.bfRejoinResumeRoom(r.id,r.hasPass,r.nicks||[]);};
+        clone.onclick=function(){if(window.bfRelayResume)window.bfRelayResume(r.id,r.hasPass,r.nicks||[]);};
         btn.parentNode.replaceChild(clone,btn);
       }
       });
       }
-  window.bfRejoinResumeRoom=function(code,hasPass,nicks){
-    // Reanudar = pedir la contraseña de la sala. La contraseña identifica al
-    // jugador como uno de los dos originales, sin depender de datos guardados
-    // en este dispositivo (puede haberse recargado o cambiado de navegador).
-    if(window.bfAskResumePass){window.bfAskResumePass(code,'',nicks||[]);return;}
-    return window.bfLegacyRejoin&&window.bfLegacyRejoin(code,hasPass);
-  };
-  window.bfLegacyRejoin=function(code,hasPass){
-    // La contraseña (guardada en el dispositivo al empezar la partida) identifica
-    // a los dos jugadores originales. No hace falta el token de reanudación: la
-    // contraseña es fiable desde el instante 0 (no depende de que se haya
-    // intercambiado el token antes de la desconexión). El host valida la
-    // contraseña al recibir el 'hello'.
-    var resumeInfo=window.__bfGetResume&&window.__bfGetResume();
-    if(!resumeInfo||resumeInfo.code!==code){
-      try{if(typeof notif==='function')notif('No tienes una partida guardada para reanudar en esta sala.');else alert('No tienes una partida guardada para reanudar en esta sala.');}catch(e){}
+  // Reanudar partida con relay por servidor: el estado está en el servidor,
+  // así que reanudar = pedir la contraseña y llamar a clientJoin (que hace
+  // gameRelay.join y recibe el estado actual). Sin localStorage, sin tokens.
+  window.bfRelayResume=function(code,hasPass,nicks){
+    var nick='';
+    try{nick=localStorage.getItem('bfMyNick')||localStorage.getItem('bfNick')||'';}catch(e){}
+    // Si el nick coincide con uno de los originales, usa esa grafía exacta.
+    var matchNick=(nicks||[]).find(function(n){return String(n).toLowerCase()===String(nick).toLowerCase();});
+    if(matchNick)nick=matchNick;
+    if(!hasPass){
+      // Sala pública: unirse directamente.
+      if(typeof window.clientJoin==='function')window.clientJoin(code,nick,'');
       return;
     }
-    if(window.bfResumeMatch)window.bfResumeMatch();
+    // Sala privada: pedir la contraseña.
+    var el=document.getElementById('bf-resume-pass');
+    if(!el){
+      var st=document.createElement('style');
+      st.textContent='#bf-resume-pass{position:fixed;inset:0;z-index:100700;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 40%,rgba(20,12,34,.85),rgba(8,5,14,.95));backdrop-filter:blur(4px)}#bf-resume-pass .bf-rp-box{max-width:340px;width:100%;padding:24px 22px;border-radius:18px;background:linear-gradient(180deg,#1b1430,#120d22);border:2px solid rgba(255,210,74,.55);box-shadow:0 18px 50px rgba(0,0,0,.7);text-align:center;font-family:Rubik,sans-serif}#bf-resume-pass .bf-rp-t{font-family:Cinzel,serif;font-weight:900;font-size:18px;color:#ffe49a}#bf-resume-pass .bf-rp-s{margin-top:8px;font-size:13px;color:#cfc6dd;line-height:1.45}#bf-resume-pass .bf-rp-err{display:none;margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(120,30,30,.4);border:1px solid rgba(255,120,100,.55);color:#ffb0a0;font-size:12.5px;font-weight:700}#bf-resume-pass .bf-rp-in{margin-top:14px;width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#efe9dc;font-size:15px;text-align:center}#bf-resume-pass .bf-rp-btns{margin-top:16px;display:flex;gap:10px;justify-content:center}#bf-resume-pass .bf-rp-ok{padding:11px 20px;border-radius:11px;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer}#bf-resume-pass .bf-rp-no{padding:11px 20px;border-radius:11px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer}';
+      document.head.appendChild(st);
+      el=document.createElement('div');
+      el.id='bf-resume-pass';
+      el.innerHTML='<div class="bf-rp-box"><div class="bf-rp-t">Reanudar la partida</div><div class="bf-rp-s">Escribe la <b>contraseña de la sala</b> para volver a entrar. El estado de la partida está guardado en el servidor.</div><div class="bf-rp-err"></div><input class="bf-rp-in" type="password" autocomplete="off" placeholder="Contraseña de la sala"><div class="bf-rp-btns"><button class="bf-rp-ok">Reanudar</button><button class="bf-rp-no">Cancelar</button></div></div>';
+      document.body.appendChild(el);
+      var input=el.querySelector('.bf-rp-in');
+      var go=function(){
+        var pass=String(input.value||'').trim();
+        if(!pass){el.querySelector('.bf-rp-err').style.display='block';el.querySelector('.bf-rp-err').textContent='⚠️ Escribe la contraseña de la sala.';return;}
+        el.style.display='none';
+        if(typeof window.clientJoin==='function')window.clientJoin(code,nick,pass);
+      };
+      el.querySelector('.bf-rp-ok').onclick=go;
+      input.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+      el.querySelector('.bf-rp-no').onclick=function(){el.style.display='none';};
+    }
+    el.dataset.code=code;
+    el.querySelector('.bf-rp-err').style.display='none';
+    el.querySelector('.bf-rp-in').value='';
+    el.style.display='flex';
+    setTimeout(function(){try{el.querySelector('.bf-rp-in').focus();}catch(e){}},80);
   };
   function injectLobbyInstructions(){
     var box=document.querySelector('#s-lobby .setup-box');
@@ -223,7 +231,6 @@ export const CENTRAL_LOBBY_PATCH = `
       decorateHostedRoom();
       decorateRoomAvatars();
       decorateResumeRooms();
-      injectResumeCard();
       injectLobbyInstructions();
       if(box)box.scrollTop=savedScroll;
       if(savedWindowScroll>0)window.scrollTo(0,savedWindowScroll);
@@ -313,7 +320,7 @@ export const CENTRAL_LOBBY_PATCH = `
       var r=LOBBY._reg;if(!r)return Promise.resolve();
       // Si la partida YA ha empezado (el juego llama a dirUnregister desde
       // leaveLobbyForGame), NO borramos la sala del backend: debe quedar
-      // registrada como "playing" (netReconnectPatch la marca) para que los
+      // registrada como "playing" (el parche de relay la marca) para que los
       // dos jugadores puedan reanudarla si se cae la conexión.
       if(typeof G!=='undefined'&&G.online)return Promise.resolve();
       LOBBY._reg=null;return request('unregister',{code:r.code}).catch(function(){});

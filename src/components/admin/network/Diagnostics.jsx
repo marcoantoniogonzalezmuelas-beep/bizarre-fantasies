@@ -3,25 +3,21 @@ import React from 'react';
 export default function Diagnostics({ turn, rooms, visitors, onlineMatches, now }) {
   const issues = [];
 
-  // TURN
+  // Relay
   if (turn?.error) {
-    issues.push({ sev: 'high', area: 'TURN', msg: `Error del proveedor: ${turn.error}`, hint: 'El relay de Metered no responde. Las partidas online en móvil pueden no arrancar (CGNAT sin relay).' });
+    issues.push({ sev: 'high', area: 'Relay', msg: `Error del servidor: ${turn.error}`, hint: 'El servidor de relay no responde. Las partidas online no funcionarán hasta que se recupere.' });
   } else if (turn?.ms != null && turn.ms > 2500) {
-    issues.push({ sev: 'medium', area: 'TURN', msg: `Latencia alta: ${turn.ms} ms`, hint: 'Metered responde pero tarde. La negociación WebRTC tarda más y la conexión puede degradarse.' });
-  } else if (turn && !turn.iceServers?.some(s => /^turns?:/i.test(Array.isArray(s.urls) ? s.urls.join(' ') : s.urls || ''))) {
-    issues.push({ sev: 'high', area: 'TURN', msg: 'No hay relay TURN en la lista', hint: 'Sin TURN no hay partida en NAT simétrico/CGNAT. Revisa la cuota de Metered o las credenciales.' });
-  } else if (turn?.source === 'fallback') {
-    issues.push({ sev: 'medium', area: 'TURN', msg: 'Usando relay de respaldo (OpenRelay)', hint: 'Metered no respondió o agotó cuota. Funciona, pero el respaldo público es menos fiable.' });
+    issues.push({ sev: 'medium', area: 'Relay', msg: `Latencia alta: ${turn.ms} ms`, hint: 'El servidor responde pero tarde. El polling puede tardar más y la partida se sentirá lenta.' });
   }
 
   // Salas atascadas
   const staleRooms = rooms.filter(r => r.status === 'playing' && (now - Date.parse(r.updated_date || r.created_date || 0)) > 120000);
   if (staleRooms.length) {
-    issues.push({ sev: 'medium', area: 'Salas', msg: `${staleRooms.length} sala(s) en partida sin latido > 2 min`, hint: 'Posible desconexión no notificada. Se auto-limpian tras 3 h, pero pueden confundir al emparejamiento.' });
+    issues.push({ sev: 'medium', area: 'Salas', msg: `${staleRooms.length} sala(s) en partida sin latido > 2 min`, hint: 'Posible desconexión no notificada. El relay las auto-limpia tras 10 min de inactividad.' });
   }
-  const leftExpired = rooms.filter(r => (r.left_at || r.state?.left_at) && now - (r.left_at || r.state.left_at) > 300000);
+  const leftExpired = rooms.filter(r => (r.left_at || r.state?.left_at) && now - (r.left_at || r.state.left_at) > 600000);
   if (leftExpired.length) {
-    issues.push({ sev: 'low', area: 'Salas', msg: `${leftExpired.length} sala(s) con abandono caducado (> 5 min)`, hint: 'Un jugador salió y nadie reanudó. La BD las borrará en el siguiente ciclo de limpieza.' });
+    issues.push({ sev: 'low', area: 'Salas', msg: `${leftExpired.length} sala(s) con abandono caducado (> 10 min)`, hint: 'Un jugador salió y nadie reanudó. La BD las borrará en el siguiente ciclo de limpieza.' });
   }
 
   // Visitantes

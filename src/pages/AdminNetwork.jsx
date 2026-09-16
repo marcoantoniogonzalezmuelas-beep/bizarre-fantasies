@@ -48,11 +48,15 @@ export default function AdminNetwork() {
     setTesting(true);
     const t0 = Date.now();
     try {
-      const res = await base44.functions.invoke('getTurnCredentials', {});
-      const ms = Date.now() - t0;
-      setTurn({ ...res.data, ms });
+      await base44.functions.invoke('gameRelay', { action: 'poll', code: 'TEST00', side: 'p' });
+      setTurn({ ok: true, ms: Date.now() - t0, source: 'relay' });
     } catch (e) {
-      setTurn({ error: e?.message || 'No se pudo contactar con el servidor', ms: Date.now() - t0 });
+      const msg = e?.message || '';
+      if (msg.includes('Room not found') || msg.includes('not found') || msg.includes('Code required')) {
+        setTurn({ ok: true, ms: Date.now() - t0, source: 'relay' });
+      } else {
+        setTurn({ error: msg || 'No se pudo contactar con el servidor', ms: Date.now() - t0 });
+      }
     }
     setTesting(false);
   }, []);
@@ -77,7 +81,7 @@ export default function AdminNetwork() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-heading text-3xl font-black text-[#fff5dc]">Red y conectividad</h1>
-            <p className="mt-1 text-sm text-[#cfc6dd]">Estado del servidor TURN, salas activas, visitantes en línea y diagnóstico de errores de conectividad.</p>
+            <p className="mt-1 text-sm text-[#cfc6dd]">Estado del servidor de relay, salas activas, visitantes en línea y diagnóstico de errores de conectividad.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link to="/admin" className="rounded-xl border border-[#ffd24a66] px-4 py-2 text-sm font-black text-[#ffe49a] hover:bg-[#ffd24a] hover:text-[#3a2600]">Backoffice de cartas</Link>
