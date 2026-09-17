@@ -36,13 +36,16 @@ export const AVATAR_PATCH = `
   // ---- Avatar guardado (sesión actual) ----
   var KEY = 'bfMyAvatar';
   function loadAv(){ try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e) {} return null; }
-  function saveAv(av){
+  function saveAv(av, skipDb){
     // Rechaza emblemas de IA: no se guardan ni en localStorage ni en la BD.
     if (av && isAiEmblem(av.url)) return;
     try { localStorage.setItem(KEY, JSON.stringify(av)); } catch(e) {}
     window.bfMyAvatar = av;
-    // Si hay un nick escrito en cualquiera de los campos, avisa al padre para
-    // que guarde/actualice el avatar en la BD (PlayerAvatar) inmediatamente.
+    // Solo guarda en la BD cuando el jugador ELIGE el avatar manualmente
+    // (skipDb=true = auto-relleno desde la BD: NO re-guarda, porque el scan
+    // de campos puede pillar el nick del rival en multiplayer y guardar el
+    // avatar del invitado con el nick del host).
+    if (skipDb) return;
     var nick = '';
     ['p1name','hname','jname','jlname','p2name'].forEach(function(id){
       var i = document.getElementById(id);
@@ -239,7 +242,11 @@ export const AVATAR_PATCH = `
     if (avUrl) {
       // No auto-rellena con un emblema de IA (datos corruptos en la BD).
       if (isAiEmblem(avUrl)) { clearAv(); return; }
-      saveAv({ url: avUrl, name: '' });
+      // skipDb=true: el auto-relleno NO guarda en la BD. Solo carga el avatar
+      // local (localStorage + UI). Si guardase aquí, el scan de campos de
+      // saveAv podría pillar el nick del rival en multiplayer y guardar el
+      // avatar de un jugador con el nick del otro.
+      saveAv({ url: avUrl, name: '' }, true);
       document.querySelectorAll('.bf-av-pick').forEach(function(b){
         var av = window.bfMyAvatar;
         if (av && av.url) { b.innerHTML = '<img src="' + av.url + '">'; b.classList.remove('bf-av-empty'); }
