@@ -166,7 +166,7 @@ export const CENTRAL_LOBBY_PATCH = `
     if(matchNick)nick=matchNick;
     function doResume(pass){
       if(window.bfRelayResumeGame)window.bfRelayResumeGame(code,pass,nick,nicks||[]);
-      else if(typeof window.clientJoin==='function')window.clientJoin(code,nick,pass);
+      else if(typeof window.clientJoin==='function')window.clientJoin(code,pass,nick);
     }
     if(!hasPass){
       // Sala pública: reanudar directamente (sin contraseña).

@@ -235,6 +235,7 @@ export const SERVER_RELAY_PATCH = `
   };
 
   // ---- Intercept clientJoin: el invitado se une vía relay ----
+  // Signatura nativa del juego: clientJoin(code, pass, name).
   function installClientJoin() {
     if (typeof window.clientJoin !== 'function' || window.clientJoin.__bfRelay) return false;
     window.clientJoin = function(code, pass, name) {

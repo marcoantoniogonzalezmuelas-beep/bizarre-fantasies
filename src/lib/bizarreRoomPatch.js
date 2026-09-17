@@ -641,7 +641,7 @@ export const BIZARRE_ROOM_PATCH = `
       var jname=document.getElementById('jname')||document.getElementById('jlname');
       if(jname)jname.value=session.nick;
       if(typeof window.clientJoin==='function'){
-        window.clientJoin(myMatch.code,session.nick,myMatch.pass);
+        window.clientJoin(myMatch.code,myMatch.pass,session.nick);
       }else if(typeof window.doJoinFromList==='function'){
         // Fallback: rellenar y llamar doJoinFromList
         if(window.doJoinFromList)window.doJoinFromList();
