@@ -310,6 +310,18 @@ export const SERVER_RELAY_PATCH = `
           lastMsgSeq = 0;
           otherLeftShown = false;
           startPolling();
+          // Volver a la lista de salas para que el host vea su sala creada
+          // en vez de quedarse en el formulario. renderRoomList() cambia la
+          // pantalla al modo "lista de salas" (browse) y refreshList()
+          // actualiza los datos desde el backend (incluye la sala nueva).
+          setTimeout(function() {
+            if (typeof window.renderRoomList === 'function') {
+              window.renderRoomList();
+            }
+            if (typeof window.refreshList === 'function') {
+              window.refreshList();
+            }
+          }, 800);
         }, 200);
       }, 50);
     };
