@@ -166,8 +166,13 @@ export function buildFumbleRollPatch(lang) {
     var t = roll();
     if(t.ok){
       log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + 'OK.');
+      window.__bfFumbleThisAct = false;
       return false;
     }
+    // Flag global: la acción actual ha pifiado. mpAbilityCinePatch lo consulta
+    // para NO enviar la cinemática de habilidad al invitado cuando el host
+    // pifia (el invitado vería la animación de una habilidad que no se ejecutó).
+    window.__bfFumbleThisAct = true;
     log('lx', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + (t.epic ? '${T.epicLog}' : (t.r === 1 ? '${T.oneLog}' : '${T.fumbleLog}')));
     pop(a.side, a.h.id, t.epic, t.r);
     if(t.epic) selfBackfire(a);
@@ -277,10 +282,13 @@ export function buildFumbleRollPatch(lang) {
       // Ya se tiró el dado en esta misma acción (p.ej. habilidad que vuelve a
       // pasar por aquí tras elegir objetivo): no se tira otra vez.
       if(rolledThisAct) return orig.apply(self, arguments);
+      // Reset del flag de pifia al inicio de cada acción de habilidad.
+      window.__bfFumbleThisAct = false;
       if(isSummon(h) || isPassive(h)) rolledThisAct = true;
       if(isSummon(h)){
         var r = die(30);
         if(r === 19 || r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
+          window.__bfFumbleThisAct = true;
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
           pop(side, h.id, false, r);
           h.abilityUsed = true;
@@ -304,6 +312,7 @@ export function buildFumbleRollPatch(lang) {
       }
       if(isPassive(h)){
         if(passiveFumbled(side, h)){
+          window.__bfFumbleThisAct = true;
           h.abilityUsed = true;
           try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
           setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);

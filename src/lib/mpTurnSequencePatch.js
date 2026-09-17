@@ -28,7 +28,7 @@ export const MP_TURN_SEQUENCE_PATCH = `
   function busy(){ return cineBusy() || fxBusy() || killPending(); }
 
   window.bfStepWhenCalm = function(next){
-    var min = 400, max = 12000, quiet = 900, step = 150, elapsed = 0, quietFrom = 0;
+    var min = 400, max = 6000, quiet = 600, step = 150, elapsed = 0, quietFrom = 0;
     function tick(){
       elapsed += step;
       if(busy()) quietFrom = 0;

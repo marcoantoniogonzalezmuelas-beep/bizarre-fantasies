@@ -65,7 +65,7 @@ export const MP_FX_SYNC_PATCH = `
         if (list && list.length && typeof NET !== 'undefined' && NET.role === 'host') {
           for (var i = 0; i < list.length; i++) pendingFx.push(list[i]);
           if (!sendTimer) {
-            sendTimer = setTimeout(function() { sendTimer = null; sendPendingFx(); }, 30);
+            sendTimer = setTimeout(function() { sendTimer = null; sendPendingFx(); }, 120);
           }
         }
       } catch(e) {}
@@ -88,10 +88,28 @@ export const MP_FX_SYNC_PATCH = `
     if (typeof NET === 'undefined' || NET.role !== 'client' || !NET.conn || NET.conn === lastConn) return;
     lastConn = NET.conn;
     try {
+      var fxQueue = [];
+      var fxDraining = false;
+      function drainFx() {
+        if (fxDraining || !fxQueue.length) return;
+        fxDraining = true;
+        var batch = fxQueue.splice(0, Math.min(fxQueue.length, 6));
+        try { if (typeof window.flushFx === 'function') window.flushFx(batch); } catch(e) {}
+        if (fxQueue.length) {
+          setTimeout(drainFx, 80);
+        } else {
+          fxDraining = false;
+        }
+      }
       NET.conn.on('data', function(m) {
         if (!m) return;
         if (m.t === 'bfFxSync' && m.evs && m.evs.length) {
-          try { if (typeof window.flushFx === 'function') window.flushFx(m.evs); } catch(e) {}
+          // Encola los eventos y los procesa en lotes pequeños con una
+          // pequeña pausa entre lotes. Sin esto, una ráfaga de 20+ eventos
+          // (ataque multi-objetivo, hechizo de área…) llega de golpe al
+          // invitado por el relay y congela el navegador varios segundos.
+          for (var i = 0; i < m.evs.length; i++) fxQueue.push(m.evs[i]);
+          drainFx();
         }
       });
     } catch(e) {}

@@ -42,7 +42,17 @@ export const MP_ABILITY_CINE_PATCH = `
           var k=h&&h.akind;
           // Los tokens (patitos, etc.) los gestiona tokenAbilitiesPatch: se saltan.
           if(!(k&&String(k).indexOf('tk_')===0)){
-            NET.conn.send({t:'bfAbilCine',side:side,hero:serializeHero(h)});
+            // Reset del flag de pifia antes de llamar al original. El original
+            // (envuelto por fumbleRollPatch) hace la tirada de pifia y pone
+            // __bfFumbleThisAct=true si pifica. Si pifica, NO enviamos la
+            // cinemática al invitado (no se ejecutó la habilidad → no hay
+            // animación que sincronizar). Si no pifica, enviamos después.
+            window.__bfFumbleThisAct=false;
+            var res=orig.apply(this,arguments);
+            if(!window.__bfFumbleThisAct){
+              NET.conn.send({t:'bfAbilCine',side:side,hero:serializeHero(h)});
+            }
+            return res;
           }
         }
       }catch(e){}
