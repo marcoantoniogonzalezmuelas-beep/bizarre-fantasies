@@ -1,5 +1,5 @@
-// Habilidades de los HÉROES BIZARROS (tokens). Antes se repartían por "akind",
-// pero varios tokens comparten el mismo akind heredado del juego original y sus
+// Habilidades de los HÉROES BIZARROS. Antes se repartían por "akind",
+// pero varios bizarros comparten el mismo akind heredado del juego original y sus
 // habilidades no hacían nada. Ahora cada bizarro se resuelve por su card_id:
 //
 //   tk_caj (La Caja de Zapatos) — normal: PIFIA (gag, no pasa nada);

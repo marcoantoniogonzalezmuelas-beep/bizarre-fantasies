@@ -123,7 +123,7 @@ export default function AdminCards() {
       - damage_enemy: inflige X de daño directo a un rival (o a todos si es área). (Magos, Vaqueros, No-muertos).
       - buff_self: sube un stat propio (cc, ad o he) al usar la habilidad. (Guerreros berserker, duelistas).
       - shield_self: se otorga un escudo de X puntos. (Tanques, protectores).
-      - summon_token: invoca un token/criatura aliada. (Nigromantes, invocadores bizarros).
+      - Las invocaciones nuevas requieren una implementación propia y NO deben inventarse automáticamente.
       - drenaje: inflige X de daño a un rival y el héroe se cura esa misma cantidad. (No-muertos, vampiros).
       - emborrachar: deja BORRACHO a un rival X turnos (-3 a sus atributos, algo de daño y 35% de fallar cada acción). (Bizarros, taberneros).
       - confundir: deja CONFUSO a un rival X turnos (50% de fallar cada acción). (Bizarros, ilusionistas).

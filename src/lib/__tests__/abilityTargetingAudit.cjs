@@ -1,5 +1,5 @@
 const prepare = require('./targetingHarness.cjs');
-const targeted = ['tor','Undertaker','Konb','vap','kre','pat','fut','gam','ret','ser','elder','zar','alf','dix','mor','renhu','pij','bat','nix','vex','sol','pac','rev','doc','caoffe','aje','rol','boski','nar','Faseve','tk_ban','tk_pez','tk_caj','tk_lav','tk_patito_goma','tk_unicornio'];
+const targeted = ['tor','Undertaker','Konb','vap','kre','pat','fut','gam','ret','ser','elder','zar','alf','dix','mor','renhu','pij','bat','nix','vex','sol','pac','rev','doc','caoffe','aje','rol','boski','nar','Faseve','bagslord','tk_ban','tk_pez','tk_caj','tk_lav','tk_patito_goma','tk_unicornio'];
 module.exports = function audit(html,cards,specs){
   const setup=prepare(html), results=[], extra=[];
   const assert=(value,label)=>{if(!value)throw Error(label);};
@@ -7,7 +7,7 @@ module.exports = function audit(html,cards,specs){
     const name=card.name+(elite?' elite':' normal')+'/'+mode;
     try{
       const t=setup(card,elite,mode,specs);t.start();const picks=t.drain();
-      let expected=(['pij','boski','nar','Faseve','tk_patito_goma'].includes(card.card_id)&&elite)||(['tk_caj','tk_lav'].includes(card.card_id)&&!elite)?0:card.card_id==='nix'||(card.card_id==='ret'&&elite)?2:1;
+      let expected=(['pij','boski','nar','Faseve','tk_patito_goma','bagslord'].includes(card.card_id)&&elite)||(['tk_caj','tk_lav'].includes(card.card_id)&&!elite)?0:card.card_id==='nix'||(card.card_id==='ret'&&elite)?2:1;
       if(mode==='ai')expected=0;
       assert(picks===expected,'Expected '+expected+' selections, got '+picks);
       assert(t.state.done===1&&!t.c.B.pending&&!t.c.__bfAbilityChoiceWaiting&&!t.state.invalidDamage,'Incomplete or invalid resolution');
@@ -26,5 +26,11 @@ module.exports = function audit(html,cards,specs){
   check('Mixed custom steps keep enemy and ally distinct',()=>{const card={card_id:'test_mixed',name:'Mixed',ability_name:'Mixed'}, spec={card_id:'test_mixed',status:'implemented',effect_type:'custom_steps',params:{steps:[{action:'damage',target:'enemy',amount:5},{action:'heal',target:'ally',amount:7}]}};const t=setup(card,false,'guest',[spec]);t.start();assert(t.drain()===2,'Needs two independent targets');assert(t.teams[t.foe][2].hp===35&&t.teams[t.side][2].hp===47,'Enemy healed or ally damaged');assert(t.state.done===1,'Mixed action incomplete');});
   check('Dedicated Retropoeta without editor spec',()=>{const card=cards.find(c=>c.card_id==='ret');const t=setup(card,true,'guest',[]);t.start();assert(t.drain()===2&&t.state.done===1,'Dedicated multiple targeting failed');});
   check('Host portrait cannot choose guest target',()=>{const t=fixture('tor');t.start();let blocked=false;(t.state.events['dom:click']||[]).forEach(f=>f({target:{closest:()=>true},preventDefault(){},stopImmediatePropagation(){blocked=true;}}));assert(blocked,'Host portrait not blocked');});
-  return {scope:'Isolated actual-source logic, not a two-device UI match',scenarios:results.length,passed:results.filter(r=>r.pass).length,failures:results.filter(r=>!r.pass),regressions:extra};
+  const full=[];
+  for(const card of cards.filter(c=>['hero','bizarro'].includes(c.category)))for(const elite of [false,true])for(const mode of ['host','guest','local','ai']){
+    const name=card.name+(elite?' elite':' normal')+'/'+mode;
+    try{const t=setup(card,elite,mode,specs);t.start();t.drain();assert(t.state.done===1&&!t.c.B.pending&&!t.c.__bfAbilityChoiceWaiting&&!t.state.invalidDamage,'Incomplete resolution');full.push({name,pass:true});}
+    catch(e){full.push({name,pass:false,error:e.message});}
+  }
+  return {scope:'Isolated actual-source logic, not a two-device UI match',scenarios:results.length,passed:results.filter(r=>r.pass).length,failures:results.filter(r=>!r.pass),regressions:extra,fullCoverage:{scenarios:full.length,passed:full.filter(r=>r.pass).length,failures:full.filter(r=>!r.pass)}};
 };

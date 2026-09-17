@@ -1,5 +1,5 @@
-// Habilidad élite de Daidoji Esva: "Dios de la Grulla" — invoca un token de
-// Grulla. La habilidad de la Grulla es PASIVA: no se puede activar ni
+// Habilidad élite de Daidoji Esva: "Dios de la Grulla" — invoca una Grulla.
+// La habilidad de la Grulla es PASIVA: no se puede activar ni
 // desactivar (su panel de acciones lo muestra como "EN JUEGO") y cada vez que
 // le toca turno cura 5 de vida (7 si es élite) a cada aliado vivo, sin
 // incluirse a ella misma.

@@ -149,8 +149,8 @@ export const EPIC_SUMMON_PATCH = `
     return true;
   }
 
-  // ---- IA: forzar el uso de habilidad de los tokens ----
-  // El motor del juego no reconoce 'pegasus-token' ni 'kamikaze-token' como
+  // ---- IA: forzar el uso de habilidad de las invocaciones ----
+  // El motor del juego no reconoce estos identificadores internos como
   // héroes con habilidad, así que la IA no llama a useAbility para ellos: los
   // manda a golpe melee y sus habilidades nunca se disparan. Se intercepta
   // aiTurn para que, cuando le toque el turno a uno de estos tokens, la IA

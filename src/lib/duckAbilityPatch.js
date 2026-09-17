@@ -1,4 +1,4 @@
-// Habilidad PROPIA de los Patitos de Goma (token tk_patito_goma).
+// Habilidad PROPIA de la invocación Patito de Goma (id interno tk_patito_goma).
 //
 // El bloqueo (tanqueo) ya lo hace el motor: cualquier golpe dirigido a un aliado
 // se desvía al patito vivo, para el resto de la partida, hasta que muere.

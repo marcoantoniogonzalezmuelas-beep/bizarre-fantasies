@@ -82,7 +82,7 @@ export default function CardFields({ form, onChange, onGenerate, generating, onU
       <input type="checkbox" checked={form.in_auction !== false} onChange={(e) => onChange('in_auction', e.target.checked)} className="w-5 h-5 accent-[#ffd24a]" />
       <div className="flex flex-col">
         <span className="text-sm font-black text-[#ffe49a]">Mostrar en subastas</span>
-        <span className="text-[11px] text-[#cfc6dd]">Si se desmarca, este héroe solo será un token o saldrá mediante cartas especiales.</span>
+        <span className="text-[11px] text-[#cfc6dd]">Si se desmarca, este héroe no saldrá en subastas; podrá ser un héroe bizarro o una invocación de una carta especial.</span>
       </div>
     </label>
   )}
