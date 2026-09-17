@@ -15,7 +15,20 @@ export const MP_TURN_SEQUENCE_PATCH = `
 
   function fxBusy(){
     var l = document.getElementById('bf-fx-layer');
-    if(l && l.children.length) return true;
+    if(l && l.children.length){
+      // Solo cuenta como "ocupado" si hay nodos RECENTES (menos de 6s).
+      // Los nodos colgados (setTimeout de borrado que no ejecutó el navegador
+      // congelado por una ráfaga de FX del relay) NO deben bloquear el turno
+      // para siempre: fxRootPatch los limpia a los 8s, pero aquí damos margen
+      // de 6s para que el turno avance antes de esperar a la limpieza.
+      var now=Date.now();
+      for(var i=0;i<l.children.length;i++){
+        var n=l.children[i];
+        if(n.nodeType!==1)continue;
+        var t=Number(n.dataset&&n.dataset.bfT||0)||Number(n.dataset&&n.dataset.bfSeen||0);
+        if(!t||now-t<6000)return true;
+      }
+    }
     return !!document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop');
   }
   function cineBusy(){

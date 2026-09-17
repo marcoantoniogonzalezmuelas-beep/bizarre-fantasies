@@ -43,14 +43,34 @@ export const FX_ROOT_PATCH = `
   // el turno se quedaba bloqueado para siempre, porque la comprobación de
   // "escena ocupada" ve hijos en la capa de FX. Todo nodo de FX con más de 8s
   // se elimina: ninguna animación del juego dura tanto.
-  setInterval(function(){
-    var r=document.getElementById('bf-fx-root');
-    if(!r||!r.children.length)return;
+  //
+  // MULTIPLAYER: el mpFxSyncPatch envía TODOS los flushFx del host al
+  // invitado por el relay. Si una ráfaga llega de golpe (20+ eventos de un
+  // ataque multi-objetivo), el invitado los procesa todos a la vez y los nodos
+  // se acumulan en #bf-fx-layer SIN que sus setTimeout de borrado lleguen a
+  // ejecutarse (el navegador está congelado procesando). Sin esta limpieza
+  // extendida a #bf-fx-layer, fxBusy ve hijos para siempre y el turno NUNCA
+  // avanza → la partida se satura totalmente.
+  var MAX_AGE=8000;
+  function cleanContainer(sel){
+    var c=document.getElementById(sel);
+    if(!c||!c.children.length)return;
     var now=Date.now();
-    Array.prototype.slice.call(r.children).forEach(function(n){
+    Array.prototype.slice.call(c.children).forEach(function(n){
+      if(n.nodeType!==1)return;
       var t=Number(n.dataset&&n.dataset.bfT||0);
-      if(t&&now-t>8000&&n.parentNode)n.parentNode.removeChild(n);
+      // Nodos sin timestamp (FX del juego original que no pasan por __bfAppend):
+      // se marca la primera vez que se ven y se eliminan tras MAX_AGE.
+      if(!t){
+        if(!n.dataset.bfSeen)n.dataset.bfSeen=String(now);
+        t=Number(n.dataset.bfSeen);
+      }
+      if(t&&now-t>MAX_AGE&&n.parentNode)n.parentNode.removeChild(n);
     });
+  }
+  setInterval(function(){
+    cleanContainer('bf-fx-root');
+    cleanContainer('bf-fx-layer');
   },1500);
   // Re-crea el contenedor si alguien lo borra (el juego reconstruye el DOM).
   var _t=setInterval(function(){ ensure(); },2000);
