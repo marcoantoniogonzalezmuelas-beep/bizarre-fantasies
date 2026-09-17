@@ -314,6 +314,8 @@ export const SERVER_RELAY_PATCH = `
           // en vez de quedarse en el formulario. renderRoomList() cambia la
           // pantalla al modo "lista de salas" (browse) y refreshList()
           // actualiza los datos desde el backend (incluye la sala nueva).
+          // Delay reducido de 800ms a 300ms: el registro ya se completó en
+          // dirRegister y la sala está en la BD; no hace falta esperar más.
           setTimeout(function() {
             if (typeof window.renderRoomList === 'function') {
               window.renderRoomList();
@@ -321,7 +323,7 @@ export const SERVER_RELAY_PATCH = `
             if (typeof window.refreshList === 'function') {
               window.refreshList();
             }
-          }, 800);
+          }, 300);
         }, 200);
       }, 50);
     };

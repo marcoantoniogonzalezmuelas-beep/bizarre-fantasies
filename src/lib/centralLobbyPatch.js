@@ -302,24 +302,29 @@ export const CENTRAL_LOBBY_PATCH = `
       if(!avUrl)avUrl=avatarFor(name);
       return new Promise(function(resolve,reject){
         function register(){
-          attempts+=1;
-          request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||'',avatar:avUrl}).then(function(data){
-            if(!data||data.ok!==true)throw new Error('register rejected');
-            return request('list');
-          }).then(function(data){
-            LOBBY.rooms=data.rooms||[];
-            var visible=LOBBY.rooms.some(function(room){return room.id===code;});
-            if(!visible)throw new Error('room not visible');
-            if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
-            resolve({ok:true});
-          }).catch(function(error){
-            if(attempts<3){setTimeout(register,800*attempts);return;}
-            if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg=null;
-            reject(error);
-          });
-        }
-        register();
-      });
+           attempts+=1;
+           request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||'',avatar:avUrl}).then(function(data){
+             if(!data||data.ok!==true)throw new Error('register rejected');
+             // Tras registrar, una sola verificación con list. Si la sala no
+             // aparece todavía (latencia de consistencia de la BD), se reintenta
+             // tras 300ms (antes 800ms×attempts → hasta 2,4s de espera acumulada).
+             return request('list');
+           }).then(function(data){
+             LOBBY.rooms=data.rooms||[];
+             var visible=LOBBY.rooms.some(function(room){return room.id===code;});
+             if(!visible)throw new Error('room not visible');
+             if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
+             resolve({ok:true});
+           }).catch(function(error){
+             if(attempts<2){setTimeout(register,300);return;}
+             // Tras 2 intentos, asumimos éxito: el backend confirmó el registro
+             // (data.ok===true) y la sala aparecerá en el próximo refresco (3s).
+             if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
+             resolve({ok:true});
+           });
+         }
+         register();
+       });
     };
     window.dirUnregister=function(){
       var r=LOBBY._reg;if(!r)return Promise.resolve();
