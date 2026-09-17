@@ -38,12 +38,12 @@ export const MP_HUMAN_CTL_PATCH = `
     if (typeof window.humanCtl !== 'function' || window.humanCtl.__bfMpHc) return false;
     var orig = window.humanCtl;
     window.humanCtl = function(side) {
-      // En el host de una partida online, el lado 'o' (cliente remoto) es
-      // un jugador humano, no la IA. Sin esto, el host auto-selecciona el
-      // objetivo de las habilidades del cliente en vez de dejar que el
-      // cliente lo elija.
+      // Solo en la fase de BATALLA: el lado 'o' (cliente remoto) es humano.
+      // En subasta/equipamiento NO se toca: el host necesita el valor
+      // original para sincronizar pujas y equipamiento correctamente.
       if (isOnline() && typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') {
-        return true;
+        var scr = document.getElementById('s-battle');
+        if (scr && scr.classList.contains('active')) return true;
       }
       return orig.apply(this, arguments);
     };
