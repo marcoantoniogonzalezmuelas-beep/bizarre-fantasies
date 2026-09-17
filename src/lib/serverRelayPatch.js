@@ -1,14 +1,14 @@
 // Parche inyectado en el iframe: RELAY POR SERVIDOR (sustituye a WebRTC/P2P/TURN).
 //
-// El motor del juego usa NET.conn (PeerJS DataConnection) con .send(), .on('data'),
-// .on('open'), .on('close') y .open. Aquí se reemplaza por una CONEXIÓN VIRTUAL
-// que enruta .send() al servidor Base44 (gameRelay) y recibe mensajes por polling.
-// El motor no nota la diferencia: sigue usando NET.conn.send(), handleIntent(),
-// netSync(), etc. igual que con PeerJS — pero sin WebRTC, sin TURN, sin NAT.
+// ESTRATEGIA: no reemplaza clientJoin/hostCreate, los ENVUELVE. Llama a la
+// función original del juego (que registra conn.on('data',...) y demás
+// handlers internos) y luego inyecta la conexión virtual por relay. Así el
+// motor registra sus propios manejadores de mensajes y todo funciona.
 //
-// La restauración de partidas es trivial: el estado siempre está en el servidor.
-// Si un jugador se desconecta, al volver solo tiene que hacer poll y recibe el
-// estado actual. No hay localStorage, ni tokens de reanudación, ni snapshots P2P.
+// FakePeer sustituye a PeerJS. Cuando el juego hace new Peer() obtiene un
+// FakePeer. peer.on('open',...) se dispara tras un setTimeout. peer.connect()
+// devuelve una conexión virtual. peer.on('connection', onHostConn) se
+// dispara cuando el invitado se une por relay.
 export const SERVER_RELAY_PATCH = `
 <script>
 (function(){
@@ -39,18 +39,45 @@ export const SERVER_RELAY_PATCH = `
   });
   window.bfRelayRequest = relayRequest;
 
+  // ---- Estado de relay (propio, no depende de NET que puede ser closure-local) ----
+  var relayCode = '';
+  var relaySide = 'p'; // 'p' host, 'g' guest
+  var relayConn = null; // conexión virtual activa
+  // Referencias a las funciones originales del juego (para reanudación)
+  var origClientJoin = null;
+  var origHostCreate = null;
+
   // ---- Fake Peer: evita que el motor cargue PeerJS o cree conexiones WebRTC ----
-  function FakePeer() {
+  var lastFakePeer = null;
+  var lastHostCode = '';
+  var lastVirtualConn = null;
+
+  function FakePeer(id, opts) {
     this.open = true;
     this.disconnected = false;
     this.destroyed = false;
     this._cbs = { open: [], error: [], connection: [], disconnected: [] };
+    lastFakePeer = this;
+    // El host crea Peer('bizfan-CODE', ...): extraer el código de sala.
+    if (typeof id === 'string' && id.indexOf('bizfan-') === 0) {
+      lastHostCode = id.substring(7);
+    }
   }
   FakePeer.prototype.on = function(ev, cb) { if (this._cbs[ev]) this._cbs[ev].push(cb); };
   FakePeer.prototype.destroy = function() { this.destroyed = true; this.open = false; };
   FakePeer.prototype.reconnect = function() { this.disconnected = false; this.open = true; };
   FakePeer.prototype._fireConnection = function(conn) { this._cbs.connection.forEach(function(cb) { try { cb(conn); } catch(e) {} }); };
   FakePeer.prototype._fireOpen = function() { this._cbs.open.forEach(function(cb) { try { cb(); } catch(e) {} }); };
+  // El cliente llama peer.connect('bizfan-CODE', ...): devolver conexión virtual.
+  FakePeer.prototype.connect = function(peerId, opts) {
+    var code = peerId;
+    if (typeof peerId === 'string' && peerId.indexOf('bizfan-') === 0) {
+      code = peerId.substring(7);
+    }
+    var conn = createVirtualConn('g', code);
+    lastVirtualConn = conn;
+    return conn;
+  };
   // Reemplazar Peer inmediatamente: el motor no debe intentar cargar PeerJS
   window.Peer = FakePeer;
 
@@ -102,35 +129,37 @@ export const SERVER_RELAY_PATCH = `
   function startPolling() {
     stopPolling();
     pollTimer = setInterval(function() {
-      if (typeof NET === 'undefined' || !NET.code || !NET.mySide) return;
+      if (!relayCode || !relaySide) return;
       if (typeof G !== 'undefined' && G._gameOver) { stopPolling(); return; }
       relayRequest('poll', {
-        code: NET.code,
-        side: NET.mySide,
+        code: relayCode,
+        side: relaySide,
         snap_since: lastSnapSeq,
         msg_since: lastMsgSeq
       }).then(function(res) {
         if (!res || !res.ok) return;
-        // Snap nuevo → dispatch
+        // Snap nuevo → dispatch a la conexión virtual
         if (res.snap && res.snap_seq > lastSnapSeq) {
           lastSnapSeq = res.snap_seq;
-          if (NET.conn) NET.conn._dispatch(res.snap);
+          if (relayConn) relayConn._dispatch(res.snap);
         }
         // Mensajes nuevos → dispatch
         if (res.msgs && res.msgs.length) {
-          res.msgs.forEach(function(m) { if (NET.conn) NET.conn._dispatch(m.data); });
+          res.msgs.forEach(function(m) { if (relayConn) relayConn._dispatch(m.data); });
           lastMsgSeq = res.msg_seq;
         }
-        // Host: detectar que el invitado se ha unido. gameRelay.join ya
-        // puso status='playing' y guest_name en la sala, así que NO hay que
-        // llamar a register_playing (destruiría el estado del relay: snap,
-        // msgs, guest_nick…).
-        if (NET.role === 'host' && res.guest_joined && !guestJoinedFired) {
+        // Host: detectar que el invitado se ha unido. Disparar
+        // peer.on('connection', onHostConn) para que el juego registre
+        // conn.on('data',...) y demás handlers.
+        if (relaySide === 'p' && res.guest_joined && !guestJoinedFired) {
           guestJoinedFired = true;
-          if (!NET.conn) {
-            NET.conn = createVirtualConn('p', NET.code);
-            if (typeof window.onHostConn === 'function') window.onHostConn(NET.conn);
-            NET.conn._open();
+          if (lastFakePeer && !relayConn) {
+            var hconn = createVirtualConn('p', relayCode);
+            relayConn = hconn;
+            // Dispara onHostConn(conn) → el juego registra conn.on('data',...)
+            lastFakePeer._fireConnection(hconn);
+            // Dispara conn.on('open',...) → el juego envía el snap inicial
+            hconn._open();
           }
         }
         // El otro jugador se ha desconectado
@@ -147,48 +176,93 @@ export const SERVER_RELAY_PATCH = `
     }, 350);
   }
 
-  // ---- Intercept hostCreate: el host crea la sala y espera al invitado ----
+  // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----
+  function installClientJoin() {
+    if (typeof window.clientJoin !== 'function' || window.clientJoin.__bfRelay) return false;
+    origClientJoin = window.clientJoin;
+    window.clientJoin = function(code, pass, name) {
+      var joinCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      var joinPass = String(pass || '').trim();
+      var joinName = name || 'Jugador 2';
+
+      // Llamar al original: crea FakePeer, registra peer.on('open',...),
+      // peer.connect() devuelve conexión virtual, registra conn.on('data',...)
+      origClientJoin.apply(this, arguments);
+
+      // Tras un breve retardo, disparar peer.on('open') para que el juego
+      // llame peer.connect() y registre los handlers de la conexión.
+      setTimeout(function() {
+        if (lastFakePeer) lastFakePeer._fireOpen();
+        // peer.connect() ya devolvió lastVirtualConn. Ahora hacer el join
+        // por relay y abrir la conexión.
+        setTimeout(function() {
+          var conn = lastVirtualConn;
+          if (!conn) return;
+          var avUrl = '';
+          try { if (window.bfMyAvatar && window.bfMyAvatar.url) avUrl = window.bfMyAvatar.url; } catch(e) {}
+
+          relayRequest('join', {
+            code: joinCode, password: joinPass,
+            nick: joinName, avatar: avUrl
+          }).then(function(res) {
+            if (!res || res.error || !res.ok) {
+              if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo unir a la sala.');
+              return;
+            }
+            // Abrir la conexión virtual → dispara conn.on('open',...) del juego
+            // (el juego envía hello al host ahí).
+            conn._open();
+            // Aplicar snap inicial si ya existe
+            if (res.snap) {
+              conn._dispatch(res.snap);
+            }
+            relayCode = joinCode;
+            relaySide = 'g';
+            relayConn = conn;
+            lastSnapSeq = res.snap_seq || 0;
+            lastMsgSeq = res.msg_seq || 0;
+            guestJoinedFired = true;
+            otherLeftShown = false;
+            startPolling();
+          }).catch(function() {
+            if (typeof lobbyError === 'function') lobbyError('No se pudo unir a la sala.');
+          });
+        }, 100);
+      }, 50);
+    };
+    window.clientJoin.__bfRelay = 1;
+    return true;
+  }
+
+  // ---- ENVOLVER hostCreate: llamar al original (registra handlers) + relay ----
   function installHostCreate() {
     if (typeof window.hostCreate !== 'function' || window.hostCreate.__bfRelay) return false;
+    origHostCreate = window.hostCreate;
     window.hostCreate = function(name, pass, roomName) {
-      NET.role = 'host';
-      NET.mySide = 'p';
-      NET.pass = String(pass || '').trim();
-      NET.names_self = name || 'Jugador 1';
-      NET.roomName = (roomName && roomName.trim()) || (typeof randomRoomName === 'function' ? randomRoomName() : 'Sala');
-      NET.code = (typeof makeCode === 'function' ? makeCode() : ('RL' + Math.random().toString(36).slice(2, 6).toUpperCase()));
+      // Llamar al original: crea FakePeer con 'bizfan-CODE', registra
+      // peer.on('open',...) (que llama a dirRegister) y
+      // peer.on('connection', onHostConn) (que registra conn.on('data',...)).
+      origHostCreate.apply(this, arguments);
 
-      renderLobby('hostwait');
-      lobbyStatus('Creando sala…');
-
-      var avUrl = '';
-      try { if (window.bfMyAvatar && window.bfMyAvatar.url) avUrl = window.bfMyAvatar.url; } catch(e) {}
-      if (!avUrl && window.__bfAvatarMap) avUrl = window.__bfAvatarMap[name] || '';
-
-      if (window.bfLobbyRequest) {
-        window.bfLobbyRequest('register', {
-          code: NET.code, name: name, hasPass: !!NET.pass,
-          pass: NET.pass, avatar: avUrl
-        }).then(function() {
-          // Setea LOBBY._reg para que canShowList() devuelva true y el host
-          // vea la lista de salas (sin esto, el lobby queda en blanco).
-          if (typeof LOBBY !== 'undefined') {
-            LOBBY._reg = { code: NET.code, name: name, hasPass: !!NET.pass, confirmed: true };
-          }
-          renderLobby('browse');
-          // Refresca la lista INMEDIATAMENTE para que la sala aparezca sin
-          // esperar al intervalo de 3 s.
-          if (typeof window.refreshList === 'function') window.refreshList();
-          NET.peer = new FakePeer();
+      // Tras un breve retardo, disparar peer.on('open') para que el juego
+      // llame a dirRegister (que centralLobbyPatch envuelve para registrar
+      // la sala en el backend).
+      setTimeout(function() {
+        if (lastFakePeer) lastFakePeer._fireOpen();
+        // Iniciar el polling para detectar cuando el invitado se une.
+        setTimeout(function() {
+          var hostCode = lastHostCode;
+          if (!hostCode) return;
+          relayCode = hostCode;
+          relaySide = 'p';
+          relayConn = null;
           guestJoinedFired = false;
           lastSnapSeq = 0;
           lastMsgSeq = 0;
           otherLeftShown = false;
           startPolling();
-        }).catch(function() {
-          lobbyStatus('No se pudo crear la sala. Inténtalo de nuevo.');
-        });
-      }
+        }, 200);
+      }, 50);
     };
     window.hostCreate.__bfRelay = 1;
     return true;
@@ -199,90 +273,74 @@ export const SERVER_RELAY_PATCH = `
   window.bfRelayResumeGame = function(code, password, nick, nicks) {
     var isHost = nicks && nicks[0] && String(nicks[0]).toLowerCase() === String(nick || '').toLowerCase();
     var side = isHost ? 'p' : 'g';
+    var cleanCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-    NET.role = isHost ? 'host' : 'client';
-    NET.mySide = side;
-    NET.code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-    NET.pass = String(password || '').trim();
-    NET.names_self = nick || (isHost ? 'Jugador 1' : 'Jugador 2');
-
-    if (typeof renderLobby === 'function') renderLobby('hostwait');
+    if (typeof renderLobby === 'function') renderLobby(isHost ? 'hostwait' : 'clientwait');
     if (typeof lobbyStatus === 'function') lobbyStatus('Reanudando partida…');
 
     var avUrl = '';
     try { if (window.bfMyAvatar && window.bfMyAvatar.url) avUrl = window.bfMyAvatar.url; } catch(e) {}
 
-    relayRequest('resume', { code: NET.code, side: side, password: NET.pass, nick: nick, avatar: avUrl }).then(function(res) {
+    relayRequest('resume', { code: cleanCode, side: side, password: String(password || '').trim(), nick: nick, avatar: avUrl }).then(function(res) {
       if (!res || res.error || !res.ok) {
         if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo reanudar la partida.');
         return;
       }
-      NET.peer = new FakePeer();
-      NET.conn = createVirtualConn(side, NET.code);
-      NET.conn._open();
-      if (res.snap) {
-        NET.conn._dispatch(res.snap);
+      // Crear FakePeer y conexión virtual, registrar handlers del juego
+      // llamando a la función original correspondiente.
+      if (isHost) {
+        // Host: llamar hostCreate original para que registre onHostConn.
+        // El código ya existe (no hace falta makeCode), pero el original
+        // generará uno nuevo. Lo sobreescribimos después con relayCode.
+        if (typeof origHostCreate === 'function') {
+          origHostCreate.call(this, nick, password, 'Reanudar');
+        }
+        setTimeout(function() {
+          if (lastFakePeer) lastFakePeer._fireOpen();
+          relayCode = cleanCode;
+          relaySide = 'p';
+          relayConn = null;
+          guestJoinedFired = true; // ya tiene estado, no esperar invitado
+          lastSnapSeq = res.snap_seq || 0;
+          lastMsgSeq = res.msg_seq || 0;
+          otherLeftShown = false;
+          // Crear conexión virtual y disparar onHostConn
+          var hconn = createVirtualConn('p', cleanCode);
+          relayConn = hconn;
+          if (lastFakePeer) lastFakePeer._fireConnection(hconn);
+          hconn._open();
+          if (res.snap) hconn._dispatch(res.snap);
+          startPolling();
+          if (typeof leaveLobbyForGame === 'function') leaveLobbyForGame();
+        }, 100);
+      } else {
+        // Invitado: llamar clientJoin original para que registre handlers.
+        if (typeof origClientJoin === 'function') {
+          origClientJoin.call(this, cleanCode, password, nick);
+        }
+        setTimeout(function() {
+          if (lastFakePeer) lastFakePeer._fireOpen();
+          setTimeout(function() {
+            var conn = lastVirtualConn;
+            if (!conn) return;
+            conn._open();
+            if (res.snap) conn._dispatch(res.snap);
+            relayCode = cleanCode;
+            relaySide = 'g';
+            relayConn = conn;
+            lastSnapSeq = res.snap_seq || 0;
+            lastMsgSeq = res.msg_seq || 0;
+            guestJoinedFired = true;
+            otherLeftShown = false;
+            startPolling();
+            if (typeof leaveLobbyForGame === 'function') leaveLobbyForGame();
+          }, 100);
+        }, 50);
       }
-      lastSnapSeq = res.snap_seq || 0;
-      lastMsgSeq = res.msg_seq || 0;
-      guestJoinedFired = true;
-      otherLeftShown = false;
-      startPolling();
-      if (typeof leaveLobbyForGame === 'function') leaveLobbyForGame();
     }).catch(function() {
       if (typeof lobbyError === 'function') lobbyError('No se pudo reanudar la partida.');
     });
   };
-
-  // ---- Intercept clientJoin: el invitado se une vía relay ----
-  // Signatura nativa del juego: clientJoin(code, pass, name).
-  function installClientJoin() {
-    if (typeof window.clientJoin !== 'function' || window.clientJoin.__bfRelay) return false;
-    window.clientJoin = function(code, pass, name) {
-      NET.role = 'client';
-      NET.mySide = 'g';
-      NET.code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-      NET.pass = String(pass || '').trim();
-      NET.names_self = name || 'Jugador 2';
-
-      renderLobby('hostwait');
-      lobbyStatus('Uniéndose a la sala…');
-
-      var avUrl = '';
-      try { if (window.bfMyAvatar && window.bfMyAvatar.url) avUrl = window.bfMyAvatar.url; } catch(e) {}
-
-      relayRequest('join', {
-        code: NET.code, password: NET.pass,
-        nick: name, avatar: avUrl
-      }).then(function(res) {
-        if (!res || res.error || !res.ok) {
-          if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo unir a la sala.');
-          return;
-        }
-        NET.peer = new FakePeer();
-        NET.conn = createVirtualConn('g', NET.code);
-        NET.conn._open();
-        // Enviar hello al host (via relay)
-        NET.conn.send({ t: 'hello', name: name, pass: NET.pass });
-        // Aplicar estado inicial si ya hay un snap
-        if (res.snap) {
-          NET.conn._dispatch(res.snap);
-          lastSnapSeq = res.snap_seq;
-        }
-        lastSnapSeq = res.snap_seq || 0;
-        lastMsgSeq = res.msg_seq || 0;
-        guestJoinedFired = true;
-        otherLeftShown = false;
-        startPolling();
-        // Salir del lobby y entrar en la partida
-        if (typeof leaveLobbyForGame === 'function') leaveLobbyForGame();
-      }).catch(function() {
-        if (typeof lobbyError === 'function') lobbyError('No se pudo unir a la sala.');
-      });
-    };
-    window.clientJoin.__bfRelay = 1;
-    return true;
-  }
 
   // ---- Intercept netDropped: en relay no hay conexión P2P que perder ----
   function installNetDropped() {
@@ -305,7 +363,7 @@ export const SERVER_RELAY_PATCH = `
     window.__bfRelayQuitHooked = true;
     function showQuitConfirm(e) {
       if (typeof G === 'undefined' || !G.online || G._gameOver) return;
-      if (typeof NET === 'undefined' || !NET.role) return;
+      if (!relayCode) return;
       if (e) { e.preventDefault(); e.stopPropagation(); }
       var qc = document.getElementById('bf-quit-confirm');
       if (!qc) {
@@ -315,9 +373,9 @@ export const SERVER_RELAY_PATCH = `
         qc.innerHTML = '<div style="font-family:Cinzel,serif;font-weight:900;font-size:16px;color:#ffe49a;margin-bottom:6px">Salir de la partida</div><div style="font-size:13px;color:#cfc6dd;line-height:1.4;margin-bottom:14px">Tu rival será notificado y la partida terminará.</div><div style="display:flex;gap:10px;justify-content:center"><button class="bf-qc-yes" style="padding:10px 18px;border-radius:10px;border:1px solid rgba(255,240,180,.8);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">Sí, salir</button><button class="bf-qc-no" style="padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#efe9dc;font-family:Cinzel,serif;font-weight:900;font-size:14px;cursor:pointer">Cancelar</button></div>';
         document.body.appendChild(qc);
         qc.querySelector('.bf-qc-yes').onclick = function() {
-          try { if (NET.conn) NET.conn.send({ t: 'bye' }); } catch(e) {}
-          relayRequest('leave', { code: NET.code, side: NET.mySide }).catch(function(){});
-          if (window.bfLobbyRequest && NET.code) window.bfLobbyRequest('unregister', { code: NET.code }).catch(function(){});
+          try { if (relayConn) relayConn.send({ t: 'bye' }); } catch(e) {}
+          relayRequest('leave', { code: relayCode, side: relaySide }).catch(function(){});
+          if (window.bfLobbyRequest && relayCode) window.bfLobbyRequest('unregister', { code: relayCode }).catch(function(){});
           qc.style.display = 'none';
           setTimeout(function() { try { location.reload(); } catch(e) {} }, 200);
         };
@@ -334,11 +392,11 @@ export const SERVER_RELAY_PATCH = `
   // ---- Limpieza al terminar la partida ----
   setInterval(function() {
     try {
-      if (typeof G === 'undefined' || typeof NET === 'undefined') return;
-      if (G._gameOver && NET.code && !window.__bfRelayReleased) {
+      if (typeof G === 'undefined') return;
+      if (G._gameOver && relayCode && !window.__bfRelayReleased) {
         window.__bfRelayReleased = true;
-        relayRequest('leave', { code: NET.code, side: NET.mySide }).catch(function(){});
-        if (window.bfLobbyRequest) window.bfLobbyRequest('unregister', { code: NET.code }).catch(function(){});
+        relayRequest('leave', { code: relayCode, side: relaySide }).catch(function(){});
+        if (window.bfLobbyRequest) window.bfLobbyRequest('unregister', { code: relayCode }).catch(function(){});
         stopPolling();
       }
     } catch(e) {}
