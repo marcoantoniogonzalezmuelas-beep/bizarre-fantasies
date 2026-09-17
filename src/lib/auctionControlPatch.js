@@ -147,6 +147,7 @@ export const AUCTION_CONTROL_PATCH = `
   // tiene marcada una épica para ese rol, se sustituye la sorteada por ella.
   function fixEpicCands(){
     try{
+      if(typeof NET !== 'undefined' && NET.role === 'client') return;
       if(typeof G === 'undefined' || !G.epicCands) return;
       ['p','o'].forEach(function(s){
         var list = G.epicCands[s];

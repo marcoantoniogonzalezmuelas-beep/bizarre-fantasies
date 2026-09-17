@@ -1,0 +1,44 @@
+// Reliable per-sender FIFO. Retries keep their batch ID; only acknowledged
+// delivery IDs are removed. No timestamps are used as message cursors.
+export async function relayProtocol(base44, room, body, now) {
+  const side = body.side;
+  if (side !== 'p' && side !== 'g') return Response.json({ error: 'Invalid side' }, { status: 400 });
+  const state = room.state || {};
+  const other = side === 'p' ? 'g' : 'p';
+  const queueKey = 'state.relay_queue_' + side;
+  if (body.action === 'sendBatch') {
+    const batchId = String(body.batch_id || '');
+    const messages = body.messages;
+    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(batchId) || !Array.isArray(messages) || !messages.length || messages.length > 50 || messages.some(m => !m || typeof m !== 'object' || typeof m.t !== 'string')) {
+      return Response.json({ error: 'Invalid batch' }, { status: 400 });
+    }
+    if (side !== 'p' && messages.some(m => m.t === 'snap' || m.t === 'bfFullSync')) return Response.json({ error: 'Host only' }, { status: 403 });
+    const seenKey = 'state.relay_seen_' + side;
+    const set = { [side === 'p' ? 'state.host_last_seen' : 'state.guest_last_seen']: now };
+    const snapshots = messages.filter(m => m.t === 'snap');
+    if (snapshots.length) set['state.snap'] = snapshots[snapshots.length - 1];
+    const ops = {
+      $push: {
+        [queueKey]: { $each: messages.map((data, i) => ({ id: batchId + '_' + i, data })) },
+        [seenKey]: { $each: [batchId], $slice: -128 }
+      },
+      $set: set
+    };
+    if (snapshots.length) ops.$inc = { 'state.snap_seq': snapshots.length };
+    await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id, [seenKey]: { $ne: batchId } }, ops);
+    return Response.json({ ok: true, batch_id: batchId });
+  }
+  const ack = Array.isArray(body.ack) ? body.ack.filter(id => typeof id === 'string').slice(0, 100) : [];
+  const incomingKey = 'state.relay_queue_' + other;
+  const seenAt = state[side === 'p' ? 'host_last_seen' : 'guest_last_seen'] || 0;
+  const ops = {};
+  if (ack.length) ops.$pull = { [incomingKey]: { id: { $in: ack } } };
+  if (now - seenAt > 8000) ops.$set = { [side === 'p' ? 'state.host_last_seen' : 'state.guest_last_seen']: now };
+  if (Object.keys(ops).length) await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, ops);
+  const acknowledged = new Set(ack);
+  const pending = (state['relay_queue_' + other] || []).filter(m => !acknowledged.has(m.id));
+  const otherSeen = state[other === 'p' ? 'host_last_seen' : 'guest_last_seen'] || 0;
+  return Response.json({ ok: true, deliveries: pending.slice(0, 50), more: pending.length > 50,
+    guest_joined: !!state.guest_nick,
+    other_left: !!state[other === 'p' ? 'host_left_at' : 'guest_left_at'] || !!(otherSeen && now - otherSeen > 45000) });
+}

@@ -18,6 +18,7 @@
 //  - leave:  un jugador abandona la sala
 //  - resume:  un jugador reanuda una partida en curso
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { relayProtocol } from '../../shared/relayProtocol.ts';
 
 const STALE_MS = 15000; // 15 s sin poll = desconectado
 const ROOM_TTL = 600000; // 10 min sin actividad = sala borrada
@@ -32,7 +33,7 @@ export default async function(req: Request): Promise<Response> {
     const now = Date.now();
 
     // Auto-limpieza de salas estancadas (throttle 60 s por isolate)
-    if (now - lastCleanup > 60000) {
+    if ((action === 'join' || action === 'resume') && now - lastCleanup > 60000) {
       lastCleanup = now;
       try {
         const all = await base44.asServiceRole.entities.GameRoom.list('-updated_date', 200);
@@ -52,6 +53,10 @@ export default async function(req: Request): Promise<Response> {
     if (!room) return Response.json({ error: 'Room not found' }, { status: 404 });
 
     const state: any = room.state || {};
+
+    if (action === 'sendBatch' || (action === 'poll' && body.protocol === 2)) {
+      return await relayProtocol(base44, room, body, now);
+    }
 
     // ---- JOIN: el invitado se une ----
     if (action === 'join') {
@@ -73,11 +78,7 @@ export default async function(req: Request): Promise<Response> {
           'state.guest_last_seen': now,
           'state.guest_left_at': null,
           'state.resume_nicks': resumeNicks,
-          // Inicializar campos de relay si no existen (la sala viene del lobby)
-          'state.snap': state.snap ?? null,
-          'state.snap_seq': state.snap_seq ?? 0,
-          'state.msgs': state.msgs ?? [],
-          'state.msg_seq': state.msg_seq ?? 0,
+          // Never rewrite relay queues or snapshots from an earlier read.
         },
       });
 

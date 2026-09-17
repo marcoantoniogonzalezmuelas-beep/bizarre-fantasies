@@ -56,9 +56,9 @@ export const MP_CHOICE_MODAL_PATCH = `
 
   // HOST: listener en NET.conn para interceptar op 'choice' SIN envolver
   // handleIntent (envolver handleIntent rompía la sincronización de pujas).
-  var hostHandlerInstalled = false;
+  var hostConnection = null;
   function installHostHandler(){
-    if (hostHandlerInstalled) return true;
+    if (typeof NET !== 'undefined' && NET.conn && NET.conn === hostConnection) return true;
     if (!isOnlineHost()) return false;
     if (typeof NET === 'undefined' || !NET || !NET.conn) return false;
     if (typeof NET.conn.on !== 'function') return false;
@@ -68,14 +68,14 @@ export const MP_CHOICE_MODAL_PATCH = `
       pendingChoiceCb = null;
       try { cb(msg.key); }catch(e){}
     });
-    hostHandlerInstalled = true;
+    hostConnection = NET.conn;
     return true;
   }
 
   // CLIENTE: interceptar mensajes entrantes con t:'bfChoice' y mostrar el modal.
-  var clientHandlerInstalled = false;
+  var clientConnection = null;
   function installClientHandler(){
-    if (clientHandlerInstalled) return true;
+    if (typeof NET !== 'undefined' && NET.conn && NET.conn === clientConnection) return true;
     if (!isOnlineClient()) return false;
     if (typeof NET === 'undefined' || !NET || !NET.conn) return false;
     if (typeof NET.conn.on !== 'function') return false;
@@ -86,17 +86,15 @@ export const MP_CHOICE_MODAL_PATCH = `
         try { if (typeof sendIntent === 'function') sendIntent('choice', { key: key }); }catch(e){}
       });
     });
-    clientHandlerInstalled = true;
+    clientConnection = NET.conn;
     return true;
   }
 
-  var tries = 0;
-  var iv = setInterval(function(){
+  setInterval(function(){
     wrapChoiceModal();
     installHostHandler();
     installClientHandler();
-    if (tries++ > 200) clearInterval(iv);
-  }, 100);
+  }, 300);
 })();
 </script>
 `;

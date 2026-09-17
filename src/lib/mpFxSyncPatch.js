@@ -120,11 +120,8 @@ export const MP_FX_SYNC_PATCH = `
         fxDraining = true;
         var batch = fxQueue.splice(0, Math.min(fxQueue.length, 6));
         try { if (typeof window.flushFx === 'function') window.flushFx(batch); } catch(e) {}
-        if (fxQueue.length) {
-          setTimeout(drainFx, 60);
-        } else {
-          fxDraining = false;
-        }
+        fxDraining = false;
+        if (fxQueue.length) setTimeout(drainFx, 60);
       }
       NET.conn.on('data', function(m) {
         if (!m) return;

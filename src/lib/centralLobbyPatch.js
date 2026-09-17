@@ -300,31 +300,16 @@ export const CENTRAL_LOBBY_PATCH = `
       var avUrl='';
       try{if(window.bfMyAvatar&&window.bfMyAvatar.url)avUrl=window.bfMyAvatar.url;}catch(e){}
       if(!avUrl)avUrl=avatarFor(name);
-      return new Promise(function(resolve,reject){
-        function register(){
-           attempts+=1;
-           request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||'',avatar:avUrl}).then(function(data){
-             if(!data||data.ok!==true)throw new Error('register rejected');
-             // Tras registrar, una sola verificación con list. Si la sala no
-             // aparece todavía (latencia de consistencia de la BD), se reintenta
-             // tras 300ms (antes 800ms×attempts → hasta 2,4s de espera acumulada).
-             return request('list');
-           }).then(function(data){
-             LOBBY.rooms=data.rooms||[];
-             var visible=LOBBY.rooms.some(function(room){return room.id===code;});
-             if(!visible)throw new Error('room not visible');
-             if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
-             resolve({ok:true});
-           }).catch(function(error){
-             if(attempts<2){setTimeout(register,300);return;}
-             // Tras 2 intentos, asumimos éxito: el backend confirmó el registro
-             // (data.ok===true) y la sala aparecerá en el próximo refresco (3s).
-             if(LOBBY._reg&&LOBBY._reg.code===code)LOBBY._reg.confirmed=true;
-             resolve({ok:true});
-           });
-         }
-         register();
-       });
+      var registration = request('register',{code:code,name:name,hasPass:!!hasPass,pass:(typeof NET!=='undefined'&&NET.pass)||'',avatar:avUrl}).then(function(data){
+        if(!data || data.ok !== true) throw new Error((data && data.error) || 'No se pudo crear la sala');
+        if(LOBBY._reg && LOBBY._reg.code === code) LOBBY._reg.confirmed = true;
+        return data;
+      }).catch(function(error){
+        if(typeof lobbyError === 'function') lobbyError('No se pudo crear la sala: ' + error.message);
+        return {ok:false};
+      });
+      window.__bfRoomRegistration = { code: code, promise: registration };
+      return registration;
     };
     window.dirUnregister=function(){
       var r=LOBBY._reg;if(!r)return Promise.resolve();

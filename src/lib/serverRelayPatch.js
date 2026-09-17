@@ -9,7 +9,9 @@
 // FakePeer. peer.on('open',...) se dispara tras un setTimeout. peer.connect()
 // devuelve una conexión virtual. peer.on('connection', onHostConn) se
 // dispara cuando el invitado se une por relay.
-export const SERVER_RELAY_PATCH = `
+import { RELAY_OUTBOX_PATCH } from '@/lib/relayOutboxPatch';
+
+export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
 <script>
 (function(){
   if (window.__bfServerRelay) return;
@@ -22,7 +24,7 @@ export const SERVER_RELAY_PATCH = `
       var requestId = 'relay-' + (++seq);
       pending[requestId] = { resolve: resolve, reject: reject };
       window.parent.postMessage({ bfRelay: { requestId: requestId, payload: Object.assign({ action: action }, data || {}) } }, '*');
-      setTimeout(function() {
+      pending[requestId].timer = setTimeout(function() {
         if (!pending[requestId]) return;
         delete pending[requestId];
         reject(new Error('timeout'));
@@ -33,6 +35,7 @@ export const SERVER_RELAY_PATCH = `
     var result = event.data && event.data.bfRelayResult;
     if (!result || !pending[result.requestId]) return;
     var task = pending[result.requestId];
+    clearTimeout(task.timer);
     delete pending[result.requestId];
     if (result.error) task.reject(new Error(result.error));
     else task.resolve(result.data || {});
@@ -88,7 +91,7 @@ export const SERVER_RELAY_PATCH = `
     }
   }
   FakePeer.prototype.on = function(ev, cb) { if (this._cbs[ev]) this._cbs[ev].push(cb); };
-  FakePeer.prototype.destroy = function() { this.destroyed = true; this.open = false; };
+  FakePeer.prototype.destroy = function() { this.destroyed = true; this.open = false; stopPolling(); if (relayConn) relayConn.close(); };
   FakePeer.prototype.reconnect = function() { this.disconnected = false; this.open = true; };
   FakePeer.prototype._fireConnection = function(conn) { this._cbs.connection.forEach(function(cb) { try { cb(conn); } catch(e) {} }); };
   FakePeer.prototype._fireOpen = function() { this._cbs.open.forEach(function(cb) { try { cb(); } catch(e) {} }); };
@@ -108,6 +111,7 @@ export const SERVER_RELAY_PATCH = `
   // ---- Conexión virtual: simula una DataConnection de PeerJS ----
   function createVirtualConn(side, code) {
     var cbs = { data: [], open: [], close: [], error: [] };
+    var outbox = window.bfCreateRelayOutbox(relayRequest, side, code, reportRelayError);
     var conn = {
       open: false,
       _side: side,
@@ -118,19 +122,23 @@ export const SERVER_RELAY_PATCH = `
       peerConnection: null,
       send: function(msg) {
         if (!msg || !code) return;
-        // Los snaps (estado completo) van por 'snap'; el resto por 'send'
-        if (msg.t === 'snap' || msg.t === 'bfFullSync') {
-          relayRequest('snap', { code: code, side: side, snap: msg }).catch(function(err){ reportRelayError('snap_failed', 'snap', err && err.message || 'timeout'); });
-        } else {
-          relayRequest('send', { code: code, side: side, data: msg }).catch(function(err){ reportRelayError('server_error', 'send', err && err.message || 'timeout'); });
+        if (msg.t === 'intent' && /^(bid|pass|sell|bfDebtBid|bfBizarroFill|bfXferEq)$/.test(msg.op) && typeof G !== 'undefined') {
+          msg = Object.assign({}, msg, { bfAuctionRound: String(G.aIndex) + ':' + String(G.subRound || 0) });
         }
+        outbox.send(msg);
       },
       on: function(ev, cb) { if (cbs[ev]) cbs[ev].push(cb); },
-      close: function() { conn.open = false; cbs.close.forEach(function(cb) { try { cb(); } catch(e) {} }); },
+      close: function() { conn.open = false; outbox.close(); if (relayConn === conn) stopPolling(); cbs.close.forEach(function(cb) { try { cb(); } catch(e) {} }); },
       _dispatch: function(msg) {
         conn._bfEverReceivedData = true;
         conn._bfLastSeen = Date.now();
-        cbs.data.forEach(function(cb) { try { cb(msg); } catch(e) {} });
+        if (side === 'p' && msg && msg.bfAuctionRound && typeof G !== 'undefined') {
+          if (!document.querySelector('#s-recruit.active') || G.phaseResult || msg.bfAuctionRound !== String(G.aIndex) + ':' + String(G.subRound || 0)) {
+            if (typeof netSync === 'function') { var active = document.querySelector('.screen.active'); if (active) netSync(active.id); }
+            return;
+          }
+        }
+        cbs.data.forEach(function(cb) { try { cb(msg); } catch(e) { reportRelayError('server_error', 'dispatch', e && e.message); } });
       },
       _open: function() {
         conn.open = true;
@@ -149,70 +157,58 @@ export const SERVER_RELAY_PATCH = `
   var guestJoinedFired = false;
   var otherLeftShown = false;
 
-  function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+  var pollGeneration = 0;
+  function stopPolling() { pollGeneration++; clearTimeout(pollTimer); pollTimer = null; }
 
   function startPolling() {
     stopPolling();
-    pollTimer = setInterval(function() {
-      if (!relayCode || !relaySide) return;
+    var generation = pollGeneration, ack = [], delivered = new Set(), failures = 0;
+    var code = relayCode, side = relaySide;
+    function poll() {
+      if (generation !== pollGeneration || !code || !side) return;
       if (typeof G !== 'undefined' && G._gameOver) { stopPolling(); return; }
-      relayRequest('poll', {
-        code: relayCode,
-        side: relaySide,
-        snap_since: lastSnapSeq,
-        msg_since: lastMsgSeq
-      }).then(function(res) {
-        // Marcar el momento del último poll exitoso: el vigilante de
-        // desconexión usa esto para detectar si el relay deja de responder.
-        lastPollOk = Date.now();
-        if (!res || !res.ok) return;
-        // Snap nuevo → dispatch a la conexión virtual
-        if (res.snap && res.snap_seq > lastSnapSeq) {
-          lastSnapSeq = res.snap_seq;
-          if (relayConn) relayConn._dispatch(res.snap);
-        }
-        // Mensajes nuevos → dispatch (solo del otro lado, filtrados por el backend)
-        if (res.msgs && res.msgs.length) {
-          res.msgs.forEach(function(m) { if (relayConn) relayConn._dispatch(m.data); });
-        }
-        // Siempre avanza lastMsgSeq: sin esto, si el host envía mensajes pero
-        // el invitado no, lastMsgSeq no avanza y el host recibe sus propios
-        // mensajes en cada poll (el backend ahora filtra por lado, pero
-        // lastMsgSeq debe avanzar igual para no re-procesar).
-        lastMsgSeq = res.msg_seq || lastMsgSeq;
-        // Host: detectar que el invitado se ha unido. Disparar
-        // peer.on('connection', onHostConn) para que el juego registre
-        // conn.on('data',...) y demás handlers.
-        if (relaySide === 'p' && res.guest_joined && !guestJoinedFired) {
+      var sentAck = ack.slice(0, 100), hasMore = false;
+      relayRequest('poll', { code: code, side: side, protocol: 2, ack: sentAck }).then(function(res) {
+        if (generation !== pollGeneration) return;
+        if (!res || !res.ok) throw new Error((res && res.error) || 'Consulta no confirmada');
+        lastPollOk = Date.now(); failures = 0; hasMore = !!res.more;
+        ack = ack.filter(function(id){ return sentAck.indexOf(id) < 0; });
+        // Register the native host listeners BEFORE consuming the guest hello.
+        if (side === 'p' && res.guest_joined && !guestJoinedFired && lastFakePeer) {
           guestJoinedFired = true;
-          if (lastFakePeer && !relayConn) {
-            var hconn = createVirtualConn('p', relayCode);
-            relayConn = hconn;
-            // Dispara onHostConn(conn) → el juego registra conn.on('data',...)
-            lastFakePeer._fireConnection(hconn);
-            // Dispara conn.on('open',...) → el juego envía el snap inicial
-            hconn._open();
+          if (!relayConn) {
+            relayConn = createVirtualConn('p', code);
+            lastFakePeer._fireConnection(relayConn);
+            relayConn._open();
           }
         }
-        // El otro jugador se ha desconectado
+        (res.deliveries || []).forEach(function(m) {
+          if (!relayConn || !m || !m.id) return;
+          if (!delivered.has(m.id)) { delivered.add(m.id); relayConn._dispatch(m.data); }
+          if (ack.indexOf(m.id) < 0) ack.push(m.id);
+        });
         if (res.other_left && !otherLeftShown) {
           otherLeftShown = true;
           if (typeof notif === 'function') notif('Tu rival se ha desconectado. La partida sigue en curso.');
-        }
-        // El otro jugador ha vuelto
-        if (!res.other_left && otherLeftShown) {
+        } else if (!res.other_left && otherLeftShown) {
           otherLeftShown = false;
-          if (typeof notif === 'function') notif('✔ Tu rival ha vuelto. ¡La partida continúa!');
+          if (typeof notif === 'function') notif('Tu rival ha vuelto. La partida continúa.');
         }
-      }).catch(function(err){
-        // El polling falla a menudo por timeouts puntuales; solo reportar
-        // si el error no es un timeout aislado (el timeout ya se reporta
-        // por separado desde relayRequest).
-        if (err && err.message && err.message !== 'timeout') {
-          reportRelayError('poll_failed', 'poll', err.message);
+      }).catch(function(err) {
+        failures++;
+        reportRelayError('poll_failed', 'poll', err && err.message || 'timeout');
+        if (err && /Room not found/i.test(err.message)) {
+          stopPolling();
+          if (typeof notif === 'function') notif('La sala ya no existe. Vuelve al inicio para crear otra partida.');
         }
+      }).finally(function() {
+        if (generation !== pollGeneration) return;
+        // One request at a time, with backoff on overload, never overlapping polls.
+        var delay = failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1)) : (hasMore ? 80 : 1000);
+        pollTimer = setTimeout(poll, delay);
       });
-    }, 250);
+    }
+    poll();
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----
@@ -221,6 +217,16 @@ export const SERVER_RELAY_PATCH = `
   // el intervalo re-envuelve y sobreescribe origClientJoin (variable de módulo)
   // creando un ciclo: relay_wrapper → lobby_wrapper → relay_wrapper → ... →
   // stack overflow.
+  var connectionAttempt = 0;
+  function waitForCreatedPeer(previous, attempt, ready) {
+    var deadline = Date.now() + 15000;
+    function check() {
+      if (attempt !== connectionAttempt) return;
+      if (lastFakePeer && lastFakePeer !== previous && !lastFakePeer.destroyed) { ready(lastFakePeer); return; }
+      if (Date.now() < deadline) setTimeout(check, 100);
+    }
+    setTimeout(check, 0);
+  }
   var relayClientJoinDone = false;
   function installClientJoin() {
     if (relayClientJoinDone) return true;
@@ -231,18 +237,16 @@ export const SERVER_RELAY_PATCH = `
       var joinCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       var joinPass = String(pass || '').trim();
       var joinName = name || 'Jugador 2';
+      stopPolling();
+      if (relayConn) relayConn.close();
+      relayConn = null;
 
-      // Llamar al original: crea FakePeer, registra peer.on('open',...),
-      // peer.connect() devuelve conexión virtual, registra conn.on('data',...)
+      var previous = lastFakePeer, attempt = ++connectionAttempt;
       origClientJoin.apply(this, arguments);
-
-      // Tras un breve retardo, disparar peer.on('open') para que el juego
-      // llame peer.connect() y registre los handlers de la conexión.
-      setTimeout(function() {
-        if (lastFakePeer) lastFakePeer._fireOpen();
-        // peer.connect() ya devolvió lastVirtualConn. Ahora hacer el join
-        // por relay y abrir la conexión.
-        setTimeout(function() {
+      waitForCreatedPeer(previous, attempt, function(peer) {
+        peer._fireOpen();
+        // The original listener synchronously creates and binds the connection.
+        (function() {
           var conn = lastVirtualConn;
           if (!conn) return;
           var avUrl = '';
@@ -252,6 +256,7 @@ export const SERVER_RELAY_PATCH = `
             code: joinCode, password: joinPass,
             nick: joinName, avatar: avUrl
           }).then(function(res) {
+            if (attempt !== connectionAttempt || peer.destroyed) return;
             if (!res || res.error || !res.ok) {
               reportRelayError('join_failed', 'join', (res && res.error) || 'No se pudo unir a la sala');
               if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo unir a la sala.');
@@ -276,8 +281,8 @@ export const SERVER_RELAY_PATCH = `
             reportRelayError('join_failed', 'join', err && err.message || 'timeout');
             if (typeof lobbyError === 'function') lobbyError('No se pudo unir a la sala.');
           });
-        }, 100);
-      }, 50);
+        })();
+      });
     };
     window.clientJoin.__bfRelay = 1;
     return true;
@@ -296,44 +301,26 @@ export const SERVER_RELAY_PATCH = `
     relayHostCreateDone = true;
     origHostCreate = window.hostCreate;
     window.hostCreate = function(name, pass, roomName) {
-      // Llamar al original: crea FakePeer con 'bizfan-CODE', registra
-      // peer.on('open',...) (que llama a dirRegister) y
-      // peer.on('connection', onHostConn) (que registra conn.on('data',...)).
+      stopPolling();
+      if (relayConn) relayConn.close();
+      relayConn = null;
+      var previous = lastFakePeer, attempt = ++connectionAttempt;
       origHostCreate.apply(this, arguments);
 
-      // Tras un breve retardo, disparar peer.on('open') para que el juego
-      // llame a dirRegister (que centralLobbyPatch envuelve para registrar
-      // la sala en el backend).
-      setTimeout(function() {
-        if (lastFakePeer) lastFakePeer._fireOpen();
-        // Iniciar el polling para detectar cuando el invitado se une.
-        setTimeout(function() {
-          var hostCode = lastHostCode;
-          if (!hostCode) return;
-          relayCode = hostCode;
-          relaySide = 'p';
-          relayConn = null;
-          guestJoinedFired = false;
-          lastSnapSeq = 0;
-          lastMsgSeq = 0;
-          otherLeftShown = false;
+      // Wait for asynchronous nick verification, then confirmed room creation.
+      waitForCreatedPeer(previous, attempt, function(peer) {
+        peer._fireOpen();
+        var hostCode = lastHostCode, registration = window.__bfRoomRegistration;
+        if (!registration || registration.code !== hostCode) return;
+        registration.promise.then(function(res) {
+          if (!res || !res.ok || attempt !== connectionAttempt || peer.destroyed || peer !== lastFakePeer) return;
+          relayCode = hostCode; relaySide = 'p'; relayConn = null;
+          guestJoinedFired = false; otherLeftShown = false;
           startPolling();
-          // Volver a la lista de salas para que el host vea su sala creada
-          // en vez de quedarse en el formulario. renderRoomList() cambia la
-          // pantalla al modo "lista de salas" (browse) y refreshList()
-          // actualiza los datos desde el backend (incluye la sala nueva).
-          // Delay reducido de 800ms a 300ms: el registro ya se completó en
-          // dirRegister y la sala está en la BD; no hace falta esperar más.
-          setTimeout(function() {
-            if (typeof window.renderRoomList === 'function') {
-              window.renderRoomList();
-            }
-            if (typeof window.refreshList === 'function') {
-              window.refreshList();
-            }
-          }, 300);
-        }, 200);
-      }, 50);
+          if (typeof window.renderRoomList === 'function') window.renderRoomList();
+          if (typeof window.refreshList === 'function') window.refreshList();
+        });
+      });
     };
     window.hostCreate.__bfRelay = 1;
     return true;
