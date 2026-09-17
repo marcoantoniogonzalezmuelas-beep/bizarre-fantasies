@@ -26,7 +26,7 @@ export const SERVER_RELAY_PATCH = `
         if (!pending[requestId]) return;
         delete pending[requestId];
         reject(new Error('timeout'));
-      }, 10000);
+      }, 15000);
     });
   }
   window.addEventListener('message', function(event) {
@@ -310,15 +310,18 @@ export const SERVER_RELAY_PATCH = `
           lastMsgSeq = 0;
           otherLeftShown = false;
           startPolling();
-          // Asegurar que el host pase a la pantalla de espera (hostwait),
-          // donde ve su código de sala y espera al invitado. Si se le manda a
-          // la lista de salas (renderRoomList), el estado interno del juego
-          // deja de ser "host esperando" y el invitado no puede conectar.
+          // Volver a la lista de salas para que el host vea su sala creada
+          // en vez de quedarse en el formulario. renderRoomList() cambia la
+          // pantalla al modo "lista de salas" (browse) y refreshList()
+          // actualiza los datos desde el backend (incluye la sala nueva).
           setTimeout(function() {
-            if (typeof window.renderLobby === 'function') {
-              window.renderLobby('hostwait');
+            if (typeof window.renderRoomList === 'function') {
+              window.renderRoomList();
             }
-          }, 400);
+            if (typeof window.refreshList === 'function') {
+              window.refreshList();
+            }
+          }, 800);
         }, 200);
       }, 50);
     };
