@@ -146,7 +146,16 @@ export const MP_EQUIP_PATCH = `
         if (msg.spellbook) G.spellbook[me] = msg.spellbook;
         if (msg.items) G.items[me] = msg.items;
         if (msg.equipCoins != null) G.equipCoins[me] = msg.equipCoins;
-        if (typeof netSync === 'function') netSync('s-equip');
+        // Solo envía el snap de equipamiento si el juego sigue en s-equip.
+        // Si el eqdone del invitado ya se procesó y la batalla arrancó, enviar
+        // un snap de s-equip ahora sobreescribiría el snap de s-battle en el
+        // relay (la petición HTTP puede llegar desordenada) y el invitado
+        // volvería a la pantalla de equipamiento tras ver la batalla 1 segundo.
+        if (typeof netSync === 'function') {
+          var activeEl = document.querySelector('.screen.active');
+          var curScreen = activeEl ? activeEl.id : '';
+          if (curScreen === 's-equip') netSync('s-equip');
+        }
       };
       if (typeof window.handleIntent === 'function' && !window.handleIntent.__bfEqSync) {
         var origHandle = window.handleIntent;
@@ -169,6 +178,18 @@ export const MP_EQUIP_PATCH = `
     if (!window.applySnapshot.__bfEqGuard) {
       var origApply = window.applySnapshot;
       window.applySnapshot = function(snap) {
+        // Red de seguridad: si el invitado ya entró en batalla (s-battle
+        // activa), ignora snaps stale de s-equip que lleguen tarde por el
+        // relay (pueden llegar desordenados si el host envió netSync('s-equip')
+        // y netSync('s-battle') casi a la vez). Sin esto, el invitado ve la
+        // batalla 1 segundo y vuelve a "Esperando al rival".
+        if (NET.role === 'client' && snap && snap.screen === 's-equip') {
+          var activeEl = document.querySelector('.screen.active');
+          var curScreen = activeEl ? activeEl.id : '';
+          if (curScreen === 's-battle' || curScreen === 's-fight') {
+            return;
+          }
+        }
         // Fuera de la pantalla de equipamiento (subasta, batalla, resultado...)
         // se reinicia la marca de "equipamiento modificado". Sin esto, la marca
         // quedaba encendida de una fase/partida anterior y el PRIMER snapshot
