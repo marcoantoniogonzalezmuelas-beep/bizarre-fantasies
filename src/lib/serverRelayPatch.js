@@ -164,9 +164,11 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
     stopPolling();
     var generation = pollGeneration, ack = [], delivered = new Set(), failures = 0;
     var code = relayCode, side = relaySide;
+    var inFlight = false;
     function poll() {
-      if (generation !== pollGeneration || !code || !side) return;
+      if (generation !== pollGeneration || !code || !side || inFlight) return;
       if (typeof G !== 'undefined' && G._gameOver) { stopPolling(); return; }
+      inFlight = true;
       var sentAck = ack.slice(0, 100), hasMore = false;
       relayRequest('poll', { code: code, side: side, protocol: 2, ack: sentAck }).then(function(res) {
         if (generation !== pollGeneration) return;
@@ -203,8 +205,12 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         }
       }).finally(function() {
         if (generation !== pollGeneration) return;
-        // One request at a time, with backoff on overload, never overlapping polls.
-        var delay = failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1)) : (hasMore ? 80 : 1000);
+        inFlight = false;
+        // Short active-play waits on BOTH ends, without overlapping requests.
+        // Idle lobbies stay inexpensive; errors retain exponential backoff.
+        var playing = !!document.querySelector('#s-battle.active,#s-recruit.active,#s-equip.active');
+        var delay = failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1))
+          : hasMore ? 0 : (playing ? 200 : 1000);
         pollTimer = setTimeout(poll, delay);
       });
     }

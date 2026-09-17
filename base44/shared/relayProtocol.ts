@@ -1,3 +1,5 @@
+import { waitUntil } from 'base44:runtime';
+
 // Reliable per-sender FIFO. Retries keep their batch ID; only acknowledged
 // delivery IDs are removed. No timestamps are used as message cursors.
 export async function relayProtocol(base44, room, body, now) {
@@ -33,8 +35,14 @@ export async function relayProtocol(base44, room, body, now) {
   const seenAt = state[side === 'p' ? 'host_last_seen' : 'guest_last_seen'] || 0;
   const ops = {};
   if (ack.length) ops.$pull = { [incomingKey]: { id: { $in: ack } } };
-  if (now - seenAt > 8000) ops.$set = { [side === 'p' ? 'state.host_last_seen' : 'state.guest_last_seen']: now };
-  if (Object.keys(ops).length) await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, ops);
+  if (now - seenAt > 8000) ops.$max = { [side === 'p' ? 'state.host_last_seen' : 'state.guest_last_seen']: now };
+  // ACK cleanup is idempotent and independent of delivery. Do not make the
+  // player wait for a second database round trip before receiving the action.
+  // Failed cleanup is safe: unremoved IDs are redelivered and acknowledged again.
+  if (Object.keys(ops).length) waitUntil(
+    base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, ops)
+      .catch(() => console.warn('Relay acknowledgement cleanup will retry on redelivery'))
+  );
   const acknowledged = new Set(ack);
   const pending = (state['relay_queue_' + other] || []).filter(m => !acknowledged.has(m.id));
   const otherSeen = state[other === 'p' ? 'host_last_seen' : 'guest_last_seen'] || 0;

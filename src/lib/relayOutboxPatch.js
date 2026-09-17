@@ -4,8 +4,14 @@ export const RELAY_OUTBOX_PATCH = `
 window.bfCreateRelayOutbox = function(request, side, code, report) {
   var queue = [], batch = null, timer = null, stopped = false, busy = false;
   var session = crypto.randomUUID(), serial = 0, failures = 0;
+  var timerDue = 0;
   function schedule(delay) {
-    if (!stopped && !timer) timer = setTimeout(function(){ timer = null; flush(); }, delay);
+    if (stopped || busy) return;
+    var due = Date.now() + delay;
+    if (timer && timerDue <= due) return;
+    clearTimeout(timer);
+    timerDue = due;
+    timer = setTimeout(function(){ timer = null; flush(); }, delay);
   }
   function flush() {
     if (stopped || busy || (!batch && !queue.length)) return;
@@ -22,7 +28,7 @@ window.bfCreateRelayOutbox = function(request, side, code, report) {
       if (failures === 1 && typeof notif === 'function') notif('Reconectando: tu acción sigue pendiente y se reenviará.');
     }).finally(function(){
       busy = false;
-      if (batch || queue.length) schedule(failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1)) : 80);
+      if (batch || queue.length) schedule(failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1)) : 0);
     });
   }
   return {
@@ -30,7 +36,9 @@ window.bfCreateRelayOutbox = function(request, side, code, report) {
       if (stopped) return;
       // Freeze at send time: queued snapshots must not reference mutable G/B.
       queue.push(JSON.parse(JSON.stringify(msg)));
-      schedule(80);
+      // Urgent clicks advance a batching timer, never overtake queued data or
+      // bypass the retry backoff of an unconfirmed batch.
+      if (!failures) schedule(msg.t === 'intent' ? 0 : 16);
     },
     close: function() { stopped = true; clearTimeout(timer); queue = []; }
   };
