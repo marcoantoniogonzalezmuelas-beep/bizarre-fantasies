@@ -21,36 +21,17 @@ export const MP_AUCTION_PATCH = `
       var isClient = (typeof NET !== 'undefined' && NET && NET.role === 'client');
       if (!isClient || typeof G === 'undefined' || !G) return orig.apply(this, arguments);
 
-      // INVITADO: preservar el estado de la subasta que vino del snap del host.
-      // Si llamamos al startAuctionPhase original, generaría héroes distintos.
-      var saved = {};
+      // INVITADO: NO llamar al startAuctionPhase original. El original genera
+      // héroes nuevos (aleatorios) que NO son los del host. Antes se llamaba y
+      // luego se restauraba el snap, pero si el snap nuevo no había llegado
+      // aún (polling 500 ms), el invitado veía los héroes de la fase anterior
+      // durante ~1 s hasta que el snap correcto llegaba. Ahora el invitado
+      // solo renderiza el estado que ya tiene del host (snap más reciente).
+      // El snap del host ya trae G.cands, G.curType, G.pools, G.aIndex…
+      // correctos. Solo hace falta re-renderizar la pantalla de subasta.
       try {
-        saved.cands = G.cands ? G.cands.slice() : null;
-        saved.epicCands = G.epicCands ? { p: (G.epicCands.p||[]).slice(), o: (G.epicCands.o||[]).slice() } : null;
-        saved.curType = G.curType;
-        saved.pools = G.pools;
-        saved.aIndex = G.aIndex;
-        saved.subRound = G.subRound;
-        saved.phaseNeeds = G.phaseNeeds ? { p: G.phaseNeeds.p, o: G.phaseNeeds.o } : null;
-        saved.bidsIn = G.bidsIn;
-      } catch(e) {}
-
-      var res = orig.apply(this, arguments);
-
-      // Restaurar el estado del snap del host
-      try {
-        if (saved.cands) G.cands = saved.cands;
-        if (saved.epicCands) G.epicCands = saved.epicCands;
-        if (saved.curType !== undefined) G.curType = saved.curType;
-        if (saved.pools) G.pools = saved.pools;
-        if (saved.aIndex !== undefined) G.aIndex = saved.aIndex;
-        if (saved.subRound !== undefined) G.subRound = saved.subRound;
-        if (saved.phaseNeeds) G.phaseNeeds = saved.phaseNeeds;
-        if (saved.bidsIn) G.bidsIn = saved.bidsIn;
-        // Re-renderizar con los candidatos correctos del snap
         if (typeof renderRecruit === 'function') renderRecruit('p');
       } catch(e) {}
-      return res;
     };
     window.startAuctionPhase.__bfMpAuction = 1;
     return true;

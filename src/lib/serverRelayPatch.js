@@ -145,6 +145,7 @@ export const SERVER_RELAY_PATCH = `
   var pollTimer = null;
   var lastSnapSeq = 0;
   var lastMsgSeq = 0;
+  var lastPollOk = 0;
   var guestJoinedFired = false;
   var otherLeftShown = false;
 
@@ -161,6 +162,9 @@ export const SERVER_RELAY_PATCH = `
         snap_since: lastSnapSeq,
         msg_since: lastMsgSeq
       }).then(function(res) {
+        // Marcar el momento del último poll exitoso: el vigilante de
+        // desconexión usa esto para detectar si el relay deja de responder.
+        lastPollOk = Date.now();
         if (!res || !res.ok) return;
         // Snap nuevo → dispatch a la conexión virtual
         if (res.snap && res.snap_seq > lastSnapSeq) {
@@ -204,7 +208,7 @@ export const SERVER_RELAY_PATCH = `
           reportRelayError('poll_failed', 'poll', err.message);
         }
       });
-    }, 1000);
+    }, 500);
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----
