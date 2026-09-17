@@ -34,7 +34,7 @@ export const RETROPOETA_ABILITY_PATCH = `
       var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
       function livingFoes(){
         var arr = (G.team && G.team[foesSide]) || [];
-        return (typeof living === 'function') ? living(arr) : arr.filter(function(x){ return x && x.alive; });
+        return arr.filter(function(x){ return x && x.alive; });
       }
       function finish(){
         h.abilityUsed = true;
@@ -54,22 +54,10 @@ export const RETROPOETA_ABILITY_PATCH = `
         var pool = livingFoes();
         if(!pool.length){ finish(); return; }
 
-        function apply(main){
-          hit(main);
-          if(h.eliteMode){
-            var second = livingFoes().find(function(x){ return x !== main; });
-            if(second) hit(second);
-          }
+        window.bfChooseAbilityTargets(side, foesSide, h.eliteMode ? 2 : 1, 'Objetivo del conjuro', function(targets){
+          targets.forEach(hit);
           finish();
-        }
-
-        // IA: golpea al rival más debilitado sin diálogo.
-        if(typeof humanCtl === 'function' && !humanCtl(side)){
-          apply(pool.slice().sort(function(a, b){ return a.hp - b.hp; })[0]);
-          return;
-        }
-
-        pendTarget('Objetivo del conjuro', foesSide, function(t){ apply(t); });
+        });
       }catch(e){ finish(); }
     };
     return true;

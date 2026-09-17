@@ -32,9 +32,9 @@ export const NIXARA_ABILITY_PATCH = `
       var el = !!h.eliteMode;
       var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
       var allies = (typeof G !== 'undefined' && G.team) ? (G.team[side] || []) : [];
-      function livingArr(arr){ return (typeof living === 'function') ? living(arr) : (arr || []).filter(function(x){ return x && x.alive; }); }
+      function livingArr(arr){ return (arr || []).filter(function(x){ return x && x.alive; }); }
       function sync(){ if (typeof renderBattle === 'function') renderBattle(); if (typeof netSync === 'function') netSync('s-battle'); }
-      function finish(){ h.abilityUsed = true; sync(); if (typeof done === 'function') done(); }
+      function finish(){ h.abilityUsed = true; sync(); if (typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }
       function healOne(a, amt){
         if (!a || amt <= 0) return 0;
         if (typeof heal === 'function') return heal(a, amt) || 0;
@@ -48,7 +48,7 @@ export const NIXARA_ABILITY_PATCH = `
         var power = el ? Math.round(base * 1.25) + 6 : Math.round(base * 1.1);
 
         // 1) El jugador elige el RIVAL al que drenar la vida.
-        pendTarget(el ? 'Rival a drenar (Drenaje Masivo)' : 'Rival a drenar', foesSide, function(foe){
+        window.bfChooseAbilityTarget(side, el ? 'Rival a drenar (Drenaje Masivo)' : 'Rival a drenar', foesSide, function(foe){
           var drained = 0;
           try {
             if (typeof pushFx === 'function') {
@@ -64,7 +64,7 @@ export const NIXARA_ABILITY_PATCH = `
           if (drained <= 0 || pool.length === 0) { finish(); return; }
 
           // 2) El jugador elige el ALIADO que recibe la vida robada.
-          pendTarget('Aliado que recibe la vida', side, function(ally){
+          window.bfChooseAbilityTarget(side, 'Aliado que recibe la vida', side, function(ally){
             try {
               if (el && pool.length > 1) {
                 // Élite: el aliado elegido recibe la mitad; el resto se reparte
@@ -90,7 +90,7 @@ export const NIXARA_ABILITY_PATCH = `
               }
             } catch (e) {}
             finish();
-          });
+          }, {noCancel:true});
         });
       } catch (e) {
         finish(); // nunca bloquear la partida

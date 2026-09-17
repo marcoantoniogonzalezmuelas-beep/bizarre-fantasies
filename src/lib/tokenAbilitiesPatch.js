@@ -42,7 +42,7 @@ export const TOKEN_ABILITIES_PATCH = `
       // estados y daño que el anfitrión sobrescribe, dejando el turno colgado).
       // Envía el intent y espera el estado autoritativo del anfitrión.
       if(typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function'){
-        sendIntent('useAbility', {});
+        sendIntent('ability', {});
         return;
       }
 
@@ -133,7 +133,7 @@ export const TOKEN_ABILITIES_PATCH = `
 
       // Objetivo: el humano elige; la IA va al rival con menos vida.
       function pickFoe(cb){
-        if(humanCtl(side)){
+        if(window.bfAbilityHuman(side)){
           pendTarget('Objetivo de ' + name, foes, cb);
         } else {
           var t = living(foes).sort(function(a, b){ return a.hp - b.hp; })[0];

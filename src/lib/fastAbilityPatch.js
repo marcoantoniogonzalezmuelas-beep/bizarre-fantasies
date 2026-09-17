@@ -22,26 +22,14 @@ export const FAST_ABILITY_PATCH = `
     return id === 'faseve' || id === 'fast' || nm === 'Fas Everest Panzer' || nm === 'Fast Everest Panzer';
   }
 
-  var CSS = '#bf-fast-pick{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(6,4,12,.82)}'
-    + '#bf-fast-pick .bx{width:min(92vw,420px);border-radius:20px;border:2px solid #ffd24a;background:linear-gradient(180deg,#1d1330,#120c1f);padding:18px;box-shadow:0 18px 50px rgba(0,0,0,.75);text-align:center}'
-    + '#bf-fast-pick h3{margin:0 0 4px;font-size:18px;font-weight:900;color:#fff5dc}'
-    + '#bf-fast-pick p{margin:0 0 14px;font-size:13px;color:#cfc6dd}'
-    + '#bf-fast-pick button{display:block;width:100%;margin-top:10px;padding:13px 12px;border-radius:14px;border:2px solid #8a5f10;font-size:14px;font-weight:900;color:#3a2600;background:linear-gradient(180deg,#ffe27a,#c8901f);cursor:pointer}'
-    + '#bf-fast-pick button.alt{border-color:#7a4bb0;color:#f4e8ff;background:linear-gradient(180deg,#6f3fb0,#3d1f66)}';
-
   function askChoice(foeName, cb){
-    var st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
-    var ov = document.createElement('div'); ov.id = 'bf-fast-pick';
-    ov.innerHTML = '<div class="bx"><h3>\\u2699\\ufe0f Compresor Roto</h3><p>Sabotaje contra <b>' + foeName + '</b>. Elige qué le rompes:</p>'
-      + '<button data-k="elite">\\u26D4 Bloquear su fase \\u00c9LITE</button>'
-      + '<button class="alt" data-k="abil">\\u2728 Anular su habilidad actual</button></div>';
-    ov.addEventListener('click', function(e){
-      var b = e.target.closest && e.target.closest('button');
-      if(!b) return;
-      ov.remove(); st.remove();
-      cb(b.getAttribute('data-k'));
-    });
-    document.body.appendChild(ov);
+    window.bfChoiceModal({
+      icon:'⚙', title:'Compresor Roto', text:'Sabotaje contra ' + foeName + '. Elige qué le rompes:',
+      options:[
+        {key:'elite', icon:'⛔', label:'Bloquear su fase ÉLITE'},
+        {key:'abil', icon:'✨', label:'Anular su habilidad actual'}
+      ]
+    }, cb);
   }
 
   function install(){
@@ -56,7 +44,7 @@ export const FAST_ABILITY_PATCH = `
       var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
       function livingFoes(){
         var arr = (G.team && G.team[foesSide]) || [];
-        return (typeof living === 'function') ? living(arr) : arr.filter(function(x){ return x && x.alive; });
+        return arr.filter(function(x){ return x && x.alive; });
       }
       function finish(){
         h.abilityUsed = true;
@@ -94,7 +82,7 @@ export const FAST_ABILITY_PATCH = `
         }
 
         // IA: elige rival y sabotaje al azar, sin diálogo.
-        if(typeof humanCtl === 'function' && !humanCtl(side)){
+        if(!window.bfAbilityHuman(side)){
           var p2 = livingFoes();
           if(!p2.length){ finish(); return; }
           apply(p2[Math.floor(Math.random() * p2.length)], Math.random() < 0.5 ? 'elite' : 'abil');

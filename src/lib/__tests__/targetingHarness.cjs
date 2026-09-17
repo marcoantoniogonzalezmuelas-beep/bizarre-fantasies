@@ -1,0 +1,31 @@
+// Isolated engine harness: actual shipped sources, no SDK writes or live match.
+const fs = require('node:fs'), vm = require('node:vm'), crypto = require('node:crypto');
+const path = require('node:path');
+const load = (name, symbol) => vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', name + '.js'), 'utf8').replace(/export /g, '') + '\n' + symbol, {});
+const files = [['abilityTargetPolicy','ABILITY_TARGET_POLICY_PATCH'],['oddStatesLogicPatch','ODD_STATES_LOGIC_PATCH'],['narbonElitePatch','NARBON_ELITE_PATCH'],['tokenAbilitiesPatch','TOKEN_ABILITIES_PATCH'],['duckAbilityPatch','DUCK_ABILITY_PATCH'],['epicSummonPatch','EPIC_SUMMON_PATCH'],['abilityImplPatch','ABILITY_IMPL_PATCH'],['nixaraAbilityPatch','NIXARA_ABILITY_PATCH'],['fastAbilityPatch','FAST_ABILITY_PATCH'],['retropoetaAbilityPatch','RETROPOETA_ABILITY_PATCH'],['faithfulAbilitiesPatch','FAITHFUL_ABILITIES_PATCH'],['mpChoiceModalPatch','MP_CHOICE_MODAL_PATCH'],['abilityTargetFlowPatch','ABILITY_TARGET_FLOW_PATCH']];
+module.exports = function prepare(html) {
+  html = load('abilityTargetingHtml','patchAbilityTargetingHtml')(html);
+  const native = ['humanCtl','pendTarget','pickTarget','cancelPending','useAbility','abilityNeedsEnemy','abilityNeedsAlly','handleIntent','snapshot'].map(name => { const i=html.indexOf('function '+name+'('), j=html.indexOf('\nfunction ',i+1); if(i<0)throw Error(name);return html.slice(i,j); });
+  const templates = vm.runInNewContext(html.match(/const HEROES=(\[[\s\S]*?\]);/)[1]);
+  const scripts = files.map(([name,symbol])=>[name,load(name,symbol).replace(/^\s*<script>/,'').replace(/<\/script>\s*$/,'')]);
+  return function setup(card, elite, mode, specs=[]) {
+    const side=['guest','local','ai'].includes(mode)?'o':'p', foe=side==='p'?'o':'p';
+    let clock=0, serial=0; const timers=new Map(), state={done:0, invalidDamage:0, choices:[], wire:[], listeners:[], events:{}};
+    const schedule=(f,d,repeat)=>{const id=++serial;timers.set(id,{f,at:clock+Number(d||0),repeat});return id;};
+    const tick=duration=>{const end=clock+duration;let budget=3000;while(budget--){let next;for(const item of timers)if(item[1].at<=end&&(!next||item[1].at<next[1].at))next=item;if(!next)break;const[id,t]=next;clock=t.at;if(t.repeat)t.at+=t.repeat;else timers.delete(id);t.f();}clock=end;if(budget<=0)throw Error('Timer loop');};
+    const make=id=>({id,name:id,type:'HE',alive:true,hp:40,maxHp:100,cc:12,ad:12,he:12,shield:0,para:0,skip:0,silence:0,_mods:[],abilityUsed:false,eliteUsed:false,ability:'Test',eAbility:'Elite'});
+    const hero=Object.assign(make(card.card_id),templates[card.number-1]||{},{id:card.card_id,name:card.name,eliteMode:elite,ability:card.ability_name,eAbility:card.elite_ability_name,hp:60,maxHp:100,_mods:[]});
+    if(card.card_id.startsWith('tk_')){hero._token=card.card_id;hero.akind=card.card_id==='tk_unicornio'?'kamikaze-token':card.card_id==='tk_patito_goma'?'big-ad':card.card_id==='tk_ban'?'tk_confuse':card.card_id==='tk_pez'?'tk_drunk':'tk_none';}
+    const teams={[side]:[hero,make('ally1'),make('ally2')],[foe]:[make('enemy1'),make('enemy2'),make('enemy3')]};
+    if(card.card_id==='sol'){teams[side][1].alive=false;teams[side][2].alive=false;}
+    const node=()=>({style:{},classList:{add(){},remove(){},contains(){return false;}},appendChild(){},remove(){},setAttribute(){},addEventListener(){},querySelectorAll(){return[];},querySelector(){return null;}});
+    const c={Math,Date,crypto,console,G:{demo:false,oppHuman:mode==='local',team:teams,spellbook:{p:[],o:[]},items:{p:[],o:[]},itemDescarte:{p:[],o:[]},bids:{p:null,o:null}},B:{current:{side,id:hero.id},round:1,qi:0,log:[],over:false,pending:null},NET:{role:mode==='host'||mode==='guest'?'host':'',mySide:'p',conn:{on:(ev,cb)=>state.listeners.push(cb)}},_fxQueue:[],document:{head:{appendChild(){}},body:node(),createElement:node,getElementById(){return null;},querySelector(){return null;},querySelectorAll(){return[];},addEventListener:(ev,cb)=>{(state.events['dom:'+ev]??=[]).push(cb);}},addEventListener:(ev,cb)=>{(state.events[ev]??=[]).push(cb);},setInterval:(f,d)=>schedule(f,d,d),setTimeout:(f,d)=>schedule(f,d,0),clearInterval:id=>timers.delete(id),clearTimeout:id=>timers.delete(id)};
+    Object.assign(c,{getHero:(s,id)=>teams[s]?.find(x=>x.id===id),living:s=>(teams[s]||[]).filter(x=>x.alive),enemySide:s=>s==='p'?'o':'p',other:s=>s==='p'?'o':'p',tSide:t=>teams.p.includes(t)?'p':'o',stat:(x,k)=>x[k]||12,primKey:t=>t==='HE'?'he':t==='AD'?'ad':'cc',heal:(t,n)=>{if(!t)throw Error('No heal target');const before=t.hp;t.hp=Math.min(t.maxHp,t.hp+n);return t.hp-before;},dealDamage:(t,n)=>{if(!t){state.invalidDamage++;throw Error('No damage target');}const d=Math.min(t.hp,n);t.hp-=d;if(t.hp<=0)t.alive=false;return d;},reviveHero:(t,p)=>{t.alive=true;t.hp=t.maxHp*p;},pushFx(){},pushLog(){},renderBattle(){},netSync(){},netSend:m=>state.wire.push(m),sendIntent:(op,data)=>state.wire.push({t:'intent',op,...data}),notif(){},finishAct:()=>state.done++,nextRound(){},stepTurn(){},bfChoiceModal:(cfg,cb)=>state.choices.push({cfg,cb})});
+    c.window=c;vm.createContext(c);native.forEach(s=>vm.runInContext(s,c));scripts.forEach(([name,s])=>vm.runInContext(s,c,{filename:name}));tick(1000);
+    (state.events.message||[]).forEach(f=>f({data:{bfAbilitySpecs:specs}}));
+    const start=()=>c.useAbility(side,hero,()=>state.done++);
+    const candidates=()=>{const p=c.B.pending;return p?teams[p.validSide].filter(x=>(p.allowDead?!x.alive:x.alive)&&(!p.allowedIds||p.allowedIds.includes(x.id))):[];};
+    const drain=()=>{let picks=0;for(let k=0;k<8;k++){if(c.B.pending){const p=c.B.pending,t=candidates().at(-1);if(!t)throw Error('No candidate');c.pickTarget(p.validSide==='p'?'o':'p',t.id);if(c.B.pending!==p)throw Error('Wrong side accepted');c.pickTarget(p.validSide,t.id);picks++;}else if(state.choices.length)state.choices.shift().cb('elite');else{const choice=state.wire.find(m=>m.t==='bfChoice');if(!choice)break;state.wire=state.wire.filter(m=>m!==choice);state.listeners.forEach(f=>f({t:'intent',op:'choice',key:'elite',choiceId:choice.choiceId}));}}tick(1000);return picks;};
+    return {c,hero,teams,side,foe,state,tick,start,drain,candidates};
+  };
+};

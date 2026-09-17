@@ -22,11 +22,11 @@ export const ABILITY_TARGET_FLOW_PATCH = `
     if(typeof window.pendTarget!=='function'||window.pendTarget.__bfFlow)return false;
     var orig=window.pendTarget;
     var w=function(){
-      var self=this,args=arguments;
+      var self=this,args=arguments, battle=B, current=B && B.current, round=B && B.round, qi=B && B.qi;
       if(!cineOn())return orig.apply(self,args);
-      var waited=0,iv=setInterval(function(){
-        waited+=200;
-        if(!cineOn()||waited>9000){ clearInterval(iv); orig.apply(self,args); }
+      var iv=setInterval(function(){
+        if(B !== battle || !B || B.over || B.current !== current || B.round !== round || B.qi !== qi){ clearInterval(iv); return; }
+        if(!cineOn()){ clearInterval(iv); orig.apply(self,args); }
       },200);
     };
     w.__bfFlow=true;
@@ -40,16 +40,21 @@ export const ABILITY_TARGET_FLOW_PATCH = `
     if(typeof window.useAbility!=='function'||window.useAbility.__bfFlow)return false;
     var orig=window.useAbility;
     var w=function(side,h,done){
-      var now=Date.now();
-      if(window.__bfAbilBusy&&now-window.__bfAbilBusy<14000)return;
-      window.__bfAbilBusy=now;
-      var release=function(){ window.__bfAbilBusy=0; };
+      if(typeof NET !== 'undefined' && NET.role === 'client'){ sendIntent('ability',{}); return; }
+      if(!h || h.abilityUsed || !B || B.over || B.pending || window.__bfAbilityChoiceWaiting) return;
+      var key=side+':'+h.id+':'+B.round+':'+B.qi;
+      if(window.__bfAbilBusy && window.__bfAbilBusy.key === key) return;
+      var lock={key:key}, completed=false;
+      window.__bfAbilBusy=lock;
+      var release=function(){ if(window.__bfAbilBusy === lock) window.__bfAbilBusy=0; };
+      window.bfReleaseAbility=release;
       var wrapped=function(){
-        release();
+        if(completed) return;
+        completed=true; release();
+        if(!B || B.over || !B.current || B.current.side+':'+B.current.id+':'+B.round+':'+B.qi !== key) return;
         if(typeof done==='function')return done.apply(this,arguments);
         if(typeof finishAct==='function')finishAct();
       };
-      setTimeout(release,14000);
       return orig.call(this,side,h,wrapped);
     };
     w.__bfFlow=true;

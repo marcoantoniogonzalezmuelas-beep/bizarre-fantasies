@@ -94,7 +94,7 @@ export const EPIC_SUMMON_PATCH = `
       sync();
       finish();
     }
-    if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
+    if(window.bfAbilityHuman(side) && typeof pendTarget === 'function'){
       pendTarget('Objetivo de Kamikaze', foes, blow);
     } else {
       blow(alive(foes).sort(function(a,b){ return a.hp - b.hp; })[0]);

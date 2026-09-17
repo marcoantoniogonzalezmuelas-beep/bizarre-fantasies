@@ -205,12 +205,12 @@ export const ABILITY_IMPL_PATCH = `
   // ¿Necesita que el jugador elija objetivo? Solo cuando algún paso apunta a un
   // único rival/aliado (los pasos de área o sobre uno mismo no preguntan).
   function needsPick(spec){
-    var steps = ((spec.params || {}).steps) || [];
-    for(var i = 0; i < steps.length; i++){
-      var tg = String((steps[i] || {}).target || 'enemy');
-      if(tg === 'enemy' || tg === 'ally') return tg;
-    }
-    return '';
+    var kinds = [];
+    (((spec.params || {}).steps) || []).forEach(function(st){
+      var tg = String((st || {}).target || 'enemy');
+      if((tg === 'enemy' || tg === 'ally') && kinds.indexOf(tg) < 0) kinds.push(tg);
+    });
+    return kinds;
   }
 
   function runSteps(side, hero, spec, chosen){
@@ -219,7 +219,7 @@ export const ABILITY_IMPL_PATCH = `
     steps.forEach(function(st){
       if(!st || !st.action) return;
       var tg = String(st.target || 'enemy');
-      var list = (chosen && (tg === 'enemy' || tg === 'ally')) ? [chosen] : pickTargets(side, hero, tg);
+      var list = (chosen && chosen[tg] && (tg === 'enemy' || tg === 'ally')) ? [chosen[tg]] : pickTargets(side, hero, tg);
       list.forEach(function(t){
         if(!t || !t.alive) return;
         try{ if(applyStep(side, hero, st, t)) did = true; }catch(e){}
@@ -297,6 +297,14 @@ export const ABILITY_IMPL_PATCH = `
 
       var complete = typeof done === 'function' ? done : function(){ if(typeof finishAct === 'function') finishAct(); };
       var acted = false;
+      function finishAbility(){
+        hero.abilityUsed = true;
+        if(hero.eliteMode) hero.eliteUsed = true;
+        if(typeof window.__bfPlayAbilityAnim === 'function') window.__bfPlayAbilityAnim(side, hero);
+        if(typeof renderBattle === 'function') renderBattle();
+        if(typeof netSync === 'function') netSync('s-battle');
+        setTimeout(complete, 420);
+      }
 
       if(kind === 'heal_allies_now'){
         var amount = num(p.amount, 0);
@@ -305,12 +313,15 @@ export const ABILITY_IMPL_PATCH = `
         acted = true;
       } else if(kind === 'damage_enemy'){
         var dmg = scaledAmount(hero, p);
-        var list = foes(side);
-        if(!p.all) list = list.slice(0, Math.max(1, num(p.targets, 1)));
-        list.forEach(function(t){ if(typeof dealDamage === 'function') dealDamage(t, dmg, { type:'true' }); });
-        if(primStat(hero)==='he') list.forEach(function(t){ arcaneFx(t); });
-        if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': ' + dmg + ' de da\\u00f1o a ' + (p.all ? 'todos los rivales' : (list.length > 1 ? list.length + ' rivales' : (list[0] ? list[0].name : 'un rival'))) + '.');
-        acted = list.length > 0;
+        var hitSelected = function(list){
+          list.forEach(function(t){ if(t.alive && typeof dealDamage === 'function') dealDamage(t, dmg, {type:'true'}); });
+          if(primStat(hero) === 'he') list.forEach(arcaneFx);
+          if(typeof pushLog === 'function') pushLog('lg', hero.name + ' — ' + (spec.ability_name || hero.ability) + ': ' + dmg + ' de daño a ' + list.map(function(t){return t.name;}).join(', ') + '.');
+          finishAbility();
+        };
+        if(p.all) hitSelected(foes(side));
+        else window.bfChooseAbilityTargets(side, side === 'p' ? 'o' : 'p', Math.max(1, Math.floor(num(p.targets, 1))), 'Objetivo de ' + (spec.ability_name || hero.ability), hitSelected);
+        return;
       } else if(kind === 'buff_self'){
         var stat = ['cc','ad','he'].indexOf(p.stat) >= 0 ? p.stat : 'cc';
         var inc = num(p.amount, 0);
@@ -320,26 +331,19 @@ export const ABILITY_IMPL_PATCH = `
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': +' + inc + ' de ' + stat.toUpperCase() + '.');
         acted = true;
       } else if(kind === 'custom_steps'){
-        var self = this, args = arguments;
-        var pick = needsPick(spec);
-        var finishSteps = function(t){
-          if(!runSteps(side, hero, spec, t)){ orig.apply(self, args); return; }
-          hero.abilityUsed = true;
-          if(hero.eliteMode) hero.eliteUsed = true;
-          if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, hero); }catch(e){} }
-          if(typeof renderBattle === 'function') renderBattle();
-          if(typeof netSync === 'function') netSync('s-battle');
-          setTimeout(complete, 420);
+        var self = this, args = arguments, picks = needsPick(spec), chosen = {};
+        var chooseNext = function(index){
+          if(index >= picks.length){
+            if(!runSteps(side, hero, spec, chosen)){ orig.apply(self, args); return; }
+            finishAbility(); return;
+          }
+          var kind = picks[index], pool = kind === 'ally' ? side : (side === 'p' ? 'o' : 'p');
+          window.bfChooseAbilityTarget(side, 'Objetivo ' + (kind === 'ally' ? 'aliado' : 'rival') + ' de ' + (spec.ability_name || hero.ability), pool, function(t){
+            chosen[kind] = t;
+            chooseNext(index + 1);
+          });
         };
-        if(!pick){ finishSteps(null); return; }
-        var pool = pick === 'ally' ? side : (side === 'p' ? 'o' : 'p');
-        var label = 'Objetivo de ' + (hero.eliteMode ? (hero.eAbility || hero.ability) : hero.ability);
-        if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
-          pendTarget(label, pool, finishSteps);
-        } else {
-          var cands = team(pool).filter(function(x){ return x && x.alive; }).sort(function(a, b){ return a.hp - b.hp; });
-          finishSteps(cands[0] || null);
-        }
+        chooseNext(0);
         return;
       } else if(kind === 'shield_self'){
         var sh = num(p.amount, 0);
@@ -351,12 +355,7 @@ export const ABILITY_IMPL_PATCH = `
       }
 
       if(!acted) return orig.apply(this, arguments);
-      hero.abilityUsed = true;
-      if(hero.eliteMode) hero.eliteUsed = true;
-      if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, hero); }catch(e){} }
-      if(typeof renderBattle === 'function') renderBattle();
-      if(typeof netSync === 'function') netSync('s-battle');
-      setTimeout(complete, 420);
+      finishAbility();
     };
     return true;
   }

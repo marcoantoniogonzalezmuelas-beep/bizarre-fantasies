@@ -32,7 +32,7 @@ export const DUCK_ABILITY_PATCH = `
       // y sincroniza el estado. Sin esto, el cliente aplica daño local (que
       // el host sobrescribe) y el turno se queda colgado.
       if(typeof NET !== 'undefined' && NET.role === 'client' && typeof sendIntent === 'function'){
-        sendIntent('useAbility', {});
+        sendIntent('ability', {});
         return;
       }
 
@@ -85,7 +85,7 @@ export const DUCK_ABILITY_PATCH = `
         finish();
       };
 
-      if(humanCtl(side)) pendTarget('Objetivo del Picotazo', foes, shoot);
+      if(window.bfAbilityHuman(side)) pendTarget('Objetivo del Picotazo', foes, shoot);
       else {
         var t = living(foes).sort(function(a,b){ return a.hp - b.hp; })[0];
         if(t) shoot(t); else finish();

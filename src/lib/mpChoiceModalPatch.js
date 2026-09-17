@@ -22,7 +22,7 @@ export const MP_CHOICE_MODAL_PATCH = `
   if (window.__bfMpChoiceModal) return;
   window.__bfMpChoiceModal = true;
 
-  var pendingChoiceCb = null;
+  var pendingChoice = null;
 
   function isOnlineHost(){
     try { return typeof NET !== 'undefined' && NET && NET.role === 'host'; }
@@ -43,12 +43,19 @@ export const MP_CHOICE_MODAL_PATCH = `
     if (typeof window.bfChoiceModal !== 'function' || window.bfChoiceModal.__bfMpChoice) return false;
     var orig = window.bfChoiceModal;
     window.bfChoiceModal = function(cfg, cb){
+      window.__bfAbilityChoiceWaiting = true;
+      var settled = false;
+      var finish = function(key){
+        if(settled) return;
+        settled = true; window.__bfAbilityChoiceWaiting = false;
+        cb(key);
+      };
       if (isOnlineHost() && isClientTurn()){
-        pendingChoiceCb = cb;
-        try { if (typeof netSend === 'function') netSend({ t:'bfChoice', cfg: cfg }); }catch(e){}
+        pendingChoice = {id:crypto.randomUUID(), cb:finish, hero:B.current.id, round:B.round, qi:B.qi, keys:(cfg.options || []).map(function(o){return o.key;})};
+        if(typeof netSend === 'function') netSend({t:'bfChoice', cfg:cfg, choiceId:pendingChoice.id});
         return;
       }
-      return orig.apply(this, arguments);
+      return orig.call(this, cfg, finish);
     };
     window.bfChoiceModal.__bfMpChoice = 1;
     return true;
@@ -63,10 +70,11 @@ export const MP_CHOICE_MODAL_PATCH = `
     if (typeof NET === 'undefined' || !NET || !NET.conn) return false;
     if (typeof NET.conn.on !== 'function') return false;
     NET.conn.on('data', function(msg){
-      if (!msg || msg.t !== 'intent' || msg.op !== 'choice' || !pendingChoiceCb) return;
-      var cb = pendingChoiceCb;
-      pendingChoiceCb = null;
-      try { cb(msg.key); }catch(e){}
+      if (!msg || msg.t !== 'intent' || msg.op !== 'choice' || !pendingChoice) return;
+      var choice = pendingChoice;
+      if(msg.choiceId !== choice.id || choice.keys.indexOf(msg.key) < 0 || !isClientTurn() || B.over || B.current.id !== choice.hero || B.round !== choice.round || B.qi !== choice.qi) return;
+      pendingChoice = null;
+      choice.cb(msg.key);
     });
     hostConnection = NET.conn;
     return true;
@@ -83,7 +91,7 @@ export const MP_CHOICE_MODAL_PATCH = `
       if (!msg || msg.t !== 'bfChoice' || !msg.cfg) return;
       if (typeof window.bfChoiceModal !== 'function') return;
       window.bfChoiceModal(msg.cfg, function(key){
-        try { if (typeof sendIntent === 'function') sendIntent('choice', { key: key }); }catch(e){}
+        try { if (typeof sendIntent === 'function') sendIntent('choice', { key: key, choiceId: msg.choiceId }); }catch(e){}
       });
     });
     clientConnection = NET.conn;

@@ -15,7 +15,7 @@ export const ODD_STATES_LOGIC_PATCH = `
 
   function installAbilities(){
     if(typeof window.useAbility !== 'function') return false;
-    if(window.useAbility.__bfOddStates) return true;
+    if(window.__bfOddAbilitiesInstalled) return true;
     var original = window.useAbility;
     window.useAbility = function(side, hero, done){
       var kind = hero && hero.akind, isNoEffect = kind === 'tk_none' || (kind === 'tk_dizzy' && !hero.eliteMode);
@@ -34,7 +34,7 @@ export const ODD_STATES_LOGIC_PATCH = `
       }
       var label = kind === 'tk_confuse' ? 'Rival a confundir' : 'Rival que beber\\u00e1 el licor';
       if(typeof pendTarget !== 'function') return original.apply(this, arguments);
-      pendTarget(label, foes, function(target){
+      window.bfChooseAbilityTarget(side, label, foes, function(target){
         var turns = hero.eliteMode ? 3 : 2;
         if(kind === 'tk_confuse'){
           target._bfConfused = Math.max(target._bfConfused || 0, turns);
@@ -51,6 +51,7 @@ export const ODD_STATES_LOGIC_PATCH = `
         complete();
       });
     };
+    window.__bfOddAbilitiesInstalled = 1;
     window.useAbility.__bfOddStates = 1; return true;
   }
 

@@ -479,7 +479,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
           log('li', c.h.name + ' desactiva la habilidad de ' + c.t.name + '.');
         }
       };
-      if(typeof humanCtl === 'function' && humanCtl(c.side) && window.bfChoiceModal){
+      if(window.bfAbilityHuman(c.side) && window.bfChoiceModal){
         var fin = c.finish;
         window.bfChoiceModal({
           icon: '\\u2699\\ufe0f',
@@ -551,7 +551,8 @@ export const FAITHFUL_ABILITIES_PATCH = `
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
       var id = hid(h), impl = IMPL[id];
-      if(!impl) return orig.apply(this, arguments);
+      // Dedicated implementations own chained drain, sabotage and area paralysis.
+      if(!impl || id === 'nix' || id === 'Faseve' || (h.eliteMode && ['nar','alf','rev'].indexOf(id) >= 0)) return orig.apply(this, arguments);
       var self = this, args = arguments;
       var foes = enemySide(side), allies = side;
       var ctx = { side:side, h:h, el:!!h.eliteMode, foes:foes, allies:allies, t:null };
@@ -573,9 +574,9 @@ export const FAITHFUL_ABILITIES_PATCH = `
         if(typeof netSync === 'function') netSync('s-battle');
         if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct();
       }
-      var need = NEEDS_ENEMY[id] ? foes : (NEEDS_ALLY[id] || (NEEDS_ALLY_NORMAL[id] && !h.eliteMode)) ? allies : null;
+      var need = (h.eliteMode && (id === 'pij' || id === 'edre')) ? null : NEEDS_ENEMY[id] ? foes : (NEEDS_ALLY[id] || (NEEDS_ALLY_NORMAL[id] && !h.eliteMode)) ? allies : null;
       if(!need){ run(null); return; }
-      if(typeof humanCtl === 'function' && humanCtl(side)){
+      if(window.bfAbilityHuman(side)){
         pendTarget('Objetivo de ' + (h.eliteMode ? h.eAbility : h.ability), need, run);
       } else {
         var t = need === foes
