@@ -48,6 +48,14 @@ export const END_GAME_SYNC_PATCH = `
     // corregir el vídeo si el cliente ya transicionó con un resultado local
     // equivocado). Nunca durante subastas ni equipamiento.
     if(!inBattle() && !resultShown()) return;
+    // SAFETY: no procesar bfEndSync si ambos bandos siguen teniendo héroes
+    // vivos. Previene finales falsos por mensajes bfEndSync erróneos o
+    // duplicados (p. ej. cuando team.o no tiene el flag 'alive' puesto aún).
+    if(inBattle() && typeof G !== 'undefined' && G && G.team && G.team.p && G.team.o){
+      var pA = (G.team.p || []).filter(function(h){ return h && h.alive !== false && !h._bfDuck; }).length;
+      var oA = (G.team.o || []).filter(function(h){ return h && h.alive !== false && !h._bfDuck; }).length;
+      if(pA > 0 && oA > 0) return;
+    }
     window.__bfEndSyncGot = true;
     try{
       if(typeof G !== 'undefined' && G) G._result = { pWin: !!msg.pWin };

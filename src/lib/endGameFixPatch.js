@@ -425,8 +425,8 @@ export const END_GAME_FIX_PATCH = `
       var battle = document.getElementById('s-battle');
       if(!battle || !battle.classList.contains('active')) return;
       if(!G.team || !G.team.p || !G.team.o) return;
-      var pAlive = (G.team.p || []).filter(function(h){ return h && h.alive && !h._bfDuck; }).length;
-      var oAlive = (G.team.o || []).filter(function(h){ return h && h.alive && !h._bfDuck; }).length;
+      var pAlive = (G.team.p || []).filter(function(h){ return h && h.alive !== false && !h._bfDuck; }).length;
+      var oAlive = (G.team.o || []).filter(function(h){ return h && h.alive !== false && !h._bfDuck; }).length;
       if(pAlive === 0 || oAlive === 0) {
         if(typeof checkWin === 'function') checkWin();
         else if(typeof window.checkWin === 'function') window.checkWin();

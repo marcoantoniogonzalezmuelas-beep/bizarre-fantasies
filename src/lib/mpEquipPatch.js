@@ -118,7 +118,31 @@ export const MP_EQUIP_PATCH = `
       window.__bfApplyEqSync = function(msg) {
         if (msg.__bfEqSyncDone) return; msg.__bfEqSyncDone = 1;
         var me = 'o';
-        if (msg.team && msg.team.length) G.team[me] = msg.team;
+        if (msg.team && msg.team.length) {
+          // Asegurar que los héroes del invitado tienen los campos de batalla
+          // inicializados (alive, maxHp…). Sin esto, la red de seguridad de
+          // endGameFixPatch los ve como muertos (alive=undefined) y dispara
+          // showResult → derrota inmediata del invitado al entrar en batalla.
+          G.team[me] = msg.team.map(function(h) {
+            if (!h) return h;
+            if (h.alive === undefined) h.alive = true;
+            if (!h.maxHp) h.maxHp = h.hp || 1;
+            if (!h.maxMana && h.mana) h.maxMana = h.mana;
+            if (h.shield === undefined) h.shield = 0;
+            if (h.eliteMode === undefined) h.eliteMode = false;
+            if (h.eliteUsed === undefined) h.eliteUsed = false;
+            if (h.abilityUsed === undefined) h.abilityUsed = false;
+            if (!h._mods) h._mods = [];
+            if (h.defending === undefined) h.defending = false;
+            if (h.sleep === undefined) h.sleep = 0;
+            if (h.para === undefined) h.para = 0;
+            if (h.skip === undefined) h.skip = 0;
+            if (h.silence === undefined) h.silence = 0;
+            if (h.evade === undefined) h.evade = 0;
+            if (h.velMod === undefined) h.velMod = 0;
+            return h;
+          });
+        }
         if (msg.spellbook) G.spellbook[me] = msg.spellbook;
         if (msg.items) G.items[me] = msg.items;
         if (msg.equipCoins != null) G.equipCoins[me] = msg.equipCoins;

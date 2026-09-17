@@ -150,7 +150,10 @@ export default async function(req: Request): Promise<Response> {
     // Escritura atómica: $push + $inc. No pisa snaps ni el state del otro lado.
     if (action === 'send') {
       const side = String(body.side || 'p');
-      const newSeq = (state.msg_seq || 0) + 1;
+      // Usar Date.now() como seq: único y monótono incluso con sends
+      // concurrentes (antes state.msg_seq+1 producía seqs duplicados
+      // cuando dos sends leían el mismo state.msg_seq stale).
+      const newSeq = Date.now();
       await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, {
         $push: {
           'state.msgs': {
@@ -158,8 +161,10 @@ export default async function(req: Request): Promise<Response> {
             $slice: -40,
           },
         },
-        $inc: { 'state.msg_seq': 1 },
-        $set: { [side === 'p' ? 'state.host_last_seen' : 'state.guest_last_seen']: now },
+        $set: {
+          'state.msg_seq': newSeq,
+          [side === 'p' ? 'state.host_last_seen' : 'state.guest_last_seen']: now,
+        },
       });
       return Response.json({ ok: true, msg_seq: newSeq });
     }
