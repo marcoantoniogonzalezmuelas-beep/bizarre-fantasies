@@ -1,0 +1,65 @@
+{
+  "name": "ConnectionError",
+  "type": "object",
+  "properties": {
+    "room_code": {
+      "type": "string",
+      "description": "C\u00f3digo de sala donde ocurri\u00f3 el error (vac\u00edo si es general)"
+    },
+    "side": {
+      "type": "string",
+      "enum": [
+        "p",
+        "g"
+      ],
+      "description": "Lado del jugador: p = host, g = invitado"
+    },
+    "nick": {
+      "type": "string",
+      "description": "Nick del jugador que report\u00f3 el error"
+    },
+    "error_type": {
+      "type": "string",
+      "enum": [
+        "timeout",
+        "server_error",
+        "join_failed",
+        "resume_failed",
+        "snap_failed",
+        "poll_failed",
+        "leave_failed"
+      ],
+      "description": "Tipo de error de conexi\u00f3n"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Mensaje de error detallado"
+    },
+    "action": {
+      "type": "string",
+      "description": "Acci\u00f3n del relay que fall\u00f3 (join, poll, snap, send, resume, leave)"
+    }
+  },
+  "required": [
+    "error_type",
+    "error_message"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

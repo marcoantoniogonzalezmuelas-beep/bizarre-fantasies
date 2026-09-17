@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Diagnostics({ turn, rooms, visitors, onlineMatches, now }) {
+export default function Diagnostics({ turn, rooms, visitors, onlineMatches, connErrors, now }) {
   const issues = [];
 
   // Relay
@@ -29,6 +29,38 @@ export default function Diagnostics({ turn, rooms, visitors, onlineMatches, now 
   // Partidas online
   if (onlineMatches.length === 0) {
     issues.push({ sev: 'info', area: 'Partidas online', msg: 'Sin partidas online registradas', hint: 'No hay datos de conectividad recientes. Juega una partida online para generar métricas.' });
+  }
+
+  // Errores de conexión reportados por el relay (entidad ConnectionError)
+  const recentErrors = (connErrors || []).filter(e => now - Date.parse(e.created_date || e.updated_date || 0) < 3600000);
+  if (recentErrors.length > 0) {
+    // Agrupar por tipo para no mostrar 50 líneas iguales
+    const byType = {};
+    recentErrors.forEach(e => {
+      const key = e.error_type || 'unknown';
+      if (!byType[key]) byType[key] = { count: 0, sample: e };
+      byType[key].count++;
+    });
+    Object.entries(byType).forEach(([type, info]) => {
+      const e = info.sample;
+      const ageMin = Math.round((now - Date.parse(e.created_date || e.updated_date || 0)) / 60000);
+      const sev = (type === 'join_failed' || type === 'resume_failed') ? 'high' : (type === 'snap_failed' ? 'medium' : 'low');
+      const typeLabel = {
+        join_failed: 'Unión a sala',
+        resume_failed: 'Reanudar partida',
+        snap_failed: 'Envío de estado',
+        poll_failed: 'Polling',
+        server_error: 'Servidor',
+        timeout: 'Timeout',
+        leave_failed: 'Salida de sala',
+      }[type] || type;
+      issues.push({
+        sev,
+        area: 'Errores de conexión',
+        msg: `${info.count}× ${typeLabel} (últ. hace ${ageMin} min)`,
+        hint: `Sala ${e.room_code || '—'} · ${e.side === 'p' ? 'host' : 'invitado'} · ${e.nick || '—'}: ${e.error_message || 'sin detalle'}`,
+      });
+    });
   }
 
   const sevColor = { high: '#ff6b6b', medium: '#ffd24a', low: '#7ab8ff', info: '#9a8fb5' };

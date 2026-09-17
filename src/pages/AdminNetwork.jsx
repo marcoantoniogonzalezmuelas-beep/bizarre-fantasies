@@ -14,6 +14,7 @@ export default function AdminNetwork() {
   const [rooms, setRooms] = useState([]);
   const [visitors, setVisitors] = useState([]);
   const [onlineMatches, setOnlineMatches] = useState([]);
+  const [connErrors, setConnErrors] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [now, setNow] = useState(Date.now());
 
@@ -24,14 +25,16 @@ export default function AdminNetwork() {
   const loadData = useCallback(async () => {
     setLoadingData(true);
     try {
-      const [roomList, visitorList, matchList] = await Promise.all([
+      const [roomList, visitorList, matchList, errorList] = await Promise.all([
         base44.entities.GameRoom.list('-updated_date', 200).catch(() => []),
         base44.entities.BizarreVisitor.list('-created_date', 200).catch(() => []),
         base44.entities.MatchResult.list('-created_date', 50).catch(() => []),
+        base44.entities.ConnectionError.list('-created_date', 50).catch(() => []),
       ]);
       setRooms(roomList || []);
       setVisitors(visitorList || []);
       setOnlineMatches((matchList || []).filter(m => m.mode === 'online'));
+      setConnErrors(errorList || []);
     } catch (e) {}
     setLoadingData(false);
   }, []);
@@ -117,7 +120,36 @@ export default function AdminNetwork() {
         <div className="grid gap-6">
           <TurnStatus turn={turn} testing={testing} onTest={testTurn} />
 
-          <Diagnostics turn={turn} rooms={rooms} visitors={visitors} onlineMatches={onlineMatches} now={now} />
+          <Diagnostics turn={turn} rooms={rooms} visitors={visitors} onlineMatches={onlineMatches} connErrors={connErrors} now={now} />
+
+          {/* Errores de conexión recientes */}
+          <section className="rounded-3xl border border-[#ff6b6b33] bg-[#140d24]/90 p-4 md:p-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-heading text-xl font-black text-[#ff9fbd]">Errores de conexión · {connErrors.length}</h2>
+              <span className="text-xs text-[#cfc6dd]">Últimas 50 notificaciones (1 h)</span>
+            </div>
+            {loadingData ? <p className="text-sm text-[#cfc6dd]">Cargando errores…</p> : (
+              <div className="grid gap-2">
+                {connErrors.length === 0 && <p className="text-sm text-[#cfc6dd]">No se han registrado errores de conexión.</p>}
+                {connErrors.slice(0, 20).map((e, i) => {
+                  const ageMin = Math.round((now - Date.parse(e.created_date || e.updated_date || 0)) / 60000);
+                  const sevColor = { join_failed: '#ff6b6b', resume_failed: '#ff6b6b', snap_failed: '#ffd24a', poll_failed: '#7ab8ff', server_error: '#ffd24a', timeout: '#7ab8ff', leave_failed: '#7ab8ff' }[e.error_type] || '#9a8fb5';
+                  return (
+                    <div key={e.id || i} className="flex items-start gap-3 rounded-xl border border-[#ffffff0a] bg-black/20 px-3 py-2 text-xs">
+                      <span className="shrink-0 rounded px-2 py-0.5 font-black" style={{ background: sevColor + '22', color: sevColor }}>
+                        {e.error_type || 'unknown'}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[#cfc6dd]">Sala <b className="text-[#fff5dc]">{e.room_code || '—'}</b> · {e.side === 'p' ? 'host' : 'inv.'} · {e.nick || '—'} · acción <b>{e.action || '—'}</b></span>
+                        <div className="mt-0.5 text-[#ff9fbd]">{e.error_message || ''}</div>
+                      </div>
+                      <span className="shrink-0 text-[#9a8fb5]">hace {ageMin} min</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
 
           {/* Salas activas */}
           <section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 md:p-6">

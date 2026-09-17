@@ -762,6 +762,19 @@ export default function Home() {
       if (e.data && e.data.bfReloading) {
         setLoading(true);
       }
+      // Errores de conexión del relay: se guardan en la BD para que el
+      // backoffice de red los muestre en el diagnóstico.
+      if (e.data && e.data.bfRelayError && base44.entities?.ConnectionError) {
+        const err = e.data.bfRelayError;
+        base44.entities.ConnectionError.create({
+          room_code: String(err.room_code || '').slice(0, 6),
+          side: err.side || '',
+          nick: String(err.nick || '').slice(0, 28),
+          error_type: err.error_type || 'server_error',
+          error_message: String(err.error_message || '').slice(0, 500),
+          action: String(err.action || '').slice(0, 20),
+        }).catch(() => {});
+      }
       // Refresco de victorias contra la IA cuando el jugador cambia de nick en
       // la misma sesión: se recargan sus partidas ganadas desde la BD y se
       // envían al iframe para que los desbloqueos de niveles sean correctos.

@@ -39,6 +39,30 @@ export const SERVER_RELAY_PATCH = `
   });
   window.bfRelayRequest = relayRequest;
 
+  // ---- Reportar errores de conexión a la página padre (para el backoffice) ----
+  var lastErrorReport = 0;
+  function reportRelayError(errorType, action, message) {
+    // Throttle: máximo un error del mismo tipo cada 5 s (evita inundar la BD
+    // si el polling falla en cada ciclo de 200 ms).
+    var now = Date.now();
+    var key = errorType + ':' + action;
+    if (window.__bfLastErrorKey === key && now - lastErrorReport < 5000) return;
+    window.__bfLastErrorKey = key;
+    lastErrorReport = now;
+    try {
+      window.parent.postMessage({
+        bfRelayError: {
+          room_code: relayCode || '',
+          side: relaySide || '',
+          nick: (typeof G !== 'undefined' && G.myNick) ? G.myNick : '',
+          error_type: errorType,
+          action: action || '',
+          error_message: String(message || '').slice(0, 500)
+        }
+      }, '*');
+    } catch(e) {}
+  }
+
   // ---- Estado de relay (propio, no depende de NET que puede ser closure-local) ----
   var relayCode = '';
   var relaySide = 'p'; // 'p' host, 'g' guest
@@ -96,9 +120,9 @@ export const SERVER_RELAY_PATCH = `
         if (!msg || !code) return;
         // Los snaps (estado completo) van por 'snap'; el resto por 'send'
         if (msg.t === 'snap' || msg.t === 'bfFullSync') {
-          relayRequest('snap', { code: code, side: side, snap: msg }).catch(function(){});
+          relayRequest('snap', { code: code, side: side, snap: msg }).catch(function(err){ reportRelayError('snap_failed', 'snap', err && err.message || 'timeout'); });
         } else {
-          relayRequest('send', { code: code, side: side, data: msg }).catch(function(){});
+          relayRequest('send', { code: code, side: side, data: msg }).catch(function(err){ reportRelayError('server_error', 'send', err && err.message || 'timeout'); });
         }
       },
       on: function(ev, cb) { if (cbs[ev]) cbs[ev].push(cb); },
@@ -172,8 +196,15 @@ export const SERVER_RELAY_PATCH = `
           otherLeftShown = false;
           if (typeof notif === 'function') notif('✔ Tu rival ha vuelto. ¡La partida continúa!');
         }
-      }).catch(function(){});
-    }, 350);
+      }).catch(function(err){
+        // El polling falla a menudo por timeouts puntuales; solo reportar
+        // si el error no es un timeout aislado (el timeout ya se reporta
+        // por separado desde relayRequest).
+        if (err && err.message && err.message !== 'timeout') {
+          reportRelayError('poll_failed', 'poll', err.message);
+        }
+      });
+    }, 200);
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----
@@ -206,6 +237,7 @@ export const SERVER_RELAY_PATCH = `
             nick: joinName, avatar: avUrl
           }).then(function(res) {
             if (!res || res.error || !res.ok) {
+              reportRelayError('join_failed', 'join', (res && res.error) || 'No se pudo unir a la sala');
               if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo unir a la sala.');
               return;
             }
@@ -224,7 +256,8 @@ export const SERVER_RELAY_PATCH = `
             guestJoinedFired = true;
             otherLeftShown = false;
             startPolling();
-          }).catch(function() {
+          }).catch(function(err) {
+            reportRelayError('join_failed', 'join', err && err.message || 'timeout');
             if (typeof lobbyError === 'function') lobbyError('No se pudo unir a la sala.');
           });
         }, 100);
@@ -283,6 +316,7 @@ export const SERVER_RELAY_PATCH = `
 
     relayRequest('resume', { code: cleanCode, side: side, password: String(password || '').trim(), nick: nick, avatar: avUrl }).then(function(res) {
       if (!res || res.error || !res.ok) {
+        reportRelayError('resume_failed', 'resume', (res && res.error) || 'No se pudo reanudar');
         if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo reanudar la partida.');
         return;
       }
@@ -337,7 +371,8 @@ export const SERVER_RELAY_PATCH = `
           }, 100);
         }, 50);
       }
-    }).catch(function() {
+    }).catch(function(err) {
+      reportRelayError('resume_failed', 'resume', err && err.message || 'timeout');
       if (typeof lobbyError === 'function') lobbyError('No se pudo reanudar la partida.');
     });
   };
