@@ -39,14 +39,39 @@ export const MP_FX_SYNC_PATCH = `
     return out;
   }
 
+  // DEDUPLICACIÓN DE EVENTOS: el juego puede llamar flushFx varias veces con los
+  // mismos eventos (si la lista interna de FX no se vacía). Sin esto, el mismo
+  // FX se enviaba al invitado una y otra vez → se renderizaba en bucle sobre
+  // el retrato del héroe → la partida se saturaba y bloqueaba.
+  var recentSigs = {};
+  function evSig(ev) {
+    if (!ev) return '';
+    return (ev.k || ev.type || '') + '|' + (ev.fromId || ev.from || '') + '|' +
+           (ev.toId || ev.to || '') + '|' + (ev.dmg || ev.val || ev.d || '');
+  }
   function sendPendingFx() {
     if (typeof NET === 'undefined' || NET.role !== 'host' || !NET.conn || !NET.conn.open) {
       pendingFx = [];
       return;
     }
     if (!pendingFx.length) return;
-    try { NET.conn.send({ t: 'bfFxSync', evs: pendingFx.map(clean).filter(Boolean) }); } catch(e) {}
+    var now = Date.now();
+    var batch = [];
+    for (var i = 0; i < pendingFx.length; i++) {
+      var s = evSig(pendingFx[i]);
+      if (s && recentSigs[s] && now - recentSigs[s] < 3000) continue;
+      if (s) recentSigs[s] = now;
+      batch.push(clean(pendingFx[i]));
+    }
     pendingFx = [];
+    batch = batch.filter(Boolean);
+    if (!batch.length) return;
+    // Cap: máximo 10 eventos por lote. Una ráfaga de 30+ eventos congela al
+    // invitado; con 10 + el drenaje de 80ms del cliente es suficiente.
+    if (batch.length > 10) batch = batch.slice(0, 10);
+    try { NET.conn.send({ t: 'bfFxSync', evs: batch }); } catch(e) {}
+    // Limpia firmas viejas
+    for (var k in recentSigs) { if (now - recentSigs[k] > 5000) delete recentSigs[k]; }
   }
 
   // Hook flushFx en el HOST: captura los eventos de la lista antes de que
@@ -65,7 +90,7 @@ export const MP_FX_SYNC_PATCH = `
         if (list && list.length && typeof NET !== 'undefined' && NET.role === 'host') {
           for (var i = 0; i < list.length; i++) pendingFx.push(list[i]);
           if (!sendTimer) {
-            sendTimer = setTimeout(function() { sendTimer = null; sendPendingFx(); }, 120);
+            sendTimer = setTimeout(function() { sendTimer = null; sendPendingFx(); }, 80);
           }
         }
       } catch(e) {}
@@ -96,7 +121,7 @@ export const MP_FX_SYNC_PATCH = `
         var batch = fxQueue.splice(0, Math.min(fxQueue.length, 6));
         try { if (typeof window.flushFx === 'function') window.flushFx(batch); } catch(e) {}
         if (fxQueue.length) {
-          setTimeout(drainFx, 80);
+          setTimeout(drainFx, 60);
         } else {
           fxDraining = false;
         }

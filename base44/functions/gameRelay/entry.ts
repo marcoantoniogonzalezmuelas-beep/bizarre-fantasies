@@ -98,6 +98,7 @@ export default async function(req: Request): Promise<Response> {
     if (action === 'poll') {
       const side = String(body.side || 'p');
       const isHost = side === 'p';
+      const otherSide = isHost ? 'g' : 'p';
       const myLastSeen = isHost ? (state.host_last_seen || 0) : (state.guest_last_seen || 0);
       const otherLastSeen = isHost ? (state.guest_last_seen || 0) : (state.host_last_seen || 0);
       const otherLeft = isHost ? (state.guest_left_at || 0) : (state.host_left_at || 0);
@@ -120,11 +121,18 @@ export default async function(req: Request): Promise<Response> {
         }
       }
 
+      // FILTRAR MENSAJES POR LADO: solo se devuelven los mensajes del OTRO
+      // jugador. Sin esto, el host recibía sus propios mensajes (welcome,
+      // bfavatar…) y el avatarPatch seteaba bfOppAvatar con el avatar del
+      // propio host → los avatares del host salían mal en la batalla.
+      const allMsgs = (state.msgs || []).filter((m: any) => m.seq > Number(body.msg_since || 0));
+      const otherMsgs = allMsgs.filter((m: any) => m.side === otherSide).slice(-50);
+
       return Response.json({
         ok: true,
         snap: (state.snap_seq || 0) > Number(body.snap_since || 0) ? state.snap : null,
         snap_seq: state.snap_seq || 0,
-        msgs: (state.msgs || []).filter((m: any) => m.seq > Number(body.msg_since || 0)).slice(-50),
+        msgs: otherMsgs,
         msg_seq: state.msg_seq || 0,
         guest_joined: !!state.guest_nick,
         other_left: !!(otherLeft || otherStale),

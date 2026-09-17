@@ -171,11 +171,15 @@ export const SERVER_RELAY_PATCH = `
           lastSnapSeq = res.snap_seq;
           if (relayConn) relayConn._dispatch(res.snap);
         }
-        // Mensajes nuevos → dispatch
+        // Mensajes nuevos → dispatch (solo del otro lado, filtrados por el backend)
         if (res.msgs && res.msgs.length) {
           res.msgs.forEach(function(m) { if (relayConn) relayConn._dispatch(m.data); });
-          lastMsgSeq = res.msg_seq;
         }
+        // Siempre avanza lastMsgSeq: sin esto, si el host envía mensajes pero
+        // el invitado no, lastMsgSeq no avanza y el host recibe sus propios
+        // mensajes en cada poll (el backend ahora filtra por lado, pero
+        // lastMsgSeq debe avanzar igual para no re-procesar).
+        lastMsgSeq = res.msg_seq || lastMsgSeq;
         // Host: detectar que el invitado se ha unido. Disparar
         // peer.on('connection', onHostConn) para que el juego registre
         // conn.on('data',...) y demás handlers.
@@ -208,7 +212,7 @@ export const SERVER_RELAY_PATCH = `
           reportRelayError('poll_failed', 'poll', err.message);
         }
       });
-    }, 500);
+    }, 350);
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----

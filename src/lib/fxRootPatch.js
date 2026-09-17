@@ -68,6 +68,24 @@ export const FX_ROOT_PATCH = `
       if(t&&now-t>MAX_AGE&&n.parentNode)n.parentNode.removeChild(n);
     });
   }
+  // Limpieza de cinemáticas 3D atascadas: si #bf-abil-anim lleva más de 6s en
+  // pantalla, su setTimeout de borrado (5s) no ejecutó (navegador congelado por
+  // ráfaga de FX del relay). Sin esto, cineBusy() siempre devuelve true y el
+  // turno nunca avanza. Se elimina y se restaura el tablero.
+  setInterval(function(){
+    var ov=document.getElementById('bf-abil-anim');
+    if(ov){
+      var t=Number(ov.dataset&&ov.dataset.bfT||0);
+      if(!t){ov.dataset.bfT=String(Date.now());t=Number(ov.dataset.bfT);}
+      if(Date.now()-t>6000){
+        if(ov.parentNode)ov.parentNode.removeChild(ov);
+        // Restaurar paneles congelados
+        document.querySelectorAll('.bf-cine-frozen').forEach(function(p){
+          try{p.classList.remove('bf-cine-frozen');}catch(e){}
+        });
+      }
+    }
+  },1000);
   setInterval(function(){
     cleanContainer('bf-fx-root');
     cleanContainer('bf-fx-layer');

@@ -378,6 +378,13 @@ export const ABILITY_ANIM_PATCH = `
       // encola de nuevo: evita que se repita la misma animación.
       if(playingUrl===url)return;
       if(queuedCine&&queuedCine.url===url)return;
+      // FIJAR lastUrlPlay al encolar: sin esto, si los FX del mpFxSyncPatch
+      // mantienen #bf-fx-layer siempre lleno, la cinemática se re-encola cada
+      // 1200ms para siempre (played[url] y lastUrlPlay[url] solo se fijan al
+      // reproducir de verdad, y como nunca llega a reproducirse, el bucle
+      // nunca se rompe). Con esto, el antirrebote (9s héroes / 5.5s hechizos)
+      // frena el re-encolado hasta que pase el margen.
+      lastUrlPlay[url]=Date.now();
       queuedCine={url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText,once:once};
       if(!cineTimer){
         cineTimer=setTimeout(function(){
