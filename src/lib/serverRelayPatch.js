@@ -212,7 +212,7 @@ export const SERVER_RELAY_PATCH = `
           reportRelayError('poll_failed', 'poll', err.message);
         }
       });
-    }, 350);
+    }, 250);
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----
