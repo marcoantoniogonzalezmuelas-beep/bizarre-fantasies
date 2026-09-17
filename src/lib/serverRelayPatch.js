@@ -204,7 +204,7 @@ export const SERVER_RELAY_PATCH = `
           reportRelayError('poll_failed', 'poll', err.message);
         }
       });
-    }, 200);
+    }, 1000);
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----

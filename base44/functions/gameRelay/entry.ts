@@ -93,25 +93,32 @@ export default async function(req: Request): Promise<Response> {
     }
 
     // ---- POLL: ambos jugadores consultan actualizaciones ----
-    // SOLO LECTURA del state. La escritura es atómica (solo last_seen y
-    // left_at) para no pisar snaps/sends concurrentes.
+    // SOLO LECTURA del state. La escritura de last_seen se hace como mucho
+    // cada 3 s (no en cada poll) para no saturar el rate-limit de la BD.
     if (action === 'poll') {
       const side = String(body.side || 'p');
       const isHost = side === 'p';
+      const myLastSeen = isHost ? (state.host_last_seen || 0) : (state.guest_last_seen || 0);
       const otherLastSeen = isHost ? (state.guest_last_seen || 0) : (state.host_last_seen || 0);
       const otherLeft = isHost ? (state.guest_left_at || 0) : (state.host_left_at || 0);
       const otherStale = !!(otherLastSeen && now - otherLastSeen > STALE_MS);
 
-      // Escritura atómica: solo el last_seen de este lado + left_at.
-      const setOps: any = {};
-      setOps[isHost ? 'state.host_last_seen' : 'state.guest_last_seen'] = now;
-      const updateOps: any = { $set: setOps };
-      if (otherStale && !room.left_at) {
-        updateOps.$set.left_at = now;
-      } else if (!otherStale && room.left_at) {
-        updateOps.$unset = { left_at: '' };
+      // Escritura atómica: solo si hace más de 3 s que no se actualiza
+      // last_seen. Esto reduce las escrituras de 5/s a ~0.3/s por jugador.
+      const needHeartbeat = !myLastSeen || now - myLastSeen > 3000;
+      if (needHeartbeat || (otherStale && !room.left_at) || (!otherStale && room.left_at)) {
+        const setOps: any = {};
+        if (needHeartbeat) setOps[isHost ? 'state.host_last_seen' : 'state.guest_last_seen'] = now;
+        const updateOps: any = { $set: setOps };
+        if (otherStale && !room.left_at) {
+          updateOps.$set.left_at = now;
+        } else if (!otherStale && room.left_at) {
+          updateOps.$unset = { left_at: '' };
+        }
+        if (Object.keys(setOps).length > 0 || updateOps.$unset) {
+          await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, updateOps);
+        }
       }
-      await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, updateOps);
 
       return Response.json({
         ok: true,
