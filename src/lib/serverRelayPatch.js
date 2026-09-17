@@ -208,8 +208,16 @@ export const SERVER_RELAY_PATCH = `
   }
 
   // ---- ENVOLVER clientJoin: llamar al original (registra handlers) + relay ----
+  // Flag persistente: una vez envuelto, NO se vuelve a envolver aunque el
+  // centralLobbyPatch cree un wrapper nuevo (sin __bfRelay) encima. Sin esto,
+  // el intervalo re-envuelve y sobreescribe origClientJoin (variable de módulo)
+  // creando un ciclo: relay_wrapper → lobby_wrapper → relay_wrapper → ... →
+  // stack overflow.
+  var relayClientJoinDone = false;
   function installClientJoin() {
+    if (relayClientJoinDone) return true;
     if (typeof window.clientJoin !== 'function' || window.clientJoin.__bfRelay) return false;
+    relayClientJoinDone = true;
     origClientJoin = window.clientJoin;
     window.clientJoin = function(code, pass, name) {
       var joinCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -268,8 +276,16 @@ export const SERVER_RELAY_PATCH = `
   }
 
   // ---- ENVOLVER hostCreate: llamar al original (registra handlers) + relay ----
+  // Flag persistente: una vez envuelto, NO se vuelve a envolver aunque el
+  // centralLobbyPatch cree un wrapper nuevo (sin __bfRelay) encima. Sin esto,
+  // el intervalo re-envuelve y sobreescribe origHostCreate (variable de módulo)
+  // creando un ciclo: relay_wrapper → lobby_wrapper → relay_wrapper → ... →
+  // stack overflow.
+  var relayHostCreateDone = false;
   function installHostCreate() {
+    if (relayHostCreateDone) return true;
     if (typeof window.hostCreate !== 'function' || window.hostCreate.__bfRelay) return false;
+    relayHostCreateDone = true;
     origHostCreate = window.hostCreate;
     window.hostCreate = function(name, pass, roomName) {
       // Llamar al original: crea FakePeer con 'bizfan-CODE', registra
@@ -378,8 +394,11 @@ export const SERVER_RELAY_PATCH = `
   };
 
   // ---- Intercept netDropped: en relay no hay conexión P2P que perder ----
+  var relayNetDroppedDone = false;
   function installNetDropped() {
+    if (relayNetDroppedDone) return true;
     if (typeof window.netDropped !== 'function' || window.netDropped.__bfRelay) return false;
+    relayNetDroppedDone = true;
     var orig = window.netDropped;
     window.netDropped = function() {
       // En modo relay, la "caída de red" se detecta por polling (other_left).
@@ -438,6 +457,8 @@ export const SERVER_RELAY_PATCH = `
   }, 2000);
 
   // ---- Instalar hooks ----
+  // Las funciones devuelven true cuando ya están instaladas (envoltura nueva o
+  // previa), para que el intervalo termine cuanto antes.
   var tries = 0;
   var installIv = setInterval(function() {
     var a = installHostCreate();
@@ -445,9 +466,6 @@ export const SERVER_RELAY_PATCH = `
     var c = installNetDropped();
     if ((a && b && c) || tries++ > 200) clearInterval(installIv);
   }, 100);
-  installHostCreate();
-  installClientJoin();
-  installNetDropped();
 
   // Vigilante permanente: si el motor carga PeerJS del CDN y sobrescribe
   // window.Peer, se vuelve a poner el FakePeer. Sin esto, el motor crearía
