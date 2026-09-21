@@ -22,7 +22,7 @@ export const ENGINE_AKIND = {
 export const FAITHFUL_NUMBERS = [2, 3, 4, 7, 8, 10, 12, 15, 16, 18, 19, 20, 21, 22, 24, 30, 31, 32, 36, 37, 39, 42, 44];
 
 // Héroes con habilidad propia programada aparte (parches dedicados).
-export const CUSTOM_NUMBERS = { 38: 'Doji Conpuri (Pequeña/Gran Amenaza)', 114: 'Juniana (refracción)', 115: 'KillerDucks (tokens)', 118: 'Daidoji Esva (bonus por aliados)', 119: 'Grulla (token)' };
+export const CUSTOM_NUMBERS = { 7: 'Llorilomo (disparos aleatorios y parálisis)', 38: 'Doji Conpuri (Pequeña/Gran Amenaza)', 114: 'Juniana (refracción)', 115: 'KillerDucks (tokens)', 118: 'Daidoji Esva (bonus por aliados)', 119: 'Grulla (token)', 122: 'Pegaso (tormenta de rayos)', 127: 'Monkgeta (Desorientado e Invisible)' };
 
 // Efectos del texto que aún NO existen en el motor y hay que programar.
 export const PENDING = {};

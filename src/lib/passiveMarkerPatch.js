@@ -21,7 +21,9 @@ export const PASSIVE_MARKER_PATCH = `
   var PASSIVES = {
     _bfRefract: { icon: '\\u2726', color: '#c79bff', label: 'Refracci\\u00f3n' },
     _bfCrane: { icon: '\\u{1F6E1}\\uFE0F', color: '#9dffcf', label: 'Protecci\\u00f3n' },
-    _bfDuckBlock: { icon: '\\u{1F986}', color: '#9dffcf', label: 'Picotazo' }
+    _bfDuckBlock: { icon: '\\u{1F986}', color: '#9dffcf', label: 'Picotazo' },
+    _bfDisoriented: { icon: '\\u{1F9ED}', color: '#c79bff', label: 'Desorientado' },
+    _bfInvisible: { icon: '\\u{1F441}\\uFE0F', color: '#c05bff', label: 'Invisible' }
   };
   // Mapa din\u00e1mico desde el editor: card_id \u2192 {flag, icon, color, label}
   var markersMap = {};

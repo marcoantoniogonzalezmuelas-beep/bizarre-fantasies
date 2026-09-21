@@ -17,6 +17,12 @@ export const EPIC_SUMMON_PATCH = `
   if(window.__bfEpicSummon) return;
   window.__bfEpicSummon = true;
 
+  function abilityKind(h){
+    var raw = String((h && (h._token || h.card_id || h.cid || h.id)) || '').replace(/_\\d{6,}$/, '');
+    if(raw === 'tk_pegaso') return 'pegasus-token';
+    if(raw === 'tk_unicornio') return 'kamikaze-token';
+    return h && h.akind;
+  }
   function tokenTpl(id){
     var fromH = (typeof HEROES !== 'undefined' ? HEROES : []).find(function(h){ return h && h.id === id; });
     if(fromH) return fromH;
@@ -133,7 +139,7 @@ export const EPIC_SUMMON_PATCH = `
     window.__bfEpicSummonHooked = true;
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
-      var k = h && h.akind;
+      var k = abilityKind(h);
       if(k !== 'epic-summon' && k !== 'kamikaze-token' && k !== 'pegasus-token') return orig.apply(this, arguments);
       // Se resuelve localmente en ambos lados (igual que faithfulAbilitiesPatch):
       // el anfitrión es la autoridad y netSync envía el estado final al invitado.
@@ -160,7 +166,7 @@ export const EPIC_SUMMON_PATCH = `
     window.__bfEpicAiTurnHooked = true;
     var orig = window.aiTurn;
     window.aiTurn = function(h, side){
-      var k = h && h.akind;
+      var k = abilityKind(h);
       if((k === 'pegasus-token' || k === 'kamikaze-token') && !h.abilityUsed && h.alive){
         // Espera a que terminen las animaciones en pantalla antes de lanzar
         // la habilidad (igual que aiWaitCinePatch, pero solo para estos tokens).
