@@ -66,6 +66,10 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-count{text-align:center;font-size:14px;color:#cfc6dd;margin-bottom:10px}
 #bf-bizarre-overlay .bf-biz-count b{color:#e2b0ff}
 #bf-bizarre-overlay .bf-biz-wait{margin-top:14px;padding:12px;border-radius:12px;background:rgba(255,42,90,.12);border:1px solid rgba(255,42,90,.4);text-align:center;color:#ffb0c0;font-size:13px;line-height:1.4}
+#bf-bizarre-overlay .bf-biz-feedback{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;text-align:center;font-size:13px;font-weight:700;line-height:1.35}
+#bf-bizarre-overlay .bf-biz-feedback.info{display:block;color:#e2b0ff;background:rgba(192,91,255,.12);border:1px solid rgba(199,155,255,.4)}
+#bf-bizarre-overlay .bf-biz-feedback.error{display:block;color:#ffb0c0;background:rgba(255,42,90,.12);border:1px solid rgba(255,42,90,.45)}
+#bf-bizarre-overlay .bf-biz-panic.unavailable{opacity:.4;cursor:not-allowed;animation:none;box-shadow:none}
 #bf-bizarre-overlay .bf-biz-spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,42,90,.3);border-top-color:#ff2a5a;border-radius:50%;animation:bfBizSpin .8s linear infinite;vertical-align:middle;margin-right:6px}
 /* Ruleta de la suerte */
 #bf-biz-roulette{position:relative;width:clamp(220px,70vw,300px);height:clamp(220px,70vw,300px);margin:0 auto 12px}
@@ -367,6 +371,12 @@ export const BIZARRE_ROOM_PATCH = `
   window.__bfBizarreClose=closeOverlay;
 
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[c];});}
+  function showFeedback(message,kind){
+    var box=overlayEl().querySelector('#bf-biz-feedback');
+    if(!box)return;
+    box.className='bf-biz-feedback '+(kind||'info');
+    box.textContent=message||'';
+  }
 
   function renderBody(){
     var body=overlayEl().querySelector('.bf-biz-body');
@@ -383,7 +393,7 @@ export const BIZARRE_ROOM_PATCH = `
       body.innerHTML='<div class="bf-biz-ig"><label>'+L('Nick','Nick')+'</label><div style="display:flex;align-items:center;gap:10px"><div class="bf-av-pick bf-av-empty" id="bf-biz-avpick" title="'+L('Elige tu avatar','Choose your avatar')+'"><span class="bf-av-ph">?</span></div><input id="bf-biz-nick" name="username" type="text" maxlength="28" autocomplete="username" placeholder="'+L('Tu nick','Your nick')+'" value="'+esc(savedNick)+'" style="flex:1"></div></div>'+
         '<div class="bf-biz-ig"><label>'+L('Contraseña','Password')+'</label><input id="bf-biz-pass" name="password" type="password" maxlength="60" autocomplete="current-password" placeholder="'+L('Contraseña de tu nick','Your nick password')+'">'+
         '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:#cfc6dd;font-family:Rubik,sans-serif;font-weight:600;cursor:pointer;user-select:none"><input id="bf-biz-rem" type="checkbox" style="width:15px;height:15px;accent-color:#c06bff;cursor:pointer;margin:0;flex:0 0 15px"><span>'+L('Recordar contraseña en este equipo','Remember password on this device')+'</span></label></div>'+
-        '<button class="bf-biz-btn bf-biz-join" id="bf-biz-join-btn">'+L('Entrar en la habitación','Enter the room')+'</button>';
+        '<button class="bf-biz-btn bf-biz-join" id="bf-biz-join-btn">'+L('Entrar en la habitación','Enter the room')+'</button><div class="bf-biz-feedback" id="bf-biz-feedback" role="alert" aria-live="assertive"></div>';
       // Avatar picker: abre el mismo modal de avatares que VS IA (catálogo +
       // héroes, 100+ avatares). Si el nick tiene avatar en la BD, se muestra;
       // si es un nick nuevo, muestra el interrogante (pulsa para elegir).
@@ -426,7 +436,8 @@ export const BIZARRE_ROOM_PATCH = `
       var canPanic=visitors.length>=3;
       body.innerHTML='<div class="bf-biz-count">'+L('Visitantes en la habitación','Visitors in the room')+': <b>'+visitors.length+'/20</b> · '+L('Mínimo 3 para el botón de pánico','Min 3 for panic button')+'</div>'+
         '<div class="bf-biz-list">'+listHtml+'</div>'+
-        '<button class="bf-biz-btn bf-biz-panic" id="bf-biz-panic-btn"'+(canPanic?'':'disabled')+'>'+L('🚨 BOTÓN DE PÁNICO','🚨 PANIC BUTTON')+'</button>'+
+        '<button class="bf-biz-btn bf-biz-panic'+(canPanic?'':' unavailable')+'" id="bf-biz-panic-btn" aria-disabled="'+(canPanic?'false':'true')+'">'+L('🚨 BOTÓN DE PÁNICO','🚨 PANIC BUTTON')+'</button>'+ 
+        '<div class="bf-biz-feedback" id="bf-biz-feedback" role="alert" aria-live="assertive"></div>'+ 
         '<button class="bf-biz-btn bf-biz-leave" id="bf-biz-leave-btn">'+L('Salir de la habitación','Leave the room')+'</button>';
       body.querySelector('#bf-biz-panic-btn').onclick=function(){doPanic();};
       body.querySelector('#bf-biz-leave-btn').onclick=function(){doLeave();};
@@ -474,16 +485,18 @@ export const BIZARRE_ROOM_PATCH = `
   function doJoin(nickI,passI){
     var nick=String(nickI.value||'').trim();
     var pass=String(passI.value||'');
-    if(!nick){try{notif(L('Escribe tu nick','Enter your nick'));}catch(e){}nickI.focus();return;}
-    if(!pass){try{notif(L('Escribe la contraseña de tu nick','Enter your nick password'));}catch(e){}passI.focus();return;}
+    if(!nick){showFeedback(L('Escribe tu nick.','Enter your nick.'),'error');try{notif(L('Escribe tu nick','Enter your nick'));}catch(e){}nickI.focus();return;}
+    if(!pass){showFeedback(L('Escribe la contraseña de tu nick.','Enter your nick password.'),'error');try{notif(L('Escribe la contraseña de tu nick','Enter your nick password'));}catch(e){}passI.focus();return;}
     var btn=overlayEl().querySelector('#bf-biz-join-btn');
-    if(btn){btn.disabled=true;btn.textContent=L('Verificando…','Verifying…');}
-    checkNick(nick,pass).then(function(r){
+    if(btn){btn.disabled=true;btn.setAttribute('aria-busy','true');btn.textContent=L('Verificando…','Verifying…');}
+    showFeedback(L('Verificando nick y contraseña…','Verifying nick and password…'),'info');
+    requestAnimationFrame(function(){checkNick(nick,pass).then(function(r){
       if(!r.ok){
-        if(btn){btn.disabled=false;btn.textContent=L('Entrar en la habitación','Enter the room');}
+        if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=L('Entrar en la habitación','Enter the room');}
         var msg=L('No se pudo verificar el nick.','Could not verify nick.');
         if(r.error==='wrong_password')msg=L('La contraseña no coincide.','Wrong password.');
         else if(r.error==='too_short')msg=L('La contraseña debe tener al menos 3 caracteres.','Password must be at least 3 characters.');
+        showFeedback(msg,'error');
         try{notif(msg);}catch(e){}
         passI.focus();
         return;
@@ -500,9 +513,10 @@ export const BIZARRE_ROOM_PATCH = `
       var av=(window.bfMyAvatar&&window.bfMyAvatar.url)||(window.__bfAvatarMap&&window.__bfAvatarMap[nick])||'';
       req('bizarre_join',{nick:nick,avatar:av}).then(function(res){
         if(!res||!res.ok){
-          if(btn){btn.disabled=false;btn.textContent=L('Entrar en la habitación','Enter the room');}
+          if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=L('Entrar en la habitación','Enter the room');}
           var joinMsg=L('No se pudo entrar.','Could not enter.');
           if(res&&res.error==='room_full')joinMsg=L('Habitación llena (20/20). Inténtalo más tarde.','Room full (20/20). Try again later.');
+          showFeedback(joinMsg,'error');
           try{notif(joinMsg);}catch(e){}
           return;
         }
@@ -512,8 +526,8 @@ export const BIZARRE_ROOM_PATCH = `
         notifyRoomChat(true);
         startHeartbeat();
         renderBody();
-      }).catch(function(){if(btn){btn.disabled=false;btn.textContent=L('Entrar en la habitación','Enter the room');}try{notif(L('No se pudo entrar.','Could not enter.'));}catch(e){}});
-    });
+      }).catch(function(){if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=L('Entrar en la habitación','Enter the room');}showFeedback(L('No se pudo entrar. Inténtalo otra vez.','Could not enter. Try again.'),'error');try{notif(L('No se pudo entrar.','Could not enter.'));}catch(e){}});
+    });});
   }
 
   function startHeartbeat(){
@@ -565,6 +579,10 @@ export const BIZARRE_ROOM_PATCH = `
   function doPanic(){
     if(!session)return;
     var btn=overlayEl().querySelector('#bf-biz-panic-btn');
+    if(visitors.length<3){
+      showFeedback(L('Necesitas mínimo 3 visitantes en total (2 además de ti).','You need at least 3 visitors total (2 besides you).'),'error');
+      return;
+    }
     if(btn){btn.disabled=true;btn.textContent=L('Buscando rival…','Finding opponent…');}
     req('bizarre_panic',{session_token:session.token}).then(function(res){
       if(!res||!res.ok){
