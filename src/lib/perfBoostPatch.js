@@ -34,15 +34,20 @@ export const PERF_BOOST_PATCH = `
   function coalesce(name){
     var orig = window[name];
     if(typeof orig !== 'function' || orig.__bfCoalesced) return false;
-    // La primera llamada se ejecuta al instante (así el DOM queda listo para
-    // quien lo lea justo después); las repeticiones dentro del mismo frame se
-    // descartan, que es lo que provocaba los tirones en Chrome.
-    var painted = false;
+    // Paint immediately, then retain the LAST request in this frame. Dropping
+    // it could leave B.current=null painted while the next hero already acts.
+    var painted = false, trailing = null;
+    function nextFrame(){
+      painted = false;
+      if(!trailing)return;
+      var call = trailing; trailing = null;
+      wrapped.apply(call.self, call.args);
+    }
     var wrapped = function(){
-      if(painted) return;
+      if(painted){ trailing = { self:this, args:Array.prototype.slice.call(arguments) }; return; }
       painted = true;
-      requestAnimationFrame(function(){ painted = false; });
-      try{ orig.call(window); }catch(e){}
+      requestAnimationFrame(nextFrame);
+      return orig.apply(this, arguments);
     };
     wrapped.__bfCoalesced = true;
     window[name] = wrapped;

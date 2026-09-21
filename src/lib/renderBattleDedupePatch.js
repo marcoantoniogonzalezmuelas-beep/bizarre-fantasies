@@ -17,15 +17,19 @@ export const RENDER_BATTLE_DEDUPE_PATCH = `
   function signature(){
     try{
       var s=[];
-      ['p','g'].forEach(function(side){
+      // The engine uses p/o; g exists only in the relay protocol.
+      ['p','o'].forEach(function(side){
         s.push(JSON.stringify((G.team&&G.team[side])||null));
-        s.push(JSON.stringify((G.hand&&G.hand[side])||null));
+        s.push(JSON.stringify((G.spellbook&&G.spellbook[side])||null));
+        s.push(JSON.stringify((G.items&&G.items[side])||null));
       });
+      s.push(G.demo, G.oppHuman, G.online);
+      if(typeof NET!=='undefined')s.push(NET.role,NET.mySide);
       s.push(JSON.stringify(G.names||null));
       if(typeof B!=='undefined'&&B){
-        s.push(B.qi,B.round,B.over?1:0,(B.log||[]).length);
+        s.push(B.qi,B.round,B.over?1:0,JSON.stringify(B.log||[]));
         s.push(B.current?(B.current.side+':'+B.current.id):'-');
-        s.push(B.pending?JSON.stringify({p:B.pending.prompt,v:B.pending.validSide,d:!!B.pending.allowDead}):'-');
+        s.push(B.pending?JSON.stringify(B.pending):'-');
       }
       return s.join('|');
     }catch(e){ return String(Math.random()); }
@@ -37,10 +41,15 @@ export const RENDER_BATTLE_DEDUPE_PATCH = `
     var last=null;
     var wrapped=function(){
       var sig=signature();
-      // Nada ha cambiado: no se reconstruye el HTML (evita el parpadeo).
-      if(sig===last&&document.querySelector('.bhero'))return;
+      // An existing portrait is NOT proof that the current action panel rendered.
+      var needsMenu = typeof B!=='undefined' && B && !B.over && B.current && !B.pending
+        && typeof humanCtl==='function' && humanCtl(B.current.side);
+      var complete = document.querySelector('#s-battle .bhero') &&
+        (!needsMenu || document.querySelector('#s-battle .active-hero-panel .jrpg-menu'));
+      if(sig===last && complete)return;
+      var result = original.apply(this,arguments);
       last=sig;
-      return original.apply(this,arguments);
+      return result;
     };
     wrapped.__bfDedupe=1;
     // Permite forzar un repintado real cuando algún sistema lo necesite.

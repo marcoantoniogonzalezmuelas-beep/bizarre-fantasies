@@ -369,7 +369,15 @@ Deno.serve(async (req) => {
         state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks, resume_token: String(body.resume_token || '').slice(0, 40), password: String(body.pass || '').slice(0, 40) },
       };
       if (existing && !ownsRoom && !isStale) return Response.json({ error: 'Room code already active' }, { status: 409 });
-      const room = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, data) : await base44.asServiceRole.entities.GameRoom.create(data);
+      // Never replace state here: relay delivery, snapshots and ACKs may be
+      // arriving concurrently while the lobby transitions into the match.
+      if (existing) {
+        const fields = { status: 'playing', host_name: data.host_name, guest_name: data.guest_name, left_at: null };
+        for (const [key, value] of Object.entries(data.state)) fields['state.' + key] = value;
+        await base44.asServiceRole.entities.GameRoom.updateMany({ id: existing.id }, { $set: fields });
+        return Response.json({ ok: true, id: existing.id });
+      }
+      const room = await base44.asServiceRole.entities.GameRoom.create(data);
       return Response.json({ ok: true, id: room.id });
     }
 

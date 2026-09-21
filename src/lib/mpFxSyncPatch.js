@@ -90,7 +90,7 @@ export const MP_FX_SYNC_PATCH = `
         if (list && list.length && typeof NET !== 'undefined' && NET.role === 'host') {
           for (var i = 0; i < list.length; i++) pendingFx.push(list[i]);
           if (!sendTimer) {
-            sendTimer = setTimeout(function() { sendTimer = null; sendPendingFx(); }, 80);
+            sendTimer = setTimeout(function() { sendTimer = null; sendPendingFx(); }, 0);
           }
         }
       } catch(e) {}

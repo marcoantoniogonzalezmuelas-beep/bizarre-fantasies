@@ -1,0 +1,24 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const script = (file, symbol) => vm.runInNewContext(fs.readFileSync(path.join(__dirname, '..', file + '.js'), 'utf8').replace(/export /g, '') + '\n' + symbol).replace(/^\s*<script>/, '').replace(/<\/script>\s*$/, '');
+module.exports = function multiplayerRenderRegression() {
+  const frames = [], intervals = [], results = [];
+  let painted = null, paints = 0, panel = true;
+  const c = {console, G:{team:{p:[{id:'host'}],o:[{id:'guest',hp:20}]},spellbook:{p:[],o:[]},items:{p:[],o:[]}}, B:{current:{side:'o',id:'guest'},round:1,qi:0,log:[],pending:null}, NET:{role:'client',mySide:'o'}, document:{hidden:false,head:{appendChild(){}},createElement:()=>({}),querySelector:s=>s.includes('jrpg-menu')?(panel?{}:null):{}},requestAnimationFrame:f=>frames.push(f),setInterval:f=>{intervals.push(f);return intervals.length;},clearInterval(){},renderBattle(){paints++;painted=JSON.stringify({G:c.G,B:c.B});panel=!!c.B.current&&!c.B.pending;}, humanCtl:s=>s===c.NET.mySide};
+  c.window=c;vm.createContext(c);
+  vm.runInContext(script('perfBoostPatch','PERF_BOOST_PATCH'),c);
+  intervals[0]();
+  vm.runInContext(script('renderBattleDedupePatch','RENDER_BATTLE_DEDUPE_PATCH'),c);
+  const frame=()=>{const pending=frames.splice(0);pending.forEach(f=>f());};
+  const check=(name,run)=>{run();results.push({name,pass:true});};
+  check('Last snapshot in a single frame is painted',()=>{c.B.current=null;c.renderBattle();c.B.current={side:'o',id:'guest'};c.renderBattle();frame();assert.equal(JSON.parse(painted).B.current.id,'guest');assert.ok(panel);frame();});
+  check('Guest hero and hand changes invalidate the render',()=>{const before=paints;c.G.team.o[0].hp=13;c.G.items.o.push({id:'potion'});c.G.spellbook.o.push('spell');c.renderBattle();frame();assert.ok(paints>before);assert.equal(JSON.parse(painted).G.team.o[0].hp,13);});
+  check('Missing action menu can recover without changing the turn',()=>{const before=paints;panel=false;c.renderBattle();frame();assert.ok(paints>before);assert.ok(panel);});
+  check('Pending target identity invalidates identical prompt',()=>{c.B.pending={prompt:'Target',validSide:'p',requestId:'one'};c.renderBattle();frame();c.B.pending.requestId='two';c.renderBattle();frame();assert.equal(JSON.parse(painted).B.pending.requestId,'two');});
+  check('Unchanged complete battle does not repaint',()=>{c.B.pending=null;c.renderBattle();frame();const before=paints;c.renderBattle();frame();assert.equal(paints,before);});
+  check('Failed animation send never repeats an ability',()=>{let actions=0;const timers=[];const a={console:{warn(){}},NET:{role:'host',conn:{open:true,send(){throw Error('Disconnected');}}},setInterval:f=>timers.push(f),useAbility(){actions++;return 'done';}};a.window=a;vm.createContext(a);vm.runInContext(script('mpAbilityCinePatch','MP_ABILITY_CINE_PATCH'),a);assert.equal(a.useAbility('p',{id:'hero'}),'done');assert.equal(actions,1);const old=a.useAbility;a.useAbility=function(){return old.apply(this,arguments);};timers.forEach(f=>f());a.useAbility('p',{id:'hero'});assert.equal(actions,2);});
+  check('Poll cadence includes time already spent in transit',()=>{const src=fs.readFileSync(path.join(__dirname,'..','serverRelayPatch.js'),'utf8');const expression=src.match(/: hasMore \? 0 : (Math\.max\(0, cadence - \(Date\.now\(\) - pollStartedAt\)\))/);assert.ok(expression);for(const elapsed of [20,200,650])assert.equal(vm.runInNewContext(expression[1],{Math,Date:{now:()=>1000+elapsed},pollStartedAt:1000,cadence:200}),Math.max(0,200-elapsed));});
+  return results;
+};

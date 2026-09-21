@@ -38,7 +38,7 @@ window.bfCreateRelayOutbox = function(request, side, code, report) {
       queue.push(JSON.parse(JSON.stringify(msg)));
       // Urgent clicks advance a batching timer, never overtake queued data or
       // bypass the retry backoff of an unconfirmed batch.
-      if (!failures) schedule(msg.t === 'intent' ? 0 : 16);
+      if (!failures) schedule(0);
     },
     close: function() { stopped = true; clearTimeout(timer); queue = []; }
   };

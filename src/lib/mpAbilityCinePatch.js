@@ -34,29 +34,20 @@ export const MP_ABILITY_CINE_PATCH = `
   // abilityFxPatch) para que envuelva sus hooks y el mensaje se envíe antes de
   // que la cadena reproduzca la cinemática en el host.
   function hookHost(){
-    if(typeof window.useAbility!=='function'||window.useAbility.__bfMpAbilCine)return;
+    if(typeof window.useAbility!=='function'||window.__bfMpAbilCineHooked)return;
+    window.__bfMpAbilCineHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,h){
-      try{
-        if(isHost()){
-          var k=h&&h.akind;
-          // Los tokens (patitos, etc.) los gestiona tokenAbilitiesPatch: se saltan.
-          if(!(k&&String(k).indexOf('tk_')===0)){
-            // Reset del flag de pifia antes de llamar al original. El original
-            // (envuelto por fumbleRollPatch) hace la tirada de pifia y pone
-            // __bfFumbleThisAct=true si pifica. Si pifica, NO enviamos la
-            // cinemática al invitado (no se ejecutó la habilidad → no hay
-            // animación que sincronizar). Si no pifica, enviamos después.
-            window.__bfFumbleThisAct=false;
-            var res=orig.apply(this,arguments);
-            if(!window.__bfFumbleThisAct){
-              NET.conn.send({t:'bfAbilCine',side:side,hero:serializeHero(h)});
-            }
-            return res;
-          }
-        }
-      }catch(e){}
-      return orig.apply(this,arguments);
+      var k=h&&h.akind;
+      var sync=isHost() && !(k&&String(k).indexOf('tk_')===0);
+      if(sync)window.__bfFumbleThisAct=false;
+      // Execute once. A failed animation send must never replay the ability.
+      var res=orig.apply(this,arguments);
+      if(sync&&!window.__bfFumbleThisAct){
+        try{ NET.conn.send({t:'bfAbilCine',side:side,hero:serializeHero(h)}); }
+        catch(e){ console.warn('No se pudo enviar la cinemática de habilidad',e); }
+      }
+      return res;
     };
     window.useAbility.__bfMpAbilCine=1;
   }

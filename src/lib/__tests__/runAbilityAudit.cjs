@@ -1,4 +1,5 @@
 const audit = require('./abilityTargetingAudit.cjs');
+const multiplayerRegression = require('./multiplayerRenderRegression.cjs');
 
 const APP = 'https://bizarre-fantasies.base44.app/functions/gameHtml';
 const SUMMONS = new Set(['tk_patito_goma','tk_grulla','tk_unicornio','tk_pegaso']);
@@ -44,6 +45,7 @@ const normalize = (c, category) => ({
     incomplete:cards.filter(c=>!c.ability_name||!c.ability_text||!c.elite_ability_name||!c.elite_ability_text).map(c=>c.card_id),
   };
   const result = audit(html, cards, specs);
-  console.log(JSON.stringify({inventory,result}, null, 2));
+  const multiplayer = multiplayerRegression();
+  console.log(JSON.stringify({inventory,result,multiplayer}, null, 2));
   if (inventory.incomplete.length || result.failures.length || result.regressions.some(x=>!x.pass) || result.fullCoverage.failures.length) process.exitCode = 1;
 })().catch(error => { console.error(error); process.exitCode = 1; });

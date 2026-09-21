@@ -169,6 +169,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       if (generation !== pollGeneration || !code || !side || inFlight) return;
       if (typeof G !== 'undefined' && G._gameOver) { stopPolling(); return; }
       inFlight = true;
+      var pollStartedAt = Date.now();
       var sentAck = ack.slice(0, 100), hasMore = false;
       relayRequest('poll', { code: code, side: side, protocol: 2, ack: sentAck }).then(function(res) {
         if (generation !== pollGeneration) return;
@@ -209,8 +210,11 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         // Short active-play waits on BOTH ends, without overlapping requests.
         // Idle lobbies stay inexpensive; errors retain exponential backoff.
         var playing = !!document.querySelector('#s-battle.active,#s-recruit.active,#s-equip.active');
+        // Pace request STARTS rather than adding 200ms after every network trip.
+        // At most five active polls/second, one in flight, unchanged error backoff.
+        var cadence = playing ? 200 : 1000;
         var delay = failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1))
-          : hasMore ? 0 : (playing ? 200 : 1000);
+          : hasMore ? 0 : Math.max(0, cadence - (Date.now() - pollStartedAt));
         pollTimer = setTimeout(poll, delay);
       });
     }
