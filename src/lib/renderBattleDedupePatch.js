@@ -60,6 +60,18 @@ export const RENDER_BATTLE_DEDUPE_PATCH = `
 
   var tries=0,timer=setInterval(function(){ if(install()||tries++>150)clearInterval(timer); },150);
   install();
+  // Recover the local human menu after a deferred/failed paint or tab resume.
+  // Never change ownership, cancel a target, skip a turn or end a cinematic.
+  setInterval(function(){
+    if(typeof NET==='undefined'||(NET.role!=='host'&&NET.role!=='client'))return;
+    var screen=document.getElementById('s-battle');
+    if(!screen||!screen.classList.contains('active'))return;
+    if(typeof B==='undefined'||!B||B.over||!B.current||B.pending)return;
+    if(typeof humanCtl!=='function'||!humanCtl(B.current.side))return;
+    var hero=typeof getHero==='function'&&getHero(B.current.side,B.current.id);
+    if(!hero||!hero.alive)return;
+    if(!screen.querySelector('.active-hero-panel .jrpg-menu'))window.renderBattle();
+  },750);
 })();
 </script>
 `;
