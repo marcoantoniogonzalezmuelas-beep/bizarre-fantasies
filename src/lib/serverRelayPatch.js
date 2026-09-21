@@ -31,14 +31,25 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       }, 15000);
     });
   }
+  var relayRealtime = false, relayAck = [], deliveredIds = new Set();
   window.addEventListener('message', function(event) {
     var result = event.data && event.data.bfRelayResult;
-    if (!result || !pending[result.requestId]) return;
-    var task = pending[result.requestId];
-    clearTimeout(task.timer);
-    delete pending[result.requestId];
-    if (result.error) task.reject(new Error(result.error));
-    else task.resolve(result.data || {});
+    if (result && pending[result.requestId]) {
+      var task = pending[result.requestId];
+      clearTimeout(task.timer);
+      delete pending[result.requestId];
+      if (result.error) task.reject(new Error(result.error));
+      else task.resolve(result.data || {});
+      return;
+    }
+    if (event.data && event.data.bfRelayRealtimeStatus === 'ready') relayRealtime = true;
+    var pushed = event.data && event.data.bfRelayPush;
+    if (!pushed || !relayConn) return;
+    (pushed.deliveries || []).forEach(function(m) {
+      if (!m || !m.id) return;
+      if (!deliveredIds.has(m.id)) { deliveredIds.add(m.id); relayConn._dispatch(m.data); }
+      if (relayAck.indexOf(m.id) < 0) relayAck.push(m.id);
+    });
   });
   window.bfRelayRequest = relayRequest;
 
@@ -162,7 +173,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
 
   function startPolling() {
     stopPolling();
-    var generation = pollGeneration, ack = [], delivered = new Set(), failures = 0;
+    var generation = pollGeneration, failures = 0;
     var code = relayCode, side = relaySide;
     var inFlight = false;
     function poll() {
@@ -170,12 +181,12 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       if (typeof G !== 'undefined' && G._gameOver) { stopPolling(); return; }
       inFlight = true;
       var pollStartedAt = Date.now();
-      var sentAck = ack.slice(0, 100), hasMore = false;
+      var sentAck = relayAck.slice(0, 100), hasMore = false;
       relayRequest('poll', { code: code, side: side, protocol: 2, ack: sentAck }).then(function(res) {
         if (generation !== pollGeneration) return;
         if (!res || !res.ok) throw new Error((res && res.error) || 'Consulta no confirmada');
         lastPollOk = Date.now(); failures = 0; hasMore = !!res.more;
-        ack = ack.filter(function(id){ return sentAck.indexOf(id) < 0; });
+        relayAck = relayAck.filter(function(id){ return sentAck.indexOf(id) < 0; });
         // Register the native host listeners BEFORE consuming the guest hello.
         if (side === 'p' && res.guest_joined && !guestJoinedFired && lastFakePeer) {
           guestJoinedFired = true;
@@ -187,8 +198,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         }
         (res.deliveries || []).forEach(function(m) {
           if (!relayConn || !m || !m.id) return;
-          if (!delivered.has(m.id)) { delivered.add(m.id); relayConn._dispatch(m.data); }
-          if (ack.indexOf(m.id) < 0) ack.push(m.id);
+          if (!deliveredIds.has(m.id)) { deliveredIds.add(m.id); relayConn._dispatch(m.data); }
+          if (relayAck.indexOf(m.id) < 0) relayAck.push(m.id);
         });
         if (res.other_left && !otherLeftShown) {
           otherLeftShown = true;
@@ -212,7 +223,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         var playing = !!document.querySelector('#s-battle.active,#s-recruit.active,#s-equip.active');
         // Pace request STARTS rather than adding 200ms after every network trip.
         // At most five active polls/second, one in flight, unchanged error backoff.
-        var cadence = playing ? 200 : 1000;
+        // WebSocket is the primary path; polling remains a slow recovery/heartbeat.
+        var cadence = relayRealtime ? 5000 : (playing ? 200 : 1000);
         var delay = failures ? Math.min(8000, 1000 * Math.pow(2, failures - 1))
           : hasMore ? 0 : Math.max(0, cadence - (Date.now() - pollStartedAt));
         pollTimer = setTimeout(poll, delay);
@@ -250,6 +262,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       stopPolling();
       if (relayConn) relayConn.close();
       relayConn = null;
+      relayRealtime = false; relayAck = []; deliveredIds = new Set();
 
       var previous = lastFakePeer, attempt = ++connectionAttempt;
       origClientJoin.apply(this, arguments);
@@ -314,6 +327,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       stopPolling();
       if (relayConn) relayConn.close();
       relayConn = null;
+      relayRealtime = false; relayAck = []; deliveredIds = new Set();
       var previous = lastFakePeer, attempt = ++connectionAttempt;
       origHostCreate.apply(this, arguments);
 
@@ -339,6 +353,10 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   // ---- Reanudar partida: el host (side 'p') o el invitado (side 'g') pueden
   // reanudar. Se detecta cuál es cada uno comparando su nick con resume_nicks.
   window.bfRelayResumeGame = function(code, password, nick, nicks) {
+    stopPolling();
+    if (relayConn) relayConn.close();
+    relayConn = null;
+    relayRealtime = false; relayAck = []; deliveredIds = new Set();
     var isHost = nicks && nicks[0] && String(nicks[0]).toLowerCase() === String(nick || '').toLowerCase();
     var side = isHost ? 'p' : 'g';
     var cleanCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
