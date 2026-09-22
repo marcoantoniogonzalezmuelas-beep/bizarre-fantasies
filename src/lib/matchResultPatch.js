@@ -15,7 +15,7 @@ export const MATCH_RESULT_PATCH = `
   }
   function report(youWin){
     try{
-      if(typeof G==='undefined'||G.demo)return;
+      if(typeof G==='undefined'||G.demo||G.bfMission)return;
       if(window.__bfResultSent)return;window.__bfResultSent=true;
       var isOnline=(typeof online==='function')?online():false;
       // Online solo registra el host: evita el resultado duplicado del cliente.

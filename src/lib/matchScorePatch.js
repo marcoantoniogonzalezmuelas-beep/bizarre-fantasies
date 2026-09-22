@@ -172,7 +172,7 @@ export const MATCH_SCORE_PATCH = `
     // envoltorios múltiples de showResult y de reenvíos por red).
     scoreOnce:function(winnerNick){
       try{
-        if(typeof G==='undefined'||!G||G.demo)return;
+        if(typeof G==='undefined'||!G||G.demo||G.bfMission)return;
         if(G.__bfScoredOnce)return;
         G.__bfScoredOnce=true;
         window.bfSeriesScore.addWin(winnerNick);
@@ -208,7 +208,7 @@ export const MATCH_SCORE_PATCH = `
   // Render periódico: muestra el marcador general en cuanto hay victorias.
   var lastRender=0;
   setInterval(function(){
-    if(typeof G==='undefined'||!G||G.demo)return;
+    if(typeof G==='undefined'||!G||G.demo||G.bfMission)return;
     var s=get();
     if(s.self>0||s.opp>0){
       if(Date.now()-lastRender>2000){render(null);lastRender=Date.now();}

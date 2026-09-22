@@ -205,7 +205,7 @@ export const AI_LEVEL_PATCH = `
   // ---- Detectar victorias contra la IA y contarlas ----
   function isAiGame(){
     try {
-      if (typeof G === 'undefined' || !G || G.demo) return false;
+      if (typeof G === 'undefined' || !G || G.demo || G.bfMission) return false;
       if (typeof online === 'function' && online()) return false;
       return !!G.oppHuman ? false : (G.oppHuman === false || (typeof NET === 'undefined' || !NET || !NET.role));
     } catch(e) { return false; }

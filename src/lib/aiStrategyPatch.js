@@ -210,7 +210,7 @@ export const AI_STRATEGY_PATCH = `
           var inner = window[n];
           window[n] = function(){
             try {
-              if (isAiGame() && typeof G !== 'undefined' && G.coins) {
+              if (isAiGame() && typeof G !== 'undefined' && G.coins && !G.bfMission) {
                 var side = aiSide();
                 if (side) {
                   var coins = Number(G.coins[side] || 0);

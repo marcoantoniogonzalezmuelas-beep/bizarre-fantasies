@@ -31,6 +31,9 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --mission-accent: 45 100% 65%;
+    --mission-surface: 260 28% 11%;
+    --mission-line: 260 22% 28%;
     --font-heading: 'Cinzel', serif;
     --font-body: 'Rubik', system-ui, sans-serif;
     --font-display: ui-sans-serif, system-ui, sans-serif;
@@ -46,6 +49,9 @@
   }
 
   .dark {
+    --mission-accent: 45 100% 65%;
+    --mission-surface: 260 28% 11%;
+    --mission-line: 260 22% 28%;
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;

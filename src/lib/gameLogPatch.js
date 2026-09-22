@@ -39,7 +39,7 @@ export const GAME_LOG_PATCH = `
   function endLog(youWin){
     if(!battleStart)return;
     try{
-      if(typeof G==='undefined'||G.demo){battleStart=null;return;}
+      if(typeof G==='undefined'||G.demo||G.bfMission){battleStart=null;return;}
       if(window.__bfLogSent)return;
       var isOnline=(typeof online==='function')?online():false;
       // Online: solo el host envía el log (evita duplicar la partida en la BD).

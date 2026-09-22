@@ -1,0 +1,30 @@
+{
+  "name": "MissionVictory",
+  "type": "object",
+  "properties": {
+    "nick": {
+      "type": "string"
+    },
+    "mission": {
+      "type": "string",
+      "enum": [
+        "club",
+        "l5r"
+      ]
+    },
+    "level": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "run_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nick",
+    "mission",
+    "level",
+    "run_id"
+  ]
+}
