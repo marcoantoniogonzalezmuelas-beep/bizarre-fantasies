@@ -23,14 +23,14 @@ export const MISSION_ENGINE_PATCH = `<script>
     if(!originalMeta)originalMeta=window.__bfAiLevelMeta;
     window.__bfAiLevelMeta=(window.__bfAiLevels||[]).find(function(l){return l.id===m.ai;})||originalMeta;
     G.bfMission={run_id:m.run_id,mission:m.mission,level:m.level};activeRun=G.bfMission;
-    G.mode='ai';G.online=false;G.demo=false;G.demoExample=false;G.oppHuman=false;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;NET.role='local';NET.mySide='p';
+    var isLocal=m.mode==='local';G.mode=isLocal?'local':'ai';G.online=false;G.demo=false;G.demoExample=false;G.oppHuman=isLocal;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;NET.role='local';NET.mySide='p';
     G.team={p:teams.p.map(makeInstance),o:teams.o.map(makeInstance)};
     var eqC=Math.max(100,[150,140,130,120,100][(m.level||1)-1]||100);G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
     G.spellbook={p:[],o:[]};G.items={p:[],o:[]};G.bonus={p:null,o:null};G.eqReady={p:false,o:false};G.pendDebt={p:0,o:0};
-    G.names.o='Misión '+m.mission.toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
+    G.names.o=isLocal?(m.p2name||'Jugador 2'):'Misión '+m.mission.toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
     G.__bfWinCounted=false;G.__bfScoredOnce=false;window.__bfResultSent=false;window.__bfLogSent=false;window.__bfEndCine=0;
     ['bf-end-cine','bf-end-heroes'].forEach(function(id){var n=document.getElementById(id);if(n)n.remove();});
-    B=null;aiEquip('o');show('s-equip');renderEquip('p');tell({bfMissionStarted:m.run_id});
+    B=null;if(!isLocal)aiEquip('o');show('s-equip');renderEquip('p');tell({bfMissionStarted:m.run_id});
   });
   function refresh(){
     var row=document.querySelector('#s-setup #p1name');

@@ -23,7 +23,7 @@ export default function MissionsOverlay({ iframeRef }) {
       {s.error && <div className="mission-notice" role="alert">{s.error}{s.hasPending && <button className="mission-button mt-2" onClick={s.persist}>Reintentar guardado</button>}</div>}
       {s.loading ? <div className="mission-pack"><LoaderCircle className="animate-spin" /><p>Cargando héroes y progreso…</p></div> : <>
         {!level && <nav className="mission-tabs" aria-label="Elegir misión">{MISSIONS.map(m => <button key={m.id} className={m.id === missionId ? 'active' : ''} aria-pressed={m.id === missionId} onClick={() => setMissionId(m.id)}><span className="font-heading text-xl">Misión {m.name}</span><span className="text-sm opacity-75">{m.description}</span></button>)}</nav>}
-        {pool.length < 3 ? <p role="alert">Esta misión necesita al menos tres héroes etiquetados y disponibles en el juego.</p> : level ? <MissionPreparation key={`${missionId}-${level.id}`} mission={mission} level={level} pool={pool} onBack={() => setLevel(null)} starting={s.starting} onStart={(player, rival) => s.start(mission, level, player, rival)} /> : <MissionLevels mission={mission} pool={pool} victories={s.victories} onChoose={setLevel} />}
+        {pool.length < 3 ? <p role="alert">Esta misión necesita al menos tres héroes etiquetados y disponibles en el juego.</p> : level ? <MissionPreparation key={`${missionId}-${level.id}`} mission={mission} level={level} pool={pool} onBack={() => setLevel(null)} starting={s.starting} onStart={(player, rival, opts) => s.start(mission, level, player, rival, opts)} /> : <MissionLevels mission={mission} pool={pool} victories={s.victories} onChoose={setLevel} />}
       </>}
     </div>
   </div>;

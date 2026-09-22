@@ -36,9 +36,9 @@ export default function useMissionSession(iframeRef) {
     }
     window.addEventListener('message', onMessage); return () => { window.removeEventListener('message', onMessage); clearTimeout(timer.current); };
   }, [iframeRef, persist]);
-  function start(mission, level, player, rival) {
+  function start(mission, level, player, rival, opts = {}) {
     if (starting || pending.current) return;
-    const current = { nick: session.nick, mission: mission.id, level: level.id, run_id: crypto.randomUUID(), ai: level.ai };
+    const current = { nick: session.nick, mission: mission.id, level: level.id, run_id: crypto.randomUUID(), ai: level.ai, mode: opts.mode || 'ai', p2name: opts.p2name || '' };
     run.current = current; setError(''); setNotice(''); setStarting(true); send({ bfMissionStart: { ...current, player: player.map(c => c.engineId), rival: rival.map(c => c.engineId) } });
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 10000);
   }
