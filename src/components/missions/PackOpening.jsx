@@ -135,7 +135,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
   return (
     <div className="pack-stage">
       <div className="pack-header">
-        <h3 className="font-heading text-2xl">Tres sobres del {mission.name}</h3>
+        <h3 className="font-heading text-2xl">{packs.length === 1 ? 'Un sobre' : 'Tres sobres'} del {mission.name}</h3>
         <p>Elige un sobre y rasga la parte superior para descubrir sus cartas, una por una.</p>
       </div>
       <div className="pack-row">
@@ -147,7 +147,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
           </button>
         ))}
       </div>
-      <p className="pack-progress">{opened.filter(v => v).length}/3 abiertos</p>
+      <p className="pack-progress">{opened.filter(v => v).length}/{packs.length} {packs.length === 1 ? 'abierto' : 'abiertos'}</p>
     </div>
   );
 }

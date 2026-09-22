@@ -26,11 +26,16 @@ export function drawPack(pool, level) {
   if (!teams.length) throw new Error('No hay tres héroes disponibles para las reglas de este nivel.');
   return teams[Math.floor(Math.random() * teams.length)];
 }
-export function drawPacks(pool, level) {
-  if (pool.length < 9) throw new Error('No hay suficientes héroes para tres sobres.');
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  const packSize = Math.min(4, Math.floor(shuffled.length / 3));
-  const total = packSize * 3;
+export function drawPacks(pool, level, missionId = 'club') {
+  const singlePack = missionId === 'l5r', packCount = singlePack ? 1 : 3;
+  if (pool.length < (singlePack ? 5 : 9)) throw new Error(singlePack ? 'No hay cinco héroes L5R disponibles para el sobre.' : 'No hay suficientes héroes para tres sobres.');
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const packSize = singlePack ? 5 : Math.min(4, Math.floor(shuffled.length / 3));
+  const total = packSize * packCount;
   const drawn = shuffled.slice(0, total);
   if (level.exactEpics) {
     const epicCountInDraw = drawn.filter(isEpic).length;
@@ -44,7 +49,7 @@ export function drawPacks(pool, level) {
     }
   }
   const packs = [];
-  for (let i = 0; i < 3; i++) packs.push(drawn.slice(i * packSize, (i + 1) * packSize));
+  for (let i = 0; i < packCount; i++) packs.push(drawn.slice(i * packSize, (i + 1) * packSize));
   return packs;
 }
 export function chooseRival(pool, team, level) {
