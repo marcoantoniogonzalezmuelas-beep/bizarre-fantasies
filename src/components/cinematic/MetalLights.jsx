@@ -55,7 +55,7 @@ export default function MetalLights() {
 // grandes chorros de luz coloreados hacia abajo. Renderizado igual que el
 // resto de flyers del cine (recorte del fondo negro → sprite visible).
 function PunkitoJets() {
-  const cut = useCutoutSrc(PUNKITO_IMG);
+  const cut = useCutoutSrc(PUNKITO_IMG, true);
   const jets = useMemo(
     () => Array.from({ length: 7 }, (_, i) => ({
       hue: ['#ffd27a', '#ff9a6a', '#8fb6ff', '#c08bff', '#7ad9c0', '#ff8fc0', '#ffe27a'][i % 7],

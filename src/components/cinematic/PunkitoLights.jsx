@@ -9,7 +9,7 @@ const PUNKITO_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6
 // dejando estelas de luz mientras dos focos lo siguen y proyectan pools.
 export default function PunkitoLights() {
   const colors = ['#ffd24a', '#ffe27a', '#ff9a6a', '#b13bff', '#05d9ff'];
-  const cut = useCutoutSrc(PUNKITO_IMG);
+  const cut = useCutoutSrc(PUNKITO_IMG, true);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">

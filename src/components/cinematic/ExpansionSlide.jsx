@@ -151,7 +151,7 @@ export default function ExpansionSlide({ ducks = [null, null], others = [null, n
 // Donut de fresa volador que recorre la escena en arco dejando estelas de luz
 // rosadas y pulsos de brillo, como una mascota dulce y mágica.
 function DonutFlyer({ accent }) {
-  const cut = useCutoutSrc(DONUT_IMG);
+  const cut = useCutoutSrc(DONUT_IMG, true);
   const colors = useMemo(
     () => ['#ff5a8a', '#ff8fb0', '#ffd24a', '#b13bff', '#ffb3d9'],
     []

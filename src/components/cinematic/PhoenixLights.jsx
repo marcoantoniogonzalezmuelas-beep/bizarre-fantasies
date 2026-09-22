@@ -9,7 +9,7 @@ const PHOENIX_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6
 // dos focos lo siguen y proyectan pools en el suelo.
 export default function PhoenixLights() {
   const colors = ['#ff7a18', '#ffd24a', '#ff4a3a', '#ffb347', '#ffe27a'];
-  const cut = useCutoutSrc(PHOENIX_IMG);
+  const cut = useCutoutSrc(PHOENIX_IMG, true);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">

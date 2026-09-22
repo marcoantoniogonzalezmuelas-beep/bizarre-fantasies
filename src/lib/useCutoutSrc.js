@@ -8,14 +8,15 @@ import { useEffect, useState } from 'react';
 const cache = new Map();
 const pending = new Map();
 
-function process(url, done) {
-  if (cache.has(url)) { done(cache.get(url)); return; }
-  if (pending.has(url)) { pending.get(url).push(done); return; }
-  pending.set(url, [done]);
+function process(url, done, flying = false) {
+  const key = flying ? `flying:${url}` : url;
+  if (cache.has(key)) { done(cache.get(key)); return; }
+  if (pending.has(key)) { pending.get(key).push(done); return; }
+  pending.set(key, [done]);
   const finish = (out) => {
-    cache.set(url, out);
-    const listeners = pending.get(url) || [];
-    pending.delete(url);
+    cache.set(key, out);
+    const listeners = pending.get(key) || [];
+    pending.delete(key);
     listeners.forEach(listener => listener(out));
   };
   const img = new Image();
@@ -53,6 +54,15 @@ function process(url, done) {
         if (cx < W - 1) push(i0 + 1);
         if (cy > 0) push(i0 - W);
         if (cy < H - 1) push(i0 + W);
+      }
+      // Los accesorios que vuelan suelen traer un fondo oscuro aislado dentro
+      // del marco: el relleno desde los bordes no lo alcanza. Atenuamos esos
+      // píxeles también, sin alterar el recorte de los héroes de fondo.
+      if (flying) {
+        for (let o = 0; o < p.length; o += 4) {
+          const brightness = Math.max(p[o], p[o + 1], p[o + 2]);
+          p[o + 3] = Math.round(p[o + 3] * Math.min(1, Math.max(0, (brightness - 50) / 90)));
+        }
       }
       // Un recorte vacío no debe sustituir a la figura original.
       if (!p.some((value, index) => index % 4 === 3 && value > 8)) { finish(url); return; }
@@ -110,15 +120,16 @@ export function preloadCutout(url) {
   process(url, () => {});
 }
 
-export function useCutoutSrc(url) {
-  const [result, setResult] = useState(() => ({ url, src: cache.get(url) || url }));
+export function useCutoutSrc(url, flying = false) {
+  const key = flying ? `flying:${url}` : url;
+  const [result, setResult] = useState(() => ({ key, src: cache.get(key) || (flying ? null : url) }));
   useEffect(() => {
     if (!url) return;
     let cancelled = false;
-    process(url, (out) => { if (!cancelled) setResult({ url, src: out }); });
+    process(url, (out) => { if (!cancelled) setResult({ key, src: out }); }, flying);
     return () => { cancelled = true; };
-  }, [url]);
-  // La figura aparece sin esperar al canvas; al cambiar de escena nunca
-  // conservamos la imagen de la escena anterior mientras llega la nueva.
-  return url ? (result.url === url ? result.src : cache.get(url) || url) : null;
+  }, [url, flying, key]);
+  // Los héroes conservan su carga inmediata. Los accesorios voladores esperan
+  // al recorte para que nunca se muestre su fondo cuadrado original.
+  return url ? (result.key === key ? result.src : cache.get(key) || (flying ? null : url)) : null;
 }

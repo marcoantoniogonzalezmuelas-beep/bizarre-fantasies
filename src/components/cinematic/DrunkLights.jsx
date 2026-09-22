@@ -99,7 +99,7 @@ export default function DrunkLights() {
 }
 
 function BeerJugFlyer() {
-  const cut = useCutoutSrc(BEER_JUG_IMG);
+  const cut = useCutoutSrc(BEER_JUG_IMG, true);
   const jetColors = ['#ffcf7a', '#ffd27a', '#9ad8ff', '#ffe08a', '#9ad8ff', '#ffe08a', '#ffd27a'];
   const jets = useMemo(() => Array.from({ length: 7 }, (_, i) => ({
     dx: (i - 3) * 18, hue: jetColors[i % jetColors.length],

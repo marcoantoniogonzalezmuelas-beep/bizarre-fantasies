@@ -8,7 +8,7 @@ const FLY_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a
 // rostro de los dos héroes, dejando conos de luz y destellos donde aterriza.
 // Pensada para la diapositiva de bienvenida (clash comedy).
 export default function FlyLights() {
-  const cut = useCutoutSrc(FLY_IMG);
+  const cut = useCutoutSrc(FLY_IMG, true);
   const colors = useMemo(() => ['#7cff5a', '#ffd24a', '#05d9ff', '#b13bff'], []);
 
   // Posiciones aproximadas de los rostros de los dos héroes en BattleClash.

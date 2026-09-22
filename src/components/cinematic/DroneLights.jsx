@@ -51,7 +51,7 @@ export default function DroneLights() {
 }
 
 function DroneFlyer({ colors }) {
-  const cut = useCutoutSrc(DRONE_IMG);
+  const cut = useCutoutSrc(DRONE_IMG, true);
   return (
     <motion.div
       className="absolute top-[7%] left-0"

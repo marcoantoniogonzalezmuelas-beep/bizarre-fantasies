@@ -9,7 +9,7 @@ const SAMURAI_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6
 // barren el campo de batalla. Ambiente épico / RPG japonés clásico de los 90.
 export default function CraneLights() {
   const colors = ['#7cff9a', '#ffd24a', '#9ad9ff', '#ff6a3c', '#fff5cc'];
-  const cut = useCutoutSrc(SAMURAI_IMG);
+  const cut = useCutoutSrc(SAMURAI_IMG, true);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">

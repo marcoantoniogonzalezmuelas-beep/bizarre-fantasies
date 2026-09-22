@@ -51,7 +51,7 @@ export default function DecepticonLights() {
 }
 
 function DecepticonJetTrail({ colors }) {
-  const cut = useCutoutSrc(DECEPTICON_IMG);
+  const cut = useCutoutSrc(DECEPTICON_IMG, true);
   return (
     <motion.div
       className="absolute top-[6%] left-0"
