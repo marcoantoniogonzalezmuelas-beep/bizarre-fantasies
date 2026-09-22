@@ -4,11 +4,12 @@ import useMissionSession from '@/components/missions/useMissionSession';
 import MissionLevels from '@/components/missions/MissionLevels';
 import MissionPreparation from '@/components/missions/MissionPreparation';
 import MissionVictoryCelebration from '@/components/missions/MissionVictoryCelebration';
+import MissionMpLobby from '@/components/missions/MissionMpLobby';
 import { MISSIONS, missionPool } from '@/components/missions/missionRules';
 import '@/components/missions/missions.css';
 const MISSION_BACKGROUND = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/38d52015c_generated_720c056f.png';
 export default function MissionsOverlay({ iframeRef }) {
-  const s = useMissionSession(iframeRef), [missionId, setMissionId] = useState('club'), [level, setLevel] = useState(null);
+  const s = useMissionSession(iframeRef), [missionId, setMissionId] = useState('club'), [level, setLevel] = useState(null), [mpMode, setMpMode] = useState(false);
   const mission = MISSIONS.find(m => m.id === missionId), pool = useMemo(() => missionPool(s.cards, missionId), [s.cards, missionId]);
   useEffect(() => { const image = new Image(); image.src = MISSION_BACKGROUND; }, []);
   useEffect(() => { if (s.session) setLevel(null); }, [s.session]);
@@ -22,8 +23,11 @@ export default function MissionsOverlay({ iframeRef }) {
       {s.notice && <p className="mission-notice" role="status">{s.notice}</p>}
       {s.error && <div className="mission-notice" role="alert">{s.error}{s.hasPending && <button className="mission-button mt-2" onClick={s.persist}>Reintentar guardado</button>}</div>}
       {s.loading ? <div className="mission-pack"><LoaderCircle className="animate-spin" /><p>Cargando héroes y progreso…</p></div> : <>
+        <div className="mission-mode-toggle" role="tablist" aria-label="Modo de misión"><button className={mpMode ? '' : 'active'} role="tab" aria-selected={!mpMode} onClick={() => setMpMode(false)}>Individual</button><button className={mpMode ? 'active' : ''} role="tab" aria-selected={mpMode} onClick={() => setMpMode(true)}>Multijugador</button></div>
+        {mpMode ? <MissionMpLobby cards={s.cards} nick={s.session.nick} onBack={() => setMpMode(false)} onStart={cfg => s.startMp(cfg)} /> : <>
         {!level && <nav className="mission-tabs" aria-label="Elegir misión">{MISSIONS.map(m => <button key={m.id} className={m.id === missionId ? 'active' : ''} aria-pressed={m.id === missionId} onClick={() => setMissionId(m.id)}><span className="font-heading text-xl">Misión {m.name}</span><span className="text-sm opacity-75">{m.description}</span></button>)}</nav>}
-        {pool.length < 3 ? <p role="alert">Esta misión necesita al menos tres héroes etiquetados y disponibles en el juego.</p> : level ? <MissionPreparation key={`${missionId}-${level.id}`} mission={mission} level={level} pool={pool} onBack={() => setLevel(null)} starting={s.starting} onStart={(player, rival, opts) => s.start(mission, level, player, rival, opts)} /> : <MissionLevels mission={mission} pool={pool} victories={s.victories} onChoose={setLevel} />}
+        {pool.length < 3 ? <p role="alert">Esta misión necesita al menos tres héroes etiquetados y disponibles en el juego.</p> : level ? <MissionPreparation key={`${missionId}-${level.id}`} mission={mission} level={level} pool={pool} onBack={() => setLevel(null)} starting={s.starting} onStart={(player, rival) => s.start(mission, level, player, rival)} /> : <MissionLevels mission={mission} pool={pool} victories={s.victories} onChoose={setLevel} />}
+        </>}
       </>}
     </div>
   </div>;

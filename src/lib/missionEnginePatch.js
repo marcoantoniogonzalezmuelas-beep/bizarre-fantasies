@@ -2,7 +2,7 @@
 export function patchMissionHtml(html) {
   const init = "show('s-recruit'); startAuctionPhase();";
   if (!html.includes(init)) throw new Error('No se encuentra el inicio del juego para las misiones.');
-  return html.replace(init, "if(window.bfMissionRequested){window.bfMissionRequested=false;window.bfOpenMissions();return;} G.bfMission=null; " + init);
+  return html.replace(init, "if(window.bfMissionRequested){window.bfMissionRequested=false;window.bfOpenMissions();return;} if(window.bfMissionMpRequested){window.bfMissionMpRequested=false;window.bfSetupMissionMp();return;} G.bfMission=null; " + init);
 }
 export const MISSION_ENGINE_PATCH = `<script>
 (function(){
@@ -14,23 +14,38 @@ export const MISSION_ENGINE_PATCH = `<script>
     G._gameOver=true;
     tell({bfMissionOpen:{nick:G.names.p,heroes:HEROES.map(function(h){return {id:h.id,number:h.num,name:h.name};})}});
   };
+  window.bfSetupMissionMp=function(){
+    var mp=window.bfMissionMpConfig;if(!mp)return;
+    var tp=mp.myTeam.map(function(id){return HEROES.find(function(h){return h.id===id;});});
+    var to=mp.oppTeam.map(function(id){return HEROES.find(function(h){return h.id===id;});});
+    if(tp.length!==3||to.length!==3||tp.concat(to).some(function(h){return !h;})){tell({bfMissionStartError:'Algún héroe no está disponible en el motor.'});return;}
+    G.bfMission={run_id:mp.run_id,mission:mp.mission,modality:mp.modality};activeRun=G.bfMission;
+    G.mode='online';G.online=true;G.demo=false;G.demoExample=false;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;
+    G.team={p:tp.map(makeInstance),o:to.map(makeInstance)};
+    var eqC=150;G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
+    G.spellbook={p:[],o:[]};G.items={p:[],o:[]};G.bonus={p:null,o:null};G.eqReady={p:false,o:false};G.pendDebt={p:0,o:0};
+    G.names.o=mp.oppNick||'Rival';var mySide=mp.role==='host'?'p':'o';G.eqSide=mySide;G.eqShop='spell';G.assign=null;
+    G.__bfWinCounted=false;G.__bfScoredOnce=false;window.__bfResultSent=false;window.__bfLogSent=false;window.__bfEndCine=0;
+    B=null;show('s-equip');renderEquip(mySide);tell({bfMissionStarted:mp.run_id});
+  };
   window.addEventListener('message',function(e){
     if(e.source!==parent)return;
     if(e.data&&e.data.bfMissionClose){G.bfMission=null;activeRun=null;if(originalMeta){window.__bfAiLevelMeta=originalMeta;originalMeta=null;}goSetup();return;}
+    var mpc=e.data&&e.data.bfMissionMpConnect;if(mpc){window.bfMissionMpConfig=mpc;window.bfMissionMpRequested=true;if(mpc.role==='host'){if(typeof hostCreate==='function')hostCreate(mpc.nick,mpc.password,mpc.room_code);}else{if(typeof clientJoin==='function')clientJoin(mpc.room_code,mpc.password,mpc.nick);}return;}
     var m=e.data&&e.data.bfMissionStart;if(!m)return;
     var teams={p:m.player.map(function(id){return HEROES.find(function(h){return h.id===id;});}),o:m.rival.map(function(id){return HEROES.find(function(h){return h.id===id;});})};
     if(teams.p.length!==3||teams.o.length!==3||teams.p.concat(teams.o).some(function(h){return !h;})){tell({bfMissionStartError:'Algún héroe no está disponible en el motor.'});return;}
     if(!originalMeta)originalMeta=window.__bfAiLevelMeta;
     window.__bfAiLevelMeta=(window.__bfAiLevels||[]).find(function(l){return l.id===m.ai;})||originalMeta;
     G.bfMission={run_id:m.run_id,mission:m.mission,level:m.level};activeRun=G.bfMission;
-    var isLocal=m.mode==='local';G.mode=isLocal?'local':'ai';G.online=false;G.demo=false;G.demoExample=false;G.oppHuman=isLocal;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;NET.role='local';NET.mySide='p';
+    G.mode='ai';G.online=false;G.demo=false;G.demoExample=false;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;NET.role='local';NET.mySide='p';
     G.team={p:teams.p.map(makeInstance),o:teams.o.map(makeInstance)};
-    var eqC=Math.max(100,[150,140,130,120,100][(m.level||1)-1]||100);G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
+    var eqC=150;G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
     G.spellbook={p:[],o:[]};G.items={p:[],o:[]};G.bonus={p:null,o:null};G.eqReady={p:false,o:false};G.pendDebt={p:0,o:0};
-    G.names.o=isLocal?(m.p2name||'Jugador 2'):'Misión '+m.mission.toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
+    G.names.o='Misión '+m.mission.toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
     G.__bfWinCounted=false;G.__bfScoredOnce=false;window.__bfResultSent=false;window.__bfLogSent=false;window.__bfEndCine=0;
     ['bf-end-cine','bf-end-heroes'].forEach(function(id){var n=document.getElementById(id);if(n)n.remove();});
-    B=null;if(!isLocal)aiEquip('o');show('s-equip');renderEquip('p');tell({bfMissionStarted:m.run_id});
+    B=null;aiEquip('o');show('s-equip');renderEquip('p');tell({bfMissionStarted:m.run_id});
   });
   function refresh(){
     var row=document.querySelector('#s-setup #p1name');
@@ -40,7 +55,7 @@ export const MISSION_ENGINE_PATCH = `<script>
       var grid=row.closest('.setup-box').querySelector('.mode-grid');grid.insertAdjacentElement('afterend',btn);
     }
     if(!G.bfMission)return;
-    var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=Math.max(100,[150,140,130,120,100][(G.bfMission.level||1)-1]||100);subtitle.textContent='Misión '+G.bfMission.mission.toUpperCase()+' · Nivel '+G.bfMission.level+' · '+ec+' monedas de equipamiento · Sin sobrante de héroes';}
+    var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=150;var lbl='Misión '+G.bfMission.mission.toUpperCase();if(G.bfMission.level)lbl+=' · Nivel '+G.bfMission.level;if(G.bfMission.modality)lbl+=' · '+G.bfMission.modality;lbl+=' · '+ec+' monedas de equipamiento';if(!G.bfMission.modality)lbl+=' · Sin sobrante de héroes';subtitle.textContent=lbl;}
     var header=document.querySelector('#s-equip.active .r-header');
     if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=window.bfOpenMissions;header.appendChild(back);}
     var result=document.querySelector('#s-result.active');if(!result)return;

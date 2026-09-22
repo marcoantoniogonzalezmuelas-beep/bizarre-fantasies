@@ -30,18 +30,25 @@ export default function useMissionSession(iframeRef) {
       if (d.bfMissionStartError) { clearTimeout(timer.current); setStarting(false); setError(d.bfMissionStartError); }
       if (d.bfMissionResult?.run_id === run.current?.run_id && run.current && !run.current.finished) {
         run.current.finished = true;
-        if (d.bfMissionResult.won) { pending.current = { ...run.current }; pendingCelebration.current = { mission: run.current.mission, level: run.current.level }; setNotice('Guardando victoria…'); await persist(); }
+        if (d.bfMissionResult.won) { if (run.current.level) { pending.current = { ...run.current }; pendingCelebration.current = { mission: run.current.mission, level: run.current.level }; setNotice('Guardando victoria…'); await persist(); } else setNotice('¡Victoria en la misión multijugador!'); }
         else setNotice('Esta vez no ha podido ser. Tus victorias anteriores se conservan.');
       }
     }
     window.addEventListener('message', onMessage); return () => { window.removeEventListener('message', onMessage); clearTimeout(timer.current); };
   }, [iframeRef, persist]);
-  function start(mission, level, player, rival, opts = {}) {
+  function start(mission, level, player, rival) {
     if (starting || pending.current) return;
-    const current = { nick: session.nick, mission: mission.id, level: level.id, run_id: crypto.randomUUID(), ai: level.ai, mode: opts.mode || 'ai', p2name: opts.p2name || '' };
+    const current = { nick: session.nick, mission: mission.id, level: level.id, run_id: crypto.randomUUID(), ai: level.ai };
     run.current = current; setError(''); setNotice(''); setStarting(true); send({ bfMissionStart: { ...current, player: player.map(c => c.engineId), rival: rival.map(c => c.engineId) } });
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 10000);
   }
+  function startMp(cfg) {
+    if (starting || pending.current) return;
+    const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, run_id: crypto.randomUUID() };
+    run.current = current; setError(''); setNotice(''); setStarting(true);
+    send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
+    timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 15000);
+  }
   function close() { if (pending.current) { setError('Guarda la victoria pendiente antes de salir.'); return; } if (pendingCelebration.current) { const pc = pendingCelebration.current; pendingCelebration.current = null; setCelebration(pc); } ++loadId.current; setSession(null); send({ bfMissionClose: true }); }
-  return { session, cards, victories, loading, error, starting, notice, celebration, dismissCelebration: () => setCelebration(null), start, close, persist, hasPending: !!pending.current };
+  return { session, cards, victories, loading, error, starting, notice, celebration, dismissCelebration: () => setCelebration(null), start, startMp, close, persist, hasPending: !!pending.current };
 }
