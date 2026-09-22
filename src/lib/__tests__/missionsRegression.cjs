@@ -25,5 +25,12 @@ module.exports = async function missionsRegression(cards, html) {
   c.B={over:true};c.showResult(true);c.showResult(true);assert.equal(messages.filter(m=>m.bfMissionResult).length,1);assert.equal(messages.find(m=>m.bfMissionResult).bfMissionResult.won,true);
   events.message({source:c.parent,data:{bfMissionStart:{...match,run_id:'loss'}}});c.B={over:true};c.showResult(false);assert.equal(messages.filter(m=>m.bfMissionResult).length,2);assert.equal(messages.at(-1).bfMissionResult.won,false);
   events.message({source:c.parent,data:{bfMissionClose:true}});assert.equal(c.G.bfMission,null);assert.equal(screen,'s-setup');
-  return {balanceCases,duplicateVictory:'pass',perMissionUnlocks:'pass',equipmentBudget:'pass',engineWinLossAndReturn:'pass',persistence:'mocked storage pass'};
+  // Run the actual native init and equipment-to-battle transition, not a copied implementation.
+  const native = name => { const i=patched.indexOf('function '+name+'('), j=patched.indexOf('\nfunction ',i+1); assert(i>=0); return patched.slice(i,j); };
+  Object.assign(c,{START_COINS:100,coachHide(){},shuffle:a=>a,startAuctionPhase:()=>auctions++,online:()=>false,sendIntent(){},netSync(){},pushLog(){},renderBattle(){},setTimeout(){},nextRound(){},battlePrep:h=>{h.alive=true;}});
+  vm.runInContext(native('initGame')+'\n'+native('eqDone')+'\n'+native('startBattle'),c);
+  c.bfMissionRequested=true;c.initGame('QA','AI',false);assert.equal(auctions,0);assert(messages.some(m=>m.bfMissionOpen));
+  events.message({source:c.parent,data:{bfMissionStart:{...match,run_id:'battle'}}});c.eqDone('p');assert.equal(screen,'s-battle');assert.equal(c.B.over,false);assert(c.G.team.p.concat(c.G.team.o).every(h=>h.alive));
+  c.bfMissionRequested=false;c.initGame('QA','AI',false);assert.equal(auctions,1);assert.equal(c.G.bfMission,null);
+  return {balanceCases,duplicateVictory:'pass',perMissionUnlocks:'pass',equipmentBudget:'pass',nativeBattleEntry:'pass',ordinaryAuctionPreserved:'pass',engineWinLossAndReturn:'pass',persistence:'mocked storage pass'};
 };
