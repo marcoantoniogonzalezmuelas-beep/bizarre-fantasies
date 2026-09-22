@@ -36,6 +36,16 @@ export function chooseRival(pool, team, level) {
   const tied = candidates.filter((_, i) => distances[i] === nearest);
   return tied[Math.floor(Math.random() * tied.length)];
 }
-export const equipCoinsForLevel = level => [150, 140, 130, 120, 100][level - 1] || 100;
+export const equipCoinsForLevel = () => 150;
+export const MP_MISSIONS = [
+  { id: 'club', name: 'Club', description: 'Misión especial multijugador del Club.' },
+  { id: 'l5r', name: 'L5R', description: 'Misión especial multijugador de L5R.' },
+];
+export const MP_MODALITIES = [
+  { id: 'pack', name: 'Sobre', description: 'Abre un sobre y elige 3 héroes de los que salgan.' },
+  { id: 'budget', name: '100 monedas', description: 'Cada jugador compra 3 héroes con 100 monedas.' },
+];
+export const MP_EQUIP_COINS = 150;
+export const MP_BUDGET = 100;
 export const winsFor = (rows, mission, level) => new Set(rows.filter(r => r.mission === mission && r.level === level).map(r => r.run_id)).size;
 export const unlocked = (rows, mission, level) => level.id === 1 || winsFor(rows, mission, level.id - 1) >= LEVELS[level.id - 2].wins;

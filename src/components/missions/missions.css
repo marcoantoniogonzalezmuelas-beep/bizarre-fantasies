@@ -49,8 +49,27 @@
 .mc-continue{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-family:var(--font-body);font-size:14px;font-weight:600;color:#cfc6dd;text-shadow:0 1px 3px #000;cursor:pointer;background:rgba(0,0,0,.4);padding:10px 22px;border-radius:999px;border:1px solid rgba(255,255,255,.2);z-index:10;animation:mcFadeIn 1s ease-out 1.6s both;transition:background .2s}
 .mc-continue:hover{background:var(--mc-c,#ff44dd);color:#1a0a24}
 @media(max-width:700px){.mc-avatar{width:100px;height:100px}.mc-avatar span{font-size:54px}}
-@media(max-width:700px){.mission-shell{padding:24px 16px 56px}.mission-tabs{grid-template-columns:1fr}.mission-level{padding:16px;gap:12px}.mission-level-number{width:34px;height:34px;font-size:16px}.mission-heroes{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.mission-portrait{height:170px}.mission-level-meta{gap:8px}.mission-tabs button{padding:18px}}
-@media(max-width:400px){.mission-heroes{grid-template-columns:1fr}.mission-portrait{height:260px}}
+@media(max-width:700px){.mission-shell{padding:24px 16px 56px}.mission-tabs{grid-template-columns:1fr}.mission-level{padding:16px;gap:12px}.mission-level-number{width:34px;height:34px;font-size:16px}.mission-heroes{gap:10px}.mission-portrait{height:170px}.mission-level-meta{gap:8px}.mission-tabs button{padding:18px}}
+@media(max-width:480px){.mission-heroes{gap:6px}.mission-portrait{height:130px}.mission-hero .p-4{padding:8px}.mission-hero h3{font-size:13px}.mission-cost,.mission-epic{font-size:9px;padding:3px 6px}.mission-hero .mission-button{font-size:11px;padding:7px 10px;min-height:36px}}
+.mp-lobby{display:flex;flex-direction:column;gap:20px}
+.mp-section{display:flex;flex-direction:column;gap:10px}
+.mp-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mp-tabs button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:18px;border:1px solid hsl(var(--mission-line));border-radius:14px;background:hsl(var(--mission-surface));cursor:pointer}
+.mp-tabs button.active{border-color:hsl(var(--mission-accent));box-shadow:inset 0 0 0 1px hsl(var(--mission-accent))}
+.mp-tabs button span:first-child{font-family:var(--font-heading);font-size:18px}
+.mp-tabs button span:last-child{font-size:12px;opacity:.75}
+.mp-role{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mp-role button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;border:1px solid hsl(var(--mission-line));border-radius:14px;background:hsl(var(--mission-surface));cursor:pointer;font-weight:600;font-size:14px;min-height:44px}
+.mp-role button.active{border-color:hsl(var(--mission-accent));background:hsl(var(--mission-accent));color:hsl(var(--background))}
+.mp-code-box{display:flex;align-items:center;gap:12px;padding:16px 20px;border:2px dashed hsl(var(--mission-accent));border-radius:12px;background:hsl(var(--mission-surface))}
+.mp-code-box code{font-family:var(--font-mono);font-size:28px;font-weight:900;letter-spacing:4px;color:hsl(var(--mission-accent))}
+.mp-code-box button{padding:8px 12px;border:1px solid hsl(var(--mission-line));border-radius:8px;background:hsl(var(--background));cursor:pointer;font-size:12px}
+.mp-waiting{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px;text-align:center}
+.mp-waiting .animate-spin{width:32px;height:32px;border:3px solid hsl(var(--mission-line));border-top-color:hsl(var(--mission-accent));border-radius:50%}
+.mp-input{width:100%;padding:12px 16px;border-radius:10px;border:1px solid hsl(var(--mission-line));background:hsl(var(--mission-surface));color:inherit;font-size:18px;font-weight:700;letter-spacing:3px;text-align:center;text-transform:uppercase}
+.mp-status{padding:12px 16px;border-radius:10px;border:1px solid hsl(var(--mission-line));background:hsl(var(--mission-surface));font-size:13px}
+.mp-status.ready{border-color:#66ff88;color:#88ff99}
+.mp-opp-team{padding-top:20px;border-top:1px solid hsl(var(--mission-line))}
 .mission-mode-toggle{display:flex;gap:8px;margin-bottom:4px}
 .mission-mode-toggle button{flex:1;padding:11px 14px;border:1px solid hsl(var(--mission-line));border-radius:10px;background:hsl(var(--mission-surface));font-weight:600;font-size:13px;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px}
 .mission-mode-toggle button.active{border-color:hsl(var(--mission-accent));background:hsl(var(--mission-accent));color:hsl(var(--background))}
