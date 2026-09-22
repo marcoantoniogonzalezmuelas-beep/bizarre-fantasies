@@ -28,7 +28,8 @@ export function drawPack(pool, level) {
 }
 export function chooseRival(pool, team, level) {
   const target = valueOf(team) + level.rivalBonus;
-  const candidates = triples(pool).filter(t => epicCount(t) <= (level.id === 1 ? 0 : 1) && (!level.pack || epicCount(t) === epicCount(team)));
+  const playerIds = new Set(team.map(card => card.card_id || card.id || card.number));
+  const candidates = triples(pool).filter(t => t.every(card => !playerIds.has(card.card_id || card.id || card.number)) && epicCount(t) <= (level.id === 1 ? 0 : 1) && (!level.pack || epicCount(t) === epicCount(team)));
   if (!candidates.length) throw new Error('No se puede formar un rival con estas reglas.');
   const distances = candidates.map(t => Math.abs(valueOf(t) - target));
   const nearest = Math.min(...distances);

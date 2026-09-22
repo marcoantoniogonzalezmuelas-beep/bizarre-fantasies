@@ -8,7 +8,7 @@ module.exports = async function missionsRegression(cards, html) {
     const pool = rules.missionPool(cards, m.id), budget = rules.heroBudget(pool, l);
     const teams = rules.availableTeams(pool, l).filter(t => l.pack || rules.valueOf(t) <= budget);
     assert(teams.length > 0);
-    for (const t of teams) { const r = rules.chooseRival(pool, t, l); assert.equal(r.length, 3); assert.equal(new Set(t.map(c => c.id)).size, 3); if(l.pack) assert.equal(rules.epicCount(t), rules.epicCount(r)); if(l.id===5)assert.equal(rules.epicCount(t),1); balanceCases++; }
+    for (const t of teams) { const r = rules.chooseRival(pool, t, l); assert.equal(r.length, 3); assert.equal(new Set(t.map(c => c.id)).size, 3); assert.equal(r.some(enemy => t.some(hero => (hero.card_id || hero.id || hero.number) === (enemy.card_id || enemy.id || enemy.number))), false); if(l.pack) assert.equal(rules.epicCount(t), rules.epicCount(r)); if(l.id===5)assert.equal(rules.epicCount(t),1); balanceCases++; }
     assert.equal(rules.unlocked([], m.id, l), l.id===1);
   }
   const records = [], database = {entities:{MissionVictory:{filter:async q=>records.filter(r=>Object.keys(q).every(k=>r[k]===q[k])),create:async r=>{const saved={...r,id:'test-'+records.length};records.push(saved);return saved;}}}};
