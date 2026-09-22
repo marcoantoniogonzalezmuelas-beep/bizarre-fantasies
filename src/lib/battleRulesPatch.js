@@ -15,8 +15,8 @@ export const BATTLE_RULES_PATCH = `
   window.__bfBattleRules = true;
 
   var css = ''+
-  '.bf-abil-used{opacity:.45!important;filter:grayscale(.8)!important;pointer-events:none!important;cursor:not-allowed!important}'+
-  '.bf-abil-used *{pointer-events:none!important}'+
+  '.jrpg-btn.ability.bf-abil-used{opacity:.45!important;filter:grayscale(.8)!important;pointer-events:none!important;cursor:not-allowed!important}'+
+  '.jrpg-btn.ability.bf-abil-used *{pointer-events:none!important}'+
   '@keyframes bfEqFly{0%{opacity:1;transform:translate(0,0) scale(1) rotate(0deg)}15%{opacity:1}100%{opacity:0;transform:translate(var(--fx,0px),var(--fy,180px)) scale(.2) rotate(540deg)}}'+
   '.bf-eq-fly{position:fixed;z-index:100500;pointer-events:none;width:44px;height:60px;border-radius:6px;border:2px solid rgba(255,140,50,.8);background:#120a1e center/cover no-repeat;box-shadow:0 4px 14px rgba(0,0,0,.7),0 0 12px rgba(255,140,50,.4);animation:bfEqFly .9s ease-in forwards}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
@@ -176,18 +176,10 @@ export const BATTLE_RULES_PATCH = `
     var heroIsElite=!!hero.eliteMode;
     battle.querySelectorAll('.bf-abil-used').forEach(function(b){b.classList.remove('bf-abil-used');});
     if(!nUsed&&!eUsed)return;
-    battle.querySelectorAll('[onclick]').forEach(function(btn){
-      var oc=btn.getAttribute('onclick')||'';
-      if(oc.indexOf('useAbility')<0&&oc.indexOf('ability')<0)return;
-      if(heroIsElite&&eUsed)btn.classList.add('bf-abil-used');
-      if(!heroIsElite&&nUsed)btn.classList.add('bf-abil-used');
-    });
-    battle.querySelectorAll('button,.btn,[class*="action"],[class*="abil"]').forEach(function(btn){
-      if(btn.classList.contains('bf-abil-used'))return;
-      var txt=(btn.textContent||'').toLowerCase();
-      if(txt.indexOf('habilidad')<0&&txt.indexOf('ability')<0&&txt.indexOf('useAbility')<0)return;
-      if(heroIsElite&&eUsed)btn.classList.add('bf-abil-used');
-      if(!heroIsElite&&nUsed)btn.classList.add('bf-abil-used');
+    // Target the engine's ability control, never containers whose descendant
+    // text happens to mention an ability (Fas's description did exactly that).
+    battle.querySelectorAll('.active-hero-panel .jrpg-menu .jrpg-btn.ability').forEach(function(btn){
+      if(heroIsElite ? eUsed : nUsed)btn.classList.add('bf-abil-used');
     });
   }
 
