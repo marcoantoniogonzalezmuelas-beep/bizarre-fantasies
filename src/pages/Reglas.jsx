@@ -6,6 +6,7 @@ import { useDesktopZoom } from '@/lib/useDesktopZoom';
 import FumbleRulesSection from '@/components/rules/FumbleRulesSection';
 import HeroDiceRulesSection from '@/components/rules/HeroDiceRulesSection';
 import MobileHandRulesSection from '@/components/rules/MobileHandRulesSection';
+import CurrentFeaturesRulesSection from '@/components/rules/CurrentFeaturesRulesSection';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f2d5fe441_generated_image.png';
 const ICON_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab147bafb_generated_image.png';
@@ -105,6 +106,7 @@ export default function Reglas() {
 
   const MODES = [
     { icon: '🤖', c: '#9adf9a', title: L('Contra la IA', 'vs AI'), text: L('4 niveles de dificultad: Novato, Berserker, Estratega y Némesis. La IA aprende de cada partida y se vuelve más fuerte. Juega sin conexión y practica estrategias.', '4 difficulty levels: Novice, Berserker, Strategist and Nemesis. The AI learns from each game and gets stronger. Play offline and practice strategies.') },
+    { icon: '🏛️', c: '#f0b94a', title: L('Misiones', 'Missions'), text: L('Campañas Club y L5R de 5 niveles, sin subasta de héroes. El progreso y las victorias quedan guardados por nick.', 'Five-level Club and L5R campaigns without a hero auction. Progress and victories are saved by nickname.') },
     { icon: '📱', c: '#6ec6ff', title: L('Local', 'Local'), text: L('2 jugadores en el mismo dispositivo. Cada uno escribe su nick y contraseña. Ideal para partidas rápidas cara a cara.', '2 players on the same device. Each enters their nick and password. Great for quick face-to-face games.') },
     { icon: '🏠', c: '#FFD24A', title: L('Sala privada online', 'Private online room'), text: L('Creas una sala con contraseña y compartes el código con tu rival. Solo quien tenga la contraseña puede unirse. Si alguien se desconecta, la partida se puede reanudar en 5 minutos.', 'You create a room with a password and share the code with your rival. Only those with the password can join. If someone disconnects, the game can be resumed within 5 minutes.') },
     { icon: '🆓', c: '#6aa6ff', title: L('Sala pública online', 'Public online room'), text: L('Sala sin contraseña: cualquiera con el código puede entrar. Si alguien pierde la conexión, la partida termina (sin reanudación).', 'Room without password: anyone with the code can join. If someone loses connection, the game ends (no resume).') },
@@ -121,6 +123,8 @@ export default function Reglas() {
     { c: '#ff9c40', i: '★', n: L('Confuso', 'Confused'), x: L('2 turnos (3 en Élite): 50% de perder cada acción.', '2 turns (3 in Elite): 50% chance to lose each action.') },
     { c: '#ff7ad9', i: '🍺', n: L('Borracho', 'Drunk'), x: L('Recibe 3 de daño, −3 CC/AD/HE durante 2 turnos (3 en Élite) y 35% de fallar cada acción.', 'Takes 3 damage, −3 CC/AD/HE for 2 turns (3 in Elite) and 35% chance to fail each action.') },
     { c: '#8fe3d9', i: '💫', n: L('Mareado', 'Dizzy'), x: L('−4 CC/AD/HE durante 2 turnos (3 con Gases Tóxicos Élite).', '−4 CC/AD/HE for 2 turns (3 with Toxic Gas Elite).') },
+    { c: '#ffb45c', i: '🧭', n: L('Desorientado', 'Disoriented'), x: L('El próximo ataque se redirige con un dado de 3 caras: rival, aliado o él mismo.', 'The next attack is redirected by a three-sided die: rival, ally or self.') },
+    { c: '#d8d8ff', i: '👻', n: L('Invisible', 'Invisible'), x: L('No puede ser elegido ni recibe daño rival durante su duración; limpia estados negativos.', 'Cannot be targeted or damaged by rivals for its duration; cleanses negative states.') },
   ];
 
   return (
@@ -208,6 +212,8 @@ export default function Reglas() {
           <FumbleRulesSection />
 
           <HeroDiceRulesSection />
+
+          <CurrentFeaturesRulesSection />
 
           <MobileHandRulesSection />
 

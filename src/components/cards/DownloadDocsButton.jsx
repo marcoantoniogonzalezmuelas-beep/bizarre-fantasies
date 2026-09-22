@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { FileDown, Loader2 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { GAME_RULES_DOC } from '@/lib/gameRulesDoc';
+import { GAME_RULES_DOC_EN } from '@/lib/gameRulesDocEn';
+import { SUMMON_IDS } from '@/lib/summonCards';
+import { getLang } from '@/lib/i18n';
 import { HERO_ART, SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 
 // Arte de cada carta: el guardado en la carta o, si falta, el del juego por número.
@@ -18,8 +21,13 @@ const artFor = (c) => {
   return null;
 };
 
-const CAT_LABELS = { hero: 'Héroes', race: 'Razas', spell: 'Hechizos', melee_weapon: 'Armas cuerpo a cuerpo', ranged_weapon: 'Armas a distancia', armor: 'Armaduras', object: 'Objetos', bonus: 'Bonificadores' };
-const CAT_ORDER = ['hero', 'race', 'spell', 'melee_weapon', 'ranged_weapon', 'armor', 'object', 'bonus'];
+const CAT_LABELS = {
+  hero: ['Héroes', 'Heroes'], bizarro: ['Bizarros', 'Bizarros'], summon: ['Invocaciones', 'Summons'], race: ['Razas', 'Races'],
+  spell: ['Hechizos', 'Spells'], melee_weapon: ['Armas cuerpo a cuerpo', 'Melee weapons'], ranged_weapon: ['Armas a distancia', 'Ranged weapons'],
+  armor: ['Armaduras', 'Armor'], object: ['Objetos', 'Items'], bonus: ['Bonificadores', 'Boosters'],
+};
+const CAT_ORDER = ['hero', 'bizarro', 'summon', 'race', 'spell', 'melee_weapon', 'ranged_weapon', 'armor', 'object', 'bonus'];
+const categoryOf = (card) => SUMMON_IDS.includes(String(card.card_id || '')) ? 'summon' : card.category;
 
 // Carga una imagen y devuelve una miniatura JPEG cuadrada (recorte centrado)
 // como dataURL, para que el PDF no pese decenas de MB con el arte original.
@@ -46,9 +54,9 @@ export default function DownloadDocsButton({ cards }) {
   const generate = async () => {
     setBusy(true);
     try {
-      // Los Bizarros (fichas "tk_") no se mencionan en la documentación.
-      const docCards = (cards || []).filter(c => !String(c.card_id || '').startsWith('tk_'));
-      const heroes = docCards.filter(c => c.category === 'hero').sort((a, b) => (a.number || 0) - (b.number || 0));
+      // El índice se genera desde el catálogo vivo: héroes, Bizarros, invocaciones y equipo.
+      const docCards = [...(cards || [])];
+      const heroes = docCards.filter(c => ['hero', 'bizarro'].includes(c.category)).sort((a, b) => (a.number || 0) - (b.number || 0));
       // Miniaturas: una por carta (héroes y equipamiento) y 3 grandes para la portada.
       const thumbs = {};
       await Promise.all(docCards.map(async c => { thumbs[c.id] = await thumb(artFor(c), 150); }));
@@ -68,7 +76,7 @@ export default function DownloadDocsButton({ cards }) {
       doc.setFontSize(34); doc.text('BIZARRE', 105, 52, { align: 'center' });
       doc.text('FANTASIES', 105, 66, { align: 'center' });
       doc.setFontSize(12); doc.setTextColor(200, 185, 220);
-      doc.text('G U Í A   D E L   J U E G O   Y   C A R T A S', 105, 80, { align: 'center' });
+      doc.text('GUÍA DEL JUEGO · GAME GUIDE · CARTAS / CARDS', 105, 80, { align: 'center' });
       doc.setDrawColor(255, 210, 74); doc.setLineWidth(0.6); doc.line(60, 88, 150, 88);
       // Tres retratos de héroes enmarcados en oro
       const cw = 48, gap = 10, x0 = (210 - (coverArts.length * cw + (coverArts.length - 1) * gap)) / 2;
@@ -78,9 +86,9 @@ export default function DownloadDocsButton({ cards }) {
         doc.addImage(art, 'JPEG', x, 120, cw, cw);
       });
       doc.setFontSize(11); doc.setTextColor(255, 210, 74);
-      doc.text('Base Set', 105, coverArts.length ? 186 : 130, { align: 'center' });
+      doc.text('Edición actual · Current Edition', 105, coverArts.length ? 186 : 130, { align: 'center' });
       doc.setFontSize(9); doc.setTextColor(150, 138, 170);
-      doc.text('Subasta · Equipamiento · Combate por turnos', 105, coverArts.length ? 193 : 137, { align: 'center' });
+      doc.text('Subasta · Misiones · Equipamiento · Combate / Auction · Missions · Equipment · Combat', 105, coverArts.length ? 193 : 137, { align: 'center' });
 
       // ---------- Utilidades de texto (sangrías consistentes) ----------
       const pageBreak = (need = 10) => { if (y + need > 282) { doc.addPage(); y = 20; } };
@@ -103,27 +111,30 @@ export default function DownloadDocsButton({ cards }) {
         line(txt, 12, 'bold', GOLD, 20, 175); y += 2.5;
       };
 
-      // ---------- Reglas ----------
-      doc.addPage(); y = 20;
-      doc.setFillColor(18, 14, 28); doc.rect(0, 0, 210, 24, 'F');
-      doc.setTextColor(255, 210, 74); doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-      doc.text('GUÍA DEL JUEGO', 15, 15);
-      y = 34;
-      GAME_RULES_DOC.forEach(([t, b]) => { sectionTitle(t); line(b, 10, 'normal', INK, 20, 175); y += 4; });
+      // ---------- Reglas en español e inglés ----------
+      const rulesChapter = (title, rules) => {
+        doc.addPage(); y = 20;
+        doc.setFillColor(18, 14, 28); doc.rect(0, 0, 210, 24, 'F');
+        doc.setTextColor(255, 210, 74); doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+        doc.text(title, 15, 15); y = 34;
+        rules.forEach(([t, b]) => { sectionTitle(t); line(b, 10, 'normal', INK, 20, 175); y += 4; });
+      };
+      rulesChapter('GUÍA DEL JUEGO · ESPAÑOL', GAME_RULES_DOC);
+      rulesChapter('GAME GUIDE · ENGLISH', GAME_RULES_DOC_EN);
 
       // ---------- Índice de cartas ----------
       doc.addPage(); y = 20;
       doc.setFillColor(18, 14, 28); doc.rect(0, 0, 210, 24, 'F');
       doc.setTextColor(255, 210, 74); doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-      doc.text('ÍNDICE DE CARTAS · Base Set', 15, 15);
+      doc.text('ÍNDICE BILINGÜE DE CARTAS · BILINGUAL CARD INDEX', 15, 15);
       y = 34;
       CAT_ORDER.forEach(cat => {
-        const list = docCards.filter(c => c.category === cat).sort((a, b) => (a.number || 0) - (b.number || 0));
+        const list = docCards.filter(c => categoryOf(c) === cat).sort((a, b) => (a.number || 0) - (b.number || 0));
         if (!list.length) return;
-        catHeader(CAT_LABELS[cat]);
+        catHeader(`${CAT_LABELS[cat][0]} · ${CAT_LABELS[cat][1]}`);
         list.forEach(c => {
-          const num = String(c.number || 0).padStart(3, '0');
-          if (cat === 'hero') {
+          const num = String(c.number || 0).padStart(3, '0'), en = c.en || {};
+          if (['hero', 'bizarro', 'summon'].includes(cat)) {
             pageBreak(26);
             const art = thumbs[c.id];
             const textX = art ? 40 : 20, textW = art ? 155 : 175;
@@ -133,9 +144,12 @@ export default function DownloadDocsButton({ cards }) {
               doc.addImage(art, 'JPEG', 20, yTop - 3.5, 16, 16);
             }
             line(`Nº ${num} · ${c.name}${c.title ? ' — ' + c.title : ''} (${c.clan || ''} · ${c.type || ''} · coste ${c.cost ?? '—'})`, 10, 'bold', INK, textX, textW);
-            line(`Stats: CC ${c.cc} / AD ${c.ad} / HE ${c.he} / HP ${c.hp} · Élite: CC ${c.elite_cc} / AD ${c.elite_ad} / HE ${c.elite_he} / HP ${c.elite_hp}`, 9, 'normal', SOFT, textX, textW);
-            if (c.ability_name) line(`Habilidad: ${c.ability_name} — ${c.ability_text || ''}`, 9, 'normal', INK, textX, textW);
-            if (c.elite_ability_name) line(`Élite: ${c.elite_ability_name} — ${c.elite_ability_text || ''}`, 9, 'normal', INK, textX, textW);
+            if (en.title) line(`EN · ${c.name}${en.title ? ' — ' + en.title : ''} · cost ${c.cost ?? '—'}`, 9, 'bold', GOLD, textX, textW);
+            line(`Stats: CC ${c.cc} / AD ${c.ad} / HE ${c.he} / HP ${c.hp} / VEL ${c.velocidad ?? '—'} · Élite: CC ${c.elite_cc} / AD ${c.elite_ad} / HE ${c.elite_he} / HP ${c.elite_hp} / VEL ${c.elite_velocidad ?? c.velocidad ?? '—'}`, 9, 'normal', SOFT, textX, textW);
+            if (c.ability_name) line(`ES · ${c.ability_name} — ${c.ability_text || ''}`, 9, 'normal', INK, textX, textW);
+            if (en.ability_name || en.ability_text) line(`EN · ${en.ability_name || c.ability_name || 'Ability'} — ${en.ability_text || c.ability_text || ''}`, 9, 'normal', GOLD, textX, textW);
+            if (c.elite_ability_name) line(`ES Élite · ${c.elite_ability_name} — ${c.elite_ability_text || ''}`, 9, 'normal', INK, textX, textW);
+            if (en.elite_ability_name || en.elite_ability_text) line(`EN Elite · ${en.elite_ability_name || c.elite_ability_name || 'Elite'} — ${en.elite_ability_text || c.elite_ability_text || ''}`, 9, 'normal', GOLD, textX, textW);
             y = Math.max(y, yTop + 15) + 3;
           } else {
             pageBreak(20);
@@ -147,7 +161,9 @@ export default function DownloadDocsButton({ cards }) {
               doc.addImage(art, 'JPEG', 20, yTop - 3.5, 13, 13);
             }
             line(`Nº ${num} · ${c.name}${c.cost != null ? ' (coste ' + c.cost + ')' : ''}${c.mana != null ? ' · maná ' + c.mana : ''}`, 10, 'bold', INK, textX, textW);
-            if (c.description) line(c.description, 9, 'normal', SOFT, textX, textW);
+            if (en.name || en.description) line(`EN · ${en.name || c.name}${c.cost != null ? ' (cost ' + c.cost + ')' : ''}${c.mana != null ? ' · mana ' + c.mana : ''}`, 9, 'bold', GOLD, textX, textW);
+            if (c.description) line(`ES · ${c.description}`, 9, 'normal', SOFT, textX, textW);
+            if (en.description) line(`EN · ${en.description}`, 9, 'normal', GOLD, textX, textW);
             y = Math.max(y, yTop + 12) + 2.5;
           }
         });
@@ -161,7 +177,7 @@ export default function DownloadDocsButton({ cards }) {
         doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150, 138, 170);
         doc.text(`Bizarre Fantasies · ${i - 1}`, 105, 291, { align: 'center' });
       }
-      doc.save('bizarre-fantasies-guia-y-cartas.pdf');
+      doc.save('bizarre-fantasies-guia-bilingue-actual.pdf');
     } finally {
       setBusy(false);
     }
@@ -169,7 +185,7 @@ export default function DownloadDocsButton({ cards }) {
 
   return (
     <button onClick={generate} disabled={busy} className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg border border-[#b8902a] text-[#FFD24A] hover:bg-[#FFD24A18] active:scale-95 transition-all whitespace-nowrap disabled:opacity-60">
-      {busy ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />} {busy ? 'Generando…' : 'PDF del juego'}
+      {busy ? <Loader2 size={15} className="animate-spin" /> : <FileDown size={15} />} {busy ? (getLang() === 'en' ? 'Generating…' : 'Generando…') : (getLang() === 'en' ? 'Bilingual game PDF' : 'PDF bilingüe del juego')}
     </button>
   );
 }
