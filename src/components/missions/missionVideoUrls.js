@@ -1,0 +1,22 @@
+// URLs de los vídeos IA de victoria por misión y nivel.
+// Cada clip dura ~6s y se reproduce en bucle 4 veces = 24s.
+// L5R niveles 2-5 pendientes de generar (usan L5R-1 como placeholder).
+export const MISSION_VIDEOS = {
+  club: {
+    1: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/9a3a80f9c_Club_Nivel_1.mp4',
+    2: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/970431466_Club_Nivel_2.mp4',
+    3: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/0be8ef3e2_Club_Nivel_3.mp4',
+    4: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/22d058e20_Club_Nivel_4.mp4',
+    5: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/f88f04286_Club_Nivel_5.mp4',
+  },
+  l5r: {
+    1: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/2c3e1a994_L5R_Nivel_1.mp4',
+    2: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/2c3e1a994_L5R_Nivel_1.mp4', // TODO: generar
+    3: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/2c3e1a994_L5R_Nivel_1.mp4', // TODO: generar
+    4: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/2c3e1a994_L5R_Nivel_1.mp4', // TODO: generar
+    5: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/2c3e1a994_L5R_Nivel_1.mp4', // TODO: generar
+  },
+};
+
+export const VIDEO_LOOPS = 4; // 4 × 6s = 24s
+export const VIDEO_DURATION_MS = 24000;
