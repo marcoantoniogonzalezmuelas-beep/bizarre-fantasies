@@ -36,5 +36,6 @@ export function chooseRival(pool, team, level) {
   const tied = candidates.filter((_, i) => distances[i] === nearest);
   return tied[Math.floor(Math.random() * tied.length)];
 }
+export const equipCoinsForLevel = level => [150, 140, 130, 120, 100][level - 1] || 100;
 export const winsFor = (rows, mission, level) => new Set(rows.filter(r => r.mission === mission && r.level === level).map(r => r.run_id)).size;
 export const unlocked = (rows, mission, level) => level.id === 1 || winsFor(rows, mission, level.id - 1) >= LEVELS[level.id - 2].wins;

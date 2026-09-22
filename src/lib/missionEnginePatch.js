@@ -25,7 +25,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     G.bfMission={run_id:m.run_id,mission:m.mission,level:m.level};activeRun=G.bfMission;
     G.mode='ai';G.online=false;G.demo=false;G.demoExample=false;G.oppHuman=false;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;NET.role='local';NET.mySide='p';
     G.team={p:teams.p.map(makeInstance),o:teams.o.map(makeInstance)};
-    G.coins={p:0,o:0};G.equipCoins={p:100,o:100};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
+    var eqC=Math.max(100,[150,140,130,120,100][(m.level||1)-1]||100);G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
     G.spellbook={p:[],o:[]};G.items={p:[],o:[]};G.bonus={p:null,o:null};G.eqReady={p:false,o:false};G.pendDebt={p:0,o:0};
     G.names.o='Misión '+m.mission.toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
     G.__bfWinCounted=false;G.__bfScoredOnce=false;window.__bfResultSent=false;window.__bfLogSent=false;window.__bfEndCine=0;
@@ -40,7 +40,7 @@ export const MISSION_ENGINE_PATCH = `<script>
       var grid=row.closest('.setup-box').querySelector('.mode-grid');grid.insertAdjacentElement('afterend',btn);
     }
     if(!G.bfMission)return;
-    var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0)subtitle.textContent='Misión '+G.bfMission.mission.toUpperCase()+' · Nivel '+G.bfMission.level+' · 100 monedas de equipamiento · Sin sobrante de héroes';
+    var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=Math.max(100,[150,140,130,120,100][(G.bfMission.level||1)-1]||100);subtitle.textContent='Misión '+G.bfMission.mission.toUpperCase()+' · Nivel '+G.bfMission.level+' · '+ec+' monedas de equipamiento · Sin sobrante de héroes';}
     var header=document.querySelector('#s-equip.active .r-header');
     if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=window.bfOpenMissions;header.appendChild(back);}
     var result=document.querySelector('#s-result.active');if(!result)return;
