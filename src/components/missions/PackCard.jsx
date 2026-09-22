@@ -1,0 +1,22 @@
+import React, { useState } from 'react';
+import HeroCardFace from '@/components/cards/HeroCardFace';
+import { HERO_ART, HERO_ELITE_ART } from '@/lib/artUrls';
+
+export default function PackCard({ card, selected, disabled, onSelect }) {
+  const [elite, setElite] = useState(false);
+  const n = Number(card.number || 0) - 1;
+  const hero = {
+    ...card, num: card.number, art: card.art_url || HERO_ART[n],
+    eliteArt: card.elite_art_url || HERO_ELITE_ART[n] || card.art_url,
+    eCc: card.elite_cc, eAd: card.elite_ad, eHe: card.elite_he, eHp: card.elite_hp,
+    ability: card.ability_name, abilityTxt: card.ability_text,
+    eAbility: card.elite_ability_name, eTxt: card.elite_ability_text,
+  };
+  return <div className="pack-card">
+    <div className="pack-card-face" aria-label={`${card.name}, ${elite ? 'élite' : 'normal'}`}><HeroCardFace hero={hero} elite={elite} /></div>
+    <div className="pack-card-actions">
+      <button className="mission-button" onClick={() => setElite(v => !v)}>{elite ? 'Ver normal' : 'Ver élite'}</button>
+      {onSelect && <button className="mission-button primary" disabled={disabled} aria-pressed={selected} onClick={onSelect}>{selected ? 'Quitar' : 'Elegir héroe'}</button>}
+    </div>
+  </div>;
+}

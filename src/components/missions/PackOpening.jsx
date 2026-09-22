@@ -1,25 +1,16 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
-import MissionHero from '@/components/missions/MissionHero';
-import { isEpic, epicCount } from '@/components/missions/missionRules';
+import PackCard from '@/components/missions/PackCard';
+import { epicCount } from '@/components/missions/missionRules';
 
 const PACK_ART = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5190ba71a_generated_image.png';
-
-function PackHeroCell({ card }) {
-  return (
-    <div className="pack-hero-cell">
-      <img src={card.art_url || card.battle_art_url || card.elite_art_url} alt={card.name} loading="lazy" />
-      <span className="pack-hero-name">{card.name}</span>
-      {isEpic(card) && <span className="pack-hero-epic">ÉPICA</span>}
-    </div>
-  );
-}
 
 export default function PackOpening({ packs, mission, level, onTeamSelected }) {
   const [opened, setOpened] = useState(() => packs.map(() => false));
   const [activeIdx, setActiveIdx] = useState(null);
   const [tearProgress, setTearProgress] = useState(0);
   const [packOpened, setPackOpened] = useState(false);
+  const [revealIdx, setRevealIdx] = useState(0);
   const [selected, setSelected] = useState([]);
   const [error, setError] = useState('');
   const packRef = useRef(null);
@@ -27,32 +18,48 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
 
   const allOpened = opened.every(v => v);
   const allHeroes = packs.flat();
+  useEffect(() => {
+    if (activeIdx !== null) packRef.current?.scrollIntoView({ block: 'center', behavior: 'auto' });
+  }, [activeIdx, packOpened, revealIdx]);
 
   function startTear(idx) {
-    if (opened[idx] || packOpened) return;
+    if (opened[idx] || activeIdx !== null) return;
     setActiveIdx(idx);
     setTearProgress(0);
     setPackOpened(false);
+    setRevealIdx(0);
+  }
+
+  function finishTear() {
+    if (packOpened) return;
+    dragging.current = false;
+    setTearProgress(100);
+    setPackOpened(true);
   }
 
   const handleMove = useCallback((clientX) => {
-    if (!dragging.current || !packRef.current || activeIdx === null || packOpened) return;
+    if (!dragging.current || !packRef.current || packOpened) return;
     const rect = packRef.current.getBoundingClientRect();
-    const progress = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    const progress = Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
     setTearProgress(progress);
-    if (progress >= 92) {
-      dragging.current = false;
-      setOpened(prev => { const n = [...prev]; n[activeIdx] = true; return n; });
-      setPackOpened(true);
-      setTearProgress(100);
-    }
-  }, [activeIdx, packOpened]);
+    if (progress >= 92) finishTear();
+  }, [packOpened]);
 
-  function onPointerDown(e) { if (packOpened) return; dragging.current = true; e.preventDefault(); }
-  function onPointerMove(e) { handleMove(e.clientX); }
-  function onPointerUp() { dragging.current = false; if (!packOpened && tearProgress < 92) setTearProgress(0); }
+  function onPointerDown(e) {
+    if (packOpened) return;
+    dragging.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    handleMove(e.clientX);
+  }
+  function onPointerUp() {
+    if (!dragging.current) return;
+    dragging.current = false;
+    setTearProgress(0);
+  }
 
   function continueFromPack() {
+    if (revealIdx < packs[activeIdx].length - 1) { setRevealIdx(i => i + 1); return; }
+    setOpened(prev => prev.map((value, index) => index === activeIdx ? true : value));
     setPackOpened(false);
     setActiveIdx(null);
     setTearProgress(0);
@@ -85,9 +92,9 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
           <h3 className="font-heading text-2xl">Elige tu ejército</h3>
           <p>3 héroes de los {allHeroes.length} revelados · {selected.length}/3 elegidos</p>
         </div>
-        <div className="mission-heroes">
+        <div className="pack-selection-grid">
           {allHeroes.map(card => (
-            <MissionHero key={card.id} card={card}
+            <PackCard key={card.id} card={card}
               selected={selected.some(c => c.id === card.id)}
               onSelect={() => toggleHero(card)}
               disabled={!selected.some(c => c.id === card.id) && selected.length >= 3}
@@ -102,32 +109,26 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
     );
   }
 
-  // Pack opening view (tearing or just opened)
+  // Tear only the top seal, then reveal the actual cards one at a time.
   if (activeIdx !== null) {
     const packHeroes = packs[activeIdx];
-    return (
-      <div className="pack-tear-stage" ref={packRef}
-        onPointerDown={onPointerDown} onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp} onPointerLeave={onPointerUp}>
-        <div className={`pack-tear-heroes ${packOpened ? 'revealed' : ''}`}>
-          {packHeroes.map(card => <PackHeroCell key={card.id} card={card} />)}
+    return <div className="pack-stage">
+      <div className="pack-header"><h3 className="font-heading text-2xl">Sobre {activeIdx + 1}</h3><p>{packOpened ? `Carta ${revealIdx + 1} de ${packHeroes.length}` : 'Desliza el dedo por la parte superior, de izquierda a derecha.'}</p></div>
+      <div className="pack-tear-stage" ref={packRef}>
+        {packOpened && <div key={`${activeIdx}-${revealIdx}`} className="pack-reveal-card"><PackCard card={packHeroes[revealIdx]} /></div>}
+        <div className={`pack-cover ${packOpened ? 'pack-cover-opened' : ''}`} aria-hidden="true">
+          <img className="pack-cover-body" src={PACK_ART} alt="" draggable={false} />
+          <img className="pack-cover-seal" src={PACK_ART} alt="" draggable={false} style={{ clipPath: `polygon(${tearProgress}% 0, 100% 0, 100% 15%, ${tearProgress}% 15%)` }} />
+          {tearProgress > 0 && <img className="pack-cover-torn" src={PACK_ART} alt="" draggable={false} style={{ clipPath: `polygon(0 0, ${tearProgress}% 0, ${tearProgress}% 15%, 0 15%)`, transform: `translateY(-${tearProgress * .45}px) rotate(-${tearProgress * .06}deg)` }} />}
+          {!packOpened && <span className="pack-tear-edge" style={{ left: `${tearProgress}%` }} />}
         </div>
-        {!packOpened && (
-          <div className="pack-cover" style={{ clipPath: `inset(0 0 0 ${tearProgress}%)` }}>
-            <img src={PACK_ART} alt="Sobre sellado" draggable={false} />
-            <div className="pack-tear-edge" style={{ left: `${tearProgress}%` }} />
-            <div className="pack-tear-hint">
-              <span className="pack-tear-hint-text">← Rasga para abrir →</span>
-            </div>
-          </div>
-        )}
-        {packOpened && (
-          <button className="pack-continue-btn" onClick={continueFromPack}>
-            <ArrowRight size={18} /> Continuar
-          </button>
-        )}
+        {!packOpened && <div className="pack-tear-target" role="slider" aria-label="Rasgar la parte superior del sobre" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(tearProgress)} tabIndex={0}
+          onPointerDown={onPointerDown} onPointerMove={e => handleMove(e.clientX)} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finishTear(); } }} />}
       </div>
-    );
+      {packOpened ? <button className="mission-button primary" onClick={continueFromPack}><ArrowRight size={18} /> {revealIdx === packHeroes.length - 1 ? 'Terminar sobre' : 'Siguiente carta'}</button>
+        : <button className="mission-button" onClick={finishTear}>Abrir sin deslizar</button>}
+    </div>;
   }
 
   // Sealed packs view
@@ -135,7 +136,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
     <div className="pack-stage">
       <div className="pack-header">
         <h3 className="font-heading text-2xl">Tres sobres del {mission.name}</h3>
-        <p>Toca un sobre y rasga los bordes para abrirlo.</p>
+        <p>Elige un sobre y rasga la parte superior para descubrir sus cartas, una por una.</p>
       </div>
       <div className="pack-row">
         {packs.map((_, i) => (
