@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { MISSION_VIDEOS, VIDEO_LOOPS, VIDEO_DURATION_MS } from '@/components/missions/missionVideoUrls';
+import { MISSION_VIDEOS, VIDEO_DURATION_MS } from '@/components/missions/missionVideoUrls';
 
 const REWARDS = {
   1: { color: '#7ec97e', title: '¡INICIACIÓN SUPERADA!', sub: 'El pollo de guerra te concede su casco torcido.', joke: '“El pollo aún cree que ‘puya’ es una estrategia.” 🐤', badge: '⚡ NIVEL 2 DESBLOQUEADO' },
@@ -17,7 +17,6 @@ export default function MissionVictoryCelebration({ reward, onClose }) {
   const scene = REWARDS[reward.level] || REWARDS[1];
   const videoUrl = MISSION_VIDEOS[reward.mission]?.[reward.level] || MISSION_VIDEOS.club[1];
   const videoRef = useRef(null);
-  const loopCount = useRef(0);
   const closed = useRef(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -38,13 +37,6 @@ export default function MissionVictoryCelebration({ reward, onClose }) {
     return () => { clearTimeout(overlayTimer); clearTimeout(finishTimer); clearTimeout(autoClose); };
   }, []);
 
-  const handleLoop = () => {
-    loopCount.current += 1;
-    if (loopCount.current >= VIDEO_LOOPS && videoRef.current) {
-      videoRef.current.pause();
-    }
-  };
-
   return (
     <div className="mc-stage" style={{ '--mc-c': scene.color }} role="status" aria-live="assertive">
       <video
@@ -54,7 +46,6 @@ export default function MissionVictoryCelebration({ reward, onClose }) {
         muted
         loop
         playsInline
-        onTimeUpdate={handleLoop}
         className="absolute inset-0 w-full h-full object-cover"
         style={{ filter: 'brightness(.85) contrast(1.05)' }}
       />
