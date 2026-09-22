@@ -122,14 +122,14 @@ export function preloadCutout(url) {
 
 export function useCutoutSrc(url, flying = false) {
   const key = flying ? `flying:${url}` : url;
-  const [result, setResult] = useState(() => ({ key, src: cache.get(key) || (flying ? null : url) }));
+  const [result, setResult] = useState(() => ({ key, src: cache.get(key) || null }));
   useEffect(() => {
     if (!url) return;
     let cancelled = false;
     process(url, (out) => { if (!cancelled) setResult({ key, src: out }); }, flying);
     return () => { cancelled = true; };
   }, [url, flying, key]);
-  // Los héroes conservan su carga inmediata. Los accesorios voladores esperan
-  // al recorte para que nunca se muestre su fondo cuadrado original.
-  return url ? (result.key === key ? result.src : cache.get(key) || (flying ? null : url)) : null;
+  // Nunca mostramos el original opaco mientras trabaja el canvas: el marco
+  // negro de los héroes también se veía al inicio de cada escena.
+  return url ? (result.key === key ? result.src : cache.get(key) || null) : null;
 }
