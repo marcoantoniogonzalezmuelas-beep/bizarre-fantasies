@@ -95,14 +95,15 @@ function buildScenes() {
 
 export default function IntroCinematic({ onClose }) {
   const scenes = useMemo(() => buildScenes(), []);
+  const [i, setI] = useState(0);
   useEffect(() => {
-    scenes.forEach((s) => {
+    // Prioriza la escena visible y la siguiente, no todas las imágenes a la vez.
+    scenes.slice(i, i + 2).forEach((s) => {
       if (s.clash) { preloadCutout(s.clash.left); preloadCutout(s.clash.right); }
       if (s.versus) { [...s.versus.left, ...s.versus.right].forEach(preloadCutout); }
       if (s.expansion) { [...s.expansion.ducks, ...s.expansion.others].forEach(preloadCutout); }
     });
-  }, [scenes]);
-  const [i, setI] = useState(0);
+  }, [scenes, i]);
   const [muted, setMuted] = useState(false);
   const [finished, setFinished] = useState(false);
   const stageRef = useStageZoom(1200);

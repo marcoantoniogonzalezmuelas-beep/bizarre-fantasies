@@ -6,9 +6,18 @@ import { useEffect, useState } from 'react';
 // de la pantalla (sin rectángulo gris de fondo ni costura). El resultado se
 // cachea por URL para que sólo se procese una vez por imagen.
 const cache = new Map();
+const pending = new Map();
 
 function process(url, done) {
   if (cache.has(url)) { done(cache.get(url)); return; }
+  if (pending.has(url)) { pending.get(url).push(done); return; }
+  pending.set(url, [done]);
+  const finish = (out) => {
+    cache.set(url, out);
+    const listeners = pending.get(url) || [];
+    pending.delete(url);
+    listeners.forEach(listener => listener(out));
+  };
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
@@ -45,12 +54,17 @@ function process(url, done) {
         if (cy > 0) push(i0 - W);
         if (cy < H - 1) push(i0 + W);
       }
+      // Un recorte vacío no debe sustituir a la figura original.
+      if (!p.some((value, index) => index % 4 === 3 && value > 8)) { finish(url); return; }
       x.putImageData(d, 0, 0);
       const out = c.toDataURL('image/png');
-      cache.set(url, out); done(out);
-    } catch (e) { cache.set(url, url); done(url); }
+      const decoded = new Image();
+      decoded.onload = () => finish(out);
+      decoded.onerror = () => finish(url);
+      decoded.src = out;
+    } catch (e) { finish(url); }
   };
-  img.onerror = () => { cache.set(url, url); done(url); };
+  img.onerror = () => finish(url);
   img.src = url;
 }
 
@@ -97,12 +111,14 @@ export function preloadCutout(url) {
 }
 
 export function useCutoutSrc(url) {
-  const [src, setSrc] = useState(() => cache.get(url) || null);
+  const [result, setResult] = useState(() => ({ url, src: cache.get(url) || url }));
   useEffect(() => {
     if (!url) return;
     let cancelled = false;
-    process(url, (out) => { if (!cancelled) setSrc(out); });
+    process(url, (out) => { if (!cancelled) setResult({ url, src: out }); });
     return () => { cancelled = true; };
   }, [url]);
-  return src;
+  // La figura aparece sin esperar al canvas; al cambiar de escena nunca
+  // conservamos la imagen de la escena anterior mientras llega la nueva.
+  return url ? (result.url === url ? result.src : cache.get(url) || url) : null;
 }
