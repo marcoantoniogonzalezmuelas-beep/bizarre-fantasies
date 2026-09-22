@@ -18,7 +18,7 @@ module.exports = async function missionsRegression(cards, html) {
   const patch = moduleApi('src/lib/missionEnginePatch.js','patchMissionHtml,MISSION_ENGINE_PATCH');
   const patched = patch.patchMissionHtml(html); assert(patched.includes('window.bfOpenMissions();return;'));
   const events={},messages=[],intervals=[];let auctions=0,screen='',eqCalls=0;
-  const c={parent:{postMessage:m=>messages.push(m)},G:{names:{p:'QA'}},B:null,NET:{},HEROES:[{id:'a'},{id:'b'},{id:'c'}],makeInstance:h=>({...h}),clearWatchdog(){},goSetup(){screen='s-setup';},aiEquip:()=>eqCalls++,show:s=>screen=s,renderEquip(){},showResult:w=>{screen='s-result';},setInterval:f=>intervals.push(f),document:{getElementById:()=>null,querySelector:()=>null,addEventListener(){}},addEventListener:(key,cb)=>events[key]=cb}; c.window=c;
+  const c={parent:{postMessage:m=>messages.push(m)},G:{names:{p:'QA'}},B:null,NET:{},HEROES:[{id:'a'},{id:'b'},{id:'c'}],makeInstance:h=>({...h}),clearWatchdog(){},goSetup(){screen='s-setup';},aiEquip:()=>eqCalls++,show:s=>screen=s,renderEquip(){},showResult:w=>{screen='s-result';},setInterval:f=>intervals.push(f),document:{head:{appendChild(){}},createElement:()=>({textContent:''}),getElementById:()=>null,querySelector:()=>null,addEventListener(){}},addEventListener:(key,cb)=>events[key]=cb}; c.window=c;
   vm.createContext(c);vm.runInContext(patch.MISSION_ENGINE_PATCH.replace('<script>','').replace('</script>',''),c);
   const match={run_id:'run',mission:'club',level:1,ai:'novice',player:['a','b','c'],rival:['a','b','c']};events.message({source:c.parent,data:{bfMissionStart:match}});
   assert.equal(screen,'s-equip');assert.equal(c.G.equipCoins.p,100);assert.equal(c.G.coins.p,0);assert.equal(eqCalls,1);assert.equal(c.G.team.p.length,3);

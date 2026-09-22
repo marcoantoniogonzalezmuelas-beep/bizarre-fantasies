@@ -35,8 +35,9 @@ export const MISSION_ENGINE_PATCH = `<script>
   function refresh(){
     var row=document.querySelector('#s-setup #p1name');
     if(row&&!document.getElementById('bf-missions-entry')){
-      var btn=document.createElement('button');btn.id='bf-missions-entry';btn.className='btn primary';btn.textContent='Misiones · Preludio de la campaña';
-      btn.onclick=function(){window.bfMissionRequested=true;startVsAI();};row.closest('.setup-box').appendChild(btn);
+      var btn=document.createElement('button');btn.id='bf-missions-entry';btn.className='btn primary bf-missions-entry';btn.innerHTML='<span>⚔️</span><strong>Misiones</strong><small>Preludio de la campaña</small>';
+      btn.onclick=function(){window.bfMissionRequested=true;startVsAI();};
+      var grid=row.closest('.setup-box').querySelector('.mode-grid');grid.insertAdjacentElement('afterend',btn);
     }
     if(!G.bfMission)return;
     var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0)subtitle.textContent='Misión '+G.bfMission.mission.toUpperCase()+' · Nivel '+G.bfMission.level+' · 100 monedas de equipamiento · Sin sobrante de héroes';
@@ -46,6 +47,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     result.querySelectorAll('button').forEach(function(b){if(/bfRematch|bfMatchRematch|location.reload/.test(b.getAttribute('onclick')||'')){b.removeAttribute('onclick');b.textContent='Volver a misiones';b.onclick=window.bfOpenMissions;}});
   }
   document.addEventListener('click',function(e){if(e.target.closest('[onclick="startVsAI()"]'))window.bfMissionRequested=false;},true);
+  var missionStyle=document.createElement('style');missionStyle.textContent='#bf-missions-entry{display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:10px;width:min(440px,92%);margin:22px auto;padding:15px 24px;border:2px solid #ffd24a;box-shadow:0 0 22px rgba(255,210,74,.25)}#bf-missions-entry span{grid-row:1/3;font-size:28px}#bf-missions-entry strong{font:900 18px Cinzel,serif;letter-spacing:.06em}#bf-missions-entry small{font-size:11px;opacity:.8}';document.head.appendChild(missionStyle);
   var resultFn=window.showResult;
   window.showResult=function(won){
     if(G.bfMission&&activeRun&&!activeRun.reported&&typeof B!=='undefined'&&B&&B.over){activeRun.reported=true;tell({bfMissionResult:{run_id:activeRun.run_id,won:!!won}});}

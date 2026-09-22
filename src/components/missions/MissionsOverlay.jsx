@@ -3,14 +3,19 @@ import { X, ScrollText, LoaderCircle } from 'lucide-react';
 import useMissionSession from '@/components/missions/useMissionSession';
 import MissionLevels from '@/components/missions/MissionLevels';
 import MissionPreparation from '@/components/missions/MissionPreparation';
+import MissionVictoryCelebration from '@/components/missions/MissionVictoryCelebration';
 import { MISSIONS, missionPool } from '@/components/missions/missionRules';
 import '@/components/missions/missions.css';
+const MISSION_BACKGROUND = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/38d52015c_generated_720c056f.png';
 export default function MissionsOverlay({ iframeRef }) {
   const s = useMissionSession(iframeRef), [missionId, setMissionId] = useState('club'), [level, setLevel] = useState(null);
   const mission = MISSIONS.find(m => m.id === missionId), pool = useMemo(() => missionPool(s.cards, missionId), [s.cards, missionId]);
+  useEffect(() => { const image = new Image(); image.src = MISSION_BACKGROUND; }, []);
   useEffect(() => { if (s.session) setLevel(null); }, [s.session]);
+  if (s.celebration) return <MissionVictoryCelebration reward={s.celebration} onClose={s.dismissCelebration} />;
   if (!s.session) return null;
   return <div className="bf-missions" role="dialog" aria-modal="true" aria-labelledby="mission-title">
+    <img className="mission-background" src={MISSION_BACKGROUND} alt="" aria-hidden="true" />
     <div className="mission-shell"><header className="mission-header"><div className="flex items-center gap-3"><ScrollText size={28} /><div><p className="mission-eyebrow">PARTIDAS INDIVIDUALES</p><h1 id="mission-title" className="font-heading text-3xl md:text-4xl">Misiones</h1></div></div><button className="mission-button" aria-label="Cerrar misiones" onClick={s.close} disabled={s.starting}><X size={20} /></button></header>
       <p className="mission-intro">Antes de la campaña, demuestra de qué está hecho tu ejército.</p>
       <div className="mission-rules"><span>3 héroes por ejército</span><span>Sin subastas</span><span>100 monedas de equipo por partida</span><span>Progreso de {s.session.nick}</span></div>

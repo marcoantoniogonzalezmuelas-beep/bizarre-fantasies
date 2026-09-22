@@ -4,6 +4,7 @@ import { loadVictories, saveVictory } from '@/components/missions/missionPersist
 export default function useMissionSession(iframeRef) {
   const [session, setSession] = useState(null), [cards, setCards] = useState([]), [victories, setVictories] = useState([]);
   const [loading, setLoading] = useState(false), [error, setError] = useState(''), [starting, setStarting] = useState(false), [notice, setNotice] = useState('');
+  const [celebration, setCelebration] = useState(null);
   const run = useRef(null), pending = useRef(null), timer = useRef(null), saving = useRef(false), loadId = useRef(0);
   const send = data => iframeRef.current?.contentWindow?.postMessage(data, '*');
   const persist = useCallback(async () => {
@@ -27,7 +28,7 @@ export default function useMissionSession(iframeRef) {
       if (d.bfMissionStartError) { clearTimeout(timer.current); setStarting(false); setError(d.bfMissionStartError); }
       if (d.bfMissionResult?.run_id === run.current?.run_id && run.current && !run.current.finished) {
         run.current.finished = true;
-        if (d.bfMissionResult.won) { pending.current = { ...run.current }; setNotice('Guardando victoria…'); await persist(); }
+        if (d.bfMissionResult.won) { pending.current = { ...run.current }; setCelebration({ mission: run.current.mission, level: run.current.level }); setNotice('Guardando victoria…'); await persist(); }
         else setNotice('Esta vez no ha podido ser. Tus victorias anteriores se conservan.');
       }
     }
@@ -40,5 +41,5 @@ export default function useMissionSession(iframeRef) {
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 10000);
   }
   function close() { if (pending.current) { setError('Guarda la victoria pendiente antes de salir.'); return; } ++loadId.current; setSession(null); send({ bfMissionClose: true }); }
-  return { session, cards, victories, loading, error, starting, notice, start, close, persist, hasPending: !!pending.current };
+  return { session, cards, victories, loading, error, starting, notice, celebration, dismissCelebration: () => setCelebration(null), start, close, persist, hasPending: !!pending.current };
 }
