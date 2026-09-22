@@ -14,7 +14,7 @@ export const ABILITY_TARGET_FLOW_PATCH = `
   window.__bfAbilTargetFlow=true;
 
   function cineOn(){
-    try{ return !!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'); }catch(e){ return false; }
+    try{ return (typeof window.__bfCinematicBusy==='function' && window.__bfCinematicBusy()) || !!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'); }catch(e){ return false; }
   }
 
   // 1) El selector de objetivo espera a que termine la cinemática 3D.

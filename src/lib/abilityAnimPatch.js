@@ -13,6 +13,7 @@
 // Funciona en AMBOS jugadores online: G.team viaja en el snapshot, así que
 // el escaneo de abilityUsed corre en host y cliente.
 import { ALL_MOTION_CSS, MOTIONS_MIN_JSON } from '@/lib/abilityAnimMotions';
+import { createAbilityCinematicQueue } from '@/lib/abilityCinematicQueue';
 
 export const ABILITY_ANIM_PATCH = `
 <script>
@@ -204,19 +205,8 @@ export const ABILITY_ANIM_PATCH = `
         if(ent.base)cutout(ent.base);
         if(ent.elite)cutout(ent.elite);
       });
-      // Al recibir el mapa, marca como "ya reproducidos" los héroes que ya
-      // tienen abilityUsed=true. Así NO se relanzan sus cinemáticas cada vez
-      // que el mapa se reenvía (cada cambio de pantalla envía el mapa otra
-      // vez, y antes el reset prev={} provocaba que todos los héroes usados
-      // repitieran su animación sin sentido). Solo los héroes que usen su
-      // habilidad DESPUÉS de este momento dispararán la cinemática.
-      if(typeof G!=='undefined'&&G&&G.team){
-        ['p','o'].forEach(function(side){
-          (G.team[side]||[]).forEach(function(h){
-            if(h&&h.id&&h.abilityUsed)prev[side+'_'+h.id]=true;
-          });
-        });
-      }
+      // Re-sending assets must not consume an ability awaiting playback.
+      // The queue deduplicates by side, hero and normal/elite form.
     }
   });
 
@@ -313,93 +303,33 @@ export const ABILITY_ANIM_PATCH = `
     return null;
   }
 
-  var lastCine=0;
-  // Cola de cinemáticas: si se pide una nueva mientras otra está en curso, se
-  // reproduce cuando termine la actual (5s). Así nunca se solapan, pero el
-  // jugador ve ambas (antes se saltaban con el cooldown de 5s y se perdían —
-  // p.ej. la Refracción Arcana de Juniana al recibir daño justo tras la
-  // cinemática del atacante).
-  var queuedCine=null,cineTimer=null;
-  // URL de la cinemática que se está reproduciendo ahora mismo. Se usa para
-  // evitar que la MISMA animación se encole dos veces (p.ej. si el hook de
-  // useAbility y el escaneo periódico la disparan a la vez).
   var playingUrl=null;
-  // Última vez que se reprodujo cada imagen (antirrebote por URL).
-  var lastUrlPlay={};
-  // Cinemáticas ya vistas en ESTA partida: no se repiten (regla del motor).
-  var played={};
-  // Nueva partida (pantallas de preparación/subasta): se olvidan las vistas.
-  var lastSid='';
-  setInterval(function(){
-    var a=document.querySelector('.screen.active');
-    var sid=a?(a.id||''):'';
-    if(sid===lastSid)return;
-    lastSid=sid;
-    if(sid==='s-setup'||sid==='s-title'){played={};lastUrlPlay={};}
-  },500);
-  // Núcleo compartido: monta el overlay 3D a pantalla completa con la imagen
-  // recortada, el título, las partículas y el movimiento temático. Lo usan
-  // tanto los héroes (playAnim) como los hechizos de la mano (playSpellCinematic).
-  function showCinematic(url,title,cc,desc,motionId,descText,once){
-    // Si el jugador ha desactivado las cinemáticas 3D (botón "Desactivar
-    // animaciones" en batalla), se salta el overlay 3D. La carta revelada y
-    // los FX 2D (rayo en cadena, tormenta ígnea, banners…) siguen funcionando.
-    if(window.__bfNoCinematics)return;
-    // REGLA DEL MOTOR: la cinemática 3D de una HABILIDAD DE HÉROE se reproduce
-    // una sola vez por partida (once=true). Los HECHIZOS y OBJETOS de la mano
-    // salen SIEMPRE que se juegan (once=false).
-    if(once&&played[url])return;
-    // Antirrebote POR IMAGEN: evita que el mismo disparo se duplique (varios
-    // hooks a la vez). Largo para héroes (una vez por partida).
-    // REGLA PARA HECHIZOS/OBJETOS: la cinemática 3D se reproduce UNA sola vez por
-    // cada acción jugada. El antirrebote cubre toda la duración del overlay (5 s)
-    // + colas, así aunque varios ganchos disparen la misma acción (castSpell,
-    // __bfPlayItemCine, reenvíos de red…), solo se ve una vez. La acción
-    // siguiente (ya pasado ese margen) sí vuelve a sonar.
-    var deb=once?9000:5500;
-    if(lastUrlPlay[url]&&Date.now()-lastUrlPlay[url]<deb)return;
-    // Si ya hay una cinemática en curso, encola esta para reproducirla cuando
-    // termine la actual. Solo se guarda la última pendiente (no acumula cola).
-    // Cualquier capa cinemática en pantalla bloquea la siguiente: además de
-    // otra cinemática 3D, también el golpe mortal (#bf-kill-ov) y las cartas
-    // especiales (#bf-spec-cine). Así nunca se solapan (p.ej. la curación de
-    // la IA encima de la cinemática de muerte).
-    // También se espera a que terminen los EFECTOS VISUALES de la acción
-    // anterior (disparos, impactos, números de daño/curación): si Surucho está
-    // lanzando sus flechas, la cinemática de la poción de la IA espera su turno
-    // en vez de colarse por encima.
-    var fxOn=false;
-    try{
+  var cineQueue=(${createAbilityCinematicQueue.toString()})({
+    enabled:function(){return !window.__bfNoCinematics;},
+    now:function(){return Date.now();},
+    schedule:function(fn,ms){return setTimeout(fn,ms);},
+    cancel:function(id){clearTimeout(id);},
+    blocked:function(){
       var fxl=document.getElementById('bf-fx-layer');
-      fxOn=!!((fxl&&fxl.children.length)||document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop'));
-    }catch(e){}
-    if(fxOn||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')){
-      // Si la cinemática en curso o ya en cola es la MISMA (misma URL), no la
-      // encola de nuevo: evita que se repita la misma animación.
-      if(playingUrl===url)return;
-      if(queuedCine&&queuedCine.url===url)return;
-      // FIJAR lastUrlPlay al encolar: sin esto, si los FX del mpFxSyncPatch
-      // mantienen #bf-fx-layer siempre lleno, la cinemática se re-encola cada
-      // 1200ms para siempre (played[url] y lastUrlPlay[url] solo se fijan al
-      // reproducir de verdad, y como nunca llega a reproducirse, el bucle
-      // nunca se rompe). Con esto, el antirrebote (9s héroes / 5.5s hechizos)
-      // frena el re-encolado hasta que pase el margen.
-      lastUrlPlay[url]=Date.now();
-      queuedCine={url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText,once:once};
-      if(!cineTimer){
-        cineTimer=setTimeout(function(){
-          cineTimer=null;var q=queuedCine;queuedCine=null;
-          // Si al vencer el turno de espera sigue habiendo una capa en
-          // pantalla, showCinematic vuelve a encolarla sola (sin solapar).
-          if(q)showCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText,q.once);
-        },1200);
-      }
-      return;
+      return !!(playingUrl||(fxl&&fxl.children.length)||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-dmg-num,.bf-heal-num,.bf-absorb-pop'));
+    },
+    play:function(q){renderCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);}
+  });
+  var lastSid='';
+  function syncSession(){
+    var a=document.querySelector('.screen.active'),sid=a?(a.id||''):'';
+    if(sid!==lastSid){
+      lastSid=sid;
+      if(['s-setup','s-title','s-recruit','s-equip'].indexOf(sid)!==-1){cineQueue.reset();prev={};}
     }
+    return sid==='s-battle';
+  }
+  function showCinematic(url,title,cc,desc,motionId,descText,once,key){
+    syncSession();
+    return cineQueue.enqueue({key:key||'item:'+url,url:url,title:title,cc:cc,desc:desc,motionId:motionId,descText:descText,once:once});
+  }
+  function renderCinematic(url,title,cc,desc,motionId,descText){
     playingUrl=url;
-    if(once)played[url]=true;
-    lastUrlPlay[url]=Date.now();
-    lastCine=Date.now();
     var ov=document.createElement('div');ov.id='bf-abil-anim';
     ov.style.setProperty('--aa-color',cc);
     ov.style.setProperty('--aa-glow',hexToRgba(cc,0.38)||'rgba(255,210,74,0.38)');
@@ -459,22 +389,16 @@ export const ABILITY_ANIM_PATCH = `
   // termine la animación 3D anterior (p.ej. la del ataque que generó el daño
   // que disparó el dado) antes de lanzarse. Así nunca se solapan.
   window.__bfCinematicBusy=function(){
-    return !!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov')||playingUrl||queuedCine||cineTimer);
+    return !!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine')||playingUrl||cineQueue.busy());
   };
   // Una sola cinemática por héroe y acción: las habilidades que piden objetivo
   // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso
   // lanzaba la misma animación dos veces.
-  var lastPlay={};
+  function abilityKey(side,hero){return (side||'')+'_'+(hero.id||hero.name||'')+'_'+(hero.eliteMode?'elite':'normal');}
   function playAnim(side,hero,force){
-    if(!hero)return;
+    if(!hero||hero._bfAbilityCineSuppressed===(hero.eliteMode?'elite':'normal'))return;
     var entry=lookup(hero);
     if(!entry)return;
-    var pk=(side||'')+'_'+(hero.id||hero.name||'');
-    // force: la habilidad se acaba de ACTIVAR (p.ej. Juniana) — se ignora el
-    // antirrebote para que la cinemática se vea siempre en ese momento.
-    if(force)delete lastPlay[pk];
-    if(lastPlay[pk]&&Date.now()-lastPlay[pk]<9000)return;
-    lastPlay[pk]=Date.now();
     var isElite=!!hero.eliteMode;
     var url=isElite?(entry.elite||entry.base):entry.base;
     if(!url)return;
@@ -484,7 +408,7 @@ export const ABILITY_ANIM_PATCH = `
     var motionId=isElite?(entry.eliteMotion||entry.motion):entry.motion;
     var isEn=!!window.__bfLangEn;
     var descText=isElite?(isEn?(entry.eliteTextEn||entry.eliteText||entry.text):(entry.eliteText||entry.text)):(isEn?(entry.textEn||entry.text):(entry.text));
-    showCinematic(url,ability,cc,descSrc||ability,motionId,descText,true);
+    return showCinematic(url,ability,cc,descSrc||ability,motionId,descText,true,abilityKey(side,hero));
   }
   window.__bfPlayAbilityAnim=playAnim;
 
@@ -607,12 +531,8 @@ export const ABILITY_ANIM_PATCH = `
       try{
         var k=h&&h.akind;
         if(!(k&&String(k).indexOf('tk_')===0)){
-          playAnim(side,h);
-          // Marca este héroe como ya reproducido para que el escaneo periódico
-          // (que detecta abilityUsed false→true) NO lo dispare de nuevo. Sin
-          // esto, la cinemática se repite: useAbility la reproduce al instante
-          // y el escaneo la vuelve a encolar al ver el flag abilityUsed cambiar.
-          if(h&&h.id)prev[side+'_'+h.id]=true;
+          var accepted=playAnim(side,h);
+          if(accepted&&h&&h.id)prev[abilityKey(side,h)]=true;
         }
       }catch(e){}
       return orig.apply(this,arguments);
@@ -623,21 +543,21 @@ export const ABILITY_ANIM_PATCH = `
   // jugadores online (G.team viaja en el snapshot).
   var prev={};
   function scan(){
-    if(typeof G==='undefined'||!G||!G.team)return;
+    if(!syncSession()||typeof G==='undefined'||!G||!G.team)return;
     ['p','o'].forEach(function(side){
       (G.team[side]||[]).forEach(function(h){
         if(!h||!h.id)return;
-        var key=side+'_'+h.id;
+        var key=abilityKey(side,h);
         var used=!!h.abilityUsed;
-        if(used&&!prev[key]){try{playAnim(side,h);}catch(e){}}
-        prev[key]=used;
+        if(used&&!prev[key]){try{if(playAnim(side,h))prev[key]=true;}catch(e){}}
+        if(!used)prev[key]=false;
       });
     });
   }
 
-  var tries=0,t=setInterval(function(){
+  setInterval(function(){
     scan();
-    if(!window.__bfAbilityAnimHooked){if(install()||tries++>120)clearInterval(t);}
+    if(!window.__bfAbilityAnimHooked)install();
     // Hook de hechizos y objetos: castSpell / useItem pueden envolverlos otros
     // parches (Transformer), así que se reintenta hasta que ambos existan.
     installSpell();

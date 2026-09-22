@@ -122,17 +122,14 @@ export const BATTLE_RULES_PATCH = `
   }
 
   // ===== 3. Habilidad una vez por batalla (normal y élite por separado) =====
-  var prevAbilityUsed={};
   function scanAbilityUsage(){
     if(typeof G==='undefined'||!G||!G.team)return;
     ['p','o'].forEach(function(side){
       (G.team[side]||[]).forEach(function(h){
         if(!h||!h.id)return;
-        var key=side+'_'+h.id;
-        var used=!!h.abilityUsed;
-        var prev=prevAbilityUsed[key]||false;
-        if(!prev&&used){ if(h.eliteMode)h._bfEliteUsed=true; else h._bfNormalUsed=true; }
-        prevAbilityUsed[key]=used;
+        // Remember usage on the instance and form, not a previous hero ID.
+        // A new match or a fast normal→elite transition can reuse that ID.
+        if(h.abilityUsed){ if(h.eliteMode)h._bfEliteUsed=true; else h._bfNormalUsed=true; }
       });
     });
   }

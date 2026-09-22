@@ -292,6 +292,7 @@ export function buildFumbleRollPatch(lang) {
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
           pop(side, h.id, false, r);
           h.abilityUsed = true;
+          h._bfAbilityCineSuppressed = h.eliteMode ? 'elite' : 'normal';
           try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
           setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
           return;
@@ -314,6 +315,7 @@ export function buildFumbleRollPatch(lang) {
         if(passiveFumbled(side, h)){
           window.__bfFumbleThisAct = true;
           h.abilityUsed = true;
+          h._bfAbilityCineSuppressed = h.eliteMode ? 'elite' : 'normal';
           try{ if(typeof renderBattle === 'function') renderBattle(); }catch(e){}
           setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
           return;
@@ -323,6 +325,7 @@ export function buildFumbleRollPatch(lang) {
       try{
         if(fumbled('${en ? 'ability' : 'habilidad'}')){
           h.abilityUsed = true;
+          h._bfAbilityCineSuppressed = h.eliteMode ? 'elite' : 'normal';
           if(typeof renderBattle === 'function') renderBattle();
           setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
           return;

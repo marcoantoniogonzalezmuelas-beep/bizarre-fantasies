@@ -448,7 +448,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
     vex: function(c){
       fx({k:'spell', toSide:side_(c.t), toId:c.t.id, el:'arcano'});
       var d = dealDamage(c.t, Math.round(stat(c.h,'he') * (c.el ? 1.6 : 1.1)), {type:'spell', element:'arcano'});
-      c.t.silence = 99; c.t.abilityUsed = true;
+      c.t.silence = 99; c.t.abilityUsed = true; c.t._bfAbilityCineSuppressed = c.t.eliteMode ? 'elite' : 'normal';
       fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
       lossPop(c.t, '\\ud83d\\udeab HABILIDAD ANULADA', '#ff7a7a');
       log('li', c.h.name + ' anula la habilidad de ' + c.t.name + ' (-' + d + ').');
@@ -473,7 +473,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
           lossPop(c.t, '\\u26d4 FASE \\u00c9LITE ANULADA', '#c79bff');
           log('li', c.h.name + ' desactiva la FASE \\u00c9LITE de ' + c.t.name + ': ya no podr\\u00e1 renacer.');
         } else {
-          c.t.silence = 99; c.t.abilityUsed = true;
+          c.t.silence = 99; c.t.abilityUsed = true; c.t._bfAbilityCineSuppressed = c.t.eliteMode ? 'elite' : 'normal';
           fx({k:'status', side:side_(c.t), id:c.t.id, txt:'\\ud83d\\udeab'});
           lossPop(c.t, '\\ud83d\\udeab HABILIDAD ANULADA', '#ff7a7a');
           log('li', c.h.name + ' desactiva la habilidad de ' + c.t.name + '.');

@@ -45,4 +45,13 @@ for(const mode of ['mission','ai','demo','local','host','client']) {
   test(`${mode}: the unused form remains available after normal or elite use`,()=>{
     for(const elite of [false,true]){const f=fixture(mode,elite,elite,!elite);f.scan();assert(!f.ability.classList.contains('bf-abil-used'));assert(!f.panel.classList.contains('bf-abil-used'));}
   });
+  test(`${mode}: rapid normal to elite use is remembered independently`,()=>{
+    const f=fixture(mode,false,false,false);f.hero.abilityUsed=true;f.scan();assert(f.hero._bfNormalUsed);
+    f.hero.eliteMode=true;f.scan();assert(f.hero._bfEliteUsed);
+    f.nodes.filter(n=>n!==f.ability).forEach(n=>assert(!n.classList.contains('bf-abil-used')));
+  });
+  test(`${mode}: a new battle does not inherit the previous hero's usage`,()=>{
+    const f=fixture(mode,false,false,false);f.hero.abilityUsed=true;f.scan();
+    f.hero._bfNormalUsed=false;f.scan();assert(f.hero._bfNormalUsed);
+  });
 }

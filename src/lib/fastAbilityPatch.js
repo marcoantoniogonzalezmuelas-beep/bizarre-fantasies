@@ -74,6 +74,7 @@ export const FAST_ABILITY_PATCH = `
             if(typeof pushLog === 'function') pushLog('li', h.name + ' bloquea la fase \\u00c9LITE de ' + foe.name + ': cuando caiga, morir\\u00e1 definitivamente.');
           } else {
             foe.abilityUsed = true;
+            foe._bfAbilityCineSuppressed = foe.eliteMode ? 'elite' : 'normal';
             if(typeof pushLog === 'function') pushLog('li', h.name + ' anula la habilidad de ' + foe.name + ' en su forma actual.');
           }
           if(typeof pushFx === 'function') pushFx({ k:'status', side: foesSide, id: foe.id, txt:'\\u2699\\ufe0f' });

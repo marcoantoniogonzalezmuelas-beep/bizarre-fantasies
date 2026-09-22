@@ -32,7 +32,8 @@ export const MP_TURN_SEQUENCE_PATCH = `
     return !!document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop');
   }
   function cineBusy(){
-    return !!document.getElementById('bf-abil-anim')
+    return (typeof window.__bfCinematicBusy==='function' && window.__bfCinematicBusy())
+        || !!document.getElementById('bf-abil-anim')
         || !!document.getElementById('bf-spec-cine')
         || !!document.getElementById('bf-kill-ov')
         || document.body.classList.contains('bf-cine-active');
@@ -47,7 +48,8 @@ export const MP_TURN_SEQUENCE_PATCH = `
       if(busy()) quietFrom = 0;
       else if(!quietFrom) quietFrom = Date.now();
       var calm = !busy() && quietFrom && (Date.now() - quietFrom >= quiet);
-      if((elapsed >= min && calm) || elapsed >= max){ try{ next(); }catch(e){} return; }
+      // The 4s stale-FX fallback must not truncate a 5s cinematic or its queue.
+      if((elapsed >= min && calm) || (elapsed >= max && !cineBusy())){ try{ next(); }catch(e){} return; }
       // Mientras se espera, se re-arma el vigilante del juego para que no
       // considere el turno atascado durante la animación.
       try{ if(typeof window.armWatchdog === 'function'){ if(typeof window.clearWatchdog === 'function') window.clearWatchdog(); window.armWatchdog(); } }catch(e){}
