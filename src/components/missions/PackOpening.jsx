@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { ArrowRight, Check, Sparkles } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import MissionHero from '@/components/missions/MissionHero';
 import { isEpic, epicCount } from '@/components/missions/missionRules';
 
