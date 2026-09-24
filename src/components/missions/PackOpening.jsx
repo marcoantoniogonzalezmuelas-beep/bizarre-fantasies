@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import PackCard from '@/components/missions/PackCard';
+import PackReveal3D from '@/components/missions/PackReveal3D';
 import { epicCount } from '@/components/missions/missionRules';
 
 const PACK_ART = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5190ba71a_generated_image.png';
@@ -11,6 +12,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
   const [tearProgress, setTearProgress] = useState(0);
   const [packOpened, setPackOpened] = useState(false);
   const [revealIdx, setRevealIdx] = useState(0);
+  const [cardRevealed, setCardRevealed] = useState(false);
   const [selected, setSelected] = useState([]);
   const [error, setError] = useState('');
   const packRef = useRef(null);
@@ -28,6 +30,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
     setTearProgress(0);
     setPackOpened(false);
     setRevealIdx(0);
+    setCardRevealed(false);
   }
 
   function finishTear() {
@@ -58,6 +61,8 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
   }
 
   function continueFromPack() {
+    if (!cardRevealed) return;
+    setCardRevealed(false);
     if (revealIdx < packs[activeIdx].length - 1) { setRevealIdx(i => i + 1); return; }
     setOpened(prev => prev.map((value, index) => index === activeIdx ? true : value));
     setPackOpened(false);
@@ -115,7 +120,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
     return <div className="pack-stage">
       <div className="pack-header"><h3 className="font-heading text-2xl">Sobre {activeIdx + 1}</h3><p>{packOpened ? `Carta ${revealIdx + 1} de ${packHeroes.length}` : 'Desliza el dedo por la parte superior, de izquierda a derecha.'}</p></div>
       <div className="pack-tear-stage" ref={packRef}>
-        {packOpened && <div key={`${activeIdx}-${revealIdx}`} className="pack-reveal-card"><PackCard card={packHeroes[revealIdx]} /></div>}
+        {packOpened && <div key={`${activeIdx}-${revealIdx}`} className="pack-reveal-card"><PackReveal3D card={packHeroes[revealIdx]} onReveal={() => setCardRevealed(true)} /></div>}
         <div className={`pack-cover ${packOpened ? 'pack-cover-opened' : ''}`} aria-hidden="true">
           <img className="pack-cover-body" src={PACK_ART} alt="" draggable={false} />
           <img className="pack-cover-seal" src={PACK_ART} alt="" draggable={false} style={{ clipPath: `polygon(${tearProgress}% 0, 100% 0, 100% 15%, ${tearProgress}% 15%)` }} />
@@ -126,7 +131,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
           onPointerDown={onPointerDown} onPointerMove={e => handleMove(e.clientX)} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finishTear(); } }} />}
       </div>
-      {packOpened ? <button className="mission-button primary" onClick={continueFromPack}><ArrowRight size={18} /> {revealIdx === packHeroes.length - 1 ? 'Terminar sobre' : 'Siguiente carta'}</button>
+      {packOpened ? <button className="mission-button primary" disabled={!cardRevealed} onClick={continueFromPack}><ArrowRight size={18} /> {revealIdx === packHeroes.length - 1 ? 'Terminar sobre' : 'Siguiente carta'}</button>
         : <button className="mission-button" onClick={finishTear}>Abrir sin deslizar</button>}
     </div>;
   }

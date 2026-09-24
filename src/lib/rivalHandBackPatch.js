@@ -7,7 +7,7 @@
 // inline con !important que hayan puesto injectHandArt u applyArtToChips en
 // los chips del rival (inline !important > CSS !important, por lo que sin el
 // JS no se podría guaranteer que el reverso del pollito se vea siempre).
-const CARD_BACK_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png';
+export const CARD_BACK_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/47cb4e9b0_generated_image.png';
 
 export const RIVAL_HAND_BACK_PATCH = `
 <script>

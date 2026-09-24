@@ -138,13 +138,8 @@ export const MATCH_MODE_PATCH = `
 
   // ---- volver a jugar sin recargar (reusa la conexión P2P) ----
   function rematch(){
-    var n=ns(); if(!n){ location.reload(); return; }
-    if(n.role==='host'){
-      try{ netSend({t:'bfrematch'}); }catch(e){}
-      if(typeof initGame==='function') initGame(n.names_self, n.names_opp, true);
-    } else if(n.role==='client'){
-      try{ if(typeof notif==='function') notif('Esperando a que el anfitrión reinicie…'); }catch(e){}
-    } else { location.reload(); }
+    if(typeof window.bfRematch==='function') return window.bfRematch();
+    if(typeof notif==='function') notif('Preparando la nueva partida. Inténtalo de nuevo en un momento.');
   }
   window.bfMatchRematch = rematch;
 

@@ -1,17 +1,18 @@
 import { base44 } from '@/api/base44Client';
+import relayRealtimeChannel from '@/lib/relayRealtimeChannel';
+import relayBackupQueue from '@/lib/relayBackupQueue';
 
 // Canal permanente para acciones inmediatas; gameRelay conserva la cola durable
 // y actúa como respaldo después de una reconexión.
 export function bindRelayBridge(iframeRef) {
   let room = null;
-  let subscription = null;
+  const backup = relayBackupQueue();
+  const post = data => iframeRef.current?.contentWindow?.postMessage(data, '*');
   let activeCode = '';
   let activeSide = '';
 
   const closeRealtime = () => {
-    subscription?.unsubscribe();
     room?.close();
-    subscription = null;
     room = null;
     activeCode = '';
     activeSide = '';
@@ -24,41 +25,26 @@ export function bindRelayBridge(iframeRef) {
     closeRealtime();
     activeCode = cleanCode;
     activeSide = side;
-    const key = `bfRelayConnection:${cleanCode}:${side}`;
-    let connectionId = sessionStorage.getItem(key);
-    if (!connectionId) {
-      connectionId = crypto.randomUUID();
-      sessionStorage.setItem(key, connectionId);
-    }
-    room = base44.actors.GameRelayRoom(cleanCode).connect({ id: connectionId });
-    subscription = room.subscribe((message) => {
-      const frameWindow = iframeRef.current?.contentWindow;
-      if (!frameWindow || !message || typeof message !== 'object') return;
-      if (message.type === 'ready') frameWindow.postMessage({ bfRelayRealtimeStatus: 'ready' }, '*');
-      if (message.type === 'presence' && message.side !== activeSide) {
-        frameWindow.postMessage({ bfRelayPresence: message }, '*');
-      }
-      if (message.type === 'deliveries' && message.side !== activeSide) {
-        frameWindow.postMessage({ bfRelayPush: { deliveries: message.deliveries || [] } }, '*');
-      }
-    });
-    room.send({ type: 'hello', side });
+    room = relayRealtimeChannel(cleanCode, side, post);
     return room;
   };
 
   const onMessage = async (event) => {
     const frameWindow = iframeRef.current?.contentWindow;
-    if (!frameWindow || event.source !== frameWindow || !event.data?.bfRelay) return;
+    if (!frameWindow || event.source !== frameWindow) return;
+    if (event.data?.bfRelayAck) { room?.acknowledge(event.data.bfRelayAck); return; }
+    if (!event.data?.bfRelay) return;
     const { requestId, payload = {} } = event.data.bfRelay;
     const action = String(payload.action || '');
     const side = String(payload.side || (action === 'join' ? 'g' : ''));
     try {
       if (action === 'sendBatch') {
-        ensureRealtime(payload.code, side)?.send({
-          type: 'send_batch',
-          batch_id: payload.batch_id,
-          messages: payload.messages,
-        });
+        const receipt = await ensureRealtime(payload.code, side)?.send(payload);
+        if (receipt?.ok) {
+          backup.push(payload);
+          post({ bfRelayResult: { requestId, data: receipt } });
+          return;
+        }
       }
       const response = await base44.functions.invoke('gameRelay', payload);
       if (response.data?.ok && ['join', 'resume', 'poll'].includes(action)) {
@@ -74,6 +60,6 @@ export function bindRelayBridge(iframeRef) {
   window.addEventListener('message', onMessage);
   return () => {
     window.removeEventListener('message', onMessage);
-    closeRealtime();
+    closeRealtime(); backup.close();
   };
 }

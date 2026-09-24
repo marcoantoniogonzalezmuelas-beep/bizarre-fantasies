@@ -57,6 +57,11 @@ export const REMATCH_PATCH = `
       // Limpia también el estado de batalla residual
       G.turn=0; G.round=0; G.log=[];
       G.fxQueue=[]; G._fxPending=null;
+      if(typeof clearWatchdog==='function')clearWatchdog();
+      if(typeof B!=='undefined')B=null;
+      if(typeof _fxQueue!=='undefined')_fxQueue=[];
+      window.__bfEndSyncGot=false;window.__bfRelayReleased=false;
+      window.__bfLogSent=false;window.__bfAbilBusy=0;window.__bfAbilityChoiceWaiting=false;
     }catch(e){}
 
     // Reconstruye los mapas de arte desde los arrays originales. bfMorph
@@ -94,6 +99,7 @@ export const REMATCH_PATCH = `
     }catch(e){}
   }
 
+  window.bfPrepareRematch=function(){cleanupEndFx();bfFullReset();};
   // Arranca una partida nueva con los MISMOS jugadores y el mismo modo.
   function startRematch(){
     if(typeof G==='undefined' || typeof initGame!=='function') return;
@@ -104,7 +110,11 @@ export const REMATCH_PATCH = `
       p1 = NET.names_self || G.names.p; p2 = NET.names_opp || G.names.o;
       if(NET.role==='client'){ p1 = NET.names_opp || G.names.o; p2 = NET.names_self || G.names.p; }
       G.online = true;
+      window.__bfMatchId=crypto.randomUUID();
+      window.__bfMatchRound=Number(window.__bfMatchRound||0)+1;
+      netSend({t:'bfrematch',bfMatchId:window.__bfMatchId,bfMatchRound:window.__bfMatchRound});
       initGame(p1, p2, true);
+      netSync('s-recruit');
     } else {
       initGame(G.names.p, G.names.o, !!G.oppHuman);
     }
@@ -177,6 +187,7 @@ export const REMATCH_PATCH = `
     var orig=window.applySnapshot;
     window.applySnapshot=function(snap){
       var wasOver = (typeof G!=='undefined') && G._gameOver;
+      if(wasOver && snap && snap.screen==='s-recruit')window.bfPrepareRematch();
       var r=orig.apply(this,arguments);
       try{
         if(snap && snap.screen && snap.screen!=='s-result'){

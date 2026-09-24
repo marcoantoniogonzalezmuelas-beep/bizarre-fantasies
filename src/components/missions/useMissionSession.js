@@ -26,6 +26,12 @@ export default function useMissionSession(iframeRef) {
         catch { setError('No se pudieron cargar las misiones. Vuelve a intentarlo.'); }
         finally { if (id === loadId.current) setLoading(false); }
       }
+      if (d.bfMissionMpHosted && d.bfMissionMpHosted.run_id === run.current?.run_id) {
+        try {
+          const { data } = await base44.functions.invoke('missionMp', { action: 'mp_hosted', code: run.current.room_code, token: run.current.token, game_code: d.bfMissionMpHosted.game_code, run_id: run.current.run_id });
+          if (!data?.ok) throw new Error(data?.error || 'No se pudo anunciar la partida.');
+        } catch (e) { clearTimeout(timer.current); setStarting(false); setError(e.message); }
+      }
       if (d.bfMissionStarted && d.bfMissionStarted === run.current?.run_id) { clearTimeout(timer.current); setStarting(false); setSession(null); }
       if (d.bfMissionStartError) { clearTimeout(timer.current); setStarting(false); setError(d.bfMissionStartError); }
       if (d.bfMissionResult?.run_id === run.current?.run_id && run.current && !run.current.finished) {
@@ -44,9 +50,9 @@ export default function useMissionSession(iframeRef) {
   }
   function startMp(cfg) {
     if (starting || pending.current) return;
-    const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, run_id: crypto.randomUUID() };
+    const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, room_code: cfg.room_code, token: cfg.token, run_id: cfg.run_id || crypto.randomUUID() };
     run.current = current; setError(''); setNotice(''); setStarting(true);
-    send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
+    send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, game_code: cfg.game_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 15000);
   }
   function close() { if (pending.current) { setError('Guarda la victoria pendiente antes de salir.'); return; } if (pendingCelebration.current) { const pc = pendingCelebration.current; pendingCelebration.current = null; setCelebration(pc); } ++loadId.current; setSession(null); send({ bfMissionClose: true }); }

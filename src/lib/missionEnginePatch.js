@@ -26,12 +26,12 @@ export const MISSION_ENGINE_PATCH = `<script>
     G.spellbook={p:[],o:[]};G.items={p:[],o:[]};G.bonus={p:null,o:null};G.eqReady={p:false,o:false};G.pendDebt={p:0,o:0};
     G.names.o=mp.oppNick||'Rival';var mySide=mp.role==='host'?'p':'o';G.eqSide=mySide;G.eqShop='spell';G.assign=null;
     G.__bfWinCounted=false;G.__bfScoredOnce=false;window.__bfResultSent=false;window.__bfLogSent=false;window.__bfEndCine=0;
-    B=null;show('s-equip');renderEquip(mySide);tell({bfMissionStarted:mp.run_id});
+    B=null;show('s-equip');renderEquip(mySide);netSync('s-equip');tell({bfMissionStarted:mp.run_id});window.bfMissionMpConfig=null;
   };
   window.addEventListener('message',function(e){
     if(e.source!==parent)return;
     if(e.data&&e.data.bfMissionClose){G.bfMission=null;activeRun=null;if(originalMeta){window.__bfAiLevelMeta=originalMeta;originalMeta=null;}goSetup();return;}
-    var mpc=e.data&&e.data.bfMissionMpConnect;if(mpc){window.bfMissionMpConfig=mpc;window.bfMissionMpRequested=true;if(mpc.role==='host'){if(typeof hostCreate==='function')hostCreate(mpc.nick,mpc.password,mpc.room_code);}else{if(typeof clientJoin==='function')clientJoin(mpc.room_code,mpc.password,mpc.nick);}return;}
+    var mpc=e.data&&e.data.bfMissionMpConnect;if(mpc){window.bfMissionMpConfig=mpc;window.bfMissionMpRequested=mpc.role==='host';G._gameOver=false;window.__bfRoomMode='private';if(mpc.role==='host'){if(typeof hostCreate==='function')hostCreate(mpc.nick,mpc.password,'Misión '+mpc.mission);}else{if(typeof clientJoin==='function')clientJoin(mpc.game_code,mpc.password,mpc.nick);}return;}
     var m=e.data&&e.data.bfMissionStart;if(!m)return;
     var teams={p:m.player.map(function(id){return HEROES.find(function(h){return h.id===id;});}),o:m.rival.map(function(id){return HEROES.find(function(h){return h.id===id;});})};
     if(teams.p.length!==3||teams.o.length!==3||teams.p.concat(teams.o).some(function(h){return !h;})){tell({bfMissionStartError:'Algún héroe no está disponible en el motor.'});return;}
@@ -47,6 +47,15 @@ export const MISSION_ENGINE_PATCH = `<script>
     ['bf-end-cine','bf-end-heroes'].forEach(function(id){var n=document.getElementById(id);if(n)n.remove();});
     B=null;aiEquip('o');show('s-equip');renderEquip('p');tell({bfMissionStarted:m.run_id});
   });
+  var applyMpSnapshot=window.applySnapshot;
+  window.applySnapshot=function(snap){
+    var result=applyMpSnapshot.apply(this,arguments),mp=window.bfMissionMpConfig;
+    if(mp&&mp.role==='guest'&&snap&&snap.screen==='s-equip'){
+      G.online=true;G._gameOver=false;G.bfMission={run_id:mp.run_id,mission:mp.mission,modality:mp.modality};activeRun=G.bfMission;
+      tell({bfMissionStarted:mp.run_id});window.bfMissionMpConfig=null;
+    }
+    return result;
+  };
   function refresh(){
     var row=document.querySelector('#s-setup #p1name');
     if(row){

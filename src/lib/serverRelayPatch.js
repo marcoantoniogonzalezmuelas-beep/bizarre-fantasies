@@ -31,7 +31,24 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       }, 15000);
     });
   }
-  var relayRealtime = false, relayAck = [], deliveredIds = new Set();
+  var relayRealtime = false, relayAck = [], deliveredIds = new Set(), earlyDeliveries = [];
+  function receiveDeliveries(deliveries){
+    if(!relayConn){earlyDeliveries=earlyDeliveries.concat(deliveries);return;}
+    var ack=[];
+    deliveries.forEach(function(m){
+      if(!m||!m.id)return;
+      if(!deliveredIds.has(m.id)){deliveredIds.add(m.id);relayConn._dispatch(m.data);}
+      if(relayAck.indexOf(m.id)<0)relayAck.push(m.id);
+      ack.push(m.id);
+    });
+    if(ack.length)window.parent.postMessage({bfRelayAck:ack},'*');
+  }
+  function drainEarly(){var items=earlyDeliveries;earlyDeliveries=[];receiveDeliveries(items);}
+  function openHostConnection(){
+    if(relaySide!=='p'||!relayCode||relayConn||!lastFakePeer)return;
+    guestJoinedFired=true;relayConn=createVirtualConn('p',relayCode);
+    lastFakePeer._fireConnection(relayConn);relayConn._open();drainEarly();
+  }
   window.addEventListener('message', function(event) {
     var result = event.data && event.data.bfRelayResult;
     if (result && pending[result.requestId]) {
@@ -42,14 +59,12 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       else task.resolve(result.data || {});
       return;
     }
-    if (event.data && event.data.bfRelayRealtimeStatus === 'ready') relayRealtime = true;
-    var pushed = event.data && event.data.bfRelayPush;
-    if (!pushed || !relayConn) return;
-    (pushed.deliveries || []).forEach(function(m) {
-      if (!m || !m.id) return;
-      if (!deliveredIds.has(m.id)) { deliveredIds.add(m.id); relayConn._dispatch(m.data); }
-      if (relayAck.indexOf(m.id) < 0) relayAck.push(m.id);
-    });
+    if(event.source!==window.parent)return;
+    if(event.data&&event.data.bfRelayRealtimeStatus)relayRealtime=event.data.bfRelayRealtimeStatus==='ready';
+    var presence=event.data&&event.data.bfRelayPresence;
+    if(presence&&presence.side==='g'&&presence.connected)openHostConnection();
+    var pushed=event.data&&event.data.bfRelayPush;
+    if(pushed)receiveDeliveries(pushed.deliveries||[]);
   });
   window.bfRelayRequest = relayRequest;
 
@@ -122,6 +137,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   // ---- Conexión virtual: simula una DataConnection de PeerJS ----
   function createVirtualConn(side, code) {
     var cbs = { data: [], open: [], close: [], error: [] };
+    if(side==='p'){window.__bfMatchId=crypto.randomUUID();window.__bfMatchRound=0;}
     var outbox = window.bfCreateRelayOutbox(relayRequest, side, code, reportRelayError);
     var conn = {
       open: false,
@@ -133,6 +149,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       peerConnection: null,
       send: function(msg) {
         if (!msg || !code) return;
+        if(window.__bfMatchId)msg=Object.assign({},msg,{bfMatchId:window.__bfMatchId,bfMatchRound:window.__bfMatchRound||0});
         if (msg.t === 'intent' && /^(bid|pass|sell|bfDebtBid|bfBizarroFill|bfXferEq)$/.test(msg.op) && typeof G !== 'undefined') {
           msg = Object.assign({}, msg, { bfAuctionRound: String(G.aIndex) + ':' + String(G.subRound || 0) });
         }
@@ -143,6 +160,15 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       _dispatch: function(msg) {
         conn._bfEverReceivedData = true;
         conn._bfLastSeen = Date.now();
+        if(side==='g'&&msg&&msg.bfMatchId){
+          if(msg.t==='bfrematch'){
+            if(Number(msg.bfMatchRound||0)<=Number(window.__bfMatchRound||0))return;
+            if(typeof window.bfPrepareRematch==='function')window.bfPrepareRematch();
+            window.__bfMatchId=msg.bfMatchId;window.__bfMatchRound=msg.bfMatchRound;return;
+          }
+          if(!window.__bfMatchId){window.__bfMatchId=msg.bfMatchId;window.__bfMatchRound=msg.bfMatchRound||0;}
+        }
+        if(msg&&msg.bfMatchId&&window.__bfMatchId&&msg.bfMatchId!==window.__bfMatchId)return;
         if (side === 'p' && msg && msg.bfAuctionRound && typeof G !== 'undefined') {
           if (!document.querySelector('#s-recruit.active') || G.phaseResult || msg.bfAuctionRound !== String(G.aIndex) + ':' + String(G.subRound || 0)) {
             if (typeof netSync === 'function') { var active = document.querySelector('.screen.active'); if (active) netSync(active.id); }
@@ -178,7 +204,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
     var inFlight = false;
     function poll() {
       if (generation !== pollGeneration || !code || !side || inFlight) return;
-      if (typeof G !== 'undefined' && G._gameOver) { stopPolling(); return; }
+      // Keep the session alive on the result screen: rematches reuse it.
       inFlight = true;
       var pollStartedAt = Date.now();
       var sentAck = relayAck.slice(0, 100), hasMore = false;
@@ -188,19 +214,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         lastPollOk = Date.now(); failures = 0; hasMore = !!res.more;
         relayAck = relayAck.filter(function(id){ return sentAck.indexOf(id) < 0; });
         // Register the native host listeners BEFORE consuming the guest hello.
-        if (side === 'p' && res.guest_joined && !guestJoinedFired && lastFakePeer) {
-          guestJoinedFired = true;
-          if (!relayConn) {
-            relayConn = createVirtualConn('p', code);
-            lastFakePeer._fireConnection(relayConn);
-            relayConn._open();
-          }
-        }
-        (res.deliveries || []).forEach(function(m) {
-          if (!relayConn || !m || !m.id) return;
-          if (!deliveredIds.has(m.id)) { deliveredIds.add(m.id); relayConn._dispatch(m.data); }
-          if (relayAck.indexOf(m.id) < 0) relayAck.push(m.id);
-        });
+        if(side==='p'&&res.guest_joined&&!guestJoinedFired&&lastFakePeer)openHostConnection();
+        receiveDeliveries(res.deliveries||[]);
         if (res.other_left && !otherLeftShown) {
           otherLeftShown = true;
           if (typeof notif === 'function') notif('Tu rival se ha desconectado. La partida sigue en curso.');
@@ -262,7 +277,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       stopPolling();
       if (relayConn) relayConn.close();
       relayConn = null;
-      relayRealtime = false; relayAck = []; deliveredIds = new Set();
+      relayRealtime = false; relayAck = []; deliveredIds = new Set(); earlyDeliveries=[];
+      window.__bfMatchId='';window.__bfMatchRound=0;window.__bfRelayReleased=false;
 
       var previous = lastFakePeer, attempt = ++connectionAttempt;
       origClientJoin.apply(this, arguments);
@@ -295,6 +311,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
             relayCode = joinCode;
             relaySide = 'g';
             relayConn = conn;
+            drainEarly();
             lastSnapSeq = res.snap_seq || 0;
             lastMsgSeq = res.msg_seq || 0;
             guestJoinedFired = true;
@@ -327,7 +344,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       stopPolling();
       if (relayConn) relayConn.close();
       relayConn = null;
-      relayRealtime = false; relayAck = []; deliveredIds = new Set();
+      relayRealtime = false; relayAck = []; deliveredIds = new Set(); earlyDeliveries=[];
+      window.__bfMatchId='';window.__bfMatchRound=0;window.__bfRelayReleased=false;
       var previous = lastFakePeer, attempt = ++connectionAttempt;
       origHostCreate.apply(this, arguments);
 
@@ -339,6 +357,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         registration.promise.then(function(res) {
           if (!res || !res.ok || attempt !== connectionAttempt || peer.destroyed || peer !== lastFakePeer) return;
           relayCode = hostCode; relaySide = 'p'; relayConn = null;
+          var mp=window.bfMissionMpConfig;
+          if(mp&&mp.role==='host')window.parent.postMessage({bfMissionMpHosted:{game_code:hostCode,run_id:mp.run_id}},'*');
           guestJoinedFired = false; otherLeftShown = false;
           startPolling();
           if (typeof window.renderRoomList === 'function') window.renderRoomList();
@@ -415,6 +435,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
             relayCode = cleanCode;
             relaySide = 'g';
             relayConn = conn;
+            drainEarly();
             lastSnapSeq = res.snap_seq || 0;
             lastMsgSeq = res.msg_seq || 0;
             guestJoinedFired = true;
@@ -480,18 +501,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   }
   setInterval(function() { if (typeof G !== 'undefined' && G.online) hookQuitButton(); }, 1000);
 
-  // ---- Limpieza al terminar la partida ----
-  setInterval(function() {
-    try {
-      if (typeof G === 'undefined') return;
-      if (G._gameOver && relayCode && !window.__bfRelayReleased) {
-        window.__bfRelayReleased = true;
-        relayRequest('leave', { code: relayCode, side: relaySide }).catch(function(){});
-        if (window.bfLobbyRequest) window.bfLobbyRequest('unregister', { code: relayCode }).catch(function(){});
-        stopPolling();
-      }
-    } catch(e) {}
-  }, 2000);
+  // A result is not a disconnect. Only explicit exit/room cancellation closes
+  // the session; heartbeats and delivery must continue for the next auction.
 
   // ---- Instalar hooks ----
   // Las funciones devuelven true cuando ya están instaladas (envoltura nueva o
