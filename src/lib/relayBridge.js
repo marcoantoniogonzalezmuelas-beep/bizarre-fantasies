@@ -39,7 +39,9 @@ export function bindRelayBridge(iframeRef) {
     const side = String(payload.side || (action === 'join' ? 'g' : ''));
     try {
       if (action === 'sendBatch') {
-        const receipt = await ensureRealtime(payload.code, side)?.send(payload);
+        let receipt;
+        try { receipt = await ensureRealtime(payload.code, side)?.send(payload); }
+        catch { closeRealtime(); }
         if (receipt?.ok) {
           backup.push(payload);
           post({ bfRelayResult: { requestId, data: receipt } });

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
 
 // Sala de misión multijugador: coordina la creación de sala, el intercambio
 // de equipos entre los dos jugadores y la confirmación de "listos" antes de
@@ -42,7 +42,7 @@ export default async function(req) {
       const token = crypto.randomUUID();
       const room = await base44.asServiceRole.entities.GameRoom.create({
         room_code: code,
-        status: 'resuming',
+        status: 'playing',
         host_name: nick,
         left_at: null,
         state: {

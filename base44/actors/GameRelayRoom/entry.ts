@@ -46,8 +46,9 @@ export default class GameRelayRoom extends Actor {
     if (msg.type === 'ack_deliveries') {
       const ids = new Set(Array.isArray(msg.ids) ? msg.ids.filter(id => typeof id === 'string').slice(0, 100) : []);
       const other = member.side === 'p' ? 'g' : 'p';
-      this.relay[other] = this.relay[other].filter(m => !ids.has(m.id));
-      await this.storage.put('relay', this.relay);
+      const next = { ...this.relay, [other]: this.relay[other].filter(m => !ids.has(m.id)) };
+      await this.storage.put('relay', next);
+      this.relay = next;
       return;
     }
     if (msg.type !== 'send_batch') return;
@@ -60,9 +61,9 @@ export default class GameRelayRoom extends Actor {
     const deliveries = messages.map((data, index) => ({ id: batchId + '_' + index, data }));
     if (!this.relay.seen.includes(key)) {
       if (this.relay[member.side].length + deliveries.length > 2000) { conn.send({ type: 'backpressure' }); return; }
-      this.relay[member.side].push(...deliveries);
-      this.relay.seen = [...this.relay.seen, key].slice(-1024);
-      await this.storage.put('relay', this.relay);
+      const next = { ...this.relay, [member.side]: [...this.relay[member.side], ...deliveries], seen: [...this.relay.seen, key].slice(-1024) };
+      await this.storage.put('relay', next);
+      this.relay = next;
     }
     this.broadcast({ type: 'deliveries', side: member.side, deliveries });
     conn.send({ type: 'batch_ack', batch_id: batchId });
