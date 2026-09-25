@@ -401,11 +401,10 @@ export const ABILITY_ANIM_PATCH = `
   function playAnim(side,hero,force){
     // Dedicated hero patches may request playback inside useAbility, before
     // they open the target picker. The outer hook decides after they return.
-    if(abilityCallDepth && !isBizarre(hero))return false;
-    // A second wrapper can call this API after the native hook returns but
-    // while its target picker is still open. That is not a confirmed use.
-    if(!isBizarre(hero) && ((window.__bfTargetAbilityPending && window.__bfTargetAbilityPending.hero===hero) ||
-      (typeof B!=='undefined' && B && B.pending && B.current && B.current.side===side && B.current.id===hero?.id)))return false;
+    if(abilityCallDepth)return false;
+    // No playback until the last valid target is confirmed, including tokens.
+    if(hero && ((window.__bfTargetAbilityPending && window.__bfTargetAbilityPending.hero===hero) ||
+      (typeof B!=='undefined' && B && B.pending && B.current && B.current.side===side && B.current.id===hero.id)))return false;
     if(!hero||hero._bfAbilityCineSuppressed===(hero.eliteMode?'elite':'normal'))return;
     var entry=lookup(hero);
     if(!entry)return;

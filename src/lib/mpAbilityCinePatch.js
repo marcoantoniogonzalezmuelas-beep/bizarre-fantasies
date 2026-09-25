@@ -29,10 +29,15 @@ export const MP_ABILITY_CINE_PATCH = `
     };
   }
 
+  // Una habilidad con selección pendiente se envía solo tras confirmarla.
+  window.__bfSendTargetAbilityCine=function(side,h){
+    var ids=h&&[h._token,h.cid,h.card_id,h.id];
+    if(!isHost()||!h||ids.some(function(id){return /^tk_/.test(String(id||''));})||window.__bfFumbleThisAct)return;
+    try{NET.conn.send({t:'bfAbilCine',side:side,hero:serializeHero(h)});}
+    catch(e){console.warn('No se pudo enviar la cinemática de habilidad',e);}
+  };
+
   // HOST: hook useAbility para enviar al cliente cuando se usa una habilidad.
-  // Se instala DESPUÉS de los demás parches (abilityAnimPatch, epicAbilityFxPatch,
-  // abilityFxPatch) para que envuelva sus hooks y el mensaje se envíe antes de
-  // que la cadena reproduzca la cinemática en el host.
   function hookHost(){
     if(typeof window.useAbility!=='function'||window.__bfMpAbilCineHooked)return;
     window.__bfMpAbilCineHooked=true;
@@ -46,9 +51,8 @@ export const MP_ABILITY_CINE_PATCH = `
       if(sync)window.__bfFumbleThisAct=false;
       // Execute once. A failed animation send must never replay the ability.
       var res=orig.apply(this,arguments);
-      if(sync&&!window.__bfFumbleThisAct){
-        try{ NET.conn.send({t:'bfAbilCine',side:side,hero:serializeHero(h)}); }
-        catch(e){ console.warn('No se pudo enviar la cinemática de habilidad',e); }
+      if(sync&&!window.__bfTargetAbilityPending && !(typeof B!=='undefined'&&B&&B.pending&&B.current&&B.current.side===side&&B.current.id===h.id)){
+        window.__bfSendTargetAbilityCine(side,h);
       }
       return res;
     };

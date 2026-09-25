@@ -6,15 +6,19 @@ const path = require('node:path');
 const setup = require('./abilityAnimationHarness.cjs');
 const source = fs.readFileSync(path.join(__dirname, '..', 'abilityTargetFlowPatch.js'), 'utf8');
 const patch = vm.runInNewContext(source.replace('export const', 'const') + '\nABILITY_TARGET_FLOW_PATCH').replace(/<\/?script>/g, '');
+const mpSource = fs.readFileSync(path.join(__dirname, '..', 'mpAbilityCinePatch.js'), 'utf8');
+const mpPatch = vm.runInNewContext(mpSource.replace('export const', 'const') + '\nMP_ABILITY_CINE_PATCH').replace(/<\/?script>/g, '');
 
-function scene(mode, count = 1, id = 'bagslord', direct = false) {
+function scene(mode, count = 1, id = 'bagslord', direct = false, multiplayer = false) {
   const f = setup(mode), h = f.hero(id);
   if (id.startsWith('tk_')) h._token = id;
   f.assets({ [id]: { base: 'normal.png', elite: 'elite.png' } });
   f.c.G.team.p = [h];
   f.c.B = { current: { side: 'p', id: h.id }, round: 1, qi: 0, pending: null, over: false };
   let choices = 0, sent = 0;
-  f.c.__bfSendTargetAbilityCine = () => sent++;
+  if (multiplayer) {
+    f.c.NET.conn = { open: true, send: () => sent++, on() {} };
+  } else f.c.__bfSendTargetAbilityCine = () => sent++;
   f.c.pendTarget = function(label, side, cb) { this.B.pending = { cb, side }; };
   f.c.useAbility = function(side, hero, done) {
     if (direct) this.__bfPlayAbilityAnim(side, hero);
@@ -27,6 +31,7 @@ function scene(mode, count = 1, id = 'bagslord', direct = false) {
     next();
   };
   f.tick(150); // install the animation hook around the native ability
+  if (multiplayer) vm.runInContext(mpPatch, f.c);
   vm.runInContext(patch, f.c);
   f.tick(200); // install the target hook around the animation hook
   const pick = () => { const pending = f.c.B.pending; assert(pending); f.c.B.pending = null; pending.cb({ id: 'enemy' + choices }); };
@@ -99,6 +104,18 @@ test('direct hooks, target confirmation and later scans play once in total', () 
   f.c.__bfPlayAbilityAnim('p', h); // repeated post-confirmation callback
   f.tick(11000); // periodic scanner and queued effects must not replay it
   assert.equal(f.overlays.length, 1);
+  assert.equal(sent(), 1);
+});
+
+test('host sends a targeted cinematic only after the last target is confirmed', () => {
+  const { f, h, pick, sent } = scene('host', 2, 'bagslord', false, true);
+  f.c.useAbility('p', h);
+  assert.equal(sent(), 0);
+  pick();
+  assert.equal(sent(), 0);
+  pick();
+  assert.equal(sent(), 1);
+  f.tick(500);
   assert.equal(sent(), 1);
 });
 

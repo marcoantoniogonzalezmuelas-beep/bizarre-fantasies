@@ -1,12 +1,5 @@
-// Orden correcto de las habilidades que piden objetivo ("tarjetear"):
-//   1) se activa la habilidad → cinemática 3D,
-//   2) al terminar la cinemática → diálogo de elegir objetivo,
-//   3) al elegir → efecto visual del impacto.
-//
-// Arregla dos fallos: (a) se podía volver a pulsar la habilidad mientras la
-// cinemática estaba en pantalla, y el juego pedía objetivo dos veces;
-// (b) el selector de objetivo aparecía debajo de la cinemática, así que el
-// jugador tarjeteaba a ciegas y el efecto se solapaba con la animación.
+// Las habilidades que piden objetivo esperan a confirmar la elección final
+// antes de reproducir su cinemática; evita anticipos, cancelaciones y duplicados.
 export const ABILITY_TARGET_FLOW_PATCH = `
 <script>
 (function(){
@@ -17,11 +10,18 @@ export const ABILITY_TARGET_FLOW_PATCH = `
     try{ return (typeof window.__bfCinematicBusy==='function' && window.__bfCinematicBusy()) || !!document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'); }catch(e){ return false; }
   }
 
-  // 1) El selector de objetivo espera a que termine la cinemática 3D.
+  // El primer selector abierto durante la habilidad es suyo; las selecciones
+  // adicionales comparten la misma acción hasta que su callback final termina.
+  var active=null;
   function wrapPend(){
     if(typeof window.pendTarget!=='function'||window.pendTarget.__bfFlow)return false;
     var orig=window.pendTarget;
     var w=function(){
+      var action=active;
+      if(action){
+        action.targeted=true;
+        window.__bfTargetAbilityPending=action;
+      }
       var self=this,args=arguments, battle=B, current=B && B.current, round=B && B.round, qi=B && B.qi;
       if(!cineOn())return orig.apply(self,args);
       var iv=setInterval(function(){
@@ -44,18 +44,29 @@ export const ABILITY_TARGET_FLOW_PATCH = `
       if(!h || h.abilityUsed || !B || B.over || B.pending || window.__bfAbilityChoiceWaiting) return;
       var key=side+':'+h.id+':'+B.round+':'+B.qi;
       if(window.__bfAbilBusy && window.__bfAbilBusy.key === key) return;
-      var lock={key:key}, completed=false;
+      var lock={key:key,hero:h,side:side,targeted:false}, completed=false;
       window.__bfAbilBusy=lock;
-      var release=function(){ if(window.__bfAbilBusy === lock) window.__bfAbilBusy=0; };
+      var release=function(){
+        if(window.__bfTargetAbilityPending===lock)window.__bfTargetAbilityPending=null;
+        if(window.__bfAbilBusy===lock)window.__bfAbilBusy=0;
+      };
       window.bfReleaseAbility=release;
       var wrapped=function(){
-        if(completed) return;
-        completed=true; release();
-        if(!B || B.over || !B.current || B.current.side+':'+B.current.id+':'+B.round+':'+B.qi !== key) return;
+        if(completed)return;
+        completed=true;
+        var valid=B && !B.over && B.current && B.current.side+':'+B.current.id+':'+B.round+':'+B.qi===key && !B.pending;
+        release();
+        if(!valid)return;
+        if(lock.targeted){
+          if(typeof window.__bfPlayAbilityAnim==='function')window.__bfPlayAbilityAnim(side,h);
+          if(typeof window.__bfSendTargetAbilityCine==='function')window.__bfSendTargetAbilityCine(side,h);
+        }
         if(typeof done==='function')return done.apply(this,arguments);
         if(typeof finishAct==='function')finishAct();
       };
-      return orig.call(this,side,h,wrapped);
+      var previous=active;
+      active=lock;
+      try{return orig.call(this,side,h,wrapped);}finally{active=previous;}
     };
     w.__bfFlow=true;
     window.useAbility=w;
