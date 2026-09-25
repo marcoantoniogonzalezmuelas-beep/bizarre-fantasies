@@ -43,10 +43,6 @@ export const STATUS_LABEL_PATCH = `
     '.bf-status-tag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 5px;border-radius:999px;font-family:Cinzel,serif;font-weight:900;font-size:9.5px;letter-spacing:.6px;line-height:1.35;white-space:nowrap;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.3);box-shadow:0 1px 4px rgba(0,0,0,.5);animation:bfStatusTagIn .28s ease-out both}' +
     '.bf-status-tag i{font-style:normal;font-size:11px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}' +
     '@keyframes bfStatusTagIn{from{opacity:0;transform:translateX(-8px) scale(.9)}to{opacity:1;transform:none}}' +
-    // Borde parpadeante del retrato: MISMO comportamiento para todos los estados,
-    // con el color del estado más importante. Vive dentro de .bf-battle-art, así
-    // que no puede mover el nombre ni la barra de atributos.
-    '.bf-status-ring{position:absolute!important;inset:0!important;z-index:13!important;pointer-events:none!important;border-radius:inherit;border:3px solid var(--bfsc,#fff);opacity:.16;box-shadow:0 0 3px var(--bfsc);contain:layout style!important}' +
     // Velo de color sobre TODO el retrato (mismo efecto que el congelado) con
     // el color del estado. Es una capa absoluta: no toca la maquetación.
     '.bf-status-veil{position:absolute!important;inset:0!important;z-index:12!important;pointer-events:none!important;border-radius:inherit;background:linear-gradient(180deg,var(--bfsc,#fff) 0%,transparent 62%),radial-gradient(circle at 50% 18%,var(--bfsc,#fff),transparent 58%);mix-blend-mode:screen;opacity:.045;contain:layout style!important}' +
@@ -133,10 +129,9 @@ export const STATUS_LABEL_PATCH = `
 
     var ring = host.querySelector('.bf-status-ring');
     var veil = host.querySelector('.bf-status-veil');
-    if(!active.length){ if(box) box.remove(); if(ring) ring.remove(); if(veil) veil.remove(); return; }
-    if(!ring){ ring = document.createElement('div'); ring.className = 'bf-status-ring'; host.appendChild(ring); }
+    if(ring) ring.remove();
+    if(!active.length){ if(box) box.remove(); if(veil) veil.remove(); return; }
     if(!veil){ veil = document.createElement('div'); veil.className = 'bf-status-veil'; host.appendChild(veil); }
-    if(ring.dataset.bfKey !== active[0].key){ ring.dataset.bfKey = active[0].key; ring.style.setProperty('--bfsc', active[0].c1); }
     if(veil.dataset.bfKey !== active[0].key){
       veil.dataset.bfKey = active[0].key;
       veil.style.setProperty('--bfsc', active[0].c1);

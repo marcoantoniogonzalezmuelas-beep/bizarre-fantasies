@@ -41,7 +41,12 @@ export const HERO_FULL_FREEZE_PATCH = `
     + HOST + ' img,' + HOST + ' .bf-active-ring,'
     + HOST + ' .bf-active-tag,' + HOST + ' .bhero-aura,' + HOST + ' .bf-agonize-badge{transform:none!important}'
     // Posición base de las partículas (sus keyframes animan desde aquí).
-    + HOST + ' .bf-decor{transform:translate(-50%,-50%)}';
+    + HOST + ' .bf-decor{transform:translate(-50%,-50%)}'
+    // El congelado conserva su velo y rótulo, pero no pinta un borde azul
+    // encima del marco estático ni mueve el arte con sombras de color.
+    + HOST + '.s-frozen{box-shadow:0 6px 16px rgba(0,0,0,.5)!important}'
+    + HOST + '.s-frozen .bf-battle-art{filter:saturate(1.05) brightness(.92) contrast(1.05)!important}'
+    + HOST + ' .bf-battle-art,' + HOST + ' .bhero-art,' + HOST + ' .bf-bscene-portrait{animation:none!important;transition:none!important}';
 
   var st = document.createElement('style');
   st.textContent = css;
