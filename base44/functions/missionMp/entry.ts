@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.49';
+import { createMissionPackDeal } from '../../shared/missionPackDeal.ts';
 import { MISSION_ROOM_TTL, missionRoomExpiresAt, missionRoomSummary, missionParticipant, hashMissionPassword } from '../../shared/missionRooms.ts';
 
 // Sala de misión multijugador: coordina la creación de sala, el intercambio
@@ -46,6 +47,11 @@ export default async function(req) {
       }
       if (!code) return Response.json({ error: 'No se pudo crear un código único.' }, { status: 500 });
 
+      let packDeal = null;
+      if (modality === 'pack') {
+        try { packDeal = await createMissionPackDeal(base44, mission); }
+        catch (error) { return Response.json({ error: error.message }, { status: 400 }); }
+      }
       const pass = genPass();
       const salt = isPrivate ? crypto.randomUUID() : '';
       const token = crypto.randomUUID();
@@ -58,6 +64,7 @@ export default async function(req) {
           mp_mission: 'mp',
           mission,
           modality,
+          pack_deal: packDeal,
           host_nick: nick,
           host_team: null,
           host_ready: false,
@@ -106,6 +113,17 @@ export default async function(req) {
       });
     }
 
+    if (action === 'mp_open_packs') {
+      const code = String(body.code || '').toUpperCase();
+      const [room] = await base44.asServiceRole.entities.GameRoom.filter({ room_code: code }, '-updated_date', 1);
+      if (!room || room.state?.mp_mission !== 'mp' || missionRoomExpiresAt(room) <= Date.now()) return Response.json({ error: 'La sala ha caducado.' }, { status: 404 });
+      const seat = missionParticipant(room, body.token);
+      if (!seat) return Response.json({ error: 'No tienes acceso a esta sala.' }, { status: 403 });
+      if (room.state.modality !== 'pack') return Response.json({ error: 'Esta sala no usa sobres.' }, { status: 400 });
+      if (!room.state.pack_deal) return Response.json({ error: 'Esta sala es anterior al nuevo reparto. Crea una nueva para jugar sin repetidos.' }, { status: 409 });
+      return Response.json({ ok: true, packs: room.state.pack_deal[seat] });
+    }
+
     if (action === 'mp_set_team') {
       const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
       const nick = String(body.nick || '').slice(0, 28).trim();
@@ -120,6 +138,13 @@ export default async function(req) {
       const isHost = role === 'host' && room.state.host_nick === nick && body.token === room.state.owner_token;
       const isGuest = role === 'guest' && room.state.guest_nick === nick && body.token === room.state.guest_token;
       if (!isHost && !isGuest) return Response.json({ error: 'Not your room' }, { status: 403 });
+      if (room.state.game_code) return Response.json({ error: 'La partida ya ha empezado.' }, { status: 409 });
+      if (room.state.modality === 'pack') {
+        const own = room.state.pack_deal?.[role]?.flat() || [];
+        const other = room.state.pack_deal?.[isHost ? 'guest' : 'host']?.flat() || [];
+        if (team.some(id => !own.includes(id) || other.includes(id))) return Response.json({ error: 'Elige tres héroes distintos de tus propios sobres.' }, { status: 400 });
+        if (room.state[role + '_ready'] && team.some(id => !room.state[role + '_team'].includes(id))) return Response.json({ error: 'Tu ejército ya está confirmado.' }, { status: 409 });
+      }
 
       const updates = {};
       if (isHost) {
@@ -140,6 +165,7 @@ export default async function(req) {
       const room = matches[0];
       if (!room || room.state?.mp_mission !== 'mp' || missionRoomExpiresAt(room) <= Date.now() || !body.token || room.state.owner_token !== body.token) return Response.json({ error: 'La sala ya no está disponible.' }, { status: 403 });
       if (!room.state.host_ready || !room.state.guest_ready) return Response.json({ error: 'Ambos ejércitos deben estar listos.' }, { status: 409 });
+      if (room.state.modality === 'pack' && room.state.host_team.some(id => room.state.guest_team.includes(id))) return Response.json({ error: 'Los ejércitos no pueden compartir héroes. Crea una nueva sala.' }, { status: 409 });
       const gameCode = String(body.game_code || '');
       if (!/^[A-Z0-9]{3,6}$/.test(gameCode) || !body.run_id) return Response.json({ error: 'Invalid game' }, { status: 400 });
       const games = await base44.asServiceRole.entities.GameRoom.filter({ room_code: gameCode }, '-created_date', 1);

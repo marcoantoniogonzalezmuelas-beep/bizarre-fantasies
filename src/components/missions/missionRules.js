@@ -1,4 +1,4 @@
-export const MISSIONS = [{ id: 'club', name: 'Club', description: 'Los héroes del Club se reúnen para su gran desafío.' }, { id: 'l5r', name: 'L5R', description: 'Honor, estrategia y leyendas en cinco pruebas.' }];
+export const MISSIONS = [{ id: 'club', name: 'Club', description: 'Los héroes del Club se reúnen para su gran desafío.' }, { id: 'l5r', name: 'Leyendas', description: 'Honor, estrategia y leyendas en cinco pruebas.' }];
 export const LEVELS = [
   { id: 1, name: 'Iniciación', budget: 100, wins: 1, ai: 'novice', epics: 0, rivalBonus: 0, description: 'Compra tres héroes sin épicas. Rival de valor similar.' },
   { id: 2, name: 'El sobre sorpresa', pack: true, wins: 1, ai: 'novice', epics: 1, rivalBonus: 0, description: 'Tres héroes al azar. Rival de valor similar y el mismo número de épicas.' },
@@ -28,7 +28,7 @@ export function drawPack(pool, level) {
 }
 export function drawPacks(pool, level, missionId = 'club') {
   const singlePack = missionId === 'l5r', packCount = singlePack ? 1 : 3;
-  if (pool.length < (singlePack ? 5 : 9)) throw new Error(singlePack ? 'No hay cinco héroes L5R disponibles para el sobre.' : 'No hay suficientes héroes para tres sobres.');
+  if (pool.length < (singlePack ? 5 : 9)) throw new Error(singlePack ? 'No hay cinco héroes de Leyendas disponibles para el sobre.' : 'No hay suficientes héroes para tres sobres.');
   const shuffled = [...pool];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -65,10 +65,10 @@ export function chooseRival(pool, team, level) {
 export const equipCoinsForLevel = () => 150;
 export const MP_MISSIONS = [
   { id: 'club', name: 'Club', description: 'Misión especial multijugador del Club.' },
-  { id: 'l5r', name: 'L5R', description: 'Misión especial multijugador de L5R.' },
+  { id: 'l5r', name: 'Leyendas', description: 'Misión especial multijugador de Leyendas.' },
 ];
 export const MP_MODALITIES = [
-  { id: 'pack', name: 'Sobre', description: 'Abre un sobre y elige 3 héroes de los que salgan.' },
+  { id: 'pack', name: 'Sobre', description: 'Abre tus sobres exclusivos y elige 3 héroes; épicas sin límite.' },
   { id: 'budget', name: '100 monedas', description: 'Cada jugador compra 3 héroes con 100 monedas.' },
 ];
 export const MP_EQUIP_COINS = 150;

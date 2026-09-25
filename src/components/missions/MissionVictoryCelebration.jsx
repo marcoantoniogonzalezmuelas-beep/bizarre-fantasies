@@ -53,7 +53,7 @@ export default function MissionVictoryCelebration({ reward, onClose }) {
       <button className="mc-skip-btn" onClick={close} aria-label="Saltar celebración"><X size={18} /></button>
       {showOverlay && (
         <div className="mc-content" style={{ pointerEvents: 'none' }}>
-          <p className="mc-eyebrow">MISIÓN {reward.mission.toUpperCase()} · NIVEL {reward.level}</p>
+          <p className="mc-eyebrow">MISIÓN {reward.mission === 'l5r' ? 'LEYENDAS' : reward.mission.toUpperCase()} · NIVEL {reward.level}</p>
           <h2 className="mc-title" style={{ color: scene.color, textShadow: `0 0 30px ${scene.color}, 0 0 60px ${scene.color}55, 0 4px 10px #000` }}>{scene.title}</h2>
           <p className="mc-sub">{scene.sub}</p>
           <p className="mc-joke">{scene.joke}</p>

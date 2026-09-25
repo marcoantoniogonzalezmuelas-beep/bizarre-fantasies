@@ -7,6 +7,7 @@ export function patchMissionHtml(html) {
 export const MISSION_ENGINE_PATCH = `<script>
 (function(){
   var originalMeta=null, activeRun=null;
+  function missionName(id){return id==='l5r'?'Leyendas':id==='club'?'Club':id;}
   function tell(data){parent.postMessage(data,'*');}
   window.bfOpenMissions=function(){
     if(typeof clearWatchdog==='function')clearWatchdog();
@@ -31,7 +32,7 @@ export const MISSION_ENGINE_PATCH = `<script>
   window.addEventListener('message',function(e){
     if(e.source!==parent)return;
     if(e.data&&e.data.bfMissionClose){G.bfMission=null;activeRun=null;if(originalMeta){window.__bfAiLevelMeta=originalMeta;originalMeta=null;}goSetup();return;}
-    var mpc=e.data&&e.data.bfMissionMpConnect;if(mpc){window.bfMissionMpConfig=mpc;window.bfMissionMpRequested=mpc.role==='host';G._gameOver=false;window.__bfRoomMode='private';if(mpc.role==='host'){if(typeof hostCreate==='function')hostCreate(mpc.nick,mpc.password,'Misión '+mpc.mission);}else{if(typeof clientJoin==='function')clientJoin(mpc.game_code,mpc.password,mpc.nick);}return;}
+    var mpc=e.data&&e.data.bfMissionMpConnect;if(mpc){window.bfMissionMpConfig=mpc;window.bfMissionMpRequested=mpc.role==='host';G._gameOver=false;window.__bfRoomMode='private';if(mpc.role==='host'){if(typeof hostCreate==='function')hostCreate(mpc.nick,mpc.password,'Misión '+missionName(mpc.mission));}else{if(typeof clientJoin==='function')clientJoin(mpc.game_code,mpc.password,mpc.nick);}return;}
     var m=e.data&&e.data.bfMissionStart;if(!m)return;
     var teams={p:m.player.map(function(id){return HEROES.find(function(h){return h.id===id;});}),o:m.rival.map(function(id){return HEROES.find(function(h){return h.id===id;});})};
     if(teams.p.length!==3||teams.o.length!==3||teams.p.concat(teams.o).some(function(h){return !h;})){tell({bfMissionStartError:'Algún héroe no está disponible en el motor.'});return;}
@@ -42,7 +43,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     G.team={p:teams.p.map(makeInstance),o:teams.o.map(makeInstance)};
     var eqC=150;G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
     G.spellbook={p:[],o:[]};G.items={p:[],o:[]};G.bonus={p:null,o:null};G.eqReady={p:false,o:false};G.pendDebt={p:0,o:0};
-    G.names.o='Misión '+m.mission.toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
+    G.names.o='Misión '+missionName(m.mission).toUpperCase()+' · Nivel '+m.level;G.eqSide='p';G.eqShop='spell';G.assign=null;
     G.__bfWinCounted=false;G.__bfScoredOnce=false;window.__bfResultSent=false;window.__bfLogSent=false;window.__bfEndCine=0;
     ['bf-end-cine','bf-end-heroes'].forEach(function(id){var n=document.getElementById(id);if(n)n.remove();});
     B=null;aiEquip('o');show('s-equip');renderEquip('p');tell({bfMissionStarted:m.run_id});
@@ -70,7 +71,7 @@ export const MISSION_ENGINE_PATCH = `<script>
       else{var grid=box&&box.querySelector('.mode-grid');if(grid)grid.insertAdjacentElement('afterend',btn);else if(box)box.appendChild(btn);}
     }
     if(!G.bfMission)return;
-    var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=150;var lbl='Misión '+G.bfMission.mission.toUpperCase();if(G.bfMission.level)lbl+=' · Nivel '+G.bfMission.level;if(G.bfMission.modality)lbl+=' · '+G.bfMission.modality;lbl+=' · '+ec+' monedas de equipamiento';if(!G.bfMission.modality)lbl+=' · Sin sobrante de héroes';subtitle.textContent=lbl;}
+    var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=150;var lbl='Misión '+missionName(G.bfMission.mission).toUpperCase();if(G.bfMission.level)lbl+=' · Nivel '+G.bfMission.level;if(G.bfMission.modality)lbl+=' · '+G.bfMission.modality;lbl+=' · '+ec+' monedas de equipamiento';if(!G.bfMission.modality)lbl+=' · Sin sobrante de héroes';subtitle.textContent=lbl;}
     var header=document.querySelector('#s-equip.active .r-header');
     if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=window.bfOpenMissions;header.appendChild(back);}
     var result=document.querySelector('#s-result.active');if(!result)return;

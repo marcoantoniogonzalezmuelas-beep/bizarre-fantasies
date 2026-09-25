@@ -119,7 +119,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
     const packHeroes = packs[activeIdx];
     return <div className="pack-stage">
       <div className="pack-header"><h3 className="font-heading text-2xl">Sobre {activeIdx + 1}</h3><p>{packOpened ? `Carta ${revealIdx + 1} de ${packHeroes.length}` : 'Desliza el dedo por la parte superior, de izquierda a derecha.'}</p></div>
-      <div className="pack-tear-stage" ref={packRef}>
+      <div className={`pack-tear-stage ${packOpened ? 'pack-is-open' : ''}`} ref={packRef}>
         {packOpened && <div key={`${activeIdx}-${revealIdx}`} className="pack-reveal-card"><PackReveal3D card={packHeroes[revealIdx]} onReveal={() => setCardRevealed(true)} /></div>}
         <div className={`pack-cover ${packOpened ? 'pack-cover-opened' : ''}`} aria-hidden="true">
           <img className="pack-cover-body" src={PACK_ART} alt="" draggable={false} />
@@ -140,7 +140,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
   return (
     <div className="pack-stage">
       <div className="pack-header">
-        <h3 className="font-heading text-2xl">{packs.length === 1 ? 'Un sobre' : 'Tres sobres'} del {mission.name}</h3>
+        <h3 className="font-heading text-2xl">{packs.length === 1 ? 'Un sobre' : 'Tres sobres'} · {mission.name}</h3>
         <p>Elige un sobre y rasga la parte superior para descubrir sus cartas, una por una.</p>
       </div>
       <div className="pack-row">
