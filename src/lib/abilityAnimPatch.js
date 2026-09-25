@@ -313,7 +313,7 @@ export const ABILITY_ANIM_PATCH = `
     cancel:function(id){clearTimeout(id);},
     blocked:function(){
       var fxl=document.getElementById('bf-fx-layer');
-      return !!(playingUrl||(fxl&&fxl.children.length)||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine'));
+      return !!(playingUrl||(fxl&&fxl.children.length)||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-hdice'));
     },
     play:function(q){renderCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);}
   });
@@ -391,7 +391,7 @@ export const ABILITY_ANIM_PATCH = `
   // termine la animación 3D anterior (p.ej. la del ataque que generó el daño
   // que disparó el dado) antes de lanzarse. Así nunca se solapan.
   window.__bfCinematicBusy=function(){
-    return !!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine')||playingUrl||cineQueue.busy());
+    return !!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-hdice')||playingUrl||cineQueue.busy());
   };
   // Una sola cinemática por héroe y acción: las habilidades que piden objetivo
   // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso

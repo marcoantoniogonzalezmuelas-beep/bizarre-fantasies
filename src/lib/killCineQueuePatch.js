@@ -19,11 +19,14 @@
 // MULTI-KILL: si una habilidad mata a varios rivales a la vez, se recogen
 // todas las víctimas durante la ventana de retraso pero solo se muestra la
 // ÚLTIMA en la cinemática (con texto "¡ANIQUILADO!" si hubo varias).
+import { createDeathQuipPicker } from '@/lib/deathQuips';
+
 export const KILL_CINE_QUEUE_PATCH = `
 <script>
 (function(){
   if(window.__bfKillCineQueue) return;
   window.__bfKillCineQueue = true;
+  var pickDeathQuip=(${createDeathQuipPicker.toString()})();
 
   // ---- CSS de la nueva cinemática bizarra ----
   var css = [
@@ -73,6 +76,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     '@media(max-width:880px){#bf-kill-ov .bf-kill-att{left:2%;width:min(48vw,240px);height:min(68vw,340px);border-width:3px}#bf-kill-ov .bf-kill-vic{width:min(42vw,210px);height:min(60vw,300px);border-width:3px}#bf-kill-ov .bf-kill-vics{right:2%;gap:8px}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(34vw,170px);height:min(48vw,240px)}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(28vw,140px);height:min(40vw,200px)}#bf-kill-ov .bf-kill-pow-txt{font-size:clamp(32px,12vw,56px)}#bf-kill-ov .bf-kill-ko{font-size:clamp(24px,9vw,44px);bottom:4%}#bf-kill-ov .bf-kill-aname{left:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-vname{right:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-att-cool{font-size:clamp(32px,7vw,48px)}}'
   ].join('\\n');
   var st = document.createElement('style');
+  css += '#bf-kill-ov .bf-kill-ko{bottom:10%;width:min(86vw,760px);box-sizing:border-box;padding:14px 22px;background:#160d1f;border:2px solid #e6b86b;border-radius:18px;font:700 clamp(19px,3vw,28px)/1.35 Rubik,sans-serif;color:#fff4dc;text-shadow:0 2px 3px #000;letter-spacing:0;white-space:normal;text-align:center;box-shadow:0 12px 40px #0009}#bf-kill-ov .bf-kill-speaker{display:block;font-size:.55em;color:#ffce88;margin-bottom:5px;letter-spacing:1px}#bf-kill-ov .bf-kill-line+ .bf-kill-line{margin-top:12px}';
   st.textContent = css;
   document.head.appendChild(st);
 
@@ -235,17 +239,24 @@ export const KILL_CINE_QUEUE_PATCH = `
     pow.appendChild(powTxt);
     ov.appendChild(pow);
 
-    // ---- Cartel KO / ELIMINADO ----
+    // Últimas palabras del héroe caído, no del atacante.
     var ko = document.createElement('div');
     ko.className = 'bf-kill-ko';
-    ko.textContent = multiKill ? '\\u00a1ANIQUILADO!' : '\\u00a1ELIMINADO!';
+    victims.forEach(function(v){
+      var line=document.createElement('div');line.className='bf-kill-line';
+      var speaker=document.createElement('span');speaker.className='bf-kill-speaker';
+      speaker.textContent=[v.name,v.clan].filter(Boolean).join(' · ');
+      var quote=document.createElement('span');quote.textContent='«'+pickDeathQuip(v.clan,!!window.__bfLangEn)+'»';
+      line.appendChild(speaker);line.appendChild(quote);ko.appendChild(line);
+    });
     ov.appendChild(ko);
 
     (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
 
-    // Duración lenta (3,5 s) para que se vea bien sin prisa
-    setTimeout(function(){ ov.classList.add('bf-kill-out'); }, 3000);
-    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, 3600);
+    // Tiempo de lectura para las últimas palabras sin adelantar otro turno.
+    var readTime=4500+Math.max(0,victims.length-1)*1600;
+    setTimeout(function(){ ov.classList.add('bf-kill-out'); }, readTime);
+    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, readTime+600);
   }
 
   // ---- Flush: tras el retraso, lanza la cinemática ----
@@ -313,6 +324,7 @@ export const KILL_CINE_QUEUE_PATCH = `
         pendingVictims.push({
           id: vId,
           name: vHero ? vHero.name : '',
+          clan: vHero ? vHero.clan || (vHero._token ? 'Bizarros' : '') : '',
           art: vArt
         });
       }

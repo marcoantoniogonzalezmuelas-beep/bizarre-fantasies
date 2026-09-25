@@ -11,6 +11,8 @@
 // __bfHeroRoll: tira el dado, lo anuncia en el registro de batalla, lanza la
 // cinemática en local y la propaga al rival online (efecto 'bfherodice').
 // __bfHeroDicePop: solo la cinemática (la usa el rival al recibir el efecto).
+import { HERO_DICE_PRESENTATION_CSS } from '@/lib/heroDicePresentation';
+
 export const HERO_DICE_PATCH = `
 <script>
 (function(){
@@ -61,7 +63,10 @@ export const HERO_DICE_PATCH = `
     + '.bf-hdice-spark{position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:#ffd24a;'
     + 'box-shadow:0 0 12px #ffd24a;animation:bfHdSpark .75s ease-out forwards}'
     + '@keyframes bfHdSpark{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2)}}';
+  st.textContent += ${JSON.stringify(HERO_DICE_PRESENTATION_CSS)};
   document.head.appendChild(st);
+  var ROLL_MS=1650, READ_MS=4500, EXIT_MS=550;
+  var TOTAL_MS=ROLL_MS+READ_MS+EXIT_MS;
 
   var BIZARRE = ['\\u00a1EL DADO DECIDE!', 'EL AZAR BIZARRO HABLA', 'RUEDA EL HUESO M\\u00c1GICO', 'EL DESTINO TARTAMUDEA', 'CAOS EN 3, 2, 1\\u2026'];
 
@@ -84,8 +89,13 @@ export const HERO_DICE_PATCH = `
     var note = document.createElement('div');
     note.className = 'bf-hdice-note';
     note.textContent = [cfg.hero, cfg.label].filter(Boolean).join(' \\u00b7 ');
-    box.appendChild(aura);
-    box.appendChild(cube);
+    var stage=document.createElement('div');stage.className='bf-hdice-stage';
+    var cup=document.createElement('div');cup.className='bf-hdice-cup';cup.setAttribute('aria-hidden','true');
+    stage.appendChild(aura);stage.appendChild(cup);stage.appendChild(cube);
+    var who=document.createElement('div');who.className='bf-hdice-who';who.textContent=note.textContent;
+    box.setAttribute('role','status');box.setAttribute('aria-live','polite');
+    box.appendChild(who);
+    box.appendChild(stage);
     box.appendChild(lbl);
     box.appendChild(note);
     document.body.appendChild(veil);
@@ -97,6 +107,7 @@ export const HERO_DICE_PATCH = `
       clearInterval(spin);
       cube.textContent = String(roll);
       cube.classList.add('bf-hd-locked');
+      box.classList.add('bf-hd-result');
       if(cfg.crit) cube.classList.add('bf-hd-crit');
       aura.style.animationDuration = '4s';
       var eye = document.createElement('div');
@@ -111,20 +122,22 @@ export const HERO_DICE_PATCH = `
         if(cfg.crit) s.style.background = '#ff6a6a';
         cube.appendChild(s);
       }
-      lbl.textContent = roll + ' / ' + faces + (cfg.mult ? '  \\u2192  \\u00d7' + cfg.mult : '');
-      if(cfg.note) note.textContent = cfg.note;
+      lbl.textContent = (window.__bfLangEn?'RESULT: ':'RESULTADO: ') + roll + ' / ' + faces + (cfg.mult ? '  \\u2192  \\u00d7' + cfg.mult : '');
+      note.textContent = cfg.note || '';
+      if(faces===3 && String(cfg.label||'').toLowerCase()==='desorientado') note.textContent=(window.__bfLangEn?['Attacks an enemy','Attacks an ally (or self if alone)','Attacks self']:['Ataca a un rival','Ataca a un aliado (o a sí mismo si está solo)','Se ataca a sí mismo'])[roll-1];
+      if(faces===2 && cfg.label==='Compresor Roto') note.textContent=roll===1?'SIN FASE ÉLITE':'SIN HABILIDAD';
       if(cfg.crit){
         var c = document.createElement('div');
         c.className = 'bf-hdice-crit';
         c.textContent = '\\ud83d\\udca5 \\u00a1CR\\u00cdTICO! ATRAVIESA LA DEFENSA';
         box.appendChild(c);
       }
-    }, 1000);
-    setTimeout(function(){ box.classList.add('bf-hd-out'); veil.classList.add('bf-hd-out'); }, 3200);
+    }, ROLL_MS);
+    setTimeout(function(){ box.classList.add('bf-hd-out'); veil.classList.add('bf-hd-out'); }, ROLL_MS+READ_MS);
     setTimeout(function(){
       if(box.parentNode) box.parentNode.removeChild(box);
       if(veil.parentNode) veil.parentNode.removeChild(veil);
-    }, 3750);
+    }, TOTAL_MS);
   }
 
   // Lanza la cinemática del dado esperando a que termine la cinemática 3D que
@@ -133,11 +146,12 @@ export const HERO_DICE_PATCH = `
   function launchPop(payload, onSettled){
     var start = Date.now();
     function tick(){
+      if(document.querySelector('.bf-hdice')){setTimeout(tick,200);return;}
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()){
         if(Date.now() - start < 12000){ setTimeout(tick, 200); return; }
       }
       pop(payload);
-      if(typeof onSettled === 'function') setTimeout(onSettled, 3800);
+      if(typeof onSettled === 'function') setTimeout(onSettled, TOTAL_MS+50);
     }
     tick();
   }
