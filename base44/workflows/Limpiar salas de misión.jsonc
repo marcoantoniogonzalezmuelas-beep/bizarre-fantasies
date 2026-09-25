@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Madrid",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "limpiar_salas_mision",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "limpiar_salas": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "cleanupMissionRooms",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Eliminar salas caducadas",
+            "description": "Cada cinco minutos"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Elimina cada cinco minutos las salas de preparaci\u00f3n de misi\u00f3n multijugador caducadas, sin tocar las partidas en curso.",
+  "name": "Limpiar salas de misi\u00f3n"
+}

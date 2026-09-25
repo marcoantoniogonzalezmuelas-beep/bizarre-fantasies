@@ -26,8 +26,11 @@ export async function cleanupMissionRooms(base44, now = Date.now()) {
     for (const room of page) {
       if (missionRoomExpiresAt(room) > now) continue;
       // Conditional deletion: a heartbeat/join that extended the expiry wins.
-      const result = await rooms.deleteMany({ id: room.id, 'state.mp_mission': 'mp', updated_date: room.updated_date });
-      const count = Number(result.deleted_count || 0); deleted += count; removed += count;
+      await rooms.deleteMany({ id: room.id, 'state.mp_mission': 'mp', updated_date: room.updated_date });
+      // The entity SDK does not guarantee a deleted_count field; check the row
+      // so paging does not skip entries shifted by a successful deletion.
+      const remains = await rooms.get(room.id).catch(() => null);
+      if (!remains) { deleted++; removed++; }
     }
     if (page.length < 100) break;
     offset += page.length - removed;

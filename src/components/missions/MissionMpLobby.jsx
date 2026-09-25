@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Package, Swords, LoaderCircle, Copy, Check, Wifi } from 'lucide-react';
+import { ArrowLeft, Package, Swords, LoaderCircle, Wifi } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import MissionHero from '@/components/missions/MissionHero';
 import MissionRoomSeats from '@/components/missions/MissionRoomSeats';
+import MissionRoomDirectory from '@/components/missions/MissionRoomDirectory';
+import MissionRoomOptions from '@/components/missions/MissionRoomOptions';
 import PackOpening from '@/components/missions/PackOpening';
 import useMissionRoomPoll from '@/components/missions/useMissionRoomPoll';
 import { MP_MISSIONS, MP_MODALITIES, MP_EQUIP_COINS, MP_BUDGET, missionPool, drawPack, valueOf, isEpic } from '@/components/missions/missionRules';
@@ -12,8 +14,9 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
   const [modality, setModality] = useState('pack');
   const [step, setStep] = useState('config');
   const [roomCode, setRoomCode] = useState('');
-  const [joinCode, setJoinCode] = useState('');
   const [password, setPassword] = useState('');
+  const [isPrivate, setPrivate] = useState(false);
+  const [roomPassword, setRoomPassword] = useState('');
   const [role, setRole] = useState('');
   const [team, setTeam] = useState([]);
   const [pack, setPack] = useState(null);
@@ -22,10 +25,10 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
   const [oppNick, setOppNick] = useState('');
   const [oppTeam, setOppTeam] = useState(null);
   const [myReady, setMyReady] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [token, setToken] = useState(''), [busy, setBusy] = useState(false), [packOpened, setPackOpened] = useState(false);
-  const launched = useRef(false);
-  const { room, error: pollError } = useMissionRoomPoll(roomCode, role);
+  const launched = useRef(false), seat = useRef(null);
+  const { room, error: pollError, expired } = useMissionRoomPoll(roomCode, role, token);
+  useEffect(() => () => { if (seat.current && !launched.current) base44.functions.invoke('missionMp', { action: 'mp_leave', ...seat.current }).catch(() => {}); }, []);
 
   const mission = MP_MISSIONS.find(m => m.id === missionId);
   const pool = missionPool(cards, missionId);
@@ -38,19 +41,29 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
     if (!room || !role) return;
     const other = role === 'host' ? 'guest' : 'host';
     if (room[other + '_nick']) { setOppNick(room[other + '_nick']); setStep('prepare'); }
-    if (room[other + '_ready'] && room[other + '_team']?.length === 3) setOppTeam(room[other + '_team']);
+    else { setOppNick(''); if (role === 'host') setStep('host_code'); }
+    setOppTeam(room[other + '_ready'] && room[other + '_team']?.length === 3 ? room[other + '_team'] : null);
     if (role === 'guest' && room.game_code && myReady && !launched.current) {
       launched.current = true;
       onStart({ mission: missionId, modality, role, room_code: roomCode, game_code: room.game_code, run_id: room.run_id, password, token, nick, oppNick: room.host_nick, myTeam: myTeam.map(c => c.engineId), oppTeam: room.host_team });
     }
   }, [room, role, myReady, missionId, modality, password, token, nick, roomCode, myTeam, onStart]);
 
+  useEffect(() => {
+    if (!expired) return;
+    seat.current = null; setRoomCode(''); setRole(''); setToken(''); setOppNick(''); setOppTeam(null);
+    setMyReady(false); setTeam([]); setPack(null); setPackOpened(false); setStep('config');
+    setError('La sala ha caducado o se ha cerrado. Elige otra sala o crea una nueva.');
+  }, [expired]);
+
   async function createRoom() {
     if (busy) return;
     setBusy(true); setError('');
     try {
-      const res = await base44.functions.invoke('missionMp', { action: 'mp_create', nick, mission: missionId, modality });
+      if (isPrivate && (roomPassword.length < 4 || roomPassword.length > 64)) throw new Error('La contraseña debe tener entre 4 y 64 caracteres.');
+      const res = await base44.functions.invoke('missionMp', { action: 'mp_create', nick, mission: missionId, modality, is_private: isPrivate, room_password: isPrivate ? roomPassword : '' });
       if (res.data?.error) throw new Error(res.data.error);
+      seat.current = { code: res.data.code, token: res.data.token };
       setRoomCode(res.data.code);
       setPassword(res.data.password);
       setRole('host');
@@ -60,15 +73,13 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
     finally { setBusy(false); }
   }
 
-  async function joinRoom() {
-    setError('');
-    const code = joinCode.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-    if (code.length < 4) { setError('Introduce un código válido.'); return; }
+  async function joinRoom(code, privatePassword) {
     if (busy) return;
-    setBusy(true);
+    setError(''); setBusy(true);
     try {
-      const res = await base44.functions.invoke('missionMp', { action: 'mp_join', code, nick });
+      const res = await base44.functions.invoke('missionMp', { action: 'mp_join', code, nick, room_password: privatePassword });
       if (res.data?.error) throw new Error(res.data.error);
+      seat.current = { code, token: res.data.token };
       setRoomCode(code);
       setPassword(res.data.password);
       setRole('guest');
@@ -78,7 +89,7 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
       setStep('prepare');
       setNotice('Te has unido. Prepara tu ejército.');
       setToken(res.data.token);
-    } catch (e) { setError(e.message || 'No se pudo unir a la sala.'); }
+    } catch (e) { setError(e.response?.data?.error || e.message || 'No se pudo unir a la sala.'); }
     finally { setBusy(false); }
   }
 
@@ -102,10 +113,9 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
 
   function launchGame() {
     if (!bothReady || starting || role !== 'host') return;
+    launched.current = true;
     onStart({ mission: missionId, modality, role, room_code: roomCode, password, token, nick, oppNick, myTeam: myTeam.map(c => c.engineId), oppTeam });
   }
-
-  function copyCode() { navigator.clipboard?.writeText(roomCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }
 
   if (pool.length < 3) return <section className="space-y-6">
     <button className="mission-link" onClick={onBack}><ArrowLeft size={16} /> Volver</button>
@@ -118,25 +128,20 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
     {pollError && <p role="alert">{pollError}</p>}
 
     {step === 'config' && <>
-      <div><p className="mission-eyebrow">MULTIJUGADOR</p><h2 className="font-heading text-3xl">Misión especial</h2><p className="mt-2 opacity-80">Elige clan y modalidad. Luego crea una sala o únete con un código.</p></div>
+      <div><p className="mission-eyebrow">MULTIJUGADOR</p><h2 className="font-heading text-3xl">Misión especial</h2><p className="mt-2 opacity-80">Elige clan y modalidad para crear una sala, o entra directamente en una de las salas disponibles.</p></div>
       <div className="mp-section"><h3 className="font-heading text-lg">Clan</h3><div className="mp-tabs">{MP_MISSIONS.map(m => <button key={m.id} className={m.id === missionId ? 'active' : ''} onClick={() => setMissionId(m.id)}><span>{m.name}</span><span>{m.description}</span></button>)}</div></div>
       <div className="mp-section"><h3 className="font-heading text-lg">Modalidad</h3><div className="mp-tabs">{MP_MODALITIES.map(mo => <button key={mo.id} className={mo.id === modality ? 'active' : ''} onClick={() => setModality(mo.id)}><span>{mo.name}</span><span>{mo.description}</span></button>)}</div></div>
       <div className="mission-budget"><span>Equipamiento: {MP_EQUIP_COINS} monedas por jugador</span><strong>{modality === 'pack' ? 'Sobre de 3 héroes' : MP_BUDGET + ' monedas para comprar 3 héroes'}</strong></div>
-      <div className="mp-role"><button className="primary mission-button" onClick={createRoom} disabled={busy}><Wifi size={18} /> {busy ? 'Creando sala…' : 'Crear sala'}</button><button className="mission-button" onClick={() => setStep('guest_join')}><Wifi size={18} /> Unirse con código</button></div>
+      <MissionRoomOptions isPrivate={isPrivate} setPrivate={setPrivate} password={roomPassword} setPassword={setRoomPassword} disabled={busy} />
+      <button className="mission-button primary" onClick={createRoom} disabled={busy}><Wifi size={18} /> {busy ? 'Creando sala…' : 'Crear sala'}</button>
       {error && <p role="alert">{error}</p>}
-    </>}
-
-    {step === 'guest_join' && <>
-      <div><p className="mission-eyebrow">UNIRSE A SALA</p><h2 className="font-heading text-3xl">Introduce el código</h2></div>
-      <input className="mp-input" placeholder="CÓDIGO" value={joinCode} onChange={e => setJoinCode(e.target.value)} maxLength={6} />
-      <div className="flex gap-3"><button className="mission-button primary" onClick={joinRoom} disabled={busy}><Wifi size={18} /> {busy ? 'Conectando…' : 'Unirse'}</button><button className="mission-link" onClick={() => setStep('config')}><ArrowLeft size={16} /> Volver</button></div>
-      {error && <p role="alert">{error}</p>}
+      <MissionRoomDirectory onJoin={joinRoom} busy={busy} roomCode={roomCode} />
     </>}
 
     {step === 'host_code' && <>
-      <div><p className="mission-eyebrow">SALA CREADA · {mission.name} · {MP_MODALITIES.find(mo => mo.id === modality).name}</p><h2 className="font-heading text-3xl">Comparte este código</h2></div>
-      <div className="mp-code-box"><code>{roomCode}</code><button onClick={copyCode}>{copied ? <><Check size={16} /> Copiado</> : <><Copy size={16} /> Copiar</>}</button></div>
+      <div><p className="mission-eyebrow">SALA CREADA · {mission.name} · {MP_MODALITIES.find(mo => mo.id === modality).name}</p><h2 className="font-heading text-3xl">Tu sala está publicada</h2><p className="mt-2 opacity-80">{isPrivate ? 'Solo entrarán quienes conozcan tu contraseña.' : 'Cualquier jugador puede entrar desde la lista, sin código.'}</p></div>
       {!oppNick ? <div className="mp-waiting"><LoaderCircle className="animate-spin" /><p>Esperando a que se una un rival…</p></div> : <div className="mp-status ready">¡{oppNick} se ha unido!</div>}
+      <MissionRoomDirectory onJoin={joinRoom} busy={busy} roomCode={roomCode} />
       {error && <p role="alert">{error}</p>}
     </>}
 
