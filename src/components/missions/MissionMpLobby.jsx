@@ -33,7 +33,7 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
   const mission = MP_MISSIONS.find(m => m.id === missionId);
   const packDescription = missionId === 'l5r' ? '1 sobre de 4 héroes por jugador · elige 3' : '3 sobres de 4 héroes por jugador · elige 3';
   const pool = missionPool(cards, missionId);
-  const available = pool.filter(c => modality === 'pack' || !isEpic(c));
+  const available = pool.filter(c => modality === 'pack' || missionId === 'todos' || !isEpic(c));
   const myTeam = modality === 'pack' ? (pack || []) : team;
   const total = valueOf(myTeam);
   const bothReady = myReady && oppTeam;

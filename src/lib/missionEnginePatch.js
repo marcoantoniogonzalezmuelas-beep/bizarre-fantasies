@@ -7,7 +7,7 @@ export function patchMissionHtml(html) {
 export const MISSION_ENGINE_PATCH = `<script>
 (function(){
   var originalMeta=null, activeRun=null;
-  function missionName(id){return id==='l5r'?'Leyendas':id==='club'?'Club':id;}
+  function missionName(id){return id==='l5r'?'Leyendas':id==='club'?'Club':id==='todos'?'Todos los Héroes':id;}
   function tell(data){parent.postMessage(data,'*');}
   window.bfOpenMissions=function(){
     if(typeof clearWatchdog==='function')clearWatchdog();

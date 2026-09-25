@@ -1,4 +1,4 @@
-export const MISSIONS = [{ id: 'club', name: 'Club', description: 'Los héroes del Club se reúnen para su gran desafío.' }, { id: 'l5r', name: 'Leyendas', description: 'Honor, estrategia y leyendas en cinco pruebas.' }];
+export const MISSIONS = [{ id: 'club', name: 'Club', description: 'Los héroes del Club se reúnen para su gran desafío.' }, { id: 'l5r', name: 'Leyendas', description: 'Honor, estrategia y leyendas en cinco pruebas.' }, { id: 'todos', name: 'Todos los Héroes', description: 'Todos los héroes del juego, sin filtros de clan ni de colección.' }];
 export const LEVELS = [
   { id: 1, name: 'Iniciación', budget: 100, wins: 1, ai: 'novice', epics: 0, rivalBonus: 0, description: 'Compra tres héroes sin épicas. Rival de valor similar.' },
   { id: 2, name: 'El sobre sorpresa', pack: true, wins: 1, ai: 'novice', epics: 1, rivalBonus: 0, description: 'Tres héroes al azar. Rival de valor similar y el mismo número de épicas.' },
@@ -9,7 +9,7 @@ export const LEVELS = [
 export const isEpic = card => String(card.clan || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === 'epicas';
 export const valueOf = team => team.reduce((sum, card) => sum + Number(card.cost), 0);
 export const epicCount = team => team.filter(isEpic).length;
-export function missionPool(cards, mission) { return cards.filter(c => c.category === 'hero' && String(c.tag || '').toLowerCase().split(/[^a-z0-9]+/).includes(mission) && Number.isFinite(Number(c.cost)) && Number(c.cost) >= 0); }
+export function missionPool(cards, mission) { return cards.filter(c => c.category === 'hero' && (mission === 'todos' || String(c.tag || '').toLowerCase().split(/[^a-z0-9]+/).includes(mission)) && Number.isFinite(Number(c.cost)) && Number(c.cost) >= 0); }
 export function triples(pool) {
   const result = [];
   for (let a = 0; a < pool.length; a++) for (let b = a + 1; b < pool.length; b++) for (let c = b + 1; c < pool.length; c++) result.push([pool[a], pool[b], pool[c]]);
@@ -66,6 +66,7 @@ export const equipCoinsForLevel = () => 150;
 export const MP_MISSIONS = [
   { id: 'club', name: 'Club', description: 'Misión especial multijugador del Club.' },
   { id: 'l5r', name: 'Leyendas', description: 'Misión especial multijugador de Leyendas.' },
+  { id: 'todos', name: 'Todos los Héroes', description: 'Todos los héroes del juego, incluidas las épicas.' },
 ];
 export const MP_MODALITIES = [
   { id: 'pack', name: 'Sobre', description: 'Abre tus sobres exclusivos y elige 3 héroes; épicas sin límite.' },

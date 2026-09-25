@@ -7,7 +7,7 @@ export async function createMissionPackDeal(base44, mission) {
   } while (page.length === 100);
   const epic = c => String(c.clan || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === 'epicas';
   const eligible = cards.filter(c => c.card_id && Number.isFinite(Number(c.cost)) && Number(c.cost) >= 0 &&
-    (String(c.tag || '').toLowerCase().split(/[^a-z0-9]+/).includes(mission) || (mission === 'club' && epic(c))));
+    (mission === 'todos' || String(c.tag || '').toLowerCase().split(/[^a-z0-9]+/).includes(mission) || (mission === 'club' && epic(c))));
   const ids = [...new Set(eligible.map(c => c.card_id))];
   const packCount = mission === 'l5r' ? 1 : 3, perSeat = packCount * 4;
   if (ids.length < perSeat * 2) throw new Error(`Se necesitan ${perSeat * 2} héroes distintos para este reparto; hay ${ids.length}.`);

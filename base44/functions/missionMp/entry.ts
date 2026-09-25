@@ -35,7 +35,7 @@ export default async function(req) {
       const modality = String(body.modality || 'pack');
       const isPrivate = body.is_private === true;
       const roomPassword = String(body.room_password || '');
-      if (!nick || !['club', 'l5r'].includes(mission) || !['pack', 'budget'].includes(modality)) return Response.json({ error: 'Datos de sala incorrectos.' }, { status: 400 });
+      if (!nick || !['club', 'l5r', 'todos'].includes(mission) || !['pack', 'budget'].includes(modality)) return Response.json({ error: 'Datos de sala incorrectos.' }, { status: 400 });
       if (isPrivate && (roomPassword.length < 4 || roomPassword.length > 64)) return Response.json({ error: 'La contraseña debe tener entre 4 y 64 caracteres.' }, { status: 400 });
 
       // Genera código único

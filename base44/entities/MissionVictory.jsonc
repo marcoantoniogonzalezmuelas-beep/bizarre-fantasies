@@ -9,7 +9,8 @@
       "type": "string",
       "enum": [
         "club",
-        "l5r"
+        "l5r",
+        "todos"
       ]
     },
     "level": {
