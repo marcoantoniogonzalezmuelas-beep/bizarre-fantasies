@@ -431,6 +431,11 @@ export const ABILITY_ANIM_PATCH = `
   // nombre que dura lo que se ve el overlay (5 s) + margen de cola: aunque
   // varios ganchos disparen la misma acción a la vez, solo el primero pasa.
   var itemActionLock={};
+  var itemCall=null;
+  function needsCardTarget(item,spell){
+    var kinds=spell?['dmg1','dmg1slow','heal1','shield','ward','sleep','para','debuff','buff']:['heal','healBig','shield','cleanse','bomb','mana','manaBig','revive','bf_drain'];
+    return !!item&&kinds.indexOf(item.kind)>=0;
+  }
   function playItemCinematic(item,entry){
     // Cinemáticas 3D desactivadas: se salta el overlay 3D y NO se fija
     // __bfCardCineName, así la carta revelada sí se muestra en el centro.
@@ -461,21 +466,56 @@ export const ABILITY_ANIM_PATCH = `
     if(e&&e.base){playItemCinematic({name:name},e);return true;}
     return false;
   };
+  // Record target requests issued synchronously by a card. The callback is
+  // invoked only after pickTarget has accepted a living/dead valid target.
+  function installItemTarget(){
+    if(typeof window.pendTarget!=='function'||window.pendTarget.__bfItemTarget)return;
+    var orig=window.pendTarget;
+    var w=function(prompt,side,cb,opts){
+      var action=itemCall;
+      if(!action)return orig.apply(this,arguments);
+      action.targeted=true;
+      var args=Array.prototype.slice.call(arguments);
+      args[2]=function(target){
+        if(!action.confirmed && target){
+          action.confirmed=true;
+          playItemCinematic(action.item,action.entry);
+          if(typeof NET!=='undefined'&&NET.role==='host'&&typeof pushFx==='function')pushFx({k:'bfItemCine',name:action.item.name});
+        }
+        return cb.apply(this,arguments);
+      };
+      return orig.apply(this,args);
+    };
+    w.__bfItemTarget=true;
+    window.pendTarget=w;
+  }
+  // Targeted card playback is relayed after confirmation, not on cast intent.
+  function installItemSync(){
+    if(typeof window.flushFx!=='function'||window.flushFx.__bfItemCine)return;
+    var orig=window.flushFx;
+    var w=function(events){
+      if(typeof NET!=='undefined'&&NET.role==='client'){
+        (events||[]).forEach(function(e){if(e&&e.k==='bfItemCine')window.__bfPlayItemCine(e.name);});
+      }
+      return orig.apply(this,arguments);
+    };
+    w.__bfItemCine=true;
+    window.flushFx=w;
+  }
   function installSpell(){
     if(typeof window.castSpell!=='function'||window.__bfAbilityAnimSpellHooked)return false;
     window.__bfAbilityAnimSpellHooked=true;
     var orig=window.castSpell;
     window.castSpell=function(id){
-      try{
-        if(typeof SPELLS!=='undefined'){
-          var spell=typeof byId==='function'?byId(SPELLS,id):null;
-          if(spell&&spell.name){
-            var entry=spellByName[String(spell.name).toLowerCase()];
-            if(entry&&entry.base)playItemCinematic(spell,entry);
-          }
-        }
-      }catch(e){}
-      return orig.apply(this,arguments);
+      var spell=typeof SPELLS!=='undefined'&&typeof byId==='function'?byId(SPELLS,id):null;
+      var entry=spell&&spell.name?spellByName[String(spell.name).toLowerCase()]:null;
+      var action=entry&&entry.base?{item:spell,entry:entry,targeted:false,confirmed:false}:null;
+      var previous=itemCall;
+      itemCall=action;
+      var result;
+      try{result=orig.apply(this,arguments);}finally{itemCall=previous;}
+      if(action&&!action.targeted && !(typeof NET!=='undefined'&&NET.role==='client'))playItemCinematic(spell,entry);
+      return result;
     };
     // IA: también reproduce la cinemática cuando la IA lanza un hechizo.
     if(typeof window.castSpell_AI==='function'&&!window.__bfAbilityAnimSpellAiHooked){
@@ -500,17 +540,16 @@ export const ABILITY_ANIM_PATCH = `
     window.__bfAbilityAnimItemHooked=true;
     var orig=window.useItem;
     window.useItem=function(idx){
-      try{
-        if(typeof G!=='undefined'&&G.items&&typeof B!=='undefined'&&B.current){
-          var side=B.current.side;
-          var o=G.items[side]&&G.items[side][idx];
-          if(o&&o.name){
-            var entry=spellByName[String(o.name).toLowerCase()];
-            if(entry&&entry.base)playItemCinematic(o,entry);
-          }
-        }
-      }catch(e){}
-      return orig.apply(this,arguments);
+      var side=typeof B!=='undefined'&&B&&B.current&&B.current.side;
+      var o=typeof G!=='undefined'&&G&&G.items&&side&&G.items[side]&&G.items[side][idx];
+      var entry=o&&o.name?spellByName[String(o.name).toLowerCase()]:null;
+      var action=entry&&entry.base?{item:o,entry:entry,targeted:false,confirmed:false}:null;
+      var previous=itemCall;
+      itemCall=action;
+      var result;
+      try{result=orig.apply(this,arguments);}finally{itemCall=previous;}
+      if(action&&!action.targeted && !(typeof NET!=='undefined'&&NET.role==='client'))playItemCinematic(o,entry);
+      return result;
     };
     if(typeof window.useItem_AI==='function'&&!window.__bfAbilityAnimItemAiHooked){
       window.__bfAbilityAnimItemAiHooked=true;
@@ -575,6 +614,8 @@ export const ABILITY_ANIM_PATCH = `
     if(!window.__bfAbilityAnimHooked)install();
     // Hook de hechizos y objetos: castSpell / useItem pueden envolverlos otros
     // parches (Transformer), así que se reintenta hasta que ambos existan.
+    installItemTarget();
+    installItemSync();
     installSpell();
     installItem();
   },150);
