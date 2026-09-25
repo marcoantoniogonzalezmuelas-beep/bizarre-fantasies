@@ -397,7 +397,15 @@ export const ABILITY_ANIM_PATCH = `
   // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso
   // lanzaba la misma animación dos veces.
   function abilityKey(side,hero){return (side||'')+'_'+(hero.id||hero.name||'')+'_'+(hero.eliteMode?'elite':'normal');}
+  var abilityCallDepth=0;
   function playAnim(side,hero,force){
+    // Dedicated hero patches may request playback inside useAbility, before
+    // they open the target picker. The outer hook decides after they return.
+    if(abilityCallDepth && !isBizarre(hero))return false;
+    // A second wrapper can call this API after the native hook returns but
+    // while its target picker is still open. That is not a confirmed use.
+    if(!isBizarre(hero) && ((window.__bfTargetAbilityPending && window.__bfTargetAbilityPending.hero===hero) ||
+      (typeof B!=='undefined' && B && B.pending && B.current && B.current.side===side && B.current.id===hero?.id)))return false;
     if(!hero||hero._bfAbilityCineSuppressed===(hero.eliteMode?'elite':'normal'))return;
     var entry=lookup(hero);
     if(!entry)return;
@@ -533,13 +541,14 @@ export const ABILITY_ANIM_PATCH = `
     window.__bfAbilityAnimHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,h){
-      try{
-        if(!isBizarre(h)){
-          var accepted=playAnim(side,h);
-          if(accepted&&h&&h.id)prev[abilityKey(side,h)]=true;
-        }
-      }catch(e){}
-      return orig.apply(this,arguments);
+      var result;
+      abilityCallDepth++;
+      try{result=orig.apply(this,arguments);}finally{abilityCallDepth--;}
+      // A pending hero target owns the cinematic; never launch it at activation.
+      if(!isBizarre(h) && !window.__bfTargetAbilityPending){
+        try{if(playAnim(side,h)&&h&&h.id)prev[abilityKey(side,h)]=true;}catch(e){}
+      }
+      return result;
     };
     return true;
   }
@@ -553,7 +562,9 @@ export const ABILITY_ANIM_PATCH = `
         if(!h||!h.id)return;
         var key=abilityKey(side,h);
         var used=!!h.abilityUsed;
-        if(used&&!prev[key]){try{if(playAnim(side,h))prev[key]=true;}catch(e){}}
+        var pending=window.__bfTargetAbilityPending;
+        var awaiting=(pending&&pending.hero===h)||(typeof B!=='undefined'&&B&&B.pending&&B.current&&B.current.side===side&&B.current.id===h.id);
+        if(used&&!prev[key]&&!awaiting){try{if(playAnim(side,h))prev[key]=true;}catch(e){}}
         if(!used)prev[key]=false;
       });
     });
