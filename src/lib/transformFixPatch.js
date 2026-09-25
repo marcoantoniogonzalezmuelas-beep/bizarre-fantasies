@@ -15,20 +15,28 @@ export const TRANSFORM_FIX_PATCH = `
   window.__bfTransformFix = true;
 
   var BIZARROS = ['tk_caj', 'tk_lav', 'tk_buf', 'tk_ban', 'tk_pez'];
-  var STALE = ['_bfRefract', '_bfDuck', '_bfCrane', '_bfTank', '_bfNoElite', '_bfPassive', 'passive_marker'];
 
-  // El sorteo del Transformer lee la lista global TOKENS: durante la tirada se
-  // le deja ver solo a los bizarros y luego se restaura la lista completa
-  // (las invocaciones siguen disponibles para Patito, Grulla, etc.).
-  function onlyBizarros(fn, ctx, args){
-    var full = window.TOKENS;
-    try{
-      var only = (full || []).filter(function(tk){ return tk && BIZARROS.indexOf(tk.id) >= 0; });
-      if(only.length) window.TOKENS = only;
-      return fn.apply(ctx, args);
-    } finally {
-      window.TOKENS = full;
+
+  var morphSerial = 0;
+  function morph(target, by){
+    var pool = (typeof TOKENS !== 'undefined' ? TOKENS : []).filter(function(x){ return x && BIZARROS.indexOf(x.id) >= 0; });
+    if(!pool.length) return;
+    var tk = pool[Math.floor(Math.random() * pool.length)];
+    var oldName = target.name, oldId = target.id, side = tSide(target);
+    // Preserve only the team's object reference. A fresh engine hero replaces
+    // every ability, passive, used flag, equipment item and old portrait key.
+    var fresh = makeInstance(tk);
+    Object.keys(target).forEach(function(key){ delete target[key]; });
+    Object.assign(target, fresh);
+    target.id = tk.id + '_m' + (++morphSerial);
+    target.cid = tk.id; target.card_id = tk.id; target._token = tk.id;
+    battlePrep(target);
+    if(typeof B !== 'undefined' && B){
+      (B.queue || []).forEach(function(turn){ if(turn.side === side && turn.id === oldId) turn.id = target.id; });
+      if(B.current && B.current.side === side && B.current.id === oldId) B.current.id = target.id;
     }
+    if(typeof pushFx === 'function') pushFx({k:'transform', side:side, id:target.id, tokenId:tk.id});
+    if(typeof pushLog === 'function') pushLog('lx', by + ': ¡' + oldName + ' se transforma en ' + tk.name + '!');
   }
 
   function wrapCast(name, isTransform){
@@ -36,37 +44,36 @@ export const TRANSFORM_FIX_PATCH = `
     var orig = window[name];
     var w = function(){
       if(!isTransform.apply(null, arguments)) return orig.apply(this, arguments);
-      return onlyBizarros(orig, this, arguments);
+      if(name === 'castSpell'){
+        if(typeof NET !== 'undefined' && NET.role === 'client'){
+          if(typeof sendIntent === 'function') sendIntent('castSpell', {id:'sp_transform'});
+          return;
+        }
+        var caster = getHero(B.current.side, B.current.id), spell = byId(SPELLS, 'sp_transform');
+        if(!caster || !spell || caster.mana < spell.mana){ if(typeof notif === 'function') notif('Maná insuficiente'); return; }
+        var pool = living('p').concat(living('o'));
+        if(!pool.length) return;
+        caster.mana -= spell.mana;
+        morph(pool[Math.floor(Math.random() * pool.length)], caster.name + ' lanza Transformer');
+        if(typeof finishAct === 'function') finishAct();
+      } else {
+        var side = arguments[0], caster = arguments[1], spell = arguments[2], choice = arguments[3];
+        caster.mana -= spell.mana;
+        var pool = living('p').concat(living('o'));
+        var target = choice || pool[Math.floor(Math.random() * pool.length)];
+        if(target) morph(target, caster.name + ' lanza Transformer');
+        if(typeof endTurn === 'function') endTurn();
+      }
     };
     w.__bfTrFix = true;
     window[name] = w;
   }
 
-  // Un héroe transformado conserva su identidad interna anterior (cid/card_id),
-  // y los parches de habilidades la usan para saber a quién pertenece la
-  // habilidad. Se sincroniza con el token para que sea el bizarro quien actúa.
-  function fixIdentities(){
-    try{
-      if(typeof G === 'undefined' || !G || !G.team) return;
-      ['p', 'o'].forEach(function(side){
-        (G.team[side] || []).forEach(function(h){
-          if(!h || !h._token || BIZARROS.indexOf(h._token) < 0) return;
-          if(h.cid === h._token && h.card_id === h._token) return;
-          h.cid = h._token;
-          h.card_id = h._token;
-          STALE.forEach(function(k){ delete h[k]; });
-        });
-      });
-    }catch(e){}
-  }
-
-  // Otros parches vuelven a envolver castSpell más tarde y dejarían el filtro
-  // por debajo: se revisa periódicamente y se vuelve a envolver si hace falta.
+  // Intercept before the old Transformer implementation can reuse its hero.
   setInterval(function(){
     wrapCast('castSpell', function(id){ return id === 'sp_transform'; });
     wrapCast('castSpell_AI', function(side, h, s){ return s && s.kind === 'transform'; });
   }, 700);
-  setInterval(fixIdentities, 500);
 })();
 </script>
 `;

@@ -27,9 +27,9 @@ export default function relayRealtimeChannel(code, side, post) {
   });
   room.send({ type: 'hello', side });
   const heartbeat = setInterval(() => {
-    if (Date.now() - lastSeen > 7000) post({ bfRelayRealtimeStatus: 'waiting' });
+    if (Date.now() - lastSeen > 2500) post({ bfRelayRealtimeStatus: 'waiting' });
     room.send({ type: 'sync' });
-  }, 3000);
+  }, 1000);
   return {
     send(payload) {
       return new Promise(resolve => {

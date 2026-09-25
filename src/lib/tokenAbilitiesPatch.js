@@ -22,6 +22,9 @@ export const TOKEN_ABILITIES_PATCH = `
 
   // Solo estos bizarros se gestionan aquí (los demás tienen su propio parche).
   var OWN = ['tk_caj', 'tk_buf', 'tk_lav', 'tk_ban', 'tk_pez'];
+  var style = document.createElement('style');
+  style.textContent = '@keyframes bfBizarreGag{0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-30deg)}35%{opacity:1;transform:translate(-50%,-65%) scale(1.5) rotate(15deg)}100%{opacity:0;transform:translate(-50%,-120%) scale(.7) rotate(360deg)}}.bf-bizarre-gag{position:fixed;z-index:100000;pointer-events:none;font-size:36px;white-space:nowrap;filter:drop-shadow(0 3px 6px #160c20);animation:bfBizarreGag 1.3s ease-out forwards}';
+  document.head.appendChild(style);
 
   function tokId(h){
     var raw = String((h && (h._token || h.cid || h.card_id || h.id)) || '');
@@ -70,6 +73,17 @@ export const TOKEN_ABILITIES_PATCH = `
         pushLog('lx', '\\u{1F3B2} ' + h.name + ' \\u2014 ' + name + ': PIFIA, no produce ning\\u00fan efecto.');
         if(typeof window.__bfFumblePop === 'function') window.__bfFumblePop(side, h.id, false, 0);
         else pushFx({k:'status', side:side, id:h.id, txt:'\\u{1F4A9}'});
+        // Un absurdo visual, sin daño ni estados: humo de colores y un pato
+        // que gira sobre el retrato antes de desaparecer.
+        var card = document.getElementById('b_' + side + '_' + h.id);
+        if(card){
+          var rect = card.getBoundingClientRect(), gag = document.createElement('div');
+          gag.className = 'bf-bizarre-gag'; gag.textContent = '\\u{1F986}\\u{1F4A8}\\u{1F300}';
+          gag.style.left = (rect.left + rect.width / 2) + 'px';
+          gag.style.top = (rect.top + rect.height / 2) + 'px';
+          document.body.appendChild(gag);
+          setTimeout(function(){ gag.remove(); }, 1350);
+        }
         sync(); finish();
       }
 
@@ -141,9 +155,10 @@ export const TOKEN_ABILITIES_PATCH = `
         }
       }
 
-      if(id === 'tk_caj'){ el ? pickFoe(applyShoe) : applyNone(); return; }
+      // The actual card text is authoritative: both forms of Caja and
+      // Lavadora do nothing; only Butifarra's elite text has a real effect.
+      if(id === 'tk_caj' || id === 'tk_lav'){ applyNone(); return; }
       if(id === 'tk_buf'){ el ? applyDizzyAll() : applyNone(); return; }
-      if(id === 'tk_lav'){ el ? pickFoe(applyStun) : applyNone(); return; }
       if(id === 'tk_ban'){ pickFoe(applyConfuse); return; }
       if(id === 'tk_pez'){ pickFoe(applyDrunk); return; }
 

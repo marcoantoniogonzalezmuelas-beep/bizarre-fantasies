@@ -137,7 +137,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   // ---- Conexión virtual: simula una DataConnection de PeerJS ----
   function createVirtualConn(side, code) {
     var cbs = { data: [], open: [], close: [], error: [] };
-    if(side==='p'){window.__bfMatchId=crypto.randomUUID();window.__bfMatchRound=0;}
+    if(side==='p' && !window.__bfMatchId){window.__bfMatchId=crypto.randomUUID();window.__bfMatchRound=0;}
     var outbox = window.bfCreateRelayOutbox(relayRequest, side, code, reportRelayError);
     var conn = {
       open: false,
