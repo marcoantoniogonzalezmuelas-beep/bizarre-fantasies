@@ -685,6 +685,9 @@ export default function Home() {
   // con el pellizco, igual que en móvil.
   useEffect(() => {
     const onMessage = (e) => {
+      if (e.data?.bfAbilityAnimReady && abilityAnimRef.current) {
+        iframeRef.current?.contentWindow?.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
+      }
       if (e.data && typeof e.data.bfScreen === 'string') {
         setShowOracle(e.data.bfScreen === 's-title');
         setScreen(e.data.bfScreen);
@@ -1253,6 +1256,9 @@ export default function Home() {
           title="Bizarre Fantasies v5"
           {...(srcDoc ? { srcDoc } : { src: blobUrl })}
           onLoad={() => {
+            // La consulta de cartas puede terminar antes de que el juego instale
+            // su receptor de mensajes: reenviar el arte al acabar de cargar.
+            if (abilityAnimRef.current) iframeRef.current?.contentWindow?.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
           }}

@@ -38,8 +38,11 @@ export const MP_ABILITY_CINE_PATCH = `
     window.__bfMpAbilCineHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,h){
-      var k=h&&h.akind;
-      var sync=isHost() && !(k&&String(k).indexOf('tk_')===0);
+      // La animación de los bizarros se verá al recibir el estado final;
+      // no enviarla antes de que el anfitrión haya elegido objetivo.
+      var ids=h&&[h._token,h.cid,h.card_id,h.id];
+      var bizarre=ids&&ids.some(function(id){return /^tk_/.test(String(id||''));});
+      var sync=isHost() && !bizarre;
       if(sync)window.__bfFumbleThisAct=false;
       // Execute once. A failed animation send must never replay the ability.
       var res=orig.apply(this,arguments);

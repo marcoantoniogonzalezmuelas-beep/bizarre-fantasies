@@ -209,8 +209,10 @@ export const ABILITY_ANIM_PATCH = `
       // The queue deduplicates by side, hero and normal/elite form.
     }
   });
+  // Ask for the map after the listener exists, rather than before iframe boot.
+  window.parent.postMessage({bfAbilityAnimReady:true}, '*');
 
-  var css=''+
+  var css=''+ 
   '#bf-abil-anim{position:fixed;inset:0;z-index:100007;pointer-events:none;overflow:hidden;perspective:900px;animation:bfAaIn .3s ease-out}'+
   '#bf-abil-anim.bf-aa-out{transition:opacity .4s;opacity:0}'+
   '@keyframes bfAaIn{from{opacity:0}to{opacity:1}}'+
@@ -521,16 +523,18 @@ export const ABILITY_ANIM_PATCH = `
     return true;
   }
 
-  // Hook directo sobre useAbility: feedback inmediato en el host. No
-  // intercepta los héroes token (los gestiona tokenAbilitiesPatch).
+  // Los bizarros lanzan su cinemática al resolver la habilidad en sus
+  // propios parches (tras seleccionar objetivo); no anticiparla aquí.
+  function isBizarre(hero){
+    return !!hero && [hero._token,hero.cid,hero.card_id,hero.id].some(function(id){return /^tk_/.test(String(id||''));});
+  }
   function install(){
     if(typeof window.useAbility!=='function'||window.__bfAbilityAnimHooked)return false;
     window.__bfAbilityAnimHooked=true;
     var orig=window.useAbility;
     window.useAbility=function(side,h){
       try{
-        var k=h&&h.akind;
-        if(!(k&&String(k).indexOf('tk_')===0)){
+        if(!isBizarre(h)){
           var accepted=playAnim(side,h);
           if(accepted&&h&&h.id)prev[abilityKey(side,h)]=true;
         }
