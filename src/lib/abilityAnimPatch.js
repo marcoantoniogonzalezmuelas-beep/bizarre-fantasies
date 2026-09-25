@@ -514,7 +514,7 @@ export const ABILITY_ANIM_PATCH = `
       itemCall=action;
       var result;
       try{result=orig.apply(this,arguments);}finally{itemCall=previous;}
-      if(action&&!action.targeted && !(typeof NET!=='undefined'&&NET.role==='client'))playItemCinematic(spell,entry);
+      if(action&&!action.targeted && (!(typeof NET!=='undefined'&&NET.role==='client')||!needsCardTarget(spell,true)))playItemCinematic(spell,entry);
       return result;
     };
     // IA: también reproduce la cinemática cuando la IA lanza un hechizo.
@@ -548,7 +548,7 @@ export const ABILITY_ANIM_PATCH = `
       itemCall=action;
       var result;
       try{result=orig.apply(this,arguments);}finally{itemCall=previous;}
-      if(action&&!action.targeted && !(typeof NET!=='undefined'&&NET.role==='client'))playItemCinematic(o,entry);
+      if(action&&!action.targeted && (!(typeof NET!=='undefined'&&NET.role==='client')||!needsCardTarget(o,false)))playItemCinematic(o,entry);
       return result;
     };
     if(typeof window.useItem_AI==='function'&&!window.__bfAbilityAnimItemAiHooked){
