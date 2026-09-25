@@ -23,7 +23,7 @@
     },
     "left_at": {
       "type": "number",
-      "description": "Timestamp (ms) en el que un jugador sali\u00f3 de la partida en curso. La sala se auto-elimina 5 minutos despu\u00e9s de este valor."
+      "description": "Timestamp (ms) en el que un jugador sali\u00f3 de la partida en curso."
     },
     "state": {
       "type": "object"
@@ -39,7 +39,20 @@
         "role": "admin"
       }
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "data.state.mp_mission": {
+            "$ne": "mp"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"
