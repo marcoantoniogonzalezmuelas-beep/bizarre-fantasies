@@ -102,7 +102,7 @@ export const KILL_CINE_QUEUE_PATCH = `
       var fx = document.getElementById('bf-fx-layer');
       if(fx && fx.children.length) return true;
       if(document.querySelector('.bf-combat-fx,.bf-fx-projectile,.bf-fx-magic-orb,.bf-cast-flash,.bf-cast-runes')) return true;
-      if(window.__bfDmgPending > 0) return true;
+      if(typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy())return true;
       if(document.querySelector('.bf-dmg-pop,.bf-heal-pop,.bf-absorb-pop,.bf-stat-pop,.bf-status-pop,.bf-loss-pop,.bf-fx-float')) return true;
     }catch(e){}
     return false;

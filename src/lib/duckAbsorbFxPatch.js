@@ -44,6 +44,9 @@ export const DUCK_ABSORB_FX_PATCH = `
   }
 
   function show(h, dmg){
+    window.__bfQueueIndicator(function(){return paint(h,dmg);},3150);
+  }
+  function paint(h, dmg){
     var el = pop(h);
     var r = el ? el.getBoundingClientRect() : null;
     var d = document.createElement('div');
@@ -52,7 +55,7 @@ export const DUCK_ABSORB_FX_PATCH = `
     d.style.top = (r ? r.top + r.height*0.42 : window.innerHeight/2) + 'px';
     d.innerHTML = '\\u{1F6E1}\\uFE0F -' + dmg + ' <small>ABSORBIDO</small>';
     (window.__bfAppend||function(n){document.body.appendChild(n);})(d);
-    setTimeout(function(){ if(d.parentNode) d.remove(); }, 3150);
+    return [d];
   }
 
   function install(){

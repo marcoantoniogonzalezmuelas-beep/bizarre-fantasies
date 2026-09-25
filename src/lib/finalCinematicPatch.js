@@ -23,7 +23,7 @@ export const FINAL_CINEMATIC_PATCH = `
       // Espera a que no quede ninguna cinemática de acción en pantalla NI EN
       // COLA (con techo de 6 s por seguridad) y deja 700 ms para leer el daño.
       var busy=(typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy())||document.querySelector(CINE_SEL);
-      if(busy&&Date.now()-start<6000)return setTimeout(tick,150);
+      if(busy||(typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy()))return setTimeout(tick,150);
       setTimeout(cb,700);
     })();
   }

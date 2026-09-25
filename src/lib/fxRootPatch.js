@@ -57,7 +57,7 @@ export const FX_ROOT_PATCH = `
     if(!c||!c.children.length)return;
     var now=Date.now();
     Array.prototype.slice.call(c.children).forEach(function(n){
-      if(n.nodeType!==1)return;
+      if(n.nodeType!==1||n.dataset.bfIndicator==='1')return;
       var t=Number(n.dataset&&n.dataset.bfT||0);
       // Nodos sin timestamp (FX del juego original que no pasan por __bfAppend):
       // se marca la primera vez que se ven y se eliminan tras MAX_AGE.

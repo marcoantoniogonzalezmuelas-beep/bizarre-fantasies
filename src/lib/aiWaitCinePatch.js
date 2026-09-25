@@ -25,7 +25,8 @@ export const AI_WAIT_CINE_PATCH = `
     return !!document.querySelector('.bf-dmg-num,.bf-heal-num,.bf-absorb-pop,.bf-skip-pop,.bf-status-pop,.bf-fumble-pop,.bf-stat-pop');
   }
   function cineBusy(){return (typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy())||!!document.querySelector(CINE_SEL);}
-  function busy(){ return cineBusy()||fxBusy(); }
+  function indicatorsBusy(){return typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy();}
+  function busy(){ return cineBusy()||fxBusy()||indicatorsBusy(); }
 
   // Margen de calma: la cinemática de GOLPE MORTAL se crea unos instantes
   // después de que el efecto visual del disparo/golpe termine. Sin este margen,
@@ -42,7 +43,7 @@ export const AI_WAIT_CINE_PATCH = `
         if(window.B&&window.B.over)return;
         if(busy())quietFrom=0;
         else if(!quietFrom)quietFrom=Date.now();
-        if(cineBusy()||((busy()||Date.now()-quietFrom<QUIET_MS)&&Date.now()-t0<9000)){
+        if(cineBusy()||indicatorsBusy()||((busy()||Date.now()-quietFrom<QUIET_MS)&&Date.now()-t0<9000)){
           // Sigue habiendo una animación: la IA espera y se re-arma el
           // vigilante para que no fuerce el turno mientras tanto.
           try{ if(typeof window.armWatchdog==='function'){ if(typeof window.clearWatchdog==='function')window.clearWatchdog(); window.armWatchdog(); } }catch(e){}

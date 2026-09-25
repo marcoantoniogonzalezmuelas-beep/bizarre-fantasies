@@ -39,7 +39,8 @@ export const MP_TURN_SEQUENCE_PATCH = `
         || document.body.classList.contains('bf-cine-active');
   }
   function killPending(){ return typeof window.__bfKillCinePending === 'function' && window.__bfKillCinePending(); }
-  function busy(){ return cineBusy() || fxBusy() || killPending(); }
+  function indicatorsBusy(){return typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy();}
+  function busy(){ return cineBusy() || fxBusy() || killPending() || indicatorsBusy(); }
 
   window.bfStepWhenCalm = function(next){
     var min = 400, max = 4000, quiet = 500, step = 120, elapsed = 0, quietFrom = 0;
@@ -49,7 +50,7 @@ export const MP_TURN_SEQUENCE_PATCH = `
       else if(!quietFrom) quietFrom = Date.now();
       var calm = !busy() && quietFrom && (Date.now() - quietFrom >= quiet);
       // The 4s stale-FX fallback must not truncate a 5s cinematic or its queue.
-      if((elapsed >= min && calm) || (elapsed >= max && !cineBusy())){ try{ next(); }catch(e){} return; }
+      if((elapsed >= min && calm) || (elapsed >= max && !cineBusy() && !indicatorsBusy())){ try{ next(); }catch(e){} return; }
       // Mientras se espera, se re-arma el vigilante del juego para que no
       // considere el turno atascado durante la animación.
       try{ if(typeof window.armWatchdog === 'function'){ if(typeof window.clearWatchdog === 'function') window.clearWatchdog(); window.armWatchdog(); } }catch(e){}

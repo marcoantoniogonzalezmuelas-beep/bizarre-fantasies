@@ -29,6 +29,9 @@ export const HEAL_NUMBER_PATCH = `
   document.head.appendChild(st);
 
   function pop(side, id, amt){
+    window.__bfQueueIndicator(function(){return paint(side,id,amt);},3550);
+  }
+  function paint(side, id, amt){
     var el = document.getElementById('b_' + side + '_' + id);
     if(!el) return;
     var r = el.getBoundingClientRect();
@@ -45,8 +48,7 @@ export const HEAL_NUMBER_PATCH = `
     n.innerHTML = '+' + amt + ' <small>HP</small>';
     (window.__bfAppend||function(x){document.body.appendChild(x);})(glow);
     (window.__bfAppend||function(x){document.body.appendChild(x);})(n);
-    setTimeout(function(){ if(glow.parentNode) glow.parentNode.removeChild(glow); }, 2300);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3550);
+    return [glow,n];
   }
 
   function install(){

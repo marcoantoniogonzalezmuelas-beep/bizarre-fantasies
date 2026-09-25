@@ -19,7 +19,8 @@ export const END_GAME_WAIT_CALM_PATCH = `
   if(window.__bfEndWaitCalm) return;
   window.__bfEndWaitCalm = true;
 
-  // ¿Queda alguna animación 3D en pantalla o en cola?
+  function indicatorsBusy(){return typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy();}
+  // ¿Queda alguna animación 3D o aviso de combate en pantalla o en cola?
   function calm(){
     try{
       if(document.getElementById('bf-abil-anim')) return false;
@@ -27,6 +28,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(document.getElementById('bf-kill-ov')) return false;
       if(document.getElementById('bf-rearm-cine')) return false;
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) return false;
+      if(indicatorsBusy())return false;
       if(typeof window.__bfKillCinePending === 'function' && window.__bfKillCinePending()) return false;
       if(document.body.classList.contains('bf-cine-active')) return false;
     }catch(e){}
@@ -66,7 +68,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       resultPending = true;
       resultDeadline = Date.now() + 12000;
       (function proceed(){
-        if(calm() || Date.now() > resultDeadline){
+        if(calm() || (Date.now() > resultDeadline && !indicatorsBusy())){
           resultPending = false;
           var a = resultArgs; resultArgs = null;
           try{ return orig.apply(window, a); }catch(e){}
@@ -94,7 +96,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       showPending = true;
       showDeadline = Date.now() + 12000;
       (function proceed(){
-        if(calm() || Date.now() > showDeadline){
+        if(calm() || (Date.now() > showDeadline && !indicatorsBusy())){
           showPending = false;
           var a = showArgs; showArgs = null;
           try{ return orig.apply(window, a); }catch(e){}

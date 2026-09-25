@@ -36,29 +36,8 @@ export const DAMAGE_NUMBER_PATCH = `
     return null;
   }
 
-  // Cinemática de habilidad / carta especial en pantalla: son capas a pantalla
-  // completa por encima del número, así que el -X HP se pintaba debajo y se
-  // apagaba antes de que acabase la cinemática (habilidad del Patrón, entre
-  // otras). Se espera a que la cinemática termine y entonces se muestra.
-  function cineOpen(){
-    return !!(document.getElementById('bf-abil-anim') || document.getElementById('bf-spec-cine'));
-  }
-  // Contador de números de daño PENDIENTES (esperando a que acabe una
-  // cinemática). El golpe mortal lo consulta para no adelantarse a ellos.
-  window.__bfDmgPending = 0;
   function pop(side, id, amt){
-    if(cineOpen()){
-      window.__bfDmgPending++;
-      var waited = 0, iv = setInterval(function(){
-        waited += 120;
-        if(cineOpen() && waited < 20000) return;
-        clearInterval(iv);
-        window.__bfDmgPending = Math.max(0, window.__bfDmgPending - 1);
-        paint(side, id, amt);
-      }, 120);
-      return;
-    }
-    paint(side, id, amt);
+    window.__bfQueueIndicator(function(){return paint(side,id,amt);},3550);
   }
 
   function paint(side, id, amt){
@@ -71,7 +50,7 @@ export const DAMAGE_NUMBER_PATCH = `
     n.style.top = (r.top + r.height * 0.42) + 'px';
     n.innerHTML = '-' + amt + ' <small>HP</small>';
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3550);
+    return [n];
   }
 
   function install(){

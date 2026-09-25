@@ -41,6 +41,9 @@ export const STAT_NUMBER_PATCH = `
   var queue = [], showing = 0;
 
   function render(job){
+    window.__bfQueueIndicator(function(){return paint(job);},3300);
+  }
+  function paint(job){
     var el = document.getElementById('b_' + job.side + '_' + job.id);
     if(!el) return;
     var r = el.getBoundingClientRect();
@@ -50,7 +53,7 @@ export const STAT_NUMBER_PATCH = `
     n.style.top = (r.top + r.height * 0.24) + 'px';
     n.innerHTML = (job.delta > 0 ? '+' : '−') + Math.abs(job.delta) + ' <small>' + job.label + '</small>';
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 3300);
+    return [n];
   }
 
   // Los avisos se muestran de uno en uno (300 ms entre ellos) para que varios

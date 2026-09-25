@@ -34,6 +34,9 @@ export const SKIP_TURN_POP_PATCH = `
   }
 
   function pop(side, id, reason){
+    window.__bfQueueIndicator(function(){return paint(side,id,reason);},4800);
+  }
+  function paint(side, id, reason){
     var el = document.getElementById('b_' + side + '_' + id);
     if(!el) return;
     var r = el.getBoundingClientRect();
@@ -43,7 +46,7 @@ export const SKIP_TURN_POP_PATCH = `
     n.style.top = (r.top + r.height * 0.42) + 'px';
     n.innerHTML = reason.ic + ' PIERDE SU TURNO<small>' + reason.lb + '</small>';
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 4800);
+    return [n];
   }
 
   function install(){

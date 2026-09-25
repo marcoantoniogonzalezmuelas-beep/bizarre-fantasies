@@ -313,7 +313,7 @@ export const ABILITY_ANIM_PATCH = `
     cancel:function(id){clearTimeout(id);},
     blocked:function(){
       var fxl=document.getElementById('bf-fx-layer');
-      return !!(playingUrl||(fxl&&fxl.children.length)||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-dmg-num,.bf-heal-num,.bf-absorb-pop'));
+      return !!(playingUrl||(fxl&&fxl.children.length)||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine'));
     },
     play:function(q){renderCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);}
   });

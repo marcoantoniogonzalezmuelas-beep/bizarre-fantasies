@@ -46,6 +46,9 @@ export function buildFumbleRollPatch(lang) {
   document.head.appendChild(st);
 
   function pop(side, id, epic, roll){
+    window.__bfQueueIndicator(function(){return paint(side,id,epic,roll);},4550);
+  }
+  function paint(side, id, epic, roll){
     var el = document.getElementById('b_' + side + '_' + id);
     if(!el) return;
     var r = el.getBoundingClientRect();
@@ -55,7 +58,7 @@ export function buildFumbleRollPatch(lang) {
     n.style.top = (r.top + r.height * 0.42) + 'px';
     n.innerHTML = (epic ? '\\u{1F480} ${T.epic}' : '\\u{1F3B2} ${T.pifia}') + (roll ? '<small>${T.roll}: ' + roll + '/30</small>' : '');
     (window.__bfAppend || function(x){ document.body.appendChild(x); })(n);
-    setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 4550);
+    return [n];
   }
   // Disponible para otros parches (Juniana hace su propia tirada).
   window.__bfFumblePop = pop;
