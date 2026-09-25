@@ -26,7 +26,7 @@
 .mission-rival{padding-top:24px;border-top:1px solid hsl(var(--mission-line))}.mission-notice{padding:16px;border:1px solid hsl(var(--mission-accent));border-radius:12px;margin-bottom:20px;background:hsl(var(--mission-surface))}
 .mc-stage{position:fixed;inset:0;z-index:100300;overflow:hidden;background:radial-gradient(circle at 50% 40%,rgba(40,8,60,.92),rgba(6,3,12,.98));color:#fff;font-family:var(--font-body);animation:mcIn .6s ease-out}
 .mc-stage.mc-out{transition:opacity .8s ease-out;opacity:0}
-.mc-veil{position:absolute;inset:0;animation:mcVeil 1.4s ease-out forwards}
+.mc-veil{position:absolute;inset:0;pointer-events:none;animation:mcVeil 1.4s ease-out forwards}
 @keyframes mcVeil{0%{opacity:0}30%{opacity:1}100%{opacity:.35}}
 @keyframes mcIn{from{opacity:0;transform:scale(1.12)}to{opacity:1;transform:none}}
 .mc-skip-btn{position:absolute;right:22px;top:22px;padding:10px;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(0,0,0,.35);color:#fff;cursor:pointer;z-index:10;transition:background .2s}

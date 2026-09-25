@@ -16,6 +16,7 @@ const COLORS = ['#ff44dd', '#ffd24a', '#7ab8ff', '#66ffaa', '#ff7a5a', '#c06bff'
 export default function MissionVictoryCelebration({ reward, onClose }) {
   const scene = REWARDS[reward.level] || REWARDS[1];
   const videoUrl = MISSION_VIDEOS[reward.mission]?.[reward.level] || MISSION_VIDEOS.club[1];
+  const videoDescription = reward.mission === 'todos' ? ({ 1: 'Goblin ninja y criaturas del bosque celebran con ramen.', 2: 'Enano metalero invoca un patito de goma contra un dragón.', 3: 'Artista marcial cambia de aspecto en un duelo vaquero.', 4: 'Tripulación espacial corona a un pato millonario.', 5: 'Banda fantástica celebra con un ratón cantante y un patito coronado.' })[reward.level] : `Animación de victoria de la misión ${reward.mission}, nivel ${reward.level}.`;
   const videoRef = useRef(null);
   const closed = useRef(false);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -45,7 +46,9 @@ export default function MissionVictoryCelebration({ reward, onClose }) {
         autoPlay
         muted
         loop
+        controls
         playsInline
+        aria-label={videoDescription}
         className="absolute inset-0 w-full h-full object-cover"
         style={{ filter: 'brightness(.85) contrast(1.05)' }}
       />

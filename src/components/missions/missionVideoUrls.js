@@ -15,6 +15,13 @@ export const MISSION_VIDEOS = {
     4: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/569fb518a_L5R_Nivel_4.mp4',
     5: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/cbf408eb1_L5R_Nivel_5.mp4',
   },
+  todos: {
+    1: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/f72fcb529_Victoria_nivel_1.mp4',
+    2: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/816530c2f_Victoria_nivel_2.mp4',
+    3: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/486fd8f54_Victoria_nivel_3.mp4',
+    4: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/6212f8896_Victoria_nivel_4.mp4',
+    5: 'https://media.base44.com/videos/public/6a39c9aee54efe3a86d6d69a/627f0c16e_Victoria_nivel_5.mp4',
+  },
 };
 
 export const VIDEO_LOOPS = 4; // 4 × 6s = 24s
