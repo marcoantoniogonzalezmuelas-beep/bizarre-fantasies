@@ -8,7 +8,7 @@ export const MONKGETA_ABILITY_PATCH = `
   function finish(side,h,done){h.abilityUsed=true;if(window.__bfPlayAbilityAnim)window.__bfPlayAbilityAnim(side,h);renderBattle();if(typeof netSync==='function')netSync('s-battle');if(typeof done==='function')done();else finishAct();}
   function installAbility(){if(window.__bfMonkgetaUse||typeof useAbility!=='function')return false;window.__bfMonkgetaUse=1;var original=useAbility;window.useAbility=function(side,h,done){
     if(id(h)!=='monkgeta')return original.apply(this,arguments);
-    if(h.eliteMode){h._bfInvisible=2;h._bfInvisibleFresh=1;clean(h);pushLog('li',h.name+' se vuelve INVISIBLE durante dos turnos.');finish(side,h,done);return;}
+    if(h.eliteMode){h._bfInvisible=2;h._bfInvisibleFresh=1;h._bfInvisSrc='monk';clean(h);pushLog('li',h.name+' se vuelve INVISIBLE durante dos turnos.');finish(side,h,done);return;}
     var foes=enemySide(side),apply=function(target){target._bfDisoriented=1;pushFx({k:'status',side:tSide(target),id:target.id,txt:'\\u{1F9ED}'});pushLog('li',target.name+' queda DESORIENTADO: su próximo ataque se decidirá con un dado de 3 caras.');finish(side,h,done);};
     if(window.bfChooseAbilityTarget)window.bfChooseAbilityTarget(side,'Rival a desorientar',foes,apply);else pendTarget('Rival a desorientar',foes,apply);
   };return true;}
@@ -19,7 +19,9 @@ export const MONKGETA_ABILITY_PATCH = `
       if(roll===2)target=allies.length?allies[Math.floor(Math.random()*allies.length)]:attacker;else if(roll===3)target=attacker;
       attacker._bfDisoriented=0;pushLog('li','Dado de DESORIENTADO: '+roll+'. El ataque va contra '+target.name+'.');
     }
-    if(target&&target._bfInvisible&&attacker&&sideOf(attacker)!==sideOf(target)){clean(target);pushFx({k:'miss',side:sideOf(target),id:target.id});pushLog('li',target.name+' es INVISIBLE: el daño no le afecta.');return 0;}
+    // Invisible (Monkgeta élite o El Anillo): no le afecta NINGÚN daño, ni de
+    // rivales ni de efectos pasivos (veneno, quemadura, rebotes…).
+    if(target&&target._bfInvisible){clean(target);pushFx({k:'miss',side:sideOf(target),id:target.id});pushLog('li',target.name+' es INVISIBLE: el daño no le afecta.');return 0;}
     return original.call(this,target,amount,opts);
   };return true;}
   function installTargets(){if(window.__bfMonkgetaTargets||typeof pendTarget!=='function')return false;window.__bfMonkgetaTargets=1;var original=pendTarget;window.pendTarget=function(prompt,validSide,cb,opts){opts=opts||{};if(B&&B.current&&validSide!==B.current.side){var visible=(G.team[validSide]||[]).filter(function(h){return h&&h.alive&&!h._bfInvisible;}).map(function(h){return h.id;});opts=Object.assign({},opts,{allowedIds:opts.allowedIds?opts.allowedIds.filter(function(x){return visible.indexOf(x)>=0;}):visible});}return original.call(this,prompt,validSide,cb,opts);};return true;}

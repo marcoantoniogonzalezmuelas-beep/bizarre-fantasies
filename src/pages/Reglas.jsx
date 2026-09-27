@@ -124,7 +124,7 @@ export default function Reglas() {
     { c: '#ff7ad9', i: '🍺', n: L('Borracho', 'Drunk'), x: L('Recibe 3 de daño, −3 CC/AD/HE durante 2 turnos (3 en Élite) y 35% de fallar cada acción.', 'Takes 3 damage, −3 CC/AD/HE for 2 turns (3 in Elite) and 35% chance to fail each action.') },
     { c: '#8fe3d9', i: '💫', n: L('Mareado', 'Dizzy'), x: L('−4 CC/AD/HE durante 2 turnos (3 con Gases Tóxicos Élite).', '−4 CC/AD/HE for 2 turns (3 with Toxic Gas Elite).') },
     { c: '#ffb45c', i: '🧭', n: L('Desorientado', 'Disoriented'), x: L('El próximo ataque se redirige con un dado de 3 caras: rival, aliado o él mismo.', 'The next attack is redirected by a three-sided die: rival, ally or self.') },
-    { c: '#d8d8ff', i: '👻', n: L('Invisible', 'Invisible'), x: L('No puede ser elegido ni recibe daño rival durante su duración; limpia estados negativos.', 'Cannot be targeted or damaged by rivals for its duration; cleanses negative states.') },
+    { c: '#d8d8ff', i: '👻', n: L('Invisible', 'Invisible'), x: L('Dura siempre 2 turnos del héroe. Ningún rival puede elegirle ni atacarle, no recibe ningún daño (ni de ataques, hechizos, objetos o efectos pasivos) y se limpian sus estados negativos. Lo conceden la habilidad élite de Monkgeta y el objeto El Anillo.', 'Always lasts 2 of the hero’s turns. No rival can target or attack them, they take no damage at all (attacks, spells, items or passive effects) and negative states are cleansed. Granted by Monkgeta’s elite ability and the item The Ring.') },
   ];
 
   return (
