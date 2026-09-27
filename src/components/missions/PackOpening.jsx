@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import PackCard from '@/components/missions/PackCard';
 import PackReveal3D from '@/components/missions/PackReveal3D';
+import PackArmyBar from '@/components/missions/PackArmyBar';
 import { epicCount } from '@/components/missions/missionRules';
 
 const PACK_ART = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5190ba71a_generated_image.png';
@@ -97,6 +98,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
           <h3 className="font-heading text-2xl">Elige tu ejército</h3>
           <p>3 héroes de los {allHeroes.length} revelados · {selected.length}/3 elegidos</p>
         </div>
+        <PackArmyBar selected={selected} level={level} onRemove={toggleHero} />
         <div className="pack-selection-grid">
           {allHeroes.map(card => (
             <PackCard key={card.id} card={card}

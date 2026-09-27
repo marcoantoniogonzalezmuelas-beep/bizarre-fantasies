@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import HeroCardFace from '@/components/cards/HeroCardFace';
 import { HERO_ART, HERO_ELITE_ART } from '@/lib/artUrls';
+import { isEpic } from '@/components/missions/missionRules';
 
 export default function PackCard({ card, selected, disabled, onSelect }) {
   const [elite, setElite] = useState(false);
@@ -12,8 +13,13 @@ export default function PackCard({ card, selected, disabled, onSelect }) {
     ability: card.ability_name, abilityTxt: card.ability_text,
     eAbility: card.elite_ability_name, eTxt: card.elite_ability_text,
   };
-  return <div className="pack-card">
-    <div className="pack-card-face" aria-label={`${card.name}, ${elite ? 'élite' : 'normal'}`}><HeroCardFace hero={hero} elite={elite} /></div>
+  const epic = isEpic(card);
+  return <div className={`pack-card ${selected ? 'is-selected' : ''} ${disabled ? 'is-disabled' : ''}`}>
+    <div className="pack-card-face" aria-label={`${card.name}, ${elite ? 'élite' : 'normal'}`}>
+      <HeroCardFace hero={hero} elite={elite} />
+      {selected && <div className="pack-card-chosen">✓ ELEGIDO</div>}
+      {epic && <div className="pack-card-epic">★ ÉPICO</div>}
+    </div>
     <div className="pack-card-actions">
       <button className="mission-button" onClick={() => setElite(v => !v)}>{elite ? 'Ver normal' : 'Ver élite'}</button>
       {onSelect && <button className="mission-button primary" disabled={disabled} aria-pressed={selected} onClick={onSelect}>{selected ? 'Quitar' : 'Elegir héroe'}</button>}

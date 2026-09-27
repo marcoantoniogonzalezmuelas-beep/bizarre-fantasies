@@ -110,4 +110,20 @@
 .pack-card-actions{display:flex;gap:8px;margin-top:10px}
 .pack-card-actions .mission-button{flex:1}
 .pack-reveal-card .pack-card-actions{display:none}
-@media(max-width:480px){.pack-row{gap:12px}.pack-selection-grid{grid-template-columns:1fr}.pack-card{max-width:294px}}
+@media(max-width:480px){.pack-row{gap:12px}}
+/* Selección de ejército: héroes elegidos marcados, épicos señalados y barra del ejército. */
+.pack-card.is-selected .pack-card-face{outline:4px solid #4ade80;outline-offset:3px;border-radius:14px;box-shadow:0 0 28px rgba(74,222,128,.7)}
+.pack-card.is-disabled{opacity:.45}
+.pack-card-chosen,.pack-card-epic{position:absolute;left:50%;transform:translateX(-50%);z-index:5;padding:4px 12px;border-radius:999px;font-weight:900;font-size:13px;letter-spacing:1px;white-space:nowrap;pointer-events:none}
+.pack-card-chosen{top:42%;background:#16a34a;color:#fff;box-shadow:0 0 16px rgba(74,222,128,.9)}
+.pack-card-epic{bottom:-12px;background:#2a1640;color:#ffd24a;border:1.5px solid #ffd24a}
+.pack-army{position:sticky;top:0;z-index:20;width:100%;padding:12px;border-radius:14px;background:rgba(14,10,22,.95);border:1.5px solid rgba(255,210,74,.5)}
+.pack-army-rules{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;margin-bottom:10px;color:#efe9dc}
+.pack-army-rules li::before{content:'• ';color:#ffd24a}
+.pack-army-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pack-army-slot{display:flex;align-items:center;gap:8px;min-height:52px;padding:6px;border-radius:10px;border:1.5px dashed rgba(255,255,255,.3);font-size:12px;font-weight:700;color:rgba(255,255,255,.55);overflow:hidden;text-align:left}
+.pack-army-slot.filled{border:1.5px solid #4ade80;color:#fff;background:rgba(22,163,74,.18)}
+.pack-army-slot img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:0 0 40px}
+/* Móvil: vista de escritorio encogida para ver varios héroes a la vez. */
+@media(max-width:700px){.pack-selection-grid{grid-template-columns:repeat(3,1fr);gap:8px}.pack-selection-grid .pack-card{width:294px;max-width:none;zoom:.33}.pack-selection-grid .pack-card-actions .mission-button{font-size:22px;padding:14px 8px}.pack-card-chosen,.pack-card-epic{font-size:22px}}
+@media(min-width:420px) and (max-width:700px){.pack-selection-grid .pack-card{zoom:.42}}
