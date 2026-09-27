@@ -139,6 +139,8 @@ export default async function(req) {
       const isGuest = role === 'guest' && room.state.guest_nick === nick && body.token === room.state.guest_token;
       if (!isHost && !isGuest) return Response.json({ error: 'Not your room' }, { status: 403 });
       if (room.state.game_code) return Response.json({ error: 'La partida ya ha empezado.' }, { status: 409 });
+      const chosen = await base44.asServiceRole.entities.Card.filter({ card_id: { $in: team } });
+      if (chosen.filter(c => String(c.clan || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() === 'epicas').length > 1) return Response.json({ error: 'Máximo 1 héroe épico por ejército.' }, { status: 400 });
       if (room.state.modality === 'pack') {
         const own = room.state.pack_deal?.[role]?.flat() || [];
         const other = room.state.pack_deal?.[isHost ? 'guest' : 'host']?.flat() || [];
@@ -174,6 +176,22 @@ export default async function(req) {
       return Response.json({ ok: true });
     }
 
+    if (action === 'mp_replay') {
+      const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      const [room] = await base44.asServiceRole.entities.GameRoom.filter({ room_code: code }, '-updated_date', 1);
+      if (!room || room.state?.mp_mission !== 'mp' || room.state.owner_token !== body.token || !room.state.game_code || room.state.run_id !== body.run_id) return Response.json({ error: 'La revancha ya se ha preparado o la sala no está disponible.' }, { status: 409 });
+      const packDeal = room.state.modality === 'pack' ? await createMissionPackDeal(base44, room.state.mission) : null;
+      const round = Number(room.state.replay_round || 0) + 1;
+      const result = await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id, 'state.run_id': body.run_id }, { $set: {
+        'state.pack_deal': packDeal, 'state.host_team': null, 'state.host_ready': false,
+        'state.guest_team': null, 'state.guest_ready': false, 'state.game_code': null,
+        'state.run_id': null, 'state.replay_round': round,
+        'state.expires_at': Date.now() + MISSION_ROOM_TTL,
+      } });
+      if (result?.modified_count === 0) return Response.json({ error: 'La revancha ya se ha preparado.' }, { status: 409 });
+      return Response.json({ ok: true, round });
+    }
+
     if (action === 'mp_poll') {
       const code = String(body.code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
       if (!code) return Response.json({ error: 'Code required' }, { status: 400 });
@@ -198,6 +216,7 @@ export default async function(req) {
         guest_ready: !!room.state.guest_ready,
         game_code: room.state.game_code || null,
         run_id: room.state.run_id || null,
+        replay_round: room.state.replay_round || 0,
       });
     }
 

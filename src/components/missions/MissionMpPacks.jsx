@@ -17,9 +17,9 @@ export default function MissionMpPacks({ cards, mission, code, token, onTeamSele
     } catch (e) { setError(e.response?.data?.error || e.message || 'No se pudieron abrir los sobres.'); }
     finally { setBusy(false); }
   }
-  if (packs) return <PackOpening packs={packs} mission={mission} level={{ epics: 3 }} onTeamSelected={onTeamSelected} />;
+  if (packs) return <PackOpening packs={packs} mission={mission} level={{ epics: 1 }} onTeamSelected={onTeamSelected} />;
   return <div className="mission-pack"><Package size={62} /><h3 className="font-heading text-2xl">{mission.id === 'l5r' ? 'Un sobre de 4 héroes' : 'Tres sobres de 4 héroes'}</h3>
-    <p>Elige 3 para tu ejército. Reparto aleatorio, sin héroes repetidos entre jugadores ni entre sobres y sin límite de épicas.{(mission.id === 'club' || mission.id === 'todos') && ' Incluye todas las épicas del juego.'}</p>
+    <p>Elige 3 para tu ejército. Reparto aleatorio, sin héroes repetidos entre jugadores ni entre sobres y con un máximo de 1 héroe épico por ejército.{(mission.id === 'club' || mission.id === 'todos') && ' Incluye todas las épicas del juego.'}</p>
     <button className="mission-button primary" onClick={open} disabled={busy}>{busy && <LoaderCircle className="animate-spin" size={18} />}{busy ? 'Abriendo…' : 'Abrir mis sobres'}</button>
     {error && <p role="alert">{error}</p>}
   </div>;

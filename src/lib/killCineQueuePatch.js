@@ -290,14 +290,14 @@ export const KILL_CINE_QUEUE_PATCH = `
 
     var actor = pendingActor;
     var victims = pendingVictims.slice();
-    // Quita víctimas duplicadas y a la que tenga el mismo ID que el atacante
-    // (un héroe no se mata a sí mismo: si aparece como víctima es un error
-    // del motor y se elimina para que no salga dos veces el mismo héroe).
+    // El ejecutor debe pertenecer al bando opuesto de TODAS las víctimas.
+    // Si el turno avanzó (o hay daño reflejado), no atribuir la muerte a un aliado.
+    var sides = victims.map(function(v){return v.side;}).filter(Boolean);
+    if(!actor || !actor.side || !sides.length || sides.some(function(s){return s===actor.side;})) actor=null;
     var seen = {};
     victims = victims.filter(function(v){
       if(!v.id) return true;
       if(seen[v.key]) return false;
-      if(actor && v.side === actor.side && v.id === actor.id) return false;
       seen[v.key] = true;
       return true;
     });
@@ -352,8 +352,8 @@ export const KILL_CINE_QUEUE_PATCH = `
 
       // Anota el atacante
       var ka = window.__bfKillActor;
-      if(ka && Date.now() - ka.ts < 6000){
-        if(!pendingActor) pendingActor = { side: ka.side, id: ka.id, ts: ka.ts };
+      if(ka && ka.victim === vId && ka.side && ka.side !== side && Date.now() - ka.ts < 6000){
+        pendingActor = { side: ka.side, id: ka.id, ts: ka.ts };
       }
       // MULTIPLAYER (cliente): si __bfKillActor no se fijó (dealDamage no
       // corre en el invitado), deduce el atacante del turno activo. Es el
@@ -372,7 +372,7 @@ export const KILL_CINE_QUEUE_PATCH = `
             }
           }
           // Solo si el atacante no es la propia víctima
-          if(fbActor && fbActor.id !== vId){
+          if(fbActor && fbActor.side && fbActor.side !== side){
             pendingActor = fbActor;
           }
         }catch(e){}

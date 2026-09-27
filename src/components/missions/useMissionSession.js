@@ -72,7 +72,7 @@ export default function useMissionSession(iframeRef) {
     if (starting || pending.current) return;
     const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, room_code: cfg.room_code, token: cfg.token, run_id: cfg.run_id || crypto.randomUUID() };
     run.current = current; setError(''); setNotice(''); setStarting(true);
-    send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, game_code: cfg.game_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
+    send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, game_code: cfg.game_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, round: cfg.round || 0, token: cfg.token, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 15000);
   }
   function close() { if (pending.current) { setError('Guarda la victoria pendiente antes de salir.'); return; } if (pendingCelebration.current) { const pc = pendingCelebration.current; pendingCelebration.current = null; setCelebration(pc); } ++loadId.current; openNick.current = null; setSession(null); send({ bfMissionClose: true }); }

@@ -27,19 +27,45 @@ export const MISSION_ENGINE_PATCH = `<script>
     activeRun.celebrationReady=true;
     tell({bfMissionCelebrationReady:activeRun.run_id});
   }
-  window.bfOpenMissions=function(){
+  window.bfOpenMissions=function(replay){
     reportMissionResult();
     if(typeof clearWatchdog==='function')clearWatchdog();
     if(typeof B!=='undefined'&&B)B.over=true;
     G._gameOver=true;
-    tell({bfMissionOpen:{nick:G.names.p,heroes:HEROES.map(function(h){return {id:h.id,number:h.num,name:h.name};})}});
+    tell({bfMissionOpen:{nick:(activeRun&&activeRun.nick)||G.names.p,heroes:HEROES.map(function(h){return {id:h.id,number:h.num,name:h.name};}),replay:replay&&activeRun&&activeRun.modality?{mission:activeRun.mission,modality:activeRun.modality,role:activeRun.role,room_code:activeRun.room_code,token:activeRun.token,password:activeRun.password,nick:activeRun.nick,oppNick:activeRun.oppNick,run_id:activeRun.run_id,round:activeRun.round||0}:null}});
   };
+  function replayNow(){
+    if(!activeRun||!activeRun.modality||!document.querySelector('#s-result.active'))return;
+    reportMissionResult();
+    var ov=document.getElementById('bf-end-cine');if(ov)ov.remove();
+    window.bfOpenMissions(true);
+  }
+  window.bfMissionReplay=function(){
+    if(!activeRun||!activeRun.modality||!document.querySelector('#s-result.active'))return;
+    if(typeof NET!=='undefined'&&NET.role==='client'){
+      netSend({t:'bfMissionReplayRequest',run_id:activeRun.run_id});
+      var b=document.getElementById('bf-mission-replay');if(b){b.disabled=true;b.textContent='Esperando al anfitrión…';}
+    }else{
+      netSend({t:'bfMissionReplayStart',run_id:activeRun.run_id});
+      replayNow();
+    }
+  };
+  var replayConn=null;
+  setInterval(function(){
+    if(typeof NET==='undefined'||!NET.conn||NET.conn===replayConn)return;
+    replayConn=NET.conn;
+    replayConn.on('data',function(msg){
+      if(!msg||!activeRun||!activeRun.modality||msg.run_id!==activeRun.run_id)return;
+      if(msg.t==='bfMissionReplayRequest'&&NET.role==='host')window.bfMissionReplay();
+      if(msg.t==='bfMissionReplayStart'&&NET.role==='client')replayNow();
+    });
+  },350);
   window.bfSetupMissionMp=function(){
     var mp=window.bfMissionMpConfig;if(!mp)return;
     var tp=mp.myTeam.map(function(id){return HEROES.find(function(h){return h.id===id;});});
     var to=mp.oppTeam.map(function(id){return HEROES.find(function(h){return h.id===id;});});
     if(tp.length!==3||to.length!==3||tp.concat(to).some(function(h){return !h;})){tell({bfMissionStartError:'Algún héroe no está disponible en el motor.'});return;}
-    G.bfMission={run_id:mp.run_id,mission:mp.mission,modality:mp.modality};activeRun=G.bfMission;
+    G.bfMission={run_id:mp.run_id,mission:mp.mission,modality:mp.modality,role:mp.role,room_code:mp.room_code,token:mp.token,password:mp.password,nick:mp.nick,oppNick:mp.oppNick,round:mp.round};activeRun=G.bfMission;
     G.mode='online';G.online=true;G.demo=false;G.demoExample=false;G._gameOver=false;G._result=null;G.__bfAdWarnAck=false;
     G.team={p:tp.map(makeInstance),o:to.map(makeInstance)};
     var eqC=150;G.coins={p:0,o:0};G.equipCoins={p:eqC,o:eqC};G.equipReserve={p:0,o:0};G.bfEquipXfer={p:0,o:0};
@@ -73,7 +99,7 @@ export const MISSION_ENGINE_PATCH = `<script>
   window.applySnapshot=function(snap){
     var result=applyMpSnapshot.apply(this,arguments),mp=window.bfMissionMpConfig;
     if(mp&&mp.role==='guest'&&snap&&snap.screen==='s-equip'){
-      G.online=true;G._gameOver=false;G.bfMission={run_id:mp.run_id,mission:mp.mission,modality:mp.modality};activeRun=G.bfMission;
+      G.online=true;G._gameOver=false;G.bfMission={run_id:mp.run_id,mission:mp.mission,modality:mp.modality,role:mp.role,room_code:mp.room_code,token:mp.token,password:mp.password,nick:mp.nick,oppNick:mp.oppNick,round:mp.round};activeRun=G.bfMission;
       tell({bfMissionStarted:mp.run_id});window.bfMissionMpConfig=null;
     }
     return result;
@@ -93,6 +119,12 @@ export const MISSION_ENGINE_PATCH = `<script>
     }
     if(!G.bfMission)return;
     reportMissionResult();
+    var oldReplay=document.getElementById('bf-mission-replay');
+    if(!G.bfMission.modality && oldReplay)oldReplay.remove();
+    if(G.bfMission.modality && document.querySelector('#s-result.active') && !oldReplay){
+      var replayBtn=document.createElement('button');replayBtn.id='bf-mission-replay';replayBtn.className='btn primary';replayBtn.textContent='Volver a jugar la misión';replayBtn.onclick=window.bfMissionReplay;
+      document.querySelector('#s-result.active').appendChild(replayBtn);
+    }
     var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=150;var lbl='Misión '+missionName(G.bfMission.mission).toUpperCase();if(G.bfMission.level)lbl+=' · Nivel '+G.bfMission.level;if(G.bfMission.modality)lbl+=' · '+G.bfMission.modality;lbl+=' · '+ec+' monedas de equipamiento';if(!G.bfMission.modality)lbl+=' · Sin sobrante de héroes';subtitle.textContent=lbl;}
     var header=document.querySelector('#s-equip.active .r-header');
     if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=window.bfOpenMissions;header.appendChild(back);}

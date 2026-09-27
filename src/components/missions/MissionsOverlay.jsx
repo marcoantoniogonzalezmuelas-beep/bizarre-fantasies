@@ -15,7 +15,7 @@ export default function MissionsOverlay({ iframeRef }) {
   const shellRef = useRef(null);
   useMissionPinch(shellRef, Boolean(s.session && !s.celebration));
   useEffect(() => { const image = new Image(); image.src = MISSION_BACKGROUND; }, []);
-  useEffect(() => { if (s.session) setLevel(null); }, [s.session]);
+  useEffect(() => { if (s.session) { setLevel(null); if(s.session.replay) setMpMode(true); } }, [s.session]);
   if (s.celebration) return <MissionVictoryCelebration reward={s.celebration} onClose={s.dismissCelebration} />;
   if (!s.session) return null;
   return <div className="bf-missions" role="dialog" aria-modal="true" aria-labelledby="mission-title">
@@ -27,7 +27,7 @@ export default function MissionsOverlay({ iframeRef }) {
       {s.error && <div className="mission-notice" role="alert">{s.error}{s.hasPending && <button className="mission-button mt-2" onClick={s.persist}>Reintentar guardado</button>}</div>}
       {s.loading ? <div className="mission-pack"><LoaderCircle className="animate-spin" /><p>Cargando héroes y progreso…</p></div> : <>
         <div className="mission-mode-toggle" role="tablist" aria-label="Modo de misión"><button className={mpMode ? '' : 'active'} role="tab" aria-selected={!mpMode} onClick={() => setMpMode(false)}>Individual</button><button className={mpMode ? 'active' : ''} role="tab" aria-selected={mpMode} onClick={() => setMpMode(true)}>Multijugador</button></div>
-        {mpMode ? <MissionMpLobby cards={s.cards} nick={s.session.nick} starting={s.starting} onBack={() => setMpMode(false)} onStart={s.startMp} /> : <>
+        {mpMode ? <MissionMpLobby key={s.session.replay?.run_id || 'normal'} replay={s.session.replay} cards={s.cards} nick={s.session.nick} starting={s.starting} onBack={() => setMpMode(false)} onStart={s.startMp} /> : <>
         {!level && <nav className="mission-tabs" aria-label="Elegir misión">{MISSIONS.map(m => <button key={m.id} className={m.id === missionId ? 'active' : ''} aria-pressed={m.id === missionId} onClick={() => setMissionId(m.id)}><span className="font-heading text-xl">Misión {m.name}</span><span className="text-sm opacity-75">{m.description}</span></button>)}</nav>}
         {pool.length < 3 ? <p role="alert">Esta misión necesita al menos tres héroes etiquetados y disponibles en el juego.</p> : level ? <MissionPreparation key={`${missionId}-${level.id}`} mission={mission} level={level} pool={pool} onBack={() => setLevel(null)} starting={s.starting} onStart={(player, rival) => s.start(mission, level, player, rival)} /> : <MissionLevels mission={mission} pool={pool} victories={s.victories} onChoose={setLevel} />}
         </>}

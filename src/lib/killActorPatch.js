@@ -51,7 +51,7 @@ export const KILL_ACTOR_PATCH = `
       var actor = currentActor();
       var result = orig.apply(this, arguments);
       try{
-        if(wasAlive && target && !target.alive && actor && actor.id !== target.id){
+        if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).some(function(h){return h && h.id === actor.id;}) && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){
           var ctx = window.__bfActionCtx;
           var kind = (ctx && Date.now() - ctx.ts < 6000) ? ctx.kind : 'attack';
           window.__bfKillActor = {
@@ -120,7 +120,8 @@ export const KILL_ACTOR_PATCH = `
           }
           // Solo lo usa si el atacante deducido NO es la propia víctima (un
           // héroe no se mata a sí mismo).
-          if(fallbackActor && fallbackActor.id !== death.id){
+          var deathSide = death.side || death.toSide || (typeof G !== 'undefined' && G.team && (G.team.p || []).some(function(h){return h && h.id === death.id;}) ? 'p' : (typeof G !== 'undefined' && G.team && (G.team.o || []).some(function(h){return h && h.id === death.id;}) ? 'o' : ''));
+          if(fallbackActor && deathSide && fallbackActor.side && fallbackActor.side !== deathSide){
             a = fallbackActor;
             window.__bfKillActor = a;
           }

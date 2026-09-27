@@ -29,10 +29,10 @@ export const END_GAME_SYNC_PATCH = `
     var orig = window.showResult;
     window.showResult = function(youWin){
       try{
-        if(typeof netSend === 'function' && !window.__bfEndSyncGot){
+        if(typeof netSend === 'function' && !window.__bfEndSyncGot && (!G.bfMission || (typeof NET !== 'undefined' && NET.role === 'host'))){
           // pWin: victoria del anfitrión (lado 'p'), independiente de quién avisa.
-          var pWin = (youWin === (mySide() === 'p'));
-          netSend({ t: 'bfEndSync', pWin: pWin });
+          var pWin = G._result && typeof G._result.pWin === 'boolean' ? G._result.pWin : (youWin === (mySide() === 'p'));
+          netSend({ t: 'bfEndSync', pWin: pWin, bfMissionRun: G.bfMission && G.bfMission.run_id });
         }
       }catch(e){}
       return orig.apply(this, arguments);
@@ -48,17 +48,21 @@ export const END_GAME_SYNC_PATCH = `
     // corregir el vídeo si el cliente ya transicionó con un resultado local
     // equivocado). Nunca durante subastas ni equipamiento.
     if(!inBattle() && !resultShown()) return;
+    var authoritative = !!(msg.bfMissionRun && typeof G !== 'undefined' && G.bfMission && G.bfMission.run_id === msg.bfMissionRun && typeof NET !== 'undefined' && NET.role === 'client');
+    if(msg.bfMissionRun && !authoritative) return;
     // SAFETY: no procesar bfEndSync si ambos bandos siguen teniendo héroes
     // vivos. Previene finales falsos por mensajes bfEndSync erróneos o
     // duplicados (p. ej. cuando team.o no tiene el flag 'alive' puesto aún).
-    if(inBattle() && typeof G !== 'undefined' && G && G.team && G.team.p && G.team.o){
+    if(!authoritative && inBattle() && typeof G !== 'undefined' && G && G.team && G.team.p && G.team.o){
       var pA = (G.team.p || []).filter(function(h){ return h && h.alive !== false && !h._bfDuck; }).length;
       var oA = (G.team.o || []).filter(function(h){ return h && h.alive !== false && !h._bfDuck; }).length;
       if(pA > 0 && oA > 0) return;
     }
+    if(authoritative && resultShown() && G._result && G._result.pWin === !!msg.pWin && document.getElementById('bf-end-cine')) return;
     window.__bfEndSyncGot = true;
     try{
-      if(typeof G !== 'undefined' && G) G._result = { pWin: !!msg.pWin };
+      if(typeof G !== 'undefined' && G) { G._result = { pWin: !!msg.pWin }; if(authoritative) G._gameOver = true; }
+      if(authoritative && typeof B !== 'undefined' && B) B.over = true;
       ['bf-abil-anim','bf-kill-ov','bf-spec-cine','bf-target-pick'].forEach(function(id){
         var el = document.getElementById(id);
         if(el && el.parentNode) el.parentNode.removeChild(el);
@@ -93,10 +97,21 @@ export const END_GAME_SYNC_PATCH = `
     return true;
   }
 
-  var tries = 0, t = setInterval(function(){
-    var a = hookShowResult(), b = hookNetRecv();
-    if((window.showResult && window.showResult.__bfEndSync && window.netOnData && window.netOnData.__bfEndSync) || tries++ > 200) clearInterval(t);
-  }, 200);
+  var observedConn = null, sentRun = '';
+  setInterval(function(){
+    hookShowResult(); hookNetRecv();
+    try{
+      if(typeof NET === 'undefined' || !NET || !NET.conn || !NET.conn.open) return;
+      if(observedConn !== NET.conn){
+        observedConn = NET.conn;
+        observedConn.on('data', handle);
+      }
+      if(NET.role === 'host' && G.bfMission && G.bfMission.modality && G._gameOver && G._result && typeof G._result.pWin === 'boolean' && sentRun !== G.bfMission.run_id){
+        sentRun = G.bfMission.run_id;
+        NET.conn.send({t:'bfEndSync',pWin:G._result.pWin,bfMissionRun:sentRun});
+      }
+    }catch(e){}
+  }, 350);
 })();
 </script>
 `;

@@ -69,7 +69,7 @@ export const MP_MISSIONS = [
   { id: 'todos', name: 'Todos los Héroes', description: 'Todos los héroes del juego, incluidas las épicas.' },
 ];
 export const MP_MODALITIES = [
-  { id: 'pack', name: 'Sobre', description: 'Abre tus sobres exclusivos y elige 3 héroes; épicas sin límite.' },
+  { id: 'pack', name: 'Sobre', description: 'Abre tus sobres exclusivos y elige 3 héroes; máximo una épica por ejército.' },
   { id: 'budget', name: '100 monedas', description: 'Cada jugador compra 3 héroes con 100 monedas.' },
 ];
 export const MP_EQUIP_COINS = 150;
