@@ -85,6 +85,21 @@ export const KILL_CINE_QUEUE_PATCH = `
   var pendingActor = null;
   var killTimer = null;
   var lastCineSeen = 0, pollId = 0;
+  // Una muerte sigue registrada al salir de la cola: el motor y flushFx
+  // pueden notificarla de nuevo durante la espera o después del overlay.
+  var claimedDeaths = Object.create(null), wasInBattle = false;
+  function refreshDeaths(){
+    var battle = document.getElementById('s-battle');
+    var inBattle = !!(battle && battle.classList.contains('active'));
+    if(wasInBattle && !inBattle) claimedDeaths = Object.create(null);
+    wasInBattle = inBattle;
+    Object.keys(claimedDeaths).forEach(function(key){
+      var death = claimedDeaths[key];
+      var hero = typeof getHero === 'function' ? getHero(death.side, death.id) : null;
+      // Resucitar permite una nueva muerte legítima, incluso con el mismo id.
+      if(hero && hero.alive) delete claimedDeaths[key];
+    });
+  }
   // Expone el estado de la cola para que bfStepWhenCalm sepa que hay un
   // golpe mortal pendiente de mostrarse (aún en el retardo antes de aparecer).
   window.__bfKillCinePending = function(){ return pendingVictims.length > 0; };
@@ -281,13 +296,14 @@ export const KILL_CINE_QUEUE_PATCH = `
     var seen = {};
     victims = victims.filter(function(v){
       if(!v.id) return true;
-      if(seen[v.id]) return false;
-      if(actor && v.id === actor.id) return false;
-      seen[v.id] = true;
+      if(seen[v.key]) return false;
+      if(actor && v.side === actor.side && v.id === actor.id) return false;
+      seen[v.key] = true;
       return true;
     });
     pendingVictims = [];
     pendingActor = null;
+    if(!victims.length){ stopWatch(); return; }
 
     // Pequeño margen: si la escena sigue ocupada, espera un poco más
     function proceed(){
@@ -319,10 +335,15 @@ export const KILL_CINE_QUEUE_PATCH = `
       var vHero = heroFromCard(card);
       var vArt = artFromCard(card);
       var vId = vHero ? vHero.id : ('dom_' + (card.id || ''));
-      var dup = pendingVictims.some(function(p){ return p.id === vId; });
+      var parts = String(card.id || '').split('_'), side = parts[1] || '';
+      var key = side + '_' + vId;
+      if(vHero && vHero.alive) return;
+      if(claimedDeaths[key]) return;
+      claimedDeaths[key] = { side: side, id: vId };
+      var dup = pendingVictims.some(function(p){ return p.key === key; });
       if(!dup){
         pendingVictims.push({
-          id: vId,
+          id: vId, side: side, key: key,
           name: vHero ? vHero.name : '',
           clan: vHero ? vHero.clan || (vHero._token ? 'Bizarros' : '') : '',
           art: vArt
@@ -385,6 +406,7 @@ export const KILL_CINE_QUEUE_PATCH = `
   // que se ejecute (la llama por referencia interno), los eliminamos del DOM
   // inmediatamente. Nuestra cinemática lleva data-bf-new="1" y no se toca.
   setInterval(function(){
+    refreshDeaths();
     document.querySelectorAll('[id="bf-kill-ov"]').forEach(function(el){
       if(el.dataset.bfNew !== '1') el.remove();
     });

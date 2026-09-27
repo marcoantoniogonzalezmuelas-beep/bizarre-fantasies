@@ -37,4 +37,33 @@ test('death overlay attributes thematic last words to the victim',()=>{
  const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;
  f.c.bfKillCinematic(card);f.tick(800);assert(f.select('#bf-kill-ov'));assert.match(f.select('.bf-kill-speaker').textContent,/Héroe caído · No-muertos/);assert(!f.select('.bf-kill-ko').textContent.includes('ELIMINADO'));
  const texts=f.all().map(n=>n.textContent).join(' ');assert.match(texts,/resucitar|cripta|costumbre|descansar/);f.tick(4400);assert(f.select('#bf-kill-ov'));f.tick(700);assert.equal(f.select('#bf-kill-ov'),null);
-});
+ });
+ test('one death is shown once across pending, waiting, playing and completed stages',()=>{
+ const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;
+ let shown=0;f.c.__bfAppend=n=>{shown++;f.c.document.body.appendChild(n);};
+ f.c.bfKillCinematic(card);f.c.bfKillCinematic(card);f.tick(650);
+ f.c.bfKillCinematic(card);f.tick(200);assert.equal(shown,1);
+ f.c.bfKillCinematic(card);f.tick(6500);f.c.bfKillCinematic(card);f.tick(7000);
+ assert.equal(shown,1);assert.equal(f.select('#bf-kill-ov'),null);
+ });
+ test('resurrection permits another death without replaying the previous death',()=>{
+ const f=fixture(),hero={id:'test',name:'Test',alive:false};f.c.getHero=()=>hero;
+ f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;
+ let shown=0;f.c.__bfAppend=n=>{shown++;f.c.document.body.appendChild(n);};
+ f.c.bfKillCinematic(card);f.tick(6000);hero.alive=true;f.tick(100);f.c.bfKillCinematic(card);f.tick(800);assert.equal(shown,1);
+ hero.alive=false;f.c.bfKillCinematic(card);f.tick(800);assert.equal(shown,2);
+ });
+ test('same hero ids on opposite sides remain separate victims',()=>{
+ const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');
+ for(const side of ['p','o']){const card=f.node();card.id='b_'+side+'_test';card.querySelector=()=>null;f.c.bfKillCinematic(card);}
+ f.tick(800);assert.equal(f.all().filter(n=>n.className==='bf-kill-speaker').length,2);
+ });
+ test('death hooks install once even when later patches wrap their functions',()=>{
+ const f=fixture();f.c.endTurn=()=>{};let calls=0;f.c.bfKillCinematic=()=>calls++;
+ const card=f.node();card.id='b_o_test';f.c.document.body.appendChild(card);
+ f.load('finalCinematicPatch','FINAL_CINEMATIC_PATCH');
+ const flush=f.c.flushFx,turn=f.c.endTurn;f.c.flushFx=(...a)=>flush(...a);f.c.endTurn=(...a)=>turn(...a);
+ const wrappedFlush=f.c.flushFx,wrappedTurn=f.c.endTurn;f.tick(1000);
+ assert.equal(f.c.flushFx,wrappedFlush);assert.equal(f.c.endTurn,wrappedTurn);
+ f.c.flushFx([{k:'death',side:'o',id:'test'}]);f.tick(800);assert.equal(calls,1);
+ });

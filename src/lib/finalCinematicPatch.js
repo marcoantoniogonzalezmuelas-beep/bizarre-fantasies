@@ -34,7 +34,8 @@ export const FINAL_CINEMATIC_PATCH = `
 
   function installDeath(){
     if(typeof window.flushFx!=='function')return false;
-    if(window.flushFx.__bfFinalKill)return true;
+    if(window.__bfFinalKillInstalled)return true;
+    window.__bfFinalKillInstalled=true;
     var original=window.flushFx;
     window.flushFx=function(events){
       var hasDeath=false;
@@ -79,7 +80,9 @@ export const FINAL_CINEMATIC_PATCH = `
   }
 
   function installDeathDelay(){
-    if(typeof window.endTurn!=='function'||window.endTurn.__bfDeathDelay)return false;
+    if(typeof window.endTurn!=='function')return false;
+    if(window.__bfDeathDelayInstalled)return true;
+    window.__bfDeathDelayInstalled=true;
     var orig=window.endTurn;
     window.endTurn=function(){
       // IMPORTANTE: el fin de turno NUNCA se aplaza en bucle esperando a las
