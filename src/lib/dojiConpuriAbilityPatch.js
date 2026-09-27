@@ -11,8 +11,9 @@
 //   esté). Sale 2 → no hace nada. Sea cual sea, la amenaza se consume (una
 //   sola vez por partida).
 //
-//   Élite (Gran Amenaza): al MORIR, resucita a todos los aliados caídos y los
-//   cura a vida completa. Solo se activa si queda al menos otro aliado vivo
+//   Élite (Gran Amenaza): al MORIR, resucita a UN aliado caído (el último en
+//   caer), lo cura a vida completa y le devuelve el arma y la armadura que
+//   llevaba al morir (saliendo de la pila de descartes). Solo se activa si queda al menos otro aliado vivo
 //   (si no, la partida se acaba y no tiene sentido).
 export const DOJI_CONPURI_ABILITY_PATCH = `
 <script>
@@ -60,7 +61,7 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
         // Cinemática 3D en el momento exacto de la activación.
         if(typeof window.__bfPlayAbilityAnim === 'function'){ try{ window.__bfPlayAbilityAnim(side, h, true); }catch(e){} }
         var name = h.eliteMode ? (h.eAbility||h.ability||h.name) : (h.ability||h.name);
-        if(typeof pushLog === 'function') pushLog('li', name + ' se arma: '+(h.eliteMode?'al morir resucitar\\u00e1 a todos los aliados ca\\u00eddos.':'la pr\\u00f3xima vez que reciba da\\u00f1o, lanzar\\u00e1 el dado mortal.'));
+        if(typeof pushLog === 'function') pushLog('li', name + ' se arma: '+(h.eliteMode?'al morir resucitar\\u00e1 a un aliado ca\\u00eddo con vida completa y su equipo.':'la pr\\u00f3xima vez que reciba da\\u00f1o, lanzar\\u00e1 el dado mortal.'));
         if(typeof pushFx === 'function') pushFx({k:'status', side:side, id:h.id, txt:'\\u26a0'});
         if(typeof renderBattle === 'function') renderBattle();
         if(typeof netSync === 'function') netSync('s-battle');
@@ -136,13 +137,24 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
           if(!aliveOther){
             if(typeof pushLog === 'function') pushLog('lx', target.name+': cae sin aliados vivos. La partida termina.');
           } else if(dead.length){
-            dead.forEach(function(a){
-              if(typeof reviveHero === 'function') reviveHero(a, 1);
-              a.alive = true;
-              a.hp = a.maxHp || a.hp || 1;
-              if(typeof pushFx === 'function') pushFx({k:'elite', side:side, id:a.id});
+            // Resucita a UN aliado: el último en caer.
+            var a = dead.slice().sort(function(x,y){ return (y._bfDeathAt||0)-(x._bfDeathAt||0); })[0];
+            var gear = a._bfDeathGear || {};
+            var pile = (typeof G!=='undefined' && G.itemDescarte && G.itemDescarte[side]) || null;
+            var rearmed = [];
+            ['mwep','rwep','armor'].forEach(function(slot){
+              var eq = gear[slot]; if(!eq) return;
+              a[slot] = eq; rearmed.push(eq.name || slot);
+              // Saca esa carta de la pila de descartes.
+              if(pile){ for(var i = pile.length-1; i >= 0; i--){ if(pile[i] && pile[i].kind === slot && pile[i].id === eq.id){ pile.splice(i,1); break; } } }
             });
-            if(typeof pushLog === 'function') pushLog('li', '\\u{1F31F} '+target.name+': resucita a '+dead.map(function(a){return a.name;}).join(', ')+' con vida completa.');
+            a._bfDeathGear = null;
+            a._bfKeepGear = true; // que el reset de resurrección no le quite el equipo
+            if(typeof reviveHero === 'function') reviveHero(a, 1); // maxHp incluye la armadura
+            a.alive = true;
+            a.hp = a.maxHp || a.hp || 1;
+            if(typeof pushFx === 'function') pushFx({k:'elite', side:side, id:a.id});
+            if(typeof pushLog === 'function') pushLog('li', '\\u{1F31F} '+target.name+': resucita a '+a.name+' con vida completa'+(rearmed.length?' y rearmado ('+rearmed.join(', ')+')':'')+'.');
             if(typeof renderBattle === 'function') renderBattle();
             if(typeof netSync === 'function') netSync('s-battle');
           } else if(typeof pushLog === 'function'){

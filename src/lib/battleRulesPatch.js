@@ -75,6 +75,10 @@ export const BATTLE_RULES_PATCH = `
     if(h.mwep)eqs.push({slot:'mwep',id:h.mwep.id});
     if(h.rwep)eqs.push({slot:'rwep',id:h.rwep.id});
     if(h.armor)eqs.push({slot:'armor',id:h.armor.id});
+    // Recuerda el equipo que llevaba al morir (lo usa Gran Amenaza de Doji
+    // Conpuri para rearmarlo al resucitar).
+    h._bfDeathGear={mwep:h.mwep||null,rwep:h.rwep||null,armor:h.armor||null};
+    h._bfDeathAt=Date.now();
     // Quita el equipo: el diff de discardPilePatch lo detecta y lo mete en el
     // descarte. Aquí sólo animamos el vuelo de las cartas al descarte.
     h.mwep=null;h.rwep=null;h.armor=null;
@@ -105,7 +109,9 @@ export const BATTLE_RULES_PATCH = `
   function onRevive(side,h){
     // Renace limpio: sin equipo, sin estados. Las marcas de habilidad usada
     // (_bfNormalUsed / _bfEliteUsed) persisten (regla de oro: una vez por batalla).
-    h.mwep=null;h.rwep=null;h.armor=null;
+    // Excepción: si una habilidad lo resucita rearmado (_bfKeepGear), conserva el equipo.
+    if(h._bfKeepGear) h._bfKeepGear=false;
+    else { h.mwep=null;h.rwep=null;h.armor=null; }
     if(h._mods)h._mods=[];
     if('skip' in h)h.skip=0;
     if('para' in h)h.para=0;
