@@ -29,14 +29,16 @@ export default function PackReveal3D({ card, onReveal }) {
     <div ref={turnRef} className={`pack-reveal-turn ${revealed ? 'is-revealed' : ''}`} style={style}>
       <span className="pack-reveal-core" aria-hidden="true" />
       <span className="pack-reveal-core pack-reveal-core-2" aria-hidden="true" />
-      <button className="pack-reveal-back" aria-label="Revelar carta" disabled={revealed} onClick={reveal} tabIndex={revealed ? -1 : 0} aria-hidden={revealed && !showingBack}>
-        <img src={CARD_BACK_URL} alt="Reverso BF con el emblema del pollito" draggable={false} />
-        <span className="pack-back-frame" aria-hidden="true" />
-        <span className="pack-back-holo" aria-hidden="true" />
-        {!revealed && <span className="pack-back-label">Toca para revelar</span>}
-      </button>
+      {revealed
+        ? <div className="pack-reveal-back" aria-hidden={!showingBack}><PackCard card={card} forceElite hideActions /><span className="pack-reveal-shine" aria-hidden="true" /></div>
+        : <button className="pack-reveal-back" aria-label="Revelar carta" onClick={reveal}>
+          <img src={CARD_BACK_URL} alt="Reverso BF con el emblema del pollito" draggable={false} />
+          <span className="pack-back-frame" aria-hidden="true" />
+          <span className="pack-back-holo" aria-hidden="true" />
+          <span className="pack-back-label">Toca para revelar</span>
+        </button>}
       <div className="pack-reveal-front" aria-hidden={!revealed || showingBack}><PackCard card={card} /><span className="pack-reveal-shine" aria-hidden="true" /></div>
     </div>
-    {revealed && <div className="pack-inspect-controls"><button className="mission-button" onPointerDown={e => e.stopPropagation()} onClick={() => setSpin(s => s + 180)}>{showingBack ? 'Ver anverso' : 'Ver reverso'}</button><span className="pack-drag-hint">Arrastra para girar</span></div>}
+    {revealed && <div className="pack-inspect-controls"><button className="mission-button" onPointerDown={e => e.stopPropagation()} onClick={() => setSpin(s => s + 180)}>{showingBack ? 'Ver normal' : 'Ver élite'}</button><span className="pack-drag-hint">Arrastra para girar</span></div>}
   </div>;
 }

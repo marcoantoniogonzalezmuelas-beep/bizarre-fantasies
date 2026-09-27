@@ -98,7 +98,10 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
           <h3 className="font-heading text-2xl">Elige tu ejército</h3>
           <p>3 héroes de los {allHeroes.length} revelados · {selected.length}/3 elegidos</p>
         </div>
-        <PackArmyBar selected={selected} level={level} onRemove={toggleHero} />
+        <PackArmyBar selected={selected} level={level} onRemove={toggleHero} action={<>
+          {error && <p role="alert" className="text-red-400 text-sm mt-2">{error}</p>}
+          <button className="mission-button primary pack-army-action" disabled={selected.length !== 3} onClick={confirm}><Check size={18} /> Confirmar ejército</button>
+        </>} />
         <div className="pack-selection-grid">
           {allHeroes.map(card => (
             <PackCard key={card.id} card={card}
@@ -108,10 +111,6 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
             />
           ))}
         </div>
-        {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}
-        <button className="mission-button primary" disabled={selected.length !== 3} onClick={confirm}>
-          <Check size={18} /> Confirmar ejército
-        </button>
       </div>
     );
   }

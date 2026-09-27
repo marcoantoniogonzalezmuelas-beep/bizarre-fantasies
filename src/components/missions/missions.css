@@ -1,4 +1,4 @@
-.bf-missions{position:fixed;inset:0;z-index:100200;overflow-y:auto;background:#0a0612;color:hsl(var(--foreground));font-family:var(--font-body);overscroll-behavior:contain;isolation:isolate}.bf-missions::before{content:'';position:fixed;inset:0;z-index:1;background:linear-gradient(rgba(10,6,18,.72),rgba(10,6,18,.92));pointer-events:none}.mission-background{position:fixed;inset:0;z-index:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center}.mission-shell{position:relative;z-index:2;max-width:1200px;margin:auto;padding:36px 28px 80px}
+.bf-missions{position:fixed;inset:0;z-index:100200;overflow:auto;touch-action:pan-x pan-y;background:#0a0612;color:hsl(var(--foreground));font-family:var(--font-body);overscroll-behavior:contain;isolation:isolate}.bf-missions::before{content:'';position:fixed;inset:0;z-index:1;background:linear-gradient(rgba(10,6,18,.72),rgba(10,6,18,.92));pointer-events:none}.mission-background{position:fixed;inset:0;z-index:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center}.mission-shell{position:relative;z-index:2;max-width:1200px;margin:auto;padding:36px 28px 80px}
 .mission-header,.mission-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .mission-header{color:hsl(var(--mission-accent));border-bottom:1px solid hsl(var(--mission-line));padding-bottom:24px}
 .mission-eyebrow{color:hsl(var(--mission-accent));font-size:10px;font-weight:700;letter-spacing:.19em;margin-bottom:7px}
@@ -118,6 +118,7 @@
 .pack-card-chosen{top:42%;background:#16a34a;color:#fff;box-shadow:0 0 16px rgba(74,222,128,.9)}
 .pack-card-epic{bottom:-12px;background:#2a1640;color:#ffd24a;border:1.5px solid #ffd24a}
 .pack-army{position:sticky;top:0;z-index:20;width:100%;padding:12px;border-radius:14px;background:rgba(14,10,22,.95);border:1.5px solid rgba(255,210,74,.5)}
+.pack-army-action{width:100%;margin-top:10px;justify-content:center}
 .pack-army-rules{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;margin-bottom:10px;color:#efe9dc}
 .pack-army-rules li::before{content:'• ';color:#ffd24a}
 .pack-army-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
