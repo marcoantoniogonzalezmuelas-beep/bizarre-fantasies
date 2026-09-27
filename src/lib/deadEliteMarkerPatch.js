@@ -14,12 +14,18 @@ export const DEAD_ELITE_MARKER_PATCH = `
   document.head.appendChild(st);
   // Quita la estrella ★ del nombre de los héroes muertos.
   function clean(){
+    // Sello flotante "★ ÉLITE" (y su aura) que se queda pegado en héroes muertos.
+    document.querySelectorAll('.bhero.dead, .bhero.bf-dead, .bhero.bf-truedead').forEach(function(c){
+      c.querySelectorAll('.bf-fx-elite-flip, .bf-fx-elite-aura, .bf-fx-status-txt').forEach(function(n){
+        if(!n.classList.contains('bf-fx-status-txt') || /LITE/i.test(n.textContent)) n.remove();
+      });
+    });
     document.querySelectorAll('.bhero.dead .bhero-name, .bhero.bf-truedead .bhero-name').forEach(function(n){
       var w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT), t;
       while((t = w.nextNode())){ if(t.nodeValue.indexOf('\\u2605') !== -1) t.nodeValue = t.nodeValue.replace(/\\s*\\u2605/g, ''); }
     });
   }
-  setInterval(clean, 400);
+  setInterval(clean, 250);
 })();
 </script>
 `;

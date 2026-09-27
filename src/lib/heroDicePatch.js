@@ -65,7 +65,7 @@ export const HERO_DICE_PATCH = `
     + '@keyframes bfHdSpark{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2)}}';
   st.textContent += ${JSON.stringify(HERO_DICE_PRESENTATION_CSS)};
   document.head.appendChild(st);
-  var ROLL_MS=1650, READ_MS=4500, EXIT_MS=550;
+  var ROLL_MS=2600, READ_MS=4500, EXIT_MS=550;
   var TOTAL_MS=ROLL_MS+READ_MS+EXIT_MS;
 
   var BIZARRE = ['\\u00a1EL DADO DECIDE!', 'EL AZAR BIZARRO HABLA', 'RUEDA EL HUESO M\\u00c1GICO', 'EL DESTINO TARTAMUDEA', 'CAOS EN 3, 2, 1\\u2026'];
@@ -144,6 +144,10 @@ export const HERO_DICE_PATCH = `
   // haya en cola (la de la acción anterior). REGLA GENERAL: cualquier tirada
   // de dado sale DESPUÉS de la animación 3D en curso, nunca solapada.
   function launchPop(payload, onSettled){
+    // Una tirada = un solo dado: la misma tirada llega por la vía local y por
+    // la cola de efectos (flushFx); la segunda se descarta.
+    window.__bfDiceSeen = window.__bfDiceSeen || {};
+    if(payload && payload.rid){ if(window.__bfDiceSeen[payload.rid]) return; window.__bfDiceSeen[payload.rid] = 1; }
     var start = Date.now();
     function tick(){
       if(document.querySelector('.bf-hdice')){setTimeout(tick,200);return;}
@@ -163,7 +167,7 @@ export const HERO_DICE_PATCH = `
     var faces = Number(cfg.faces || 20);
     var value = cfg.forced != null ? Number(cfg.forced)
       : (typeof window.__bfDie === 'function' ? window.__bfDie(faces) : (1 + Math.floor(Math.random() * faces)));
-    var payload = { faces:faces, roll:value, crit:!!cfg.crit, mult:cfg.mult, label:cfg.label, hero:cfg.hero, note:cfg.note };
+    var payload = { faces:faces, roll:value, crit:!!cfg.crit, mult:cfg.mult, label:cfg.label, hero:cfg.hero, note:cfg.note, rid: Date.now().toString(36) + Math.random().toString(36).slice(2,7) };
     if(typeof pushLog === 'function'){
       pushLog('li', '\\ud83c\\udfb2 Tirada de habilidad' + (cfg.hero ? ' de ' + cfg.hero : '')
         + (cfg.label ? ' (' + cfg.label + ')' : '') + ': ' + value + '/' + faces
