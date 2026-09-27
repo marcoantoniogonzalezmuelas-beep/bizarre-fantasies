@@ -1,0 +1,30 @@
+const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),test=require('node:test'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const patch=vm.runInNewContext(read('lib/deadEliteMarkerPatch.js').replace('export function','function').replace('export const','const')+'\npatchLivingEliteHtml');
+test('native elite producer rejects dead heroes including fresh cards without death classes',()=>{
+ const native=fs.readFileSync(path.join(root,'../base44/functions/gameHtml/entry.ts'),'utf8');
+ const body=native.slice(native.indexOf('  function transformHeroToElite(card) {'),native.indexOf('  function playTrueDeath(card) {'));
+ assert(body.includes('addOverlayFx'));const fixed=patch(body);assert.notEqual(fixed,body);
+ let effects=0;const hero={id:'test',alive:false},c={G:{team:{p:[hero]}},heroIdFromCard:()=>hero.id,bfArtId:()=>hero.id,ELITE_BY_ID:{},addOverlayFx:()=>effects++};
+ vm.createContext(c);vm.runInContext(fixed,c);
+ const card=()=>({id:'b_p_test',dataset:{},querySelector:()=>null,classList:{add(){}}});
+ c.transformHeroToElite(card());c.transformHeroToElite(card());assert.equal(effects,0);
+ hero.alive=true;c.transformHeroToElite(card());assert.equal(effects,1);
+ hero.alive=false;c.transformHeroToElite(card());assert.equal(effects,1);
+ hero.alive=true;c.transformHeroToElite(card());assert.equal(effects,2);
+});
+test('pinch scales only cards and keeps the touched point stable deep down a scrolled mission',()=>{
+ const bind=vm.runInNewContext(read('components/missions/bindMissionPinch.js').replace('export default function','function')+'\nbindMissionPinch');
+ const handlers={},scroller={scrollTop:1200,scrollLeft:0,addEventListener:(t,f)=>handlers[t]=f,removeEventListener:t=>delete handlers[t]};
+ const pan={scrollLeft:0};
+ const grid={style:{},closest:()=>pan,getBoundingClientRect(){const z=Number(this.style.zoom)||1;return {left:16-pan.scrollLeft,top:1500-scroller.scrollTop,width:358*z};}};
+ const shell={parentElement:scroller,contains:g=>g===grid,style:{}};
+ const target={closest:()=>grid},touches=(distance,x=180,y=450)=>[{clientX:x-distance/2,clientY:y},{clientX:x+distance/2,clientY:y}];
+ let prevented=0;const event=t=>({target,touches:t,preventDefault(){prevented++;},stopPropagation(){}});
+ const cleanup=bind(shell);handlers.touchstart(event(touches(100)));handlers.touchmove(event(touches(200)));
+ assert.equal(grid.style.zoom,'2');assert.equal(grid.style.width,'358px');assert.equal(shell.style.zoom,undefined);
+ assert.equal(grid.getBoundingClientRect().left+164*2,180);assert.equal(grid.getBoundingClientRect().top+150*2,450);
+ handlers.touchend(event([]));handlers.touchstart(event(touches(100)));handlers.touchmove(event(touches(50)));handlers.touchend(event([]));
+ assert.equal(grid.style.zoom,'');assert.equal(grid.style.width,'');assert(prevented>=6);cleanup();assert.equal(Object.keys(handlers).length,0);
+});

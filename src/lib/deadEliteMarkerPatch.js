@@ -1,6 +1,14 @@
 // Parche inyectado en el iframe: cuando un héroe en forma ÉLITE muere
 // definitivamente, deja de mostrar cualquier marcador de élite (★ junto al
 // nombre, borde/brillo dorado, aura y marcador pasivo élite).
+// Guard the native producer as well as hiding already-mounted effects.
+export function patchLivingEliteHtml(html) {
+  return html.replace('function transformHeroToElite(card) {', `function transformHeroToElite(card) {
+    if (!card) return;
+    var eliteSide = String(card.id || '').split('_')[1], eliteId = heroIdFromCard(card);
+    var eliteHero = (typeof G !== 'undefined' && G && G.team && G.team[eliteSide] || []).find(function(h){ return h && h.id === eliteId; });
+    if (!eliteHero || !eliteHero.alive) return;`);
+}
 export const DEAD_ELITE_MARKER_PATCH = `
 <script>
 (function(){
@@ -10,7 +18,9 @@ export const DEAD_ELITE_MARKER_PATCH = `
   st.textContent =
     'html body .bhero.bhero.bhero.dead.elite-mode,html body .bhero.bhero.bhero.dead.bf-auto-elite,html body .bhero.bhero.bhero.bf-truedead{border-color:#3a3048!important;background:linear-gradient(180deg,#1c1824,#141018)!important;box-shadow:none!important}' +
     'html body .bhero.dead .bhero-aura,html body .bhero.dead .bf-passive-mark,html body .bhero.bf-truedead .bf-passive-mark,html body .bhero.dead .bf-fx-elite-aura{display:none!important}' +
-    'html body .bhero.dead.bf-auto-elite .bf-battle-art,html body .bhero.bf-truedead .bf-battle-art{filter:grayscale(1) brightness(.45)!important}';
+    'html body .bhero.dead.bf-auto-elite .bf-battle-art,html body .bhero.bf-truedead .bf-battle-art{filter:grayscale(1) brightness(.45)!important}' +
+    'html body .bhero.bhero.bhero:is(.dead,.bf-dead,.bf-truedead){box-shadow:none!important;border-color:#3a3048!important}' +
+    'html body .bhero:is(.dead,.bf-dead,.bf-truedead) :is(.bf-fx-elite-flip,.bf-fx-elite-aura,.bhero-aura){display:none!important;animation:none!important}';
   document.head.appendChild(st);
   // Quita la estrella ★ del nombre de los héroes muertos.
   function clean(){

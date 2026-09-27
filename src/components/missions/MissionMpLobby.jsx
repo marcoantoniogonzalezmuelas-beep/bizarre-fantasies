@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Swords, LoaderCircle, Wifi } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import MissionHero from '@/components/missions/MissionHero';
+import MissionCardGrid from '@/components/missions/MissionCardGrid';
 import MissionRoomSeats from '@/components/missions/MissionRoomSeats';
 import MissionRoomDirectory from '@/components/missions/MissionRoomDirectory';
 import MissionRoomOptions from '@/components/missions/MissionRoomOptions';
@@ -151,7 +152,7 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting 
       <div><p className="mission-eyebrow">{mission.name} · {MP_MODALITIES.find(mo => mo.id === modality).name} · MULTIJUGADOR</p><h2 className="font-heading text-3xl">Prepara tu ejército</h2><p className="mt-2 opacity-80">Rival: {oppNick}. Equipamiento: {MP_EQUIP_COINS} monedas.</p></div>
       <div className="mission-budget"><span>{modality === 'pack' ? packDescription : 'Héroes: ' + total + ' / ' + MP_BUDGET + ' monedas · ' + team.length + '/3 elegidos'}</span><strong>Equipamiento: {MP_EQUIP_COINS} monedas</strong></div>
       {modality === 'pack' && !pack ? <MissionMpPacks key={roomCode} cards={cards} mission={mission} code={roomCode} token={token} onTeamSelected={setPack} />
-        : <div className="mission-heroes">{(modality === 'pack' ? myTeam : available).map(card => <MissionHero key={card.id} card={card} selected={myTeam.some(c => c.id === card.id)} disabled={myReady || (modality !== 'pack' && (!myTeam.some(c => c.id === card.id) && (team.length === 3 || total + Number(card.cost) > MP_BUDGET)))} onSelect={modality === 'pack' ? undefined : () => toggle(card)} />)}</div>}
+        : <MissionCardGrid>{(modality === 'pack' ? myTeam : available).map(card => <MissionHero key={card.id} card={card} selected={myTeam.some(c => c.id === card.id)} disabled={myReady || (modality !== 'pack' && (!myTeam.some(c => c.id === card.id) && (team.length === 3 || total + Number(card.cost) > MP_BUDGET)))} onSelect={modality === 'pack' ? undefined : () => toggle(card)} />)}</MissionCardGrid>}
       {!myReady && myTeam.length === 3 && <button className="mission-button primary" disabled={busy} onClick={submitTeam}><Swords size={18} /> Confirmar ejército</button>}
       {myReady && !oppTeam && <div className="mp-waiting"><LoaderCircle className="animate-spin" /><p>¡Equipo listo! Esperando al rival…</p></div>}
       {myReady && oppTeam && <div className="mp-opp-team space-y-4"><h3 className="font-heading text-xl">¡El rival está listo!</h3><p className="text-sm opacity-80">Tu rival ({oppNick}) ha confirmado su ejército. ¡A la batalla!</p>{role === 'host' ? <button className="mission-button primary" disabled={starting} onClick={launchGame}><Swords size={18} /> {starting ? 'Conectando partida…' : 'Ir a equipamiento'}</button> : <p role="status">{starting ? 'Conectando partida…' : 'Esperando a que el anfitrión inicie la partida…'}</p>}</div>}

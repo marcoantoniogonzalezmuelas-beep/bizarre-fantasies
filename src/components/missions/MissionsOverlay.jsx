@@ -13,7 +13,7 @@ export default function MissionsOverlay({ iframeRef }) {
   const s = useMissionSession(iframeRef), [missionId, setMissionId] = useState('club'), [level, setLevel] = useState(null), [mpMode, setMpMode] = useState(false);
   const mission = MISSIONS.find(m => m.id === missionId), pool = useMemo(() => missionPool(s.cards, missionId), [s.cards, missionId]);
   const shellRef = useRef(null);
-  useMissionPinch(shellRef);
+  useMissionPinch(shellRef, Boolean(s.session && !s.celebration));
   useEffect(() => { const image = new Image(); image.src = MISSION_BACKGROUND; }, []);
   useEffect(() => { if (s.session) setLevel(null); }, [s.session]);
   if (s.celebration) return <MissionVictoryCelebration reward={s.celebration} onClose={s.dismissCelebration} />;

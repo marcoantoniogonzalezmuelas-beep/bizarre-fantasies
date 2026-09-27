@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import PackCard from '@/components/missions/PackCard';
+import MissionCardGrid from '@/components/missions/MissionCardGrid';
 import PackReveal3D from '@/components/missions/PackReveal3D';
 import PackArmyBar from '@/components/missions/PackArmyBar';
 import { epicCount } from '@/components/missions/missionRules';
@@ -102,7 +103,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
           {error && <p role="alert" className="text-red-400 text-sm mt-2">{error}</p>}
           <button className="mission-button primary pack-army-action" disabled={selected.length !== 3} onClick={confirm}><Check size={18} /> Confirmar ejército</button>
         </>} />
-        <div className="pack-selection-grid">
+        <MissionCardGrid className="pack-selection-grid">
           {allHeroes.map(card => (
             <PackCard key={card.id} card={card}
               selected={selected.some(c => c.id === card.id)}
@@ -110,7 +111,7 @@ export default function PackOpening({ packs, mission, level, onTeamSelected }) {
               disabled={!selected.some(c => c.id === card.id) && selected.length >= 3}
             />
           ))}
-        </div>
+        </MissionCardGrid>
       </div>
     );
   }

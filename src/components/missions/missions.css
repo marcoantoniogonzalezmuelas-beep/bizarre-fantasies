@@ -1,4 +1,4 @@
-.bf-missions{position:fixed;inset:0;z-index:100200;overflow:auto;touch-action:pan-x pan-y;background:#0a0612;color:hsl(var(--foreground));font-family:var(--font-body);overscroll-behavior:contain;isolation:isolate}.bf-missions::before{content:'';position:fixed;inset:0;z-index:1;background:linear-gradient(rgba(10,6,18,.72),rgba(10,6,18,.92));pointer-events:none}.mission-background{position:fixed;inset:0;z-index:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center}.mission-shell{position:relative;z-index:2;max-width:1200px;margin:auto;padding:36px 28px 80px}
+.bf-missions{position:fixed;inset:0;z-index:100200;overflow:auto;overflow-anchor:none;touch-action:pan-x pan-y;background:#0a0612;color:hsl(var(--foreground));font-family:var(--font-body);overscroll-behavior:contain;isolation:isolate}.bf-missions::before{content:'';position:fixed;inset:0;z-index:1;background:linear-gradient(rgba(10,6,18,.72),rgba(10,6,18,.92));pointer-events:none}.mission-background{position:fixed;inset:0;z-index:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center}.mission-shell{position:relative;z-index:2;max-width:1200px;margin:auto;padding:36px 28px 80px}
 .mission-header,.mission-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .mission-header{color:hsl(var(--mission-accent));border-bottom:1px solid hsl(var(--mission-line));padding-bottom:24px}
 .mission-eyebrow{color:hsl(var(--mission-accent));font-size:10px;font-weight:700;letter-spacing:.19em;margin-bottom:7px}
@@ -126,6 +126,8 @@
 .pack-army-slot{display:flex;align-items:center;gap:8px;min-height:52px;padding:6px;border-radius:10px;border:1.5px dashed rgba(255,255,255,.3);font-size:12px;font-weight:700;color:rgba(255,255,255,.55);overflow:hidden;text-align:left}
 .pack-army-slot.filled{border:1.5px solid #4ade80;color:#fff;background:rgba(22,163,74,.18)}
 .pack-army-slot img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:0 0 40px}
+.mission-grid-viewport{width:100%;min-width:0}
+@media(max-width:1024px){.mission-grid-viewport{overflow:auto;overflow-anchor:none}}
 /* Todas las misiones: rejilla de cartas reales (igual que en subasta). */
 .bf-missions .mission-heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));gap:22px;width:100%}
 /* Móvil: vista de escritorio encogida para ver varios héroes a la vez. */
