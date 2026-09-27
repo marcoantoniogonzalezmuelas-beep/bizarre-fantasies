@@ -84,7 +84,7 @@ export const AI_EQUIP_VARIETY_PATCH = `
       bomb: 1.6, cleanse: 0.8, mana: casters.length ? 2 : 0, manaBig: casters.length ? 1.4 : 0,
       bf_drain: 2.3, bf_ring: fragile ? 2.6 : 1.7, bf_rearm: weaponUsers >= 2 ? 1.9 : 0.7
     };
-    for(var o = 0; o < 4; o++){
+    for(var o = 0; o < 5; o++){
       var have = G.items[side].map(function(x){ return x.id; });
       var oc = OBJECTS.filter(function(x){ return x && x.cost <= budget && have.indexOf(x.id) < 0; }).map(function(x){ return { it: x, w: (W[x.kind] != null ? W[x.kind] : 1) * pen(x.id) }; });
       var ob = pickW(oc);
