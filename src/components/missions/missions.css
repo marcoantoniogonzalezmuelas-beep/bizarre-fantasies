@@ -114,7 +114,8 @@
 /* Selección de ejército: héroes elegidos marcados, épicos señalados y barra del ejército. */
 .pack-card.is-selected .pack-card-face{outline:4px solid #4ade80;outline-offset:3px;border-radius:14px;box-shadow:0 0 28px rgba(74,222,128,.7)}
 .pack-card.is-disabled{opacity:.45}
-.pack-card-chosen,.pack-card-epic{position:absolute;left:50%;transform:translateX(-50%);z-index:5;padding:4px 12px;border-radius:999px;font-weight:900;font-size:13px;letter-spacing:1px;white-space:nowrap;pointer-events:none}
+.pack-card-face{isolation:isolate}
+.pack-card-chosen,.pack-card-epic{position:absolute;left:50%;transform:translateX(-50%) translateZ(0);z-index:999;padding:4px 12px;border-radius:999px;font-weight:900;font-size:13px;letter-spacing:1px;white-space:nowrap;pointer-events:none}
 .pack-card-chosen{top:42%;background:#16a34a;color:#fff;box-shadow:0 0 16px rgba(74,222,128,.9)}
 .pack-card-epic{bottom:-12px;background:#2a1640;color:#ffd24a;border:1.5px solid #ffd24a}
 .pack-army{position:sticky;top:0;z-index:20;width:100%;padding:12px;border-radius:14px;background:rgba(14,10,22,.95);border:1.5px solid rgba(255,210,74,.5)}
