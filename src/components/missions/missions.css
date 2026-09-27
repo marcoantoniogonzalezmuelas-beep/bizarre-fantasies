@@ -124,6 +124,8 @@
 .pack-army-slot{display:flex;align-items:center;gap:8px;min-height:52px;padding:6px;border-radius:10px;border:1.5px dashed rgba(255,255,255,.3);font-size:12px;font-weight:700;color:rgba(255,255,255,.55);overflow:hidden;text-align:left}
 .pack-army-slot.filled{border:1.5px solid #4ade80;color:#fff;background:rgba(22,163,74,.18)}
 .pack-army-slot img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:0 0 40px}
+/* Todas las misiones: rejilla de cartas reales (igual que en subasta). */
+.bf-missions .mission-heroes{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));gap:22px;width:100%}
 /* Móvil: vista de escritorio encogida para ver varios héroes a la vez. */
-@media(max-width:700px){.pack-selection-grid{grid-template-columns:repeat(3,1fr);gap:8px}.pack-selection-grid .pack-card{width:294px;max-width:none;zoom:.33}.pack-selection-grid .pack-card-actions .mission-button{font-size:22px;padding:14px 8px}.pack-card-chosen,.pack-card-epic{font-size:22px}}
-@media(min-width:420px) and (max-width:700px){.pack-selection-grid .pack-card{zoom:.42}}
+@media(max-width:700px){.bf-missions .mission-heroes{grid-template-columns:repeat(3,1fr);gap:8px}.mission-heroes .pack-card{width:294px;max-width:none;zoom:.33}.mission-heroes .pack-card-actions .mission-button{font-size:22px;padding:14px 8px}.pack-selection-grid{grid-template-columns:repeat(3,1fr);gap:8px}.pack-selection-grid .pack-card{width:294px;max-width:none;zoom:.33}.pack-selection-grid .pack-card-actions .mission-button{font-size:22px;padding:14px 8px}.pack-card-chosen,.pack-card-epic{font-size:22px}}
+@media(min-width:420px) and (max-width:700px){.pack-selection-grid .pack-card,.mission-heroes .pack-card{zoom:.42}}

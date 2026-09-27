@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ArrowLeft, Package, Swords } from 'lucide-react';
 import MissionHero from '@/components/missions/MissionHero';
 import PackOpening from '@/components/missions/PackOpening';
+import PackArmyBar from '@/components/missions/PackArmyBar';
 import { heroBudget, isEpic, drawPacks, chooseRival, valueOf, equipCoinsForLevel } from '@/components/missions/missionRules';
 export default function MissionPreparation({ mission, level, pool, onBack, onStart, starting }) {
   const [chosen, setChosen] = useState([]), [packs, setPacks] = useState(null), [packTeam, setPackTeam] = useState(null), [error, setError] = useState('');
@@ -23,6 +24,7 @@ export default function MissionPreparation({ mission, level, pool, onBack, onSta
       : !packTeam ? <PackOpening packs={packs} mission={mission} level={level} onTeamSelected={handlePackTeam} />
       : <div className="mission-rival space-y-4"><h3 className="font-heading text-xl">Tu ejército · {total} monedas</h3><div className="mission-heroes">{packTeam.map(card => <MissionHero key={card.id} card={card} />)}</div>{rival && <><h3 className="font-heading text-xl">Tu rival · {valueOf(rival)} monedas en héroes</h3><p className="text-sm opacity-80">Ambos disponéis de {equipCoinsForLevel(level.id)} monedas de equipamiento.</p><div className="mission-heroes">{rival.map(card => <MissionHero key={card.id} card={card} />)}</div><button className="mission-button primary" disabled={starting} onClick={() => onStart(packTeam, rival)}><Swords size={18} />{starting ? 'Preparando…' : 'Ir a equipamiento'}</button></>}</div>
     ) : <>
+      {!rival && <PackArmyBar selected={team} level={level} onRemove={toggle} extra={<>Presupuesto: <b>{total}/{budget} monedas</b> (quedan {budget - total})</>} />}
       <div className="mission-heroes">{cards.map(card => <MissionHero key={card.id} card={card} selected={team.some(c => c.id === card.id)} disabled={!team.some(c => c.id === card.id) && (team.length === 3 || total + Number(card.cost) > budget)} onSelect={() => toggle(card)} />)}</div>
       {team.length === 3 && !rival && <button className="mission-button primary" onClick={prepare}>Confirmar ejército y ver rival</button>}
       {rival && <div className="mission-rival space-y-4"><h3 className="font-heading text-xl">Tu rival · {valueOf(rival)} monedas en héroes</h3><p className="text-sm opacity-80">Tu ejército: {total} monedas. Ambos disponéis de {equipCoinsForLevel(level.id)} monedas de equipamiento.</p><div className="mission-heroes">{rival.map(card => <MissionHero key={card.id} card={card} />)}</div><button className="mission-button primary" disabled={starting} onClick={() => onStart(team, rival)}><Swords size={18} />{starting ? 'Preparando…' : 'Ir a equipamiento'}</button></div>}

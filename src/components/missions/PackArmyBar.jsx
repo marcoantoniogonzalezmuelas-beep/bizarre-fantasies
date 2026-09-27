@@ -1,7 +1,7 @@
 import React from 'react';
 import { isEpic, epicCount } from '@/components/missions/missionRules';
 
-export default function PackArmyBar({ selected, level, onRemove }) {
+export default function PackArmyBar({ selected, level, onRemove, extra }) {
   const epics = epicCount(selected);
   const epicRule = level.exactEpics
     ? `Exactamente ${level.exactEpics} héroe(s) épico(s)`
@@ -10,6 +10,7 @@ export default function PackArmyBar({ selected, level, onRemove }) {
   return <div className="pack-army">
     <ul className="pack-army-rules">
       <li>Elige <b>3 héroes</b> ({selected.length}/3)</li>
+      {extra && <li>{extra}</li>}
       <li>{epicRule} <b>({epics}/{epicLimit})</b></li>
       <li>Toca un héroe elegido abajo para quitarlo</li>
     </ul>
