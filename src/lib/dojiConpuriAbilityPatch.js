@@ -126,7 +126,7 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
             setTimeout(resolveThreat, 1200);
           }
         }
-        // Élite: al morir → resucita a todos los aliados caídos a vida completa.
+        // Élite: al morir → resucita al último aliado caído, con vida completa y su equipo.
         if(armedRevive && target._bfDojiRevive && wasAlive && !target.alive){
           target._bfDojiRevive = false; // se consume
           var tSideF2 = (typeof tSide === 'function') ? tSide : null;
