@@ -35,14 +35,16 @@ export const MISSION_ENGINE_PATCH = `<script>
     tell({bfMissionOpen:{nick:(activeRun&&activeRun.nick)||G.names.p,heroes:HEROES.map(function(h){return {id:h.id,number:h.num,name:h.name};}),replay:replay&&activeRun&&activeRun.modality?{mission:activeRun.mission,modality:activeRun.modality,role:activeRun.role,room_code:activeRun.room_code,token:activeRun.token,password:activeRun.password,nick:activeRun.nick,oppNick:activeRun.oppNick,run_id:activeRun.run_id,round:activeRun.round||0}:null}});
   };
   function replayNow(){
-    if(!activeRun||!activeRun.modality||!document.querySelector('#s-result.active'))return;
+    if(!activeRun||!activeRun.modality||activeRun.replayStarted||!document.querySelector('#s-result.active'))return;
+    activeRun.replayStarted=true;
     reportMissionResult();
     var ov=document.getElementById('bf-end-cine');if(ov)ov.remove();
     window.bfOpenMissions(true);
   }
   window.bfMissionReplay=function(){
     if(!activeRun||!activeRun.modality||!document.querySelector('#s-result.active'))return;
-    if(typeof NET!=='undefined'&&NET.role==='client'){
+    if(typeof NET==='undefined'||!NET.conn||!NET.conn.open)return;
+    if(NET.role==='client'){
       netSend({t:'bfMissionReplayRequest',run_id:activeRun.run_id});
       var b=document.getElementById('bf-mission-replay');if(b){b.disabled=true;b.textContent='Esperando al anfitrión…';}
     }else{

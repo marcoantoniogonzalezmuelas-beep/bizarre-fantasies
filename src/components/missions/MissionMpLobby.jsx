@@ -18,7 +18,7 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting,
   const [password, setPassword] = useState(replay?.password || '');
   const [isPrivate, setPrivate] = useState(false);
   const [roomPassword, setRoomPassword] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState(replay?.role || '');
   const [team, setTeam] = useState([]);
   const [pack, setPack] = useState(null);
   const [error, setError] = useState('');
@@ -35,7 +35,7 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting,
   const mission = MP_MISSIONS.find(m => m.id === missionId);
   const packDescription = missionId === 'l5r' ? '1 sobre de 4 héroes por jugador · elige 3' : '3 sobres de 4 héroes por jugador · elige 3';
   const pool = missionPool(cards, missionId);
-  const available = pool.filter(c => modality === 'pack' || missionId === 'todos' || !isEpic(c));
+  const available = pool;
   const myTeam = modality === 'pack' ? (pack || []) : team;
   const total = valueOf(myTeam);
   const bothReady = myReady && oppTeam;
@@ -146,7 +146,7 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting,
   </section>;
 
   return <section className="mp-lobby space-y-6">
-    <button className="mission-link" onClick={onBack} disabled={starting}><ArrowLeft size={16} /> Volver</button>
+    <button className="mission-link" onClick={onBack} disabled={starting || !!replay}><ArrowLeft size={16} /> Volver</button>
     {roomCode && <MissionRoomSeats nick={nick} opponent={oppNick} ready={myReady} opponentReady={!!oppTeam} />}
     {pollError && <p role="alert">{pollError}</p>}
 
