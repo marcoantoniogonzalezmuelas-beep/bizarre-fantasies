@@ -51,6 +51,10 @@ export const KILL_ACTOR_PATCH = `
       var actor = currentActor();
       var result = orig.apply(this, arguments);
       try{
+        // Autogolpe: el héroe (o un aliado) cae por daño de su propio bando.
+        if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).indexOf(target) >= 0){
+          window.__bfSelfKill = { side: actor.side, id: actor.id, victim: target.id, ts: Date.now() };
+        }
         if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).some(function(h){return h && h.id === actor.id;}) && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){
           var ctx = window.__bfActionCtx;
           var kind = (ctx && Date.now() - ctx.ts < 6000) ? ctx.kind : 'attack';

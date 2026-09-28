@@ -75,6 +75,24 @@ export const KILL_CINE_QUEUE_PATCH = `
     // Tablet/móvil: héroes aún más grandes relativamente
     '@media(max-width:880px){#bf-kill-ov .bf-kill-att{left:2%;width:min(48vw,240px);height:min(68vw,340px);border-width:3px}#bf-kill-ov .bf-kill-vic{width:min(42vw,210px);height:min(60vw,300px);border-width:3px}#bf-kill-ov .bf-kill-vics{right:2%;gap:8px}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(34vw,170px);height:min(48vw,240px)}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(28vw,140px);height:min(40vw,200px)}#bf-kill-ov .bf-kill-pow-txt{font-size:clamp(32px,12vw,56px)}#bf-kill-ov .bf-kill-ko{font-size:clamp(24px,9vw,44px);bottom:4%}#bf-kill-ov .bf-kill-aname{left:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-vname{right:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-att-cool{font-size:clamp(32px,7vw,48px)}}'
   ].join('\\n');
+  css += [
+    // Multi-kill: el atacante crece y los caídos salen juntitos, en fila y solapados
+    '#bf-kill-ov.bf-kill-multi .bf-kill-att{width:min(50vw,470px);height:min(70vw,600px);animation:bfKillAtt .7s cubic-bezier(.2,.8,.3,1) both,bfKillShake .45s linear .7s 3}',
+    '@keyframes bfKillShake{0%,100%{margin-left:0}25%{margin-left:-6px}75%{margin-left:6px}}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vics{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:0;max-width:56vw}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vic{flex:0 1 auto;margin-left:-4%;width:min(20vw,200px)!important;height:min(30vw,300px)!important}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vic:first-child{margin-left:0}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vic:nth-child(even){margin-top:26px}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-pow-txt{font-size:clamp(30px,7vw,64px);color:#ff5a3c}',
+    // Autogolpe: la víctima ocupa el centro y resbala con un plátano
+    '#bf-kill-ov.bf-kill-self .bf-kill-vics{right:auto;left:50%;transform:translate(-50%,-50%)}',
+    '#bf-kill-ov.bf-kill-self .bf-kill-vic{width:min(52vw,340px);height:min(72vw,460px);animation:bfKillSlip 1.5s cubic-bezier(.3,.7,.4,1) .2s both}',
+    '@keyframes bfKillSlip{0%{opacity:0;transform:translateX(-120px) rotate(0)}35%{opacity:1;transform:translateX(0) rotate(0)}55%{transform:translateY(-40px) rotate(-25deg)}80%{transform:translateY(10px) rotate(-95deg)}100%{opacity:1;transform:translateY(0) rotate(-88deg)}}',
+    '#bf-kill-ov .bf-kill-banana{position:absolute;bottom:6%;left:14%;font-size:clamp(46px,10vw,84px);z-index:6;filter:drop-shadow(0 4px 6px #000);animation:bfKillBanana 1.5s ease-out .2s both}',
+    '@keyframes bfKillBanana{0%{opacity:0;transform:translateY(-140px) rotate(0)}30%{opacity:1;transform:translateY(0) rotate(20deg)}100%{opacity:1;transform:translateY(0) rotate(160deg)}}',
+    '#bf-kill-ov.bf-kill-self .bf-kill-pow{top:22%}',
+    '#bf-kill-ov.bf-kill-self .bf-kill-pow-txt{color:#ffe14a}'
+  ].join('\\n');
   var st = document.createElement('style');
   css += '#bf-kill-ov .bf-kill-ko{bottom:10%;width:min(86vw,760px);box-sizing:border-box;padding:14px 22px;background:#160d1f;border:2px solid #e6b86b;border-radius:18px;font:700 clamp(19px,3vw,28px)/1.35 Rubik,sans-serif;color:#fff4dc;text-shadow:0 2px 3px #000;letter-spacing:0;white-space:normal;text-align:center;box-shadow:0 12px 40px #0009}#bf-kill-ov .bf-kill-speaker{display:block;font-size:.55em;color:#ffce88;margin-bottom:5px;letter-spacing:1px}#bf-kill-ov .bf-kill-line+ .bf-kill-line{margin-top:12px}';
   st.textContent = css;
@@ -82,7 +100,7 @@ export const KILL_CINE_QUEUE_PATCH = `
 
   // ---- Estado de la cola de kills ----
   var pendingVictims = [];
-  var pendingActor = null;
+  var pendingActor = null, pendingSelf = null;
   var killTimer = null;
   var lastCineSeen = 0, pollId = 0;
   // Una muerte sigue registrada al salir de la cola: el motor y flushFx
@@ -157,6 +175,15 @@ export const KILL_CINE_QUEUE_PATCH = `
         var m = /url\\(["']?([^"')]+)["']?\\)/.exec(bg);
         if(m) return m[1];
       }
+      // Respaldo: cualquier imagen del retrato para que NUNCA falte el héroe.
+      var im = card.querySelector('img');
+      if(im && im.src) return im.src;
+      var all = card.querySelectorAll('*');
+      for(var k=0;k<all.length;k++){
+        var b2 = getComputedStyle(all[k]).backgroundImage;
+        var m2 = /url\\(["']?([^"')]+)["']?\\)/.exec(b2 || '');
+        if(m2) return m2[1];
+      }
     }catch(e){}
     return null;
   }
@@ -171,10 +198,12 @@ export const KILL_CINE_QUEUE_PATCH = `
   }
 
   // ---- Nueva cinemática bizarra ----
-  function showKillCinematic(actor, victims){
+  function showKillCinematic(actor, victims, selfKill){
     var multiKill = victims.length > 1;
     var ov = document.createElement('div');
     ov.id = 'bf-kill-ov';
+    if(multiKill) ov.classList.add('bf-kill-multi');
+    if(selfKill) ov.classList.add('bf-kill-self');
     ov.dataset.bfNew = '1';
 
     var bg = document.createElement('div');
@@ -191,7 +220,7 @@ export const KILL_CINE_QUEUE_PATCH = `
       }
     }catch(e){}
 
-    if(attArt){
+    if(attArt && !selfKill){
       var att = document.createElement('div');
       att.className = 'bf-kill-att';
       att.style.backgroundImage = 'url("' + attArt + '")';
@@ -202,7 +231,7 @@ export const KILL_CINE_QUEUE_PATCH = `
       att.appendChild(cool);
       ov.appendChild(att);
     }
-    if(attName){
+    if(attName && !selfKill){
       var aname = document.createElement('div');
       aname.className = 'bf-kill-aname';
       aname.textContent = attName;
@@ -213,10 +242,15 @@ export const KILL_CINE_QUEUE_PATCH = `
     var vicWrap = document.createElement('div');
     vicWrap.className = 'bf-kill-vics';
     victims.forEach(function(v, i){
-      if(!v.art) return;
       var vic = document.createElement('div');
       vic.className = 'bf-kill-vic';
-      vic.style.backgroundImage = 'url("' + v.art + '")';
+      if(v.art) vic.style.backgroundImage = 'url("' + v.art + '")';
+      if(selfKill){
+        var banana = document.createElement('div');
+        banana.className = 'bf-kill-banana';
+        banana.textContent = '\\ud83c\\udf4c';
+        vic.appendChild(banana);
+      }
       vic.style.animationDelay = (0.15 + i * 0.12) + 's';
       // Estrellitas 💫 de mareo
       var star = document.createElement('div');
@@ -250,7 +284,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     pow.className = 'bf-kill-pow';
     var powTxt = document.createElement('div');
     powTxt.className = 'bf-kill-pow-txt';
-    powTxt.textContent = multiKill ? '\\u00a1BAM!' : '\\u00a1POW!';
+    powTxt.textContent = selfKill ? '\\u00a1CATAPLUM!' : (multiKill ? '\\u00a1ANIQUILADOS!' : '\\u00a1POW!');
     pow.appendChild(powTxt);
     ov.appendChild(pow);
 
@@ -261,7 +295,7 @@ export const KILL_CINE_QUEUE_PATCH = `
       var line=document.createElement('div');line.className='bf-kill-line';
       var speaker=document.createElement('span');speaker.className='bf-kill-speaker';
       speaker.textContent=[v.name,v.clan].filter(Boolean).join(' · ');
-      var quote=document.createElement('span');quote.textContent='«'+pickDeathQuip(v.clan,!!window.__bfLangEn)+'»';
+      var quote=document.createElement('span');quote.textContent='«'+pickDeathQuip(v.clan,!!window.__bfLangEn,selfKill?'self':'')+'»';
       line.appendChild(speaker);line.appendChild(quote);ko.appendChild(line);
     });
     ov.appendChild(ko);
@@ -289,6 +323,8 @@ export const KILL_CINE_QUEUE_PATCH = `
     }
 
     var actor = pendingActor;
+    var selfHint = pendingSelf;
+    pendingSelf = null;
     var victims = pendingVictims.slice();
     // El ejecutor debe pertenecer al bando opuesto de TODAS las víctimas.
     // Si el turno avanzó (o hay daño reflejado), no atribuir la muerte a un aliado.
@@ -301,6 +337,12 @@ export const KILL_CINE_QUEUE_PATCH = `
       seen[v.key] = true;
       return true;
     });
+    // Autogolpe: nadie del bando rival remató al héroe (se mató él solo o un
+    // aliado). Se muestra la versión humorística del tropezón.
+    var sk = window.__bfSelfKill;
+    var selfKill = !actor && victims.length === 1 && !!(
+      (sk && Date.now() - sk.ts < 8000 && sk.victim === victims[0].id) ||
+      (selfHint && selfHint.side === victims[0].side));
     pendingVictims = [];
     pendingActor = null;
     if(!victims.length){ stopWatch(); return; }
@@ -316,7 +358,7 @@ export const KILL_CINE_QUEUE_PATCH = `
       setTimeout(function(){
         if(gameEnded()){ stopWatch(); return; }
         if(busy()){ setTimeout(proceed, 200); return; }
-        showKillCinematic(actor, victims);
+        showKillCinematic(actor, victims, selfKill);
         stopWatch();
       }, 150);
     }
@@ -374,6 +416,8 @@ export const KILL_CINE_QUEUE_PATCH = `
           // Solo si el atacante no es la propia víctima
           if(fbActor && fbActor.side && fbActor.side !== side){
             pendingActor = fbActor;
+          } else if(fbActor && fbActor.side === side){
+            pendingSelf = fbActor;
           }
         }catch(e){}
       }
