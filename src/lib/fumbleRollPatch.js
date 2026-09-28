@@ -120,16 +120,19 @@ export function buildFumbleRollPatch(lang) {
   var lastFail = -99, actCount = 0;
   function roll(){
     actCount++;
+    // Fallo = 20 (1/30 ≈ 3,3%). Un 1 solo cuenta si se confirma con un 1 en el
+    // d6 (fallo épico ≈ 0,5%); un 1 sin confirmar es una tirada normal.
     var r = die(30);
-    var bad = (r === 1 || r === 20);
+    var epic = (r === 1) && confirmEpic();
+    var bad = (r === 20 || epic);
     if(bad && (actCount - lastFail) <= 2){
       r = die(30);
-      bad = (r === 1 || r === 20);
+      epic = (r === 1) && confirmEpic();
+      bad = (r === 20 || epic);
     }
     if(!bad) return { ok:true, r:r };
     lastFail = actCount;
-    if(r === 1) return { ok:false, r:r, epic:confirmEpic() };
-    return { ok:false, r:r, epic:false };
+    return { ok:false, r:r, epic:epic };
   }
 
   function selfBackfire(a){
@@ -247,10 +250,10 @@ export function buildFumbleRollPatch(lang) {
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
   function passiveFumbled(side, h){
     var r = die(30);
-    if(r !== 20 && r !== 1){
+    if(r !== 20){
       return false;
     }
-    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
+    log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
     pop(side, h.id, false, r);
     return true;
   }
@@ -288,9 +291,10 @@ export function buildFumbleRollPatch(lang) {
       if(isSummon(h) || isPassive(h)) rolledThisAct = true;
       if(isSummon(h)){
         var r = die(30);
-        if(r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
+        var epicSummon = (r === 1) && confirmEpic();
+        if(r === 20){
           window.__bfFumbleThisAct = true;
-          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
+          log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ${T.fumbleLog}');
           pop(side, h.id, false, r);
           h.abilityUsed = true;
           h._bfAbilityCineSuppressed = h.eliteMode ? 'elite' : 'normal';
@@ -298,7 +302,7 @@ export function buildFumbleRollPatch(lang) {
           setTimeout(function(){ if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct(); }, 900);
           return;
         }
-        if(r === 1){
+        if(epicSummon){
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): 1/30 \\u2192 ${T.epicLog}');
           pop(side, h.id, true, r);
           var before = ((G.team[side] || []).map(function(x){ return x.id; }));
