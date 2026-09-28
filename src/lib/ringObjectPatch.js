@@ -78,8 +78,26 @@ export const RING_OBJECT_PATCH = `
     return true;
   }
 
+  // Solo se puede comprar UNA unidad de El Anillo en la fase de equipamiento.
+  function hookBuy(){
+    if(typeof window.buyObject !== 'function' || window.buyObject.__bfRingBuy) return false;
+    var orig = window.buyObject;
+    var wrapped = function(side, id){
+      try{
+        if(id === 'ob_ring' && ((G.items && G.items[side]) || []).some(function(i){ return i && i.id === 'ob_ring'; })){
+          if(window.notif) window.notif('M\\u00e1ximo 1 copia de El Anillo.');
+          return;
+        }
+      }catch(e){}
+      return orig.apply(this, arguments);
+    };
+    wrapped.__bfRingBuy = 1;
+    window.buyObject = wrapped;
+    return true;
+  }
+
   var tries = 0, iv = setInterval(function(){
-    injectObject(); hookUse(); hookUseAI();
+    injectObject(); hookUse(); hookUseAI(); hookBuy();
     if(tries++ > 200) clearInterval(iv);
   }, 300);
   injectObject();
