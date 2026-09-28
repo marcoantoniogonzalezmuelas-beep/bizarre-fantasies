@@ -176,13 +176,21 @@ export const KILL_CINE_QUEUE_PATCH = `
         if(m) return m[1];
       }
       // Respaldo: cualquier imagen del retrato para que NUNCA falte el héroe.
-      var im = card.querySelector('img');
-      if(im && im.src) return im.src;
-      var all = card.querySelectorAll('*');
-      for(var k=0;k<all.length;k++){
-        var b2 = getComputedStyle(all[k]).backgroundImage;
-        var m2 = /url\\(["']?([^"')]+)["']?\\)/.exec(b2 || '');
-        if(m2) return m2[1];
+      // Solo elementos GRANDES (el retrato); los iconos de armas, armaduras,
+      // estados o efectos se descartan (salía el icono del arma a distancia).
+      var cr = card.getBoundingClientRect();
+      var cand = card.querySelectorAll('img, div, span');
+      for(var k=0;k<cand.length;k++){
+        var el = cand[k];
+        if(el.closest('.bf-kill-ov,[class*="chip"],[class*="badge"],[class*="fx"],[class*="mark"],[class*="icon"],[class*="status"]')) continue;
+        var er = el.getBoundingClientRect();
+        if(er.width < cr.width * 0.7 || er.height < cr.height * 0.4) continue;
+        var src2 = el.tagName === 'IMG' ? el.src : '';
+        if(!src2){
+          var m2 = /url\\(["']?([^"')]+)["']?\\)/.exec(getComputedStyle(el).backgroundImage || '');
+          if(m2) src2 = m2[1];
+        }
+        if(src2) return src2;
       }
     }catch(e){}
     return null;

@@ -21,8 +21,20 @@ export const CHROME_PERF_PATCH = `
     // los maneja bien, así que solo se desactivan en Chromium.
     + '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}'
     // Animaciones decorativas pausadas mientras están fuera de la vista.
-    + '.bf-offscreen,.bf-offscreen *{animation-play-state:paused!important}';
+    + '.bf-offscreen,.bf-offscreen *{animation-play-state:paused!important}'
+    // Pantallas no activas: no se pintan ni se calculan; cartas aisladas para
+    // que un cambio en una no obligue a recalcular el layout de toda la mesa.
+    + '.screen:not(.active){content-visibility:hidden}'
+    + '.hcard,.bhero{contain:layout style}';
   document.head.appendChild(st);
+
+  // Las imágenes se decodifican fuera del hilo principal (menos tirones al
+  // abrir sobres, subastas o cambiar de héroe).
+  function asyncImgs(){
+    document.querySelectorAll('img:not([decoding])').forEach(function(im){ im.decoding = 'async'; });
+  }
+  asyncImgs();
+  setInterval(asyncImgs, 2500);
 
   // Marca como fuera de vista las secciones que no se están viendo, para que
   // sus animaciones en bucle no consuman GPU.

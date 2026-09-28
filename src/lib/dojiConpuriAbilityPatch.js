@@ -104,6 +104,8 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
                 if(!victim && foes.length) victim = foes.slice().sort(function(a,b){ return (a.hp||0)-(b.hp||0); })[0];
                 if(victim){
                   if(typeof pushLog === 'function') pushLog('ld', '\\u2620 '+target.name+': \\u00a1el dado sale 1! '+victim.name+' cae fulminado.');
+                  // La amenaza atraviesa la invisibilidad: se quita antes del golpe.
+                  if(victim._bfInvisible){ victim._bfInvisible = 0; victim._bfInvisibleFresh = 0; }
                   orig.call(window, victim, 9999, {type:'spell', element:'arcano', bfDojiKill:true});
                   if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id});
                 } else if(typeof pushLog === 'function'){
