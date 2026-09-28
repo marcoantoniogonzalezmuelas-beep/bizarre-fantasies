@@ -46,6 +46,15 @@ export const ABILITY_ANIM_PATCH = `
     idle(function(){ build(url); });
   }
   function done(){ BUSY=false; idle(pump); }
+  // La cinemática que se va a mostrar ya no espera su turno en la cola (en el
+  // móvil del invitado tardaba y salía la imagen original con fondo blanco).
+  function prioritize(url){
+    var qi=QUEUE.indexOf(url);
+    if(qi<0)return;
+    QUEUE.splice(qi,1);
+    if(BUSY){QUEUE.unshift(url);return;}
+    BUSY=true;build(url);
+  }
   function cutout(url){
     if(!url||CUT.hasOwnProperty(url))return;
     CUT[url]=false; // pendiente: mientras llega, se usa la URL original
@@ -341,7 +350,8 @@ export const ABILITY_ANIM_PATCH = `
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
     var cu=CUT[url];
-    html+='<img class="bf-aa-img'+(cu?'':' bf-aa-raw')+'" style="animation:'+motion.anim+' 4.5s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
+    if(!cu)prioritize(url);
+    html+='<img class="bf-aa-img'+(cu?'':' bf-aa-raw')+'" style="'+(cu?'':'visibility:hidden;')+'animation:'+motion.anim+' 4.5s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
     ov.innerHTML=html;
@@ -374,8 +384,9 @@ export const ABILITY_ANIM_PATCH = `
       var swp=setInterval(function(){
         if(!ov.parentNode){clearInterval(swp);return;}
         var c2=CUT[url];
-        if(c2){imEl.src=c2;imEl.classList.remove('bf-aa-raw');clearInterval(swp);}
-      },250);
+        if(c2){imEl.src=c2;imEl.classList.remove('bf-aa-raw');imEl.style.visibility='';clearInterval(swp);}
+      },100);
+      setTimeout(function(){if(imEl)imEl.style.visibility='';},2500);
       setTimeout(function(){clearInterval(swp);},5000);
     }
     setTimeout(function(){ov.classList.add('bf-aa-out');},4500);

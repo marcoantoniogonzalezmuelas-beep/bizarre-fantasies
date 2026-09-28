@@ -125,7 +125,8 @@ export const DRAIN_OBJECT_PATCH = `
       if(typeof netSync === 'function') netSync('s-battle');
       if(typeof finishAct === 'function') finishAct();
     };
-    if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
+    var human = (typeof window.bfAbilityHuman === 'function') ? window.bfAbilityHuman(side) : (typeof humanCtl === 'function' && humanCtl(side));
+    if(human && typeof pendTarget === 'function'){
       pendTarget('Rival al que drenar la vida', foes, apply);
     } else {
       apply(pool.sort(function(a, b){ return a.hp - b.hp; })[0]);

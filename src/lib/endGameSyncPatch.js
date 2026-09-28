@@ -43,7 +43,13 @@ export const END_GAME_SYNC_PATCH = `
 
   // Recibe el aviso del rival y muestra la pantalla final correcta.
   function handle(msg){
+    if(msg && msg.t === 'bfEndSyncAck'){ if(msg.bfMissionRun) window.__bfEndSyncAcked = msg.bfMissionRun; return; }
     if(!msg || msg.t !== 'bfEndSync') return;
+    // Reenvíos del anfitrión: si ya se aplicó este resultado, solo se confirma.
+    if(msg.bfMissionRun && window.__bfEndSyncApplied === msg.bfMissionRun && typeof NET !== 'undefined' && NET.role === 'client' && resultShown() && G._result && G._result.pWin === !!msg.pWin){
+      try{ NET.conn.send({t:'bfEndSyncAck',bfMissionRun:msg.bfMissionRun}); }catch(e){}
+      return;
+    }
     // Solo actúa en batalla o en la propia pantalla de resultado (para
     // corregir el vídeo si el cliente ya transicionó con un resultado local
     // equivocado). Nunca durante subastas ni equipamiento.
@@ -60,6 +66,10 @@ export const END_GAME_SYNC_PATCH = `
     }
     if(authoritative && resultShown() && G._result && G._result.pWin === !!msg.pWin && document.getElementById('bf-end-cine')) return;
     window.__bfEndSyncGot = true;
+    if(authoritative){
+      window.__bfEndSyncApplied = msg.bfMissionRun;
+      try{ NET.conn.send({t:'bfEndSyncAck',bfMissionRun:msg.bfMissionRun}); }catch(e){}
+    }
     try{
       if(typeof G !== 'undefined' && G) { G._result = { pWin: !!msg.pWin }; if(authoritative) G._gameOver = true; }
       if(authoritative && typeof B !== 'undefined' && B) B.over = true;
@@ -97,7 +107,7 @@ export const END_GAME_SYNC_PATCH = `
     return true;
   }
 
-  var observedConn = null, sentRun = '';
+  var observedConn = null, sentRun = '', sentCount = 0, lastSent = 0;
   setInterval(function(){
     hookShowResult(); hookNetRecv();
     try{
@@ -106,9 +116,13 @@ export const END_GAME_SYNC_PATCH = `
         observedConn = NET.conn;
         observedConn.on('data', handle);
       }
-      if(NET.role === 'host' && G.bfMission && G.bfMission.modality && G._gameOver && G._result && typeof G._result.pWin === 'boolean' && sentRun !== G.bfMission.run_id){
-        sentRun = G.bfMission.run_id;
-        NET.conn.send({t:'bfEndSync',pWin:G._result.pWin,bfMissionRun:sentRun});
+      // El anfitrión reenvía el resultado cada ~1,4 s hasta que el invitado lo confirma.
+      if(NET.role === 'host' && G.bfMission && G.bfMission.modality && G._gameOver && G._result && typeof G._result.pWin === 'boolean' && window.__bfEndSyncAcked !== G.bfMission.run_id){
+        if(sentRun !== G.bfMission.run_id){ sentRun = G.bfMission.run_id; sentCount = 0; }
+        if(sentCount < 30 && Date.now() - lastSent > 1400){
+          lastSent = Date.now(); sentCount++;
+          NET.conn.send({t:'bfEndSync',pWin:G._result.pWin,bfMissionRun:sentRun});
+        }
       }
     }catch(e){}
   }, 350);

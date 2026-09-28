@@ -15,6 +15,8 @@ export const HERO_DICE_PRESENTATION_CSS = `
 .bf-hdice-lbl{font-size:17px;line-height:1.35;white-space:normal;letter-spacing:.5px;padding:8px 16px}
 .bf-hdice.bf-hd-result .bf-hdice-lbl{font-size:28px;background:var(--dice-gold);color:#21120a;text-shadow:none;border-radius:12px}
 .bf-hdice-note{font-size:18px;line-height:1.45;color:var(--dice-ink);letter-spacing:0;max-width:100%}
+.bf-hdice.bf-hd-result .bf-hdice-note{font:900 clamp(22px,6vw,32px)/1.25 Cinzel,serif;color:#ffe49a;background:rgba(0,0,0,.6);border:2px solid #ffd24a;border-radius:14px;padding:12px 18px;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 14px rgba(255,210,74,.8),0 2px 4px #000;animation:bfHdNote .5s ease-out both}
+@keyframes bfHdNote{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
 .bf-hdice-who{color:#cfbfde;font:600 14px/1.4 Rubik,sans-serif}
 .bf-hdice-crit{font-size:18px;line-height:1.4;white-space:normal;animation:none;text-shadow:none;color:#ffcece;letter-spacing:.5px}
 .bf-hdice-eye{animation:none}

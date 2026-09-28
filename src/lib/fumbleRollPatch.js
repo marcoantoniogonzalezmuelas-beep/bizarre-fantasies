@@ -168,7 +168,6 @@ export function buildFumbleRollPatch(lang) {
     rolledThisAct = true;
     var t = roll();
     if(t.ok){
-      log('li', '\\u{1F3B2} ${T.roll} (' + label + '): ' + t.r + '/30 \\u2192 ' + 'OK.');
       window.__bfFumbleThisAct = false;
       return false;
     }
@@ -249,7 +248,6 @@ export function buildFumbleRollPatch(lang) {
   function passiveFumbled(side, h){
     var r = die(30);
     if(r !== 19 && r !== 20 && r !== 1){
-      log('li', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 OK.');
       return false;
     }
     log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));

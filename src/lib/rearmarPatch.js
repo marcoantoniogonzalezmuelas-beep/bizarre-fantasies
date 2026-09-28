@@ -318,7 +318,7 @@ export const REARMAR_PATCH = `
             // El héroe activo tiene el hueco libre → se equipa él mismo.
             if(hero && freeSlot(hero, slot)){ resolveEquip(hero); return; }
             if(cands.length === 1){ resolveEquip(cands[0]); return; }
-            if(typeof humanCtl==='function' && humanCtl(side) && typeof pendTarget==='function'){
+            if(((typeof window.bfAbilityHuman==='function' && window.bfAbilityHuman(side)) || (typeof humanCtl==='function' && humanCtl(side))) && typeof pendTarget==='function'){
               pendTarget('\\u00bfA qui\\u00e9n le pones el arma recuperada?', side, resolveEquip);
             } else {
               resolveEquip(cands.sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);

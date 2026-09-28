@@ -39,8 +39,8 @@ export const JUNIANA_ABILITY_PATCH = `
       try{
         var r = 1 + Math.floor(Math.random() * 20);
         var fum = (r >= 19 || r === 1);
-        if(typeof pushLog === 'function'){
-          pushLog(fum ? 'lx' : 'li', '\\u{1F3B2} Tirada d20 (habilidad): ' + r + '/20 \\u2192 ' + (fum ? '\\u00a1PIFIA! La habilidad no produce ning\\u00fan efecto.' : 'OK.'));
+        if(fum && typeof pushLog === 'function'){
+          pushLog('lx', '\\u{1F3B2} Tirada d20 (habilidad): ' + r + '/20 \\u2192 ' + (fum ? '\\u00a1PIFIA! La habilidad no produce ning\\u00fan efecto.' : 'OK.'));
         }
         if(fum){
           h.abilityUsed = true;

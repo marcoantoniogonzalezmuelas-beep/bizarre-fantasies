@@ -44,14 +44,27 @@ export const MISSION_ENGINE_PATCH = `<script>
   window.bfMissionReplay=function(){
     if(!activeRun||!activeRun.modality||!document.querySelector('#s-result.active'))return;
     if(typeof NET==='undefined'||!NET.conn||!NET.conn.open)return;
+    var rid=activeRun.run_id;
     if(NET.role==='client'){
-      netSend({t:'bfMissionReplayRequest',run_id:activeRun.run_id});
+      netSend({t:'bfMissionReplayRequest',run_id:rid});
       var b=document.getElementById('bf-mission-replay');if(b){b.disabled=true;b.textContent='Esperando al anfitrión…';}
+      resendReplay(function(){netSend({t:'bfMissionReplayRequest',run_id:rid});});
     }else{
-      netSend({t:'bfMissionReplayStart',run_id:activeRun.run_id});
+      netSend({t:'bfMissionReplayStart',run_id:rid});
       replayNow();
+      resendReplay(function(){netSend({t:'bfMissionReplayStart',run_id:rid});});
     }
   };
+  // Los mensajes de revancha se reenvían hasta que la otra parte actúa (o cambia la partida).
+  var replayTimer=null;
+  function resendReplay(fn){
+    clearInterval(replayTimer);var n=0,rid=activeRun&&activeRun.run_id;
+    replayTimer=setInterval(function(){
+      if(!activeRun||activeRun.run_id!==rid||n++>25||typeof NET==='undefined'||!NET.conn||!NET.conn.open){clearInterval(replayTimer);return;}
+      if(NET.role==='client'&&activeRun.replayStarted){clearInterval(replayTimer);return;}
+      try{fn();}catch(e){}
+    },1500);
+  }
   var replayConn=null;
   setInterval(function(){
     if(typeof NET==='undefined'||!NET.conn||NET.conn===replayConn)return;

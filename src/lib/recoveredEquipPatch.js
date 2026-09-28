@@ -83,7 +83,7 @@ export const RECOVERED_EQUIP_PATCH = `
           if(hero && freeSlot(hero, slot)){ done(hero); return; }
           // Si no, se elige a quién fortificar (o lo decide la IA).
           if(cands.length === 1){ done(cands[0]); return; }
-          if(typeof humanCtl==='function' && humanCtl(side) && typeof pendTarget==='function'){
+          if(((typeof window.bfAbilityHuman==='function' && window.bfAbilityHuman(side)) || (typeof humanCtl==='function' && humanCtl(side))) && typeof pendTarget==='function'){
             pendTarget('\\u00bfA qui\\u00e9n le pones ' + (item.name||'el equipo') + '?', side, done);
           } else {
             done(cands.sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
