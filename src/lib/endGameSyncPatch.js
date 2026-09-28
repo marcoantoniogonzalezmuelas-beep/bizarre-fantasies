@@ -53,8 +53,14 @@ export const END_GAME_SYNC_PATCH = `
     // Solo actúa en batalla o en la propia pantalla de resultado (para
     // corregir el vídeo si el cliente ya transicionó con un resultado local
     // equivocado). Nunca durante subastas ni equipamiento.
-    if(!inBattle() && !resultShown()) return;
     var authoritative = !!(msg.bfMissionRun && typeof G !== 'undefined' && G.bfMission && G.bfMission.run_id === msg.bfMissionRun && typeof NET !== 'undefined' && NET.role === 'client');
+    if(!inBattle() && !resultShown()){
+      // Resultado autorizado del anfitrión: también se aplica si el invitado está
+      // en una pantalla intermedia (cinemática, transición), salvo preparación.
+      var act = document.querySelector('.screen.active');
+      var prep = !act || /^s-(equip|auction|recruit|setup)$/.test(act.id);
+      if(!authoritative || prep || !G._gameOver && !(G.team && G.team.p)) return;
+    }
     if(msg.bfMissionRun && !authoritative) return;
     // SAFETY: no procesar bfEndSync si ambos bandos siguen teniendo héroes
     // vivos. Previene finales falsos por mensajes bfEndSync erróneos o
@@ -116,6 +122,8 @@ export const END_GAME_SYNC_PATCH = `
         observedConn = NET.conn;
         observedConn.on('data', handle);
       }
+      // Nueva ronda (revancha con el mismo run_id): se reinicia el estado de envío/confirmación.
+      if(!G._gameOver && !resultShown()){ window.__bfEndSyncAcked = null; window.__bfEndSyncApplied = null; sentRun = ''; sentCount = 0; }
       // El anfitrión reenvía el resultado cada ~1,4 s hasta que el invitado lo confirma.
       if(NET.role === 'host' && G.bfMission && G.bfMission.modality && G._gameOver && G._result && typeof G._result.pWin === 'boolean' && window.__bfEndSyncAcked !== G.bfMission.run_id){
         if(sentRun !== G.bfMission.run_id){ sentRun = G.bfMission.run_id; sentCount = 0; }
