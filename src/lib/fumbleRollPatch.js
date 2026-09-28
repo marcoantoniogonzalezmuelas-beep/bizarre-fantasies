@@ -14,7 +14,7 @@ export function buildFumbleRollPatch(lang) {
     pifia: en ? 'FUMBLE' : 'PIFIA',
     epic: en ? 'EPIC FAIL' : 'FALLO ÉPICO',
     roll: en ? 'd30 roll' : 'Tirada d30',
-    fumbleLog: en ? 'FUMBLE! (19-20 on a d30 ≈ 7%): the action does nothing.' : '¡PIFIA! (19-20 en d30 ≈ 7%): la acción no hace nada.',
+    fumbleLog: en ? 'FUMBLE! (20 on a d30 ≈ 3%): the action does nothing.' : '¡PIFIA! (20 en d30 ≈ 3%): la acción no hace nada.',
     // Un 1 en el d30 solo es FALLO ÉPICO si se confirma con un 1 en el d6;
     // si no se confirma, se queda en pifia normal (y así debe explicarse).
     oneLog: en ? 'FUMBLE! (a 1 on a d30 not confirmed on the d6): the action does nothing.' : '¡PIFIA! (1 en d30 no confirmado en el d6): la acción no hace nada.',
@@ -121,10 +121,10 @@ export function buildFumbleRollPatch(lang) {
   function roll(){
     actCount++;
     var r = die(30);
-    var bad = (r === 1 || r === 19 || r === 20);
+    var bad = (r === 1 || r === 20);
     if(bad && (actCount - lastFail) <= 2){
       r = die(30);
-      bad = (r === 1 || r === 19 || r === 20);
+      bad = (r === 1 || r === 20);
     }
     if(!bad) return { ok:true, r:r };
     lastFail = actCount;
@@ -247,7 +247,7 @@ export function buildFumbleRollPatch(lang) {
   // Pifia de habilidad permanente: sin fallo épico, marcada como usada.
   function passiveFumbled(side, h){
     var r = die(30);
-    if(r !== 19 && r !== 20 && r !== 1){
+    if(r !== 20 && r !== 1){
       return false;
     }
     log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'ability' : 'habilidad'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
@@ -288,7 +288,7 @@ export function buildFumbleRollPatch(lang) {
       if(isSummon(h) || isPassive(h)) rolledThisAct = true;
       if(isSummon(h)){
         var r = die(30);
-        if(r === 19 || r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
+        if(r === 20 || (r === 1 && !(window.__bfEpicConfirmed = confirmEpic()))){
           window.__bfFumbleThisAct = true;
           log('lx', '\\u{1F3B2} ${T.roll} (${en ? 'summon' : 'invocaci\\u00f3n'}): ' + r + '/30 \\u2192 ' + (r === 1 ? '${T.oneLog}' : '${T.fumbleLog}'));
           pop(side, h.id, false, r);
