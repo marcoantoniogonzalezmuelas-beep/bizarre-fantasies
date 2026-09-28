@@ -1,35 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { applyHtmlPatches } from './htmlPatches.ts';
-const COVER_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/db79541e2_generated_image.png';
-const AUCTION_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/f9a34e5e7_generated_image.png';
-const SHOP_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/8a8abf227_generated_image.png';
-const BATTLE_BG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/67703a458_generated_image.png';
+import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
 const GAME_PATCH_VERSION = 'bf-2026-09-28-mp-sync-drain-dice-v222';
-const LOGO_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/80e2c6fb5_generated_image.png';
-const toHArt = id => 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/' + id + '_generated_image.png';
-const HERO_ART = ['0a701a388','0ae86f5cf','3144fa0cc','b3befffca','b27af2a2e','49da10371','4b39462db','70e5ca186','2321b345c','7b6b1032e','3bbcf59c0','dc308d368','a53c0e073','362ea0a4b','861dbe1ad','562066537','3ec5dbfd9','e5d35394d','49c4de216','a96095ce8','dd9ae011d','d9d830676','54365cb73','b34bdb48f','a237d8ffc','99d2f7a81','dcee2560b','ed76b96e2','a1aed5117','998c3949c','3c97a29dd','5a9d97619','1bd2bdf6d','40de7f507','a6a9e3561','a291e62f4','3e72cf42e','95e8228cd','c8b5e2201','c71c525b8','0ad0be833','3aedc4e62','0b3987343','2cfe0922c','9c56aea64'].map(toHArt);
-const HERO_ELITE_ART = ['b2219417f','a2abfb434','4952ab881','01e96302a','e908b3273','650b7ff27','4d934fdf4','f7954d1fc','8bc966bfa','452bb4fb7','653c2036d','141eb7445','ddf40d7ab','12f840fe3','4cf89ac43','b264548c2','8979eecb4','87c291158','e7ace3347','8d6e97ce2','33eb953a8','ffd892ff4','5a79e3638','b08f41b13','fb9937c69','04b64ecc7','d9ef92043','40e91e893','437bbb48b','35add4eeb','0827725df','2c7c03c8f','d0512bd56','ae296c827','8cde88cb7','ea100edfb','7764cb9ea','84c9693dc','6996705b7','b96972130','8959bebcc','e7ce90f66','4328395b6','06c814afa','12a5ddb5c'].map(toHArt);
-const IMG_BASE = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
-const toArt = function(id){ return IMG_BASE + id + '_generated_image.png'; };
-const MELEE_ART = ['2ef6e8fd8','90d5f4f20','ca0217dac','79830b431','b5b6160a3','a8ea859a5'].map(toArt);
-const RANGED_ART = ['2146a215b','ab826c633','88e45b0a1','93554b1ee','c8cf4c6d1','06ce99379','08cb8f198','809f7051c'].map(toArt);
-const ARMOR_ART = ['b989796b2','37519e06c','4a38b42e1','6889c5c36','fefd71323','2de5cea6a','244338b2e','adc154eaf','46890f673','ed198ba53'].map(toArt);
-const SPELL_ART = ['16656e37c','3ecdf6d2c','f07673381','c9386b2a6','77fcb19fb','75254b62e','fbc82143b','0cc792c57','05dd1e130','938f0dfba','299116e86','3e1c0a659','e73cbd75b','e0c8c5f87'].map(toArt);
-// Token heroes (Nº 109-113): la buffarra, lavadora, bañador con rositas, caja de zapatos, pez espada de tres ojos. Stats flojos (<5), vida <=25, habilidades absurdas.
-const TOKEN_ART = ['677d6bde3','5fde36306','707fa83e5','7b2be0479','1bc6fc19d'].map(toArt);
-const TRANSFORMER_ART = toArt('e0c8c5f87');
-const TOKENS = [{id:'tk_buf',name:'La Butifarra',title:'Parrillera',clan:'Bizarros',clanColor:'#caa14a',type:'CC',cost:0,num:109,cc:3,ad:1,he:2,hp:18,eCc:4,eAd:1,eHe:3,eHp:25,ability:'Petardeo',abilityTxt:'Hace "brum brum" muy fuerte. No pasa nada en absoluto.',eAbility:'Gases Tóxicos',eTxt:'Todos los rivales se marean y sufren -4 a sus stats por el olor.',akind:'tk_dizzy'},{id:'tk_lav',name:'La Lavadora',title:'Centrifugado Final',clan:'Bizarros',clanColor:'#7ad6ff',type:'HE',cost:0,num:110,cc:1,ad:2,he:4,hp:22,eCc:1,eAd:2,eHe:4,eHp:22,ability:'Centrifugado',abilityTxt:'Pone un programa de 90 minutos. Tarda un rato y no hace nada.',eAbility:'Centrifugado',eTxt:'Pone un programa de 90 minutos. Tarda un rato y no hace nada.',akind:'tk_none'},{id:'tk_ban',name:'El Bañador',title:'Rositas Serigrafiadas',clan:'Bizarros',clanColor:'#ff9ed1',type:'AD',cost:0,num:111,cc:2,ad:3,he:1,hp:15,eCc:2,eAd:3,eHe:1,eHp:15,ability:'Masaje',abilityTxt:'Sirve una paella imposible a un rival y lo deja Confuso durante 2 turnos.',eAbility:'Paella del Caos',eTxt:'Deja Confuso a un rival durante 3 turnos.',akind:'tk_confuse'},{id:'tk_caj',name:'La Caja de Zapatos',title:'Cartón Legendario',clan:'Bizarros',clanColor:'#d6a14a',type:'CC',cost:0,num:112,cc:4,ad:2,he:1,hp:25,eCc:4,eAd:2,eHe:1,eHp:25,ability:'Guardar un Zapato',abilityTxt:'Guarda un zapato dentro. Nadie sabe para qué.',eAbility:'Guardar un Zapato',eTxt:'Guarda un zapato dentro. Nadie sabe para qué.',akind:'tk_none'},{id:'tk_pez',name:'El Pez Espada',title:'De Tres Ojos',clan:'Bizarros',clanColor:'#3fd0c8',type:'AD',cost:0,num:113,cc:2,ad:4,he:3,hp:20,eCc:2,eAd:4,eHe:3,eHp:20,ability:'Licor de Tres Ojos',abilityTxt:'Emborracha a un rival durante 2 turnos: -3 a sus atributos y 3 de daño.',eAbility:'Licor Abisal',eTxt:'Emborracha a un rival durante 3 turnos: -3 a sus atributos y 3 de daño.',akind:'tk_drunk'}];
-const OBJECT_ART = ['58d239c00','1688e1433','9b9d6986f','dd35e9e6b','026d2d45d','d138d9427','6eec753dd','4581afaa7','b990b1173'].map(toArt);
-// Spell mana by name — the upstream SPELLS list has no `mana`, so we inject this and use it as fallback.
-const SPELL_MANA = {'Bola de Fuego':8,'Tormenta Ígnea':16,'Lanza de Hielo':9,'Rayo en Cadena':12,'Maremoto':15,'Curación':8,'Curación Divina':15,'Escudo de Maná':8,'Barrera Arcana':12,'Sueño':10,'Paralización':11,'Maldición':8,'Bendición':8,'Transformer':20,'Reanimación Arcana':12};
-const BONUS_ART = ['88ffc8b21','a644bca96','a5d3ecf52','a58e01097','664754ee3','6c0160e33','fbe03869b','5369480ce','e5c4370fc','26219e884','1acefc0e0','77bc42e4f','0934ebffe','70f137c2b'].map(toArt);
-const BONUS_IDS = ["ban","cor","mer","nau","pre","for","arm","pir","cor2","hac","ban2","gli","mina","roba"];
-const BONUS_NAMES = ["Gran Banquero","Corredor de Bolsa","Mercader Zeta","Nauta Financiero","La Prestamista","Patrón de Forja","Armero Real","El Pirata","La Corsaria","Hacker Nexus","Bandolero Seco","Glitch","Mina de Oro","Ladrón de Guante"];
-// Hero id order, matching the HERO_ART / HERO_ELITE_ART arrays index-for-index.
-const HERO_IDS = ["kru","bos","nar","hil","tor","vor","bra","gna","vra","mor","buc","com","kre","hev","pij","pat","syl","ael","zar","ere","alf","dix","ska","syx","gor","fut","gam","ret","mal","ser","bat","nix","vex","chi","sol","man","pac","hex","rev","doc","zer","xer","aje","rol","pol"];
-// Hero id -> display name (so we can match cards already rendered in the DOM by name).
-const HERO_NAMES = ["Krunder","Boss","Narbon","Hildra","Torax","Vorn","Bramblok","Gnarr","Vragnar","Morthex","Buck Ironclad","La Comadreja","Krunder Mec.","El Heavy","El Pijo","Patrón","Sylvara","Aelion","Zarmanda","Eredon","Alfredinho","Dixie Plasma","Skarla","Sylvex","Gorvak","El Futbolista","El Gamer","Retropoeta","Malachar","Serafis","Batu","Nixara","Vexal","Chivo","Solenne","Mantenimiento","Pacopiton","Hexara","Reverendo Sapis","Doc Radiante","Zarmandis","Xerath","El Ajedrecista","El Rolero","El Político"];
-const EQUIP = { melee: { nums:[59,60,61,62,63,64] }, ranged: { nums:[65,66,67,68,69,70,71,72] }, armor: { nums:[73,74,75,76,77,78,79,80,81,82] }, spell: { nums:[46,47,48,49,50,51,52,53,54,55,56,57,58] }, object: { nums:[83,84,85,86,87,88,89,90,91] } };
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -1465,14 +1437,15 @@ function buildArtScript(dbCards) {
     var originalBuyObject = window.buyObject;
     window.buyObject = function(side, id) {
       // Remote (rival) purchase reaching the host via intent: apply directly, no confirm dialog.
-      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuyObject(side, id);
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
       if (!item) return;
-      // Objects: up to 3 copies of the same object.
-      if (bfObjectCount(side, id) >= 3) {
-        if (window.notif) notif('Máximo 3 copias de ' + item.name + '.');
+      // Objects: up to 3 copies of the same object (El Anillo: solo 1, también para compras remotas).
+      var bfMaxCopies = id === 'ob_ring' ? 1 : 3;
+      if (bfObjectCount(side, id) >= bfMaxCopies) {
+        if (window.notif) notif('Máximo ' + bfMaxCopies + (bfMaxCopies === 1 ? ' copia' : ' copias') + ' de ' + item.name + '.');
         return;
       }
+      if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuyObject(side, id);
       var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
