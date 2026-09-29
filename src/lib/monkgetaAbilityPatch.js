@@ -14,9 +14,18 @@ export const MONKGETA_ABILITY_PATCH = `
   };return true;}
   function installDamage(){if(window.__bfMonkgetaDamage||typeof dealDamage!=='function')return false;window.__bfMonkgetaDamage=1;var original=dealDamage;window.dealDamage=function(target,amount,opts){
     var attacker=B&&B.current&&getHero(B.current.side,B.current.id),kind=opts&&opts.type;
-    if(attacker&&attacker._bfDisoriented&&(kind==='melee'||kind==='ranged'||kind==='spell')){
+    var sess=window.__bfDisSess;
+    if(sess&&sess.attacker===attacker&&(kind==='melee'||kind==='ranged'||kind==='spell')&&target){
+      // Misma acción (varios impactos / área): el dado ya decidió, todo el ataque sigue esa decisión.
+      if(sess.roll!==1){
+        if(target.id===sess.origId&&target===sess.orig){if(!sess.dest.alive)return 0;target=sess.dest;}
+        else if(target!==sess.dest&&(G.team[enemySide(B.current.side)]||[]).indexOf(target)>=0)return 0;
+      }
+    }else if(attacker&&attacker._bfDisoriented&&target&&(kind==='melee'||kind==='ranged'||kind==='spell')){
       var roll=window.__bfHeroRoll?window.__bfHeroRoll({faces:3,hero:attacker.name,label:'Desorientado',note:'1 rival · 2 aliado · 3 él mismo'}):1+Math.floor(Math.random()*3),allies=(G.team[B.current.side]||[]).filter(function(x){return x&&x.alive&&x!==attacker;});
+      var orig=target;
       if(roll===2)target=allies.length?allies[Math.floor(Math.random()*allies.length)]:attacker;else if(roll===3)target=attacker;
+      window.__bfDisSess={attacker:attacker,roll:roll,orig:orig,origId:orig.id,dest:target};setTimeout(function(){window.__bfDisSess=null;},0);
       attacker._bfDisoriented=0;pushLog('li','Dado de DESORIENTADO: '+roll+'. El ataque va contra '+target.name+'.');
     }
     // Invisible (Monkgeta élite o El Anillo): no le afecta NINGÚN daño, ni de

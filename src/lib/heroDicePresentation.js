@@ -19,7 +19,11 @@ export const HERO_DICE_PRESENTATION_CSS = `
 @keyframes bfHdNote{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
 .bf-hdice-who{color:#cfbfde;font:600 14px/1.4 Rubik,sans-serif}
 .bf-hdice-crit{font-size:18px;line-height:1.4;white-space:normal;animation:none;text-shadow:none;color:#ffcece;letter-spacing:.5px}
-.bf-hdice-eye{animation:none}
+.bf-hdice-eye{animation:none;display:none}
+.bf-hdice-cube{background:none!important;border:0!important;box-shadow:none!important;isolation:isolate;filter:drop-shadow(0 10px 14px #000c) drop-shadow(0 0 16px #c05bff88)}
+.bf-hdice-cube::before{content:'';position:absolute;inset:-8px;z-index:-2;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:linear-gradient(160deg,#fff0b0,#d9a43a 45%,#7a5216)}
+.bf-hdice-cube::after{content:'';position:absolute;inset:-4px;z-index:-1;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:linear-gradient(180deg,#ffffff38 0 12%,transparent 12%),linear-gradient(60deg,transparent 0 46%,#0000004d 46% 47%,transparent 47%),linear-gradient(120deg,transparent 0 46%,#ffffff33 46% 47%,transparent 47%),conic-gradient(from 20deg at 50% 52%,#6a35b0,#3a1d63,#8a4bd6,#2a1350,#7a3fc4,#40206e,#6a35b0)}
+.bf-hdice-cube.bf-hd-crit::after{background:linear-gradient(180deg,#ffffff38 0 12%,transparent 12%),conic-gradient(from 20deg at 50% 52%,#c0282e,#5d0f14,#e04046,#3a080c,#d0343a,#6a1015,#c0282e)}
 @media(max-height:600px){.bf-hdice{gap:6px;padding:14px}.bf-hdice-stage{height:150px}.bf-hdice-cube{width:114px;height:114px;font-size:62px}.bf-hdice.bf-hd-result .bf-hdice-lbl{font-size:24px}.bf-hdice-note{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.bf-hdice-cup,.bf-hdice-cube,.bf-hdice,.bf-hdice-spark{animation:none!important}.bf-hdice-cup{left:0;opacity:.4}}
 `;
