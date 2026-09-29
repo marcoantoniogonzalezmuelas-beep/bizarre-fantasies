@@ -29,8 +29,9 @@ export const ATTACK_FX_PATCH = `
     '.bf-muzzle{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,#fff,#ffe14a 40%,transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-smoke-trail{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,rgba(180,180,180,.7),transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-plasma-trail{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(120,200,255,.85),transparent 70%);transform:translate(-50%,-50%)}',
-    '.bf-tomato{width:58px;height:58px;object-fit:contain;mix-blend-mode:multiply;filter:drop-shadow(0 4px 4px rgba(0,0,0,.5))}',
-    '.bf-splat{width:150px;height:150px;transform:translate(-50%,-50%);border-radius:50% 42% 55% 45%;background:radial-gradient(circle,rgba(150,10,20,.95) 0 30%,rgba(120,20,20,.75) 45%,rgba(90,110,20,.45) 60%,transparent 72%);animation:bfSplat 1.4s ease-out forwards}',
+    '.bf-tomato{width:30px;height:30px;object-fit:contain;mix-blend-mode:multiply;filter:drop-shadow(0 4px 4px rgba(0,0,0,.5))}',
+    '.bf-tdrop{position:absolute;z-index:6;pointer-events:none;border-radius:50% 50% 55% 55%;background:radial-gradient(circle at 35% 30%,#e0352e,#8f0d16);box-shadow:0 0 3px rgba(120,0,10,.8)}',
+    '.bf-splat{width:64px;height:64px;transform:translate(-50%,-50%);border-radius:50% 42% 55% 45%;background:radial-gradient(circle,rgba(150,10,20,.95) 0 30%,rgba(120,20,20,.75) 45%,rgba(90,110,20,.45) 60%,transparent 72%);animation:bfSplat 1.4s ease-out forwards}',
     '@keyframes bfSplat{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}20%{opacity:1}70%{opacity:.9}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}',
     // ---- impactos ----
     '.bf-dust{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,rgba(200,180,150,.85),transparent 70%);transform:translate(-50%,-50%);animation:bfPuff 1.5s ease-out forwards}',
@@ -270,22 +271,34 @@ export const ATTACK_FX_PATCH = `
   // Sin arma: el héroe lanza tomates podridos (en arco, girando) y estallan en el objetivo.
   var TOMATO='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/685da9e8b_generated_image.png';
   { var ti=new Image(); ti.src=TOMATO; }
-  function splatAt(b){
+  function dropsOnCard(ev,n){
+    var card=document.getElementById('b_'+ev.toSide+'_'+ev.toId); if(!card)return;
+    if(getComputedStyle(card).position==='static')card.style.position='relative';
+    for(var i=0;i<n;i++){
+      var d=document.createElement('div'); d.className='bf-tdrop';
+      var sz=4+Math.random()*7;
+      d.style.cssText='left:'+(10+Math.random()*80)+'%;top:'+(8+Math.random()*70)+'%;width:'+sz+'px;height:'+(sz*(1.2+Math.random()*.8))+'px';
+      card.appendChild(d);
+      (function(d){ setTimeout(function(){ d.style.transition='opacity 1.2s,transform 1.6s'; d.style.opacity='0'; d.style.transform='translateY(14px)'; },3200); setTimeout(function(){ if(d.parentNode)d.parentNode.removeChild(d); },5000); })(d);
+    }
+  }
+  function splatAt(b,ev){
     var s=document.createElement('div'); s.className='bf-afx bf-splat'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1500);
-    impactSparks(b,9,'#a3121a'); impactSparks(b,4,'#6b7a1c');
+    impactSparks(b,4,'#a3121a'); dropsOnCard(ev,4);
   }
   function tomatoThrow(a,b,n,ev){
-    n=n||1;
+    n=5;
     for(var i=0;i<n;i++){ (function(i){ setTimeout(function(){
-      var ms=900, img=document.createElement('img'); img.src=TOMATO; img.className='bf-afx bf-tomato';
-      var top=Math.min(a.y,b.y)-90-i*12;
+      var ms=700+Math.random()*200, img=document.createElement('img'); img.src=TOMATO; img.className='bf-afx bf-tomato';
+      var bb={x:b.x+(Math.random()-.5)*50,y:b.y+(Math.random()-.5)*50};
+      var top=Math.min(a.y,b.y)-50-Math.random()*60;
       img.animate([
-        {left:a.x+'px',top:a.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(0deg) scale(.7)'},
-        {left:((a.x+b.x)/2)+'px',top:top+'px',opacity:1,transform:'translate(-50%,-50%) rotate(300deg) scale(1)',offset:.5},
-        {left:b.x+'px',top:b.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(620deg) scale(1.05)'}
+        {left:a.x+'px',top:a.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(0deg) scale(.6)'},
+        {left:((a.x+bb.x)/2)+'px',top:top+'px',opacity:1,transform:'translate(-50%,-50%) rotate(300deg) scale(.8)',offset:.5},
+        {left:bb.x+'px',top:bb.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(620deg) scale(.85)'}
       ],{duration:ms,easing:'ease-in-out',fill:'forwards'});
-      bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); splatAt(b); hitStar(b); shake(ev.toSide,ev.toId); },ms);
-    },i*260); })(i); }
+      bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); splatAt(bb,ev); if(i===0||i===n-1){ hitStar(b); shake(ev.toSide,ev.toId); } },ms);
+    },i*170); })(i); }
   }
 
   function meleeFx(ev){
