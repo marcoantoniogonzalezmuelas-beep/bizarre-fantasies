@@ -48,6 +48,8 @@ export default class GameRelayRoom extends Actor {
   async processMessage(conn, msg) {
     if (!msg || typeof msg !== 'object') return;
     if (msg.type === 'hello' && VALID_SIDES.has(msg.side)) {
+      const prev = this.members.get(conn.id);
+      if (prev && prev.side === msg.side) return; // hello repetido: sin nueva consulta a la BD
       if (!(await this.tokenValid(msg.side, msg.token))) { conn.send({ type: 'unauthorized' }); return; }
       this.members.set(conn.id, { side: msg.side });
       await this.storage.put('members', [...this.members.entries()]);
