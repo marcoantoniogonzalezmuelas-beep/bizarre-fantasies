@@ -1,6 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import relayRealtimeChannel from '@/lib/relayRealtimeChannel';
 import relayBackupQueue from '@/lib/relayBackupQueue';
+import { getRelayToken, setRelayToken } from '@/lib/relayTokens';
 
 // Canal permanente para acciones inmediatas; gameRelay conserva la cola durable
 // y actúa como respaldo después de una reconexión.
@@ -25,7 +26,7 @@ export function bindRelayBridge(iframeRef) {
     closeRealtime();
     activeCode = cleanCode;
     activeSide = side;
-    room = relayRealtimeChannel(cleanCode, side, post);
+    room = relayRealtimeChannel(cleanCode, side, post, getRelayToken(cleanCode, side));
     return room;
   };
 
@@ -34,9 +35,11 @@ export function bindRelayBridge(iframeRef) {
     if (!frameWindow || event.source !== frameWindow) return;
     if (event.data?.bfRelayAck) { room?.acknowledge(event.data.bfRelayAck); return; }
     if (!event.data?.bfRelay) return;
-    const { requestId, payload = {} } = event.data.bfRelay;
-    const action = String(payload.action || '');
-    const side = String(payload.side || (action === 'join' ? 'g' : ''));
+    const { requestId, payload: rawPayload = {} } = event.data.bfRelay;
+    const action = String(rawPayload.action || '');
+    const side = String(rawPayload.side || (action === 'join' ? 'g' : ''));
+    const stored = getRelayToken(rawPayload.code, side);
+    const payload = stored ? { ...rawPayload, token: stored } : rawPayload;
     try {
       if (action === 'sendBatch') {
         let receipt;
@@ -49,6 +52,7 @@ export function bindRelayBridge(iframeRef) {
         }
       }
       const response = await base44.functions.invoke('gameRelay', payload);
+      if (response.data?.ok && response.data.token) setRelayToken(payload.code, response.data.side || side, response.data.token);
       if (response.data?.ok && ['join', 'resume', 'poll'].includes(action)) {
         ensureRealtime(payload.code, response.data.side || side);
       }

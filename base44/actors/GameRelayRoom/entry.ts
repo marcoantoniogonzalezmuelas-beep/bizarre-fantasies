@@ -25,6 +25,20 @@ export default class GameRelayRoom extends Actor {
     return operation;
   }
 
+  // El asiento solo se concede con el token secreto de la sala (owner/relay para
+  // el anfitrión, guest para el invitado), comprobado contra la sala en la BD.
+  async tokenValid(side, token) {
+    const t = typeof token === 'string' ? token : '';
+    if (!t || t.length > 80) return false;
+    try {
+      const rows = await this.client.asServiceRole.entities.GameRoom.filter({ room_code: this.instanceId }, '-updated_date', 1);
+      const state = rows && rows[0] && rows[0].state;
+      if (!state) return false;
+      const valid = side === 'p' ? [state.owner_token, state.relay_host_token] : [state.guest_token];
+      return valid.some(v => typeof v === 'string' && v.length > 0 && v === t);
+    } catch (e) { return false; }
+  }
+
   replay(conn, side) {
     conn.send({ type: 'ready', side, peers: [...this.members.values()].map(m => m.side) });
     const other = side === 'p' ? 'g' : 'p';
@@ -34,6 +48,7 @@ export default class GameRelayRoom extends Actor {
   async processMessage(conn, msg) {
     if (!msg || typeof msg !== 'object') return;
     if (msg.type === 'hello' && VALID_SIDES.has(msg.side)) {
+      if (!(await this.tokenValid(msg.side, msg.token))) { conn.send({ type: 'unauthorized' }); return; }
       this.members.set(conn.id, { side: msg.side });
       await this.storage.put('members', [...this.members.entries()]);
       this.replay(conn, msg.side);

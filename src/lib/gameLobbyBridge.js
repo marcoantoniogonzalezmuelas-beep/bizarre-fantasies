@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { setRelayToken } from '@/lib/relayTokens';
 
 export function bindGameLobbyBridge(iframeRef) {
   const onMessage = async (event) => {
@@ -9,6 +10,10 @@ export function bindGameLobbyBridge(iframeRef) {
     const { requestId, payload } = event.data.bfLobby;
     try {
       const response = await base44.functions.invoke('gameLobby', payload || {});
+      // El anfitrión registra la sala con su token secreto: lo reutiliza el relay.
+      if (payload && ['register', 'register_playing'].includes(payload.action) && response.data?.ok !== false) {
+        setRelayToken(payload.code, 'p', payload.token);
+      }
       frameWindow.postMessage({ bfLobbyResult: { requestId, data: response.data } }, '*');
     } catch (error) {
       const errMsg = error.response?.data?.error || error.message || 'Lobby unavailable';

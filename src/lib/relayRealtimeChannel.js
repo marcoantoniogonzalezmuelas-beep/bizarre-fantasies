@@ -1,6 +1,6 @@
 import { base44 } from '@/api/base44Client';
 
-export default function relayRealtimeChannel(code, side, post) {
+export default function relayRealtimeChannel(code, side, post, token = '') {
   const key = `bfRelayConnection:${code}:${side}`;
   let connectionId = sessionStorage.getItem(key);
   if (!connectionId) { connectionId = crypto.randomUUID(); sessionStorage.setItem(key, connectionId); }
@@ -10,7 +10,7 @@ export default function relayRealtimeChannel(code, side, post) {
   const subscription = room.subscribe(message => {
     if (closed || !message || typeof message !== 'object') return;
     lastSeen = Date.now();
-    if (message.type === 'connected') room.send({ type: 'hello', side });
+    if (message.type === 'connected') room.send({ type: 'hello', side, token });
     if (message.type === 'ready') {
       post({ bfRelayRealtimeStatus: message.peers?.includes(side === 'p' ? 'g' : 'p') ? 'ready' : 'waiting' });
       for (const peer of message.peers || []) if (peer !== side) post({ bfRelayPresence: { side: peer, connected: true } });
@@ -25,7 +25,7 @@ export default function relayRealtimeChannel(code, side, post) {
     }
     if (message.type === 'deliveries' && message.side !== side) post({ bfRelayPush: { deliveries: message.deliveries || [] } });
   });
-  room.send({ type: 'hello', side });
+  room.send({ type: 'hello', side, token });
   const heartbeat = setInterval(() => {
     if (Date.now() - lastSeen > 2500) post({ bfRelayRealtimeStatus: 'waiting' });
     room.send({ type: 'sync' });
