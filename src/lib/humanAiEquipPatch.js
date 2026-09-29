@@ -43,33 +43,59 @@ export const HUMAN_AI_EQUIP_PATCH = `
     G.spellbook[side] = before.spells; G.items[side] = before.items;
     G.equipCoins[side] = before.coins;
     // 3) Se aplica: cliente = intents al anfitrión; anfitrión/local = directo.
-    var n = 0;
-    plan.gear.forEach(function(p){
-      var cost = Number(p.it.cost || 0);
-      if(G.equipCoins[side] < cost) return;
-      G.equipCoins[side] -= cost;
+    var n = 0, spent = {}, sp2 = before.spells.slice(), it2 = before.items.slice();
+    function coins(){ return Number(G.equipCoins[side] || 0); }
+    function payGear(h, slot, kind, it){
+      var cost = Number(it.cost || 0);
+      if(coins() < cost) return false;
+      G.equipCoins[side] = coins() - cost; spent[h.id + slot] = 1;
       if(isClient()){
-        if(typeof sendIntent === 'function') sendIntent('doAssign', { heroId: p.hero.id, assign: { kind: p.kind, id: p.it.id, cost: p.it.cost, name: p.it.name } });
-      } else p.hero[p.slot] = p.it;
-      n++;
-    });
-    plan.spells.forEach(function(id){
-      var sp = (typeof SPELLS !== 'undefined' ? SPELLS : []).filter(function(x){ return x.id === id; })[0];
-      var cost = Number(sp && sp.cost || 0);
-      if(!sp || G.equipCoins[side] < cost) return;
-      G.equipCoins[side] -= cost;
-      if(isClient()){ if(typeof sendIntent === 'function') sendIntent('buySpell', { id: id }); }
-      else G.spellbook[side].push(id);
-      n++;
-    });
-    plan.items.forEach(function(o){
+        if(typeof sendIntent === 'function') sendIntent('doAssign', { heroId: h.id, assign: { kind: kind, id: it.id, cost: it.cost, name: it.name } });
+      } else h[slot] = it;
+      n++; return true;
+    }
+    function paySpell(sp){
+      var cost = Number(sp.cost || 0);
+      if(sp2.indexOf(sp.id) >= 0 || coins() < cost) return false;
+      G.equipCoins[side] = coins() - cost; sp2.push(sp.id);
+      if(isClient()){ if(typeof sendIntent === 'function') sendIntent('buySpell', { id: sp.id }); }
+      else G.spellbook[side].push(sp.id);
+      n++; return true;
+    }
+    function payObj(o){
       var cost = Number(o.cost || 0);
-      if(G.equipCoins[side] < cost) return;
-      G.equipCoins[side] -= cost;
+      if(coins() < cost) return false;
+      G.equipCoins[side] = coins() - cost; it2.push(o);
       if(isClient()){ if(typeof sendIntent === 'function') sendIntent('buyObject', { id: o.id }); }
       else G.items[side].push(o);
-      n++;
+      n++; return true;
+    }
+    plan.gear.forEach(function(p){ payGear(p.hero, p.slot, p.kind, p.it); });
+    plan.spells.forEach(function(id){
+      var sp = (typeof SPELLS !== 'undefined' ? SPELLS : []).filter(function(x){ return x.id === id; })[0];
+      if(sp) paySpell(sp);
     });
+    plan.items.forEach(payObj);
+    // 4) Sobrante: se gasta en huecos libres, hechizos y objetos que aún no se tengan.
+    function hasGear(h, slot, old){ return !!(old || spent[h.id + slot]); }
+    for(var guard = 0; guard < 40 && coins() > 0; guard++){
+      var did = false;
+      before.gear.forEach(function(g){
+        var h = g.h, list, slot, kind;
+        if(!hasGear(h, 'armor', g.a)){ list = ARMORS; slot = 'armor'; kind = 'armor'; }
+        else if(!hasGear(h, 'mwep', g.m) && !hasGear(h, 'rwep', g.r)){ if(h.type === 'AD'){ list = RANGED; slot = 'rwep'; kind = 'ranged'; } else { list = MELEE; slot = 'mwep'; kind = 'melee'; } }
+        else return;
+        var best = list.filter(function(x){ return Number(x.cost) > 0 && Number(x.cost) <= coins(); }).sort(function(a, b){ return b.cost - a.cost; })[0];
+        if(best && payGear(h, slot, kind, clone(best))) did = true;
+      });
+      var spc = (typeof SPELLS !== 'undefined' ? SPELLS : []).filter(function(x){ return sp2.indexOf(x.id) < 0 && Number(x.cost) > 0 && Number(x.cost) <= coins(); }).sort(function(a, b){ return b.cost - a.cost; })[0];
+      if(spc && team.some(function(h){ return h.type === 'HE'; }) && paySpell(spc)) did = true;
+      var obc = (typeof OBJECTS !== 'undefined' ? OBJECTS : []).filter(function(x){
+        return x && Number(x.cost) > 0 && Number(x.cost) <= coins() && it2.filter(function(y){ return y.id === x.id; }).length < (x.kind === 'bf_ring' ? 1 : 2);
+      }).sort(function(a, b){ return b.cost - a.cost; })[0];
+      if(obc && payObj(clone(obc))) did = true;
+      if(!did) break;
+    }
     return n;
   }
 

@@ -43,7 +43,7 @@ export const MP_TURN_SEQUENCE_PATCH = `
   function busy(){ return cineBusy() || fxBusy() || killPending() || indicatorsBusy(); }
 
   window.bfStepWhenCalm = function(next){
-    var min = 400, max = 4000, quiet = 500, step = 120, elapsed = 0, quietFrom = 0;
+    var min = 120, max = 4000, quiet = 120, step = 50, elapsed = 0, quietFrom = 0;
     function tick(){
       elapsed += step;
       if(busy()) quietFrom = 0;

@@ -175,7 +175,11 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
     var m = String(card.id||'').match(/^b_([po])_(.+)$/);
     return m && typeof G!=='undefined' && G.team ? (G.team[m[1]]||[]).find(function(h){return h&&h.id===m[2];}) : null;
   }
+  // Los marcadores (retrato + panel) los pinta ahora passiveMarkerPatch como
+  // en el resto de pasivas; aquí solo se limpian los antiguos.
   function updatePortraitMarkers(){
+    document.querySelectorAll('.bf-doji-mark').forEach(function(n){ n.remove(); });
+    return;
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(card){
       var h = heroFor(card);
       var badge = card.querySelector('.bf-doji-mark');
@@ -193,6 +197,8 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
 
   // Marcador en el panel de acciones del héroe activo.
   function updatePanelMarker(){
+    document.querySelectorAll('.bf-doji-panel-mark').forEach(function(n){ n.remove(); });
+    return;
     try{
       if(typeof B==='undefined'||!B||!B.current) return;
       var h = (typeof getHero==='function') ? getHero(B.current.side, B.current.id) : null;

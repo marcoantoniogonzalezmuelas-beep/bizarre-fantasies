@@ -23,7 +23,9 @@ export const PASSIVE_MARKER_PATCH = `
     _bfCrane: { icon: '\\u{1F6E1}\\uFE0F', color: '#9dffcf', label: 'Protecci\\u00f3n' },
     _bfDuckBlock: { icon: '\\u{1F986}', color: '#9dffcf', label: 'Picotazo' },
     _bfDisoriented: { icon: '\\u{1F9ED}', color: '#c79bff', label: 'Desorientado' },
-    _bfInvisible: { icon: '\\u{1F441}\\uFE0F', color: '#c05bff', label: 'Invisible' }
+    _bfInvisible: { icon: '\\u{1F441}\\uFE0F', color: '#c05bff', label: 'Invisible' },
+    _bfDojiRevive: { icon: '\\u{1F31F}', color: '#c79bff', label: 'Gran amenaza' },
+    _bfDojiThreat: { icon: '\\u26a0\\uFE0F', color: '#9dffcf', label: 'Peque\\u00f1a amenaza' }
   };
   // Mapa din\u00e1mico desde el editor: card_id \u2192 {flag, icon, color, label}
   var markersMap = {};
