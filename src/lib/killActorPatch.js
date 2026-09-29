@@ -31,6 +31,7 @@ export const KILL_ACTOR_PATCH = `
     }, 200);
   });
 
+  var deathSources = Object.create(null);
   function currentActor(){
     try{
       if(typeof B === 'undefined' || !B || !B.current) return null;
@@ -49,17 +50,20 @@ export const KILL_ACTOR_PATCH = `
     window.dealDamage = function(target, amount){
       var wasAlive = !!(target && target.alive);
       var actor = currentActor();
-      // Hechizo/objeto/habilidad: la muerte se atribuye a quien lo lanzó, aunque
-      // el turno ya haya avanzado o el daño llegue tarde.
+      // El turno actual es la fuente de verdad: un contexto de habilidad de
+      // hace segundos no puede atribuir un ataque posterior a otro héroe.
       var cx = window.__bfActionCtx;
-      if(cx && cx.actor && Date.now() - cx.ts < 20000 && (cx.kind === 'castSpell' || cx.kind === 'useItem' || cx.kind === 'useAbility')) actor = cx.actor;
+      if(!actor && cx && cx.actor && Date.now()-cx.ts<1200) actor=cx.actor;
       var result = orig.apply(this, arguments);
       try{
         // Autogolpe: el héroe (o un aliado) cae por daño de su propio bando.
         // Solo cuenta como autogolpe si el propio bando lo provocó con un
         // hechizo/objeto/habilidad reciente (no por veneno, contraataque, etc.).
-        if(wasAlive && target && !target.alive && actor && cx && cx.actor && cx.actor.side === actor.side && Date.now() - cx.ts < 20000 && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).indexOf(target) >= 0){
-          window.__bfSelfKill = { side: actor.side, id: actor.id, victim: target.id, ts: Date.now() };
+        if(wasAlive && target && !target.alive && typeof G !== 'undefined' && G.team){
+          var victimSide=(G.team.p||[]).includes(target)?'p':(G.team.o||[]).includes(target)?'o':null;
+          if(victimSide && actor && (G.team[actor.side]||[]).some(function(h){return h && h.id===actor.id;})){
+            deathSources[victimSide+'_'+target.id]={side:actor.side,id:actor.id,ts:Date.now(),self:actor.side===victimSide && !!(cx && cx.actor && cx.actor.side===actor.side && cx.actor.id===actor.id && Date.now()-cx.ts<2000 && !(arguments[2]&&arguments[2].bfReflect))};
+          }
         }
         if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).some(function(h){return h && h.id === actor.id;}) && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){
           var ctx = window.__bfActionCtx;
@@ -106,15 +110,20 @@ export const KILL_ACTOR_PATCH = `
     var orig = window.flushFx;
     window.flushFx = function(events){
       try{
+        (events||[]).forEach(function(ev){
+          if(!ev||ev.k!=='death')return;
+          var key=ev.side+'_'+ev.id;
+          if(deathSources[key]){ev.bfKillSource=deathSources[key];delete deathSources[key];}
+        });
         var death = (events || []).filter(function(ev){ return ev && ev.k === 'death'; })[0];
-        var a = window.__bfKillActor;
+        var a = death && death.bfKillSource ? (death.bfKillSource.self ? null : {...death.bfKillSource,victim:death.id}) : window.__bfKillActor;
         // MULTIPLAYER (cliente): dealDamage NO se ejecuta en el lado del
         // invitado — solo el host simula el combate. __bfKillActor nunca se
         // establece, así que la cinemática de golpe mortal no mostraba al
         // atacante (solo al héroe caído). Fallback: deducir el atacante del
         // turno activo (B.current o .bhero.active-turn), que SÍ llega sincronizado
         // al cliente. Solo si no hay un __bfKillActor válido ya fijado.
-        if(death && (!a || Date.now() - a.ts > 20000 || a.victim !== death.id)){
+        if(death && !death.bfKillSource && (!a || Date.now() - a.ts > 2000 || a.victim !== death.id)){
           var fallbackActor = null;
           // 1) B.current: el héroe cuyo turno está en curso (el atacante).
           if(typeof B !== 'undefined' && B && B.current){

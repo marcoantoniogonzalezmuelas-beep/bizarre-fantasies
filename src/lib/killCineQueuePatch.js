@@ -11,10 +11,8 @@
 // habilidad). Así nunca se solapan. Para kills de ataque normal, se mantiene
 // el comportamiento anterior (espera corta + sondeo de escena ocupada).
 //
-// FIN DE PARTIDA: si el golpe mortal supone el final de la partida (el juego
-// detecta B.over o lanza la animación de golpe definitivo), NO se muestra la
-// cinemática de golpe mortal: ya hay suficiente con la animación de fin de
-// batalla existente.
+// FIN DE PARTIDA: el héroe caído sí se muestra tras el último golpe; el
+// resultado espera a que acabe. Solo se omite si el resultado ya está visible.
 //
 // MULTI-KILL: si una habilidad mata a varios rivales a la vez, se recogen
 // todas las víctimas durante la ventana de retraso pero solo se muestra la
@@ -100,7 +98,7 @@ export const KILL_CINE_QUEUE_PATCH = `
 
   // ---- Estado de la cola de kills ----
   var pendingVictims = [];
-  var pendingActor = null, pendingSelf = null;
+  var pendingActor = null;
   var killTimer = null, resolvingKills = 0;
   var lastCineSeen = 0, pollId = 0;
   // Una muerte sigue registrada al salir de la cola: el motor y flushFx
@@ -145,13 +143,12 @@ export const KILL_CINE_QUEUE_PATCH = `
     return false;
   }
 
-  // ¿El golpe mortal ha puesto fin a la partida? Si es así, NO lanzamos la
-  // cinemática de golpe mortal: la animación de fin de batalla (golpe
-  // definitivo) ya es suficiente y no hay que duplicar.
+  // Si el resultado ya está en pantalla, no superponer un remate tardío.
+  // B.over por sí solo no basta: también se activa justo al caer el último héroe.
   function gameEnded(){
     try{
-      // Flag global del juego: B.over se establece cuando la partida termina
-      if(typeof B !== 'undefined' && B && B.over) return true;
+      // B.over marca también el golpe que acaba de matar al último héroe.
+      // No descartarlo: la transición a resultado espera a esta cola.
       // La animación de golpe definitivo ya está en pantalla
       if(document.querySelector('#bf-final-blow,.bf-final-blow,.bf-game-over,.bf-end-cine')) return true;
       // El juego muestra el panel de fin de partida
@@ -169,7 +166,7 @@ export const KILL_CINE_QUEUE_PATCH = `
 
   function artFromCard(card){
     try{
-      var art = card.querySelector('.bf-battle-art');
+      var art = card.querySelector('.bf-bscene-portrait,.bf-battle-art');
       if(art){
         var bg = art.style.backgroundImage || getComputedStyle(art).backgroundImage;
         var m = /url\\(["']?([^"')]+)["']?\\)/.exec(bg);
@@ -193,17 +190,22 @@ export const KILL_CINE_QUEUE_PATCH = `
         if(src2) return src2;
       }
     }catch(e){}
-    return null;
+    try{
+      var h=heroFromCard(card),id=h&&(h._token||h.id),avatar=window.__bfAvatarMap||{},scenes=window.__bfBattleArtMap||{};
+      return (id&&(avatar[id]||(scenes[id]&&(h.eliteMode?scenes[id].elite:scenes[id].base))))||null;
+    }catch(e){return null;}
   }
 
-  function attackerArt(actor){
+  function heroArt(side,id){
+    var card=document.getElementById('b_'+side+'_'+id);
+    if(card){var url=artFromCard(card);if(url)return url;}
     try{
-      if(!actor) return null;
-      var card = document.getElementById('b_' + actor.side + '_' + actor.id);
-      if(card) return artFromCard(card);
-    }catch(e){}
-    return null;
+      var h=typeof getHero==='function'&&getHero(side,id),key=h&&(h._token||h.id);
+      var avatars=window.__bfAvatarMap||{},scenes=window.__bfBattleArtMap||{};
+      return key&&(avatars[key]||(scenes[key]&&(h.eliteMode?(scenes[key].elite||scenes[key].base):scenes[key].base)))||null;
+    }catch(e){return null;}
   }
+  function attackerArt(actor){return actor?heroArt(actor.side,actor.id):null;}
 
   // ---- Nueva cinemática bizarra ----
   function showKillCinematic(actor, victims, selfKill){
@@ -257,7 +259,8 @@ export const KILL_CINE_QUEUE_PATCH = `
     victims.forEach(function(v, i){
       var vic = document.createElement('div');
       vic.className = 'bf-kill-vic';
-      if(v.art) vic.style.backgroundImage = 'url("' + v.art + '")';
+      var vicArt=v.art||heroArt(v.side,v.id);
+      if(vicArt) vic.style.backgroundImage = 'url("' + vicArt + '")';
       if(selfKill){
         var banana = document.createElement('div');
         banana.className = 'bf-kill-banana';
@@ -329,16 +332,16 @@ export const KILL_CINE_QUEUE_PATCH = `
     // Si el golpe mortal ha puesto fin a la partida, NO lanzamos la
     // cinemática: la animación de fin de batalla ya es suficiente.
     if(gameEnded()){
+      pendingVictims.forEach(function(v){if(window.__bfDeathVisHold)delete window.__bfDeathVisHold[v.key];});
       pendingVictims = [];
       pendingActor = null;
       stopWatch();
       return;
     }
 
-    var actor = pendingActor;
-    var selfHint = pendingSelf;
-    pendingSelf = null;
     var victims = pendingVictims.slice();
+    var sources=victims.map(function(v){return v.source;}).filter(Boolean);
+    var actor=sources.length===victims.length && sources.every(function(s){return s.side!==victims[0].side && s.side===sources[0].side && s.id===sources[0].id;}) ? {side:sources[0].side,id:sources[0].id} : (sources.length?null:pendingActor);
     // El ejecutor debe pertenecer al bando opuesto de TODAS las víctimas.
     // Si el turno avanzó (o hay daño reflejado), no atribuir la muerte a un aliado.
     var sides = victims.map(function(v){return v.side;}).filter(Boolean);
@@ -352,9 +355,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     });
     // Autogolpe: nadie del bando rival remató al héroe (se mató él solo o un
     // aliado). Se muestra la versión humorística del tropezón.
-    var sk = window.__bfSelfKill;
-    var selfKill = !actor && victims.length === 1 && !!(
-      (sk && Date.now() - sk.ts < 8000 && sk.victim === victims[0].id && sk.side === victims[0].side));
+    var selfKill = !actor && victims.length === 1 && !!(victims[0].source && victims[0].source.self && victims[0].source.side === victims[0].side);
     pendingVictims = [];
     pendingActor = null;
     if(!victims.length){ stopWatch(); return; }
@@ -363,7 +364,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     // next turn cannot slip into the gap before the death overlay mounts.
     resolvingKills++;
     function proceed(){
-      if(gameEnded()){ resolvingKills--; stopWatch(); return; }
+      if(gameEnded()){ victims.forEach(function(v){if(window.__bfDeathVisHold)delete window.__bfDeathVisHold[v.key];}); resolvingKills--; stopWatch(); return; }
       if(busy()){
         setTimeout(proceed, 80);
         return;
@@ -379,7 +380,7 @@ export const KILL_CINE_QUEUE_PATCH = `
   function install(){
     var orig = window.bfKillCinematic;
     if(typeof orig !== 'function' || orig.__bfQueued) return false;
-    var wrapped = function(card, confirmedDeath){
+    var wrapped = function(card, confirmedDeath, source){
       if(!card) return;
 
       // Recoge la víctima (sin duplicar: si el mismo héroe ya está en la
@@ -398,19 +399,21 @@ export const KILL_CINE_QUEUE_PATCH = `
           id: vId, side: side, key: key,
           name: vHero ? vHero.name : '',
           clan: vHero ? vHero.clan || (vHero._token ? 'Bizarros' : '') : '',
-          art: vArt
+          art: vArt, source: source || null
         });
       }
 
       // Anota el atacante
       var ka = window.__bfKillActor;
-      if(ka && ka.victim === vId && ka.side && ka.side !== side && Date.now() - ka.ts < 20000){
+      if(source && !source.self && source.side !== side){
+        pendingActor={side:source.side,id:source.id,ts:source.ts};
+      }else if(!source && ka && ka.victim === vId && ka.side && ka.side !== side && Date.now() - ka.ts < 2000){
         pendingActor = { side: ka.side, id: ka.id, ts: ka.ts };
       }
       // MULTIPLAYER (cliente): si __bfKillActor no se fijó (dealDamage no
       // corre en el invitado), deduce el atacante del turno activo. Es el
       // respaldo si bfKillCinematic se llama antes que flushFx.
-      if(!pendingActor){
+      if(!source && !pendingActor){
         var fbActor = null;
         try{
           if(typeof B !== 'undefined' && B && B.current){
@@ -426,8 +429,6 @@ export const KILL_CINE_QUEUE_PATCH = `
           // Solo si el atacante no es la propia víctima
           if(fbActor && fbActor.side && fbActor.side !== side){
             pendingActor = fbActor;
-          } else if(fbActor && fbActor.side === side){
-            pendingSelf = fbActor;
           }
         }catch(e){}
       }

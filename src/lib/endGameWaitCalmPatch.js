@@ -27,14 +27,9 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(document.getElementById('bf-spec-cine')) return false;
       if(document.getElementById('bf-rearm-cine')) return false;
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) return false;
-      // Partida terminada: tras la animación de la acción definitiva se pasa
-      // directo a la animación final. No se esperan números de daño, golpe
-      // mortal en cola ni avisos de combate (antes sumaban varios segundos).
-      if(typeof B !== 'undefined' && B && B.over){
-        var ko = document.getElementById('bf-kill-ov');
-        if(ko && ko.parentNode) ko.parentNode.removeChild(ko);
-        return true;
-      }
+      // También el último héroe caído debe verse antes del resultado.
+      // Esperar el golpe mortal ya en cola evita cortar su retrato al acabar.
+      if(typeof window.__bfKillCinePending==='function' && window.__bfKillCinePending()) return false;
       if(document.getElementById('bf-kill-ov')) return false;
       if(indicatorsBusy())return false;
       if(typeof window.__bfKillCinePending === 'function' && window.__bfKillCinePending()) return false;

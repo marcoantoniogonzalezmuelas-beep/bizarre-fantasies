@@ -57,7 +57,7 @@ export const FINAL_CINEMATIC_PATCH = `
             if(typeof window.bfKillCinematic==='function'){
               // La cinemática (encolada por killCineQueuePatch tras habilidad,
               // efectos y daño) añadirá bf-truedead al reproducirse.
-              window.bfKillCinematic(card,true);
+              window.bfKillCinematic(card,true,ev.bfKillSource);
             }else{
               // Sin cinemática disponible: estado de muerto directo.
               card.classList.add('bf-truedead');
