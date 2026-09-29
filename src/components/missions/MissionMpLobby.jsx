@@ -10,9 +10,9 @@ import MissionMpPacks from '@/components/missions/MissionMpPacks';
 import useMissionRoomPoll from '@/components/missions/useMissionRoomPoll';
 import { MP_MISSIONS, MP_MODALITIES, MP_EQUIP_COINS, MP_BUDGET, missionPool, valueOf, isEpic } from '@/components/missions/missionRules';
 
-export default function MissionMpLobby({ cards, nick, onBack, onStart, starting, replay }) {
-  const [missionId, setMissionId] = useState(replay?.mission || 'club');
-  const [modality, setModality] = useState(replay?.modality || 'pack');
+export default function MissionMpLobby({ cards, nick, onBack, onStart, starting, replay, preset }) {
+  const [missionId, setMissionId] = useState(replay?.mission || preset?.mission || 'club');
+  const [modality, setModality] = useState(replay?.modality || preset?.modality || 'pack');
   const [step, setStep] = useState(replay ? 'prepare' : 'config');
   const [roomCode, setRoomCode] = useState(replay?.room_code || '');
   const [password, setPassword] = useState(replay?.password || '');

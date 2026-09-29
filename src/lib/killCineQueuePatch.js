@@ -349,8 +349,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     // aliado). Se muestra la versión humorística del tropezón.
     var sk = window.__bfSelfKill;
     var selfKill = !actor && victims.length === 1 && !!(
-      (sk && Date.now() - sk.ts < 8000 && sk.victim === victims[0].id) ||
-      (selfHint && selfHint.side === victims[0].side));
+      (sk && Date.now() - sk.ts < 8000 && sk.victim === victims[0].id && sk.side === victims[0].side));
     pendingVictims = [];
     pendingActor = null;
     if(!victims.length){ stopWatch(); return; }

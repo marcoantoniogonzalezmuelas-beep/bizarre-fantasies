@@ -56,7 +56,9 @@ export const KILL_ACTOR_PATCH = `
       var result = orig.apply(this, arguments);
       try{
         // Autogolpe: el héroe (o un aliado) cae por daño de su propio bando.
-        if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).indexOf(target) >= 0){
+        // Solo cuenta como autogolpe si el propio bando lo provocó con un
+        // hechizo/objeto/habilidad reciente (no por veneno, contraataque, etc.).
+        if(wasAlive && target && !target.alive && actor && cx && cx.actor && cx.actor.side === actor.side && Date.now() - cx.ts < 20000 && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).indexOf(target) >= 0){
           window.__bfSelfKill = { side: actor.side, id: actor.id, victim: target.id, ts: Date.now() };
         }
         if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).some(function(h){return h && h.id === actor.id;}) && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){

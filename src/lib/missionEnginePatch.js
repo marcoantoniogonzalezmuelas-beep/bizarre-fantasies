@@ -16,6 +16,7 @@ export const MISSION_ENGINE_PATCH = `<script>
       activeRun.sentAt=Date.now();
       var side=activeRun.level?'p':(NET.mySide||(NET.role==='client'?'o':'p'));
       tell({bfMissionResult:{run_id:activeRun.run_id,won:G._result.pWin===(side==='p')}});
+      if(activeRun.modality&&!activeRun.scored&&window.bfSeriesScore){activeRun.scored=true;try{var mw=G._result.pWin===(side==='p');window.bfSeriesScore.addWin(mw?(NET.names_self||activeRun.nick):(NET.names_opp||activeRun.oppNick));}catch(e){}}
     }
     var result=document.querySelector('#s-result.active');
     if(!result)return;
@@ -32,7 +33,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     if(typeof clearWatchdog==='function')clearWatchdog();
     if(typeof B!=='undefined'&&B)B.over=true;
     G._gameOver=true;
-    tell({bfMissionOpen:{nick:(activeRun&&activeRun.nick)||G.names.p,heroes:HEROES.map(function(h){return {id:h.id,number:h.num,name:h.name};}),replay:replay&&activeRun&&activeRun.modality?{mission:activeRun.mission,modality:activeRun.modality,role:activeRun.role,room_code:activeRun.room_code,token:activeRun.token,password:activeRun.password,nick:activeRun.nick,oppNick:activeRun.oppNick,run_id:activeRun.run_id,round:activeRun.round||0}:null}});
+    tell({bfMissionOpen:{nick:(activeRun&&activeRun.nick)||G.names.p,heroes:HEROES.map(function(h){return {id:h.id,number:h.num,name:h.name};}),replay:null,preset:activeRun&&activeRun.modality?{mission:activeRun.mission,modality:activeRun.modality}:null}});
   };
   function replayNow(){
     if(!activeRun||!activeRun.modality||activeRun.replayStarted||!document.querySelector('#s-result.active'))return;
@@ -137,15 +138,12 @@ export const MISSION_ENGINE_PATCH = `<script>
     reportMissionResult();
     var oldReplay=document.getElementById('bf-mission-replay');
     if(!G.bfMission.modality && oldReplay)oldReplay.remove();
-    if(G.bfMission.modality && document.querySelector('#s-result.active') && !oldReplay){
-      var replayBtn=document.createElement('button');replayBtn.id='bf-mission-replay';replayBtn.className='btn primary';replayBtn.textContent='Volver a jugar la misión';replayBtn.onclick=window.bfMissionReplay;
-      document.querySelector('#s-result.active').appendChild(replayBtn);
-    }
+    if(oldReplay)oldReplay.remove();
     var subtitle=document.querySelector('#s-equip .r-subtitle');if(subtitle&&subtitle.textContent.indexOf('Misión')!==0){var ec=150;var lbl='Misión '+missionName(G.bfMission.mission).toUpperCase();if(G.bfMission.level)lbl+=' · Nivel '+G.bfMission.level;if(G.bfMission.modality)lbl+=' · '+G.bfMission.modality;lbl+=' · '+ec+' monedas de equipamiento';if(!G.bfMission.modality)lbl+=' · Sin sobrante de héroes';subtitle.textContent=lbl;}
     var header=document.querySelector('#s-equip.active .r-header');
-    if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=window.bfOpenMissions;header.appendChild(back);}
+    if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=function(){window.bfOpenMissions();};header.appendChild(back);}
     var result=document.querySelector('#s-result.active');if(!result)return;
-    result.querySelectorAll('button').forEach(function(b){if(/bfRematch|bfMatchRematch|location.reload/.test(b.getAttribute('onclick')||'')){b.removeAttribute('onclick');b.textContent='Volver a misiones';b.onclick=window.bfOpenMissions;}});
+    result.querySelectorAll('button').forEach(function(b){if(/bfRematch|bfMatchRematch|location.reload/.test(b.getAttribute('onclick')||'')){b.removeAttribute('onclick');b.textContent='Volver a misiones';b.onclick=function(){window.bfOpenMissions();};}});
   }
   document.addEventListener('click',function(e){if(e.target.closest('[onclick="startVsAI()"]'))window.bfMissionRequested=false;},true);
   var missionStyle=document.createElement('style');missionStyle.textContent='#bf-missions-entry{display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:10px;width:min(440px,92%);margin:14px auto;padding:15px 24px;border:2px solid #ffd24a;box-shadow:0 0 22px rgba(255,210,74,.25)}#bf-missions-entry span{grid-row:1/3;font-size:28px}#bf-missions-entry strong{font:900 18px Cinzel,serif;letter-spacing:.06em}#bf-missions-entry small{font-size:11px;opacity:.8}';document.head.appendChild(missionStyle);
