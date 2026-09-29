@@ -92,12 +92,16 @@ export const AI_VICTORY_CINEMATIC_PATCH = `
     '@keyframes bfAvEmoji{0%{transform:translateY(-30px) rotate(0) scale(.8)}50%{transform:translateY(50vh) rotate(360deg) scale(1.1)}100%{transform:translateY(110vh) rotate(720deg) scale(.8)}}',
     '.bf-av-skip{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-family:Rubik,sans-serif;font-size:12px;color:#cfc6dd;text-shadow:0 1px 3px #000;animation:bfAvSub 1s ease-out 1.6s both;pointer-events:auto;cursor:pointer;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.2)}',
     '.bf-av-skip:hover{background:rgba(255,68,221,.3)}',
+    '.bf-av-parade{position:absolute;left:-12vw;font-size:clamp(34px,7vw,64px);animation:bfAvMarch 5s linear infinite,bfAvHop .45s ease-in-out infinite;filter:drop-shadow(0 3px 4px #000)}',
+    '@keyframes bfAvMarch{0%{left:-12vw}100%{left:112vw}}',
+    '@keyframes bfAvHop{0%,100%{margin-bottom:0;transform:rotate(-8deg)}50%{margin-bottom:18px;transform:rotate(8deg)}}',
   ].join('\\n');
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
 
-  var EMOJIS = ['🤡','💀','🎉','🌈','✨','🃏','👾','🤯','💩','🦄','⚡','🎲'];
+  var EMOJIS = ['🐔','🦆','🍌','🧦','🥔','🐸','🧻','🍕','🦄','🤡','🃏','🎉','🍅','🐙'];
+  var PARADE = ['🐔','🦆','🐸','🥔','🧦','🍌','🦄','🐙'];
   var COLORS = ['#ff44dd','#ffd24a','#7ab8ff','#66ffaa','#ff7a5a','#c06bff','#ffffff'];
 
   function makeConfetti(host, n, isEmoji){
@@ -135,6 +139,15 @@ export const AI_VICTORY_CINEMATIC_PATCH = `
     document.body.appendChild(host);
     makeConfetti(host, cfg.confetti, false);
     makeConfetti(host, cfg.emojis, true);
+    // Desfile bizarro: personajes absurdos que cruzan la pantalla dando saltitos.
+    for (var pi = 0; pi < PARADE.length; pi++) {
+      var pe = document.createElement('div');
+      pe.className = 'bf-av-parade';
+      pe.textContent = PARADE[pi];
+      pe.style.animationDelay = (0.6 + pi * 0.45) + 's';
+      pe.style.bottom = (4 + (pi % 3) * 5) + 'vh';
+      host.appendChild(pe);
+    }
 
     var skip = host.querySelector('#bf-av-skip');
     skip.onclick = function(){ close(); };
@@ -145,6 +158,19 @@ export const AI_VICTORY_CINEMATIC_PATCH = `
     }
     setTimeout(close, cfg.duration);
   };
+
+  // Se muestra al SALIR de la partida (cuando la pantalla de resultado deja de
+  // estar activa), si se han conseguido las victorias necesarias.
+  var wasResult = false;
+  setInterval(function(){
+    var active = !!document.querySelector('#s-result.active');
+    if (wasResult && !active && window.__bfPendingCelebration) {
+      var k = window.__bfPendingCelebration;
+      window.__bfPendingCelebration = null;
+      setTimeout(function(){ window.__bfBizarreCelebration(k); }, 400);
+    }
+    wasResult = active;
+  }, 300);
 
   // Permite dispararla también desde la página padre (postMessage).
   window.addEventListener('message', function(e){

@@ -229,13 +229,12 @@ export const AI_LEVEL_PATCH = `
                 setTimeout(function(){ notif((isEn() ? 'Unlocked: ' : 'Desbloqueada: ') + nm + ' ⚡'); }, 1200);
               }
               // Cinemática bizarra al PASAR cada nivel de IA (desbloquea el siguiente).
-              if (typeof window.__bfBizarreCelebration === 'function') {
-                setTimeout(function(){ window.__bfBizarreCelebration(lvl.id + '_complete'); }, 1600);
-              }
+              // Se guarda y se muestra al SALIR de la partida (ver aiVictoryCinematicPatch).
+              window.__bfPendingCelebration = lvl.id + '_complete';
             }
             // Fin del juego: 10 victorias vs IA Bizarra (cinemática final, más larga).
-            if (lvl.id === 'bizarra' && newWins === 10 && typeof window.__bfBizarreCelebration === 'function') {
-              setTimeout(function(){ window.__bfBizarreCelebration('game_complete'); }, 1600);
+            if (lvl.id === 'bizarra' && newWins === 10) {
+              window.__bfPendingCelebration = 'game_complete';
             }
           }
         }
