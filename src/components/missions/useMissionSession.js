@@ -76,5 +76,5 @@ export default function useMissionSession(iframeRef) {
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 15000);
   }
   function close() { if (pending.current) { setError('Guarda la victoria pendiente antes de salir.'); return; } if (pendingCelebration.current) { const pc = pendingCelebration.current; pendingCelebration.current = null; setCelebration(pc); } ++loadId.current; openNick.current = null; setSession(null); send({ bfMissionClose: true }); }
-  return { session, cards, victories, loading, error, starting, notice, celebration, dismissCelebration: () => setCelebration(null), start, startMp, close, persist, hasPending: !!pending.current };
+  return { session, cards, victories, loading, error, starting, notice, celebration, dismissCelebration: () => { setCelebration(null); send({ bfMissionReopen: true }); }, start, startMp, close, persist, hasPending: !!pending.current };
 }

@@ -19,7 +19,7 @@ export const KILL_ACTOR_PATCH = `
 
   // Acción en curso (para saber CON QUÉ se remató: ataque, habilidad, hechizo
   // u objeto). Se usará también en el resumen de la acción definitiva.
-  function markAction(kind){ window.__bfActionCtx = { kind: kind, ts: Date.now() }; }
+  function markAction(kind){ var c=null; try{ if(typeof B!=='undefined'&&B&&B.current) c={side:B.current.side,id:B.current.id}; }catch(e){} window.__bfActionCtx = { kind: kind, ts: Date.now(), actor: c }; }
   ['useAbility','castSpell','useItem'].forEach(function(fn){
     var tries = 0, t = setInterval(function(){
       if(typeof window[fn] === 'function' && !window[fn].__bfKillActor){
@@ -49,6 +49,10 @@ export const KILL_ACTOR_PATCH = `
     window.dealDamage = function(target, amount){
       var wasAlive = !!(target && target.alive);
       var actor = currentActor();
+      // Hechizo/objeto/habilidad: la muerte se atribuye a quien lo lanzó, aunque
+      // el turno ya haya avanzado o el daño llegue tarde.
+      var cx = window.__bfActionCtx;
+      if(cx && cx.actor && Date.now() - cx.ts < 20000 && (cx.kind === 'castSpell' || cx.kind === 'useItem' || cx.kind === 'useAbility')) actor = cx.actor;
       var result = orig.apply(this, arguments);
       try{
         // Autogolpe: el héroe (o un aliado) cae por daño de su propio bando.
@@ -57,7 +61,7 @@ export const KILL_ACTOR_PATCH = `
         }
         if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).some(function(h){return h && h.id === actor.id;}) && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){
           var ctx = window.__bfActionCtx;
-          var kind = (ctx && Date.now() - ctx.ts < 6000) ? ctx.kind : 'attack';
+          var kind = (ctx && Date.now() - ctx.ts < 20000) ? ctx.kind : 'attack';
           window.__bfKillActor = {
             side: actor.side,
             id: actor.id,
@@ -108,7 +112,7 @@ export const KILL_ACTOR_PATCH = `
         // atacante (solo al héroe caído). Fallback: deducir el atacante del
         // turno activo (B.current o .bhero.active-turn), que SÍ llega sincronizado
         // al cliente. Solo si no hay un __bfKillActor válido ya fijado.
-        if(death && (!a || Date.now() - a.ts > 6000 || a.victim !== death.id)){
+        if(death && (!a || Date.now() - a.ts > 20000 || a.victim !== death.id)){
           var fallbackActor = null;
           // 1) B.current: el héroe cuyo turno está en curso (el atacante).
           if(typeof B !== 'undefined' && B && B.current){
@@ -130,7 +134,7 @@ export const KILL_ACTOR_PATCH = `
             window.__bfKillActor = a;
           }
         }
-        if(death && a && Date.now() - a.ts < 6000 && a.victim === death.id){
+        if(death && a && Date.now() - a.ts < 20000 && a.victim === death.id){
           var card = document.getElementById('b_' + a.side + '_' + a.id);
           if(card && !card.classList.contains('active-turn')){
             var prev = Array.prototype.slice.call(document.querySelectorAll('.bhero.active-turn'));

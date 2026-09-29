@@ -93,6 +93,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     if(e.source!==parent)return;
     if(activeRun&&e.data&&e.data.bfMissionResultAck===activeRun.run_id){activeRun.acknowledged=true;return;}
     if(activeRun&&e.data&&e.data.bfMissionSaveFailed===activeRun.run_id){window.bfOpenMissions();return;}
+    if(e.data&&e.data.bfMissionReopen){if(activeRun&&document.querySelector('#s-result.active'))window.bfOpenMissions();return;}
     if(e.data&&e.data.bfMissionClose){G.bfMission=null;activeRun=null;if(originalMeta){window.__bfAiLevelMeta=originalMeta;originalMeta=null;}goSetup();return;}
     var mpc=e.data&&e.data.bfMissionMpConnect;if(mpc){window.bfMissionMpConfig=mpc;window.bfMissionMpRequested=mpc.role==='host';G._gameOver=false;window.__bfRoomMode='private';if(mpc.role==='host'){if(typeof hostCreate==='function')hostCreate(mpc.nick,mpc.password,'Misión '+missionName(mpc.mission));}else{if(typeof clientJoin==='function')clientJoin(mpc.game_code,mpc.password,mpc.nick);}return;}
     var m=e.data&&e.data.bfMissionStart;if(!m)return;

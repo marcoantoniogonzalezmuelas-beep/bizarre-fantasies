@@ -402,7 +402,7 @@ export const KILL_CINE_QUEUE_PATCH = `
 
       // Anota el atacante
       var ka = window.__bfKillActor;
-      if(ka && ka.victim === vId && ka.side && ka.side !== side && Date.now() - ka.ts < 6000){
+      if(ka && ka.victim === vId && ka.side && ka.side !== side && Date.now() - ka.ts < 20000){
         pendingActor = { side: ka.side, id: ka.id, ts: ka.ts };
       }
       // MULTIPLAYER (cliente): si __bfKillActor no se fijó (dealDamage no
