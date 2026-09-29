@@ -61,11 +61,14 @@ export const KILL_ACTOR_PATCH = `
         // hechizo/objeto/habilidad reciente (no por veneno, contraataque, etc.).
         if(wasAlive && target && !target.alive && typeof G !== 'undefined' && G.team){
           var victimSide=(G.team.p||[]).includes(target)?'p':(G.team.o||[]).includes(target)?'o':null;
-          if(victimSide && actor && (G.team[actor.side]||[]).some(function(h){return h && h.id===actor.id;})){
-            deathSources[victimSide+'_'+target.id]={side:actor.side,id:actor.id,ts:Date.now(),self:actor.side===victimSide && !!(cx && cx.actor && cx.actor.side===actor.side && cx.actor.id===actor.id && Date.now()-cx.ts<2000 && !(arguments[2]&&arguments[2].bfReflect))};
+          if(victimSide){
+            var opts=arguments[2]||{}, periodic=/poison|veneno|burn|bleed|dot|persist/i.test(String(opts.type||opts.element||opts.status||'')) || !!opts.bfPeriodic;
+            var valid=actor && (G.team[actor.side]||[]).some(function(h){return h && h.id===actor.id;});
+            var isSelf=!valid || actor.side===victimSide || periodic;
+            deathSources[victimSide+'_'+target.id]={side:valid?actor.side:victimSide,id:valid?actor.id:target.id,ts:Date.now(),self:isSelf,kind:cx&&Date.now()-cx.ts<2000?cx.kind:'attack'};
           }
         }
-        if(wasAlive && target && !target.alive && actor && typeof G !== 'undefined' && G.team && (G.team[actor.side] || []).some(function(h){return h && h.id === actor.id;}) && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){
+        if(wasAlive && target && !target.alive && actor && deathSources[(G.team.p||[]).includes(target)?'p_'+target.id:'o_'+target.id] && !deathSources[(G.team.p||[]).includes(target)?'p_'+target.id:'o_'+target.id].self && (G.team[actor.side === 'p' ? 'o' : 'p'] || []).includes(target)){
           var ctx = window.__bfActionCtx;
           var kind = (ctx && Date.now() - ctx.ts < 20000) ? ctx.kind : 'attack';
           window.__bfKillActor = {

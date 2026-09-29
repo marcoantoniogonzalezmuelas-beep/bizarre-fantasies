@@ -94,7 +94,7 @@ export const FINAL_ACTION_RECAP_PATCH = `
     var res = document.getElementById('s-result');
     if(!res || !res.classList.contains('active')) return;
     var fb = window.__bfFinalBlow;
-    if(!fb || fb.ts === shown) return;
+    if(!fb || fb.ts === shown || window.__bfKillFinalShown===fb.ts) return;
     shown = fb.ts;
     show(fb);
   }, 300);

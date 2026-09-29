@@ -107,7 +107,7 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
                   // La amenaza atraviesa la invisibilidad: se quita antes del golpe.
                   if(victim._bfInvisible){ victim._bfInvisible = 0; victim._bfInvisibleFresh = 0; }
                   orig.call(window, victim, 9999, {type:'spell', element:'arcano', bfDojiKill:true});
-                  if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id});
+                  if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id, bfKillSource:{side:foeSide,id:victim.id,ts:Date.now(),self:true,kind:'useAbility'}});
                 } else if(typeof pushLog === 'function'){
                   pushLog('lx', target.name+': no hay rivales vivos a los que fulminar.');
                 }

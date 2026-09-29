@@ -2,6 +2,8 @@ const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),test
 const read=n=>fs.readFileSync(path.join(__dirname,'..',n+'.js'),'utf8');
 const value=(n,s,extra={})=>vm.runInNewContext(read(n).replace(/^import .*;$/gm,'').replace('export const','const').replace('export function','function')+'\n'+s,extra);
 const createDeathQuipPicker=value('deathQuips','createDeathQuipPicker');
+const createDeathScene=value('deathScene','createDeathScene');
+const DEATH_SCENE_CSS=value('deathScene','DEATH_SCENE_CSS');
 const css=value('heroDicePresentation','HERO_DICE_PRESENTATION_CSS');
 function fixture(){
  let now=10000,id=0;const timers=new Map();
@@ -13,7 +15,7 @@ function fixture(){
  const select=s=>all().find(n=>s.split(',').some(x=>x[0]==='.'?n.classList.contains(x.slice(1)):x[0]==='#'?n.id===x.slice(1):false))||null;
  const c={console,Math,Date:{now:()=>now},document:{body,head,createElement:node,querySelector:select,querySelectorAll:()=>[],getElementById:id=>all().find(n=>n.id===id)||null},setTimeout:(f,ms)=>schedule(f,ms),setInterval:(f,ms)=>schedule(f,ms,ms),clearInterval:k=>timers.delete(k),clearTimeout:k=>timers.delete(k),__bfCinematicBusy:()=>false,bfKillCinematic(){},B:{over:false},getHero:()=>({id:'test',name:'Héroe caído',clan:'No-muertos'}),flushFx(){}};
  c.window=c;vm.createContext(c);
- const load=(n,s)=>vm.runInContext(value(n,s,{HERO_DICE_PRESENTATION_CSS:css,createDeathQuipPicker}).replace(/<\/?script>/g,''),c);
+ const load=(n,s)=>vm.runInContext(value(n,s,{HERO_DICE_PRESENTATION_CSS:css,createDeathQuipPicker,createDeathScene,DEATH_SCENE_CSS}).replace(/<\/?script>/g,''),c);
  return {c,tick,load,select,all,node};
 }
 test('ability die uses a cup and holds the exact result for 4.5 seconds',()=>{
@@ -35,8 +37,8 @@ for(const clan of ['Guerreros','Druidas','No-muertos','Vaqueros','Cotidianos','E
 });
 test('death overlay attributes thematic last words to the victim',()=>{
  const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;
- f.c.bfKillCinematic(card);f.tick(800);assert(f.select('#bf-kill-ov'));assert.match(f.select('.bf-kill-speaker').textContent,/Héroe caído · No-muertos/);assert(!f.select('.bf-kill-ko').textContent.includes('ELIMINADO'));
- const texts=f.all().map(n=>n.textContent).join(' ');assert.match(texts,/resucitar|cripta|costumbre|descansar/);f.tick(4400);assert(f.select('#bf-kill-ov'));f.tick(700);assert.equal(f.select('#bf-kill-ov'),null);
+ f.c.bfKillCinematic(card);f.tick(800);assert(f.select('#bf-kill-ov'));assert.match(f.select('.bf-kill-speaker').textContent,/Héroe caído/);assert(!f.select('.bf-kill-ko').textContent.includes('ELIMINADO'));
+ const texts=f.all().map(n=>n.textContent).join(' ');assert.match(texts,/PIFIA LEGENDARIA|autodesautorizado|suelo|plátano/);f.tick(4000);assert(f.select('#bf-kill-ov'));f.tick(900);assert.equal(f.select('#bf-kill-ov'),null);
  });
  test('one death is shown once across pending, waiting, playing and completed stages',()=>{
  const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;

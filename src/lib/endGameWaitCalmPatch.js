@@ -27,8 +27,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(document.getElementById('bf-spec-cine')) return false;
       if(document.getElementById('bf-rearm-cine')) return false;
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) return false;
-      // Espera la cola de muertes: el último remate se registra sin repetir
-      // su animación; los remates intermedios sí terminan antes del cierre.
+      // Espera a que termine la nueva escena de bajas, incluida la última.
       if(typeof window.__bfKillCinePending==='function' && window.__bfKillCinePending()) return false;
       if(document.getElementById('bf-kill-ov')) return false;
       if(indicatorsBusy())return false;
@@ -68,7 +67,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       resultArgs = arguments;
       if(resultPending) return;
       resultPending = true;
-      resultDeadline = Date.now() + 12000;
+      resultDeadline = Date.now() + 30000;
       (function proceed(){
         if(calm() || (Date.now() > resultDeadline && !indicatorsBusy())){
           resultPending = false;
@@ -96,7 +95,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       showArgs = arguments;
       if(showPending) return;
       showPending = true;
-      showDeadline = Date.now() + 12000;
+      showDeadline = Date.now() + 30000;
       (function proceed(){
         if(calm() || (Date.now() > showDeadline && !indicatorsBusy())){
           showPending = false;

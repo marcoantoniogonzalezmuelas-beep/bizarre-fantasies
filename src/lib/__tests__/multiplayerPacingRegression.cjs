@@ -10,7 +10,7 @@ function fixture(){
  const select=s=>all().find(n=>s.split(',').some(x=>x[0]==='#'?n.id===x.slice(1):x[0]==='.'?n.classList.contains(x.slice(1)):false))||null;
  const doc={body,head,createElement:tag=>{const n=node();n.tagName=tag.toUpperCase();n.ownerDocument=doc;return n;},querySelector:select,querySelectorAll:()=>[],getElementById:id=>all().find(n=>n.id===id)||null};
  const c={console,Math,Date:{now:()=>now},document:doc,setTimeout:(f,ms)=>schedule(f,ms),setInterval:(f,ms)=>schedule(f,ms,ms),clearInterval:id=>timers.delete(id),clearTimeout:id=>timers.delete(id),__bfCinematicBusy:()=>false,bfKillCinematic(){},B:{over:false},getHero:()=>({id:'test',name:'Test',alive:false}),flushFx(){},endTurn(){}};c.window=c;vm.createContext(c);
- function load(n,s){vm.runInContext(value(n,s,{createDeathQuipPicker:value('deathQuips','createDeathQuipPicker')}).replace(/<\/?script>/g,''),c);}
+ function load(n,s){vm.runInContext(value(n,s,{createDeathQuipPicker:value('deathQuips','createDeathQuipPicker'),createDeathScene:value('deathScene','createDeathScene'),DEATH_SCENE_CSS:value('deathScene','DEATH_SCENE_CSS')}).replace(/<\/?script>/g,''),c);}
  return {c,tick,node,doc,select,load,now:()=>now};
 }
 test('host and guest retain one mission button, including repeated result refreshes',()=>{

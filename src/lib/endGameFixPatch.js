@@ -504,18 +504,8 @@ export const END_GAME_FIX_PATCH = `
     // animación de la habilidad que lo mató (ver __bfDeathVisHold en 1b).
     card.classList.add('bf-truedead');
     releaseHold();
-    // Evita duplicar el FX si ya tiene uno
-    var existing = card.querySelector('.bf-kill-fx');
-    if(existing) existing.remove();
-    var fx = document.createElement('div');
-    fx.className = 'bf-kill-fx';
-    fx.innerHTML =
-      '<div class="bf-kill-smoke"></div>' +
-      '<div class="bf-kill-skull">💀</div>' +
-      '<div class="bf-kill-grave">🪦</div>' +
-      '<div class="bf-kill-rip">R.I.P.</div>';
-    card.appendChild(fx);
-    setTimeout(function() { if(fx.parentNode) fx.parentNode.removeChild(fx); }, 2700);
+    // El viejo FX de lápida ya no se crea: la única escena es la del reparto
+    // de golpe mortal. Si todavía no se instaló, se conserva el estado muerto.
   };
 
   // ---- 3) CINEMÁTICA FINAL de fin de partida ----
