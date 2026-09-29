@@ -48,26 +48,36 @@ export const HUMAN_AI_EQUIP_PATCH = `
     function payGear(h, slot, kind, it){
       var cost = Number(it.cost || 0);
       if(coins() < cost) return false;
-      G.equipCoins[side] = coins() - cost; spent[h.id + slot] = 1;
       if(isClient()){
-        if(typeof sendIntent === 'function') sendIntent('doAssign', { heroId: h.id, assign: { kind: kind, id: it.id, cost: it.cost, name: it.name } });
-      } else h[slot] = it;
+        // El parche de equipo del cliente (mpEquipPatch) ya aplica Y COBRA la compra:
+        // cobrar aquí también duplicaba el gasto. Se comprueba el cambio real de monedas.
+        var c0 = coins();
+        sendIntent('doAssign', { heroId: h.id, assign: { kind: kind, id: it.id, cost: it.cost, name: it.name } });
+        if(coins() >= c0 && cost > 0) return false;
+      } else { G.equipCoins[side] = coins() - cost; h[slot] = it; }
+      spent[h.id + slot] = 1;
       n++; return true;
     }
     function paySpell(sp){
       var cost = Number(sp.cost || 0);
       if(sp2.indexOf(sp.id) >= 0 || coins() < cost) return false;
-      G.equipCoins[side] = coins() - cost; sp2.push(sp.id);
-      if(isClient()){ if(typeof sendIntent === 'function') sendIntent('buySpell', { id: sp.id }); }
-      else G.spellbook[side].push(sp.id);
+      if(isClient()){
+        var c0 = coins();
+        sendIntent('buySpell', { id: sp.id });
+        if(coins() >= c0 && cost > 0) return false;
+      } else { G.equipCoins[side] = coins() - cost; G.spellbook[side].push(sp.id); }
+      sp2.push(sp.id);
       n++; return true;
     }
     function payObj(o){
       var cost = Number(o.cost || 0);
       if(coins() < cost) return false;
-      G.equipCoins[side] = coins() - cost; it2.push(o);
-      if(isClient()){ if(typeof sendIntent === 'function') sendIntent('buyObject', { id: o.id }); }
-      else G.items[side].push(o);
+      if(isClient()){
+        var c0 = coins();
+        sendIntent('buyObject', { id: o.id });
+        if(coins() >= c0 && cost > 0) return false;
+      } else { G.equipCoins[side] = coins() - cost; G.items[side].push(o); }
+      it2.push(o);
       n++; return true;
     }
     plan.gear.forEach(function(p){ payGear(p.hero, p.slot, p.kind, p.it); });
