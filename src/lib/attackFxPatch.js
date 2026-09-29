@@ -29,6 +29,9 @@ export const ATTACK_FX_PATCH = `
     '.bf-muzzle{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,#fff,#ffe14a 40%,transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-smoke-trail{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,rgba(180,180,180,.7),transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-plasma-trail{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(120,200,255,.85),transparent 70%);transform:translate(-50%,-50%)}',
+    '.bf-tomato{width:58px;height:58px;object-fit:contain;mix-blend-mode:multiply;filter:drop-shadow(0 4px 4px rgba(0,0,0,.5))}',
+    '.bf-splat{width:150px;height:150px;transform:translate(-50%,-50%);border-radius:50% 42% 55% 45%;background:radial-gradient(circle,rgba(150,10,20,.95) 0 30%,rgba(120,20,20,.75) 45%,rgba(90,110,20,.45) 60%,transparent 72%);animation:bfSplat 1.4s ease-out forwards}',
+    '@keyframes bfSplat{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}20%{opacity:1}70%{opacity:.9}100%{transform:translate(-50%,-50%) scale(1.3);opacity:0}}',
     // ---- impactos ----
     '.bf-dust{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,rgba(200,180,150,.85),transparent 70%);transform:translate(-50%,-50%);animation:bfPuff 1.5s ease-out forwards}',
     '@keyframes bfPuff{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}',
@@ -248,6 +251,7 @@ export const ATTACK_FX_PATCH = `
     var h=getAttacker(ev.fromSide,ev.fromId); var w=h&&h.rwep; var wid=(w&&w.id)||'';
     var kind=RANGED_KIND[wid]||'arrow';
     var hits=ev.hits||1;
+    if(!wid){ tomatoThrow(a,b,1,ev); return; }
     // Compás anime: primero aparece el arma apuntando (sprite animado con
     // retroceso; si no hay sprite, la carta), luego el disparo.
     if(!showRangedWeapon(a,b,wid))weaponShow(a,b,w&&w.name,kind);
@@ -263,6 +267,27 @@ export const ATTACK_FX_PATCH = `
     else { setTimeout(function(){ shoot('bf-arrow2',a,b,1460,false); setTimeout(function(){ impact(function(){ impactSparks(b,6,'#6fd98a'); }); },1460); },L); }
   }
 
+  // Sin arma: el héroe lanza tomates podridos (en arco, girando) y estallan en el objetivo.
+  var TOMATO='https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/685da9e8b_generated_image.png';
+  { var ti=new Image(); ti.src=TOMATO; }
+  function splatAt(b){
+    var s=document.createElement('div'); s.className='bf-afx bf-splat'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1500);
+    impactSparks(b,9,'#a3121a'); impactSparks(b,4,'#6b7a1c');
+  }
+  function tomatoThrow(a,b,n,ev){
+    n=n||1;
+    for(var i=0;i<n;i++){ (function(i){ setTimeout(function(){
+      var ms=900, img=document.createElement('img'); img.src=TOMATO; img.className='bf-afx bf-tomato';
+      var top=Math.min(a.y,b.y)-90-i*12;
+      img.animate([
+        {left:a.x+'px',top:a.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(0deg) scale(.7)'},
+        {left:((a.x+b.x)/2)+'px',top:top+'px',opacity:1,transform:'translate(-50%,-50%) rotate(300deg) scale(1)',offset:.5},
+        {left:b.x+'px',top:b.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(620deg) scale(1.05)'}
+      ],{duration:ms,easing:'ease-in-out',fill:'forwards'});
+      bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); splatAt(b); hitStar(b); shake(ev.toSide,ev.toId); },ms);
+    },i*260); })(i); }
+  }
+
   function meleeFx(ev){
     var b=centerOf(ev.toSide,ev.toId); if(!b)return;
     var h=ev.fromSide?getAttacker(ev.fromSide,ev.fromId):null; var w=h&&h.mwep; var wid=(w&&w.id)||'';
@@ -270,6 +295,7 @@ export const ATTACK_FX_PATCH = `
     var a=ev.fromSide?centerOf(ev.fromSide,ev.fromId):null;
     // Compás anime: el arma aparece junto al atacante, que embiste hacia el
     // objetivo; el golpe (tajos + estrella de impacto + sacudida) llega después.
+    if(a&&!wid){ tomatoThrow(a,b,1,ev); return; }
     if(a){ if(!showMeleeWeapon(a,b,wid))weaponShow(a,b,w&&w.name,kind); lunge(ev.fromSide,ev.fromId,b); }
     var D=a?1040:0;
     setTimeout(function(){
