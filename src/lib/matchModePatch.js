@@ -174,7 +174,9 @@ export const MATCH_MODE_PATCH = `
     var title = myWin ? '¡VICTORIA!' : 'DERROTA';
     var sub = myWin ? 'Has ganado la partida' : 'Tu rival ha ganado';
     var btns;
-    if(champSide){
+    if(typeof G!=='undefined' && G.bfMission){
+      btns = '<button class="btn primary big" onclick="bfOpenMissions()">Volver a las Misiones</button>';
+    } else if(champSide){
       btns = '<button class="btn primary big" onclick="location.reload()">Terminar</button>';
     } else if(n.role==='host'){
       btns = '<button class="btn primary big" onclick="bfMatchRematch()">Jugar otra vez</button>'+

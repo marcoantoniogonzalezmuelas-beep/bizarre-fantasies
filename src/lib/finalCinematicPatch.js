@@ -18,6 +18,9 @@ export const FINAL_CINEMATIC_PATCH = `
   // comía la animación que había provocado la muerte.
   var CINE_SEL='#bf-abil-anim,#bf-spec-cine';
   function whenActionEnds(cb){
+    // The shared death queue already waits for cinematics and damage captions.
+    // Register now rather than adding a second wait followed by 700ms of silence.
+    if(window.__bfKillCineQueue){cb();return;}
     var start=Date.now();
     (function tick(){
       // Espera a que no quede ninguna cinemática de acción en pantalla NI EN
@@ -54,7 +57,7 @@ export const FINAL_CINEMATIC_PATCH = `
             if(typeof window.bfKillCinematic==='function'){
               // La cinemática (encolada por killCineQueuePatch tras habilidad,
               // efectos y daño) añadirá bf-truedead al reproducirse.
-              window.bfKillCinematic(card);
+              window.bfKillCinematic(card,true);
             }else{
               // Sin cinemática disponible: estado de muerto directo.
               card.classList.add('bf-truedead');
@@ -66,13 +69,13 @@ export const FINAL_CINEMATIC_PATCH = `
             releaseHold(ev.side,ev.id);
           }
           // El turno no avanza hasta que termine la cinemática de muerte.
-          window.__bfDeathDelayUntil=Date.now()+3700;
+          if(!window.__bfKillCineQueue)window.__bfDeathDelayUntil=Date.now()+3700;
         });
       });
       // Si hubo una muerte, el siguiente endTurn espera a que termine la
       // cinemática de muerte (2.7s, ralentizada para ver bien quién mata a
       // quién) para no solaparse con la siguiente acción.
-      if(hasDeath) window.__bfDeathDelayUntil=Date.now()+4500;
+      if(hasDeath&&!window.__bfKillCineQueue) window.__bfDeathDelayUntil=Date.now()+4500;
       return original.apply(this,arguments);
     };
     window.flushFx.__bfFinalKill=1;

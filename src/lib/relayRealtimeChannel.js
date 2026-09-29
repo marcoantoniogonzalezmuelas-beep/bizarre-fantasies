@@ -6,12 +6,13 @@ export default function relayRealtimeChannel(code, side, post, token = '') {
   if (!connectionId) { connectionId = crypto.randomUUID(); sessionStorage.setItem(key, connectionId); }
   const room = base44.actors.GameRelayRoom(code).connect({ id: connectionId });
   const pending = new Map();
-  let lastSeen = 0, closed = false;
+  let lastSeen = 0, closed = false, ready = false;
   const subscription = room.subscribe(message => {
     if (closed || !message || typeof message !== 'object') return;
     lastSeen = Date.now();
-    if (message.type === 'connected') room.send({ type: 'hello', side, token });
+    if (message.type === 'connected') { ready = false; room.send({ type: 'hello', side, token }); }
     if (message.type === 'ready') {
+      ready = true;
       post({ bfRelayRealtimeStatus: message.peers?.includes(side === 'p' ? 'g' : 'p') ? 'ready' : 'waiting' });
       for (const peer of message.peers || []) if (peer !== side) post({ bfRelayPresence: { side: peer, connected: true } });
     }
@@ -32,8 +33,10 @@ export default function relayRealtimeChannel(code, side, post, token = '') {
   }, 1000);
   return {
     send(payload) {
+      // A known unavailable socket must not add 900ms before every HTTP fallback.
+      if (closed || !ready || Date.now() - lastSeen > 2500) return Promise.resolve(null);
       return new Promise(resolve => {
-        const timer = setTimeout(() => { pending.delete(payload.batch_id); post({ bfRelayRealtimeStatus: 'waiting' }); resolve(null); }, 900);
+        const timer = setTimeout(() => { ready = false; pending.delete(payload.batch_id); post({ bfRelayRealtimeStatus: 'waiting' }); resolve(null); }, 900);
         pending.set(payload.batch_id, { resolve, timer });
         room.send({ type: 'send_batch', batch_id: payload.batch_id, messages: payload.messages });
       });

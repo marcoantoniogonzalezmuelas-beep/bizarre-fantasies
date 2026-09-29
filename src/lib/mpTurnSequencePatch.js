@@ -43,17 +43,20 @@ export const MP_TURN_SEQUENCE_PATCH = `
   function busy(){ return cineBusy() || fxBusy() || killPending() || indicatorsBusy(); }
 
   window.bfStepWhenCalm = function(next){
-    var min = 120, max = 4000, quiet = 120, step = 50, elapsed = 0, quietFrom = 0;
+    var min = 120, max = 4000, quiet = 120, step = 50, started = Date.now(), quietFrom = 0, watchdogAt = 0;
     function tick(){
-      elapsed += step;
-      if(busy()) quietFrom = 0;
-      else if(!quietFrom) quietFrom = Date.now();
-      var calm = !busy() && quietFrom && (Date.now() - quietFrom >= quiet);
-      // The 4s stale-FX fallback must not truncate a 5s cinematic or its queue.
-      if((elapsed >= min && calm) || (elapsed >= max && !cineBusy() && !indicatorsBusy())){ try{ next(); }catch(e){} return; }
+      var now = Date.now(), elapsed = now - started, occupied = busy();
+      if(occupied) quietFrom = 0;
+      else if(!quietFrom) quietFrom = now;
+      var calm = !occupied && quietFrom && (now - quietFrom >= quiet);
+      // Stale particles may time out; queued deaths and readable captions may not.
+      if((elapsed >= min && calm) || (elapsed >= max && !cineBusy() && !indicatorsBusy() && !killPending())){ try{ next(); }catch(e){} return; }
       // Mientras se espera, se re-arma el vigilante del juego para que no
       // considere el turno atascado durante la animación.
-      try{ if(typeof window.armWatchdog === 'function'){ if(typeof window.clearWatchdog === 'function') window.clearWatchdog(); window.armWatchdog(); } }catch(e){}
+      if(now - watchdogAt >= 1000){
+        watchdogAt = now;
+        try{ if(typeof window.armWatchdog === 'function'){ if(typeof window.clearWatchdog === 'function') window.clearWatchdog(); window.armWatchdog(); } }catch(e){}
+      }
       setTimeout(tick, step);
     }
     setTimeout(tick, step);

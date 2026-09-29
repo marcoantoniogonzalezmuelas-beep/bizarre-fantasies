@@ -1,3 +1,5 @@
+import { reconcileMissionResultControls } from '@/lib/missionResultControls';
+
 // Native initialization stays authoritative; only the mission branch skips auctions.
 export function patchMissionHtml(html) {
   const init = "show('s-recruit'); startAuctionPhase();";
@@ -7,6 +9,7 @@ export function patchMissionHtml(html) {
 export const MISSION_ENGINE_PATCH = `<script>
 (function(){
   var originalMeta=null, activeRun=null;
+  var reconcileResultControls=(${reconcileMissionResultControls.toString()});
   function missionName(id){return id==='l5r'?'Leyendas':id==='club'?'Club':id==='todos'?'Todos los Héroes':id;}
   function tell(data){parent.postMessage(data,'*');}
   function reportMissionResult(){
@@ -145,12 +148,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     var header=document.querySelector('#s-equip.active .r-header');
     if(header&&!document.getElementById('bf-mission-back')){var back=document.createElement('button');back.id='bf-mission-back';back.className='btn sm';back.textContent='Volver a misiones';back.onclick=function(){window.bfOpenMissions();};header.appendChild(back);}
     var result=document.querySelector('#s-result.active');if(!result)return;
-    result.querySelectorAll('button').forEach(function(b){if(/bfRematch|bfMatchRematch|location.reload/.test(b.getAttribute('onclick')||'')){b.removeAttribute('onclick');b.textContent='Volver a misiones';b.onclick=function(){window.bfOpenMissions();};}});
-    // Respaldo: si otros parches reemplazaron los botones del final, siempre hay uno fijo.
-    var floating=document.getElementById('bf-mission-result-back');
-    var hasBtn=Array.prototype.some.call(result.querySelectorAll('button'),function(b){return b.id!=='bf-mission-result-back'&&/Volver a (las )?misiones/i.test(b.textContent)&&b.offsetParent!==null;});
-    if(hasBtn){if(floating)floating.remove();}
-    else if(!floating){var fb=document.createElement('button');fb.id='bf-mission-result-back';fb.className='btn primary';fb.textContent='Volver a las Misiones';fb.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:100010;padding:14px 28px;font:900 16px Cinzel,serif;border:2px solid #ffd24a;box-shadow:0 0 22px rgba(255,210,74,.4)';fb.onclick=function(){window.bfOpenMissions();};document.body.appendChild(fb);}
+    reconcileResultControls(result,function(){window.bfOpenMissions();});
   }
   document.addEventListener('click',function(e){if(e.target.closest('[onclick="startVsAI()"]'))window.bfMissionRequested=false;},true);
   var missionStyle=document.createElement('style');missionStyle.textContent='#bf-missions-entry{display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:10px;width:min(440px,92%);margin:14px auto;padding:15px 24px;border:2px solid #ffd24a;box-shadow:0 0 22px rgba(255,210,74,.25)}#bf-missions-entry span{grid-row:1/3;font-size:28px}#bf-missions-entry strong{font:900 18px Cinzel,serif;letter-spacing:.06em}#bf-missions-entry small{font-size:11px;opacity:.8}';document.head.appendChild(missionStyle);
