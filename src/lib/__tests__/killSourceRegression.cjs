@@ -20,24 +20,31 @@ function fixture(){
  return {context,tick,select,attacker,victim,now:()=>now};
 }
 test('AI enemy kill uses actual attacker despite stale spell context, with both portraits',()=>{
- const f=fixture(),c=f.context;c.__bfActionCtx={kind:'useAbility',actor:{side:'o',id:'o1'},ts:f.now()-1700};
+ const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfActionCtx={kind:'useAbility',actor:{side:'o',id:'o1'},ts:f.now()-1700};
  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
  const overlay=f.select('#bf-kill-ov');assert(overlay);assert.equal(overlay.classList.contains('bf-kill-self'),false);
  assert.match(f.select('.bf-kill-att').style.backgroundImage,/attacker.jpg/);
  assert.match(f.select('.bf-kill-vic').style.backgroundImage,/victim.jpg/);
  assert(f.select('.bf-kill-vname').textContent.includes('Caído'));
 });
-test('final AI kill is displayed before results rather than discarded at B.over',()=>{
- const f=fixture(),c=f.context;c.dealDamage(f.victim,9);c.B.over=true;c.flushFx(c.events);assert(c.__bfKillCinePending(),'death not queued: '+JSON.stringify(c.events));c.showResult(true);
- f.tick(400);assert(f.select('#bf-kill-ov'),'overlay missing: '+JSON.stringify({pending:c.__bfKillCinePending(),results:c.results,events:c.events}));assert.equal(c.results,0);
- f.tick(5500);assert.equal(c.results,1);assert.equal(f.select('#bf-kill-ov'),null);
+test('final AI kill uses the definitive action without a duplicate death overlay',()=>{
+  const f=fixture(),c=f.context;c.dealDamage(f.victim,9);c.B.over=true;c.flushFx(c.events);assert(c.__bfKillCinePending());c.showResult(true);
+  f.tick(400);assert.equal(f.select('#bf-kill-ov'),null);assert.equal(c.results,1);
+  assert.equal(c.__bfKillCinePending(),false);assert(f.select('#b_o_o1').classList.contains('bf-truedead'));
+  assert.equal(c.__bfDeathVisHold.o_o1,undefined);assert.equal(c.__bfFinalBlow.victimName,'Caído');
+  f.tick(5500);assert.equal(c.results,1);assert.equal(f.select('#bf-kill-ov'),null);
+});
+test('an intermediate AI kill still shows its own death cinematic',()=>{
+  const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});
+  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(400);
+  assert(f.select('#bf-kill-ov'));assert.equal(c.__bfFinalBlow.victimName,'Caído');
 });
 test('stale self-kill flag cannot relabel an enemy kill as slapstick',()=>{
- const f=fixture(),c=f.context;c.__bfSelfKill={side:'o',victim:'o1',id:'o1',ts:f.now()};c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
+ const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfSelfKill={side:'o',victim:'o1',id:'o1',ts:f.now()};c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
  assert(f.select('.bf-kill-att'));assert.equal(f.select('#bf-kill-ov').classList.contains('bf-kill-self'),false);
 });
 test('fallen portrait survives an empty card art layer using the catalog image',()=>{
- const f=fixture(),c=f.context;c.__bfAvatarMap={o1:'catalog-victim.jpg'};
+ const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfAvatarMap={o1:'catalog-victim.jpg'};
  f.select('#b_o_o1').portrait.style.backgroundImage='';
  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
  assert.match(f.select('.bf-kill-vic').style.backgroundImage,/catalog-victim.jpg/);

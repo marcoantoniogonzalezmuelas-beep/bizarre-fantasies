@@ -27,12 +27,11 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(document.getElementById('bf-spec-cine')) return false;
       if(document.getElementById('bf-rearm-cine')) return false;
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) return false;
-      // También el último héroe caído debe verse antes del resultado.
-      // Esperar el golpe mortal ya en cola evita cortar su retrato al acabar.
+      // Espera la cola de muertes: el último remate se registra sin repetir
+      // su animación; los remates intermedios sí terminan antes del cierre.
       if(typeof window.__bfKillCinePending==='function' && window.__bfKillCinePending()) return false;
       if(document.getElementById('bf-kill-ov')) return false;
       if(indicatorsBusy())return false;
-      if(typeof window.__bfKillCinePending === 'function' && window.__bfKillCinePending()) return false;
       if(document.body.classList.contains('bf-cine-active')) return false;
     }catch(e){}
     return true;

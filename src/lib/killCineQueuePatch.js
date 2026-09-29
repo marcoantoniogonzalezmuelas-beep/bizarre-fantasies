@@ -11,8 +11,8 @@
 // habilidad). Así nunca se solapan. Para kills de ataque normal, se mantiene
 // el comportamiento anterior (espera corta + sondeo de escena ocupada).
 //
-// FIN DE PARTIDA: el héroe caído sí se muestra tras el último golpe; el
-// resultado espera a que acabe. Solo se omite si el resultado ya está visible.
+// FIN DE PARTIDA: el último héroe no repite la animación de golpe mortal.
+// La acción definitiva se muestra una sola vez en el cierre de la partida.
 //
 // MULTI-KILL: si una habilidad mata a varios rivales a la vez, se recogen
 // todas las víctimas durante la ventana de retraso pero solo se muestra la
@@ -143,13 +143,28 @@ export const KILL_CINE_QUEUE_PATCH = `
     return false;
   }
 
+  // El cierre puede aún no haber activado B.over cuando se vacía la cola:
+  // detectar si murió el último héroe real del bando de la víctima.
+  function finalKill(victims){
+    try{
+      if(typeof G==='undefined'||!G||!G.team) return false;
+      return victims.some(function(v){
+        var team=G.team[v.side];
+        return team && team.length && team.every(function(h){return !h || !h.alive || h._bfDuck;});
+      });
+    }catch(e){return false;}
+  }
+  function releaseVictims(victims){
+    victims.forEach(function(v){
+      if(window.__bfDeathVisHold)delete window.__bfDeathVisHold[v.key];
+      var card=document.getElementById('b_'+v.side+'_'+v.id);
+      if(card)card.classList.add('bf-truedead');
+    });
+  }
   // Si el resultado ya está en pantalla, no superponer un remate tardío.
-  // B.over por sí solo no basta: también se activa justo al caer el último héroe.
   function gameEnded(){
     try{
-      // B.over marca también el golpe que acaba de matar al último héroe.
-      // No descartarlo: la transición a resultado espera a esta cola.
-      // La animación de golpe definitivo ya está en pantalla
+      // La animación definitiva ya está en pantalla.
       if(document.querySelector('#bf-final-blow,.bf-final-blow,.bf-game-over,.bf-end-cine')) return true;
       // El juego muestra el panel de fin de partida
       if(document.querySelector('#s-gameover,#gameover,.bf-end-screen')) return true;
@@ -329,10 +344,9 @@ export const KILL_CINE_QUEUE_PATCH = `
     killTimer = null;
     if(!pendingVictims.length){ stopWatch(); return; }
 
-    // Si el golpe mortal ha puesto fin a la partida, NO lanzamos la
-    // cinemática: la animación de fin de batalla ya es suficiente.
-    if(gameEnded()){
-      pendingVictims.forEach(function(v){if(window.__bfDeathVisHold)delete window.__bfDeathVisHold[v.key];});
+    // El último remate pertenece al cierre de partida: no duplicar su escena.
+    if(finalKill(pendingVictims)||gameEnded()){
+      releaseVictims(pendingVictims);
       pendingVictims = [];
       pendingActor = null;
       stopWatch();
@@ -364,7 +378,7 @@ export const KILL_CINE_QUEUE_PATCH = `
     // next turn cannot slip into the gap before the death overlay mounts.
     resolvingKills++;
     function proceed(){
-      if(gameEnded()){ victims.forEach(function(v){if(window.__bfDeathVisHold)delete window.__bfDeathVisHold[v.key];}); resolvingKills--; stopWatch(); return; }
+      if(finalKill(victims)||gameEnded()){ releaseVictims(victims); resolvingKills--; stopWatch(); return; }
       if(busy()){
         setTimeout(proceed, 80);
         return;
