@@ -23,8 +23,9 @@ test('AI enemy kill uses actual attacker despite stale spell context, with both 
  const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfActionCtx={kind:'useAbility',actor:{side:'o',id:'o1'},ts:f.now()-1700};
  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
  const overlay=f.select('#bf-kill-ov');assert(overlay);assert.equal(overlay.classList.contains('bf-kill-self'),false);
- assert.match(f.select('.bf-kill-att').style.backgroundImage,/attacker.jpg/);
+ assert.equal(f.select('.bf-kill-att'),null);
  assert.match(f.select('.bf-kill-vic').style.backgroundImage,/victim.jpg/);
+ assert.equal(f.select('.bf-kill-tears'),null);
  assert(f.select('.bf-kill-vname').textContent.includes('Caído'));
 });
 test('final AI kill uses the definitive action without a duplicate death overlay',()=>{
@@ -41,11 +42,12 @@ test('an intermediate AI kill still shows its own death cinematic',()=>{
 });
 test('stale self-kill flag cannot relabel an enemy kill as slapstick',()=>{
  const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfSelfKill={side:'o',victim:'o1',id:'o1',ts:f.now()};c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
- assert(f.select('.bf-kill-att'));assert.equal(f.select('#bf-kill-ov').classList.contains('bf-kill-self'),false);
+ assert.equal(f.select('.bf-kill-title').textContent,'¡GOLPE MORTAL!');assert.equal(f.select('.bf-kill-tears'),null);
 });
 test('fallen portrait survives an empty card art layer using the catalog image',()=>{
- const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfAvatarMap={o1:'catalog-victim.jpg'};
+ const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfCardArtMap={o1:{base:'catalog-victim.jpg'}};c.__bfAvatarMap={o1:'wrong-player-avatar.jpg'};
  f.select('#b_o_o1').portrait.style.backgroundImage='';
  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
  assert.match(f.select('.bf-kill-vic').style.backgroundImage,/catalog-victim.jpg/);
+ assert.doesNotMatch(f.select('.bf-kill-vic').style.backgroundImage,/wrong-player-avatar/);
 });

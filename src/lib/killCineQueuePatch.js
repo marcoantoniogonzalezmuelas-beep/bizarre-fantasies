@@ -1,10 +1,6 @@
-// La cinemática de GOLPE MORTAL nunca debe solaparse con la animación 3D de la
-// habilidad del héroe. Además, se sustituye la cinemática original del juego
-// (demasiado rápida y que distorsiona la pantalla en tablet) por una nueva
-// bizarra y humorística: el héroe ATACANTE aparece en GRANDE a la izquierda
-// con pose victoriosa, y el héroe CAÍDO (solo uno) a la derecha derrotado,
-// con lágrimas, estrellitas de mareo y un fantasma que se eleva. Entre ambos
-// un estallido cómic "¡POW!/¡BAM!".
+// El golpe mortal usa un único retrato oficial del héroe caído, el mismo
+// que en su carta y en el tablero. Su marco y destello son efectos de la
+// escena, no elementos dibujados sobre la cara.
 //
 // RETRASO: cuando la muerte la causa una habilidad (useAbility), la cinemática
 // de golpe mortal se retrasa 5 s (la duración exacta de la animación 3D de la
@@ -26,74 +22,29 @@ export const KILL_CINE_QUEUE_PATCH = `
   window.__bfKillCineQueue = true;
   var pickDeathQuip=(${createDeathQuipPicker.toString()})();
 
-  // ---- CSS de la nueva cinemática bizarra ----
-  var css = [
-    '#bf-kill-ov{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;animation:bfKillFade .35s ease-out}',
-    '@keyframes bfKillFade{from{opacity:0}to{opacity:1}}',
-    '#bf-kill-ov.bf-kill-out{transition:opacity .5s;opacity:0}',
-    '#bf-kill-ov .bf-kill-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(20,5,5,.72),rgba(6,2,2,.92))}',
-    // Atacante: retrato ENORME a la izquierda, con brillo dorado victorioso
-    '#bf-kill-ov .bf-kill-att{position:absolute;left:4%;top:50%;transform:translateY(-50%);width:min(44vw,420px);height:min(62vw,560px);border-radius:20px;overflow:hidden;border:4px solid #ffd24a;box-shadow:0 0 40px rgba(255,210,74,.6),0 12px 36px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;animation:bfKillAtt .7s cubic-bezier(.2,.8,.3,1) both}',
-    '@keyframes bfKillAtt{0%{opacity:0;transform:translateY(-50%) translateX(-80px) scale(.7) rotate(-8deg)}60%{transform:translateY(-50%) translateX(10px) scale(1.05) rotate(2deg)}100%{opacity:1;transform:translateY(-50%) translateX(0) scale(1) rotate(0)}}',
-    '#bf-kill-ov .bf-kill-att::after{content:"";position:absolute;inset:-4px;border-radius:22px;border:3px solid rgba(255,210,74,.5);box-shadow:0 0 24px rgba(255,210,74,.4);animation:bfKillGlow 1.4s ease-in-out infinite;pointer-events:none}',
-    '@keyframes bfKillGlow{0%,100%{opacity:.4}50%{opacity:.9}}',
-    // Emoji 😎 del atacante flotando encima (guay/victorioso)
-    '#bf-kill-ov .bf-kill-att-cool{position:absolute;top:-8%;right:-6%;font-size:clamp(40px,8vw,64px);z-index:6;animation:bfKillCool .6s ease-out .5s both,bfKillCoolBob 2s ease-in-out 1s infinite;filter:drop-shadow(0 0 12px rgba(255,210,74,.8))}',
-    '@keyframes bfKillCool{0%{opacity:0;transform:scale(0) rotate(-180deg)}100%{opacity:1;transform:scale(1) rotate(0)}}',
-    '@keyframes bfKillCoolBob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-8px) rotate(8deg)}}',
-    // Contenedor de víctimas (derecha): apila varias si hay multi-kill
-    '#bf-kill-ov .bf-kill-vics{position:absolute;right:4%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;align-items:flex-end;max-height:88vh}',
-    // Cada víctima: retrato GRANDE, inclinada, derrotada
-    '#bf-kill-ov .bf-kill-vic{position:relative;width:min(38vw,360px);height:min(54vw,480px);border-radius:18px;overflow:hidden;border:4px solid #ff3b30;box-shadow:0 0 34px rgba(255,59,48,.5),0 10px 28px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;filter:saturate(.3) brightness(.5);animation:bfKillVic .7s cubic-bezier(.2,.8,.3,1) .15s both}',
-    '@keyframes bfKillVic{0%{opacity:0;transform:translateX(80px) scale(.7) rotate(8deg)}60%{transform:translateX(-10px) scale(1.05) rotate(-6deg)}100%{opacity:1;transform:translateX(0) scale(1) rotate(-6deg)}}',
-    // Lágrimas 💧 cayendo del héroe caído
-    '#bf-kill-ov .bf-kill-tears{position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:clamp(22px,5vw,36px);animation:bfKillTears 1.6s ease-in .5s infinite;z-index:3;filter:drop-shadow(0 0 8px rgba(100,180,255,.7))}',
-    '@keyframes bfKillTears{0%{opacity:0;transform:translateX(-50%) translateY(0)}15%{opacity:1}80%{opacity:.7}100%{opacity:0;transform:translateX(-50%) translateY(60px)}}',
-    // Estrellitas 💫 de mareo girando encima de la víctima
-    '#bf-kill-ov .bf-kill-star{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:clamp(24px,5vw,36px);animation:bfKillStar 1.4s linear infinite;z-index:3;filter:drop-shadow(0 0 8px #ffd24a)}',
-    '@keyframes bfKillStar{from{transform:translateX(-50%) rotate(0)}to{transform:translateX(-50%) rotate(360deg)}}',
-    // Fantasma 👻 elevándose desde la víctima
-    '#bf-kill-ov .bf-kill-ghost{position:absolute;bottom:4%;left:50%;font-size:clamp(36px,8vw,56px);opacity:0;animation:bfKillGhost 2.2s ease-out .6s forwards;z-index:3;filter:drop-shadow(0 0 12px rgba(200,220,255,.7))}',
-    '@keyframes bfKillGhost{0%{opacity:0;transform:translateX(-50%) translateY(20px) scale(.6)}15%{opacity:.85}80%{opacity:.5}100%{opacity:0;transform:translateX(-50%) translateY(-120px) scale(1.1)}}',
-    // Estallido cómic "¡POW!" entre los dos héroes
-    '#bf-kill-ov .bf-kill-pow{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);z-index:7;animation:bfKillPow .5s cubic-bezier(.2,.8,.3,1) .4s both}',
-    '@keyframes bfKillPow{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-20deg)}60%{transform:translate(-50%,-50%) scale(1.3) rotate(8deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-5deg)}}',
-    '#bf-kill-ov .bf-kill-pow-txt{font-family:Cinzel,serif;font-weight:1000;font-size:clamp(40px,10vw,80px);color:#ffd24a;text-shadow:0 0 24px rgba(255,210,74,.9),0 0 48px rgba(255,180,40,.5),0 5px 0 #b8860b,0 6px 12px #000;letter-spacing:3px;transform:rotate(-8deg)}',
-    // Cartel KO / ELIMINADO (abajo centro)
-    '#bf-kill-ov .bf-kill-ko{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);font-family:Cinzel,serif;font-weight:1000;font-size:clamp(30px,8vw,60px);color:#ff3b30;text-shadow:0 0 28px rgba(255,59,48,.9),0 0 56px rgba(255,59,48,.35),0 4px 10px #000;letter-spacing:5px;white-space:nowrap;animation:bfKillKo .6s cubic-bezier(.2,.8,.3,1) .3s both;z-index:5}',
-    '@keyframes bfKillKo{0%{opacity:0;transform:translateX(-50%) scale(2.2)}100%{opacity:1;transform:translateX(-50%) scale(1)}}',
-    // Nombre del atacante (abajo izquierda)
-    '#bf-kill-ov .bf-kill-aname{position:absolute;bottom:2%;left:4%;font-family:Cinzel,serif;font-weight:900;font-size:clamp(14px,3.5vw,24px);color:#ffd24a;text-shadow:0 2px 8px #000,0 0 14px rgba(255,210,74,.5);text-align:left;max-width:44vw;animation:bfKillFade .5s ease-out .4s both;z-index:5}',
-    // Nombre de la víctima (abajo derecha)
-    '#bf-kill-ov .bf-kill-vname{position:absolute;bottom:2%;right:4%;font-family:Cinzel,serif;font-weight:900;font-size:clamp(14px,3.5vw,24px);color:#ff8a8a;text-shadow:0 2px 8px #000,0 0 14px rgba(255,59,48,.5);text-align:right;max-width:44vw;animation:bfKillFade .5s ease-out .4s both;z-index:5}',
-    // Multi-kill: cuando hay varias víctimas, se encogen para que quepan
-    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(30vw,280px);height:min(42vw,380px)}',
-    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(24vw,220px);height:min(34vw,300px)}',
-    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(4)) .bf-kill-vic{width:min(20vw,180px);height:min(28vw,250px)}',
-    // Tablet/móvil: héroes aún más grandes relativamente
-    '@media(max-width:880px){#bf-kill-ov .bf-kill-att{left:2%;width:min(48vw,240px);height:min(68vw,340px);border-width:3px}#bf-kill-ov .bf-kill-vic{width:min(42vw,210px);height:min(60vw,300px);border-width:3px}#bf-kill-ov .bf-kill-vics{right:2%;gap:8px}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(34vw,170px);height:min(48vw,240px)}#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(28vw,140px);height:min(40vw,200px)}#bf-kill-ov .bf-kill-pow-txt{font-size:clamp(32px,12vw,56px)}#bf-kill-ov .bf-kill-ko{font-size:clamp(24px,9vw,44px);bottom:4%}#bf-kill-ov .bf-kill-aname{left:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-vname{right:2%;font-size:clamp(11px,3vw,16px)}#bf-kill-ov .bf-kill-att-cool{font-size:clamp(32px,7vw,48px)}}'
-  ].join('\\n');
-  css += [
-    // Multi-kill: el atacante crece y los caídos salen juntitos, en fila y solapados
-    '#bf-kill-ov.bf-kill-multi .bf-kill-att{width:min(50vw,470px);height:min(70vw,600px);animation:bfKillAtt .7s cubic-bezier(.2,.8,.3,1) both,bfKillShake .45s linear .7s 3}',
-    '@keyframes bfKillShake{0%,100%{margin-left:0}25%{margin-left:-6px}75%{margin-left:6px}}',
-    '#bf-kill-ov.bf-kill-multi .bf-kill-vics{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:0;max-width:56vw}',
-    '#bf-kill-ov.bf-kill-multi .bf-kill-vic{flex:0 1 auto;margin-left:-4%;width:min(20vw,200px)!important;height:min(30vw,300px)!important}',
-    '#bf-kill-ov.bf-kill-multi .bf-kill-vic:first-child{margin-left:0}',
-    '#bf-kill-ov.bf-kill-multi .bf-kill-vic:nth-child(even){margin-top:26px}',
-    '#bf-kill-ov.bf-kill-multi .bf-kill-pow-txt{font-size:clamp(30px,7vw,64px);color:#ff5a3c}',
-    // Autogolpe: la víctima ocupa el centro y resbala con un plátano
-    '#bf-kill-ov.bf-kill-self .bf-kill-vics{right:auto;left:50%;transform:translate(-50%,-50%)}',
-    '#bf-kill-ov.bf-kill-self .bf-kill-vic{width:min(52vw,340px);height:min(72vw,460px);animation:bfKillSlip 1.5s cubic-bezier(.3,.7,.4,1) .2s both}',
-    '@keyframes bfKillSlip{0%{opacity:0;transform:translateX(-120px) rotate(0)}35%{opacity:1;transform:translateX(0) rotate(0)}55%{transform:translateY(-40px) rotate(-25deg)}80%{transform:translateY(10px) rotate(-95deg)}100%{opacity:1;transform:translateY(0) rotate(-88deg)}}',
-    '#bf-kill-ov .bf-kill-banana{position:absolute;bottom:6%;left:14%;font-size:clamp(46px,10vw,84px);z-index:6;filter:drop-shadow(0 4px 6px #000);animation:bfKillBanana 1.5s ease-out .2s both}',
-    '@keyframes bfKillBanana{0%{opacity:0;transform:translateY(-140px) rotate(0)}30%{opacity:1;transform:translateY(0) rotate(20deg)}100%{opacity:1;transform:translateY(0) rotate(160deg)}}',
-    '#bf-kill-ov.bf-kill-self .bf-kill-pow{top:22%}',
-    '#bf-kill-ov.bf-kill-self .bf-kill-pow-txt{color:#ffe14a}'
-  ].join('\\n');
+  // El retrato permanece despejado: marco, halo y ondas viven fuera de la cara.
   var st = document.createElement('style');
-  css += '#bf-kill-ov .bf-kill-ko{bottom:10%;width:min(86vw,760px);box-sizing:border-box;padding:14px 22px;background:#160d1f;border:2px solid #e6b86b;border-radius:18px;font:700 clamp(19px,3vw,28px)/1.35 Rubik,sans-serif;color:#fff4dc;text-shadow:0 2px 3px #000;letter-spacing:0;white-space:normal;text-align:center;box-shadow:0 12px 40px #0009}#bf-kill-ov .bf-kill-speaker{display:block;font-size:.55em;color:#ffce88;margin-bottom:5px;letter-spacing:1px}#bf-kill-ov .bf-kill-line+ .bf-kill-line{margin-top:12px}';
-  st.textContent = css;
+  st.textContent = [
+    '#bf-kill-ov{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;isolation:isolate;color:#fff4dc;font-family:Cinzel,serif;animation:bfKillIn .35s ease-out}',
+    '@keyframes bfKillIn{from{opacity:0}to{opacity:1}}',
+    '#bf-kill-ov.bf-kill-out{transition:opacity .5s;opacity:0}',
+    '#bf-kill-ov .bf-kill-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#392345 0%,#110d20 57%,#05040b 100%)}',
+    '#bf-kill-ov .bf-kill-bg::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 56px,rgba(239,190,112,.035) 57px 58px,transparent 59px 116px)}',
+    '#bf-kill-ov .bf-kill-title{position:absolute;top:5%;left:0;width:100%;text-align:center;color:#f6d58a;letter-spacing:.23em;font-size:clamp(18px,3vw,32px);font-weight:800;text-shadow:0 2px 12px #000,0 0 26px #ad6a41;z-index:4}',
+    '#bf-kill-ov .bf-kill-stage{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);width:min(42vw,340px);height:min(54vh,440px);display:grid;place-items:center;z-index:2}',
+    '#bf-kill-ov .bf-kill-stage::before{content:"";position:absolute;inset:-22px;border:1px solid rgba(246,213,138,.55);border-radius:28px;box-shadow:0 0 0 12px rgba(246,213,138,.04),0 0 55px rgba(237,159,86,.35);animation:bfKillRing 1.5s ease-out both}',
+    '@keyframes bfKillRing{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}',
+    '#bf-kill-ov .bf-kill-stage::after{content:"";position:absolute;inset:-9px;border:2px solid #f5c777;border-radius:23px;box-shadow:0 0 22px rgba(245,199,119,.7),inset 0 0 16px rgba(245,199,119,.35);pointer-events:none}',
+    '#bf-kill-ov .bf-kill-vic{position:relative;width:100%;height:100%;border-radius:16px;background-color:#161020;background-size:cover;background-position:center 8%;box-shadow:0 20px 60px #000c;animation:bfKillPortrait .65s cubic-bezier(.2,.8,.3,1) both}',
+    '@keyframes bfKillPortrait{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:scale(1)}}',
+    '#bf-kill-ov .bf-kill-vic::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,transparent 68%,rgba(12,6,23,.48));pointer-events:none}',
+    '#bf-kill-ov .bf-kill-vname{position:absolute;left:8%;right:8%;top:calc(43% + min(27vh,220px) + 20px);text-align:center;font-size:clamp(17px,2.8vw,29px);font-weight:800;color:#ffe5b1;text-shadow:0 3px 10px #000;z-index:3}',
+    '#bf-kill-ov .bf-kill-ko{position:absolute;bottom:4%;left:50%;transform:translateX(-50%);width:min(86vw,760px);max-height:24vh;overflow:auto;box-sizing:border-box;padding:12px 20px;border:1px solid rgba(246,213,138,.55);border-radius:16px;background:rgba(17,11,29,.94);text-align:center;font:600 clamp(14px,2vw,22px)/1.35 Rubik,sans-serif;color:#fff4dc;box-shadow:0 12px 32px #0009;z-index:4}',
+    '#bf-kill-ov .bf-kill-speaker{display:block;font-size:.65em;color:#f6d58a;letter-spacing:.12em;margin-bottom:4px}',
+    '#bf-kill-ov .bf-kill-line+.bf-kill-line{margin-top:9px}',
+    '@media(max-width:880px){#bf-kill-ov .bf-kill-title{top:3%;font-size:clamp(14px,3vw,22px)}#bf-kill-ov .bf-kill-stage{top:38%;width:min(38vw,230px);height:min(48vh,290px)}#bf-kill-ov .bf-kill-vname{top:calc(38% + min(24vh,145px) + 12px)}#bf-kill-ov .bf-kill-ko{bottom:2%;padding:8px 12px;max-height:25vh}}',
+    '@media(prefers-reduced-motion:reduce){#bf-kill-ov,#bf-kill-ov *{animation:none!important}}'
+  ].join('');
   document.head.appendChild(st);
 
   // ---- Estado de la cola de kills ----
@@ -179,149 +130,39 @@ export const KILL_CINE_QUEUE_PATCH = `
     try{ return getHero(parts[1], parts.slice(2).join('_')); }catch(e){ return null; }
   }
 
-  function artFromCard(card){
-    try{
-      var art = card.querySelector('.bf-bscene-portrait,.bf-battle-art');
-      if(art){
-        var bg = art.style.backgroundImage || getComputedStyle(art).backgroundImage;
-        var m = /url\\(["']?([^"')]+)["']?\\)/.exec(bg);
-        if(m) return m[1];
-      }
-      // Respaldo: cualquier imagen del retrato para que NUNCA falte el héroe.
-      // Solo elementos GRANDES (el retrato); los iconos de armas, armaduras,
-      // estados o efectos se descartan (salía el icono del arma a distancia).
-      var cr = card.getBoundingClientRect();
-      var cand = card.querySelectorAll('img, div, span');
-      for(var k=0;k<cand.length;k++){
-        var el = cand[k];
-        if(el.closest('.bf-kill-ov,[class*="chip"],[class*="badge"],[class*="fx"],[class*="mark"],[class*="icon"],[class*="status"]')) continue;
-        var er = el.getBoundingClientRect();
-        if(er.width < cr.width * 0.7 || er.height < cr.height * 0.4) continue;
-        var src2 = el.tagName === 'IMG' ? el.src : '';
-        if(!src2){
-          var m2 = /url\\(["']?([^"')]+)["']?\\)/.exec(getComputedStyle(el).backgroundImage || '');
-          if(m2) src2 = m2[1];
-        }
-        if(src2) return src2;
-      }
-    }catch(e){}
-    try{
-      var h=heroFromCard(card),id=h&&(h._token||h.id),avatar=window.__bfAvatarMap||{},scenes=window.__bfBattleArtMap||{};
-      return (id&&(avatar[id]||(scenes[id]&&(h.eliteMode?scenes[id].elite:scenes[id].base))))||null;
-    }catch(e){return null;}
-  }
-
+  // El mapa de cartas contiene el mismo art_url mostrado en batalla. No usar
+  // __bfAvatarMap: ese mapa asocia nicks a avatares de jugadores, no héroes.
   function heroArt(side,id){
     var card=document.getElementById('b_'+side+'_'+id);
-    if(card){var url=artFromCard(card);if(url)return url;}
-    try{
-      var h=typeof getHero==='function'&&getHero(side,id),key=h&&(h._token||h.id);
-      var avatars=window.__bfAvatarMap||{},scenes=window.__bfBattleArtMap||{};
-      return key&&(avatars[key]||(scenes[key]&&(h.eliteMode?(scenes[key].elite||scenes[key].base):scenes[key].base)))||null;
-    }catch(e){return null;}
+    var hero=typeof getHero==='function'?getHero(side,id):null;
+    var map=window.__bfCardArtMap||{};
+    var entry=hero&&(map[hero._token]||map[hero.id]||map[hero.name]||map[String(hero.name||'').toLowerCase()]);
+    var official=entry&&(hero.eliteMode?(entry.elite||entry.base):entry.base);
+    if(official)return official;
+    var portrait=card&&(card.querySelector('.bf-bscene-portrait')||card.querySelector('.bf-battle-art'));
+    var bg=portrait&&(portrait.style.backgroundImage||getComputedStyle(portrait).backgroundImage)||'';
+    var match=/url\\(["']?([^"')]+)["']?\\)/.exec(bg);
+    return match?match[1]:null;
   }
-  function attackerArt(actor){return actor?heroArt(actor.side,actor.id):null;}
 
-  // ---- Nueva cinemática bizarra ----
+  // Un único retrato del caído; los otros nombres quedan en la cita si hay varias bajas.
   function showKillCinematic(actor, victims, selfKill){
-    victims.forEach(function(v){
-      if(window.__bfDeathVisHold)delete window.__bfDeathVisHold[v.key];
-      var card=document.getElementById('b_'+v.side+'_'+v.id);
-      if(card)card.classList.add('bf-truedead');
-    });
-    var multiKill = victims.length > 1;
-    var ov = document.createElement('div');
-    ov.id = 'bf-kill-ov';
-    if(multiKill) ov.classList.add('bf-kill-multi');
-    if(selfKill) ov.classList.add('bf-kill-self');
-    ov.dataset.bfNew = '1';
-
-    var bg = document.createElement('div');
-    bg.className = 'bf-kill-bg';
-    ov.appendChild(bg);
-
-    // ---- Atacante (héroe que mata) ----
-    var attArt = attackerArt(actor);
-    var attName = '';
-    try{
-      if(actor && typeof getHero === 'function'){
-        var ah = getHero(actor.side, actor.id);
-        if(ah) attName = ah.name || '';
-      }
-    }catch(e){}
-
-    if(attArt && !selfKill){
-      var att = document.createElement('div');
-      att.className = 'bf-kill-att';
-      att.style.backgroundImage = 'url("' + attArt + '")';
-      // Emoji 😎 flotando encima del atacante (guay/victorioso)
-      var cool = document.createElement('div');
-      cool.className = 'bf-kill-att-cool';
-      cool.textContent = '\\ud83d\\ude0e';
-      att.appendChild(cool);
-      ov.appendChild(att);
-    }
-    if(attName && !selfKill){
-      var aname = document.createElement('div');
-      aname.className = 'bf-kill-aname';
-      aname.textContent = attName;
-      ov.appendChild(aname);
-    }
-
-    // ---- Víctimas (todos los héroes que mueren, apilados a la derecha) ----
-    var vicWrap = document.createElement('div');
-    vicWrap.className = 'bf-kill-vics';
-    victims.forEach(function(v, i){
-      var vic = document.createElement('div');
-      vic.className = 'bf-kill-vic';
-      var vicArt=v.art||heroArt(v.side,v.id);
-      if(vicArt) vic.style.backgroundImage = 'url("' + vicArt + '")';
-      if(selfKill){
-        var banana = document.createElement('div');
-        banana.className = 'bf-kill-banana';
-        banana.textContent = '\\ud83c\\udf4c';
-        vic.appendChild(banana);
-      }
-      vic.style.animationDelay = (0.15 + i * 0.12) + 's';
-      // Estrellitas 💫 de mareo
-      var star = document.createElement('div');
-      star.className = 'bf-kill-star';
-      star.textContent = '\\ud83d\\udcab';
-      vic.appendChild(star);
-      // Lágrimas 💧
-      var tears = document.createElement('div');
-      tears.className = 'bf-kill-tears';
-      tears.textContent = '\\ud83d\\udca7 \\ud83d\\udca7';
-      vic.appendChild(tears);
-      // Fantasma 👻 elevándose
-      var ghost = document.createElement('div');
-      ghost.className = 'bf-kill-ghost';
-      vic.appendChild(ghost);
-      vicWrap.appendChild(vic);
-    });
-    ov.appendChild(vicWrap);
-
-    // Nombres de todas las víctimas
-    var vnames = victims.map(function(v){ return v.name; }).filter(Boolean).join(' \\u00b7 ');
-    if(vnames){
-      var vname = document.createElement('div');
-      vname.className = 'bf-kill-vname';
-      vname.textContent = vnames;
-      ov.appendChild(vname);
-    }
-
-    // ---- Estallido cómic "¡POW!" entre los dos ----
-    var pow = document.createElement('div');
-    pow.className = 'bf-kill-pow';
-    var powTxt = document.createElement('div');
-    powTxt.className = 'bf-kill-pow-txt';
-    powTxt.textContent = selfKill ? '\\u00a1CATAPLUM!' : (multiKill ? '\\u00a1ANIQUILADOS!' : '\\u00a1POW!');
-    pow.appendChild(powTxt);
-    ov.appendChild(pow);
-
-    // Últimas palabras del héroe caído, no del atacante.
-    var ko = document.createElement('div');
-    ko.className = 'bf-kill-ko';
+    releaseVictims(victims);
+    var victim=victims[victims.length-1];
+    var ov=document.createElement('div');
+    ov.id='bf-kill-ov';
+    ov.dataset.bfNew='1';
+    var bg=document.createElement('div');bg.className='bf-kill-bg';ov.appendChild(bg);
+    var title=document.createElement('div');title.className='bf-kill-title';
+    title.textContent=selfKill?'¡AUTOGOLPE!':(victims.length>1?'¡ANIQUILADOS!':'¡GOLPE MORTAL!');ov.appendChild(title);
+    var stage=document.createElement('div');stage.className='bf-kill-stage';
+    var portrait=document.createElement('div');portrait.className='bf-kill-vic';
+    var art=victim.art||heroArt(victim.side,victim.id);
+    if(art)portrait.style.backgroundImage='url("'+art+'")';
+    stage.appendChild(portrait);ov.appendChild(stage);
+    var name=document.createElement('div');name.className='bf-kill-vname';
+    name.textContent=victim.name||'';ov.appendChild(name);
+    var ko=document.createElement('div');ko.className='bf-kill-ko';
     victims.forEach(function(v){
       var line=document.createElement('div');line.className='bf-kill-line';
       var speaker=document.createElement('span');speaker.className='bf-kill-speaker';
@@ -330,13 +171,10 @@ export const KILL_CINE_QUEUE_PATCH = `
       line.appendChild(speaker);line.appendChild(quote);ko.appendChild(line);
     });
     ov.appendChild(ko);
-
-    (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
-
-    // Tiempo de lectura para las últimas palabras sin adelantar otro turno.
+    (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     var readTime=4500+Math.max(0,victims.length-1)*1600;
-    setTimeout(function(){ ov.classList.add('bf-kill-out'); }, readTime);
-    setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); }, readTime+600);
+    setTimeout(function(){ov.classList.add('bf-kill-out');},readTime);
+    setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},readTime+600);
   }
 
   // ---- Flush: tras el retraso, lanza la cinemática ----
@@ -400,9 +238,9 @@ export const KILL_CINE_QUEUE_PATCH = `
       // Recoge la víctima (sin duplicar: si el mismo héroe ya está en la
       // lista de víctimas pendientes, no se añade otra vez)
       var vHero = heroFromCard(card);
-      var vArt = artFromCard(card);
-      var vId = vHero ? vHero.id : ('dom_' + (card.id || ''));
       var parts = String(card.id || '').split('_'), side = parts[1] || '';
+      var vArt = heroArt(side,vHero ? vHero.id : parts.slice(2).join('_'));
+      var vId = vHero ? vHero.id : ('dom_' + (card.id || ''));
       var key = side + '_' + vId;
       if(vHero && vHero.alive && !confirmedDeath) return;
       if(claimedDeaths[key]) return;
