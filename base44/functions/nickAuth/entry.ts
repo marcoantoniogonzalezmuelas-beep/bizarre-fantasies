@@ -4,7 +4,7 @@
 //  - check: verifica la contraseña de un nick, o la crea si el nick es nuevo
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 
-const MIN_LEN = 6;
+const MIN_LEN = 3;
 const ITER = 100000;
 // Freno básico de fuerza bruta por nick (por isolate).
 const fails = new Map<string, { n: number; until: number }>();

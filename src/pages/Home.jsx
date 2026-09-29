@@ -881,27 +881,10 @@ export default function Home() {
           try { iframeRef.current?.contentWindow?.postMessage({ bfNickCredentialResult: { ...payload, requestId } }, '*'); } catch (e2) {}
         };
         (async () => {
-          if (!base44.entities?.NickCredential) { respond({ ok: false, error: 'db_error' }); return; }
-          const existing = nickCredsRef.current[key];
-          if (existing && existing.password) {
-            // El nick ya está protegido: verificar la contraseña.
-            const hash = await sha256Hex(password);
-            if (hash === existing.password) { respond({ ok: true, mode: 'verified' }); }
-            else { respond({ ok: false, error: 'wrong_password' }); }
-            return;
-          }
-          // Nick nuevo o sin proteger aún: crear la contraseña.
-          if (!password || String(password).length < 3) { respond({ ok: false, error: 'too_short' }); return; }
-          if (!nick || !String(nick).trim()) { respond({ ok: false, error: 'empty' }); return; }
-          const hash = await sha256Hex(password);
           try {
-            if (existing) {
-              await base44.entities.NickCredential.update(existing.id, { password: hash });
-            } else {
-              const rec = await base44.entities.NickCredential.create({ nick: key, password: hash });
-              nickCredsRef.current[key] = rec;
-            }
-            respond({ ok: true, mode: 'set' });
+            const { data } = await base44.functions.invoke('nickAuth', { action: 'check', nick: key, password: String(password || '') });
+            if (data?.ok && data.mode === 'set') nickCredsRef.current[key] = { nick: key, password: true };
+            respond({ ok: !!data?.ok, mode: data?.mode, error: data?.error });
           } catch (e2) { respond({ ok: false, error: 'db_error' }); }
         })();
       }
@@ -1096,14 +1079,12 @@ export default function Home() {
       // Credenciales de nick (NickCredential): nicks que ya tienen contraseña
       // guardada. Se envían al iframe para que el campo muestre "escribir" vs
       // "crear" y para que la verificación se haga contra la BD.
-      if (base44.entities?.NickCredential) {
-        base44.entities.NickCredential.list('nick', 1000).then(rows => {
-          const m = {};
-          (rows || []).forEach(r => { if (r.nick) m[String(r.nick).toLowerCase()] = r; });
-          nickCredsRef.current = m;
-          try { iframeRef.current?.contentWindow?.postMessage({ bfNickCreds: Object.keys(m) }, '*'); } catch (e) {}
-        }).catch(() => {});
-      }
+      base44.functions.invoke('nickAuth', { action: 'list' }).then(({ data }) => {
+        const m = {};
+        (data?.nicks || []).forEach(n => { if (n) m[String(n).toLowerCase()] = { nick: n, password: true }; });
+        nickCredsRef.current = m;
+        try { iframeRef.current?.contentWindow?.postMessage({ bfNickCreds: Object.keys(m) }, '*'); } catch (e) {}
+      }).catch(() => {});
       // Progreso de niveles de IA por nick (BD): victorias contra cada nivel,
       // para que los desbloqueos funcionen entre dispositivos.
       try {
