@@ -40,18 +40,9 @@
       }
     },
     "read": {
-      "$or": [
-        {
-          "data.state.mp_mission": {
-            "$ne": "mp"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
       "user_condition": {
