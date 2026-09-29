@@ -38,7 +38,7 @@ for(const clan of ['Guerreros','Druidas','No-muertos','Vaqueros','Cotidianos','E
 test('death overlay attributes thematic last words to the victim',()=>{
  const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;
  f.c.bfKillCinematic(card);f.tick(800);assert(f.select('#bf-kill-ov'));assert.match(f.select('.bf-kill-speaker').textContent,/Héroe caído/);assert(!f.select('.bf-kill-ko').textContent.includes('ELIMINADO'));
- const texts=f.all().map(n=>n.textContent).join(' ');assert.match(texts,/PIFIA LEGENDARIA|autodesautorizado|suelo|plátano/);f.tick(4000);assert(f.select('#bf-kill-ov'));f.tick(900);assert.equal(f.select('#bf-kill-ov'),null);
+ const texts=f.all().map(n=>n.textContent).join(' ');assert.match(texts,/CATAPLUM|POW/);f.tick(4000);assert(f.select('#bf-kill-ov'));f.tick(900);assert.equal(f.select('#bf-kill-ov'),null);
  });
  test('one death is shown once across pending, waiting, playing and completed stages',()=>{
  const f=fixture();f.load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');const card=f.node();card.id='b_o_test';card.querySelector=()=>null;

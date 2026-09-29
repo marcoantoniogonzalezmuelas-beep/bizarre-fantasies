@@ -1,7 +1,7 @@
 // Cola de remates: recopila todas las bajas de una acción y espera a que
 // concluyan sus efectos antes de mostrar el nuevo reparto humorístico.
 import { createDeathQuipPicker } from '@/lib/deathQuips';
-import { DEATH_SCENE_CSS, createDeathScene } from '@/lib/deathScene';
+
 
 export const KILL_CINE_QUEUE_PATCH = `
 <script>
@@ -9,9 +9,44 @@ export const KILL_CINE_QUEUE_PATCH = `
   if(window.__bfKillCineQueue) return;
   window.__bfKillCineQueue = true;
   var pickDeathQuip=(${createDeathQuipPicker.toString()})();
-  var buildScene=(${createDeathScene.toString()});
+  var css = [
+    '#bf-kill-ov{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;animation:bfKillFade .35s ease-out}',
+    '@keyframes bfKillFade{from{opacity:0}to{opacity:1}}',
+    '#bf-kill-ov.bf-kill-out{transition:opacity .5s;opacity:0}',
+    '#bf-kill-ov .bf-kill-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(20,5,5,.72),rgba(6,2,2,.92))}',
+    '#bf-kill-ov .bf-kill-att{position:absolute;left:4%;top:50%;transform:translateY(-50%);width:min(44vw,420px);height:min(62vw,560px);border-radius:20px;overflow:hidden;border:4px solid #ffd24a;box-shadow:0 0 40px rgba(255,210,74,.6),0 12px 36px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;animation:bfKillAtt .7s cubic-bezier(.2,.8,.3,1) both}',
+    '@keyframes bfKillAtt{0%{opacity:0;transform:translateY(-50%) translateX(-80px) scale(.7) rotate(-8deg)}60%{transform:translateY(-50%) translateX(10px) scale(1.05) rotate(2deg)}100%{opacity:1;transform:translateY(-50%) translateX(0) scale(1) rotate(0)}}',
+    '#bf-kill-ov .bf-kill-att-cool{position:absolute;top:2%;right:2%;font-size:clamp(40px,8vw,64px);z-index:6;animation:bfKillCool .6s ease-out .5s both,bfKillCoolBob 2s ease-in-out 1s infinite;filter:drop-shadow(0 0 12px rgba(255,210,74,.8))}',
+    '@keyframes bfKillCool{0%{opacity:0;transform:scale(0) rotate(-180deg)}100%{opacity:1;transform:scale(1) rotate(0)}}',
+    '@keyframes bfKillCoolBob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-8px) rotate(8deg)}}',
+    '#bf-kill-ov .bf-kill-vics{position:absolute;right:4%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;align-items:flex-end;max-height:88vh}',
+    '#bf-kill-ov .bf-kill-vic{position:relative;width:min(38vw,360px);height:min(54vw,480px);border-radius:18px;overflow:hidden;border:4px solid #ff3b30;box-shadow:0 0 34px rgba(255,59,48,.5),0 10px 28px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;filter:saturate(.3) brightness(.6);animation:bfKillVic .7s cubic-bezier(.2,.8,.3,1) .15s both}',
+    '@keyframes bfKillVic{0%{opacity:0;transform:translateX(80px) scale(.7) rotate(8deg)}60%{transform:translateX(-10px) scale(1.05) rotate(-6deg)}100%{opacity:1;transform:translateX(0) scale(1) rotate(-6deg)}}',
+    '#bf-kill-ov .bf-kill-star{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:clamp(24px,5vw,36px);animation:bfKillStar 1.4s linear infinite;z-index:3;filter:drop-shadow(0 0 8px #ffd24a)}',
+    '@keyframes bfKillStar{from{transform:translateX(-50%) rotate(0)}to{transform:translateX(-50%) rotate(360deg)}}',
+    '#bf-kill-ov .bf-kill-pow{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);z-index:7;animation:bfKillPow .5s cubic-bezier(.2,.8,.3,1) .4s both}',
+    '@keyframes bfKillPow{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-20deg)}60%{transform:translate(-50%,-50%) scale(1.3) rotate(8deg)}100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-5deg)}}',
+    '#bf-kill-ov .bf-kill-pow-txt{font-family:Cinzel,serif;font-weight:1000;font-size:clamp(40px,10vw,80px);color:#ffd24a;text-shadow:0 0 24px rgba(255,210,74,.9),0 0 48px rgba(255,180,40,.5),0 5px 0 #b8860b,0 6px 12px #000;letter-spacing:3px;transform:rotate(-8deg);white-space:nowrap}',
+    '#bf-kill-ov .bf-kill-ko{position:absolute;bottom:10%;left:50%;transform:translateX(-50%);width:min(86vw,760px);box-sizing:border-box;padding:14px 22px;background:#160d1f;border:2px solid #e6b86b;border-radius:18px;font:700 clamp(19px,3vw,28px)/1.35 Rubik,sans-serif;color:#fff4dc;text-shadow:0 2px 3px #000;text-align:center;box-shadow:0 12px 40px #0009;z-index:8;animation:bfKillKo .6s cubic-bezier(.2,.8,.3,1) .3s both}',
+    '@keyframes bfKillKo{0%{opacity:0;transform:translateX(-50%) scale(1.6)}100%{opacity:1;transform:translateX(-50%) scale(1)}}',
+    '#bf-kill-ov .bf-kill-speaker{display:block;font-size:.55em;color:#ffce88;margin-bottom:5px;letter-spacing:1px}',
+    '#bf-kill-ov .bf-kill-line+.bf-kill-line{margin-top:12px}',
+    '#bf-kill-ov .bf-kill-aname{position:absolute;bottom:2%;left:4%;font-family:Cinzel,serif;font-weight:900;font-size:clamp(14px,3.5vw,24px);color:#ffd24a;text-shadow:0 2px 8px #000;max-width:44vw;z-index:5}',
+    '#bf-kill-ov .bf-kill-vname{position:absolute;bottom:2%;right:4%;font-family:Cinzel,serif;font-weight:900;font-size:clamp(14px,3.5vw,24px);color:#ff8a8a;text-shadow:0 2px 8px #000;text-align:right;max-width:44vw;z-index:5}',
+    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(2)) .bf-kill-vic{width:min(30vw,280px);height:min(42vw,380px)}',
+    '#bf-kill-ov .bf-kill-vics:has(.bf-kill-vic:nth-child(3)) .bf-kill-vic{width:min(24vw,220px);height:min(34vw,300px)}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vics{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:0;max-width:56vw}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vic{flex:0 1 auto;margin-left:-4%;width:min(20vw,200px)!important;height:min(30vw,300px)!important}',
+    '#bf-kill-ov.bf-kill-multi .bf-kill-vic:first-child{margin-left:0}',
+    '#bf-kill-ov.bf-kill-self .bf-kill-vics{right:auto;left:50%;transform:translate(-50%,-50%)}',
+    '#bf-kill-ov.bf-kill-self .bf-kill-vic{width:min(52vw,340px);height:min(72vw,460px);animation:bfKillSlip 1.5s cubic-bezier(.3,.7,.4,1) .2s both}',
+    '@keyframes bfKillSlip{0%{opacity:0;transform:translateX(-120px) rotate(0)}35%{opacity:1;transform:translateX(0) rotate(0)}55%{transform:translateY(-40px) rotate(-25deg)}80%{transform:translateY(10px) rotate(-95deg)}100%{opacity:1;transform:translateY(0) rotate(-88deg)}}',
+    '#bf-kill-ov .bf-kill-banana{position:absolute;bottom:6%;left:14%;font-size:clamp(46px,10vw,84px);z-index:6;filter:drop-shadow(0 4px 6px #000);animation:bfKillBanana 1.5s ease-out .2s both}',
+    '@keyframes bfKillBanana{0%{opacity:0;transform:translateY(-140px) rotate(0)}30%{opacity:1;transform:translateY(0) rotate(20deg)}100%{opacity:1;transform:translateY(0) rotate(160deg)}}',
+    '@media(max-width:880px){#bf-kill-ov .bf-kill-att{left:2%;top:38%;width:min(46vw,240px);height:min(66vw,340px);border-width:3px}#bf-kill-ov .bf-kill-vic{width:min(44vw,220px);height:min(62vw,310px);border-width:3px}#bf-kill-ov .bf-kill-vics{right:2%;top:38%;gap:8px}#bf-kill-ov .bf-kill-pow-txt{font-size:clamp(30px,11vw,52px)}#bf-kill-ov .bf-kill-ko{bottom:5%;width:94vw;padding:10px 14px;font-size:clamp(17px,4.6vw,22px)}#bf-kill-ov .bf-kill-aname,#bf-kill-ov .bf-kill-vname{bottom:26%;font-size:clamp(11px,3vw,15px)}}'
+  ].join('\\n');
   var st=document.createElement('style');
-  st.textContent=${JSON.stringify(DEATH_SCENE_CSS)};
+  st.textContent=css;
   document.head.appendChild(st);
 
   // ---- Estado de la cola de kills ----
@@ -93,7 +128,47 @@ export const KILL_CINE_QUEUE_PATCH = `
 
   function showKillCinematic(actor,victims,selfKill){
     releaseVictims(victims);
-    var ov=buildScene(document,actor,victims,selfKill,pickDeathQuip,!!window.__bfLangEn);
+    var multi=victims.length>1;
+    var ov=document.createElement('div');
+    ov.id='bf-kill-ov';ov.dataset.bfNew='1';
+    if(multi)ov.classList.add('bf-kill-multi');
+    if(selfKill)ov.classList.add('bf-kill-self');
+    var bg=document.createElement('div');bg.className='bf-kill-bg';ov.appendChild(bg);
+    if(actor&&!selfKill){
+      if(actor.art){
+        var att=document.createElement('div');att.className='bf-kill-att';
+        att.style.backgroundImage='url("'+actor.art+'")';
+        var cool=document.createElement('div');cool.className='bf-kill-att-cool';cool.textContent='\\ud83d\\ude0e';
+        att.appendChild(cool);ov.appendChild(att);
+      }
+      if(actor.name){var an=document.createElement('div');an.className='bf-kill-aname';an.textContent=actor.name;ov.appendChild(an);}
+    }
+    var wrap=document.createElement('div');wrap.className='bf-kill-vics';
+    victims.forEach(function(v,i){
+      var vic=document.createElement('div');vic.className='bf-kill-vic';
+      var a=v.art||heroArt(v.side,v.id);
+      if(a)vic.style.backgroundImage='url("'+a+'")';
+      vic.style.animationDelay=(0.15+i*0.12)+'s';
+      if(selfKill){var b=document.createElement('div');b.className='bf-kill-banana';b.textContent='\\ud83c\\udf4c';vic.appendChild(b);}
+      var s=document.createElement('div');s.className='bf-kill-star';s.textContent='\\ud83d\\udcab';vic.appendChild(s);
+      wrap.appendChild(vic);
+    });
+    ov.appendChild(wrap);
+    var vn=victims.map(function(v){return v.name;}).filter(Boolean).join(' \\u00b7 ');
+    if(vn){var vname=document.createElement('div');vname.className='bf-kill-vname';vname.textContent=vn;ov.appendChild(vname);}
+    var pow=document.createElement('div');pow.className='bf-kill-pow';
+    var pt=document.createElement('div');pt.className='bf-kill-pow-txt';
+    pt.textContent=selfKill?'\\u00a1CATAPLUM!':(multi?'\\u00a1ANIQUILADOS!':'\\u00a1POW!');
+    pow.appendChild(pt);ov.appendChild(pow);
+    var ko=document.createElement('div');ko.className='bf-kill-ko';
+    victims.forEach(function(v){
+      var line=document.createElement('div');line.className='bf-kill-line';
+      var sp=document.createElement('span');sp.className='bf-kill-speaker';
+      sp.textContent=[v.name,v.clan].filter(Boolean).join(' \\u00b7 ');
+      var q=document.createElement('span');q.textContent='\\u00ab'+pickDeathQuip(v.clan,!!window.__bfLangEn,selfKill?'self':'')+'\\u00bb';
+      line.appendChild(sp);line.appendChild(q);ko.appendChild(line);
+    });
+    ov.appendChild(ko);
     (window.__bfAppend||function(n){document.body.appendChild(n);})(ov);
     var readTime=4500+Math.max(0,victims.length-1)*1000;
     setTimeout(function(){ov.classList.add('bf-kill-out');},readTime);
@@ -105,6 +180,19 @@ export const KILL_CINE_QUEUE_PATCH = `
     killTimer = null;
     if(!pendingVictims.length){ stopWatch(); return; }
 
+    // El último remate de la partida lo cubre la animación definitiva:
+    // no se duplica con esta escena.
+    var lastDown=false;
+    try{
+      lastDown=pendingVictims.some(function(v){
+        var team=typeof G!=='undefined'&&G&&G.team&&G.team[v.side];
+        return team&&team.length&&team.every(function(h){return !h||!h.alive||h._bfDuck;});
+      });
+    }catch(e){}
+    if(lastDown){
+      releaseVictims(pendingVictims);
+      pendingVictims=[];pendingActor=null;stopWatch();return;
+    }
     var victims = pendingVictims.slice();
     var sources=victims.map(function(v){return v.source;}).filter(Boolean);
     var actor=sources.length===victims.length && sources.every(function(s){return !s.self && s.side===sources[0].side && s.id===sources[0].id;}) ? {side:sources[0].side,id:sources[0].id,kind:sources[0].kind} : (sources.length?null:pendingActor);
@@ -138,7 +226,6 @@ export const KILL_CINE_QUEUE_PATCH = `
       }
       resolvingKills--;
       showKillCinematic(actor, victims, selfKill);
-      if(typeof B!=='undefined' && B && B.over && window.__bfFinalBlow)window.__bfKillFinalShown=window.__bfFinalBlow.ts;
       stopWatch();
     }
     proceed();

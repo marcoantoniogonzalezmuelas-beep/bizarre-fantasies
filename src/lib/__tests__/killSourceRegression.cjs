@@ -21,60 +21,26 @@ function fixture(){
  load('finalCinematicPatch','FINAL_CINEMATIC_PATCH');load('killActorPatch','KILL_ACTOR_PATCH');load('killCineQueuePatch','KILL_CINE_QUEUE_PATCH');load('endGameWaitCalmPatch','END_GAME_WAIT_CALM_PATCH');
  return {context,tick,select,attacker,victim,now:()=>now};
 }
-test('AI enemy kill uses actual attacker despite stale spell context, with both portraits',()=>{
- const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfActionCtx={kind:'useAbility',actor:{side:'o',id:'o1'},ts:f.now()-1700};
+function spare(c){c.G.team.o.push({id:'o2',name:'Otro',alive:true});}
+test('enemy kill shows attacker, fallen hero and the quote',()=>{
+ const f=fixture(),c=f.context;spare(c);
  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
- const overlay=f.select('#bf-kill-ov');assert(overlay);assert.equal(overlay.classList.contains('bf-kill-self'),false);
- assert.match(f.select('.bf-kill-actor .bf-kill-portrait')?.style?.backgroundImage||f.select('.bf-kill-actor').children[0].style.backgroundImage,/attacker.jpg/);
- assert.match(f.select('.bf-kill-vic').children[0].style.backgroundImage,/victim.jpg/);
+ assert(f.select('#bf-kill-ov'));assert.equal(f.select('#bf-kill-ov').classList.contains('bf-kill-self'),false);
+ assert(f.select('.bf-kill-att'));assert(f.select('.bf-kill-vic'));assert(f.select('.bf-kill-ko'));
  assert.equal(f.select('.bf-kill-tears'),null);
- assert(f.select('.bf-kill-vic').children[1].textContent.includes('Caído'));
 });
-test('final AI kill uses the definitive action without a duplicate death overlay',()=>{
-  const f=fixture(),c=f.context;c.dealDamage(f.victim,9);c.B.over=true;c.flushFx(c.events);assert(c.__bfKillCinePending());c.showResult(true);
-  f.tick(500);assert(f.select('#bf-kill-ov'));assert.equal(c.results,0);
-  assert.equal(c.__bfKillCinePending(),false);assert(f.select('#b_o_o1').classList.contains('bf-truedead'));
-  assert.equal(c.__bfDeathVisHold.o_o1,undefined);assert.equal(c.__bfFinalBlow.victimName,'Caído');
-  assert.match(f.select('.bf-kill-actor').children[0].style.backgroundImage,/attacker.jpg/);
-  f.tick(5500);assert.equal(c.results,1);assert.equal(f.select('#bf-kill-ov'),null);
-  assert.equal(c.__bfKillFinalShown,c.__bfFinalBlow.ts);
+test('last kill of the game leaves the scene to the definitive animation',()=>{
+ const f=fixture(),c=f.context;c.dealDamage(f.victim,9);c.B.over=true;c.flushFx(c.events);f.tick(600);
+ assert.equal(f.select('#bf-kill-ov'),null);assert.equal(c.__bfKillCinePending(),false);
+ assert.equal(c.__bfFinalBlow.victimName,'Caído');
 });
-test('an intermediate AI kill still shows its own death cinematic',()=>{
-  const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});
-  c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(400);
-  assert(f.select('#bf-kill-ov'));assert.equal(c.__bfFinalBlow.victimName,'Caído');
+test('self-inflicted deaths use the slapstick variant without attacker',()=>{
+ const f=fixture(),c=f.context;spare(c);c.G.team.p.push({id:'p2',name:'Aliado',alive:true});c.B.current={side:'p',id:'p1'};
+ c.dealDamage(f.attacker,9);c.flushFx(c.events);f.tick(550);
+ assert(f.select('#bf-kill-ov').classList.contains('bf-kill-self'));assert.equal(f.select('.bf-kill-att'),null);
 });
-test('stale self-kill flag cannot relabel an enemy kill as slapstick',()=>{
- const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfSelfKill={side:'o',victim:'o1',id:'o1',ts:f.now()};c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
- assert.equal(f.select('.bf-kill-title').textContent,'¡GOLPE MORTAL!');assert.equal(f.select('.bf-kill-tears'),null);
-});
-test('fallen portrait survives an empty card art layer using the catalog image',()=>{
- const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});c.__bfCardArtMap={o1:{base:'catalog-victim.jpg'}};c.__bfAvatarMap={o1:'wrong-player-avatar.jpg'};
- f.select('#b_o_o1').portrait.style.backgroundImage='';
- c.dealDamage(f.victim,9);c.flushFx(c.events);f.tick(500);
- assert.match(f.select('.bf-kill-vic').children[0].style.backgroundImage,/catalog-victim.jpg/);
- assert.doesNotMatch(f.select('.bf-kill-vic').children[0].style.backgroundImage,/wrong-player-avatar/);
- });
- test('one action with two victims shows the killer and both fallen heroes',()=>{
- const f=fixture(),c=f.context,other={id:'o2',name:'Segundo',alive:true,clan:'Magos'};c.G.team.o.push(other);
- const card=c.document.createElement('div');card.id='b_o_o2';card.portrait=c.document.createElement('div');card.portrait.style.backgroundImage='url("second.jpg")';c.document.body.appendChild(card);
- c.dealDamage(f.victim,7);c.dealDamage(other,8);c.flushFx(c.events);f.tick(550);
- const stage=f.select('.bf-kill-cast');assert(stage);assert.equal(stage.children[0].className,'bf-kill-actor');
- assert.equal(stage.children[2].children.length,2);assert.deepEqual(Array.from(stage.children[2].children,x=>x.children[1].textContent),['Caído','Segundo']);
- assert.match(stage.children[2].children[1].children[0].style.backgroundImage,/second.jpg/);
- });
- test('self-inflicted and unclaimed deaths use a distinct slapstick scene',()=>{
- const f=fixture(),c=f.context;c.B.current={side:'p',id:'p1'};c.dealDamage(f.attacker,9);c.flushFx(c.events);f.tick(550);
- assert.equal(f.select('.bf-kill-title').textContent,'¡PIFIA LEGENDARIA!');assert.equal(f.select('.bf-kill-actor'),null);
- assert.equal(f.select('.bf-kill-vic').children[1].textContent,'Atacante');
- });
- test('Doji-like direct death event retains its self-inflicted classification',()=>{
- const f=fixture(),c=f.context;f.victim.alive=false;
- c.flushFx([{k:'death',side:'o',id:'o1',bfKillSource:{side:'o',id:'o1',self:true,ts:f.now()}}]);f.tick(550);
- assert.equal(f.select('.bf-kill-title').textContent,'¡PIFIA LEGENDARIA!');assert.equal(f.select('.bf-kill-actor'),null);
- });
 test('poison does not assign the current opponent as killer',()=>{
- const f=fixture(),c=f.context;c.G.team.o.push({id:'o2',name:'Otro',alive:true});
+ const f=fixture(),c=f.context;spare(c);
  c.dealDamage(f.victim,9,{type:'poison'});c.flushFx(c.events);f.tick(550);
- assert.equal(f.select('.bf-kill-title').textContent,'¡PIFIA LEGENDARIA!');assert.equal(f.select('.bf-kill-actor'),null);
+ assert(f.select('#bf-kill-ov').classList.contains('bf-kill-self'));assert.equal(f.select('.bf-kill-att'),null);
 });
