@@ -363,6 +363,12 @@ export const AVATAR_PATCH = `
   function injectResultAvatars() {
     var rs = document.getElementById('s-result');
     if (!rs || !rs.classList.contains('active')) return;
+    // En misiones solo se deja el botón estándar de volver: sin avatares antiguos.
+    if (typeof G !== 'undefined' && G && G.bfMission) {
+      var oldAv = rs.querySelector('.bf-av-result');
+      if (oldAv && oldAv.parentNode) oldAv.parentNode.remove();
+      return;
+    }
     var myAv = ensureMyAvatar();
     if (!myAv && !window.bfOppAvatar) return;
     // Si ya están inyectados, solo actualiza el src.

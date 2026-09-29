@@ -46,6 +46,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     window.bfOpenMissions(true);
   }
   window.bfMissionReplay=function(){
+    return; // Revancha automática eliminada: solo queda el botón "Volver a las Misiones".
     if(!activeRun||!activeRun.modality||!document.querySelector('#s-result.active'))return;
     if(typeof NET==='undefined'||!NET.conn||!NET.conn.open)return;
     var rid=activeRun.run_id;
@@ -76,7 +77,7 @@ export const MISSION_ENGINE_PATCH = `<script>
     replayConn.on('data',function(msg){
       if(!msg||!activeRun||!activeRun.modality||msg.run_id!==activeRun.run_id)return;
       if(msg.t==='bfMissionReplayRequest'&&NET.role==='host')window.bfMissionReplay();
-      if(msg.t==='bfMissionReplayStart'&&NET.role==='client')replayNow();
+
     });
   },350);
   window.bfSetupMissionMp=function(){

@@ -48,6 +48,29 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
 
   useEffect(() => { openRef.current = open; }, [open]);
 
+  // Se coloca pegado al botón de animaciones del juego (arriba a la izquierda),
+  // sin solaparlo; si no está visible, queda en la esquina superior izquierda.
+  const [anchor, setAnchor] = useState({ left: 10, top: 10, height: 28 });
+  useEffect(() => {
+    const measure = () => {
+      let next = { left: 10, top: 10, height: 28 };
+      try {
+        const frame = document.querySelector('iframe');
+        const btn = frame?.contentDocument?.getElementById('bf-cine-toggle');
+        if (btn && btn.offsetParent !== null) {
+          const fr = frame.getBoundingClientRect();
+          const r = btn.getBoundingClientRect();
+          const k = fr.width && frame.contentWindow?.innerWidth ? fr.width / frame.contentWindow.innerWidth : 1;
+          next = { left: Math.round(fr.left + r.right * k + 8), top: Math.round(fr.top + r.top * k), height: Math.max(24, Math.round(r.height * k)) };
+        }
+      } catch (e) {}
+      setAnchor((a) => (a.left === next.left && a.top === next.top && a.height === next.height ? a : next));
+    };
+    measure();
+    const t = setInterval(measure, 600);
+    return () => clearInterval(t);
+  }, []);
+
   // Escucha el estado multiplayer que envía el parche del iframe
   useEffect(() => {
     const onMessage = (e) => {
@@ -147,8 +170,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   // En móvil/tablet el juego se pinta escalado; el icono NO se escala con él
   // (quedaba diminuto): se muestra grande y a tamaño real de pantalla, sobre la
   // esquina inferior derecha (fuera de los retratos y de la mano de cartas).
-  const isMobile = mobScale < 0.95;
-  const iconSize = isMobile ? '64px' : '44px';
+
 
   const emojiMap = {};
   categories.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
@@ -162,12 +184,12 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
       {/* Icono plegable (borde derecho, no se solapa con retratos arriba ni mano abajo) */}
       {!open && (
         <div
-          className="fixed z-40"
+          className="fixed"
           style={{
-            // Esquina inferior DERECHA en todas las versiones (el botón de
-            // animaciones queda abajo a la izquierda / centrado en móvil).
-            right: isMobile ? '12px' : '16px',
-            bottom: isMobile ? '12px' : '16px',
+            // Arriba a la izquierda, justo al lado del botón de animaciones.
+            zIndex: 100500,
+            left: `${anchor.left}px`,
+            top: `${anchor.top}px`,
             transform: `translate(${iconDrag.offset.x}px, ${iconDrag.offset.y}px)`,
             touchAction: 'none',
           }}
@@ -176,27 +198,29 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
           {...iconDrag.dragHandlers}
           onClick={() => { if (!iconDrag.didDrag()) setOpen(true); }}
           aria-label="Abrir chat (arrastrable)"
-          className="relative flex items-center justify-center rounded-full backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+          className="relative flex items-center gap-1.5 rounded-full backdrop-blur-md transition-all hover:scale-105 active:scale-95 font-bold"
           style={{
-            width: iconSize,
-            height: iconSize,
-            background: 'radial-gradient(circle at 50% 30%, rgba(60,40,10,.95), rgba(14,10,22,.95))',
-            border: isMobile ? '3px solid rgba(255, 210, 74, 0.85)' : '2px solid rgba(255, 210, 74, 0.5)',
-            boxShadow: isMobile
-              ? '0 6px 22px rgba(0,0,0,0.6), 0 0 26px rgba(255,210,74,0.55)'
-              : '0 4px 16px rgba(0,0,0,0.5), 0 0 12px rgba(255,210,74,0.2)',
+            height: `${anchor.height}px`,
+            padding: '0 12px',
+            fontSize: '12px',
+            color: '#3a2600',
+            background: 'linear-gradient(180deg, rgba(255,226,122,.95), rgba(200,144,31,.95))',
+            border: '1px solid rgba(255,240,180,.8)',
+            boxShadow: '0 3px 12px rgba(0,0,0,0.55), 0 0 14px rgba(255,210,74,0.45)',
+            whiteSpace: 'nowrap',
           }}
         >
-          <MessageCircle size={isMobile ? 36 : 22} style={{ color: '#FFD24A' }} />
+          <MessageCircle size={16} style={{ color: '#3a2600' }} />
+          <span>Chat</span>
           {unread > 0 && (
             <span
               className="absolute flex items-center justify-center rounded-full font-bold"
               style={{
-                top: isMobile ? '-4px' : '-4px',
-                right: isMobile ? '-4px' : '-4px',
-                fontSize: isMobile ? '13px' : '10px',
-                minWidth: isMobile ? '24px' : '18px',
-                height: isMobile ? '24px' : '18px',
+                top: '-6px',
+                right: '-6px',
+                fontSize: '10px',
+                minWidth: '18px',
+                height: '18px',
                 background: '#e60b0b',
                 color: '#fff',
                 boxShadow: '0 0 8px rgba(230,11,11,0.8)',
@@ -212,10 +236,11 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
       {/* Panel desplegado */}
       {open && (
         <div
-          className="fixed z-50 flex flex-col"
+          className="fixed flex flex-col"
           style={{
-            right: '6px',
-            top: 'calc(50% - 200px)',
+            zIndex: 100501,
+            left: '8px',
+            top: `${anchor.top + anchor.height + 8}px`,
             width: 'min(300px, calc(100vw - 16px))',
             maxHeight: 'min(420px, calc(100vh - 24px))',
             background: 'rgba(14, 10, 22, 0.96)',

@@ -32,7 +32,7 @@ export const END_GAME_SYNC_PATCH = `
         if(typeof netSend === 'function' && !window.__bfEndSyncGot && (!G.bfMission || (typeof NET !== 'undefined' && NET.role === 'host'))){
           // pWin: victoria del anfitrión (lado 'p'), independiente de quién avisa.
           var pWin = G._result && typeof G._result.pWin === 'boolean' ? G._result.pWin : (youWin === (mySide() === 'p'));
-          netSend({ t: 'bfEndSync', pWin: pWin, bfMissionRun: G.bfMission && G.bfMission.run_id });
+          netSend({ t: 'bfEndSync', pWin: pWin, bfMissionRun: G.bfMission && G.bfMission.run_id, fb: window.__bfFinalBlow || null });
         }
       }catch(e){}
       return orig.apply(this, arguments);
@@ -45,6 +45,9 @@ export const END_GAME_SYNC_PATCH = `
   function handle(msg){
     if(msg && msg.t === 'bfEndSyncAck'){ if(msg.bfMissionRun) window.__bfEndSyncAcked = msg.bfMissionRun; return; }
     if(!msg || msg.t !== 'bfEndSync') return;
+    // El golpe mortal solo se calcula en el anfitrión: el invitado lo recibe aquí
+    // para mostrar la misma acción definitiva antes de la animación final.
+    if(msg.fb && msg.fb.actorName && !(typeof NET !== 'undefined' && NET.role === 'host')) window.__bfFinalBlow = msg.fb;
     // Reenvíos del anfitrión: si ya se aplicó este resultado, solo se confirma.
     if(msg.bfMissionRun && window.__bfEndSyncApplied === msg.bfMissionRun && typeof NET !== 'undefined' && NET.role === 'client' && resultShown() && G._result && G._result.pWin === !!msg.pWin){
       try{ NET.conn.send({t:'bfEndSyncAck',bfMissionRun:msg.bfMissionRun}); }catch(e){}
@@ -129,7 +132,7 @@ export const END_GAME_SYNC_PATCH = `
         if(sentRun !== G.bfMission.run_id){ sentRun = G.bfMission.run_id; sentCount = 0; }
         if(sentCount < 30 && Date.now() - lastSent > 1400){
           lastSent = Date.now(); sentCount++;
-          NET.conn.send({t:'bfEndSync',pWin:G._result.pWin,bfMissionRun:sentRun});
+          NET.conn.send({t:'bfEndSync',pWin:G._result.pWin,bfMissionRun:sentRun,fb:window.__bfFinalBlow||null});
         }
       }
     }catch(e){}
