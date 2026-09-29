@@ -19,6 +19,7 @@
 //  - resume:  un jugador reanuda una partida en curso
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { relayProtocol } from '../../shared/relayProtocol.ts';
+import { relayTokenOk, newRelayToken } from '../../shared/relayAuth.ts';
 
 const STALE_MS = 15000; // 15 s sin poll = desconectado
 const ROOM_TTL = 600000; // 10 min sin actividad = sala borrada
@@ -54,6 +55,14 @@ export default async function(req: Request): Promise<Response> {
 
     const state: any = room.state || {};
 
+    // Todas las acciones de partida exigen el token secreto del jugador; el
+    // lado (host/invitado) se deduce del token verificado, nunca se confía.
+    if (['poll', 'snap', 'send', 'leave', 'sendBatch'].includes(action)) {
+      if (!relayTokenOk(state, String(body.side || ''), body.token)) {
+        return Response.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+    }
+
     if (action === 'sendBatch' || (action === 'poll' && body.protocol === 2)) {
       return await relayProtocol(base44, room, body, now);
     }
@@ -63,6 +72,11 @@ export default async function(req: Request): Promise<Response> {
       if (state.password && String(body.password || '') !== state.password) {
         return Response.json({ error: 'Wrong password' }, { status: 403 });
       }
+      // Un asiento de invitado ya ocupado no se puede volver a tomar sin la contraseña.
+      if (state.guest_token && !(state.password && String(body.password || '') === state.password)) {
+        return Response.json({ error: 'Room full' }, { status: 409 });
+      }
+      const guestToken = newRelayToken();
       const guestNick = String(body.nick || '').slice(0, 28);
       const guestAvatar = String(body.avatar || '').slice(0, 600);
       const resumeNicks = [room.host_name || state.room_name || '', guestNick].filter(Boolean);
@@ -74,6 +88,7 @@ export default async function(req: Request): Promise<Response> {
           guest_name: guestNick,
           left_at: null,
           'state.guest_nick': guestNick,
+          'state.guest_token': guestToken,
           'state.guest_avatar': guestAvatar,
           'state.guest_last_seen': now,
           'state.guest_left_at': null,
@@ -90,6 +105,7 @@ export default async function(req: Request): Promise<Response> {
         msg_seq: state.msg_seq || 0,
         role: 'client',
         side: 'g',
+        token: guestToken,
       });
     }
 
@@ -183,8 +199,14 @@ export default async function(req: Request): Promise<Response> {
       if (state.password && String(body.password || '') !== state.password) {
         return Response.json({ error: 'Wrong password' }, { status: 403 });
       }
-      const side = String(body.side || 'g');
-      const setOps: any = { left_at: null };
+      const side = String(body.side || 'g') === 'p' ? 'p' : 'g';
+      // Reanudar exige el token del asiento o la contraseña de la sala.
+      const passOk = !!(state.password && String(body.password || '') === state.password);
+      if (!passOk && !relayTokenOk(state, side, body.token)) {
+        return Response.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+      const newToken = newRelayToken();
+      const setOps: any = { left_at: null, [side === 'p' ? 'state.relay_host_token' : 'state.guest_token']: newToken };
       if (side === 'p') {
         setOps['state.host_last_seen'] = now;
         setOps['state.host_left_at'] = null;
@@ -204,6 +226,7 @@ export default async function(req: Request): Promise<Response> {
         msg_seq: state.msg_seq || 0,
         role: side === 'p' ? 'host' : 'client',
         side,
+        token: newToken,
       });
     }
 
