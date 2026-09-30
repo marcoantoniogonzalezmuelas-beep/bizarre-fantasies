@@ -60,13 +60,26 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       return;
     }
     if(event.source!==window.parent)return;
-    if(event.data&&event.data.bfRelayRealtimeStatus)relayRealtime=event.data.bfRelayRealtimeStatus==='ready';
+    if(event.data&&event.data.bfRelayRealtimeStatus){var wasRealtime=relayRealtime;relayRealtime=event.data.bfRelayRealtimeStatus==='ready';if(wasRealtime&&!relayRealtime)wakePoll();}
     var presence=event.data&&event.data.bfRelayPresence;
     if(presence&&presence.side==='g'&&presence.connected)openHostConnection();
     var pushed=event.data&&event.data.bfRelayPush;
     if(pushed)receiveDeliveries(pushed.deliveries||[]);
   });
   window.bfRelayRequest = relayRequest;
+
+  // ---- Despertar el polling ----
+  // El siguiente poll se programa al FINAL de cada ciclo con la cadencia que
+  // tocaba entonces (5 s si el canal realtime estaba 'ready'). Si el canal cae
+  // o el dispositivo estuvo en segundo plano, ese temporizador dormía hasta 5 s
+  // (o congelado) y el turno parecía atascado. wakePoll() lo cancela y consulta
+  // ya; poll() ya protege contra peticiones solapadas (inFlight).
+  var wakePollFn = null;
+  function wakePoll() { if (wakePollFn) wakePollFn(); }
+  document.addEventListener('visibilitychange', function() { if (!document.hidden) wakePoll(); });
+  window.addEventListener('online', wakePoll);
+  window.addEventListener('pageshow', wakePoll);
+  window.addEventListener('focus', wakePoll);
 
   // ---- Reportar errores de conexión a la página padre (para el backoffice) ----
   var lastErrorReport = 0;
@@ -158,6 +171,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       on: function(ev, cb) { if (cbs[ev]) cbs[ev].push(cb); },
       close: function() { conn.open = false; outbox.close(); if (relayConn === conn) stopPolling(); cbs.close.forEach(function(cb) { try { cb(); } catch(e) {} }); },
       _dispatch: function(msg) {
+        if (window.bfCleanIncoming) window.bfCleanIncoming(msg);
         conn._bfEverReceivedData = true;
         conn._bfLastSeen = Date.now();
         if(side==='g'&&msg&&msg.bfMatchId){
@@ -168,7 +182,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
           }
           if(!window.__bfMatchId){window.__bfMatchId=msg.bfMatchId;window.__bfMatchRound=msg.bfMatchRound||0;}
         }
-        if(msg&&msg.bfMatchId&&window.__bfMatchId&&msg.bfMatchId!==window.__bfMatchId)return;
+        if(msg&&msg.bfMatchId&&window.__bfMatchId&&msg.bfMatchId!==window.__bfMatchId){window.__bfMatchDrops=(window.__bfMatchDrops||0)+1;if(window.__bfMatchDrops===3||window.__bfMatchDrops%50===0)reportRelayError('match_id_mismatch','dispatch','drops='+window.__bfMatchDrops+' side='+side+' t='+String(msg.t||''));return;}
+        window.__bfMatchDrops=0;
         if (side === 'p' && msg && msg.bfAuctionRound && typeof G !== 'undefined') {
           if (!document.querySelector('#s-recruit.active') || G.phaseResult || msg.bfAuctionRound !== String(G.aIndex) + ':' + String(G.subRound || 0)) {
             if (typeof netSync === 'function') { var active = document.querySelector('.screen.active'); if (active) netSync(active.id); }
@@ -195,7 +210,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   var otherLeftShown = false;
 
   var pollGeneration = 0;
-  function stopPolling() { pollGeneration++; clearTimeout(pollTimer); pollTimer = null; }
+  function stopPolling() { pollGeneration++; clearTimeout(pollTimer); pollTimer = null; wakePollFn = null; }
 
   function startPolling() {
     stopPolling();
@@ -245,6 +260,11 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         pollTimer = setTimeout(poll, delay);
       });
     }
+    wakePollFn = function() {
+      if (generation !== pollGeneration || inFlight) return;
+      clearTimeout(pollTimer); pollTimer = null;
+      poll();
+    };
     poll();
   }
 

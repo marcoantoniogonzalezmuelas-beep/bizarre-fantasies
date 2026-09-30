@@ -179,7 +179,7 @@ export const DEMO_FLOW_PATCH = `
     if(typeof origStartDemo==='function'){
       window.startDemo=function(){ var r=origStartDemo.apply(this,arguments); setTimeout(patchDemoModalText,50); setTimeout(patchDemoModalText,250); return r; };
     }
-    new MutationObserver(patchDemoModalText).observe(document.documentElement,{childList:true,subtree:true});
+    (window.bfDom?window.bfDom.on(patchDemoModalText):new MutationObserver(patchDemoModalText).observe(document.documentElement,{childList:true,subtree:true}));
   }
 
   // Mantén el nombre demoEquip apuntando al flujo nuevo (por si se invoca).
@@ -258,7 +258,7 @@ export const DEMO_FLOW_PATCH = `
     } else if(!isDemo && btn){ btn.remove(); }
   }
   setInterval(ensureDemoIntroBtn, 400);
-  new MutationObserver(ensureDemoIntroBtn).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(ensureDemoIntroBtn):new MutationObserver(ensureDemoIntroBtn).observe(document.documentElement,{childList:true,subtree:true}));
 
   // El padre avisa cuando la cinemática cerró/saltó desde "Aprender a jugar":
   // arrancamos la demo (subasta completa IA vs IA + combate).

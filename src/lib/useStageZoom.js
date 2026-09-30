@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { onViewportChange } from '@/lib/viewportEvents';
 
 // Escala un "escenario" de ancho/alto fijos (desktop) para que QUEPE ENTERO en
 // el viewport (contain), con letterboxing y centrado. El usuario puede pellizcar
@@ -61,8 +62,7 @@ export default function useStageZoom(stageWidth = 1200, stageHeight) {
       zoom.current = 1;
       apply();
     };
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', onResize);
+    const offViewport = onViewportChange(onResize);
 
     const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     const mid = (t) => ({ x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 });
@@ -101,14 +101,12 @@ export default function useStageZoom(stageWidth = 1200, stageHeight) {
     window.addEventListener('touchcancel', onEnd);
 
     return () => {
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('orientationchange', onResize);
+      offViewport();
       window.removeEventListener('touchstart', onStart);
       window.removeEventListener('touchmove', onMove);
       window.removeEventListener('touchend', onEnd);
       window.removeEventListener('touchcancel', onEnd);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fit]);
 
   return ref;

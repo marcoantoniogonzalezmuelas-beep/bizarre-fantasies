@@ -20,6 +20,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
 import { relayProtocol } from '../../shared/relayProtocol.ts';
 import { relayTokenOk, newRelayToken } from '../../shared/relayAuth.ts';
+import { cleanNick, cleanAvatarUrl } from '../../shared/sanitize.ts';
+import { checkRoomPassword } from '../../shared/joinGuard.ts';
 
 const STALE_MS = 15000; // 15 s sin poll = desconectado
 const ROOM_TTL = 600000; // 10 min sin actividad = sala borrada
@@ -69,16 +71,19 @@ export default async function(req: Request): Promise<Response> {
 
     // ---- JOIN: el invitado se une ----
     if (action === 'join') {
-      if (state.password && String(body.password || '') !== state.password) {
-        return Response.json({ error: 'Wrong password' }, { status: 403 });
+      // Contraseña con freno: tras 5 fallos la sala se bloquea un tiempo creciente.
+      const guard = checkRoomPassword(state, body.password, now);
+      if (guard.patch) await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: guard.patch });
+      if (!guard.allowed) {
+        return Response.json({ error: guard.reason === 'locked' ? 'Too many attempts' : 'Wrong password' }, { status: guard.reason === 'locked' ? 429 : 403 });
       }
       // Un asiento de invitado ya ocupado no se puede volver a tomar sin la contraseña.
-      if (state.guest_token && !(state.password && String(body.password || '') === state.password)) {
+      if (state.guest_token && !state.password) {
         return Response.json({ error: 'Room full' }, { status: 409 });
       }
       const guestToken = newRelayToken();
-      const guestNick = String(body.nick || '').slice(0, 28);
-      const guestAvatar = String(body.avatar || '').slice(0, 600);
+      const guestNick = cleanNick(body.nick);
+      const guestAvatar = cleanAvatarUrl(body.avatar);
       const resumeNicks = [room.host_name || state.room_name || '', guestNick].filter(Boolean);
 
       // Escritura atómica: solo los campos del invitado. No toca snap/msgs.
@@ -196,12 +201,14 @@ export default async function(req: Request): Promise<Response> {
 
     // ---- RESUME: un jugador reanuda una partida en curso ----
     if (action === 'resume') {
-      if (state.password && String(body.password || '') !== state.password) {
-        return Response.json({ error: 'Wrong password' }, { status: 403 });
+      const guard = checkRoomPassword(state, body.password, now);
+      if (guard.patch) await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: guard.patch });
+      if (!guard.allowed) {
+        return Response.json({ error: guard.reason === 'locked' ? 'Too many attempts' : 'Wrong password' }, { status: guard.reason === 'locked' ? 429 : 403 });
       }
       const side = String(body.side || 'g') === 'p' ? 'p' : 'g';
       // Reanudar exige el token del asiento o la contraseña de la sala.
-      const passOk = !!(state.password && String(body.password || '') === state.password);
+      const passOk = !!state.password;
       if (!passOk && !relayTokenOk(state, side, body.token)) {
         return Response.json({ error: 'Unauthorized' }, { status: 403 });
       }
@@ -213,7 +220,7 @@ export default async function(req: Request): Promise<Response> {
       } else {
         setOps['state.guest_last_seen'] = now;
         setOps['state.guest_left_at'] = null;
-        if (!state.guest_nick) setOps['state.guest_nick'] = String(body.nick || '').slice(0, 28);
+        if (!state.guest_nick) setOps['state.guest_nick'] = cleanNick(body.nick);
       }
       await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, {
         $set: setOps,

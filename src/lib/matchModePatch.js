@@ -78,7 +78,7 @@ export const MATCH_MODE_PATCH = `
       });
     });
   }
-  new MutationObserver(injectModePicker).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(injectModePicker):new MutationObserver(injectModePicker).observe(document.documentElement,{childList:true,subtree:true}));
   if(document.readyState!=='loading') injectModePicker(); else document.addEventListener('DOMContentLoaded', injectModePicker);
 
   // ---- 2) Segundo listener sobre NET.conn para mensajes propios ----

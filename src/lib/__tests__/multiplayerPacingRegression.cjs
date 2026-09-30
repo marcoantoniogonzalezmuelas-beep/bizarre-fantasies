@@ -39,4 +39,16 @@ test('realtime unavailable falls back immediately; ready sends keep acknowledgem
  receive({type:'ready',peers:['p','g']});const sending=channel.send(payload);receive({type:'batch_ack',batch_id:'b1'});assert.equal((await sending).ok,true);
  const lost=channel.send({...payload,batch_id:'b2'});f.tick(900);assert.equal(await lost,null);assert.equal(await channel.send({...payload,batch_id:'b3'}),null);
  receive({type:'ready',peers:['p','g']});const recovered=channel.send({...payload,batch_id:'b4'});receive({type:'batch_ack',batch_id:'b4'});assert.equal((await recovered).ok,true);channel.close();
+});test('online match adds NO extra delay between turns (same fast pace as solo)',()=>{
+ const f=fixture();f.load('mpTurnSequencePatch','MP_TURN_SEQUENCE_PATCH');f.c.__bfMatchId='match-1';let count=0;
+ f.c.bfStepWhenCalm(()=>count++);f.tick(250);assert.equal(count,1,'online turn passes in under 250ms when calm');
+ f.tick(1000);assert.equal(count,1);
+});
+test('a stuck logical flag can no longer block the turn forever (hard ceiling)',()=>{
+ const f=fixture();f.load('mpTurnSequencePatch','MP_TURN_SEQUENCE_PATCH');let count=0;
+ f.c.__bfIndicatorsBusy=()=>true;f.c.__bfKillCinePending=()=>true; // banderas colgadas para siempre
+ f.c.bfStepWhenCalm(()=>count++);
+ f.tick(19000);assert.equal(count,0,'legit long waits (captions + kill cinematic) are still respected');
+ f.tick(2000);assert.equal(count,1,'after the ceiling the turn advances instead of hanging');
+ f.tick(5000);assert.equal(count,1,'and only once');
 });

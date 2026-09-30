@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { onViewportChange } from '@/lib/viewportEvents';
 
 const UA = typeof navigator !== 'undefined' ? (navigator.userAgent || '') : '';
 const IS_TABLET = /iPad/i.test(UA) || (/Macintosh|Mac OS/i.test(UA) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1) || (/Android/i.test(UA) && !/Mobile/i.test(UA));
@@ -17,9 +18,7 @@ export default function useDesktopMode(designWidth = 1280) {
     if (!IS_MOBILE) return;
     const calc = () => setScale(Math.min(1, (document.documentElement.clientWidth || 360) / designWidth));
     calc();
-    window.addEventListener('resize', calc);
-    window.addEventListener('orientationchange', calc);
-    return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
+    return onViewportChange(calc);
   }, [designWidth]);
 
   return IS_MOBILE ? scale : 1;

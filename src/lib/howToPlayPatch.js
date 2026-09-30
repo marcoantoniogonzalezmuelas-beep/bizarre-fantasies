@@ -155,7 +155,7 @@ export const HOW_TO_PLAY_PATCH = `
     });
   }
   setInterval(renameTitle,300);
-  new MutationObserver(renameTitle).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(renameTitle):new MutationObserver(renameTitle).observe(document.documentElement,{childList:true,subtree:true}));
 })();
 </script>
 `;

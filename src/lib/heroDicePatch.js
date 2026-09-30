@@ -65,7 +65,10 @@ export const HERO_DICE_PATCH = `
     + '@keyframes bfHdSpark{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2)}}';
   st.textContent += ${JSON.stringify(HERO_DICE_PRESENTATION_CSS)};
   document.head.appendChild(st);
-  var ROLL_MS=2600, READ_MS=7000, EXIT_MS=550;
+  // Antes 2600 + 7000: más de 10 s por tirada, y el turno no avanza hasta que termina.
+  // 1600 + 4500 es el ritmo que documenta el test de regresión (resultado visible a
+  // los ~1,6 s y mantenido 4,5 s). Si se prefiere más lectura, ajustar aquí.
+  var ROLL_MS=1600, READ_MS=4500, EXIT_MS=550;
   var TOTAL_MS=ROLL_MS+READ_MS+EXIT_MS;
 
   var BIZARRE = ['\\u00a1EL DADO DECIDE!', 'EL AZAR BIZARRO HABLA', 'RUEDA EL HUESO M\\u00c1GICO', 'EL DESTINO TARTAMUDEA', 'CAOS EN 3, 2, 1\\u2026'];

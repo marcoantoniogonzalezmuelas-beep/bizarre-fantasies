@@ -4,6 +4,10 @@ import { EMOJI_CATEGORIES } from '@/lib/heroEmojis';
 import { MessageCircle, X, Send, Smile, GripHorizontal } from 'lucide-react';
 import useDragOffset from '@/hooks/useDragOffset';
 import { isChatMessageBlocked } from '@/lib/chatModeration';
+import { mergeChatMessage } from '@/lib/chatMessages';
+import { recordGame, isRejection } from '@/lib/gameRecordClient';
+import { getRelayToken } from '@/lib/relayTokens';
+import { t, getLang } from '@/lib/i18n';
 
 // Overlay de chat entre jugadores en partidas multiplayer. Se muestra como un
 // icono circular plegable en el borde derecho de la pantalla (que no se solapa
@@ -52,7 +56,9 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   // sin solaparlo; si no está visible, queda en la esquina superior izquierda.
   const [anchor, setAnchor] = useState({ left: 10, top: 10, height: 28 });
   useEffect(() => {
+    if (!status?.connOpen) return undefined;
     const measure = () => {
+      if (document.hidden) return;
       let next = { left: 10, top: 10, height: 28 };
       try {
         const frame = document.querySelector('iframe');
@@ -67,9 +73,9 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
       setAnchor((a) => (a.left === next.left && a.top === next.top && a.height === next.height ? a : next));
     };
     measure();
-    const t = setInterval(measure, 600);
-    return () => clearInterval(t);
-  }, []);
+    const timer = setInterval(measure, 1000);
+    return () => clearInterval(timer);
+  }, [status?.connOpen]);
 
   // Escucha el estado multiplayer que envía el parche del iframe
   useEffect(() => {
@@ -92,23 +98,14 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
     }
     const roomCode = status.roomCode;
     base44.entities.ChatMessage.filter({ room_code: roomCode }, 'created_date', 100)
-      .then((msgs) => setMessages(msgs || []))
+      .then((msgs) => setMessages((msgs || []).slice(-200)))
       .catch(() => {});
     const unsub = base44.entities.ChatMessage.subscribe((event) => {
       if (!event.data || event.data.room_code !== roomCode) return;
       if (event.type === 'delete') {
         setMessages((prev) => prev.filter((m) => m.id !== event.data.id));
       } else {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === event.data.id)) {
-            return prev.map((m) => (m.id === event.data.id ? event.data : m));
-          }
-          return [...prev, event.data].sort((a, b) => {
-            const ta = new Date(a.created_date).getTime();
-            const tb = new Date(b.created_date).getTime();
-            return ta - tb;
-          });
-        });
+        setMessages((prev) => mergeChatMessage(prev, event.data));
         if (!openRef.current && event.data.sender_nick !== myNickRef.current) {
           setUnread((u) => u + 1);
         }
@@ -118,7 +115,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
     return () => { if (unsubRef.current) { try { unsubRef.current(); } catch (e) {} unsubRef.current = null; } };
   }, [status?.roomCode, status?.connOpen]);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(() => { if (open) messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
   useEffect(() => { if (open) setUnread(0); }, [open]);
 
   // Al abrir el chat siempre se ve el final de la conversación (último mensaje).
@@ -136,23 +133,40 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
     if (!trimmed && !emojiId) return;
     if (!status?.roomCode) return;
     if (trimmed && isChatMessageBlocked(trimmed)) {
-      setModerationError('Mensaje no permitido: evita insultos, contenido sexual y palabras ofensivas.');
+      setModerationError(t('Mensaje no permitido: evita insultos, contenido sexual y palabras ofensivas.'));
       return;
     }
     setModerationError('');
     setSending(true);
     try {
-      const created = await base44.entities.ChatMessage.create({
-        room_code: status.roomCode,
-        sender_nick: status.playerNick || 'Jugador',
-        sender_is_host: !!status.isHost,
-        text: trimmed,
-        emoji_id: emojiId || '',
-      });
-      setMessages((prev) => prev.some((m) => m.id === created.id) ? prev : [...prev, created]);
+      let created;
+      try {
+        // El servidor decide quién habla (por el token de la sala o de la Habitación
+        // Bizarra) y aplica la moderación: el nick que envíe el cliente no se usa.
+        const side = status.isHost ? 'p' : 'g';
+        const res = await recordGame('chat', {
+          room_code: status.roomCode, side, token: getRelayToken(status.roomCode, side),
+          session_token: status.sessionToken || '', text: trimmed, emoji_id: emojiId || '',
+        });
+        created = res.message;
+      } catch (err) {
+        if (err.code === 'blocked') { setModerationError(t('Mensaje no permitido: evita insultos, contenido sexual y palabras ofensivas.')); return; }
+        if (err.code === 'rate_limited') { setModerationError(t('Vas muy rápido. Espera un momento.')); return; }
+        if (isRejection(err)) throw err;
+        // Reserva (función no disponible): escritura directa antigua.
+        created = await base44.entities.ChatMessage.create({
+          room_code: status.roomCode,
+          sender_nick: status.playerNick || 'Jugador',
+          sender_is_host: !!status.isHost,
+          text: trimmed,
+          emoji_id: emojiId || '',
+        });
+      }
+      setMessages((prev) => (prev.some((m) => m.id === created.id) ? prev : mergeChatMessage(prev, created)));
       setInput('');
     } catch (e) {
-      // noop
+      // Antes fallaba en silencio: el jugador no sabía si el mensaje salió.
+      setModerationError(t('No se pudo enviar el mensaje. Inténtalo de nuevo.'));
     } finally {
       setSending(false);
     }
@@ -176,7 +190,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
   categories.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
 
   const fmtTime = (d) => {
-    try { return new Date(d).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
+    try { return new Date(d).toLocaleTimeString(getLang() === 'en' ? 'en-US' : 'es-ES', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; }
   };
 
   return (
@@ -197,7 +211,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
         <button
           {...iconDrag.dragHandlers}
           onClick={() => { if (!iconDrag.didDrag()) setOpen(true); }}
-          aria-label="Abrir chat (arrastrable)"
+          aria-label={t('Abrir chat (arrastrable)')}
           className="relative flex items-center gap-1.5 rounded-full backdrop-blur-md transition-all hover:scale-105 active:scale-95 font-bold"
           style={{
             height: `${anchor.height}px`,
@@ -259,14 +273,14 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
           >
             <div className="flex items-center gap-2">
               <GripHorizontal size={14} style={{ color: '#ffe49a', opacity: 0.6 }} />
-              <span className="font-heading text-sm font-bold" style={{ color: '#FFD24A' }}>Chat de sala</span>
+              <span className="font-heading text-sm font-bold" style={{ color: '#FFD24A' }}>{t('Chat de sala')}</span>
               <span className="text-[10px] opacity-50" style={{ color: '#ffe49a' }}>{status.roomCode}</span>
             </div>
             <button
               onClick={() => setOpen(false)}
               onPointerDown={(e) => e.stopPropagation()}
               className="rounded-full p-1 transition-colors hover:bg-white/10"
-              aria-label="Cerrar chat"
+              aria-label={t('Cerrar chat')}
             >
               <X size={16} style={{ color: '#ffe49a' }} />
             </button>
@@ -285,7 +299,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
               return (
                 <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
                   <span className="text-[10px] opacity-50 mb-0.5 px-1" style={{ color: '#ffe49a' }}>
-                    {mine ? 'Tú' : m.sender_nick || 'Rival'} · {fmtTime(m.created_date)}
+                    {mine ? t('Tú') : m.sender_nick || t('Rival')} · {fmtTime(m.created_date)}
                   </span>
                   <div
                     className={`max-w-[85%] rounded-lg px-2.5 py-1.5 text-sm ${mine ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
@@ -368,7 +382,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
               value={input}
               onChange={(e) => { setInput(e.target.value); if (moderationError) setModerationError(''); }}
               onKeyDown={onKey}
-              placeholder="Escribe un mensaje…"
+              placeholder={t('Escribe un mensaje…')}
               maxLength={200}
               className="flex-1 rounded-lg px-2.5 py-1.5 text-sm outline-none"
               style={{
@@ -381,7 +395,7 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
               onClick={() => send(input, '')}
               disabled={sending || (!input.trim())}
               className="rounded-full p-1.5 transition-all hover:scale-110 disabled:opacity-30 disabled:scale-100"
-              aria-label="Enviar"
+              aria-label={t('Enviar')}
               style={{ background: 'rgba(255,210,74,0.2)' }}
             >
               <Send size={16} style={{ color: '#FFD24A' }} />

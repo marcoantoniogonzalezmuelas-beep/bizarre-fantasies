@@ -101,7 +101,7 @@ export function buildQuitContactPatch(texts) {
     if(q) placeNextToBtn(q.querySelector('.mb')||q.querySelector('.bf-confirm-box'));
   }
   function whenRoot(){
-    new MutationObserver(markQuitModal).observe(document.documentElement,{childList:true,subtree:true});
+    (window.bfDom?window.bfDom.on(markQuitModal):new MutationObserver(markQuitModal).observe(document.documentElement,{childList:true,subtree:true}));
     markQuitModal();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',whenRoot);
@@ -183,7 +183,7 @@ export function buildQuitContactPatch(texts) {
   function ensureHomeHit(){
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', patchHomeHit); }
     else patchHomeHit();
-    new MutationObserver(function(){ var n=Date.now(); if(n-(patchHomeHit._t||0)<400)return; patchHomeHit._t=n; patchHomeHit(); }).observe(document.documentElement, { childList:true, subtree:true });
+    (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ var n=Date.now(); if(n-(patchHomeHit._t||0)<400)return; patchHomeHit._t=n; patchHomeHit(); });
   }
   ensureHomeHit();
 
@@ -208,7 +208,7 @@ export function buildQuitContactPatch(texts) {
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inject);
   else inject();
-  new MutationObserver(inject).observe(document.documentElement, { childList:true, subtree:true });
+  (window.bfDom?window.bfDom.on(inject):new MutationObserver(inject).observe(document.documentElement,{childList:true,subtree:true}));
 })();
 </script>
 `;

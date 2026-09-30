@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { cleanNick, cleanAvatarUrl } from '../../shared/sanitize.ts';
+import { isJoinLocked } from '../../shared/joinGuard.ts';
 
 // Throttle de las limpiezas de BD, compartido entre peticiones del mismo
 // isolate: cada cliente del lobby refresca cada ~8s y cada visitante de la
@@ -97,8 +99,8 @@ Deno.serve(async (req) => {
 
     if (action === 'bizarre_join') {
       await cleanupBizarre();
-      const nick = String(body.nick || '').slice(0, 28).trim();
-      const avatar = String(body.avatar || '').slice(0, 600);
+      const nick = cleanNick(body.nick);
+      const avatar = cleanAvatarUrl(body.avatar);
       if (!nick) return Response.json({ error: 'Nick required' }, { status: 400 });
       // Capacidad máxima: 20 visitantes (10 partidas simultáneas). Si la
       // habitación está llena, bloquea el acceso salvo que el nick ya esté
@@ -338,7 +340,7 @@ Deno.serve(async (req) => {
     const ownsRoom = existing?.state?.owner_token === token;
     const resumeToken = String(body.resume_token || '').slice(0, 40);
     const hasResumeToken = !!(resumeToken && existing?.state?.resume_token && resumeToken === existing.state.resume_token);
-    const passMatch = !!(existing?.state?.password && String(body.password || '') === existing.state.password);
+    const passMatch = !!(existing?.state?.password && !isJoinLocked(existing.state, Date.now()) && String(body.password || '') === existing.state.password);
     const canModify = ownsRoom || hasResumeToken || passMatch;
     const isStale = existing && Date.parse(existing.updated_date || existing.created_date || 0) < cutoff;
 
@@ -346,9 +348,9 @@ Deno.serve(async (req) => {
       const data = {
         room_code: code,
         status: 'waiting',
-        host_name: String(body.name || code).slice(0, 28),
+        host_name: cleanNick(body.name || code),
         left_at: null,
-        state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token, password: String(body.pass || '').slice(0, 40), host_avatar: String(body.avatar || '').slice(0, 600) },
+        state: { room_name: cleanNick(body.name || code), has_pass: body.hasPass === true, owner_token: token, password: String(body.pass || '').slice(0, 40), host_avatar: cleanAvatarUrl(body.avatar) },
       };
       if (existing && !ownsRoom && !isStale) return Response.json({ error: 'Room code already active' }, { status: 409 });
       const room = existing ? await base44.asServiceRole.entities.GameRoom.update(existing.id, data) : await base44.asServiceRole.entities.GameRoom.create(data);
@@ -359,14 +361,14 @@ Deno.serve(async (req) => {
     // La sala deja de ser visible en la lista pública: nadie puede unirse salvo
     // los dos jugadores originales, que usan su token de reanudación.
     if (action === 'register_playing') {
-      const nicks = Array.isArray(body.nicks) ? body.nicks.slice(0, 2).map((n: any) => String(n || '').slice(0, 28)) : [];
+      const nicks = Array.isArray(body.nicks) ? body.nicks.slice(0, 2).map((n: any) => cleanNick(n)) : [];
       const data = {
         room_code: code,
         status: 'playing' as const,
-        host_name: nicks[0] || String(body.name || code).slice(0, 28),
+        host_name: nicks[0] || cleanNick(body.name || code),
         guest_name: nicks[1] || '',
         left_at: null,
-        state: { room_name: String(body.name || code).slice(0, 28), has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks, resume_token: String(body.resume_token || '').slice(0, 40), password: String(body.pass || '').slice(0, 40) },
+        state: { room_name: cleanNick(body.name || code), has_pass: body.hasPass === true, owner_token: token, resume_nicks: nicks, resume_token: String(body.resume_token || '').slice(0, 40), password: String(body.pass || '').slice(0, 40) },
       };
       if (existing && !ownsRoom && !isStale) return Response.json({ error: 'Room code already active' }, { status: 409 });
       // Never replace state here: relay delivery, snapshots and ACKs may be

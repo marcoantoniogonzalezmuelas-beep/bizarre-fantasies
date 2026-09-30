@@ -104,7 +104,7 @@ export const HAND_DIRECT_PLAY_PATCH = `
     });
   }
 
-  new MutationObserver(function(){ requestAnimationFrame(process); }).observe(document.documentElement,{childList:true,subtree:true});
+  (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ requestAnimationFrame(process); });
   setInterval(process,600);
 })();
 </script>

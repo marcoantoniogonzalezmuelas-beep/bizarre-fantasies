@@ -57,7 +57,7 @@ export const NICK_MEMORY_PATCH = `
 
   prefill();
   hookAll();
-  new MutationObserver(prefill).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(prefill):new MutationObserver(prefill).observe(document.documentElement,{childList:true,subtree:true}));
   var tries=0,iv=setInterval(function(){hookAll();if(tries++>100)clearInterval(iv);},200);
 })();
 </script>

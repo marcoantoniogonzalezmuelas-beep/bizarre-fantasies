@@ -143,6 +143,17 @@ const UI_EN = {
   'Héroes más renacidos': 'Most Reborn Heroes',
   'renacidos': 'rebirths',
   'Corona de campeón': 'Champion crown',
+  // Chat de sala (antes en castellano fijo aunque el idioma fuese inglés)
+  'Chat de sala': 'Room chat',
+  'Cerrar chat': 'Close chat',
+  'Abrir chat (arrastrable)': 'Open chat (draggable)',
+  'Tú': 'You',
+  'Rival': 'Opponent',
+  'Escribe un mensaje…': 'Type a message…',
+  'Enviar': 'Send',
+  'Mensaje no permitido: evita insultos, contenido sexual y palabras ofensivas.': 'Message not allowed: avoid insults, sexual content and offensive words.',
+  'No se pudo enviar el mensaje. Inténtalo de nuevo.': 'Could not send the message. Please try again.',
+  'Vas muy rápido. Espera un momento.': 'You are going too fast. Wait a moment.',
 };
 
 export const t = (es) => (getLang() === 'en' ? (UI_EN[es] ?? es) : es);

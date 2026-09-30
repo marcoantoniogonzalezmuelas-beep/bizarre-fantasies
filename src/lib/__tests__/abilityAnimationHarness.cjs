@@ -7,7 +7,7 @@ module.exports=function(mode='ai'){
  let clock=10000,serial=0,sid='s-battle',blocked=false;const timers=new Map(),listeners={},overlays=[],mounted=new Map();
  const schedule=(fn,ms,repeat=0)=>{const id=++serial;timers.set(id,{fn,at:clock+ms,repeat});return id;};
  const tick=ms=>{const end=clock+ms;let budget=20000;while(budget--){let next;for(const t of timers)if(t[1].at<=end&&(!next||t[1].at<next[1].at))next=t;if(!next)break;const[id,t]=next;clock=t.at;if(t.repeat)t.at+=t.repeat;else timers.delete(id);t.fn();}clock=end;if(budget<=0)throw Error('Timer loop');};
- const node=()=>({style:{setProperty(){}},classList:{add(){},remove(){}},querySelector:()=>({classList:{remove(){}},src:''})});
+ const node=()=>({style:{setProperty(){}},classList:{add(){},remove(){}},querySelector:()=>({classList:{remove(){}},src:'',style:{}})});
  const body={appendChild(el){el.parentNode=body;mounted.set(el.id,el);if(el.id==='bf-abil-anim')overlays.push(el.innerHTML);},removeChild(el){mounted.delete(el.id);el.parentNode=null;}};
  const c={Date:{now:()=>clock},Math,console,parent:{postMessage(){}},G:{mode,team:{p:[],o:[]}},NET:{role:mode==='host'||mode==='client'?mode:'local'},
   document:{head:{appendChild(){}},body,createElement:node,getElementById:id=>id==='bf-fx-layer'?{children:blocked?[{}]:[]}:null,

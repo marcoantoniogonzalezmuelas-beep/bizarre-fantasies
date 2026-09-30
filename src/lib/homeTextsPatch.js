@@ -31,7 +31,7 @@ export function buildHomeTextsPatch(texts) {
     if(onTitle&&g&&g.innerHTML!==GUIDE){ g.innerHTML=GUIDE; }
   }
   apply();
-  new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(apply):new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true}));
 })();
 </script>
 `;

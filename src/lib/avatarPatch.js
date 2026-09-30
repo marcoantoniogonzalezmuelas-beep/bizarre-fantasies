@@ -120,7 +120,7 @@ export const AVATAR_PATCH = `
         closeModal();
         document.querySelectorAll('.bf-av-pick').forEach(function(b){
           var a = window.bfMyAvatar;
-          if (a && a.url) { b.innerHTML = '<img src="' + a.url + '">'; b.classList.remove('bf-av-empty'); }
+          if (a && a.url) { b.innerHTML = '<img src="' + (window.bfAvUrl?window.bfAvUrl(a.url):'') + '">'; b.classList.remove('bf-av-empty'); }
           else { b.innerHTML = '<span class="bf-av-ph">?</span>'; b.classList.add('bf-av-empty'); }
         });
         injectScoreAvatars();
@@ -202,7 +202,7 @@ export const AVATAR_PATCH = `
     if (!e.data) return;
     if (Array.isArray(e.data.bfAvatarCatalog)) window.__bfAvatarCatalog = e.data.bfAvatarCatalog;
     if (Array.isArray(e.data.bfAvatarMap)) window.__bfHeroAvatars = e.data.bfAvatarMap;
-    if (e.data.bfPlayerAvatars && typeof e.data.bfPlayerAvatars === 'object') {
+    if (e.data.bfPlayerAvatars && typeof e.data.bfPlayerAvatars === 'object' && e.source === window.parent) {
       window.__bfPlayerAvatars = e.data.bfPlayerAvatars;
       window.__bfPlayerAvatarsLoaded = true;
       // Re-comprueba los nicks ya escritos para auto-rellenar el avatar.
@@ -249,7 +249,7 @@ export const AVATAR_PATCH = `
       saveAv({ url: avUrl, name: '' }, true);
       document.querySelectorAll('.bf-av-pick').forEach(function(b){
         var av = window.bfMyAvatar;
-        if (av && av.url) { b.innerHTML = '<img src="' + av.url + '">'; b.classList.remove('bf-av-empty'); }
+        if (av && av.url) { b.innerHTML = '<img src="' + (window.bfAvUrl?window.bfAvUrl(av.url):'') + '">'; b.classList.remove('bf-av-empty'); }
         else { b.innerHTML = '<span class="bf-av-ph">?</span>'; b.classList.add('bf-av-empty'); }
       });
       injectScoreAvatars();
@@ -277,7 +277,7 @@ export const AVATAR_PATCH = `
       btn.className = 'bf-av-pick';
       function refresh(){
         var av = window.bfMyAvatar;
-        if (av && av.url) { btn.innerHTML = '<img src="' + av.url + '">'; btn.classList.remove('bf-av-empty'); }
+        if (av && av.url) { btn.innerHTML = '<img src="' + (window.bfAvUrl?window.bfAvUrl(av.url):'') + '">'; btn.classList.remove('bf-av-empty'); }
         else { btn.innerHTML = '<span class="bf-av-ph">?</span>'; btn.classList.add('bf-av-empty'); }
       }
       refresh();
@@ -289,7 +289,7 @@ export const AVATAR_PATCH = `
       else btn.classList.remove('bf-av-empty');
     });
   }
-  new MutationObserver(renderPickers).observe(document.documentElement, { childList:true, subtree:true });
+  (window.bfDom?window.bfDom.on(renderPickers):new MutationObserver(renderPickers).observe(document.documentElement,{childList:true,subtree:true}));
   setInterval(renderPickers, 600);
 
   // ---- Avatar OBLIGATORIO: bloquea startVsAI, localStart, hostCreate,

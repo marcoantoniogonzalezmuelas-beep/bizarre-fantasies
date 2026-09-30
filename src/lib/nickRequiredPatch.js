@@ -112,7 +112,7 @@ export const NICK_REQUIRED_PATCH = `
     });
   }
   clearGeneric();
-  new MutationObserver(clearGeneric).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(clearGeneric):new MutationObserver(clearGeneric).observe(document.documentElement,{childList:true,subtree:true}));
 
   hookAll();
   // Reintenta por si otras envolturas (reconexión, lobby) redefinen funciones.

@@ -6,6 +6,8 @@ export default class GameRelayRoom extends Actor {
   members = new Map();
   relay = { seen: [], p: [], g: [] };
   serial = Promise.resolve();
+  persisting = null;
+  dirty = false;
 
   async handleStart() {
     const saved = await this.storage.get('members');
@@ -20,6 +22,15 @@ export default class GameRelayRoom extends Actor {
   }
 
   handleMessage(conn, msg) {
+    // Las jugadas (send_batch) y sus confirmaciones NO pasan por la cadena
+    // secuencial ni esperan al disco: se aplican en memoria, se entregan al rival
+    // y se confirman al instante. Antes el broadcast iba DESPUÉS de reescribir
+    // toda la cola en el almacenamiento, y además bloqueaba el envío siguiente:
+    // ese era el retraso al pasar el turno. La copia duradera sigue existiendo
+    // (aquí, agrupada, y en gameRelay vía relayBackupQueue).
+    if (msg && typeof msg === 'object' && (msg.type === 'send_batch' || msg.type === 'ack_deliveries')) {
+      return this.applyFast(conn, msg);
+    }
     const operation = this.serial.then(() => this.processMessage(conn, msg));
     this.serial = operation.catch(() => {});
     return operation;
@@ -37,6 +48,48 @@ export default class GameRelayRoom extends Actor {
       const valid = side === 'p' ? [state.owner_token, state.relay_host_token] : [state.guest_token];
       return valid.some(v => typeof v === 'string' && v.length > 0 && v === t);
     } catch (e) { return false; }
+  }
+
+  // Guarda SIEMPRE el último estado en memoria; si llegan cambios mientras se
+  // escribe, se hace una escritura más (no una por mensaje).
+  persistSoon() {
+    this.dirty = true;
+    if (this.persisting) return this.persisting;
+    this.persisting = (async () => {
+      try {
+        while (this.dirty) { this.dirty = false; await this.storage.put('relay', this.relay); }
+      } catch (e) { /* el respaldo duradero de gameRelay cubre este caso */ }
+      finally { this.persisting = null; }
+    })();
+    return this.persisting;
+  }
+
+  applyFast(conn, msg) {
+    const member = this.members.get(conn.id);
+    if (!member) return;
+    if (msg.type === 'ack_deliveries') {
+      const ids = new Set(Array.isArray(msg.ids) ? msg.ids.filter(id => typeof id === 'string').slice(0, 100) : []);
+      const other = member.side === 'p' ? 'g' : 'p';
+      this.relay = { ...this.relay, [other]: this.relay[other].filter(m => !ids.has(m.id)) };
+      return this.persistSoon();
+    }
+    const batchId = String(msg.batch_id || '');
+    const messages = msg.messages;
+    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(batchId) || !Array.isArray(messages) || !messages.length || messages.length > 50) return;
+    if (messages.some((item) => !item || typeof item !== 'object' || typeof item.t !== 'string')) return;
+    if (member.side !== 'p' && messages.some((item) => item.t === 'snap' || item.t === 'bfFullSync')) return;
+    const key = member.side + ':' + batchId;
+    const deliveries = messages.map((data, index) => ({ id: batchId + '_' + index, data }));
+    if (this.relay.seen.includes(key)) {
+      this.broadcast({ type: 'deliveries', side: member.side, deliveries });
+      conn.send({ type: 'batch_ack', batch_id: batchId });
+      return;
+    }
+    if (this.relay[member.side].length + deliveries.length > 2000) { conn.send({ type: 'backpressure' }); return; }
+    this.relay = { ...this.relay, [member.side]: [...this.relay[member.side], ...deliveries], seen: [...this.relay.seen, key].slice(-1024) };
+    this.broadcast({ type: 'deliveries', side: member.side, deliveries });
+    conn.send({ type: 'batch_ack', batch_id: batchId });
+    return this.persistSoon();
   }
 
   replay(conn, side) {
@@ -60,30 +113,7 @@ export default class GameRelayRoom extends Actor {
     const member = this.members.get(conn.id);
     if (!member) return;
     if (msg.type === 'sync') { this.replay(conn, member.side); return; }
-    if (msg.type === 'ack_deliveries') {
-      const ids = new Set(Array.isArray(msg.ids) ? msg.ids.filter(id => typeof id === 'string').slice(0, 100) : []);
-      const other = member.side === 'p' ? 'g' : 'p';
-      const next = { ...this.relay, [other]: this.relay[other].filter(m => !ids.has(m.id)) };
-      await this.storage.put('relay', next);
-      this.relay = next;
-      return;
-    }
-    if (msg.type !== 'send_batch') return;
-    const batchId = String(msg.batch_id || '');
-    const messages = msg.messages;
-    if (!/^[a-zA-Z0-9_-]{1,100}$/.test(batchId) || !Array.isArray(messages) || !messages.length || messages.length > 50) return;
-    if (messages.some((item) => !item || typeof item !== 'object' || typeof item.t !== 'string')) return;
-    if (member.side !== 'p' && messages.some((item) => item.t === 'snap' || item.t === 'bfFullSync')) return;
-    const key = member.side + ':' + batchId;
-    const deliveries = messages.map((data, index) => ({ id: batchId + '_' + index, data }));
-    if (!this.relay.seen.includes(key)) {
-      if (this.relay[member.side].length + deliveries.length > 2000) { conn.send({ type: 'backpressure' }); return; }
-      const next = { ...this.relay, [member.side]: [...this.relay[member.side], ...deliveries], seen: [...this.relay.seen, key].slice(-1024) };
-      await this.storage.put('relay', next);
-      this.relay = next;
-    }
-    this.broadcast({ type: 'deliveries', side: member.side, deliveries });
-    conn.send({ type: 'batch_ack', batch_id: batchId });
+    // send_batch y ack_deliveries se atienden en applyFast() (sin esperar al disco).
   }
 
   async handleClose(conn) {

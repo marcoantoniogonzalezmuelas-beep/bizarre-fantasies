@@ -197,7 +197,7 @@ export const AI_LEVEL_PATCH = `
     });
   }
 
-  new MutationObserver(injectLevelPicker).observe(document.documentElement, { childList:true, subtree:true });
+  (window.bfDom?window.bfDom.on(injectLevelPicker):new MutationObserver(injectLevelPicker).observe(document.documentElement,{childList:true,subtree:true}));
   if (document.readyState !== 'loading') injectLevelPicker();
   else document.addEventListener('DOMContentLoaded', injectLevelPicker);
   setInterval(injectLevelPicker, 400);

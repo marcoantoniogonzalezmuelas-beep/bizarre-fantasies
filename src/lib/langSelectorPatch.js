@@ -76,7 +76,7 @@ export const buildLangSelectorPatch = (lang) => `
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add);
   else add();
-  new MutationObserver(add).observe(document.documentElement, { childList:true, subtree:true });
+  (window.bfDom?window.bfDom.on(add):new MutationObserver(add).observe(document.documentElement,{childList:true,subtree:true}));
 })();
 </script>
 `;

@@ -282,12 +282,27 @@ function scheduler() {
   }
 }
 
+// iOS deja el AudioContext 'suspended' hasta un gesto del usuario y lo pone en
+// 'interrupted' al bloquear la pantalla o cambiar de app: hay que reanudarlo.
+let wakeInstalled = false;
+function wakeAudio() {
+  if (ctx && ctx.state !== 'running') { try { ctx.resume(); } catch (e) { /* noop */ } }
+}
+function installAudioWake() {
+  if (wakeInstalled || typeof document === 'undefined') return;
+  wakeInstalled = true;
+  ['pointerdown', 'touchend', 'click', 'keydown'].forEach((ev) => document.addEventListener(ev, wakeAudio, true));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeAudio(); });
+}
+
 export function startMusic() {
   if (started) return;
   try {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
   } catch (e) { return; }
   started = true;
+  installAudioWake();
+  wakeAudio();
   master = ctx.createGain();
   master.gain.setValueAtTime(0, ctx.currentTime);
   master.gain.linearRampToValueAtTime(muted ? 0 : 0.85, ctx.currentTime + 2.0);

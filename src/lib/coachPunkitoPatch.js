@@ -142,7 +142,26 @@ export const COACH_PUNKITO_PATCH = `
   function tick(){ swapCoachIcon(); hideRoamingGuideDuringDemo(); hideBattleNarratorInDemo(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
   else tick();
-  new MutationObserver(tick).observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class'] });
+  // Este observer salta con CADA cambio de style/class del documento (las animaciones
+  // los producen sin parar) y tick() llama a getComputedStyle, que fuerza un recálculo
+  // de estilos síncrono. Ahora: como mucho una pasada por fotograma, y la parte cara
+  // (getComputedStyle) como mucho 4 veces por segundo, con pasada final garantizada.
+  var _cpRaf = 0, _cpLast = 0, _cpTimer = 0;
+  function heavy(){ hideRoamingGuideDuringDemo(); hideBattleNarratorInDemo(); }
+  function scheduledTick(){
+    if (_cpRaf) return;
+    _cpRaf = requestAnimationFrame(function(){
+      _cpRaf = 0;
+      swapCoachIcon();
+      var n = Date.now(), wait = 250 - (n - _cpLast);
+      if (wait > 0) {
+        if (!_cpTimer) _cpTimer = setTimeout(function(){ _cpTimer = 0; _cpLast = Date.now(); heavy(); }, wait);
+        return;
+      }
+      _cpLast = n; heavy();
+    });
+  }
+  new MutationObserver(scheduledTick).observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class'] });
 })();
 </script>
 `;

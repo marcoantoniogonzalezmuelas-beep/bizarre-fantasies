@@ -43,9 +43,19 @@ export const MP_TURN_SEQUENCE_PATCH = `
   function busy(){ return cineBusy() || fxBusy() || killPending() || indicatorsBusy(); }
 
   window.bfStepWhenCalm = function(next){
-    var min = 120, max = 4000, quiet = 120, step = 50, started = Date.now(), quietFrom = 0, watchdogAt = 0;
+    // HARD: techo absoluto. Hay esperas legítimas largas (subtítulos + cinemática
+    // de muerte de ~5,6 s, y puede haber más de una muerte en cola), por eso es
+    // generoso. Pasado el techo, alguna bandera lógica (muerte en cola, indicadores)
+    // se quedó colgada: se avanza igualmente en vez de bloquear la partida, porque
+    // además este bucle re-arma el vigilante del juego y este nunca podría rescatar.
+    var min = 120, max = 4000, quiet = 120, step = 50, HARD = 20000, started = Date.now(), quietFrom = 0, watchdogAt = 0;
     function tick(){
       var now = Date.now(), elapsed = now - started, occupied = busy();
+      if(elapsed >= HARD){
+        try{ window.parent.postMessage({ bfRelayError: { room_code: '', side: '', nick: '', error_type: 'turn_stall', action: 'stepWhenCalm', error_message: ('forzado tras ' + elapsed + 'ms cine=' + cineBusy() + ' fx=' + fxBusy() + ' kill=' + killPending() + ' ind=' + indicatorsBusy()).slice(0, 500) } }, '*'); }catch(e){}
+        try{ next(); }catch(e){}
+        return;
+      }
       if(occupied) quietFrom = 0;
       else if(!quietFrom) quietFrom = now;
       var calm = !occupied && quietFrom && (now - quietFrom >= quiet);

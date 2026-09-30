@@ -39,7 +39,7 @@ export const RULES_BUTTON_PATCH = `
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);
   else install();
-  new MutationObserver(install).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(install):new MutationObserver(install).observe(document.documentElement,{childList:true,subtree:true}));
 })();
 </script>
 `;

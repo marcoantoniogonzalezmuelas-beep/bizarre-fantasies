@@ -20,6 +20,11 @@ import { MOBILE_HAPTICS_LITE_PATCH } from '@/lib/mobileHapticsLitePatch';
 import { STAT_NUMBER_PATCH } from '@/lib/statNumberPatch';
 import { CARD_ART_MAP_PATCH } from '@/lib/cardArtMapPatch';
 import { PERF_BOOST_PATCH } from '@/lib/perfBoostPatch';
+import { UUID_POLYFILL } from '@/lib/uuidPolyfill';
+import { HTML_SAFETY_PATCH } from '@/lib/htmlSafetyPatch';
+import { recordGame, isRejection } from '@/lib/gameRecordClient';
+import { onViewportChange } from '@/lib/viewportEvents';
+import { DOM_BUS_PATCH } from '@/lib/domBusPatch';
 import { STYLE_ORDER_PATCH } from '@/lib/styleOrderPatch';
 import { MOBILE_ANTIFLICKER_PATCH } from '@/lib/mobileAntiFlickerPatch';
 import { MOBILE_RESPONSIVE_PATCH } from '@/lib/mobileResponsivePatch';
@@ -405,7 +410,7 @@ const DRAGGABLE_GUIDE_PATCH = `
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', patchAllGuideDrag);
   else patchAllGuideDrag();
-  var _bfGd=0; new MutationObserver(function(){ var n=Date.now(); if(n-_bfGd<500)return; _bfGd=n; patchAllGuideDrag(); }).observe(document.documentElement, { childList:true, subtree:true });
+  var _bfGd=0; (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ var n=Date.now(); if(n-_bfGd<500)return; _bfGd=n; patchAllGuideDrag(); });
 
   function patchMobileBidSteppers(){
     document.querySelectorAll('input.bid-mini-input[id^="bid_"]').forEach(function(input){
@@ -444,7 +449,7 @@ const DRAGGABLE_GUIDE_PATCH = `
   bidStyle.textContent = '.hcard-bid-zone>div:first-child{align-items:center!important;flex-wrap:wrap!important}.bf-mobile-bid-stepper{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(255,210,74,.7);background:linear-gradient(180deg,#ffe27a,#c8901f);color:#3a2600;font-size:24px;font-weight:1000;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.4);padding:0;flex:0 0 38px;cursor:pointer;user-select:none}.bf-mobile-bid-stepper:active{transform:scale(.92)}.bid-mini-input{min-width:54px!important;text-align:center!important}.bid-mini-input::-webkit-outer-spin-button,.bid-mini-input::-webkit-inner-spin-button{-webkit-appearance:none!important;margin:0!important}.bid-mini-input{-moz-appearance:textfield!important;appearance:textfield!important}';
   document.head.appendChild(bidStyle);
   patchMobileBidSteppers();
-  var _bfBs=0; new MutationObserver(function(){ var n=Date.now(); if(n-_bfBs<500)return; _bfBs=n; patchMobileBidSteppers(); }).observe(document.documentElement, { childList:true, subtree:true });
+  var _bfBs=0; (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ var n=Date.now(); if(n-_bfBs<500)return; _bfBs=n; patchMobileBidSteppers(); });
 })();
 </script>
 `;
@@ -567,9 +572,7 @@ export default function Home() {
       setMobScale(Math.min(1, w / dw));
     };
     calc();
-    window.addEventListener('resize', calc);
-    window.addEventListener('orientationchange', calc);
-    return () => { window.removeEventListener('resize', calc); window.removeEventListener('orientationchange', calc); };
+    return onViewportChange(calc);
   }, [screen]);
   // Los accesos flotantes (Oráculo, Reglas, Razas) y el cartel de actualidad se
   // encogen con el juego, pero con un mínimo para que sigan siendo legibles y
@@ -850,6 +853,13 @@ export default function Home() {
   useEffect(() => {
     // Persiste en la BD las victorias del jugador contra cada nivel de IA,
     // asociadas a su nick (para subir de nivel entre dispositivos).
+    const applyAiWinToCache = (nick, levelId) => {
+      const m = { ...(aiWinsRef.current || {}) };
+      (m[nick] = m[nick] || {})[levelId] = ((m[nick] && m[nick][levelId]) || 0) + 1;
+      aiWinsRef.current = m;
+      try { iframeRef.current?.contentWindow?.postMessage({ bfAiWins: m }, '*'); } catch (e) {}
+    };
+    // Escritura directa ANTIGUA: solo como reserva si la función de servidor no responde.
     const upsertAiWin = async (nick, levelId) => {
       if (!base44.entities || !base44.entities.PlayerAiProgress) return;
       try {
@@ -859,10 +869,7 @@ export default function Home() {
         } else {
           await base44.entities.PlayerAiProgress.create({ nick, level_id: levelId, wins: 1 });
         }
-        const m = { ...(aiWinsRef.current || {}) };
-        (m[nick] = m[nick] || {})[levelId] = ((m[nick] && m[nick][levelId]) || 0) + 1;
-        aiWinsRef.current = m;
-        try { iframeRef.current?.contentWindow?.postMessage({ bfAiWins: m }, '*'); } catch (e) {}
+        applyAiWinToCache(nick, levelId);
       } catch (e) {}
     };
     // Hash SHA-256 de la contraseña (no se guarda en claro en la BD).
@@ -874,6 +881,10 @@ export default function Home() {
       } catch (e) { return String(text || ''); }
     };
     const onResult = (e) => {
+      // Estas acciones escriben en la base de datos: solo se aceptan del iframe del juego
+      // (antes cualquier ventana con referencia a esta página podía enviarlas).
+      const d = e.data || {};
+      if ((d.bfCheckNick || d.bfMatchResult || d.bfScoreWin || d.bfGameLog || d.bfSaveAvatar) && e.source !== iframeRef.current?.contentWindow) return;
       if (e.data && e.data.bfCheckNick) {
         // El iframe pide verificar/crear la contraseña de un nick.
         const { nick, password, requestId } = e.data.bfCheckNick;
@@ -891,37 +902,49 @@ export default function Home() {
       }
       if (e.data && e.data.bfMatchResult) {
         const r = e.data.bfMatchResult;
-        base44.entities.MatchResult.create(r).catch(() => {});
-        // Asocia el avatar al nick en la BD (PlayerAvatar) para que el ranking
-        // lo muestre siempre, independientemente del dispositivo o partida.
-        if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
-        if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
-        if (r.mode === 'ia' && !r.winner_is_ai && r.ai_level && r.winner_nick) upsertAiWin(r.winner_nick, r.ai_level);
+        const aiWin = r.mode === 'ia' && !r.winner_is_ai && r.ai_level && r.winner_nick;
+        // El servidor valida y guarda el resultado, el avatar de los jugadores y la
+        // victoria contra la IA en una sola llamada.
+        recordGame('match', { result: r }).then((res) => {
+          if (aiWin && !res.duplicate) applyAiWinToCache(r.winner_nick, r.ai_level);
+        }).catch((err) => {
+          if (isRejection(err)) return;
+          // Reserva (función no disponible): escritura directa antigua.
+          base44.entities.MatchResult.create(r).catch(() => {});
+          if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
+          if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
+          if (aiWin) upsertAiWin(r.winner_nick, r.ai_level);
+        });
       }
 
       // Marcador general: guarda la victoria en la BD asociada a la pareja de
       // nicks para que nunca se resetee al volver con el mismo nick.
       if (e.data && e.data.bfScoreWin && base44.entities?.HeadToHead) {
         const { pair_key, nick, wins } = e.data.bfScoreWin;
-        base44.entities.HeadToHead.filter({ pair_key, nick }, '-created_date', 1).then(rows => {
-          // Los dos jugadores guardan la misma victoria: se queda el valor más
-          // alto para que ninguno de los dos dispositivos pise al otro.
-          if (rows && rows.length) {
-            const best = Math.max(rows[0].wins || 0, wins);
-            return best === (rows[0].wins || 0) ? null : base44.entities.HeadToHead.update(rows[0].id, { wins: best });
-          }
-          return base44.entities.HeadToHead.create({ pair_key, nick, wins });
-        }).then(() => {
+        const cacheScore = (saved) => {
           const m = { ...(scoreDbRef.current || {}) };
           const pair = { ...(m[pair_key] || {}) };
-          pair[nick] = Math.max(pair[nick] || 0, wins);
+          pair[nick] = Math.max(pair[nick] || 0, saved);
           m[pair_key] = pair;
           scoreDbRef.current = m;
-        }).catch(() => {});
+        };
+        recordGame('score_win', { pair_key, nick, wins }).then((res) => cacheScore(res.wins ?? wins)).catch((err) => {
+          if (isRejection(err)) return;
+          // Reserva (función no disponible): escritura directa antigua.
+          base44.entities.HeadToHead.filter({ pair_key, nick }, '-created_date', 1).then(rows => {
+            if (rows && rows.length) {
+              const best = Math.max(rows[0].wins || 0, wins);
+              return best === (rows[0].wins || 0) ? null : base44.entities.HeadToHead.update(rows[0].id, { wins: best });
+            }
+            return base44.entities.HeadToHead.create({ pair_key, nick, wins });
+          }).then(() => cacheScore(wins)).catch(() => {});
+        });
       }
 
       if (e.data && e.data.bfGameLog) {
-        base44.entities.GameLog.create(e.data.bfGameLog).catch(() => {});
+        recordGame('game_log', { log: e.data.bfGameLog }).catch((err) => {
+          if (!isRejection(err)) base44.entities.GameLog.create(e.data.bfGameLog).catch(() => {});
+        });
       }
       if (e.data && typeof e.data.bfNavigate === 'string') {
         // Si venimos de la partida demo (botón "Conocer las cartas"), marcamos
@@ -932,13 +955,17 @@ export default function Home() {
       if (e.data && e.data.bfSaveAvatar) {
         const { nick, avatar_url } = e.data.bfSaveAvatar;
         if (nick && avatar_url && base44.entities?.PlayerAvatar) {
-          base44.entities.PlayerAvatar.filter({ nick }, '-created_date', 1).then(existing => {
-            if (existing && existing.length) {
-              base44.entities.PlayerAvatar.update(existing[0].id, { avatar_url }).catch(() => {});
-            } else {
-              base44.entities.PlayerAvatar.create({ nick, avatar_url }).catch(() => {});
-            }
-          }).catch(() => {});
+          recordGame('avatar', { nick, avatar_url }).catch((err) => {
+            if (isRejection(err)) return;
+            // Reserva (función no disponible): escritura directa antigua.
+            base44.entities.PlayerAvatar.filter({ nick }, '-created_date', 1).then(existing => {
+              if (existing && existing.length) {
+                base44.entities.PlayerAvatar.update(existing[0].id, { avatar_url }).catch(() => {});
+              } else {
+                base44.entities.PlayerAvatar.create({ nick, avatar_url }).catch(() => {});
+              }
+            }).catch(() => {});
+          });
           // Actualiza el caché en memoria para que el auto-relleno funcione al instante.
           const m = { ...(playerAvatarsRef.current || {}) };
           m[nick] = avatar_url;
@@ -1152,7 +1179,7 @@ export default function Home() {
         // The game HTML is ~480KB. Injecting it through srcDoc (a giant HTML
         // attribute) hangs on production/mobile. A Blob URL loads large HTML
         // reliably across browsers and devices.
-        const INJECT = ABILITY_TARGET_POLICY_PATCH + STYLE_ORDER_PATCH + PERF_BOOST_PATCH + CHOICE_MODAL_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + COMBAT_INDICATOR_SEQUENCE_PATCH + NATIVE_INDICATOR_SEQUENCE_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + DAMAGE_NUMBER_PATCH + STAT_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + SERVER_RELAY_PATCH + MP_CHOICE_MODAL_PATCH + CENTRAL_LOBBY_PATCH + FINAL_CINEMATIC_PATCH + ODD_STATES_LOGIC_PATCH + STATUS_LABEL_PATCH + STATUS_SCENE_FX_PATCH + NO_HERO_MOTION_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + HOME_MENU_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + ACTION_PANEL_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + MP_AUCTION_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + TRANSFORM_FIX_PATCH + DUCK_ABILITY_PATCH + DUCK_ABSORB_FX_PATCH + CRANE_SUMMON_PATCH + EPIC_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + FAST_ABILITY_PATCH + RETROPOETA_ABILITY_PATCH + JUNIANA_ABILITY_PATCH + DOJI_CONPURI_ABILITY_PATCH + FAITHFUL_ABILITIES_PATCH + LLORILOMO_ABILITY_PATCH + MONKGETA_ABILITY_PATCH + RING_OBJECT_PATCH + INVISIBLE_FX_PATCH + AI_NEW_CARDS_PATCH + ABILITY_ANIM_PATCH + PASSIVE_MARKER_PATCH + DEAD_ELITE_MARKER_PATCH + TABLE_MAT_PATCH + EQ_HERO_SCENE_BG_PATCH + BATTLE_SCENE_BG_PATCH + BATTLE_ART_FIX_PATCH + BATTLE_ZOOM_PATCH + CHROME_PERF_PATCH + TURN_UNSTICK_PATCH + STALL_GUARD_PATCH + AI_WAIT_CINE_PATCH + MP_TURN_SEQUENCE_PATCH + KILL_ACTOR_PATCH + FINAL_ACTION_RECAP_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + BIZARRE_ROOM_PATCH + BIZARRE_RETURN_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + RECOVERED_EQUIP_PATCH + STEAL_SPELL_PATCH + DRAIN_OBJECT_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + BATTLE_LOG_ORDER_PATCH + SKIP_REASON_LOG_PATCH + SKIP_TURN_POP_PATCH + SPEED_GAUGE_PATCH + TYPE_STAT_NUMBER_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + THINK_BOX_SKIN_PATCH + EQUIP_BADGE_BIG_PATCH + AI_LEVEL_PATCH + AI_VICTORY_CINEMATIC_PATCH + AI_EQUIP_VARIETY_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_GAME_SYNC_PATCH + END_GAME_RESCUE_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + buildFumbleRollPatch(getLang()) + HERO_DICE_PATCH + ABILITY_TARGET_FLOW_PATCH + TARGET_SCOPE_PATCH + HERO_CARD_SPEED_PATCH + HERO_VEL_PATCH + BATTLE_SIZE_STABLE_PATCH + PORTRAIT_PRESERVE_PATCH + (IS_MOBILE ? MOBILE_EXIT_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + MOBILE_PINCH_PATCH + MODAL_FOCUS_PATCH + MOBILE_HAND_COLLAPSE_PATCH + MOBILE_HAPTICS_LITE_PATCH : '') + (IS_PHONE ? MOBILE_RESPONSIVE_PATCH : '') + HERO_FULL_FREEZE_PATCH + BATTLE_EQUAL_SIZE_PATCH + FOIL_SHINE_PATCH + HERO_NAME_FIT_PATCH + STATUS_POP_PATCH + RENDER_BATTLE_DEDUPE_PATCH + KILL_CINE_QUEUE_PATCH + HERO_GEAR_CHIPS_PATCH + ARMY_ALIGN_PATCH + REARMAR_PATCH + DEAD_HERO_SKIP_PATCH + SYNC_NEW_EQUIP_PATCH + HUMAN_AI_EQUIP_PATCH + END_GAME_WAIT_CALM_PATCH + MISSION_ENGINE_PATCH + (IS_MOBILE ? MOBILE_PORTRAIT_STILL_PATCH : '');
+        const INJECT = UUID_POLYFILL + HTML_SAFETY_PATCH + DOM_BUS_PATCH + ABILITY_TARGET_POLICY_PATCH + STYLE_ORDER_PATCH + PERF_BOOST_PATCH + CHOICE_MODAL_PATCH + CONTACT_REPOSITION_PATCH + DRAGGABLE_GUIDE_PATCH + RELOAD_COVER_PATCH + MATCH_MODE_PATCH + COACH_PUNKITO_PATCH + NARRATOR_ACTION_PATCH + BATTLE_UI_PATCH + BATTLE_PORTRAIT_PATCH + FX_ROOT_PATCH + COMBAT_INDICATOR_SEQUENCE_PATCH + NATIVE_INDICATOR_SEQUENCE_PATCH + SPELL_FX_PATCH + ATTACK_FX_PATCH + SHIELD_FX_PATCH + HEAL_NUMBER_PATCH + DAMAGE_NUMBER_PATCH + STAT_NUMBER_PATCH + CARD_ART_MAP_PATCH + MP_FX_SYNC_PATCH + MP_EQUIP_PATCH + AUCTION_NODUP_PATCH + AI_AUCTION_PATCH + HAND_UNDER_ACTION_PATCH + LOBBY_GUARD_PATCH + EQUIP_DRAG_PATCH + RIVAL_HAND_BACK_PATCH + SHOP_SPELL_ART_PATCH + CARD_MAGNIFIER_PATCH + HAND_DIRECT_PLAY_PATCH + DISCARD_PILE_PATCH + SERVER_RELAY_PATCH + MP_CHOICE_MODAL_PATCH + CENTRAL_LOBBY_PATCH + FINAL_CINEMATIC_PATCH + ODD_STATES_LOGIC_PATCH + STATUS_LABEL_PATCH + STATUS_SCENE_FX_PATCH + NO_HERO_MOTION_PATCH + HERO_NAME_SIGIL_PATCH + BATTLE_ANIME_PATCH + HERO_BLOOD_FX_PATCH + MATCH_RESULT_PATCH + MATCH_SCORE_PATCH + RANKING_BUTTON_PATCH + RULES_BUTTON_PATCH + HOME_MENU_PATCH + ABILITY_FX_PATCH + EPIC_ABILITY_FX_PATCH + RAINBOW_BORDER_PATCH + ACTION_FOCUS_PATCH + ACTION_PANEL_FOCUS_PATCH + OBJECT_FX_PATCH + HAND_PICK_HIGHLIGHT_PATCH + CARD_PLAY_REVEAL_PATCH + GUIDE_HELP_BADGE_PATCH + SPECIAL_CARD_CINEMATIC_PATCH + BATTLE_RULES_PATCH + NICK_MEMORY_PATCH + NICK_PASSWORD_PATCH + NICK_REQUIRED_PATCH + buildQuitContactPatch(homeTexts) + HOW_TO_PLAY_PATCH + buildHomeTextsPatch(homeTexts) + AUCTION_THUMB_PATCH + MP_AUCTION_PATCH + AUCTION_CONTROL_PATCH + NARBON_ELITE_PATCH + TOKEN_ABILITIES_PATCH + TRANSFORM_FIX_PATCH + DUCK_ABILITY_PATCH + DUCK_ABSORB_FX_PATCH + CRANE_SUMMON_PATCH + EPIC_SUMMON_PATCH + DAIDOJI_BLADE_PATCH + ABILITY_IMPL_PATCH + NIXARA_ABILITY_PATCH + FAST_ABILITY_PATCH + RETROPOETA_ABILITY_PATCH + JUNIANA_ABILITY_PATCH + DOJI_CONPURI_ABILITY_PATCH + FAITHFUL_ABILITIES_PATCH + LLORILOMO_ABILITY_PATCH + MONKGETA_ABILITY_PATCH + RING_OBJECT_PATCH + INVISIBLE_FX_PATCH + AI_NEW_CARDS_PATCH + ABILITY_ANIM_PATCH + PASSIVE_MARKER_PATCH + DEAD_ELITE_MARKER_PATCH + TABLE_MAT_PATCH + EQ_HERO_SCENE_BG_PATCH + BATTLE_SCENE_BG_PATCH + BATTLE_ART_FIX_PATCH + BATTLE_ZOOM_PATCH + CHROME_PERF_PATCH + TURN_UNSTICK_PATCH + STALL_GUARD_PATCH + AI_WAIT_CINE_PATCH + MP_TURN_SEQUENCE_PATCH + KILL_ACTOR_PATCH + FINAL_ACTION_RECAP_PATCH + MP_ABILITY_CINE_PATCH + CINE_TOGGLE_PATCH + BIZARRE_ROOM_PATCH + BIZARRE_RETURN_PATCH + DEMO_FLOW_PATCH + buildLangEnPatch(getLang()) + DEMO_TIPS_PATCH + MODE_ICON_PATCH + buildLangSelectorPatch(getLang()) + RECOVER_SPELL_PATCH + RECOVERED_EQUIP_PATCH + STEAL_SPELL_PATCH + DRAIN_OBJECT_PATCH + CHAT_STATUS_PATCH + GAME_LOG_PATCH + BATTLE_LOG_ORDER_PATCH + SKIP_REASON_LOG_PATCH + SKIP_TURN_POP_PATCH + SPEED_GAUGE_PATCH + TYPE_STAT_NUMBER_PATCH + TYPE_MEDAL_PATCH + ACTION_PANEL_STABLE_PATCH + THINK_BOX_SKIN_PATCH + EQUIP_BADGE_BIG_PATCH + AI_LEVEL_PATCH + AI_VICTORY_CINEMATIC_PATCH + AI_EQUIP_VARIETY_PATCH + AI_STRATEGY_PATCH + AVATAR_PATCH + END_GAME_FIX_PATCH + END_GAME_SYNC_PATCH + END_GAME_RESCUE_PATCH + END_HEROES_PATCH + REMATCH_PATCH + VS_TEXT_PATCH + WHITE_FLASH_FIX_PATCH + CARD_REVEAL_LOCK_PATCH + ABILITY_USED_MEMORY_PATCH + buildFumbleRollPatch(getLang()) + HERO_DICE_PATCH + ABILITY_TARGET_FLOW_PATCH + TARGET_SCOPE_PATCH + HERO_CARD_SPEED_PATCH + HERO_VEL_PATCH + BATTLE_SIZE_STABLE_PATCH + PORTRAIT_PRESERVE_PATCH + (IS_MOBILE ? MOBILE_EXIT_PATCH + NO_FLICKER_PATCH + MOBILE_ANTIFLICKER_PATCH + MOBILE_PINCH_PATCH + MODAL_FOCUS_PATCH + MOBILE_HAND_COLLAPSE_PATCH + MOBILE_HAPTICS_LITE_PATCH : '') + (IS_PHONE ? MOBILE_RESPONSIVE_PATCH : '') + HERO_FULL_FREEZE_PATCH + BATTLE_EQUAL_SIZE_PATCH + FOIL_SHINE_PATCH + HERO_NAME_FIT_PATCH + STATUS_POP_PATCH + RENDER_BATTLE_DEDUPE_PATCH + KILL_CINE_QUEUE_PATCH + HERO_GEAR_CHIPS_PATCH + ARMY_ALIGN_PATCH + REARMAR_PATCH + DEAD_HERO_SKIP_PATCH + SYNC_NEW_EQUIP_PATCH + HUMAN_AI_EQUIP_PATCH + END_GAME_WAIT_CALM_PATCH + MISSION_ENGINE_PATCH + (IS_MOBILE ? MOBILE_PORTRAIT_STILL_PATCH : '');
         // Portada: "EDICIÓN V5" → "Base Set".
         let baseData = patchLivingEliteHtml(patchMissionHtml(patchAbilityTargetingHtml(data))).replace(/EDICI[ÓO]N&nbsp;V5/g, 'Base Set').replace(/Doc Radiante/g, 'Clint Tripud').replace(/Krunder(?![kK]| Mec)/g, 'Xabierus').replace(/Despertar/g, 'Sanar').replace(/despertar/g, 'sanar');
         // Botón "Hechizo" del panel de acciones: en vez del multiplicador de HE,

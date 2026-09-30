@@ -252,7 +252,7 @@ export const SHOP_SPELL_ART_PATCH = `
   hookRender();
   setInterval(function () { fixConfirmArt(); if (typeof window.eqShopGrid === 'function' && !window.eqShopGrid.__bfNameArt) wrap(); if (typeof window.renderBattle === 'function' && !window.renderBattle.__bfShopArt) hookRender(); syncAllEquip(); scan(); }, 1000);
   var _bfSt=0;
-  new MutationObserver(function(){ fixConfirmArt(); var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); applyArtToChips(); }).observe(document.documentElement, { childList: true, subtree: true });
+  (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ fixConfirmArt(); var n=Date.now(); if(n-_bfSt<500)return; _bfSt=n; requestAnimationFrame(scan); applyArtToChips(); });
 })();
 </script>
 `;

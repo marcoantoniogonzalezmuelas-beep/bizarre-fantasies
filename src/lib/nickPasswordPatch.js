@@ -159,7 +159,7 @@ export const NICK_PASSWORD_PATCH = `
       labelPass(input);
     });
   }
-  new MutationObserver(injectPass).observe(document.documentElement,{childList:true,subtree:true});
+  (window.bfDom?window.bfDom.on(injectPass):new MutationObserver(injectPass).observe(document.documentElement,{childList:true,subtree:true}));
   setInterval(injectPass,600);
   injectPass();
   // Re-etiqueta los campos cuando el nick se rellena programáticamente

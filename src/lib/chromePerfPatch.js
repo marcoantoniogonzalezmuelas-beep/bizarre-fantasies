@@ -1,4 +1,5 @@
-// Optimización de rendimiento SOLO para Chrome/Edge (motor Chromium).
+// Optimización de rendimiento para Chrome/Edge (motor Chromium) y para iPhone/iPad
+// (WebKit: en iOS todos los navegadores lo usan, y aquí nunca se aplicaba).
 //
 // En Firefox el juego ya va fluido, así que este parche se desactiva por
 // completo ahí: solo se instala si el navegador es Chromium.
@@ -12,7 +13,9 @@ export const CHROME_PERF_PATCH = `
 (function(){
   var ua = navigator.userAgent || '';
   var isChromium = /Chrome|Chromium|Edg\\//.test(ua) && !/Firefox/.test(ua);
-  if(!isChromium || window.__bfChromePerf) return;
+  // iPadOS se identifica como Mac: se distingue por tener pantalla táctil.
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if(!(isChromium || isIOS) || window.__bfChromePerf) return;
   window.__bfChromePerf = true;
 
   var st = document.createElement('style');
@@ -24,7 +27,8 @@ export const CHROME_PERF_PATCH = `
     + '.bf-offscreen,.bf-offscreen *{animation-play-state:paused!important}'
     // Pantallas no activas: no se pintan ni se calculan; cartas aisladas para
     // que un cambio en una no obligue a recalcular el layout de toda la mesa.
-    + '.screen:not(.active){content-visibility:hidden}'
+    // content-visibility solo en Chromium: en WebKit es reciente y no se ha probado.
+    + (isIOS ? '' : '.screen:not(.active){content-visibility:hidden}')
     + '.hcard,.bhero{contain:layout style}';
   document.head.appendChild(st);
 

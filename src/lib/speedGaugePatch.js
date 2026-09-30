@@ -136,7 +136,7 @@ export const SPEED_GAUGE_PATCH = `
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
   else tick();
   var lastT = 0;
-  new MutationObserver(function(){ var n = Date.now(); if (n - lastT < 200) return; lastT = n; tick(); }).observe(document.documentElement, { childList: true, subtree: true });
+  (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ var n = Date.now(); if (n - lastT < 200) return; lastT = n; tick(); });
 })();
 </script>
 `;

@@ -49,6 +49,7 @@ export function buildLangEnPatch(lang) {
     });
   }
   function scan(){
+    lastFull = Date.now();
     try {
       var wkr = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
       var n; while ((n = wkr.nextNode())) transNode(n);
@@ -69,8 +70,38 @@ export function buildLangEnPatch(lang) {
     } catch(err) {}
     scan();
   });
-  var pend = null;
-  function queue(){ if (pend) return; pend = setTimeout(function(){ pend = null; scan(); }, 180); }
+  // Incremental: solo se traducen los nodos que cambiaron (añadidos o con texto editado).
+  // El recorrido completo (por si cambió algún atributo sin nodos nuevos) se hace como
+  // mucho cada 2 s y solo si hubo cambios. Antes: recorrido completo cada 180 ms, y en
+  // combate hay mutaciones continuas (números de daño, contadores).
+  var dirty = new Set(), pend = null, fullTimer = null, lastFull = 0;
+  function scanRoot(root){
+    try {
+      if (root.nodeType === 3) { transNode(root); return; }
+      if (root.nodeType !== 1 || !root.isConnected) return;
+      var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
+      while ((n = w.nextNode())) transNode(n);
+      transAttrs(root);
+      root.querySelectorAll('[placeholder],[title],[aria-label]').forEach(transAttrs);
+    } catch(e) {}
+  }
+  // Dos temporizadores independientes: los nodos cambiados se traducen a los 120 ms
+  // SIEMPRE; el recorrido completo va aparte y nunca retrasa a los anteriores.
+  function flushDirty(){
+    pend = null;
+    var roots = Array.from(dirty); dirty.clear();
+    roots.forEach(scanRoot);
+  }
+  function runFull(){ fullTimer = null; dirty.clear(); scan(); }
+  function queue(records){
+    for (var i = 0; i < records.length; i++) {
+      var r = records[i];
+      if (r.type === 'characterData') dirty.add(r.target);
+      else for (var j = 0; j < r.addedNodes.length; j++) dirty.add(r.addedNodes[j]);
+    }
+    if (!pend) pend = setTimeout(flushDirty, 120);
+    if (!fullTimer) fullTimer = setTimeout(runFull, Math.max(120, 2000 - (Date.now() - lastFull)));
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
   new MutationObserver(queue).observe(document.documentElement, { childList:true, subtree:true, characterData:true });
 })();

@@ -34,7 +34,7 @@ export const CENTRAL_LOBBY_PATCH = `
   // mostrar el avatar del creador en la tarjeta de la sala en vez del icono 🏠.
   window.__bfAvatarMap=window.__bfAvatarMap||{};
   window.addEventListener('message',function(event){
-    if(event.data&&event.data.bfPlayerAvatars)window.__bfAvatarMap=event.data.bfPlayerAvatars||{};
+    if(event.data&&event.data.bfPlayerAvatars&&event.source===window.parent)window.__bfAvatarMap=event.data.bfPlayerAvatars||{};
   });
   function avatarFor(nick){if(!nick)return'';var m=window.__bfAvatarMap||{};return m[nick]||m[String(nick).toLowerCase()]||'';}
   function setAvatarIcon(iconEl,url){
@@ -47,7 +47,7 @@ export const CENTRAL_LOBBY_PATCH = `
       // y fijamos ese tamaño en el <img> en píxeles.
       var w=iconEl.offsetWidth||40,h=iconEl.offsetHeight||40;
       iconEl.textContent='';
-      iconEl.innerHTML='<img src="'+url+'" alt="" style="display:block;width:'+w+'px;height:'+h+'px;object-fit:cover;border-radius:50%">';
+      iconEl.innerHTML='<img src="'+(window.bfAvUrl?window.bfAvUrl(url):'')+'" alt="" style="display:block;width:'+w+'px;height:'+h+'px;object-fit:cover;border-radius:50%">';
     }else{
       iconEl.textContent='🏠';
     }
@@ -141,7 +141,7 @@ export const CENTRAL_LOBBY_PATCH = `
       var ico=card.querySelector('.room-ico');if(ico)ico.textContent='🔄';
       var name=card.querySelector('.room-name');if(name)name.textContent='Partida en curso';
       var sub=card.querySelector('.room-sub');
-      if(sub){var nicks=(r.nicks||[]).join(' vs ');sub.innerHTML='código <b>'+r.id+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':' · 🆓');}
+      if(sub){var esc=window.bfEscH||function(){return '';};var nicks=(r.nicks||[]).map(function(n){return esc(n);}).join(' vs ');sub.innerHTML='código <b>'+esc(r.id)+'</b> · '+(nicks||'')+(r.hasPass?' · 🔒':' · 🆓');}
       var btn=card.querySelector('button');
       if(btn){
         // Clonar el botón para eliminar cualquier listener nativo del juego que

@@ -39,7 +39,7 @@ export const TYPE_MEDAL_PATCH = `
   if (document.readyState !== 'loading') patch();
   else document.addEventListener('DOMContentLoaded', patch);
   var _t = 0;
-  new MutationObserver(function(){ var n = Date.now(); if (n - _t < 300) return; _t = n; patch(); }).observe(document.documentElement, { childList: true, subtree: true });
+  (function(f){ if(window.bfDom)window.bfDom.on(f); else new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true}); })(function(){ var n = Date.now(); if (n - _t < 300) return; _t = n; patch(); });
 })();
 </script>
 `;

@@ -138,7 +138,7 @@ export const BIZARRE_ROOM_PATCH = `
   var joined=false;
 
   function notifyRoomChat(active){
-    try{parent.postMessage({bfChatStatus:{roomCode:active?'BIZARRE_ROOM':'',connOpen:!!active,inBattle:false,isHost:false,playerNick:active&&session?session.nick:''}},'*');}catch(e){}
+    try{parent.postMessage({bfChatStatus:{roomCode:active?'BIZARRE_ROOM':'',connOpen:!!active,inBattle:false,isHost:false,playerNick:active&&session?session.nick:'',sessionToken:active&&session?session.token:''}},'*');}catch(e){}
   }
 
   var playerAvatars={}; // nick → avatar_url (BD PlayerAvatar)
