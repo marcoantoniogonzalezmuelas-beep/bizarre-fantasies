@@ -29,7 +29,11 @@
     "run_id"
   ],
   "rls": {
-    "create": null,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": null,
     "update": {
       "user_condition": {
