@@ -5,27 +5,26 @@ const lib=f=>path.join(__dirname,'..',f),load=f=>import(pathToFileURL(lib(f)).hr
 async function focusApi(){const {ZOOM_FOCUS_PATCH}=await load('zoomFocusPatch.js');const env={Math};env.window=env;vm.runInNewContext(script(ZOOM_FOCUS_PATCH),env);return env;}
 const plain=x=>x&&JSON.parse(JSON.stringify(x));
 
-test('tablet / landscape: the whole equipment zone is framed at its full width (already readable)',async()=>{
+test('the WHOLE equipment zone is framed (nothing cropped): fit to width AND height, whatever the screen',async()=>{
   const A=await focusApi();
-  const f=plain(A.bfComputeEquipFocus({x:140,y:60,w:1000,h:700},{x:140,y:90,w:600,h:520},1280,900,1024));
-  assert.equal(f.z,1.25);assert.equal(f.tx,-161,'centred horizontally');assert.equal(f.ty,-61,'zone top just below the screen top');assert.equal(f.cropped,false,'nothing is cut off');
+  // tablet / apaisado
+  const t=plain(A.bfComputeEquipFocus({x:140,y:60,w:1000,h:700},{x:140,y:90,w:600,h:520},1280,900,1024));
+  assert.equal(t.z,1.25);assert.equal(t.tx,-157,'centred horizontally');assert.equal(t.ty,-61);assert.equal(t.cropped,false);
+  // móvil en vertical: antes ampliaba x2 y enfocaba SOLO a los héroes (el jugador pidió ver toda la vista)
+  const m=plain(A.bfComputeEquipFocus({x:90,y:60,w:1100,h:900},{x:90,y:90,w:560,h:520},1280,2400,390));
+  assert.equal(m.z,1.14,'just enough to fill the width (was 2.03, which cut the shop off)');assert.equal(m.cropped,false);
+  for(const [name,f] of [['tablet',t],['phone',m]]){const z=f.z,zone=name==='tablet'?{x:140,y:60,w:1000,h:700}:{x:90,y:60,w:1100,h:900};
+    assert(zone.x*z+f.tx>=0&&(zone.x+zone.w)*z+f.tx<=1280+1,name+': left/right edges of the zone stay on screen');}
+  // la zona es más alta que la pantalla: no se amplía (se vería menos, no más)
+  assert.equal(A.bfComputeEquipFocus({x:0,y:0,w:600,h:2000},{x:0,y:0,w:600,h:300},1280,900,390),null);
 });
-test('phone in portrait: zoom up to a readable scale and focus the HEROES zone (the shop is one drag away)',async()=>{
+test('limits: tiny zone -> max zoom; nearly full width -> no change; bad input -> null; pan stays inside the canvas',async()=>{
   const A=await focusApi();
-  const f=plain(A.bfComputeEquipFocus({x:90,y:60,w:1100,h:900},{x:90,y:90,w:560,h:520},1280,2400,390));
-  assert.equal(f.z,2.03,'0.62 / (390/1280)');assert.equal(f.cropped,true);assert.equal(f.tx,-113,'heroes centred');assert.equal(f.ty,-169);
-  const effective=f.z*(390/1280);assert(effective>=0.6&&effective<0.65,'effective scale is now readable: '+effective);
-  const before=390/1280;assert(effective/before>=2,'at least twice as big as before ('+before.toFixed(2)+' -> '+effective.toFixed(2)+')');
-});
-test('limits: heroes too wide -> left aligned; tiny zone -> max zoom; nearly full width -> no change; bad input -> null',async()=>{
-  const A=await focusApi();
-  const wide=plain(A.bfComputeEquipFocus({x:90,y:60,w:1100,h:900},{x:90,y:90,w:1000,h:520},1280,2400,390));
-  assert.equal(wide.tx,-169,'cannot fit the heroes at this zoom: starts at their left edge');
   assert.equal(plain(A.bfComputeEquipFocus({x:500,y:0,w:300,h:300},{x:500,y:0,w:300,h:300},1280,900,390)).z,2.6,'max zoom');
   assert.equal(A.bfComputeEquipFocus({x:25,y:0,w:1230,h:600},{x:25,y:0,w:600,h:600},1280,900,1280),null,'less than 4% gain: leave it alone');
   for(const bad of [[null,null],[{x:0,y:0,w:0,h:5},null],[{x:0,y:0,w:5,h:0},null]])assert.equal(A.bfComputeEquipFocus(bad[0],bad[1],1280,900,390),null);
   assert.equal(A.bfComputeEquipFocus({x:0,y:0,w:100,h:100},null,0,900,390),null);
-  const clamp=plain(A.bfComputeEquipFocus({x:0,y:5000,w:300,h:300},{x:0,y:5000,w:300,h:300},1280,900,390));assert(clamp.ty>=-(900*2.6-900),'vertical pan stays inside the canvas');
+  const c=plain(A.bfComputeEquipFocus({x:0,y:5000,w:300,h:300},{x:0,y:5000,w:300,h:300},1280,3000,390));assert(c.ty>=-(3000*2.6-3000));
 });
 test('zones are measured live and the current zoom is discounted (hidden elements ignored, heroes required)',async()=>{
   const A=await focusApi();
@@ -57,9 +56,9 @@ test('integration with the REAL pinch patch: entering equipment frames the zone,
   advance(1000);active='s-equip';advance(1500);
   assert.equal(scale(),1,'heroes not painted yet: nothing applied (and it keeps trying)');
   heroesPainted=true;advance(2000);
-  assert.equal(scale(),2.03,'the equipment zone is now framed at a readable zoom');assert.match(style.transform,/translate3d\(-113px,-291px,0\)/,'heroes zone in view');
-  assert(posts.some(p=>p.bfPinch&&p.bfPinch.z===2.03),'the app is told (its overlays follow the zoom)');
-  advance(5000);assert.equal(scale(),2.03,'applied once, not re-applied every cycle');
+  assert.equal(scale(),1.14,'the WHOLE equipment zone is framed');assert.match(style.transform,/translate3d\(-88px,-100px,0\)/,'zone centred, top just below the screen top');
+  assert(posts.some(p=>p.bfPinch&&p.bfPinch.z===1.14),'the app is told (its overlays follow the zoom)');
+  advance(5000);assert.equal(scale(),1.14,'applied once, not re-applied every cycle');
   active='s-battle';advance(1500);assert.equal(scale(),1,'leaving equipment undoes the automatic zoom');
 });
 test('wiring: the focus math is injected before the pinch patch, and a zoom the player made is respected',()=>{

@@ -20,7 +20,8 @@ test('gameRecord function is wired to the validated handler with the service rol
 });
 test('every client write goes through recordGame first (direct writes are only the fallback)',()=>{
   const home=read('src/pages/Home.jsx'),chat=read('src/components/chat/ChatOverlay.jsx'),mis=read('src/components/missions/missionPersistence.js');
-  for(const kind of ['match','score_win','game_log','avatar'])assert.match(home,new RegExp("recordGame\\('"+kind+"'"),kind);
+  for(const kind of ['score_win','game_log','avatar'])assert.match(home,new RegExp("recordGame\\('"+kind+"'"),kind);
+  assert.match(home,/saveMatchResult\(r, \{/,'results use the layered saver (server -> direct -> persistent queue)');assert.match(read('src/lib/resultSaver.js'),/record\(item\.kind \|\| 'match', \{ result \}\)/,'...whose first layer is the server function');
   assert.match(chat,/recordGame\('chat'/);assert.match(mis,/recordGame\('mission_victory'/);
   // Cada escritura directa debe ser RESERVA: dentro de la función marcada como antigua, o en un
   // catch que sigue a una llamada a recordGame (nunca el primer camino).
@@ -29,7 +30,7 @@ test('every client write goes through recordGame first (direct writes are only t
     const inLegacyFn=before.lastIndexOf('Escritura directa ANTIGUA')>=0&&before.lastIndexOf('Escritura directa ANTIGUA')>before.lastIndexOf('recordGame(');
     const afterRecord=before.lastIndexOf('recordGame(')>=0&&before.slice(before.lastIndexOf('recordGame(')).includes('catch');
     assert(inLegacyFn||afterRecord,'direct write that is not a fallback: '+home.slice(m.index,m.index+70));}
-  assert(n>=6,'fallback writes still present (transition): '+n);
+  assert(n>=3,'fallback writes still present (transition): '+n);
   assert.match(home,/e\.source !== iframeRef\.current\?\.contentWindow\) return;/,'privileged messages only from the game iframe');
   assert.match(chat,/session_token: status\.sessionToken/);assert.match(read('src/lib/bizarreRoomPatch.js'),/sessionToken:active&&session\?session\.token:''/);
 });

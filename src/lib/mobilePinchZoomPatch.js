@@ -230,9 +230,10 @@ export const MOBILE_PINCH_PATCH = `
     }, 300);
     var b = document.body;
     b.style.transition = 'transform .26s cubic-bezier(.2,.8,.3,1)';
-    // Solo se reencuadra a x1 si el usuario se quedó muy cerca de x1; si ha
-    // alejado a propósito (z<0,97) se respeta su zoom.
-    if (z >= 0.97 && z < 1.05) { z = 1; tx = 0; ty = 0; }
+    // Por debajo de x1,05 se vuelve EXACTAMENTE a x1 (sin desplazamiento). Antes, si el jugador alejaba
+    // (z<0,97) se respetaba ese zoom: el juego quedaba encogido con una franja negra alrededor que ya no
+    // se iba. En un móvil el juego ya va ajustado a la pantalla: no tiene sentido alejarlo más.
+    if (z < 1.05) { z = 1; tx = 0; ty = 0; }
     clampT();
     applyNow();
     flushMsg();
@@ -386,6 +387,9 @@ export const MOBILE_PINCH_PATCH = `
   // touchend/touchcancel NO hacen preventDefault: se registran como passive
   // para no bloquear el hilo de composición del navegador al soltar el gesto
   // (una de las causas del parpadeo en tablet).
+  // iOS dispara además sus propios eventos de gesto y hace zoom NATIVO de la página (desplaza el diseño y
+  // deja márgenes negros): se bloquea, el zoom lo gestiona este parche.
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function(ev){ document.addEventListener(ev, function(e){ e.preventDefault(); }, { passive: false }); });
   document.addEventListener('touchend', onEnd, { capture: true, passive: true });
   document.addEventListener('touchcancel', onEnd, { capture: true, passive: true });
 })();

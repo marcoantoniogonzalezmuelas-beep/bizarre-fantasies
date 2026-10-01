@@ -68,24 +68,29 @@ test('chat status: without the relay (solo / legacy) it falls back to NET exactl
   const solo=await runStatus({NET:{role:'local',code:'',conn:null},G:{},bfRelayInfo:()=>({code:'',side:'',joined:false})});
   assert.equal(solo.posts.at(-1).bfChatStatus.connOpen,false,'vs the AI: no chat');
 });
-test('chat icon: always to the RIGHT of the animations button (never overlapping) and scaled like the game',async()=>{
+test('chat icon: to the RIGHT of the animations button, SAME size as it, scaled with the game, never overlapping',async()=>{
   const {chatIconAnchor,CHAT_ICON_MIN_SCALE,CHAT_ICON_MAX_SCALE}=await load('chatIconAnchor.js');
-  assert.deepEqual(chatIconAnchor(null),{left:10,top:10,height:28,scale:1},'toggle not visible: top-left fallback');
-  // Móvil vertical: el juego (860 px de diseño) se muestra a 390 px => escala ~0.45
-  for(const width of [860,780,640,500,390,320,1280,1600]){
-    const fr={left:0,top:40,width},btn={right:150,top:8,height:30};
+  assert.deepEqual(chatIconAnchor(null),{left:10,top:10,height:28,scale:1},'no iframe measured yet');
+  for(const width of [860,780,640,500,390,320,1280,1600]){                      // anchos de pantalla (diseño 860)
+    const fr={left:0,top:40,width},btn={left:10,right:150,top:8,width:140,height:30};
     const a=chatIconAnchor({frameRect:fr,innerWidth:860,btnRect:btn});const k=width/860;
-    const buttonRightOnScreen=fr.left+btn.right*k;
-    assert(a.left>buttonRightOnScreen,'icon must start after the toggle (width '+width+'): '+a.left+' <= '+buttonRightOnScreen);
+    assert(a.left>fr.left+btn.right*k,'icon starts AFTER the toggle (width '+width+'): '+a.left+' <= '+(btn.right*k));
     assert(a.scale>=CHAT_ICON_MIN_SCALE&&a.scale<=CHAT_ICON_MAX_SCALE);
+    const iconH=28*a.scale,btnH=btn.height*k;assert(Math.abs(iconH-btnH)<=1||a.scale===CHAT_ICON_MIN_SCALE||a.scale===CHAT_ICON_MAX_SCALE,'same height as the animations button: '+iconH.toFixed(1)+' vs '+btnH.toFixed(1));
+    assert(Math.abs((a.top+iconH/2)-(fr.top+btn.top*k+btnH/2))<=1.5,'vertically centred on the animations button');
   }
-  const phone=chatIconAnchor({frameRect:{left:0,top:0,width:390},innerWidth:860,btnRect:{right:150,top:8,height:30}});
-  const desktop=chatIconAnchor({frameRect:{left:0,top:0,width:860},innerWidth:860,btnRect:{right:150,top:8,height:30}});
-  assert(phone.scale<desktop.scale,'the icon shrinks on the phone together with the rest of the screen: '+phone.scale+' vs '+desktop.scale);
-  assert.equal(desktop.scale,1);assert.equal(desktop.left,150+16,'a clear gap at scale 1');
-  // centrado en vertical con el botón de animaciones
-  const mid=chatIconAnchor({frameRect:{left:0,top:0,width:860},innerWidth:860,btnRect:{right:100,top:10,height:44}});assert.equal(mid.top,10+(44-28)/2);
-  assert.equal(chatIconAnchor({frameRect:{left:0,top:0,width:10},innerWidth:860,btnRect:{right:100,top:0,height:30}}).scale,CHAT_ICON_MIN_SCALE,'scale is clamped');
+  const phone=chatIconAnchor({frameRect:{left:0,top:0,width:390},innerWidth:860,btnRect:{right:150,top:8,width:140,height:30}});
+  const desktop=chatIconAnchor({frameRect:{left:0,top:0,width:860},innerWidth:860,btnRect:{right:150,top:8,width:140,height:30}});
+  assert(phone.scale<0.6&&desktop.scale>1,'phone: '+phone.scale+' (small, like the rest of the screen) | desktop: '+desktop.scale);
+  // el botón de animaciones no está a la vista (display:none => rectángulo vacío): esquina superior izquierda, ESCALADA con el juego
+  const hidden=chatIconAnchor({frameRect:{left:0,top:0,width:390},innerWidth:860,btnRect:{left:0,right:0,top:0,width:0,height:0}});
+  assert.equal(hidden.left,Math.round(10*390/860));assert(hidden.scale<0.6,'never full size on the phone: '+hidden.scale);
+  assert.deepEqual(chatIconAnchor({frameRect:{left:0,top:0,width:390},innerWidth:860,btnRect:null}),hidden,'no button at all = same corner');
+});
+test('REGRESSION: #bf-cine-toggle is position:fixed, so offsetParent is ALWAYS null — visibility must not depend on it',()=>{
+  const src=fs.readFileSync(path.join(__dirname,'..','..','components','chat','ChatOverlay.jsx'),'utf8');
+  assert.doesNotMatch(src.replace(/\/\/[^\n]*/g,''),/offsetParent/,'the chat icon must not use offsetParent (it made the icon fall on top of the button, full size)');
+  assert.match(fs.readFileSync(path.join(__dirname,'..','cineTogglePatch.js'),'utf8'),/#bf-cine-toggle\{position:fixed/,'the premise: the toggle really is fixed');
 });
 test('chat icon wiring: ChatOverlay uses the anchor scale and re-measures on rotation',()=>{
   const src=fs.readFileSync(path.join(__dirname,'..','..','components','chat','ChatOverlay.jsx'),'utf8');

@@ -5,7 +5,7 @@ function fixture(){
  let now=10000,serial=0;const timers=new Map();
  const schedule=(fn,ms,repeat=0)=>{const id=++serial;timers.set(id,{fn,at:now+ms,repeat});return id;};
  const tick=ms=>{const end=now+ms;let budget=20000;while(budget--){let next;for(const t of timers)if(t[1].at<=end&&(!next||t[1].at<next[1].at))next=t;if(!next)break;const[id,t]=next;now=t.at;if(t.repeat)t.at+=t.repeat;else timers.delete(id);t.fn();}now=end;assert(budget>0);};
- const node=()=>{const n={children:[],style:{setProperty(){}},dataset:{},className:'',textContent:'',attrs:{},getAttribute(k){return n.attrs[k]||null;},removeAttribute(k){delete n.attrs[k];},appendChild(c){c.parentNode=n;n.children.push(c);},removeChild(c){n.children.splice(n.children.indexOf(c),1);c.parentNode=null;},remove(){n.parentNode?.removeChild(n);},querySelector:()=>null,querySelectorAll(){return n.children.filter(c=>c.tagName==='BUTTON');},contains(c){return n.children.includes(c);}};n.classList={contains:s=>n.className.split(' ').includes(s),add:s=>n.className+=' '+s};return n;};
+ const node=()=>{const n={children:[],style:{setProperty(){}},dataset:{},className:'',textContent:'',attrs:{},getAttribute(k){return n.attrs[k]||null;},removeAttribute(k){delete n.attrs[k];},appendChild(c){if(c.parentNode&&c.parentNode.children)c.parentNode.children=c.parentNode.children.filter(x=>x!==c);c.parentNode=n;n.children.push(c);},removeChild(c){n.children.splice(n.children.indexOf(c),1);c.parentNode=null;},remove(){n.parentNode?.removeChild(n);},querySelector:()=>null,querySelectorAll(){return n.children.filter(c=>c.tagName==='BUTTON');},contains(c){return n.children.includes(c);}};n.classList={contains:s=>n.className.split(' ').includes(s),add:s=>n.className+=' '+s};return n;};
  const body=node(),head=node(),all=(root=body)=>root.children.flatMap(c=>[c,...all(c)]);
  const select=s=>all().find(n=>s.split(',').some(x=>x[0]==='#'?n.id===x.slice(1):x[0]==='.'?n.classList.contains(x.slice(1)):false))||null;
  const doc={body,head,createElement:tag=>{const n=node();n.tagName=tag.toUpperCase();n.ownerDocument=doc;return n;},querySelector:select,querySelectorAll:()=>[],getElementById:id=>all().find(n=>n.id===id)||null};
@@ -18,7 +18,11 @@ test('host and guest retain one mission button, including repeated result refres
  for(const count of [0,1,2]){const f=fixture(),result=f.doc.createElement('div');f.doc.body.appendChild(result);let opened=0;
  for(let i=0;i<count;i++){const b=f.doc.createElement('button');b.attrs.onclick=i?'location.reload()':'bfMatchRematch()';result.appendChild(b);}
  const old=f.doc.createElement('button');old.id='bf-mission-result-back';f.doc.body.appendChild(old);
- reconcile(result,()=>opened++);reconcile(result,()=>opened++);assert.equal(result.children.length,1);assert.equal(old.parentNode,null);result.children[0].onclick();assert.equal(opened,1);
+ reconcile(result,()=>opened++);reconcile(result,()=>opened++);assert.equal(result.children.length,1);assert.equal(old.parentNode,null);
+  // el botón queda dentro de un contenedor que lo CENTRA (en multijugador salía arriba a la izquierda)
+  const holder=result.children[0],btn=holder.id==='bf-mission-result-wrap'?holder.children[0]:holder;assert.equal(holder.id,'bf-mission-result-wrap');assert.equal(holder.children.length,1,'exactly one mission button');
+  assert.equal(btn.id,'bf-mission-result-back');assert.equal(btn.style.margin,'0 auto');assert.equal(btn.style.display,'block');assert.match(holder.style.cssText,/justify-content:center/);
+  btn.onclick();assert.equal(opened,1);
  }
 });
 test('death waits only once for captions; next turn cannot pass the queued death',()=>{

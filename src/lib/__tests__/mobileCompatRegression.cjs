@@ -42,11 +42,9 @@ const UA={
 test('perf patch: Android Chrome keeps the full set (incl. content-visibility)',async()=>{
   const css=await perfRun(UA.chrome);assert.match(css,/backdrop-filter:none/);assert.match(css,/content-visibility:hidden/);
 });
-test('perf patch: iPhone, Chrome-on-iOS and iPadOS now get it, without content-visibility',async()=>{
-  for(const [name,opts] of [['iphone',{platform:'iPhone',touch:5}],['chromeIOS',{platform:'iPhone',touch:5}],['ipadOS',{platform:'MacIntel',touch:5}]]){
-    const css=await perfRun(UA[name],opts);
-    assert.match(css,/backdrop-filter:none/,name);assert.doesNotMatch(css,/content-visibility/,name);assert.match(css,/contain:layout style/,name);
-  }
+test('perf patch: iPhone, Chrome-on-iOS and iPadOS get NOTHING (an untested WebKit change broke the layout on a real iPhone)',async()=>{
+  for(const [name,opts] of [['iphone',{platform:'iPhone',touch:5}],['chromeIOS',{platform:'iPhone',touch:5}],['ipadOS',{platform:'MacIntel',touch:5}]])
+    assert.equal(await perfRun(UA[name],opts),'',name+' must not receive contain/backdrop/observer tweaks');
 });
 test('perf patch: desktop Firefox and desktop Safari (no touch) stay untouched',async()=>{
   assert.equal(await perfRun(UA.firefox),'');

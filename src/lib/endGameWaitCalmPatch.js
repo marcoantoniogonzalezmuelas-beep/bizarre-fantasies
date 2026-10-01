@@ -46,7 +46,18 @@ export const END_GAME_WAIT_CALM_PATCH = `
     if(typeof orig !== 'function' || orig.__bfWaitCalm) return false;
     var wrapped = function(){
       try{
-        if(typeof B !== 'undefined' && B && B.over && (!calm() || (typeof window.__bfRecapPending==='function' && window.__bfRecapPending()))) return;
+        if(typeof B !== 'undefined' && B && B.over && (!calm() || (typeof window.__bfRecapPending==='function' && window.__bfRecapPending()))){
+          // Tope de espera: la cinemática final nunca se retiene más de unos segundos (invitado 5 s, anfitrión 9 s).
+          if(!endHoldSince) endHoldSince = Date.now();
+          if(Date.now() - endHoldSince < (isClient() ? 5000 : 9000)) return;
+        }
+        endHoldSince = 0;
+        // Diagnóstico: si el final tarda demasiado desde que acabó la partida, queda registrado.
+        var dt = Date.now() - (window.__bfEndT0 || Date.now());
+        if(dt > 12000 && !window.__bfSlowEndReported){
+          window.__bfSlowEndReported = true;
+          try{ window.parent.postMessage({ bfRelayError: { room_code:'', side:'', nick:'', error_type:'slow_end', action:'endCine', error_message:'final tardó '+dt+'ms role='+(isClient()?'client':'host') } }, '*'); }catch(e2){}
+        }
       }catch(e){}
       return orig.apply(this, arguments);
     };
@@ -58,6 +69,12 @@ export const END_GAME_WAIT_CALM_PATCH = `
   // ---- 2) showResult: llamada puntual. Se retrasa hasta que todo está calmado
   // (con techo de 12 s). Un flag evita que múltiples llamadas encadenen varias
   // esperas en paralelo. ----
+  // Plazos: el INVITADO no debe esperar tanto como el anfitrión. Allí el estado "ocupado" (efectos,
+  // indicadores) puede arrastrarse porque sus efectos llegan por la red; con 30 s la animación final
+  // le salía lentísima mientras al anfitrión le iba perfecta.
+  function isClient(){ try{ return typeof NET!=='undefined' && NET && NET.role==='client'; }catch(e){ return false; } }
+  function holdMs(){ return isClient() ? 7000 : 30000; }
+  var endHoldSince = 0;
   var resultPending = false, resultArgs = null, resultDeadline = 0;
   function hookShowResult(){
     var orig = window.showResult;
@@ -68,7 +85,8 @@ export const END_GAME_WAIT_CALM_PATCH = `
       resultArgs = arguments;
       if(resultPending) return;
       resultPending = true;
-      resultDeadline = Date.now() + 30000;
+      resultDeadline = Date.now() + holdMs();
+      window.__bfEndT0 = Date.now();
       var epoch = window.__bfMatchEpoch|0;
       (function proceed(){
         // Otra partida: el resultado retenido era de la anterior y NO debe mostrarse ahora.
@@ -99,7 +117,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       showArgs = arguments;
       if(showPending) return;
       showPending = true;
-      showDeadline = Date.now() + 30000;
+      showDeadline = Date.now() + holdMs();
       var epoch = window.__bfMatchEpoch|0;
       (function proceed(){
         if((window.__bfMatchEpoch|0)!==epoch){ showPending = false; showArgs = null; return; }

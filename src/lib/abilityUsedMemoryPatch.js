@@ -38,8 +38,12 @@ export const ABILITY_USED_MEMORY_PATCH = `
       var r=orig.apply(this,arguments);
       try{
         if(t){
-          if(!t.eliteMode&&t._bfAbUsedNorm)t.abilityUsed=true;
-          if(t.eliteMode&&t._bfAbUsedElite)t.abilityUsed=true;
+          var restored=false;
+          if(!t.eliteMode&&t._bfAbUsedNorm){t.abilityUsed=true;restored=true;}
+          if(t.eliteMode&&t._bfAbUsedElite){t.abilityUsed=true;restored=true;}
+          // Marca de RESTAURACIÓN (viaja en el snapshot): el escáner de animaciones no debe tomar este
+          // false->true por una activación (Batu lanzaba su habilidad al renacer con la Pluma Fénix).
+          if(restored)t._bfAbRestoredAt=String(Date.now())+':'+Math.random().toString(36).slice(2,6);
         }
       }catch(e){}
       return r;

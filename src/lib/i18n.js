@@ -154,6 +154,14 @@ const UI_EN = {
   'Mensaje no permitido: evita insultos, contenido sexual y palabras ofensivas.': 'Message not allowed: avoid insults, sexual content and offensive words.',
   'No se pudo enviar el mensaje. Inténtalo de nuevo.': 'Could not send the message. Please try again.',
   'Vas muy rápido. Espera un momento.': 'You are going too fast. Wait a moment.',
+  // Ranking de misiones
+  'Misiones': 'Missions',
+  'partidas de misión registradas': 'mission matches recorded',
+  'Mejores en misiones': 'Best in missions',
+  'Misiones en solitario': 'Solo missions',
+  'Misiones multijugador': 'Multiplayer missions',
+  'Nadie ha ganado una misión todavía': 'Nobody has won a mission yet',
+  'derrotas': 'defeats',
 };
 
 export const t = (es) => (getLang() === 'en' ? (UI_EN[es] ?? es) : es);

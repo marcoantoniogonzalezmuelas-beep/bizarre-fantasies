@@ -12,24 +12,20 @@ export const ZOOM_FOCUS_PATCH = `
 <script>
 (function(){
   if(window.bfComputeEquipFocus)return;
-  var O={pad:14,maxZ:2.6,target:0.62,minGain:1.04};
+  var O={pad:14,maxZ:2.6,minGain:1.04};
   // zone / heroes: rectángulos {x,y,w,h} en coordenadas del lienzo SIN zoom. W,H: tamaño del lienzo.
   // devW: ancho real de la pantalla (la app encoge el lienzo a devW/W).
+  // NUNCA recorta: encuadra la zona ENTERA (héroes + presupuesto + tienda + mano) para que se vean todos los
+  // elementos. La versión anterior ampliaba y enfocaba solo a los héroes en el móvil en vertical, y el
+  // jugador pidió ver toda la vista (en iPhone, donde no se recortaba, ya se veía bien).
   window.bfComputeEquipFocus=function(zone,heroes,W,H,devW,opt){
-    var o=opt||{},pad=o.pad==null?O.pad:o.pad,maxZ=o.maxZ||O.maxZ,target=o.target||O.target;
+    var o=opt||{},pad=o.pad==null?O.pad:o.pad,maxZ=o.maxZ||O.maxZ;
     if(!zone||!(zone.w>0)||!(zone.h>0)||!(W>0)||!(H>0))return null;
-    var k=Math.min(1,(devW>0?devW:W)/W);
-    var fitZ=(W-2*pad)/zone.w;
-    var focus=zone,z,cropped=false;
-    if(fitZ*k>=target||fitZ>=maxZ){
-      z=Math.min(maxZ,Math.max(1,fitZ));
-    }else{
-      z=Math.min(maxZ,Math.max(1,target/k));
-      if(heroes&&heroes.w>0&&heroes.h>0&&heroes.w*z<=W-2*pad+1){focus=heroes;}
-      cropped=focus.w*z>W-2*pad||focus!==zone;
-    }
+    var fitW=(W-2*pad)/zone.w,fitH=(H-2*pad)/zone.h;
+    var z=Math.min(maxZ,Math.max(1,Math.min(fitW,fitH)));          // el menor de los dos ajustes: cabe en ancho Y alto
     if(z<O.minGain)return null;
-    var tx=focus.w*z<=W-2*pad+1?-(focus.x*z)+(W-focus.w*z)/2:-(focus.x*z)+pad;   // centrada, o pegada a la izquierda si no cabe
+    var focus=zone,cropped=false;
+    var tx=-(focus.x*z)+(W-focus.w*z)/2;                           // centrada en horizontal
     var ty=-(focus.y*z)+pad;
     var mx=W*z-W,my=H*z-H;
     tx=Math.min(0,Math.max(-mx,tx));ty=Math.min(0,Math.max(-my,ty));

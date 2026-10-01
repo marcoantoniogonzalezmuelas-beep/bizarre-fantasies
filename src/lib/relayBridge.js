@@ -2,6 +2,7 @@ import { base44 } from '@/api/base44Client';
 import relayRealtimeChannel from '@/lib/relayRealtimeChannel';
 import relayBackupQueue from '@/lib/relayBackupQueue';
 import { getRelayToken, setRelayToken } from '@/lib/relayTokens';
+import { screenWakeLock } from '@/lib/wakeLock';
 
 // Canal permanente para acciones inmediatas; gameRelay conserva la cola durable
 // y actúa como respaldo después de una reconexión.
@@ -13,6 +14,7 @@ export function bindRelayBridge(iframeRef) {
   let activeSide = '';
 
   const closeRealtime = () => {
+    screenWakeLock.release();   // sin sala activa, la pantalla puede apagarse como siempre
     room?.close();
     room = null;
     activeCode = '';
@@ -26,6 +28,9 @@ export function bindRelayBridge(iframeRef) {
     closeRealtime();
     activeCode = cleanCode;
     activeSide = side;
+    // Partida online en marcha: la pantalla no debe apagarse mientras esperas el turno del rival (en iPhone
+    // se suspendía la página y la partida se desconectaba).
+    screenWakeLock.keep();
     room = relayRealtimeChannel(cleanCode, side, post, getRelayToken(cleanCode, side));
     return room;
   };

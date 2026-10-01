@@ -26,7 +26,7 @@ export const MATCH_EPOCH_PATCH = `
     try{
       // Datos del golpe mortal y esperas de la partida anterior
       window.__bfFinalBlow=null;window.__bfKillFinalShown=0;window.__bfDeathDelayUntil=0;window.__bfDeathVisHold={};
-      window.__bfEndCine=0;window.__bfKillAnim=0;window.__bfEndCineDoneAt=0;window.__bfResultSent=false;window.__bfDiceSeen={};
+      window.__bfEndCine=0;window.__bfKillAnim=0;window.__bfEndCineDoneAt=0;window.__bfResultSent=false;window.__bfDiceSeen={};window.__bfEndT0=0;window.__bfSlowEndReported=false;
     }catch(e){}
     try{
       // Marcas "ya sumado/registrado" de la partida anterior: si siguen puestas, la victoria de la

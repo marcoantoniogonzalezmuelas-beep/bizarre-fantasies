@@ -603,18 +603,22 @@ export const ABILITY_ANIM_PATCH = `
   }
   // Escaneo periódico: detecta abilityUsed false->true. Funciona en AMBOS
   // jugadores online (G.team viaja en el snapshot).
-  var prev={};
+  var memo=window.bfNewAbilityMemo?window.bfNewAbilityMemo():{prev:{},known:{},alive:{},quiet:{},restored:{}};
+  var prev=memo.prev;
+  // Partida nueva: se olvida lo visto (si no, el estado de la anterior contaminaba la siguiente).
+  if(window.bfOnMatchReset)window.bfOnMatchReset(function(){if(window.bfResetAbilityMemo)window.bfResetAbilityMemo(memo);});
   function scan(){
     if(!syncSession()||typeof G==='undefined'||!G||!G.team)return;
     ['p','o'].forEach(function(side){
       (G.team[side]||[]).forEach(function(h){
         if(!h||!h.id)return;
         var key=abilityKey(side,h);
-        var used=!!h.abilityUsed;
         var pending=window.__bfTargetAbilityPending;
         var awaiting=(pending&&pending.hero===h)||(typeof B!=='undefined'&&B&&B.pending&&B.current&&B.current.side===side&&B.current.id===h.id);
-        if(used&&!prev[key]&&!awaiting){try{if(playAnim(side,h))prev[key]=true;}catch(e){}}
-        if(!used)prev[key]=false;
+        // Una activación REAL es un false->true observado en un héroe ya conocido, fuera de una
+        // resurrección y sin ser la restauración del flag "Usada" (ver animGuardPatch).
+        var verdict=window.bfAbilityGate?window.bfAbilityGate(memo,key,h,Date.now(),awaiting):((h.abilityUsed&&!prev[key]&&!awaiting)?'play':'idle');
+        if(verdict==='play'){try{if(playAnim(side,h))prev[key]=true;}catch(e){}}
       });
     });
   }

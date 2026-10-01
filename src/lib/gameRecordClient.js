@@ -20,5 +20,14 @@ export async function recordGame(kind, payload) {
   }
 }
 
-// true = el servidor rechazó el dato a propósito (no sirve reintentar por otro camino).
-export const isRejection = (e) => !!(e && e.status && e.status >= 400 && e.status < 500 && e.status !== 404);
+// Códigos con los que la función gameRecord rechaza un dato A PROPÓSITO.
+export const SERVER_REJECTION_CODES = new Set([
+  'invalid_result', 'invalid_score', 'invalid_avatar', 'invalid_log', 'invalid_victory', 'invalid_message',
+  'rate_limited', 'blocked', 'too_large', 'unknown_kind', 'unauthorized', 'room_not_found',
+]);
+
+// true = la función respondió con uno de SUS códigos de rechazo (no sirve reintentar por otro camino).
+// Antes bastaba cualquier 4xx (salvo 404): si la función no era accesible o la plataforma respondía
+// 400/401/403, el resultado se descartaba EN SILENCIO y sin reserva (el ranking dejó de recibir partidas).
+// Un error que no trae un código del servidor no es un rechazo: se recurre a la reserva.
+export const isRejection = (e) => !!(e && e.status && e.status >= 400 && e.status < 500 && SERVER_REJECTION_CODES.has(e.code));

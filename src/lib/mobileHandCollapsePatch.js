@@ -25,6 +25,25 @@ export const MOBILE_HAND_COLLAPSE_PATCH = `
   ].join('');
   document.head.appendChild(st);
 
+  // PLEGADO A PRUEBA DE REPINTADOS. Las manos (#hand_p / #hand_o) se reconstruyen en cada repintado y el
+  // plegado dependía de reaplicarles una clase después (y de que otros parches les hubieran puesto antes
+  // la suya): si algo cambiaba, la mano salía DESPLEGADA hasta el siguiente intervalo (500 ms). En
+  // multijugador hay muchos más repintados (cada snapshot) y parecía aleatorio. Ahora la regla CSS cuelga
+  // de #s-battle y se aplica por id en el mismo instante en que existe la mano: solo se despliega si el
+  // jugador lo pidió (clase bf-open-hand_x en #s-battle, que sobrevive a los repintados).
+  var HAND_IDS=['hand_p','hand_o'];
+  (function(){
+    var css=[];
+    HAND_IDS.forEach(function(id){
+      css.push('#s-battle:not(.bf-open-'+id+') #'+id+' > *:not(.hand-under-title){display:none!important}');
+      css.push('#s-battle:not(.bf-open-'+id+') #'+id+'{min-height:0!important;padding-bottom:6px!important}');
+    });
+    var s=document.createElement('style');s.id='bf-hand-closed-css';s.textContent=css.join('');document.head.appendChild(s);
+  })();
+  function setOpenClass(id,open){
+    var s=document.getElementById('s-battle');
+    if(s)s.classList.toggle('bf-open-'+id,!!open);
+  }
   function key(hand){ return 'bfHandOpen_'+hand.id; }
   function isOpen(hand){ try{ return sessionStorage.getItem(key(hand))==='1'; }catch(e){ return false; } }
 
@@ -56,13 +75,26 @@ export const MOBILE_HAND_COLLAPSE_PATCH = `
   }
 
   function apply(hand,open){
+    setOpenClass(hand.id,open);
     hand.classList.toggle('bf-hand-collapsed',!open);
     var b=hand.querySelector('.bf-hand-toggle');
     if(b)b.innerHTML=open?'▲ Recoger cartas':'▼ Ver cartas ('+countCards(hand)+')';
     try{ sessionStorage.setItem(key(hand),open?'1':'0'); }catch(e){}
   }
 
+  // Reaplica a #s-battle lo que el jugador tenga abierto (sobrevive a los repintados).
+  function syncOpenClasses(){
+    HAND_IDS.forEach(function(id){
+      var open=false;try{open=sessionStorage.getItem('bfHandOpen_'+id)==='1';}catch(e){}
+      setOpenClass(id,open);
+    });
+  }
+  // Partida nueva: las manos vuelven a estar recogidas (siempre se despliegan solo si el jugador quiere).
+  if(window.bfOnMatchReset)window.bfOnMatchReset(function(){
+    HAND_IDS.forEach(function(id){try{sessionStorage.removeItem('bfHandOpen_'+id);}catch(e){}setOpenClass(id,false);});
+  });
   function decorate(){
+    syncOpenClasses();
     document.querySelectorAll('#s-battle.active .hand-under-action').forEach(function(hand){
       var title=hand.querySelector('.hand-under-title');
       if(!title)return;

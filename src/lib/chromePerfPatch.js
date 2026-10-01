@@ -13,9 +13,12 @@ export const CHROME_PERF_PATCH = `
 (function(){
   var ua = navigator.userAgent || '';
   var isChromium = /Chrome|Chromium|Edg\\//.test(ua) && !/Firefox/.test(ua);
-  // iPadOS se identifica como Mac: se distingue por tener pantalla táctil.
-  var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if(!(isChromium || isIOS) || window.__bfChromePerf) return;
+  // SOLO Chromium. Se probó a activarlo también en iPhone/iPad (WebKit) sin poder verificarlo en un
+  // dispositivo y en un iPhone real el diseño falló: contain:layout cambia el bloque contenedor de los
+  // elementos posicionados dentro de las tarjetas y el IntersectionObserver dentro de un iframe escalado
+  // no es fiable. Se deja como estaba hasta poder medirlo en un iPhone.
+  var isIOS = false;
+  if(!isChromium || window.__bfChromePerf) return;
   window.__bfChromePerf = true;
 
   var st = document.createElement('style');
