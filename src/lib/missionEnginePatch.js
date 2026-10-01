@@ -28,6 +28,12 @@ export const MISSION_ENGINE_PATCH = `<script>
     if(document.querySelector('#bf-end-cine,#bf-end-heroes,#bf-abil-anim,#bf-spec-cine,#bf-kill-ov'))return;
     if(typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy())return;
     if(typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy())return;
+    // La celebración va SIEMPRE al final del todo: después del repaso de la acción definitiva y de
+    // la animación de victoria/derrota con los retratos (antes se disparaba en cuanto aparecía la
+    // pantalla de resultado y se pisaba con ellas). Si esa animación no llegara a reproducirse,
+    // a los 30 s se muestra igualmente.
+    if(document.getElementById('bf-recap')||(typeof window.__bfRecapPending==='function'&&window.__bfRecapPending()))return;
+    if((window.__bfEndCineDoneAt|0)<activeRun.resultShownAt&&Date.now()-activeRun.resultShownAt<30000)return;
     activeRun.celebrationReady=true;
     tell({bfMissionCelebrationReady:activeRun.run_id});
   }

@@ -9,9 +9,14 @@ export const CHAT_STATUS_PATCH = `
   var last={};
   function get(){
     var inBattle=!!(document.getElementById('s-battle')&&document.getElementById('s-battle').classList.contains('active'));
-    var roomCode=(typeof NET!=='undefined'&&NET.code)||'';
-    var isHost=(typeof NET!=='undefined'&&NET.role==='host');
-    var connOpen=(typeof NET!=='undefined'&&NET.conn&&NET.conn.open);
+    // El relay es la fuente de verdad: conoce la sala y el lado de AMBOS jugadores. NET.code y
+    // NET.conn.open los rellena el motor solo para el anfitrión (que crea la sala): el invitado
+    // entra por el relay y para él quedaban vacíos, así que el chat no le aparecía nunca.
+    var ri=(typeof window.bfRelayInfo==='function')?window.bfRelayInfo():null;
+    var viaRelay=!!(ri&&ri.code);
+    var roomCode=viaRelay?ri.code:((typeof NET!=='undefined'&&NET.code)||'');
+    var isHost=viaRelay?(ri.side==='p'):(typeof NET!=='undefined'&&NET.role==='host');
+    var connOpen=viaRelay?!!ri.joined:!!(typeof NET!=='undefined'&&NET.conn&&NET.conn.open);
     var playerNick='',opponentNick='';
     try{
       if(typeof NET!=='undefined'){
@@ -28,7 +33,7 @@ export const CHAT_STATUS_PATCH = `
   }
   function tick(){
     var s=get();
-    var changed=(s.roomCode!==last.roomCode||s.connOpen!==last.connOpen||s.inBattle!==last.inBattle||s.playerNick!==last.playerNick);
+    var changed=(s.roomCode!==last.roomCode||s.connOpen!==last.connOpen||s.inBattle!==last.inBattle||s.playerNick!==last.playerNick||s.isHost!==last.isHost);
     if(changed){last=s;window.parent.postMessage({bfChatStatus:s},'*');}
   }
   setInterval(tick,800);

@@ -8,6 +8,8 @@ import { mergeChatMessage } from '@/lib/chatMessages';
 import { recordGame, isRejection } from '@/lib/gameRecordClient';
 import { getRelayToken } from '@/lib/relayTokens';
 import { t, getLang } from '@/lib/i18n';
+import { onViewportChange } from '@/lib/viewportEvents';
+import { chatIconAnchor } from '@/lib/chatIconAnchor';
 
 // Overlay de chat entre jugadores en partidas multiplayer. Se muestra como un
 // icono circular plegable en el borde derecho de la pantalla (que no se solapa
@@ -54,27 +56,29 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
 
   // Se coloca pegado al botón de animaciones del juego (arriba a la izquierda),
   // sin solaparlo; si no está visible, queda en la esquina superior izquierda.
-  const [anchor, setAnchor] = useState({ left: 10, top: 10, height: 28 });
+  const [anchor, setAnchor] = useState({ left: 10, top: 10, height: 28, scale: 1 });
   useEffect(() => {
     if (!status?.connOpen) return undefined;
     const measure = () => {
       if (document.hidden) return;
-      let next = { left: 10, top: 10, height: 28 };
+      let next = chatIconAnchor(null);
       try {
         const frame = document.querySelector('iframe');
         const btn = frame?.contentDocument?.getElementById('bf-cine-toggle');
         if (btn && btn.offsetParent !== null) {
-          const fr = frame.getBoundingClientRect();
-          const r = btn.getBoundingClientRect();
-          const k = fr.width && frame.contentWindow?.innerWidth ? fr.width / frame.contentWindow.innerWidth : 1;
-          next = { left: Math.round(fr.left + r.right * k + 8), top: Math.round(fr.top + r.top * k), height: Math.max(24, Math.round(r.height * k)) };
+          next = chatIconAnchor({
+            frameRect: frame.getBoundingClientRect(),
+            innerWidth: frame.contentWindow?.innerWidth,
+            btnRect: btn.getBoundingClientRect(),
+          });
         }
       } catch (e) {}
-      setAnchor((a) => (a.left === next.left && a.top === next.top && a.height === next.height ? a : next));
+      setAnchor((a) => (a.left === next.left && a.top === next.top && a.height === next.height && a.scale === next.scale ? a : next));
     };
     measure();
     const timer = setInterval(measure, 1000);
-    return () => clearInterval(timer);
+    const offViewport = onViewportChange(measure);
+    return () => { clearInterval(timer); offViewport(); };
   }, [status?.connOpen]);
 
   // Escucha el estado multiplayer que envía el parche del iframe
@@ -181,10 +185,8 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
 
   if (!status?.connOpen || !status?.roomCode) return null;
 
-  // En móvil/tablet el juego se pinta escalado; el icono NO se escala con él
-  // (quedaba diminuto): se muestra grande y a tamaño real de pantalla, sobre la
-  // esquina inferior derecha (fuera de los retratos y de la mano de cartas).
-
+  // El icono se escala con el juego (misma escala que el resto de elementos de la pantalla):
+  // antes se dibujaba a tamaño real de pantalla y en el móvil quedaba siempre enorme.
 
   const emojiMap = {};
   categories.forEach((cat) => { cat.emojis.forEach((em) => { emojiMap[em.id] = em; }); });
@@ -215,6 +217,8 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
           className="relative flex items-center gap-1.5 rounded-full backdrop-blur-md transition-all hover:scale-105 active:scale-95 font-bold"
           style={{
             height: `${anchor.height}px`,
+            transform: `scale(${anchor.scale})`,
+            transformOrigin: 'left top',
             padding: '0 12px',
             fontSize: '12px',
             color: '#3a2600',

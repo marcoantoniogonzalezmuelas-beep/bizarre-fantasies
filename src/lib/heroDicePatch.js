@@ -151,14 +151,15 @@ export const HERO_DICE_PATCH = `
     // la cola de efectos (flushFx); la segunda se descarta.
     window.__bfDiceSeen = window.__bfDiceSeen || {};
     if(payload && payload.rid){ if(window.__bfDiceSeen[payload.rid]) return; window.__bfDiceSeen[payload.rid] = 1; }
-    var start = Date.now();
+    var start = Date.now(), epoch = window.__bfMatchEpoch|0;
     function tick(){
+      if((window.__bfMatchEpoch|0)!==epoch) return;      // la tirada era de la partida anterior
       if(document.querySelector('.bf-hdice')){setTimeout(tick,200);return;}
       if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()){
         if(Date.now() - start < 12000){ setTimeout(tick, 200); return; }
       }
       pop(payload);
-      if(typeof onSettled === 'function') setTimeout(onSettled, TOTAL_MS+50);
+      if(typeof onSettled === 'function') setTimeout(function(){ if((window.__bfMatchEpoch|0)===epoch) onSettled(); }, TOTAL_MS+50);
     }
     tick();
   }

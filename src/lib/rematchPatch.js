@@ -33,6 +33,8 @@ export const REMATCH_PATCH = `
   // tokens, pujas sin resolver, bonificadores usados, mapas de arte mutados
   // por Transformer…) se filtran a la siguiente partida.
   function bfFullReset(){
+    // Todo lo que la partida anterior dejó en cola o con temporizador queda invalidado.
+    try{ if(window.bfNewMatchEpoch) window.bfNewMatchEpoch('rematch'); }catch(e){}
     try{
       // Estado de partida
       G._gameOver=false; G._result=null; G._coachMsg='';
@@ -150,6 +152,28 @@ export const REMATCH_PATCH = `
       b.setAttribute('onclick','bfRematch()');
       b.textContent='🔁 Volver a jugar';
     });
+    ensureExit(root);
+  }
+
+  // Partida individual (contra la IA o local, que no sea misión ni demo): además de volver a jugar,
+  // la pantalla de resultado siempre ofrece SALIR. Las misiones tienen su propio botón
+  // ("Volver a las Misiones") y online ya trae "Terminar".
+  function ensureExit(root){
+    try{
+      if(isOnline()) return;
+      if(typeof G!=='undefined' && (G.demo || G.bfMission)) return;
+      var names=['salir','terminar','menú','menu','volver al menú','volver al menu'], has=false;
+      root.querySelectorAll('button').forEach(function(b){
+        var t=String(b.textContent||'').trim().toLowerCase();
+        for(var i=0;i<names.length;i++) if(t.indexOf(names[i])===0) has=true;
+      });
+      if(has || document.getElementById('bf-exit-btn')) return;
+      var ex=document.createElement('button');
+      ex.id='bf-exit-btn'; ex.className='btn big'; ex.style.marginLeft='10px'; ex.textContent='Salir';
+      ex.onclick=function(){ try{ location.reload(); }catch(e){} };
+      var anchor=document.getElementById('bf-rematch-btn');
+      if(anchor && anchor.parentNode) anchor.parentNode.appendChild(ex); else root.appendChild(ex);
+    }catch(e){}
   }
 
   function hookShowResult(){

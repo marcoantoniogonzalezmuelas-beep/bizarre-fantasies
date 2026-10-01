@@ -4,9 +4,9 @@ const VALID_SIDES = new Set(['p', 'g']);
 
 export default class GameRelayRoom extends Actor {
   members = new Map();
-  relay = { seen: [], p: [], g: [] };
+  relay: Record<string, any> = { seen: [], p: [], g: [] };
   serial = Promise.resolve();
-  persisting = null;
+  persisting: Promise<void> | null = null;
   dirty = false;
 
   async handleStart() {
@@ -64,13 +64,13 @@ export default class GameRelayRoom extends Actor {
     return this.persisting;
   }
 
-  applyFast(conn, msg) {
+  applyFast(conn: any, msg: any) {
     const member = this.members.get(conn.id);
     if (!member) return;
     if (msg.type === 'ack_deliveries') {
       const ids = new Set(Array.isArray(msg.ids) ? msg.ids.filter(id => typeof id === 'string').slice(0, 100) : []);
       const other = member.side === 'p' ? 'g' : 'p';
-      this.relay = { ...this.relay, [other]: this.relay[other].filter(m => !ids.has(m.id)) };
+      this.relay = { ...this.relay, [other]: this.relay[other].filter((m: any) => !ids.has(m.id)) };
       return this.persistSoon();
     }
     const batchId = String(msg.batch_id || '');

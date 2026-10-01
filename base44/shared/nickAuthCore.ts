@@ -28,7 +28,9 @@ export type FailMap = Map<string, { n: number; until: number }>;
 export const defaultFails: FailMap = new Map();
 const lockFor = (n: number, now: number) => (n >= 5 ? now + Math.min(300000, 2000 * 2 ** (n - 5)) : 0);
 
-export async function checkNick(creds: any, rawNick: unknown, rawPassword: unknown, now: number = Date.now(), fails: FailMap = defaultFails): Promise<Record<string, unknown>> {
+// allowCreate=false: solo VERIFICA una contraseña existente (nunca crea una nueva). Lo usa la
+// reanudación de partidas para demostrar identidad desde otro dispositivo.
+export async function checkNick(creds: any, rawNick: unknown, rawPassword: unknown, now: number = Date.now(), fails: FailMap = defaultFails, allowCreate = true): Promise<Record<string, unknown>> {
   const nick = String(rawNick || '').trim().toLowerCase().slice(0, 40);
   const password = String(rawPassword || '').slice(0, 200);
   if (!nick) return { ok: false, error: 'empty' };
@@ -62,6 +64,7 @@ export async function checkNick(creds: any, rawNick: unknown, rawPassword: unkno
     }
     return { ok: true, mode: 'verified' };
   }
+  if (!allowCreate) return { ok: false, error: 'no_credential' };
   if (password.length < MIN_LEN) return { ok: false, error: 'too_short' };
   const hash = await hashNew(password);
   if (existing) await creds.update(existing.id, { password: hash });

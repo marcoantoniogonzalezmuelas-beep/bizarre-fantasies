@@ -1,7 +1,9 @@
 // El actor debe entregar y confirmar una jugada SIN esperar al guardado en disco
 // (antes el broadcast iba después de reescribir toda la cola: retraso al pasar turno).
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),test=require('node:test');
-const src=fs.readFileSync(path.join(__dirname,'..','..','..','base44','actors','GameRelayRoom','entry.ts'),'utf8')
+// El actor está en TypeScript: se pelan los tipos con la utilidad oficial de Node.
+const {stripTypeScriptTypes}=require('node:module');
+const src=stripTypeScriptTypes(fs.readFileSync(path.join(__dirname,'..','..','..','base44','actors','GameRelayRoom','entry.ts'),'utf8'))
   .replace(/^import .*;$/gm,'').replace('export default class','class');
 const PUT_MS=120;
 function makeRoom(){

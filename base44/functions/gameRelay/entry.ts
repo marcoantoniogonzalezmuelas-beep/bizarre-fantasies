@@ -22,6 +22,9 @@ import { relayProtocol } from '../../shared/relayProtocol.ts';
 import { relayTokenOk, newRelayToken } from '../../shared/relayAuth.ts';
 import { cleanNick, cleanAvatarUrl } from '../../shared/sanitize.ts';
 import { checkRoomPassword } from '../../shared/joinGuard.ts';
+import { checkNick } from '../../shared/nickAuthCore.ts';
+import { roomExpired, canRejoin } from '../../shared/resumePolicy.ts';
+import { authorizeResume, resumeStatus, matchPhasePatch, leavePatch, forfeitDecision } from '../../shared/resumeActions.ts';
 
 const STALE_MS = 15000; // 15 s sin poll = desconectado
 const ROOM_TTL = 600000; // 10 min sin actividad = sala borrada
@@ -43,6 +46,8 @@ export default async function(req: Request): Promise<Response> {
         const stale = (all || []).filter((r: any) => {
           const s = r.state || {};
           const lastActivity = Math.max(s.host_last_seen || 0, s.guest_last_seen || 0, Date.parse(r.updated_date || r.created_date || 0));
+          // Partida en curso: 30 min desde el último latido para poder reanudarla (o 10 si ya terminó).
+          if ((r.status === 'playing' || r.status === 'resuming') && !s.mp_mission) return roomExpired(r, now);
           return r.status === 'finished' || (now - lastActivity > ROOM_TTL);
         });
         await Promise.all(stale.map((r: any) => base44.asServiceRole.entities.GameRoom.delete(r.id).catch(() => {})));
@@ -59,7 +64,7 @@ export default async function(req: Request): Promise<Response> {
 
     // Todas las acciones de partida exigen el token secreto del jugador; el
     // lado (host/invitado) se deduce del token verificado, nunca se confía.
-    if (['poll', 'snap', 'send', 'leave', 'sendBatch'].includes(action)) {
+    if (['poll', 'snap', 'send', 'leave', 'sendBatch', 'resume_status', 'match_phase', 'claim_forfeit'].includes(action)) {
       if (!relayTokenOk(state, String(body.side || ''), body.token)) {
         return Response.json({ error: 'Unauthorized' }, { status: 403 });
       }
@@ -97,6 +102,8 @@ export default async function(req: Request): Promise<Response> {
           'state.guest_avatar': guestAvatar,
           'state.guest_last_seen': now,
           'state.guest_left_at': null,
+          'state.match_started_at': now,
+          'state.match_over_at': null,
           'state.resume_nicks': resumeNicks,
           // Never rewrite relay queues or snapshots from an earlier read.
         },
@@ -111,6 +118,8 @@ export default async function(req: Request): Promise<Response> {
         role: 'client',
         side: 'g',
         token: guestToken,
+        match_id: state.match_id || '',
+        match_round: state.match_round || 0,
       });
     }
 
@@ -201,16 +210,18 @@ export default async function(req: Request): Promise<Response> {
 
     // ---- RESUME: un jugador reanuda una partida en curso ----
     if (action === 'resume') {
-      const guard = checkRoomPassword(state, body.password, now);
-      if (guard.patch) await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: guard.patch });
-      if (!guard.allowed) {
-        return Response.json({ error: guard.reason === 'locked' ? 'Too many attempts' : 'Wrong password' }, { status: guard.reason === 'locked' ? 429 : 403 });
-      }
       const side = String(body.side || 'g') === 'p' ? 'p' : 'g';
-      // Reanudar exige el token del asiento o la contraseña de la sala.
-      const passOk = !!state.password;
-      if (!passOk && !relayTokenOk(state, side, body.token)) {
-        return Response.json({ error: 'Unauthorized' }, { status: 403 });
+      // Identidad: token del asiento (mismo navegador), contraseña de la sala, o contraseña de
+      // tu nick (otro dispositivo). Antes se exigía SIEMPRE la contraseña de sala.
+      const auth = await authorizeResume({
+        room, side, body, now,
+        verifyNick: (nick, password) => checkNick(base44.asServiceRole.entities.NickCredential, nick, password, now, undefined, false),
+      });
+      if (auth.patch) await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: auth.patch });
+      if (!auth.allowed) return Response.json({ error: auth.error }, { status: auth.status });
+      const can = canRejoin(room, now);
+      if (!can.ok) {
+        return Response.json({ error: can.reason === 'over' ? 'Match over' : can.reason === 'expired' ? 'Room expired' : 'Match not in progress' }, { status: can.reason === 'over' || can.reason === 'expired' ? 410 : 409 });
       }
       const newToken = newRelayToken();
       const setOps: any = { left_at: null, [side === 'p' ? 'state.relay_host_token' : 'state.guest_token']: newToken };
@@ -234,15 +245,37 @@ export default async function(req: Request): Promise<Response> {
         role: side === 'p' ? 'host' : 'client',
         side,
         token: newToken,
+        nicks: Array.isArray(state.resume_nicks) ? state.resume_nicks : [room.host_name, room.guest_name].filter(Boolean),
+        match_id: state.match_id || '',
+        match_round: state.match_round || 0,
       });
     }
 
-    // ---- LEAVE: un jugador abandona ----
+    // ---- RESUME_STATUS: ¿puedo volver a MI partida? (se exige el token del asiento) ----
+    if (action === 'resume_status') {
+      return Response.json(resumeStatus(room, String(body.side) === 'p' ? 'p' : 'g', now));
+    }
+
+    // ---- MATCH_PHASE: la partida terminó ('over') o empezó otra ('playing', revancha) ----
+    if (action === 'match_phase') {
+      const patch = matchPhasePatch(body.phase, String(body.side) === 'p' ? 'p' : 'g', now);
+      if (!patch) return Response.json({ error: 'Invalid phase' }, { status: 400 });
+      await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: patch });
+      return Response.json({ ok: true });
+    }
+
+    // ---- CLAIM_FORFEIT: el rival lleva demasiado tiempo ausente (lo comprueba el SERVIDOR) ----
+    if (action === 'claim_forfeit') {
+      const d: any = forfeitDecision(room, String(body.side) === 'p' ? 'p' : 'g', now);
+      if (!d.ok) return Response.json({ ok: false, error: d.error, wait_ms: d.wait_ms }, { status: d.status });
+      await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: d.patch });
+      return Response.json({ ok: true, winner_nick: d.winner_nick, loser_nick: d.loser_nick });
+    }
+
+    // ---- LEAVE: "Sí, salir" (el aviso dice que la partida termina: ya no es reanudable) ----
     if (action === 'leave') {
-      const side = String(body.side || 'p');
-      const setOps: any = { left_at: now };
-      setOps[side === 'p' ? 'state.host_left_at' : 'state.guest_left_at'] = now;
-      await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: setOps });
+      const side = String(body.side) === 'g' ? 'g' : 'p';
+      await base44.asServiceRole.entities.GameRoom.updateMany({ id: room.id }, { $set: leavePatch(side, now) });
       return Response.json({ ok: true });
     }
 

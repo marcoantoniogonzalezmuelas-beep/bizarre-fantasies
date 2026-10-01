@@ -21,13 +21,14 @@ export const FINAL_CINEMATIC_PATCH = `
     // The shared death queue already waits for cinematics and damage captions.
     // Register now rather than adding a second wait followed by 700ms of silence.
     if(window.__bfKillCineQueue){cb();return;}
-    var start=Date.now();
+    var start=Date.now(), epoch=window.__bfMatchEpoch|0;
     (function tick(){
+      if((window.__bfMatchEpoch|0)!==epoch)return;   // otra partida: esta muerte ya no existe
       // Espera a que no quede ninguna cinemática de acción en pantalla NI EN
       // COLA (con techo de 6 s por seguridad) y deja 700 ms para leer el daño.
       var busy=(typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy())||document.querySelector(CINE_SEL);
       if(busy||(typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy()))return setTimeout(tick,150);
-      setTimeout(cb,700);
+      setTimeout(function(){ if((window.__bfMatchEpoch|0)===epoch)cb(); },700);
     })();
   }
 
@@ -94,9 +95,9 @@ export const FINAL_CINEMATIC_PATCH = `
       // se respeta la breve espera tras una muerte, y una única vez.
       var until=window.__bfDeathDelayUntil||0,now=Date.now();
       if(until>now){
-        var args=arguments,self=this;
+        var args=arguments,self=this,epoch=window.__bfMatchEpoch|0;
         window.__bfDeathDelayUntil=0;
-        return setTimeout(function(){orig.apply(self,args);},until-now);
+        return setTimeout(function(){ if((window.__bfMatchEpoch|0)===epoch)orig.apply(self,args); },until-now);
       }
       return orig.apply(this,arguments);
     };

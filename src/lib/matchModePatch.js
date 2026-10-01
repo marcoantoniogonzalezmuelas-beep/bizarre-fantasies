@@ -126,7 +126,7 @@ export const MATCH_MODE_PATCH = `
     wrap.innerHTML = confetti +
       '<div class="bf-champ-crown">👑</div>'+
       '<div class="bf-champ-ttl">¡CAMPEÓN!</div>'+
-      '<div class="bf-champ-name">'+name+'</div>'+
+      '<div class="bf-champ-name">'+(window.bfEscH?window.bfEscH(name):String(name==null?'':name).split('<').join('').split('>').join(''))+'</div>'+
       '<div class="bf-champ-sub">Ha ganado el match</div>'+
       '<button class="btn primary big" id="bf-champ-end">Terminar</button>';
     document.body.appendChild(wrap);
@@ -151,7 +151,9 @@ export const MATCH_MODE_PATCH = `
     // Marcador de la pantalla final = EL MISMO marcador general (por nicks)
     // que se ve en la barra superior: tus victorias · las del rival.
     var gen = (window.bfSeriesScore&&window.bfSeriesScore.get)?window.bfSeriesScore.get():null;
-    var nameP = gen?gen.selfNick:(n.names_self||'Tú'), nameO = gen?gen.oppNick:(n.names_opp||'Rival');
+    // Los nicks los elige cada jugador: se escapan antes de entrar en innerHTML.
+    var E = window.bfEscH || function(s){ return String(s==null?'':s).split('<').join('').split('>').join(''); };
+    var nameP = E(gen?gen.selfNick:(n.names_self||'Tú')), nameO = E(gen?gen.oppNick:(n.names_opp||'Rival'));
     // En modo libre el marcador de la pantalla final ES el global (histórico).
     // En Match a 3 / 5 se muestra el marcador del match (empieza 0-0) y debajo
     // una línea con el global, porque estas partidas también suman al general.
@@ -163,7 +165,7 @@ export const MATCH_MODE_PATCH = `
       sp = (mySideR==='p')?(ms.p||0):(ms.o||0);
       so = (mySideR==='p')?(ms.o||0):(ms.p||0);
     }
-    var genLine = (isMatch&&gen)?('<div class="bf-mode-lbl">Marcador global: '+gen.selfNick+' '+gen.self+' — '+gen.opp+' '+gen.oppNick+'</div>'):'';
+    var genLine = (isMatch&&gen)?('<div class="bf-mode-lbl">Marcador global: '+E(gen.selfNick)+' '+gen.self+' — '+gen.opp+' '+E(gen.oppNick)+'</div>'):'';
     var myWin = !!data.myWin;
     var champSide = data.champSide || null;
 
@@ -182,8 +184,9 @@ export const MATCH_MODE_PATCH = `
       btns = '<button class="btn primary big" onclick="bfMatchRematch()">Jugar otra vez</button>'+
              '<button class="btn big" style="margin-left:10px" onclick="location.reload()">Terminar</button>';
     } else {
-      btns = '<div class="bf-mode-lbl">Esperando a que el anfitrión decida si jugar otra vez…</div>'+
-             '<div style="margin-top:14px"><button class="btn big" onclick="location.reload()">Terminar</button></div>';
+      btns = '<div class="bf-mode-lbl">Puedes pedir la revancha: el anfitrión decide.</div>'+
+             '<div style="margin-top:14px"><button class="btn primary big" id="bf-rematch-btn" onclick="bfMatchRematch()">Volver a jugar</button>'+
+             '<button class="btn big" style="margin-left:10px" onclick="location.reload()">Terminar</button></div>';
     }
     var rs = document.getElementById('s-result');
     if(rs){

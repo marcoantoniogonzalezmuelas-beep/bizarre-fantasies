@@ -49,7 +49,10 @@ export const MP_TURN_SEQUENCE_PATCH = `
     // se quedó colgada: se avanza igualmente en vez de bloquear la partida, porque
     // además este bucle re-arma el vigilante del juego y este nunca podría rescatar.
     var min = 120, max = 4000, quiet = 120, step = 50, HARD = 20000, started = Date.now(), quietFrom = 0, watchdogAt = 0;
+    var epoch = window.__bfMatchEpoch|0;
     function tick(){
+      // Si empezó otra partida mientras se esperaba, el fin de turno de la anterior NO se ejecuta.
+      if((window.__bfMatchEpoch|0)!==epoch) return;
       var now = Date.now(), elapsed = now - started, occupied = busy();
       if(elapsed >= HARD){
         try{ window.parent.postMessage({ bfRelayError: { room_code: '', side: '', nick: '', error_type: 'turn_stall', action: 'stepWhenCalm', error_message: ('forzado tras ' + elapsed + 'ms cine=' + cineBusy() + ' fx=' + fxBusy() + ' kill=' + killPending() + ' ind=' + indicatorsBusy()).slice(0, 500) } }, '*'); }catch(e){}

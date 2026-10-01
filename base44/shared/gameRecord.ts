@@ -16,10 +16,15 @@
 import { cleanNick, cleanAvatarUrl, cleanText } from './sanitize.ts';
 import { isChatMessageBlocked } from './chatModeration.ts';
 import { relayTokenOk } from './relayAuth.ts';
+import { canonNick, nickKey, canonPairKey } from './nickCanon.ts';
 
 const MODES = ['online', 'local', 'ia'];
 const MISSIONS = ['club', 'l5r', 'todos'];
 const WINNERS = ['player', 'opponent', 'draw'];
+// Cuánto puede subir el marcador de una pareja en un solo envío. Es un freno contra números absurdos,
+// pero lo bastante holgado para que unas cuantas victorias perdidas por falta de red se recuperen
+// (con +3 la base de datos se quedaba permanentemente por detrás del marcador local).
+const SCORE_MAX_JUMP = 10;
 
 export type Reply = { status: number; body: Record<string, unknown> };
 const ok = (extra: Record<string, unknown> = {}): Reply => ({ status: 200, body: { ok: true, ...extra } });
@@ -72,7 +77,8 @@ async function upsertAvatar(E: any, nick: string, url: string) {
 async function recordMatch(E: any, body: any, now: number, allow: any): Promise<Reply> {
   const r = (body && body.result) || {};
   const mode = MODES.includes(r.mode) ? r.mode : '';
-  const winner = cleanNick(r.winner_nick), loser = cleanNick(r.loser_nick);
+  // Una IA es la misma aunque el juego esté en inglés ("AI Novice" = "IA Novata").
+  const winner = canonNick(cleanNick(r.winner_nick)), loser = canonNick(cleanNick(r.loser_nick));
   if (!mode || !winner || !loser) return bad('invalid_result');
   const wAi = r.winner_is_ai === true, lAi = r.loser_is_ai === true;
   if (wAi && lAi) return bad('invalid_result');
@@ -102,7 +108,7 @@ async function recordMatch(E: any, body: any, now: number, allow: any): Promise<
 
 // ---- Marcador entre dos jugadores: solo puede subir poco a poco ----
 async function recordScoreWin(E: any, body: any, now: number, allow: any): Promise<Reply> {
-  const pair = str(body.pair_key, 90), nick = cleanNick(body.nick), wins = int(body.wins, 1, 100000);
+  const pair = canonPairKey(str(body.pair_key, 90)), nick = nickKey(cleanNick(body.nick)), wins = int(body.wins, 1, 100000);
   if (!pair || !nick || wins === null) return bad('invalid_score');
   if (!allow('score:' + pair + '|' + nick, 20, 60000, now)) return bad('rate_limited', 429);
   const rows = await E.HeadToHead.filter({ pair_key: pair, nick }, '-created_date', 1);
@@ -110,11 +116,11 @@ async function recordScoreWin(E: any, body: any, now: number, allow: any): Promi
     const cur = rows[0].wins || 0;
     // Los dos dispositivos guardan la misma victoria: se conserva el mayor, pero un
     // envío no puede disparar el marcador (antes se podía poner cualquier número).
-    const next = Math.min(wins, cur + 3);
+    const next = Math.min(wins, cur + SCORE_MAX_JUMP);
     if (next > cur) await E.HeadToHead.update(rows[0].id, { wins: next });
     return ok({ wins: Math.max(cur, next) });
   }
-  const first = Math.min(wins, 5);
+  const first = Math.min(wins, SCORE_MAX_JUMP);
   await E.HeadToHead.create({ pair_key: pair, nick, wins: first });
   return ok({ wins: first });
 }

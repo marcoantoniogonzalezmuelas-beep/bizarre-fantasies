@@ -27,8 +27,10 @@ export const MATCH_SCORE_PATCH = `
     }catch(e){}
     return {self:String(self),opp:String(opp)};
   }
+  // Clave canónica (minúsculas; la IA en inglés = la IA en español): el marcador no se parte por idioma.
+  function nk(s){ return window.bfNickKey?window.bfNickKey(s):String(s).toLowerCase(); }
   function pairKey(n){
-    var a=[n.self,n.opp].map(function(s){return s.toLowerCase();}).sort();
+    var a=[nk(n.self),nk(n.opp)].sort();
     return a[0]+'||'+a[1];
   }
 
@@ -65,12 +67,12 @@ export const MATCH_SCORE_PATCH = `
 
   function get(){
     var n=nicks(),all=readAll(),rec=all[pairKey(n)]||{};
-    return {self:rec[n.self.toLowerCase()]||0,opp:rec[n.opp.toLowerCase()]||0,selfNick:n.self,oppNick:n.opp};
+    return {self:rec[nk(n.self)]||0,opp:rec[nk(n.opp)]||0,selfNick:n.self,oppNick:n.opp};
   }
   function addWin(winnerNick){
     if(!winnerNick)return get();
     var n=nicks(),all=readAll(),k=pairKey(n),rec=all[k]||{};
-    var w=String(winnerNick).toLowerCase();
+    var w=nk(winnerNick);
     rec[w]=(rec[w]||0)+1;   // una victoria = +1 punto
     all[k]=rec; writeAll(all);
     // Persiste la victoria en la base de datos solo si NO somos cliente
@@ -165,7 +167,7 @@ export const MATCH_SCORE_PATCH = `
     render:render,
     addWin:function(nick){
       var n=nicks(),s=addWin(nick);
-      render(String(nick).toLowerCase()===n.self.toLowerCase()?'self':'opp');
+      render(nk(nick)===nk(n.self)?'self':'opp');
       return s;
     },
     // Suma la victoria de la partida actual una ÚNICA vez (a prueba de

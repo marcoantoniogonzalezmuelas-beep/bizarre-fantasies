@@ -72,6 +72,13 @@ export const KILL_CINE_QUEUE_PATCH = `
   // Expone el estado de la cola para que bfStepWhenCalm sepa que hay un
   // golpe mortal pendiente de mostrarse (aún en el retardo antes de aparecer).
   window.__bfKillCinePending = function(){ return pendingVictims.length > 0 || resolvingKills > 0; };
+  // Partida nueva: se descarta lo que la anterior dejó en cola (si no, el golpe mortal de la
+  // partida vieja se reproducía en la nueva) y se libera el registro de muertes.
+  if(window.bfOnMatchReset)window.bfOnMatchReset(function(){
+    if(killTimer){clearTimeout(killTimer);killTimer=null;}
+    pendingVictims=[];pendingActor=null;resolvingKills=0;claimedDeaths=Object.create(null);wasInBattle=false;
+    if(pollId){clearInterval(pollId);pollId=0;}
+  });
 
   function seeCine(){
     try{ if(document.querySelector('#bf-abil-anim,#bf-spec-cine')) lastCineSeen = Date.now(); }catch(e){}
@@ -219,7 +226,9 @@ export const KILL_CINE_QUEUE_PATCH = `
     // Keep the death pending while waiting for damage indicators, so the
     // next turn cannot slip into the gap before the death overlay mounts.
     resolvingKills++;
+    var epochAtStart = window.__bfMatchEpoch|0;
     function proceed(){
+      if((window.__bfMatchEpoch|0)!==epochAtStart){ resolvingKills=Math.max(0,resolvingKills-1); return; }
       if(busy()){
         setTimeout(proceed, 80);
         return;

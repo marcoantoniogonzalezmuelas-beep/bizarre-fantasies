@@ -32,6 +32,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(document.getElementById('bf-kill-ov')) return false;
       if(indicatorsBusy())return false;
       if(document.body.classList.contains('bf-cine-active')) return false;
+      if(document.getElementById('bf-recap')) return false;
     }catch(e){}
     return true;
   }
@@ -45,7 +46,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
     if(typeof orig !== 'function' || orig.__bfWaitCalm) return false;
     var wrapped = function(){
       try{
-        if(typeof B !== 'undefined' && B && B.over && !calm()) return;
+        if(typeof B !== 'undefined' && B && B.over && (!calm() || (typeof window.__bfRecapPending==='function' && window.__bfRecapPending()))) return;
       }catch(e){}
       return orig.apply(this, arguments);
     };
@@ -68,7 +69,10 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(resultPending) return;
       resultPending = true;
       resultDeadline = Date.now() + 30000;
+      var epoch = window.__bfMatchEpoch|0;
       (function proceed(){
+        // Otra partida: el resultado retenido era de la anterior y NO debe mostrarse ahora.
+        if((window.__bfMatchEpoch|0)!==epoch){ resultPending = false; resultArgs = null; return; }
         if(calm() || (Date.now() > resultDeadline && !indicatorsBusy())){
           resultPending = false;
           var a = resultArgs; resultArgs = null;
@@ -96,7 +100,9 @@ export const END_GAME_WAIT_CALM_PATCH = `
       if(showPending) return;
       showPending = true;
       showDeadline = Date.now() + 30000;
+      var epoch = window.__bfMatchEpoch|0;
       (function proceed(){
+        if((window.__bfMatchEpoch|0)!==epoch){ showPending = false; showArgs = null; return; }
         if(calm() || (Date.now() > showDeadline && !indicatorsBusy())){
           showPending = false;
           var a = showArgs; showArgs = null;

@@ -39,9 +39,9 @@ test('match vs AI increments progress on the server; duplicates and floods are s
 });
 test('score_win: can only climb slowly, never be set to an arbitrary number',async()=>{
   const {handleRecord,allow}=await mk();const E=db();
-  assert.equal((await handleRecord(E,{kind:'score_win',pair_key:'a|b',nick:'a',wins:99999},T0,allow)).body.wins,5,'new row capped');
-  assert.equal((await handleRecord(E,{kind:'score_win',pair_key:'a|b',nick:'a',wins:99999},T0+1,allow)).body.wins,8,'update capped at +3');
-  assert.equal((await handleRecord(E,{kind:'score_win',pair_key:'a|b',nick:'a',wins:2},T0+2,allow)).body.wins,8,'never goes down');
+  assert.equal((await handleRecord(E,{kind:'score_win',pair_key:'a|b',nick:'a',wins:99999},T0,allow)).body.wins,10,'new row capped');
+  assert.equal((await handleRecord(E,{kind:'score_win',pair_key:'a|b',nick:'a',wins:99999},T0+1,allow)).body.wins,20,'update capped at +10');
+  assert.equal((await handleRecord(E,{kind:'score_win',pair_key:'a|b',nick:'a',wins:2},T0+2,allow)).body.wins,20,'never goes down');
   assert.equal(E.HeadToHead.rows.length,1);
   for(const bad of [{pair_key:'',nick:'a',wins:1},{pair_key:'a|b',nick:'a',wins:0},{pair_key:'a|b',nick:'a',wins:'x'}])assert.equal((await handleRecord(E,{kind:'score_win',...bad},T0,allow)).status,400);
 });

@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { cleanNick, cleanAvatarUrl } from '../../shared/sanitize.ts';
 import { isJoinLocked } from '../../shared/joinGuard.ts';
+import { resumeInfo, roomExpired } from '../../shared/resumePolicy.ts';
 
 // Throttle de las limpiezas de BD, compartido entre peticiones del mismo
 // isolate: cada cliente del lobby refresca cada ~8s y cada visitante de la
@@ -48,10 +49,11 @@ Deno.serve(async (req) => {
         const stale = all.filter((room) => {
           const upd = Date.parse(room.updated_date || room.created_date || 0);
           const created = Date.parse(room.created_date || room.updated_date || 0);
-          const leftAt = room.left_at || room.state?.left_at;
           return (
             room.status === 'finished' ||
-            (leftAt && now - leftAt > LEFT_TTL) ||
+            // Partida en curso: 30 min desde el último latido (10 si ya terminó). Antes se borraba
+            // a los 10 min de salir alguien y la lista solo la mostraba si había `left_at`.
+            ((room.status === 'playing' || room.status === 'resuming') && !room.state?.mp_mission && roomExpired(room, now)) ||
             (room.status === 'waiting' && now - created > WAITING_TTL) ||
             ((room.status === 'playing' || room.status === 'resuming') && now - upd > 10800000)
           );
@@ -303,8 +305,10 @@ Deno.serve(async (req) => {
       // Salas "playing" sin left_at: partida en juego activo, NO se muestran en la lista
       // (nadie puede unirse salvo los dos jugadores originales, que usan su token).
       playingRecords.forEach((room) => {
-        const leftAt = room.left_at || room.state?.left_at;
-        if (!leftAt || Date.now() - leftAt > LEFT_TTL) return;
+        // Reanudable = partida empezada, no terminada y con algún jugador ausente (por latidos:
+        // una caída brusca nunca escribía left_at y la partida no aparecía nunca).
+        const info = resumeInfo(room, Date.now());
+        if (!info.resumable) return;
         rooms.push({
           id: room.room_code,
           name: 'Partida en curso',

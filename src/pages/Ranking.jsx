@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import RankList from '@/components/ranking/RankList';
 import RankingPrizeBanner from '@/components/ranking/RankingPrizeBanner';
 import { t, getLang } from '@/lib/i18n';
+import { makeNickDisplay } from '@/lib/nickCanon';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
@@ -81,13 +82,20 @@ export default function Ranking() {
   // de avatar entre partidas, el ranking muestra siempre el último que usó.
   // PlayerAvatar (BD) tiene prioridad; luego el avatar guardado en el propio
   // MatchResult; y por último el fallback de IAs para partidas antiguas.
-  const playerArtMap = { ...(playerAvatars || {}) };
+  // Un jugador es el mismo aunque cambie las mayúsculas de su nick, y una IA es la misma aunque el
+  // juego esté en inglés ("IA Novata" = "AI Novice"): antes contaban como jugadores distintos.
+  // La primera grafía vista manda (los resultados vienen del más reciente al más antiguo).
+  const nickDisplay = makeNickDisplay(getLang());
+  (results || []).forEach(r => { nickDisplay(r.winner_nick); nickDisplay(r.loser_nick); });
+  const playerArtMap = {};
+  Object.keys(playerAvatars || {}).forEach(n => { const d = nickDisplay(n); if (!playerArtMap[d]) playerArtMap[d] = playerAvatars[n]; });
   (results || []).forEach(r => {
     if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
-    wins[r.winner_nick] = (wins[r.winner_nick] || 0) + 1;
-    losses[r.loser_nick] = (losses[r.loser_nick] || 0) + 1;
-    if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
-    if (r.loser_avatar && !playerArtMap[r.loser_nick]) playerArtMap[r.loser_nick] = { art: r.loser_avatar };
+    const wn = nickDisplay(r.winner_nick), ln = nickDisplay(r.loser_nick);
+    wins[wn] = (wins[wn] || 0) + 1;
+    losses[ln] = (losses[ln] || 0) + 1;
+    if (r.winner_avatar && !playerArtMap[wn]) playerArtMap[wn] = { art: r.winner_avatar };
+    if (r.loser_avatar && !playerArtMap[ln]) playerArtMap[ln] = { art: r.loser_avatar };
     // Bajas (kills): cada héroe VIVO suma una baja por cada héroe caído del
     // bando contrario, gane o pierda la partida. Los héroes que caen no
     // reciben crédito de baja (no sobrevivieron para cobrarla).
@@ -129,10 +137,11 @@ export default function Ranking() {
     if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
     const d = new Date(r.created_date);
     if (isNaN(d.getTime()) || d.getMonth() !== curMonth || d.getFullYear() !== curYear) return;
-    monthWins[r.winner_nick] = (monthWins[r.winner_nick] || 0) + 1;
-    monthLosses[r.loser_nick] = (monthLosses[r.loser_nick] || 0) + 1;
-    if (r.winner_avatar && !playerArtMap[r.winner_nick]) playerArtMap[r.winner_nick] = { art: r.winner_avatar };
-    if (r.loser_avatar && !playerArtMap[r.loser_nick]) playerArtMap[r.loser_nick] = { art: r.loser_avatar };
+    const mwn = nickDisplay(r.winner_nick), mln = nickDisplay(r.loser_nick);
+    monthWins[mwn] = (monthWins[mwn] || 0) + 1;
+    monthLosses[mln] = (monthLosses[mln] || 0) + 1;
+    if (r.winner_avatar && !playerArtMap[mwn]) playerArtMap[mwn] = { art: r.winner_avatar };
+    if (r.loser_avatar && !playerArtMap[mln]) playerArtMap[mln] = { art: r.loser_avatar };
     // Bajas del mes: mismo criterio que el Top Kills global (héroes vivos
     // cobran una baja por cada héroe caído del bando contrario).
     var mwDead = 0, mlDead = 0;

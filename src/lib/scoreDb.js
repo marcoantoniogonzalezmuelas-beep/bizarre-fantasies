@@ -7,22 +7,20 @@
 // dos fuentes (se queda siempre el valor más alto) antes de enviar el marcador
 // al juego.
 import { base44 } from '@/api/base44Client';
+import { AI_LEVEL_NICKS, nickKey, canonPairKey } from '@/lib/nickCanon';
 
-export const AI_NICKS = {
-  novice: 'IA Novata',
-  berserker: 'IA Bersérker',
-  strategist: 'IA Estratega',
-  nemesis: 'IA Némesis',
-};
+// Antes faltaba el nivel final (IA Bizarra) y el nick de la IA cambiaba con el idioma.
+export const AI_NICKS = AI_LEVEL_NICKS;
 
 export function pairKeyOf(a, b) {
-  return [String(a || '').toLowerCase(), String(b || '').toLowerCase()].sort().join('||');
+  return [nickKey(a), nickKey(b)].sort().join('||');
 }
 
 function bump(map, pairKey, nick, wins) {
   if (!pairKey || !nick || !wins) return;
-  const pair = (map[pairKey] = map[pairKey] || {});
-  const key = String(nick).toLowerCase();
+  // Todo se guarda con la clave canónica: filas antiguas con "ai novice||ana" o "Ana" se unen aquí.
+  const pair = (map[canonPairKey(pairKey)] = map[canonPairKey(pairKey)] || {});
+  const key = nickKey(nick);
   pair[key] = Math.max(pair[key] || 0, wins);
 }
 

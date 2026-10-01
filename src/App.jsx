@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -8,24 +9,32 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import PagePinchZoom from './components/PagePinchZoom';
 import Home from './pages/Home';
-import Cards from './pages/Cards';
-import CardGuide from './pages/CardGuide';
-import RacesPage from './pages/RacesPage';
-import Ranking from './pages/Ranking';
-import Reglas from './pages/Reglas';
-import EnglishEntry from './pages/EnglishEntry';
-import AdminCards from './pages/AdminCards';
-import FlashNewsAdmin from './pages/FlashNewsAdmin';
-import AdminAiLogs from './pages/AdminAiLogs';
-import AdminAuctions from './pages/AdminAuctions';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import AdminChat from './pages/AdminChat';
-import AdminPlayers from './pages/AdminPlayers';
-import AdminHeroStats from './pages/AdminHeroStats';
-import AdminNetwork from './pages/AdminNetwork';
+
+// Solo la portada (Home) va en el bloque principal; el resto de páginas se descargan al visitarlas.
+const Cards = lazy(() => import('./pages/Cards'));
+const CardGuide = lazy(() => import('./pages/CardGuide'));
+const RacesPage = lazy(() => import('./pages/RacesPage'));
+const Ranking = lazy(() => import('./pages/Ranking'));
+const Reglas = lazy(() => import('./pages/Reglas'));
+const EnglishEntry = lazy(() => import('./pages/EnglishEntry'));
+const AdminCards = lazy(() => import('./pages/AdminCards'));
+const FlashNewsAdmin = lazy(() => import('./pages/FlashNewsAdmin'));
+const AdminAiLogs = lazy(() => import('./pages/AdminAiLogs'));
+const AdminAuctions = lazy(() => import('./pages/AdminAuctions'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const AdminChat = lazy(() => import('./pages/AdminChat'));
+const AdminPlayers = lazy(() => import('./pages/AdminPlayers'));
+const AdminHeroStats = lazy(() => import('./pages/AdminHeroStats'));
+const AdminNetwork = lazy(() => import('./pages/AdminNetwork'));
+
+const PageFallback = () => (
+  <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#0e0a16' }}>
+    <div className="w-8 h-8 border-4 border-[#3c3158] border-t-[#FFD24A] rounded-full animate-spin"></div>
+  </div>
+);
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,6 +61,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <Suspense fallback={<PageFallback />}>
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -74,6 +84,7 @@ const AuthenticatedApp = () => {
       <Route path="/en" element={<EnglishEntry />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

@@ -216,7 +216,7 @@ export const CENTRAL_LOBBY_PATCH = `
         'Sala abierta <b style="color:#a8c4ff">sin contraseña</b>: cualquiera con el código puede entrar directamente.</div>'+
       '<div style="margin-bottom:10px">'+
         '<div style="font-weight:800;color:#9adf9a;margin-bottom:3px">🔌 Reanudar una partida</div>'+
-        'Si se cae tu conexión, la sala sigue abierta como "Partida en curso" durante <b style="color:#ffe49a">10 minutos</b>. Busca tu sala y pulsa <b style="color:#ffe49a">Reanudar</b>. Funciona en <b>salas públicas y privadas</b>.</div>'+
+        'Si se cae tu conexión o cierras el juego, tu partida se guarda 30 minutos. Al volver a abrirlo te ofrecemos reanudarla con un clic (también desde otro dispositivo, con la contraseña de tu nick). Si tu rival no vuelve en 5 minutos, puedes reclamar la victoria.</div>'+
       '<div style="margin-bottom:10px">'+
         '<div style="font-weight:800;color:#e2b0ff;margin-bottom:3px">🃏 Habitación Bizarra</div>'+
         'Entras con tu nick y pulsas el <b style="color:#e2b0ff">Botón de Pánico</b>: te empareja al azar con otro visitante. Mínimo <b style="color:#e2b0ff">3 jugadores</b> dentro.</div>'+
@@ -332,8 +332,8 @@ export const CENTRAL_LOBBY_PATCH = `
     // Contraseña obligatoria al crear sala PRIVADA: sin ella la reanudación no
     // puede identificar a los dos jugadores originales (los nicks no son fiables
     // sin registro). El juego nativo la hace opcional, así que la exigimos aquí
-    // solo para salas privadas. Las salas LIBRES no llevan contraseña y no tienen
-    // reanudación: si cualquiera se desconecta, la partida termina.
+    // solo para salas privadas. Las salas LIBRES no llevan contraseña y se reanudan igual
+    // (30 min): con el token de asiento del navegador o con la contraseña del nick.
     if(!window.__bfHostCreateWrapped){
       window.__bfHostCreateWrapped=true;
       var origHostCreate=window.hostCreate;
@@ -405,7 +405,7 @@ export const CENTRAL_LOBBY_PATCH = `
       var freeNote=document.createElement('div');
       freeNote.id='bf-free-note';
       freeNote.style.cssText='display:none;margin:8px 0;padding:10px 12px;border-radius:10px;background:rgba(20,40,80,.4);border:1px solid rgba(90,150,255,.4);font-size:12px;color:#a8c4ff;line-height:1.4';
-      freeNote.innerHTML='🆓 <b>Sala pública</b>: sin contraseña. Cualquiera con el código puede unirse. Si alguien se desconecta, la partida se puede <b>reanudar</b> en 10 minutos.';
+      freeNote.textContent='🆓 Sala pública: sin contraseña. Cualquiera con el código puede unirse. Si alguien se desconecta, la partida se puede reanudar durante 30 minutos.';
       ig.parentNode.insertBefore(freeNote,ig);
       toggle.querySelectorAll('.bf-mode-pill').forEach(function(btn){
         btn.onclick=function(){

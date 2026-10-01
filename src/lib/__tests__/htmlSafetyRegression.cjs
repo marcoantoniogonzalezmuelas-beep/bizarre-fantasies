@@ -48,13 +48,13 @@ test('server sanitizers: strip markup/bidi/control chars, keep legitimate nicks,
   for(const bad of ['javascript:alert(1)',EVIL_ATTR,'http://insecure.test/a.png','//evil.test/a.png','data:image/png;base64,AAAA',null])assert.equal(cleanAvatarUrl(bad),'',String(bad));
 });
 test('the vulnerable sinks are gone (static guards)',()=>{
-  const av=read('src/lib/avatarPatch.js'),cl=read('src/lib/centralLobbyPatch.js'),rp=read('src/lib/serverRelayPatch.js'),home=read('src/pages/Home.jsx');
+  const av=read('src/lib/avatarPatch.js'),cl=read('src/lib/centralLobbyPatch.js'),rp=read('src/lib/serverRelayPatch.js'),home=read('src/lib/gameInject.js');
   assert.doesNotMatch(av,/<img src="' \+ (a|av)\.url \+/,'avatarPatch must not concatenate raw urls');
   assert.equal((av.match(/window\.bfAvUrl\?window\.bfAvUrl\(/g)||[]).length,3);
   assert.doesNotMatch(cl,/<img src="'\+url\+'"/);assert.match(cl,/bfAvUrl\(url\)/);
   assert.doesNotMatch(cl,/'código <b>'\+r\.id\+'<\/b>/);assert.match(cl,/esc\(r\.id\)/);assert.match(cl,/map\(function\(n\)\{return esc\(n\);\}\)/);
   assert.match(rp,/bfCleanIncoming\(msg\)/,'every incoming relay message is cleaned');
-  assert.match(home,/const INJECT = UUID_POLYFILL \+ HTML_SAFETY_PATCH \+/,'helpers are injected before any patch that uses them');
+  assert.match(home,/return UUID_POLYFILL \+ HTML_SAFETY_PATCH \+/,'helpers are injected before any patch that uses them');
   assert.match(cl,/bfPlayerAvatars&&event\.source===window\.parent/);assert.match(av,/bfPlayerAvatars === 'object' && e\.source === window\.parent/);
   for(const f of ['base44/functions/gameRelay/entry.ts','base44/functions/gameLobby/entry.ts'])
     assert.doesNotMatch(read(f),/String\(body\.(nick|avatar)\b/,f+' must sanitise nick/avatar');

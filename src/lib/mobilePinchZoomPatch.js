@@ -312,6 +312,38 @@ export const MOBILE_PINCH_PATCH = `
   // Auto-scroll al borde superior al entrar en "Preparar Partida" (s-setup) o
   // al aparecer el panel de resolución de puja (.pr-box) en la subasta.
   // Solo en móvil/tablet: en PC el contenido cabe sin scroll.
+  // ---- Enfoque automático en EQUIPAMIENTO (zoomFocusPatch calcula; aquí se aplica) ----
+  // Al entrar en s-equip se encuadra la zona útil en vez de dejar la pantalla entera encogida. Si el
+  // jugador ya había hecho zoom no se toca; al salir se deshace solo si sigue tal cual lo dejamos.
+  var equipDone = false, equipTimer = 0, equipAuto = null;
+  function focusEquip(){
+    equipTimer = 0;
+    if (pinch || !window.bfEquipZones || !window.bfComputeEquipFocus) return;
+    if (z !== 1 || tx || ty) { equipDone = true; return; }
+    var zs = window.bfEquipZones(document, { z: z, tx: tx, ty: ty });
+    if (!zs) return;   // aún no hay héroes pintados: se reintenta en el siguiente ciclo
+    var devW = 0;
+    try { devW = window.parent.document.documentElement.clientWidth; } catch (e) {}
+    var f = window.bfComputeEquipFocus(zs.zone, zs.heroes, window.innerWidth, window.innerHeight, devW);
+    equipDone = true;
+    if (!f) return;
+    z = f.z; tx = f.tx; ty = f.ty; clampT();
+    document.body.style.transition = 'transform .5s cubic-bezier(.25,.8,.3,1)';
+    enableWC(); applyNow(); flushMsg(); disableWC(560);
+    equipAuto = { z: z, tx: tx, ty: ty };
+  }
+  function maybeFocusEquip(sid){
+    if (sid !== 's-equip') {
+      if (equipTimer) { clearTimeout(equipTimer); equipTimer = 0; }
+      if (equipAuto) { if (z === equipAuto.z && tx === equipAuto.tx && ty === equipAuto.ty) resetZoom(); equipAuto = null; }
+      equipDone = false;
+      return;
+    }
+    if (equipDone || equipTimer || pinch) return;
+    equipTimer = setTimeout(focusEquip, 600);
+  }
+  window.__bfEquipFocusNow = function(){ equipDone = false; if (equipTimer) clearTimeout(equipTimer); focusEquip(); };
+
   var lastScreen = '';
   function activeScreenId(){
     var a = document.querySelector('.screen.active');
@@ -322,6 +354,7 @@ export const MOBILE_PINCH_PATCH = `
     // atributos fuerza reflow en mitad del gesto = flicker.
     if (pinch) return;
     var sid = activeScreenId();
+    maybeFocusEquip(sid);
     if (sid !== lastScreen) {
       lastScreen = sid;
       if (sid === 's-setup') topReset();

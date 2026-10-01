@@ -5,7 +5,9 @@ const root=path.join(__dirname,'..','..','..');const read=p=>fs.readFileSync(pat
 
 test('room passwords go through the lockout guard everywhere they are compared',()=>{
   const relay=read('base44/functions/gameRelay/entry.ts'),lobby=read('base44/functions/gameLobby/entry.ts');
-  assert.equal((relay.match(/checkRoomPassword\(state, body\.password, now\)/g)||[]).length,2,'join and resume');
+  assert.equal((relay.match(/checkRoomPassword\(state, body\.password, now\)/g)||[]).length,1,'join');
+  assert.match(relay,/authorizeResume\(\{/,'resume goes through authorizeResume, which applies the same guard');
+  assert.match(read('base44/shared/resumeActions.ts'),/checkRoomPassword\(state, body && body\.password, now\)/);
   assert.doesNotMatch(relay,/String\(body\.password \|\| ''\) [!=]== state\.password/,'no plain comparison left in gameRelay');
   assert.match(lobby,/!isJoinLocked\(existing\.state, Date\.now\(\)\)/,'lobby takeover honours the lock');
 });

@@ -32,6 +32,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
     });
   }
   var relayRealtime = false, relayAck = [], deliveredIds = new Set(), earlyDeliveries = [];
+  var pendingRelayCode = '';   // sala a la que se está entrando (join / reanudar) y aún sin relayCode
   function receiveDeliveries(deliveries){
     if(!relayConn){earlyDeliveries=earlyDeliveries.concat(deliveries);return;}
     var ack=[];
@@ -60,6 +61,10 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       return;
     }
     if(event.source!==window.parent)return;
+    // Mensajes del canal en tiempo real: solo valen los de LA sala de esta partida. Sin esto, los
+    // de la sala anterior (la página padre seguía conectada) acababan en la partida nueva.
+    var fromCode=event.data&&event.data.bfRelayCode;
+    if(fromCode){var mine=relayCode||pendingRelayCode;if(!mine||fromCode!==mine)return;}
     if(event.data&&event.data.bfRelayRealtimeStatus){var wasRealtime=relayRealtime;relayRealtime=event.data.bfRelayRealtimeStatus==='ready';if(wasRealtime&&!relayRealtime)wakePoll();}
     var presence=event.data&&event.data.bfRelayPresence;
     if(presence&&presence.side==='g'&&presence.connected)openHostConnection();
@@ -67,6 +72,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
     if(pushed)receiveDeliveries(pushed.deliveries||[]);
   });
   window.bfRelayRequest = relayRequest;
+  // Iframe recién cargado = sin sala: la página padre cierra el canal de la partida anterior.
+  try { window.parent.postMessage({ bfRelayIdle: true }, '*'); } catch (e) {}
 
   // ---- Despertar el polling ----
   // El siguiente poll se programa al FINAL de cada ciclo con la cadencia que
@@ -76,6 +83,12 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   // ya; poll() ya protege contra peticiones solapadas (inFlight).
   var wakePollFn = null;
   function wakePoll() { if (wakePollFn) wakePollFn(); }
+
+  // ---- Partida activa: para poder reanudarla tras recargar o caerse (resumePromptPatch) ----
+  function activeSave(nick) {
+    try { if (window.bfActiveMatch && relayCode && relaySide) window.bfActiveMatch.save({ code: relayCode, side: relaySide, nick: nick || '' }); } catch (e) {}
+  }
+  window.bfRelayInfo = function() { return { code: relayCode, side: relaySide, joined: !!guestJoinedFired }; };
   document.addEventListener('visibilitychange', function() { if (!document.hidden) wakePoll(); });
   window.addEventListener('online', wakePoll);
   window.addEventListener('pageshow', wakePoll);
@@ -231,6 +244,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         // Register the native host listeners BEFORE consuming the guest hello.
         if(side==='p'&&res.guest_joined&&!guestJoinedFired&&lastFakePeer)openHostConnection();
         receiveDeliveries(res.deliveries||[]);
+        try { if (window.bfOnRivalAway) window.bfOnRivalAway(res.other_away_ms || 0, !!res.match_over, res.forfeit_after_ms || 300000); } catch (e) {}
         if (res.other_left && !otherLeftShown) {
           otherLeftShown = true;
           if (typeof notif === 'function') notif('Tu rival se ha desconectado. La partida sigue en curso.');
@@ -299,6 +313,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       relayConn = null;
       relayRealtime = false; relayAck = []; deliveredIds = new Set(); earlyDeliveries=[];
       window.__bfMatchId='';window.__bfMatchRound=0;window.__bfRelayReleased=false;
+      pendingRelayCode = joinCode; relayCode = '';
+      if (window.bfNewMatchEpoch) window.bfNewMatchEpoch('join');
 
       var previous = lastFakePeer, attempt = ++connectionAttempt;
       origClientJoin.apply(this, arguments);
@@ -321,6 +337,9 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
               if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo unir a la sala.');
               return;
             }
+            // El servidor recuerda el id de la partida en curso: se adopta de ahí, no del primer
+            // mensaje que llegue (que podía ser un resto de la sala anterior).
+            if (res.match_id) { window.__bfMatchId = res.match_id; window.__bfMatchRound = res.match_round || 0; }
             // Abrir la conexión virtual → dispara conn.on('open',...) del juego
             // (el juego envía hello al host ahí).
             conn._open();
@@ -330,6 +349,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
             }
             relayCode = joinCode;
             relaySide = 'g';
+            activeSave(joinName);
             relayConn = conn;
             drainEarly();
             lastSnapSeq = res.snap_seq || 0;
@@ -366,6 +386,8 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       relayConn = null;
       relayRealtime = false; relayAck = []; deliveredIds = new Set(); earlyDeliveries=[];
       window.__bfMatchId='';window.__bfMatchRound=0;window.__bfRelayReleased=false;
+      pendingRelayCode = ''; relayCode = '';
+      if (window.bfNewMatchEpoch) window.bfNewMatchEpoch('host');
       var previous = lastFakePeer, attempt = ++connectionAttempt;
       origHostCreate.apply(this, arguments);
 
@@ -377,6 +399,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         registration.promise.then(function(res) {
           if (!res || !res.ok || attempt !== connectionAttempt || peer.destroyed || peer !== lastFakePeer) return;
           relayCode = hostCode; relaySide = 'p'; relayConn = null;
+          activeSave(name);
           var mp=window.bfMissionMpConfig;
           if(mp&&mp.role==='host')window.parent.postMessage({bfMissionMpHosted:{game_code:hostCode,run_id:mp.run_id}},'*');
           guestJoinedFired = false; otherLeftShown = false;
@@ -392,14 +415,19 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
 
   // ---- Reanudar partida: el host (side 'p') o el invitado (side 'g') pueden
   // reanudar. Se detecta cuál es cada uno comparando su nick con resume_nicks.
-  window.bfRelayResumeGame = function(code, password, nick, nicks) {
+  // sideOverride ('p'|'g'): lado guardado de la partida activa (más fiable que comparar nicks).
+  // proof: contraseña para demostrar identidad desde otro dispositivo (sala o nick).
+  window.bfRelayResumeGame = function(code, password, nick, nicks, sideOverride, proof) {
     stopPolling();
     if (relayConn) relayConn.close();
     relayConn = null;
     relayRealtime = false; relayAck = []; deliveredIds = new Set();
-    var isHost = nicks && nicks[0] && String(nicks[0]).toLowerCase() === String(nick || '').toLowerCase();
+    var isHost = (sideOverride === 'p' || sideOverride === 'g') ? sideOverride === 'p'
+      : !!(nicks && nicks[0] && String(nicks[0]).toLowerCase() === String(nick || '').toLowerCase());
     var side = isHost ? 'p' : 'g';
     var cleanCode = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    pendingRelayCode = cleanCode; relayCode = '';
+    if (window.bfNewMatchEpoch) window.bfNewMatchEpoch('resume');
 
     if (typeof renderLobby === 'function') renderLobby(isHost ? 'hostwait' : 'clientwait');
     if (typeof lobbyStatus === 'function') lobbyStatus('Reanudando partida…');
@@ -407,12 +435,15 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
     var avUrl = '';
     try { if (window.bfMyAvatar && window.bfMyAvatar.url) avUrl = window.bfMyAvatar.url; } catch(e) {}
 
-    relayRequest('resume', { code: cleanCode, side: side, password: String(password || '').trim(), nick: nick, avatar: avUrl }).then(function(res) {
+    relayRequest('resume', { code: cleanCode, side: side, password: String(password || '').trim(), nick: nick, nick_password: String(proof || ''), avatar: avUrl }).then(function(res) {
       if (!res || res.error || !res.ok) {
         reportRelayError('resume_failed', 'resume', (res && res.error) || 'No se pudo reanudar');
         if (typeof lobbyError === 'function') lobbyError(res && res.error || 'No se pudo reanudar la partida.');
         return;
       }
+      // Id de la partida en curso (lo guarda el servidor): sin él, el anfitrión que recarga genera
+      // uno nuevo y el invitado descarta todos sus mensajes por "partida distinta".
+      window.__bfMatchId = res.match_id || ''; window.__bfMatchRound = res.match_round || 0;
       // Crear FakePeer y conexión virtual, registrar handlers del juego
       // llamando a la función original correspondiente.
       if (isHost) {
@@ -434,9 +465,11 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
           // Crear conexión virtual y disparar onHostConn
           var hconn = createVirtualConn('p', cleanCode);
           relayConn = hconn;
+          activeSave(nick);
           if (lastFakePeer) lastFakePeer._fireConnection(hconn);
           hconn._open();
           if (res.snap) hconn._dispatch(res.snap);
+          ensureHostRestored(res.snap);
           startPolling();
           if (typeof leaveLobbyForGame === 'function') leaveLobbyForGame();
         }, 100);
@@ -454,6 +487,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
             if (res.snap) conn._dispatch(res.snap);
             relayCode = cleanCode;
             relaySide = 'g';
+            activeSave(nick);
             relayConn = conn;
             drainEarly();
             lastSnapSeq = res.snap_seq || 0;
@@ -466,10 +500,45 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         }, 50);
       }
     }).catch(function(err) {
-      reportRelayError('resume_failed', 'resume', err && err.message || 'timeout');
-      if (typeof lobbyError === 'function') lobbyError('No se pudo reanudar la partida.');
+      var msg = (err && err.message) || '';
+      reportRelayError('resume_failed', 'resume', msg || 'timeout');
+      var say = function(t) { if (typeof lobbyError === 'function') lobbyError(t); };
+      // Sin token (otro dispositivo) o contraseña de sala equivocada: pedir prueba de identidad.
+      if (/Unauthorized|Wrong password/i.test(msg)) {
+        if (!proof && window.bfAskResumeProof) {
+          window.bfAskResumeProof(function(p) { window.bfRelayResumeGame(code, p, nick, nicks, sideOverride, p); });
+          return;
+        }
+        say('Contraseña incorrecta.'); return;
+      }
+      if (/Too many attempts/i.test(msg)) { say('Demasiados intentos. Espera un momento.'); return; }
+      if (/Match over|Room expired|Room not found|not in progress/i.test(msg)) {
+        try { if (window.bfActiveMatch) window.bfActiveMatch.clear(); } catch (e) {}
+        say('La partida ya terminó o caducó.'); return;
+      }
+      say('No se pudo reanudar la partida.');
     });
   };
+
+  // Red de seguridad del ANFITRIÓN: él tiene la partida en memoria, así que al reanudar debe
+  // reconstruirla desde el último snapshot del servidor. Se le entrega como mensaje (arriba),
+  // pero el manejador del anfitrión del motor puede ignorarlo; si tras 1,5 s no se ha pasado a
+  // una pantalla de partida, se aplica directamente con applySnapshot (y queda registrado en
+  // los diagnósticos para saber si hizo falta).
+  var GAME_SCREENS = ['s-recruit', 's-equip', 's-battle', 's-result'];
+  function ensureHostRestored(snap) {
+    if (!snap) return;
+    setTimeout(function() {
+      try {
+        var a = document.querySelector('.screen.active');
+        if (a && GAME_SCREENS.indexOf(a.id) >= 0) return;
+        if (typeof window.applySnapshot !== 'function') return;
+        var s = (snap && snap.screen) ? snap : (snap.snap || snap.s || snap.d || snap);
+        window.applySnapshot(s);
+        reportRelayError('host_restore_fallback', 'resume', 'snapshot applied directly');
+      } catch (e) { reportRelayError('host_restore_failed', 'resume', e && e.message); }
+    }, 1500);
+  }
 
   // ---- Intercept netDropped: en relay no hay conexión P2P que perder ----
   var relayNetDroppedDone = false;
@@ -507,6 +576,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
         qc.querySelector('.bf-qc-yes').onclick = function() {
           try { if (relayConn) relayConn.send({ t: 'bye' }); } catch(e) {}
           relayRequest('leave', { code: relayCode, side: relaySide }).catch(function(){});
+          try { if (window.bfActiveMatch) window.bfActiveMatch.clear(); } catch(e) {}
           if (window.bfLobbyRequest && relayCode) window.bfLobbyRequest('unregister', { code: relayCode }).catch(function(){});
           qc.style.display = 'none';
           setTimeout(function() { try { location.reload(); } catch(e) {} }, 200);

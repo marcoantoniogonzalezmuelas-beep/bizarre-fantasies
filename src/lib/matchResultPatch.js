@@ -35,8 +35,9 @@ export const MATCH_RESULT_PATCH = `
       // que cada nick muestre siempre su último avatar aunque lo cambie.
       var pAv=(window.bfMyAvatar&&window.bfMyAvatar.url)||'';
       var oAv=(window.bfOppAvatar&&window.bfOppAvatar.url)||'';
+      var cn=window.bfCanonNick||function(x){return x;};
       window.parent.postMessage({bfMatchResult:{
-        winner_nick:winner,loser_nick:loser,
+        winner_nick:cn(winner),loser_nick:cn(loser),
         mode:isOnline?'online':(G.oppHuman?'local':'ia'),
         winner_is_ai:winnerIsAi,loser_is_ai:loserIsAi,
         winner_avatar:winnerSide==='p'?pAv:oAv,

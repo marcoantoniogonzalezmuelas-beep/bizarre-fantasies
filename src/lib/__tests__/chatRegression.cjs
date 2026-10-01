@@ -38,3 +38,57 @@ test('chat no longer measures the game iframe when it is not shown, and a failed
   assert.match(src,/catch \(e\) \{\s*\/\/[^\n]*\n\s*setModerationError\(t\('No se pudo enviar/,'send failure is surfaced');
   assert.match(src,/if \(open\) messagesEndRef\.current\?\.scrollIntoView/,'no smooth scroll while closed');
 });
+
+// ---- Chat del invitado + icono (posición y escala) ----
+const vm=require('node:vm');
+function statusWorld(over={}){
+  const timers=[];let now=0;const posts=[];
+  const env={setTimeout:(f,ms)=>{timers.push({f,at:now+ms,rep:0});},setInterval:(f,ms)=>{timers.push({f,at:now+ms,rep:ms});},
+    document:{getElementById:()=>null},localStorage:{getItem:()=>null},...over};
+  env.window=env;env.parent={postMessage:(m)=>posts.push(JSON.parse(JSON.stringify(m)))};
+  const advance=ms=>{const end=now+ms;while(now<end){now=Math.min(end,now+50);for(const t of timers)if(t.at<=now){t.f();t.at=t.rep?t.at+t.rep:Infinity;}}};
+  return {env,posts,advance};
+}
+async function runStatus(over){
+  const {CHAT_STATUS_PATCH}=await load('chatStatusPatch.js');const w=statusWorld(over);
+  vm.runInNewContext(CHAT_STATUS_PATCH.replace(/<\/?script>/g,''),w.env);w.advance(500);return w;
+}
+test('chat status: the GUEST gets the room and an open connection from the relay (it used to be empty for them)',async()=>{
+  // El invitado entra por el relay: el motor NO rellena NET.code ni NET.conn para él.
+  const g=await runStatus({NET:{role:'client',code:'',conn:null,names_self:'Bob',names_opp:'Ana'},G:{},bfRelayInfo:()=>({code:'ABC123',side:'g',joined:true})});
+  const s=g.posts.at(-1).bfChatStatus;assert.equal(s.roomCode,'ABC123');assert.equal(s.connOpen,true,'the chat is shown');assert.equal(s.isHost,false);assert.equal(s.playerNick,'Bob');
+  // Anfitrión sin rival todavía: sin chat; cuando entra el invitado, aparece (y el cambio se publica)
+  let joined=false;const h=await runStatus({NET:{role:'host',code:'ABC123',conn:null,names_self:'Ana'},G:{},bfRelayInfo:()=>({code:'ABC123',side:'p',joined})});
+  assert.equal(h.posts.at(-1).bfChatStatus.connOpen,false,'waiting room: no chat yet');joined=true;h.advance(1000);
+  assert.equal(h.posts.at(-1).bfChatStatus.connOpen,true);assert.equal(h.posts.at(-1).bfChatStatus.isHost,true);
+});
+test('chat status: without the relay (solo / legacy) it falls back to NET exactly as before',async()=>{
+  const a=await runStatus({NET:{role:'host',code:'ZZZ999',conn:{open:true},names_self:'Ana'},G:{}});
+  assert.deepEqual([a.posts.at(-1).bfChatStatus.roomCode,a.posts.at(-1).bfChatStatus.connOpen,a.posts.at(-1).bfChatStatus.isHost],['ZZZ999',true,true]);
+  const solo=await runStatus({NET:{role:'local',code:'',conn:null},G:{},bfRelayInfo:()=>({code:'',side:'',joined:false})});
+  assert.equal(solo.posts.at(-1).bfChatStatus.connOpen,false,'vs the AI: no chat');
+});
+test('chat icon: always to the RIGHT of the animations button (never overlapping) and scaled like the game',async()=>{
+  const {chatIconAnchor,CHAT_ICON_MIN_SCALE,CHAT_ICON_MAX_SCALE}=await load('chatIconAnchor.js');
+  assert.deepEqual(chatIconAnchor(null),{left:10,top:10,height:28,scale:1},'toggle not visible: top-left fallback');
+  // Móvil vertical: el juego (860 px de diseño) se muestra a 390 px => escala ~0.45
+  for(const width of [860,780,640,500,390,320,1280,1600]){
+    const fr={left:0,top:40,width},btn={right:150,top:8,height:30};
+    const a=chatIconAnchor({frameRect:fr,innerWidth:860,btnRect:btn});const k=width/860;
+    const buttonRightOnScreen=fr.left+btn.right*k;
+    assert(a.left>buttonRightOnScreen,'icon must start after the toggle (width '+width+'): '+a.left+' <= '+buttonRightOnScreen);
+    assert(a.scale>=CHAT_ICON_MIN_SCALE&&a.scale<=CHAT_ICON_MAX_SCALE);
+  }
+  const phone=chatIconAnchor({frameRect:{left:0,top:0,width:390},innerWidth:860,btnRect:{right:150,top:8,height:30}});
+  const desktop=chatIconAnchor({frameRect:{left:0,top:0,width:860},innerWidth:860,btnRect:{right:150,top:8,height:30}});
+  assert(phone.scale<desktop.scale,'the icon shrinks on the phone together with the rest of the screen: '+phone.scale+' vs '+desktop.scale);
+  assert.equal(desktop.scale,1);assert.equal(desktop.left,150+16,'a clear gap at scale 1');
+  // centrado en vertical con el botón de animaciones
+  const mid=chatIconAnchor({frameRect:{left:0,top:0,width:860},innerWidth:860,btnRect:{right:100,top:10,height:44}});assert.equal(mid.top,10+(44-28)/2);
+  assert.equal(chatIconAnchor({frameRect:{left:0,top:0,width:10},innerWidth:860,btnRect:{right:100,top:0,height:30}}).scale,CHAT_ICON_MIN_SCALE,'scale is clamped');
+});
+test('chat icon wiring: ChatOverlay uses the anchor scale and re-measures on rotation',()=>{
+  const src=fs.readFileSync(path.join(__dirname,'..','..','components','chat','ChatOverlay.jsx'),'utf8');
+  assert.match(src,/transform: `scale\(\$\{anchor\.scale\}\)`/);assert.match(src,/transformOrigin: 'left top'/);assert.match(src,/chatIconAnchor\(\{/);assert.match(src,/onViewportChange\(measure\)/);
+  assert.doesNotMatch(src,/fr\.left \+ r\.right \* k \+ 8\b/,'the old fixed 8px gap is gone');
+});

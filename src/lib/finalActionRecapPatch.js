@@ -90,6 +90,15 @@ export const FINAL_ACTION_RECAP_PATCH = `
   // La pantalla de resultado se activa al terminar la partida: ese es el momento
   // del repaso. Cada partida se repasa una sola vez (marca de tiempo del golpe).
   var shown = 0;
+  // La cinemática de victoria/derrota espera a este aviso: antes arrancaban a la vez y el repaso
+  // (z-index mayor) tapaba los retratos de los héroes durante sus primeros 3 segundos.
+  window.__bfRecapPending = function(){
+    var res = document.getElementById('s-result');
+    if(!res || !res.classList.contains('active')) return false;
+    if(document.getElementById('bf-recap')) return true;
+    var fb = window.__bfFinalBlow;
+    return !!(fb && fb.ts !== shown && window.__bfKillFinalShown !== fb.ts);
+  };
   setInterval(function(){
     var res = document.getElementById('s-result');
     if(!res || !res.classList.contains('active')) return;

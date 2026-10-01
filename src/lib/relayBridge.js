@@ -33,6 +33,9 @@ export function bindRelayBridge(iframeRef) {
   const onMessage = async (event) => {
     const frameWindow = iframeRef.current?.contentWindow;
     if (!frameWindow || event.source !== frameWindow) return;
+    // El iframe acaba de (re)cargarse y no tiene ninguna sala: el canal de la partida anterior no
+    // debe seguir empujándole mensajes (antes seguía vivo tras "Terminar").
+    if (event.data?.bfRelayIdle) { closeRealtime(); return; }
     if (event.data?.bfRelayAck) { room?.acknowledge(event.data.bfRelayAck); return; }
     if (!event.data?.bfRelay) return;
     const { requestId, payload: rawPayload = {} } = event.data.bfRelay;
