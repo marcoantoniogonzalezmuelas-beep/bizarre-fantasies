@@ -13,7 +13,7 @@
       "enum": [
         "online",
         "local",
-        "ia"
+        "ia", "mission", "mission_mp"
       ]
     },
     "ai_level": {
@@ -69,6 +69,18 @@
           }
         }
       }
+    },
+    "mission": {
+      "type": "string",
+      "description": "Misión (solo en partidas de misión)"
+    },
+    "mission_level": {
+      "type": "number",
+      "description": "Nivel de la misión (solo en partidas de misión en solitario)"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Identificador de la partida de misión: evita guardarla dos veces"
     }
   },
   "required": [
@@ -76,11 +88,7 @@
     "loser_nick"
   ],
   "rls": {
-    "create": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
+    "create": null,
     "read": null,
     "update": {
       "user_condition": {

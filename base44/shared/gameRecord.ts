@@ -18,7 +18,7 @@ import { isChatMessageBlocked } from './chatModeration.ts';
 import { relayTokenOk } from './relayAuth.ts';
 import { canonNick, nickKey, canonPairKey } from './nickCanon.ts';
 
-const MODES = ['online', 'local', 'ia'];
+const MODES = ['online', 'local', 'ia', 'mission', 'mission_mp'];
 const MISSIONS = ['club', 'l5r', 'todos'];
 const WINNERS = ['player', 'opponent', 'draw'];
 // Cuánto puede subir el marcador de una pareja en un solo envío. Es un freno contra números absurdos,
@@ -83,6 +83,17 @@ async function recordMatch(E: any, body: any, now: number, allow: any): Promise<
   const wAi = r.winner_is_ai === true, lAi = r.loser_is_ai === true;
   if (wAi && lAi) return bad('invalid_result');
   const aiLevel = str(r.ai_level, 40);
+  // Partidas de MISIÓN (en solitario o multijugador): llevan misión, nivel y run_id, y cada run_id se
+  // guarda UNA sola vez (en multijugador informan los dos jugadores).
+  const isMission = mode === 'mission' || mode === 'mission_mp';
+  let missionFields: Record<string, unknown> = {};
+  if (isMission) {
+    const runId = String(r.run_id || '');
+    if (!MISSIONS.includes(r.mission) || !/^[A-Za-z0-9_-]{6,80}$/.test(runId)) return bad('invalid_result');
+    const already = await E.MatchResult.filter({ run_id: runId }, '-created_date', 1);
+    if (already && already.length) return ok({ duplicate: true });
+    missionFields = { mission: r.mission, mission_level: int(r.mission_level, 0, 100) ?? 0, run_id: runId };
+  }
   if (!allow('match:' + winner.toLowerCase(), 6, 60000, now)) return bad('rate_limited', 429);
   // Los dos clientes pueden informar del mismo resultado: solo se guarda uno.
   if (!allow(`dup:${mode}:${winner.toLowerCase()}:${loser.toLowerCase()}`, 1, 20000, now)) return ok({ duplicate: true });
@@ -92,7 +103,7 @@ async function recordMatch(E: any, body: any, now: number, allow: any): Promise<
   await E.MatchResult.create({
     winner_nick: winner, loser_nick: loser, mode, ai_level: aiLevel,
     winner_is_ai: wAi, loser_is_ai: lAi, winner_avatar: winnerAvatar, loser_avatar: loserAvatar,
-    winner_heroes: heroes(r.winner_heroes), loser_heroes: heroes(r.loser_heroes),
+    winner_heroes: heroes(r.winner_heroes), loser_heroes: heroes(r.loser_heroes), ...missionFields,
   });
   if (!wAi) await upsertAvatar(E, winner, winnerAvatar);
   if (!lAi) await upsertAvatar(E, loser, loserAvatar);

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import MissionsOverlay from '@/components/missions/MissionsOverlay';
 import { recordGame, isRejection } from '@/lib/gameRecordClient';
+import { saveMatchResult, flushResultOutbox } from '@/lib/resultPipeline';
 import { onViewportChange } from '@/lib/viewportEvents';
 import { gameHtmlLoader } from '@/lib/gameHtmlLoader';
 import { bindGameLobbyBridge } from '@/lib/gameLobbyBridge';
@@ -20,6 +21,7 @@ import IntroCinematic from '@/components/cinematic/IntroCinematic';
 
 const ORACLE_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/ab6da3724_generated_image.png';
 const MAX_LOAD_ATTEMPTS = 6;
+const CONNECTION_ERROR_TYPES = ['timeout', 'server_error', 'join_failed', 'resume_failed', 'snap_failed', 'poll_failed', 'leave_failed'];
 
 const DRAGGABLE_GUIDE_PATCH = `
 <script>
@@ -329,7 +331,27 @@ export default function Home() {
 
   const iframeRef = useRef(null);
   const loadTimerRef = useRef(null);
-  const gameReadyRef = useRef(false);   // el juego ya dio señales de vida (primer aviso de pantalla)
+  const gameReadyRef = useRef(false);
+
+  // iOS hace zoom NATIVO de la página con el pellizco (eventos gesture*) además del zoom propio del juego:
+  // desplaza el diseño y deja un margen negro que no se va. Se bloquea solo mientras está esta pantalla
+  // (el zoom del resto de páginas es otro componente y no se toca).
+  useEffect(() => {
+    const stop = (e) => { try { e.preventDefault(); } catch (err) { /* noop */ } };
+    const evs = ['gesturestart', 'gesturechange', 'gestureend'];
+    evs.forEach((n) => document.addEventListener(n, stop, { passive: false }));
+    return () => evs.forEach((n) => document.removeEventListener(n, stop));
+  }, []);
+
+  // Resultados que no se pudieron guardar (sin red, función caída...): se reintentan al abrir, cada minuto
+  // y cuando vuelve la conexión. Así ninguna partida se pierde en silencio.
+  useEffect(() => {
+    const run = () => { flushResultOutbox().catch(() => {}); };
+    const first = setTimeout(run, 4000);
+    const timer = setInterval(run, 60000);
+    window.addEventListener('online', run);
+    return () => { clearTimeout(first); clearInterval(timer); window.removeEventListener('online', run); };
+  }, []);   // el juego ya dio señales de vida (primer aviso de pantalla)
   const battleArtRef = useRef(null);
   const abilityAnimRef = useRef(null);
   const avatarListRef = useRef(null);
@@ -618,10 +640,12 @@ export default function Home() {
         const err = e.data.bfRelayError;
         base44.entities.ConnectionError.create({
           room_code: String(err.room_code || '').slice(0, 6),
-          side: err.side || '',
+          ...(err.side === 'p' || err.side === 'g' ? { side: err.side } : {}),
           nick: String(err.nick || '').slice(0, 28),
-          error_type: err.error_type || 'server_error',
-          error_message: String(err.error_message || '').slice(0, 500),
+          // error_type es un enum cerrado: los tipos nuevos (turn_stall, match_id_mismatch...) se rechazaban
+          // en silencio y no llegaban a los diagnósticos. Se guardan como server_error con su tipo delante.
+          error_type: CONNECTION_ERROR_TYPES.includes(err.error_type) ? err.error_type : 'server_error',
+          error_message: ((CONNECTION_ERROR_TYPES.includes(err.error_type) || !err.error_type) ? '' : `[${err.error_type}] `) + String(err.error_message || '').slice(0, 480),
           action: String(err.action || '').slice(0, 20),
         }).catch(() => {});
       }
@@ -730,15 +754,11 @@ export default function Home() {
         const aiWin = r.mode === 'ia' && !r.winner_is_ai && r.ai_level && r.winner_nick;
         // El servidor valida y guarda el resultado, el avatar de los jugadores y la
         // victoria contra la IA en una sola llamada.
-        recordGame('match', { result: r }).then((res) => {
-          if (aiWin && !res.duplicate) applyAiWinToCache(r.winner_nick, r.ai_level);
-        }).catch((err) => {
-          if (isRejection(err)) return;
-          // Reserva (función no disponible): escritura directa antigua.
-          base44.entities.MatchResult.create(r).catch(() => {});
-          if (r.winner_avatar) base44.entities.PlayerAvatar.create({ nick: r.winner_nick, avatar_url: r.winner_avatar }).catch(() => {});
-          if (r.loser_avatar) base44.entities.PlayerAvatar.create({ nick: r.loser_nick, avatar_url: r.loser_avatar }).catch(() => {});
-          if (aiWin) upsertAiWin(r.winner_nick, r.ai_level);
+        // Servidor -> escritura directa -> cola persistente que reintenta (ver resultSaver).
+        // Antes, cualquier 4xx de la función descartaba el resultado sin reserva y sin dejar rastro.
+        saveMatchResult(r, {
+          onServer: (res) => { if (aiWin && !res.duplicate) applyAiWinToCache(r.winner_nick, r.ai_level); },
+          onDirect: () => { if (aiWin) upsertAiWin(r.winner_nick, r.ai_level); },
         });
       }
 

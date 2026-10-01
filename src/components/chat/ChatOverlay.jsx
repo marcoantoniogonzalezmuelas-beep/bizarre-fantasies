@@ -65,11 +65,13 @@ export default function ChatOverlay({ mobScale = 1, pinchZ = 1 }) {
       try {
         const frame = document.querySelector('iframe');
         const btn = frame?.contentDocument?.getElementById('bf-cine-toggle');
-        if (btn && btn.offsetParent !== null) {
+        if (frame) {
+          // El botón es position:fixed: offsetParent es SIEMPRE null, así que no sirve para saber si se ve.
+          // chatIconAnchor decide por su rectángulo (y cae a la esquina, escalado, si no está a la vista).
           next = chatIconAnchor({
             frameRect: frame.getBoundingClientRect(),
             innerWidth: frame.contentWindow?.innerWidth,
-            btnRect: btn.getBoundingClientRect(),
+            btnRect: btn ? btn.getBoundingClientRect() : null,
           });
         }
       } catch (e) {}

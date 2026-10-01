@@ -5,6 +5,7 @@ import RankList from '@/components/ranking/RankList';
 import RankingPrizeBanner from '@/components/ranking/RankingPrizeBanner';
 import { t, getLang } from '@/lib/i18n';
 import { makeNickDisplay } from '@/lib/nickCanon';
+import { isMissionRow, buildMissionRanking } from '@/lib/rankingMissions';
 import { useDesktopZoom } from '@/lib/useDesktopZoom';
 
 const BG_IMG = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/e6f0b7316_generated_image.png';
@@ -44,11 +45,20 @@ function top(map, n = 10, extraMap) {
 export default function Ranking() {
   useDesktopZoom();
   const [results, setResults] = useState(null);
+  const [missionRows, setMissionRows] = useState([]);
+  const [missionVictories, setMissionVictories] = useState([]);
   const [artMap, setArtMap] = useState({});
   const [playerAvatars, setPlayerAvatars] = useState({});
 
   useEffect(() => {
-    base44.entities.MatchResult.list('-created_date', 500).then(setResults);
+    // Partidas generales (hasta 1000: las de misión van aparte y no desplazan a las demás)...
+    base44.entities.MatchResult.list('-created_date', 1000).then(setResults);
+    // ...y las de MISIÓN (solitario y multijugador) + las victorias de misión guardadas antes de esta sección.
+    Promise.all([
+      base44.entities.MatchResult.filter({ mode: 'mission' }, '-created_date', 500).catch(() => []),
+      base44.entities.MatchResult.filter({ mode: 'mission_mp' }, '-created_date', 500).catch(() => []),
+    ]).then(([a, b]) => setMissionRows([...(a || []), ...(b || [])]));
+    base44.entities.MissionVictory.list('-created_date', 1000).then(v => setMissionVictories(v || [])).catch(() => {});
     // Avatares de jugadores asociados al nick en la BD: el más reciente por nick.
     base44.entities.PlayerAvatar.list('-created_date', 500).then(avatars => {
       const m = {};
@@ -86,10 +96,11 @@ export default function Ranking() {
   // juego esté en inglés ("IA Novata" = "AI Novice"): antes contaban como jugadores distintos.
   // La primera grafía vista manda (los resultados vienen del más reciente al más antiguo).
   const nickDisplay = makeNickDisplay(getLang());
-  (results || []).forEach(r => { nickDisplay(r.winner_nick); nickDisplay(r.loser_nick); });
+  const generalResults = (results || []).filter(r => !isMissionRow(r));
+  generalResults.forEach(r => { nickDisplay(r.winner_nick); nickDisplay(r.loser_nick); });
   const playerArtMap = {};
   Object.keys(playerAvatars || {}).forEach(n => { const d = nickDisplay(n); if (!playerArtMap[d]) playerArtMap[d] = playerAvatars[n]; });
-  (results || []).forEach(r => {
+  generalResults.forEach(r => {
     if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
     const wn = nickDisplay(r.winner_nick), ln = nickDisplay(r.loser_nick);
     wins[wn] = (wins[wn] || 0) + 1;
@@ -127,13 +138,17 @@ export default function Ranking() {
     return `${w + l} ${t('partidas')} · ${Math.round((w / Math.max(1, w + l)) * 100)}% ${t('victorias')}`;
   };
 
+  // Ranking de MISIONES (aparte del general): victorias y derrotas por jugador.
+  const missionRanking = buildMissionRanking(missionRows, missionVictories, nickDisplay);
+  const missionExtra = (nick) => `${missionRanking.wins.all[nick] || 0} ${t('victorias')} · ${missionRanking.losses.all[nick] || 0} ${t('derrotas')}`;
+
   // Ranking mensual: solo partidas del mes en curso (mes a mes, ahora Agosto).
   const now = new Date();
   const curMonth = now.getMonth();
   const curYear = now.getFullYear();
   const monthLabel = MONTH_NAMES()[curMonth];
   const monthWins = {}, monthLosses = {}, monthHeroKills = {};
-  (results || []).forEach(r => {
+  generalResults.forEach(r => {
     if (isGeneric(r.winner_nick) || isGeneric(r.loser_nick)) return;
     const d = new Date(r.created_date);
     if (isNaN(d.getTime()) || d.getMonth() !== curMonth || d.getFullYear() !== curYear) return;
@@ -174,7 +189,7 @@ export default function Ranking() {
         <div className="text-center mb-10">
           <img src={ICON_IMG} alt="Top Ranking" className="w-24 h-24 mx-auto rounded-full border-2 border-[#FFD24A] shadow-[0_0_30px_rgba(255,210,74,.5)] object-cover mb-4" />
           <h1 className="font-heading font-black text-4xl md:text-5xl text-[#FFD24A] drop-shadow-[0_2px_12px_rgba(255,210,74,.35)] tracking-wide">Top Ranking</h1>
-          <p className="text-[#cfc6dd] mt-2 text-sm">{t('El salón de la fama de Bizarre Fantasies')} · {results ? results.length : '…'} {t('partidas registradas')}</p>
+          <p className="text-[#cfc6dd] mt-2 text-sm">{t('El salón de la fama de Bizarre Fantasies')} · {results ? generalResults.length : '…'} {t('partidas registradas')}</p>
         </div>
 
         <div className="mb-8">
@@ -193,6 +208,16 @@ export default function Ranking() {
             <div className="md:col-span-2">
               <RankList title={t('Mejores de ') + monthLabel} iconImg={ICON_MONTHLY} rows={top(monthWins, 10, monthExtra)} valueLabel={t('victorias')} accent="#ff9a3c" empty={t('Nadie ha ganado todavía este mes. ¡Sé el primero en entrar en la leyenda!')} artMap={playerArtMap} />
             </div>
+            {/* MISIONES: sección aparte (partidas en solitario y multijugador). */}
+            <div className="md:col-span-2 mt-4">
+              <h2 className="font-heading font-black text-2xl text-[#FFD24A] tracking-wide">{t('Misiones')}</h2>
+              <p className="text-[#cfc6dd] text-xs mt-1">{missionRows.length} {t('partidas de misión registradas')}</p>
+            </div>
+            <div className="md:col-span-2">
+              <RankList title={t('Mejores en misiones')} iconImg={ICON_VICTORY} rows={top(missionRanking.wins.all, 10, missionExtra)} valueLabel={t('victorias')} accent="#7ddf7d" empty={t('Nadie ha ganado una misión todavía')} artMap={playerArtMap} />
+            </div>
+            <RankList title={t('Misiones en solitario')} iconImg={ICON_VICTORY} rows={top(missionRanking.wins.solo, 8, missionExtra)} valueLabel={t('victorias')} accent="#7ddf7d" empty={t('Nadie ha ganado una misión todavía')} artMap={playerArtMap} />
+            <RankList title={t('Misiones multijugador')} iconImg={ICON_VICTORY} rows={top(missionRanking.wins.mp, 8, missionExtra)} valueLabel={t('victorias')} accent="#7ddf7d" empty={t('Nadie ha ganado una misión todavía')} artMap={playerArtMap} />
             <div className="md:col-span-2">
               <div className="rounded-2xl p-[2px] shadow-[0_0_36px_-6px_rgba(255,59,59,.45)]" style={{ background: 'linear-gradient(135deg, rgba(255,59,59,.55), rgba(255,59,59,.08) 40%, rgba(255,59,59,.55))' }}>
                 <RankList title={t('Top Kills')} iconImg={ICON_KILLS} rows={top(heroKills, 8)} valueLabel={t('bajas')} accent="#ff3b3b" empty={t('Ningún héroe ha causado baja todavía. ¡Derrama sangre en el campo de batalla!')} artMap={artMap} />

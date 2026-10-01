@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { saveMatchResult } from '@/lib/resultPipeline';
+import { missionResult } from '@/lib/resultSaver';
 import { loadVictories, saveVictory } from '@/components/missions/missionPersistence';
 import { readPendingVictory, rememberPendingVictory, clearPendingVictory } from '@/components/missions/missionPendingVictory';
 export default function useMissionSession(iframeRef) {
@@ -51,6 +53,9 @@ export default function useMissionSession(iframeRef) {
       if (run.current && d.bfMissionResult?.run_id === run.current.run_id && typeof d.bfMissionResult.won === 'boolean') {
         if (run.current.finished) { send({ bfMissionResultAck: run.current.run_id }); return; }
         run.current.finished = true;
+        // TODAS las partidas de misión (ganadas o perdidas, en solitario o multijugador) pasan al ranking de
+        // misiones. En multijugador informan los dos jugadores: el servidor guarda una sola por run_id.
+        try { saveMatchResult(missionResult(run.current, d.bfMissionResult.won)); } catch (e) { /* no debe bloquear la misión */ }
         if (d.bfMissionResult.won && run.current.level) {
           pending.current = rememberPendingVictory(run.current); setNotice('Guardando victoria…');
           send({ bfMissionResultAck: run.current.run_id }); await persist();
@@ -70,7 +75,7 @@ export default function useMissionSession(iframeRef) {
   }
   function startMp(cfg) {
     if (starting || pending.current) return;
-    const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, room_code: cfg.room_code, token: cfg.token, run_id: cfg.run_id || crypto.randomUUID() };
+    const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, room_code: cfg.room_code, token: cfg.token, run_id: cfg.run_id || crypto.randomUUID(), oppNick: cfg.oppNick, role: cfg.role };
     run.current = current; setError(''); setNotice(''); setStarting(true);
     send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, game_code: cfg.game_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, round: cfg.round || 0, token: cfg.token, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 15000);
