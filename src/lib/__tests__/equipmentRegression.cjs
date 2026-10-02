@@ -23,7 +23,7 @@ test('validator: rejects what the game could not run; the editor catalog lists t
   assert.equal(validateEffect('object',{kind:'heal'}).ok,false,'val is required');assert.equal(validateEffect('ranged_weapon',{hits:9}).ok,false);assert.equal(validateEffect('melee_weapon',null).ok,true,'melee weapons need nothing beyond the card fields');assert.equal(validateEffect('hero',null).ok,true,'categories without engine parameters never require them');assert.equal(validateEffect('bonus',null).ok,false,'a bonus needs its type and number');
   for(const cat of ['ranged_weapon','armor','spell','object','bonus'])assert.ok(validateEffect(cat,defaultEffect(cat)).ok,'default for '+cat+' is valid');
   assert.equal(validateEffect('bonus',{type:'INVENTADO',effect:3}).ok,false);assert.equal(validateEffect('bonus',{type:'EQP'}).ok,false,'effect is required');assert.equal(validateEffect('bonus',{type:'PERM',effect:5,target:'nadie'}).ok,false);assert.equal(validateEffect('bonus',{type:'BID_ADD',effect:5,debt:-1}).ok,false);assert.equal(validateEffect('bonus',{type:'PERM',effect:5,target:'rival'}).ok,true);
-  assert.equal(Object.keys(SPELL_KINDS).length,15);assert.equal(Object.keys(OBJECT_KINDS).length,12);
+  assert.equal(Object.keys(SPELL_KINDS).length,16);assert.equal(Object.keys(OBJECT_KINDS).length,13);   // + bf_steps (efecto definido con pasos)
 });
 test('buildEquipItem: the engine object comes ONLY from the card; export apostrophes are removed; invalid cards are skipped; it survives being injected as text',async()=>{
   const m=await load(path.join(root,'base44/shared/equipItems.ts')),b=m.buildEquipItem;
