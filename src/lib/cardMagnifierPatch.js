@@ -142,7 +142,10 @@ export const CARD_MAGNIFIER_PATCH = `
 
   document.addEventListener('mouseover', function(e){
     if (!e.target.closest) { hide(); return; }
-    var el = e.target.closest('.chip.bf-chip-card') || e.target.closest('.shop-card.has-art') || e.target.closest('.bf-quick-card');
+    // Sin lupa en el selector de armas y armaduras del equipamiento (.bf-quick-card): allí la carta ya se ve grande
+    // y la ampliación solo la duplicaba encima del resto.
+    if (e.target.closest('.bf-quick-card')) { hide(); return; }
+    var el = e.target.closest('.chip.bf-chip-card') || e.target.closest('.shop-card.has-art');
     if (el) show(el); else hide();
   });
   var _bfSc=0;
