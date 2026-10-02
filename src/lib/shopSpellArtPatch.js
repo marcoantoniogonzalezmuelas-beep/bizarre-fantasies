@@ -161,6 +161,20 @@ export const SHOP_SPELL_ART_PATCH = `
         chip.dataset.bfArtDone = '1'; chip.dataset.bfArtFor = m;
       });
     }
+    // Mano de la fase de EQUIPAMIENTO: el juego pinta cada carta con capas de arte (.bf-chip-art-layer/.bf-chip-fill)
+    // buscando por posición. Si la imagen no es la de SU nombre en la base de datos, se corrige aquí (El Ladrón
+    // Enmascarado aparecía con el arte de Reanimación Arcana).
+    document.querySelectorAll('#s-equip .chip-spell, #s-equip .chip-object').forEach(function (chip) {
+      var m = matchChipName(chip);
+      if (!m) return;
+      var art = artFor(m);
+      if (!art) return;
+      var want = baseUrl(art);
+      chip.querySelectorAll('.bf-chip-art-layer, .bf-chip-fill').forEach(function (layer) {
+        if (baseUrl(layer.style.backgroundImage) !== want) layer.style.backgroundImage = 'url("' + art + '")';
+      });
+      chip.dataset.bfArtFor = m;
+    });
     // Limpia cualquier arte inline que injectHandArt u otra función haya puesto
     // en la mano del rival — el reverso del pollito lo pinta rivalHandBackPatch.
     var rivalHand = document.getElementById('hand_' + rivalSide);
