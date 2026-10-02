@@ -1,5 +1,5 @@
 import React from 'react';
-import { SPELL_KINDS, OBJECT_KINDS, ELEMENTS, SPELL_ELEMENTS, validateEffect, defaultEffect } from '@/lib/equipmentEffects';
+import { SPELL_KINDS, OBJECT_KINDS, BONUS_TYPES, ELEMENTS, SPELL_ELEMENTS, validateEffect, defaultEffect } from '@/lib/equipmentEffects';
 
 // Parámetros del MOTOR de una carta de equipo (Card.effect). La base de datos es la única fuente del juego: aquí
 // se define cómo funciona la carta (tipo de efecto y números) y el juego la aplica sin tocar código.
@@ -44,6 +44,18 @@ export default function EffectEditor({ category, value, onChange }) {
               <div><span className={label}>element</span>
                 <select className={input} value={e.element || ''} onChange={(ev) => set('element', ev.target.value)}>
                   <option value="">(ninguno)</option>{SPELL_ELEMENTS.map((x) => <option key={x} value={x}>{x}</option>)}</select></div>
+            </>
+          ) : null}
+          {category === 'bonus' ? (
+            <>
+              <div className="col-span-2"><span className={label}>type (tipo de bonus)</span>
+                <select className={input} value={e.type || ''} onChange={(ev) => set('type', ev.target.value)}>
+                  <option value="">(elige)</option>{Object.entries(BONUS_TYPES).map(([k, t]) => <option key={k} value={k}>{k} — {t}</option>)}</select></div>
+              <Num name="effect" value={e.effect} onChange={set} />
+              <Num name="debt" value={e.debt} onChange={set} />
+              <div><span className={label}>target (solo PERM)</span>
+                <select className={input} value={e.target || ''} onChange={(ev) => set('target', ev.target.value || undefined)}>
+                  <option value="">(ninguno)</option><option value="self">self (tú)</option><option value="rival">rival</option></select></div>
             </>
           ) : null}
           {category === 'object' ? (

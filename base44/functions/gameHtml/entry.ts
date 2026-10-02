@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-03-equipdb-v234';
+const GAME_PATCH_VERSION = 'bf-2026-10-03-bonusdb-v235';
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -49,7 +49,7 @@ function buildArtScript(dbCards) {
   // coste y maná de hechizos/armas/armaduras/objetos se sincronizan desde la BD
   // al juego (igual que ya ocurría con héroes y arte). Sin esto, editar una
   // carta de equipo en el admin se veía en el Oráculo pero no en la partida.
-  const DB_EQUIP = (dbCards || []).filter(c => c && ['melee_weapon','ranged_weapon','armor','spell','object'].includes(c.category)).map(c => ({ num: Number(c.number), cat: c.category, card_id: c.card_id, name: c.name, cost: c.cost, txt: c.ability_text || c.description || '', cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, power: c.power, mana: c.mana, element: c.type || '', tag: c.tag || '', foil: c.foil === true, effect: c.effect || null }));
+  const DB_EQUIP = (dbCards || []).filter(c => c && ['melee_weapon','ranged_weapon','armor','spell','object','bonus'].includes(c.category)).map(c => ({ num: Number(c.number), cat: c.category, card_id: c.card_id, name: c.name, cost: c.cost, txt: c.ability_text || c.description || '', cc: c.cc, ad: c.ad, he: c.he, hp: c.hp, power: c.power, mana: c.mana, element: c.type || '', tag: c.tag || '', foil: c.foil === true, effect: c.effect || null }));
   return `
 <script>
 (function() {
@@ -2389,6 +2389,7 @@ function buildArtScript(dbCards) {
   ${buildEquipItem.toString()}
   function rebuildEquipmentFromDb() {
     var MAP = { melee_weapon: MELEE, ranged_weapon: RANGED, armor: ARMORS, spell: SPELLS, object: OBJECTS };
+    if (typeof BONUS !== 'undefined') MAP.bonus = BONUS;   // bonus de subasta: tipo y número vienen de la base de datos
     Object.keys(MAP).forEach(function(cat) {
       var cards = DB_EQUIP.filter(function(d){ return d && d.cat === cat; }).sort(function(a, b){ return a.num - b.num; });
       if (!cards.length) return;   // si la BD no trae esa categoría, se conserva la del motor (el juego nunca se queda sin equipo)
@@ -2483,7 +2484,10 @@ async function cardsStamp(base44) {
   try {
     const latest = await base44.asServiceRole.entities.Card.list('-updated_date', 1);
     const c = latest && latest[0];
-    return c ? String(c.updated_date || '') + '|' + String(c.id || '') : '';
+    // También cuenta la última ficha de AbilityImpl: ahí viven los parámetros del motor del equipo.
+    let a = null;
+    try { const la = await base44.asServiceRole.entities.AbilityImpl.list('-updated_date', 1); a = la && la[0]; } catch (e) { /* sin fichas */ }
+    return (c ? String(c.updated_date || '') + '|' + String(c.id || '') : '') + '#' + (a ? String(a.updated_date || '') + '|' + String(a.id || '') : '');
   } catch (e) { return ''; }
 }
 async function buildGameHtml(req) {
@@ -2495,7 +2499,14 @@ async function buildGameHtml(req) {
   let html = await upstream.text();
   const RB = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/';
   html = applyHtmlPatches(html, RB);
-  const dbCards = await base44.asServiceRole.entities.Card.list('number', 1000);
+  let dbCards = await base44.asServiceRole.entities.Card.list('number', 1000);
+  // Parámetros del motor del equipo: viven en AbilityImpl (effect_type "equipment"); Card.effect, si existiera, tiene prioridad.
+  try {
+    const specs = await base44.asServiceRole.entities.AbilityImpl.list('-updated_date', 2000);
+    const eq = {};
+    (specs || []).forEach(function (s) { if (s && s.effect_type === 'equipment' && s.params && typeof s.params === 'object') eq[s.card_id] = s.params; });
+    dbCards = (dbCards || []).map(function (c) { return c && !c.effect && eq[c.card_id] ? Object.assign({}, c, { effect: eq[c.card_id] }) : c; });
+  } catch (e) { /* sin fichas de equipo: el juego usa sus tablas */ }
   const artScript = buildArtScript(dbCards || []);
   html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
   cachedHtml = html; cachedAt = Date.now(); cachedVersion = GAME_PATCH_VERSION; cachedStamp = stamp;

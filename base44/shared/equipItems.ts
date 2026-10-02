@@ -2,7 +2,7 @@
 // datos. LA BASE DE DATOS ES LA ÚNICA FUENTE: el servidor inyecta esta función en el juego y rellena con ella las
 // tablas MELEE / RANGED / ARMORS / SPELLS / OBJECTS, en vez de usar las que traía escritas el motor.
 // Se escribe sin anotaciones de tipos porque se inyecta como texto en el HTML del juego (toString()).
-export const EQUIP_CATEGORIES = ['melee_weapon', 'ranged_weapon', 'armor', 'spell', 'object'];
+export const EQUIP_CATEGORIES = ['melee_weapon', 'ranged_weapon', 'armor', 'spell', 'object', 'bonus'];
 
 export function buildEquipItem(c) {
   if (!c || !c.card_id || !c.name) return null;
@@ -27,6 +27,9 @@ export function buildEquipItem(c) {
   } else if (cat === 'object') {
     if (!e.kind) return null;
     it.kind = e.kind; it.val = n(e.val); it.desc = it.txt;
+  } else if (cat === 'bonus') {
+    if (!e.type) return null;
+    it.type = e.type; it.effect = n(e.effect);
   } else {
     return null;
   }
