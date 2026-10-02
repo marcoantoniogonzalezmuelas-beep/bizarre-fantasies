@@ -12,6 +12,7 @@ export const EFFECTS = `
   action: damage | true_damage | drain | heal | heal_full | shield | cleanse | buff | debuff | debuff_all_stats | paralyze | skip_turn | sleep | silence | confuse | drunk | mark | evade | mana | lifesteal | recover_card | steal_card | disarm | fx
   target: self | ally | all_allies | enemy | all_enemies | random_enemy | weakest_enemy | strongest_enemy
   Los objetivos ally/enemy los elige el jugador; random_enemy elige al azar. fx solo acompaña visualmente y requiere element.
+  magic_base N (en cualquier paso de daño, cura, escudo...): cantidad que ESCALA con la Magia del lanzador, como los hechizos del motor (N x HE / 18). Se usa en hechizos.
   Opciones de daño (action damage/drain): scale_stat cc|ad|he + stat_mult, bonus (plano), dtype melee|ranged|spell|true, element, pierce 0..1, ignore_shield, ignore_armor, hits [0,-3] (varios golpes; cada número ajusta el daño de ese golpe), double_below 0.4 (x2 si al rival le queda esa fracción de vida), hp_pct 0.5 (fracción de SU vida actual), lifesteal 0.5 (fracción del daño que cura), heal_to weakest_ally, split_allies 0.5.
   Otras acciones: execute {threshold, else_mult?}, destroy_equipment, reduce_max_hp {amount}, swap_stats (intercambia CC y HE), revive {hp_pct} con target dead_ally, heal_equalize (iguala la vida al aliado más sano), shield_regen {amount} (el escudo se regenera a la mitad cada turno), block_hand {turns} (el héroe no puede jugar cartas de la mano), noop {text}.
   buff/debuff aceptan mods {cc,ad,he,vel} para varios stats en un solo modificador. Objetivos extra: other_enemy (otro rival distinto del elegido), dead_ally.
@@ -30,7 +31,7 @@ export function validateAbilitySpec(res) {
       if (!VALID_TARGETS.includes(step?.target || 'enemy')) return { ok:false, status:'manual', reason:'un paso usa un objetivo no soportado' };
       const noAmount = ['cleanse','heal_full','lifesteal','recover_card','disarm','fx','paralyze','skip_turn','sleep','silence','confuse','execute','destroy_equipment','swap_stats','revive','heal_equalize','noop'].includes(step.action);
       const hasMods = step.mods && typeof step.mods === 'object' && Object.keys(step.mods).length > 0;
-      if (!noAmount && !hasMods && !Number.isFinite(Number(step.amount)) && !Number.isFinite(Number(step.stat_mult)) && !Number.isFinite(Number(step.hp_pct))) return { ok:false, status:'manual', reason:'un paso necesita una cantidad numérica' };
+      if (!noAmount && !hasMods && !Number.isFinite(Number(step.amount)) && !Number.isFinite(Number(step.stat_mult)) && !Number.isFinite(Number(step.hp_pct)) && !Number.isFinite(Number(step.magic_base))) return { ok:false, status:'manual', reason:'un paso necesita una cantidad numérica' };
     }
   }
   return { ok:true, status:'implemented' };

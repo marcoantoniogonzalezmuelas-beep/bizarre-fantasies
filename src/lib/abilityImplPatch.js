@@ -96,7 +96,13 @@ export const ABILITY_IMPL_PATCH = `
   function statOf(h, k){ try{ return typeof stat === 'function' ? stat(h, k) : num(h[k], 0); }catch(e){ return num(h[k], 0); } }
   // Valor del paso: amount fijo, o multiplicador sobre el stat del héroe
   // (stat_mult: 1.5 = "1,5 veces su stat principal").
+  // Escalado por Magia, igual que los hechizos del motor: base x (HE del lanzador / HE_REF).
+  function magicAmount(hero, st){
+    var ref = (typeof HE_REF !== 'undefined' && HE_REF > 0) ? HE_REF : 18;
+    return Math.max(1, Math.round(Number(st.magic_base) * statOf(hero, 'he') / ref));
+  }
   function stepAmount(hero, st){
+    if(Number(st.magic_base) > 0) return magicAmount(hero, st);
     var mult = Number(st.stat_mult);
     if(!isNaN(mult) && mult > 0) return Math.max(1, Math.round(statOf(hero, primStat(hero)) * mult));
     return num(st.amount, 0);
@@ -141,7 +147,8 @@ export const ABILITY_IMPL_PATCH = `
   }
   function extAmount(hero, st, t){
     var mult = Number(st.stat_mult), v;
-    if(!isNaN(mult) && mult > 0){
+    if(Number(st.magic_base) > 0){ v = magicAmount(hero, st); }
+    else if(!isNaN(mult) && mult > 0){
       var sk2 = ['cc','ad','he'].indexOf(st.scale_stat) >= 0 ? st.scale_stat : primStat(hero);
       v = Math.round(statOf(hero, sk2) * mult);
     } else v = num(st.amount, 0);
@@ -150,7 +157,7 @@ export const ABILITY_IMPL_PATCH = `
     if(Number(st.double_below) > 0 && t && t.maxHp && (t.hp / t.maxHp) <= Number(st.double_below)) v *= 2;
     return Math.max(1, v);
   }
-  var EXT_DAMAGE_KEYS = ['dtype','scale_stat','bonus','ignore_shield','ignore_armor','hits','double_below','hp_pct','lifesteal','heal_to','split_allies'];
+  var EXT_DAMAGE_KEYS = ['magic_base','dtype','scale_stat','bonus','ignore_shield','ignore_armor','hits','double_below','hp_pct','lifesteal','heal_to','split_allies'];
   function usesExt(st){
     for(var i = 0; i < EXT_DAMAGE_KEYS.length; i++) if(st[EXT_DAMAGE_KEYS[i]] !== undefined) return true;
     return typeof st.pierce === 'number' && st.pierce > 0 && st.pierce < 1;
@@ -457,6 +464,35 @@ export const ABILITY_IMPL_PATCH = `
   window.__bfGenericAbility = genericAbility;
 
   // ── Activas: se resuelven al usar la habilidad
+  // Ejecuta una lista de pasos como si fuera una habilidad: pide los objetivos que haga falta (rival, aliado, aliado
+  // caído), aplica los pasos y llama a onDone; si ningún paso hizo nada llama a onNone. La usan las fichas de
+  // habilidad y también los hechizos y objetos de tipo "bf_steps" (spellStepsPatch), así un efecto nuevo se
+  // describe solo con datos.
+  function executeSteps(side, hero, steps, label, onDone, onNone){
+    var spec = { params: { steps: steps || [] } }, picks = needsPick(spec), chosen = {};
+    var chooseNext = function(index){
+      if(index >= picks.length){
+        if(!runSteps(side, hero, spec, chosen)){ if(onNone) onNone(); return; }
+        if(onDone) onDone(); return;
+      }
+      var kind = picks[index], pool = kind === 'ally' ? side : (side === 'p' ? 'o' : 'p');
+      if(kind === 'dead_ally'){
+        var deadList = team(side).filter(function(x){ return x && !x.alive; });
+        if(!deadList.length){ chosen[kind] = null; chooseNext(index + 1); return; }
+        if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
+          pendTarget('Aliado CA\\u00cdDO a revivir', side, function(t){ chosen[kind] = t; chooseNext(index + 1); }, { allowDead: true });
+        } else { chosen[kind] = deadList[0]; chooseNext(index + 1); }
+        return;
+      }
+      window.bfChooseAbilityTarget(side, 'Objetivo ' + (kind === 'ally' ? 'aliado' : 'rival') + ' de ' + (label || 'la carta'), pool, function(t){
+        chosen[kind] = t;
+        chooseNext(index + 1);
+      });
+    };
+    chooseNext(0);
+  }
+  window.__bfExecuteSteps = executeSteps;
+
   function hookAbility(){
     if(window.__bfAiAbilHooked || typeof window.useAbility !== 'function' || typeof G === 'undefined') return false;
     window.__bfAiAbilHooked = true;
@@ -521,27 +557,8 @@ export const ABILITY_IMPL_PATCH = `
         if(typeof pushLog === 'function') pushLog('lg', hero.name + ' \\u2014 ' + (spec.ability_name || '') + ': +' + inc + ' de ' + stat.toUpperCase() + '.');
         acted = true;
       } else if(kind === 'custom_steps'){
-        var self = this, args = arguments, picks = needsPick(spec), chosen = {};
-        var chooseNext = function(index){
-          if(index >= picks.length){
-            if(!runSteps(side, hero, spec, chosen)){ orig.apply(self, args); return; }
-            finishAbility(); return;
-          }
-          var kind = picks[index], pool = kind === 'ally' ? side : (side === 'p' ? 'o' : 'p');
-          if(kind === 'dead_ally'){
-            var deadList = team(side).filter(function(x){ return x && !x.alive; });
-            if(!deadList.length){ chosen[kind] = null; chooseNext(index + 1); return; }
-            if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
-              pendTarget('Aliado CA\\u00cdDO a revivir', side, function(t){ chosen[kind] = t; chooseNext(index + 1); }, { allowDead: true });
-            } else { chosen[kind] = deadList[0]; chooseNext(index + 1); }
-            return;
-          }
-          window.bfChooseAbilityTarget(side, 'Objetivo ' + (kind === 'ally' ? 'aliado' : 'rival') + ' de ' + (spec.ability_name || hero.ability), pool, function(t){
-            chosen[kind] = t;
-            chooseNext(index + 1);
-          });
-        };
-        chooseNext(0);
+        var self = this, args = arguments;
+        executeSteps(side, hero, (spec.params || {}).steps || [], spec.ability_name || hero.ability, finishAbility, function(){ orig.apply(self, args); });
         return;
       } else if(kind === 'shield_self'){
         var sh = num(p.amount, 0);

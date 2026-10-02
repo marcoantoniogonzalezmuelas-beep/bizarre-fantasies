@@ -1,17 +1,21 @@
 // Catálogo de PARÁMETROS DEL MOTOR para las cartas de equipo (Card.effect). Lo usan el editor (formulario y
 // validación) y las pruebas. Los "tipos" (kind) son las mecánicas que el motor sabe ejecutar: una carta nueva
 // elige uno y pone sus números, sin escribir código. Las marcadas como "dedicadas" tienen programación propia.
+import { validateAbilitySpec } from './abilityImplementationCatalog.js';
+
 export const ELEMENTS = ['fuego', 'agua', 'hielo', 'rayo'];   // elementos de armadura
 export const SPELL_ELEMENTS = ['fuego', 'hielo', 'rayo', 'agua', 'curacion', 'proteccion', 'arcano', 'estado'];
 export const SPELL_KINDS = {
   dmg1: 'Daño a un rival', dmgAll: 'Daño a todos los rivales', dmg1slow: 'Daño a un rival y lo ralentiza', dmg2: 'Daño a 2 rivales',
   heal1: 'Cura a un aliado', healAll: 'Cura a todos los aliados', shield: 'Escudo a un aliado', ward: 'Barrera contra hechizos (2 turnos)',
   sleep: 'Duerme a un rival', para: 'Paraliza a un rival', debuff: 'Resta stats a un rival', buff: 'Suma stats a un aliado',
+  bf_steps: 'PERSONALIZADO: pasos definidos aquí (sin código)',
   transform: 'DEDICADA: Transformer', bf_recover: 'DEDICADA: recuperar carta del descarte', bf_steal: 'DEDICADA: robar carta al rival',
 };
 export const OBJECT_KINDS = {
   heal: 'Cura (valor fijo)', healBig: 'Cura grande (valor fijo)', mana: 'Restaura maná', manaBig: 'Restaura mucho maná', shield: 'Escudo (valor fijo)',
   cleanse: 'Quita estados negativos', bomb: 'Daño directo a un rival', revive: 'Revive a un héroe (% de vida)', reviveAll: 'Revive a todos los caídos',
+  bf_steps: 'PERSONALIZADO: pasos definidos aquí (sin código)',
   bf_rearm: 'DEDICADO: rearmar desde el descarte', bf_drain: 'DEDICADO: robar vida', bf_ring: 'DEDICADO: invisibilidad',
 };
 export const BONUS_TYPES = {
@@ -21,6 +25,17 @@ export const BONUS_TYPES = {
 export const ARMOR_FIELDS = ['redM', 'redA', 'redH', 'regen'];
 
 export const EQUIPMENT_EFFECT_CATEGORIES = ['ranged_weapon', 'armor', 'spell', 'object', 'bonus'];
+// Un hechizo u objeto "bf_steps" lleva su efecto como pasos: se validan con el mismo validador que las habilidades.
+function validateSteps(e, errors) {
+  if (!Array.isArray(e.steps) || !e.steps.length) { errors.push('Faltan los pasos del efecto (steps).'); return; }
+  const v = validateAbilitySpec({ effect_type: 'custom_steps', params: { steps: e.steps } });
+  if (!v.ok) errors.push('Pasos no válidos: ' + (v.reason || 'revisa las acciones y objetivos') + '.');
+}
+export function stepsTemplate(category) {
+  return category === 'spell'
+    ? [{ action: 'damage', target: 'all_enemies', magic_base: 8, dtype: 'spell', element: 'rayo' }]
+    : [{ action: 'heal', target: 'ally', amount: 20 }];
+}
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 // Devuelve { ok, errors[] }. Los números nunca pueden faltar ni ser negativos (salvo que se indique).
 export function validateEffect(category, effect) {
@@ -36,10 +51,12 @@ export function validateEffect(category, effect) {
     if (e.element != null && !ELEMENTS.includes(e.element)) errors.push('element debe ser fuego, agua, hielo, rayo o vacío.');
   } else if (category === 'spell') {
     if (!SPELL_KINDS[e.kind]) errors.push('kind desconocido para un hechizo: ' + e.kind);
-    if (!isNum(e.base) || e.base < 0) errors.push('base debe ser un número igual o mayor que 0.');
+    if (e.kind === 'bf_steps') validateSteps(e, errors);
+    else if (!isNum(e.base) || e.base < 0) errors.push('base debe ser un número igual o mayor que 0.');
   } else if (category === 'object') {
     if (!OBJECT_KINDS[e.kind]) errors.push('kind desconocido para un objeto: ' + e.kind);
-    if (!isNum(e.val) || e.val < 0) errors.push('val debe ser un número igual o mayor que 0.');
+    if (e.kind === 'bf_steps') validateSteps(e, errors);
+    else if (!isNum(e.val) || e.val < 0) errors.push('val debe ser un número igual o mayor que 0.');
   } else if (category === 'bonus') {
     if (!BONUS_TYPES[e.type]) errors.push('type desconocido para un bonus: ' + e.type);
     if (!isNum(e.effect) || e.effect < 0) errors.push('effect debe ser un número igual o mayor que 0.');
