@@ -6,6 +6,7 @@ import { recordGame, isRejection } from '@/lib/gameRecordClient';
 import { saveMatchResult, flushResultOutbox } from '@/lib/resultPipeline';
 import { onViewportChange } from '@/lib/viewportEvents';
 import { gameHtmlLoader } from '@/lib/gameHtmlLoader';
+import { loadCardCatalog } from '@/lib/cardCatalog';
 import { bindGameLobbyBridge } from '@/lib/gameLobbyBridge';
 import { bindRelayBridge } from '@/lib/relayBridge';
 import { getLang, setLang, t } from '@/lib/i18n';
@@ -823,12 +824,13 @@ export default function Home() {
       // Con el idioma en inglés se añade además un diccionario texto ES → EN de
       // todas las cartas para que el parche de traducción lo aplique en vivo.
       if (e.data && e.data.bfArtMapRequest) {
-        base44.entities.Card.list('number', 300).then(cards => {
+        loadCardCatalog().then(cards => {
           const isEn = getLang() === 'en';
           const ITEM_CATS = ['spell', 'object', 'ranged_weapon', 'melee_weapon', 'armor'];
           const map = {};
           const info = {};
           const dict = {};
+          const rev = {};   // inglés -> castellano (solo en castellano): defensa contra textos en inglés que se cuelen
           (cards || []).forEach(c => {
             if (!c.name) return;
             const en = isEn ? (c.en || {}) : {};
@@ -847,13 +849,18 @@ export default function Home() {
                 ability: c.ability_name,
               };
             }
+            if (!isEn && c.en) {
+              ['title', 'ability_name', 'ability_text', 'elite_ability_name', 'elite_ability_text', 'description'].forEach(f => {
+                if (c[f] && c.en[f] && c[f] !== c.en[f]) rev[String(c.en[f]).trim()] = c[f];
+              });
+            }
             if (isEn && c.en) {
               ['title', 'ability_name', 'ability_text', 'elite_ability_name', 'elite_ability_text', 'description'].forEach(f => {
                 if (c[f] && c.en[f] && c[f] !== c.en[f]) dict[c[f]] = c.en[f];
               });
             }
           });
-          iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map, bfCardInfo: info, bfCardDict: dict }, '*');
+          iframeRef.current?.contentWindow?.postMessage({ bfArtMap: map, bfCardInfo: info, bfCardDict: dict, bfCardDictRev: rev }, '*');
         }).catch(() => {});
       }
     };
@@ -869,7 +876,12 @@ export default function Home() {
   // iframe para que el rectángulo de batalla muestre el arte de combate en vez
   // del retrato, cambiando a la versión élite cuando el héroe entra en modo élite.
   useEffect(() => {
-    base44.entities.Card.list('number', 300).then(cards => {
+    let stopped = false, timer = 0;
+    // Si el catálogo no se puede cargar (ni con los reintentos internos), se vuelve a intentar cada 15 s
+    // (hasta 8 veces) en vez de dejar la partida sin arte de batalla ni animaciones.
+    const loadBattleData = (attempt) => loadCardCatalog().then(cards => {
+      if (stopped) return;
+      if (cards?.length) setDbCount(cards.length);
       if (cards?.length) setDbCount(cards.length);
       const map = {};
       (cards || []).forEach(c => {
@@ -986,7 +998,9 @@ export default function Home() {
           if (passiveMarkersRef.current) iw.postMessage({ bfPassiveMarkers: passiveMarkersRef.current }, '*');
         }
       } catch (e) {}
-    }).catch(() => {});
+    }).catch(() => { if (!stopped && attempt < 8) timer = setTimeout(() => loadBattleData(attempt + 1), 15000); });
+    loadBattleData(1);
+    return () => { stopped = true; clearTimeout(timer); };
   }, []);
 
   useEffect(() => {

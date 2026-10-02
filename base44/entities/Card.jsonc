@@ -101,6 +101,10 @@
     "description": {
       "type": "string"
     },
+    "effect": {
+      "type": "object",
+      "description": "Parámetros del motor de las cartas de equipo (armadura: redM/redA/redH/regen/element; hechizo: kind/base/element; objeto: kind/val; arma a distancia: hits). El juego construye sus tablas solo desde aquí."
+    },
     "en": {
       "type": "object",
       "description": "English translations of the card texts",
