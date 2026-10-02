@@ -54,11 +54,15 @@ export function createGameHtmlLoader({ invoke, store, version, getStamp = async 
 
 // Versión del cliente: cámbiala SIEMPRE que cambie el HTML del servidor o los parches que lo esperan
 // (invalida las copias guardadas). Debe coincidir con GAME_PATCH_VERSION de base44/functions/gameHtml.
-export const GAME_HTML_VERSION = 'bf-2026-10-03-equipdb-v234';
+export const GAME_HTML_VERSION = 'bf-2026-10-03-bonusdb-v235';
 
 export const gameHtmlLoader = createGameHtmlLoader({
   invoke: (name, payload) => base44.functions.invoke(name, payload),
-  getStamp: async () => { const l = await base44.entities.Card.list('-updated_date', 1); const c = l && l[0]; return c ? String(c.updated_date || '') + '|' + String(c.id || '') : ''; },
+  getStamp: async () => {
+    const l = await base44.entities.Card.list('-updated_date', 1); const c = l && l[0];
+    let a = null; try { const la = await base44.entities.AbilityImpl.list('-updated_date', 1); a = la && la[0]; } catch (e) { /* sin fichas */ }
+    return (c ? String(c.updated_date || '') + '|' + String(c.id || '') : '') + '#' + (a ? String(a.updated_date || '') + '|' + String(a.id || '') : '');
+  },
   store: createGameHtmlStore(idbBackend()),
   version: GAME_HTML_VERSION,
 });

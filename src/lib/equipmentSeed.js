@@ -1,4 +1,4 @@
-// PARÁMETROS DEL MOTOR de las cartas de equipo (armas, armaduras, hechizos y objetos), listos para guardarse en
+// PARÁMETROS DEL MOTOR de las cartas de equipo (armas, armaduras, hechizos, objetos y bonus), listos para guardarse en
 // Card.effect. Salen de las tablas que el motor tenía escritas en código: tras importarlos, la base de datos es
 // la ÚNICA fuente y el juego construye esas tablas solo desde ella. Se importan desde Administración >
 // "Importar parámetros de equipo" (actualiza Card.effect por card_id; no toca ningún otro campo).
@@ -500,6 +500,153 @@ export const EQUIPMENT_SEED = [
    "val": 0,
    "element": "arcano",
    "type": "arcano"
+  }
+ },
+ {
+  "card_id": "ban",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_ADD",
+   "effect": 25
+  }
+ },
+ {
+  "card_id": "cor",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_ADD",
+   "effect": 20
+  }
+ },
+ {
+  "card_id": "mer",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_ADD",
+   "effect": 15
+  }
+ },
+ {
+  "card_id": "nau",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_ADD",
+   "effect": 18
+  }
+ },
+ {
+  "card_id": "pre",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_ADD",
+   "effect": 22,
+   "debt": 8
+  }
+ },
+ {
+  "card_id": "for",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "EQP",
+   "effect": 20
+  }
+ },
+ {
+  "card_id": "arm",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "EQP",
+   "effect": 15
+  }
+ },
+ {
+  "card_id": "pir",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_SUB",
+   "effect": 20
+  }
+ },
+ {
+  "card_id": "cor2",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_SUB",
+   "effect": 25
+  }
+ },
+ {
+  "card_id": "hac",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_SUB",
+   "effect": 15
+  }
+ },
+ {
+  "card_id": "ban2",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_SUB",
+   "effect": 12
+  }
+ },
+ {
+  "card_id": "gli",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BID_SUB",
+   "effect": 10
+  }
+ },
+ {
+  "card_id": "epic_self",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "BON",
+   "effect": 0
+  }
+ },
+ {
+  "card_id": "epic_rival",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "RES",
+   "effect": 0
+  }
+ },
+ {
+  "card_id": "mina",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "PERM",
+   "effect": 15,
+   "target": "self"
+  }
+ },
+ {
+  "card_id": "roba",
+  "category": "bonus",
+  "effect": {
+   "v": 1,
+   "type": "PERM",
+   "effect": 15,
+   "target": "rival"
   }
  }
 ];

@@ -14,9 +14,13 @@ export const OBJECT_KINDS = {
   cleanse: 'Quita estados negativos', bomb: 'Daño directo a un rival', revive: 'Revive a un héroe (% de vida)', reviveAll: 'Revive a todos los caídos',
   bf_rearm: 'DEDICADO: rearmar desde el descarte', bf_drain: 'DEDICADO: robar vida', bf_ring: 'DEDICADO: invisibilidad',
 };
+export const BONUS_TYPES = {
+  BID_ADD: 'Suma monedas a tu puja', BID_SUB: 'Resta monedas a la puja del rival', EQP: 'Suma monedas para el equipamiento',
+  PERM: 'Permanente (suma a ti o resta al rival, según target)', BON: 'Subasta: efecto especial (por id)', RES: 'Subasta: efecto especial rival (por id)',
+};
 export const ARMOR_FIELDS = ['redM', 'redA', 'redH', 'regen'];
 
-export const EQUIPMENT_EFFECT_CATEGORIES = ['ranged_weapon', 'armor', 'spell', 'object'];
+export const EQUIPMENT_EFFECT_CATEGORIES = ['ranged_weapon', 'armor', 'spell', 'object', 'bonus'];
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 // Devuelve { ok, errors[] }. Los números nunca pueden faltar ni ser negativos (salvo que se indique).
 export function validateEffect(category, effect) {
@@ -36,6 +40,11 @@ export function validateEffect(category, effect) {
   } else if (category === 'object') {
     if (!OBJECT_KINDS[e.kind]) errors.push('kind desconocido para un objeto: ' + e.kind);
     if (!isNum(e.val) || e.val < 0) errors.push('val debe ser un número igual o mayor que 0.');
+  } else if (category === 'bonus') {
+    if (!BONUS_TYPES[e.type]) errors.push('type desconocido para un bonus: ' + e.type);
+    if (!isNum(e.effect) || e.effect < 0) errors.push('effect debe ser un número igual o mayor que 0.');
+    if (e.debt !== undefined && !(isNum(e.debt) && e.debt >= 0)) errors.push('debt debe ser un número igual o mayor que 0.');
+    if (e.target !== undefined && !['self', 'rival'].includes(e.target)) errors.push('target debe ser self o rival.');
   } else {
     return { ok: true, errors };
   }
@@ -48,6 +57,7 @@ export function defaultEffect(category) {
     case 'armor': return { v: 1, redM: 0, redA: 0, redH: 0, regen: 0, element: null };
     case 'spell': return { v: 1, kind: 'dmg1', base: 10, element: 'fuego' };
     case 'object': return { v: 1, kind: 'heal', val: 10 };
+    case 'bonus': return { v: 1, type: 'BID_ADD', effect: 10 };
     default: return { v: 1 };
   }
 }

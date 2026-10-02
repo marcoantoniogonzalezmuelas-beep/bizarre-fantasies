@@ -2241,5 +2241,43 @@ export const ABILITY_SEED = [
   "effect_type": "dedicated_faseve_elite",
   "params": {},
   "note": "Reduce los stats de un rival en 15. Programada en el motor."
+ },
+ {
+  "card_id": "motoma",
+  "elite": true,
+  "ability_name": "Tormento Dragonil",
+  "ability_text": "Con la ayuda de un Dragón del lego que ilumina el campo de batalla. Quita el arma a un héroe enemigo aleatorio de los que queden vivos y desaparece.",
+  "status": "implemented",
+  "effect_type": "custom_steps",
+  "params": {
+   "steps": [
+    {
+     "action": "fx",
+     "target": "self",
+     "element": "luz"
+    },
+    {
+     "action": "disarm",
+     "target": "random_enemy"
+    }
+   ]
+  },
+  "note": "Dragón de lego de 3 cabezas: ILUMINA el campo de batalla con luz blanca-amarilla (1s) y quita TODAS las armas (cuerpo a cuerpo y a distancia) a UN héroe rival vivo ELEGIDO AL AZAR, enviándolas a su pila de descartes."
+ },
+ {
+  "card_id": "tk_patito_goma",
+  "elite": false,
+  "ability_name": "Picotazo",
+  "ability_text": "Un pequeño ataque a distancia. Al recibir un golpe, bloquea el daño para sus aliados.",
+  "status": "implemented",
+  "effect_type": "dedicated_duck_block",
+  "params": {
+   "damage": 2,
+   "damage_type": "ranged",
+   "passive_flag": "_bfDuckBlock",
+   "passive_label": "Picotazo",
+   "block_allies": true
+  },
+  "note": "Implementado en duckAbilityPatch.js: hace 2 de daño a distancia al objetivo elegido y marca _bfDuckBlock=true para activar el bloqueo pasivo (el motor desvía los golpes al patito mientras viva). El marcador pasivo 'Picotazo' se muestra en el retrato y en el panel de acciones."
  }
 ];
