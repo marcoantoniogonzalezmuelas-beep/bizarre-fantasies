@@ -230,3 +230,10 @@ test('TRANSFORMER and summons read TOKENS as a global: the server must expose it
   assert.match(read('fumbleRollPatch.js'),/doji\|conpuri\|dojpur\|monkgeta\|llorilomo\|rolero\|compresor/,'heroes whose mechanic is their own die skip the central fumble roll');
   assert.match(read('endGuardPatch.js'),/living\(side\)\.filter/,'forced end uses the engine rule (summons and bizarre heroes count as heroes)');
 });
+test('hand art in the EQUIPMENT phase comes from the card itself (card_id / name in the DB), never from a table position, and heals itself',()=>{
+  const e=fs.readFileSync(path.join(__dirname,'..','..','..','base44/functions/gameHtml/entry.ts'),'utf8'),s=read('shopSpellArtPatch.js');
+  assert.match(e,/const EQUIP_ART_BY_ID = \{\}, EQUIP_ART_BY_NAME = \{\};/);assert.match(e,/function equipArt\(it\) \{ return \(it && \(EQUIP_ART_BY_ID\[it\.id\] \|\| EQUIP_ART_BY_NAME\[it\.name\]\)\) \|\| ''; \}/);
+  for(const re of [/var _a = equipArt\(s\) \|\| \(SPELL_ART/,/var _b = equipArt\(o\) \|\| \(OBJECT_ART/,/var art = equipArt\(item\) \|\| \(SPELL_ART\[indexInList/,/var art = equipArt\(item\) \|\| \(OBJECT_ART\[indexInList/,/art: equipArt\(it\) \|\| \(NUM_ART/,/artArr\[i\] = equipArt\(it\) \|\|/])assert.match(e,re,'card art first: '+re);
+  assert.match(e,/if \(chip\.dataset\.bfHandArt === '1'\) \{[\s\S]{0,400}l\.style\.backgroundImage = 'url\("' \+ u0 \+ '"\)'/,'an already painted hand card is repainted if its image is not its own');
+  assert.match(s,/document\.querySelectorAll\('#s-equip \.chip-spell, #s-equip \.chip-object'\)/,'the client also fixes the equipment-phase hand (before: only the battle hand)');
+});

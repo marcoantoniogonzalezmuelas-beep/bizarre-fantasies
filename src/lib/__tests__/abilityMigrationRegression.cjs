@@ -119,6 +119,6 @@ test('NO FALSE FUMBLES: a passive that arms itself or an applied status counts a
   const i=f.indexOf("if(window.__bfLogSeq === seq && stateSig() === sig0){"),seg=f.slice(i,i+300);assert.ok(i>0);assert.doesNotMatch(seg,/pop\(/,'and it does not show the PIFIA banner');
   assert.match(f,/function flagSig\(x\)/);assert.match(f,/x\.sleep \|\| 0, x\.para \|\| 0, x\.skip \|\| 0, x\.silence \|\| 0/);assert.match(f,/VOLATILE = \/\^_bf\(AbilityCineSuppressed\|AbUsed/);
   const e=fs.readFileSync(path.join(__dirname,'..','..','..','base44/functions/gameHtml/entry.ts'),'utf8');
-  assert.match(e,/artArr\[i\] = \(typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART\[String\(it\.num\)\]\) \|\| oldArt\[it\.id\] \|\| ''/,'art is re-aligned with the rebuilt table (hand card of El Ladrón showed Reanimación Arcana)');
+  assert.match(e,/artArr\[i\] = equipArt\(it\) \|\| \(typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART\[String\(it\.num\)\]\) \|\| oldArt\[it\.id\] \|\| ''/,'art is re-aligned with the rebuilt table (hand card of El Ladrón showed Reanimación Arcana)');
   assert.match(e,/window\.__bfEquipVer = \(window\.__bfEquipVer \|\| 0\) \+ 1;/);assert.match(e,/\+ '\/' \+ \(window\.__bfEquipVer \|\| 0\);/,'the hand art cache is invalidated after the rebuild');
 });
