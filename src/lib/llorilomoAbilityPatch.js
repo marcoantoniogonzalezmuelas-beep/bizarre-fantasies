@@ -9,7 +9,7 @@ export const LLORILOMO_ABILITY_PATCH = `
     if(window.__bfLlorilomoHook||typeof useAbility!=='function')return false;
     window.__bfLlorilomoHook=1;var original=useAbility;
     window.useAbility=function(side,h,done){
-      if(id(h)!=='yoritom')return original.apply(this,arguments);
+      if(id(h)!=='yoritom'||(window.__bfSpecOwns&&window.__bfSpecOwns(h)))return original.apply(this,arguments);
       var foes=enemySide(side),shots=h.eliteMode?2:1,turns=h.eliteMode?2:1;
       for(var i=0;i<shots;i++){
         var pool=alive(foes);if(!pool.length)break;

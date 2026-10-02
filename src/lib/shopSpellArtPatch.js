@@ -18,13 +18,36 @@ export const SHOP_SPELL_ART_PATCH = `
 
   var ART_BY_NAME = {};
   var INFO_BY_NAME = {};
+  // Nombres tolerantes: sin tildes, sin artículos ("El Ladrón Enmascarado" = "Ladrón Enmascarado") y sin
+  // mayúsculas. El juego y la BD no siempre escriben igual el nombre de una carta, y un nombre que no
+  // coincidía dejaba la carta sin arte o con el de otra.
+  function norm(s){
+    return String(s || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase()
+      .replace(/[^a-z0-9 ]+/g, ' ').replace(/\\b(el|la|los|las|the)\\b/g, ' ').replace(/\\s+/g, ' ').trim();
+  }
+  var NORM_ART = {}, NORM_INFO = {};
+  function reindex(){
+    NORM_ART = {}; NORM_INFO = {};
+    Object.keys(ART_BY_NAME).forEach(function(k){ NORM_ART[norm(k)] = ART_BY_NAME[k]; });
+    Object.keys(INFO_BY_NAME).forEach(function(k){ NORM_INFO[norm(k)] = INFO_BY_NAME[k]; });
+  }
+  function artFor(name){ return ART_BY_NAME[name] || NORM_ART[norm(name)] || ''; }
+  function infoFor(name){ return INFO_BY_NAME[name] || NORM_INFO[norm(name)] || null; }
   window.addEventListener('message', function (e) {
     if (!e.data) return;
-    if (e.data.bfArtMap)   ART_BY_NAME  = e.data.bfArtMap  || {};
+    if (e.data.bfArtMap)   { ART_BY_NAME  = e.data.bfArtMap  || {}; window.__bfArtMapAt = Date.now(); }
     if (e.data.bfCardInfo) INFO_BY_NAME = e.data.bfCardInfo || {};
+    if (e.data.bfArtMap || e.data.bfCardInfo) reindex();
     if (e.data.bfArtMap || e.data.bfCardInfo) { setTimeout(function(){ syncAllEquip(); scan(); rerenderShop(); }, 0); }
   });
   try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
+  // Si el mapa no llega (la consulta del padre pudo fallar), se vuelve a pedir cada 3 s, hasta 25 veces.
+  (function(){
+    var tries = 0, iv = setInterval(function(){
+      if (window.__bfArtMapAt || ++tries > 25) { clearInterval(iv); return; }
+      try { window.parent.postMessage({ bfArtMapRequest: 1 }, '*'); } catch (e) {}
+    }, 3000);
+  })();
 
   var css = ''+
   '.shop-card.has-art .bf-shop-name{font-size:12.5px!important;bottom:88px!important;padding:3px 5px!important}'+
@@ -70,7 +93,7 @@ export const SHOP_SPELL_ART_PATCH = `
   }
 
   function fillCard(card, name) {
-    var info = INFO_BY_NAME[name]; if (!info) return;
+    var info = infoFor(name); if (!info) return;
     ensureEl(card, 'bf-shop-name', '');
     var nm = card.querySelector('.bf-shop-name'); if (nm) nm.textContent = name;
     if (info.number != null) ensureEl(card, 'bf-shop-num', 'Nº ' + info.number);
@@ -85,7 +108,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (typeof document === 'undefined') return;
     document.querySelectorAll('.shop-card').forEach(function (card) {
       var name = nameOf(card); if (!name) return;
-      var url = ART_BY_NAME[name]; if (url) setArt(card, url);
+      var url = artFor(name); if (url) setArt(card, url);
       fillCard(card, name);
     });
   }
@@ -98,6 +121,20 @@ export const SHOP_SPELL_ART_PATCH = `
   // — sin necesitar un parche dedicado por carta.
   // SOLO se aplica a la mano del jugador (mySide): la del rival se muestra
   // boca abajo con el reverso del pollito (rivalHandBackPatch).
+  function baseUrl(bg){
+    var u = String(bg || ''), i = u.indexOf('url(');
+    if (i >= 0) { u = u.slice(i + 4); var j = u.lastIndexOf(')'); if (j >= 0) u = u.slice(0, j); }   // acepta "url(...)" o la URL suelta
+    return u.replace(/["']/g, '').split('?')[0];
+  }
+  // Nombre de la carta de un chip: exacto (nombre / título), o el nombre MÁS LARGO que contenga su texto.
+  function matchChipName(chip){
+    var ne = chip.querySelector('.bf-chip-name');
+    var cands = [ne ? ne.textContent.trim() : '', String(chip.title || '').trim(), String(chip.textContent || '').trim()];
+    for (var i = 0; i < cands.length; i++) { if (cands[i] && artFor(cands[i])) return cands[i]; }
+    var txt = norm(cands[2] + ' ' + cands[1]), best = '', bestLen = 0;
+    Object.keys(ART_BY_NAME).forEach(function(k){ var nk = norm(k); if (nk.length >= 4 && nk.length > bestLen && txt.indexOf(nk) >= 0) { best = k; bestLen = nk.length; } });
+    return best;
+  }
   function applyArtToChips() {
     if (!ART_BY_NAME) return;
     var names = Object.keys(ART_BY_NAME);
@@ -107,25 +144,21 @@ export const SHOP_SPELL_ART_PATCH = `
     var hand = document.getElementById('hand_' + side);
     if (hand) {
       hand.querySelectorAll('.chip').forEach(function (chip) {
-        if (chip.dataset.bfArtDone === '1') return;
-        // Saltar si el juego ya pintó el arte (injectHandArt pone background-image inline)
-        var bg = chip.style.backgroundImage;
-        if (bg && bg !== 'none' && bg.indexOf('url') === 0) { chip.dataset.bfArtDone = '1'; return; }
-        // Matching por SUBSTRING: los chips contienen texto extra (maná, nº…)
-        var txt = (chip.textContent || '').trim();
-        var title = chip.title || '';
-        var matched = null;
-        for (var n = 0; n < names.length; n++) {
-          if (txt.indexOf(names[n]) >= 0 || title.indexOf(names[n]) >= 0) { matched = names[n]; break; }
-        }
-        if (!matched) return;
-        var art = ART_BY_NAME[matched];
+        var m = matchChipName(chip);
+        if (!m) return;
+        var art = artFor(m);
+        if (!art) return;
+        // La BD (por nombre) es la fuente de verdad. ANTES se daba por bueno cualquier fondo que el motor ya
+        // hubiera pintado, pero el motor lo pinta por índice/número y para los hechizos inyectados (Ladrón
+        // Enmascarado, Transformer...) pintaba la imagen de OTRA carta (Reanimación Arcana).
+        var want = baseUrl(art), cur = baseUrl(chip.style.backgroundImage);
         chip.classList.add('bf-chip-card');
+        if (cur === want) { chip.dataset.bfArtDone = '1'; chip.dataset.bfArtFor = m; return; }
         chip.style.setProperty('background-image', 'url("' + art + '")', 'important');
         chip.style.setProperty('background-size', 'cover', 'important');
         chip.style.setProperty('background-position', 'center', 'important');
         chip.style.setProperty('background-color', '#120a1e', 'important');
-        chip.dataset.bfArtDone = '1';
+        chip.dataset.bfArtDone = '1'; chip.dataset.bfArtFor = m;
       });
     }
     // Limpia cualquier arte inline que injectHandArt u otra función haya puesto
@@ -162,7 +195,7 @@ export const SHOP_SPELL_ART_PATCH = `
       var arr = arrs[a]; if (!arr) continue;
       for (var i = 0; i < arr.length; i++) {
         var item = arr[i]; if (!item || !item.name) continue;
-        var info = INFO_BY_NAME[item.name]; if (!info || info.number == null || info.number === 0) continue;
+        var info = infoFor(item.name); if (!info || info.number == null || info.number === 0) continue;
         // 1) Asegura que item.num = nº de BD (lo usa handArtByName)
         if (item.num !== info.number) { item.num = info.number; changed = true; }
         // 2) Asegura que CARD_NO[id] = nº de BD padded (lo usa cardNo → injectEquipArt, numFor, bfConfirm)
@@ -171,7 +204,7 @@ export const SHOP_SPELL_ART_PATCH = `
           if (CARD_NO[item.id] !== padded) { CARD_NO[item.id] = padded; changed = true; }
         }
         // 3) Si el juego no tiene el arte en NUM_ART (carta nueva dinámica), lo registra por nº de BD
-        var art = ART_BY_NAME[item.name];
+        var art = artFor(item.name);
         if (art && typeof NUM_ART !== 'undefined' && NUM_ART && !NUM_ART[String(info.number)]) {
           try { NUM_ART[String(info.number)] = art; changed = true; } catch (e) {}
         }
@@ -188,7 +221,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (typeof SPELLS !== 'undefined') {
       for (var s = 0; s < SPELLS.length; s++) {
         var sp = SPELLS[s]; if (!sp || !sp.name) continue;
-        var si = INFO_BY_NAME[sp.name]; if (!si) continue;
+        var si = infoFor(sp.name); if (!si) continue;
         if (si.mana != null) sp.mana = si.mana;
         if (si.text) sp.txt = si.text;
         if (si.cost != null) sp.cost = si.cost;
@@ -212,7 +245,7 @@ export const SHOP_SPELL_ART_PATCH = `
     if (!box || box.dataset.bfArtFix === '1') return;
     var nmEl = box.querySelector('.bf-confirm-name');
     var nm = nmEl ? nmEl.textContent.trim() : '';
-    var url = nm && ART_BY_NAME[nm];
+    var url = nm && artFor(nm);
     if (!url) return;
     var art = box.querySelector('.bf-confirm-art');
     if (art) {

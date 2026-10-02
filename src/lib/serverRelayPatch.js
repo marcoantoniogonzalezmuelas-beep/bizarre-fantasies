@@ -48,7 +48,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   function openHostConnection(){
     if(relaySide!=='p'||!relayCode||relayConn||!lastFakePeer)return;
     guestJoinedFired=true;relayConn=createVirtualConn('p',relayCode);
-    lastFakePeer._fireConnection(relayConn);relayConn._open();drainEarly();
+    lastFakePeer._fireConnection(relayConn);relayConn._open();drainEarly();startHostBeat();
   }
   window.addEventListener('message', function(event) {
     var result = event.data && event.data.bfRelayResult;
@@ -160,6 +160,54 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   // Reemplazar Peer inmediatamente: el motor no debe intentar cargar PeerJS
   window.Peer = FakePeer;
 
+  // ---- AUTORREPARACIÓN DE TURNOS ----
+  // Un mensaje descartado (id de partida, ronda de subasta...) se confirma igualmente y NO se reenvía: si era
+  // el snapshot que pasaba el turno, el anfitrión espera la jugada del invitado y el invitado cree que aún
+  // juega el anfitrión: nadie juega y la partida se atasca. Para que no dependa de acertar la causa:
+  //   - el anfitrión emite un LATIDO con el turno (bfTurnHb) cada 2,5 s durante la batalla;
+  //   - si el turno del invitado difiere del del anfitrión en 2 latidos seguidos (~5 s), pide RESINCRONIZAR
+  //     (bfResync) y el anfitrión le reenvía el estado completo;
+  //   - si le toca al invitado y lleva en silencio 8 s (luego 20 s, 45 s...), el anfitrión le reenvía el estado.
+  // Son mensajes de control: no llegan al motor del juego.
+  var foreignId = { id: '', n: 0 };
+  var hbSeq = 0, hbTimer = 0, mismatchRun = 0, lastResyncAt = 0, lastSnapPush = 0, pushGap = 8000;
+  function turnKey() { try { return (typeof B !== 'undefined' && B && B.current) ? (B.current.side + ':' + B.current.id) : ''; } catch (e) { return ''; } }
+  function battleOn() { try { var b = document.getElementById('s-battle'); return !!(b && b.classList.contains('active') && typeof B !== 'undefined' && B && !B.over); } catch (e) { return false; } }
+  function pushState() { try { var scr = document.querySelector('.screen.active'); if (scr && typeof netSync === 'function') netSync(scr.id); } catch (e) { /* noop */ } }
+  function handleControl(conn, msg, side) {
+    if (!msg || typeof msg.t !== 'string') return false;
+    if (msg.t === 'bfTurnHb') {
+      if (side !== 'g') return true;
+      var mine = turnKey();
+      if (battleOn() && msg.turn && mine && msg.turn !== mine) mismatchRun++; else mismatchRun = 0;
+      if (mismatchRun >= 2 && Date.now() - lastResyncAt > 4000) {
+        lastResyncAt = Date.now(); mismatchRun = 0;
+        try { conn.send({ t: 'bfResync', turn: mine }); } catch (e) { /* noop */ }
+        reportRelayError('turn_desync', 'resync', 'anfitrión ' + msg.turn + ' / invitado ' + mine);
+      }
+      return true;
+    }
+    if (msg.t === 'bfResync') { if (side === 'p') pushState(); return true; }
+    return false;
+  }
+  function startHostBeat() {
+    if (hbTimer) clearInterval(hbTimer);
+    pushGap = 8000;
+    hbTimer = setInterval(function() {
+      try {
+        if (!relayConn || relaySide !== 'p' || !relayConn.open || !battleOn()) return;
+        relayConn.send({ t: 'bfTurnHb', turn: turnKey(), seq: ++hbSeq });
+        var cur = B.current && B.current.side;
+        var silent = Date.now() - (relayConn._bfLastSeen || 0);
+        if (relayConn._bfLastSeen !== relayConn._bfBeatSeen) { relayConn._bfBeatSeen = relayConn._bfLastSeen; pushGap = 8000; }
+        if (cur === 'o' && silent > pushGap && Date.now() - lastSnapPush > pushGap) {
+          lastSnapPush = Date.now(); pushGap = Math.min(pushGap * 2.5, 60000);
+          pushState();
+        }
+      } catch (e) { /* noop */ }
+    }, 2500);
+  }
+
   // ---- Conexión virtual: simula una DataConnection de PeerJS ----
   function createVirtualConn(side, code) {
     var cbs = { data: [], open: [], close: [], error: [] };
@@ -195,8 +243,19 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
           }
           if(!window.__bfMatchId){window.__bfMatchId=msg.bfMatchId;window.__bfMatchRound=msg.bfMatchRound||0;}
         }
-        if(msg&&msg.bfMatchId&&window.__bfMatchId&&msg.bfMatchId!==window.__bfMatchId){window.__bfMatchDrops=(window.__bfMatchDrops||0)+1;if(window.__bfMatchDrops===3||window.__bfMatchDrops%50===0)reportRelayError('match_id_mismatch','dispatch','drops='+window.__bfMatchDrops+' side='+side+' t='+String(msg.t||''));return;}
+        if(msg&&msg.bfMatchId&&window.__bfMatchId&&msg.bfMatchId!==window.__bfMatchId){
+          // El anfitrión es la autoridad de la partida. Si el MISMO id ajeno llega 3 veces seguidas, el que
+          // está desfasado es el invitado (id viejo de otra partida): lo adopta en vez de descartar para
+          // siempre todo lo que le manda el anfitrión (cada uno creía que le tocaba al otro).
+          if(side==='g'){
+            if(foreignId.id===msg.bfMatchId)foreignId.n++;else{foreignId.id=msg.bfMatchId;foreignId.n=1;}
+            if(foreignId.n>=3){window.__bfMatchId=msg.bfMatchId;window.__bfMatchRound=msg.bfMatchRound||window.__bfMatchRound||0;foreignId.n=0;reportRelayError('match_id_mismatch','dispatch','adoptado tras 3 descartes seguidos');}
+            else{window.__bfMatchDrops=(window.__bfMatchDrops||0)+1;if(window.__bfMatchDrops===3||window.__bfMatchDrops%50===0)reportRelayError('match_id_mismatch','dispatch','drops='+window.__bfMatchDrops+' side='+side+' t='+String(msg.t||''));return;}
+          }else{window.__bfMatchDrops=(window.__bfMatchDrops||0)+1;if(window.__bfMatchDrops===3||window.__bfMatchDrops%50===0)reportRelayError('match_id_mismatch','dispatch','drops='+window.__bfMatchDrops+' side='+side+' t='+String(msg.t||''));return;}
+        }
+        foreignId.n=0;
         window.__bfMatchDrops=0;
+        if(handleControl(conn,msg,side))return;
         if (side === 'p' && msg && msg.bfAuctionRound && typeof G !== 'undefined') {
           if (!document.querySelector('#s-recruit.active') || G.phaseResult || msg.bfAuctionRound !== String(G.aIndex) + ':' + String(G.subRound || 0)) {
             if (typeof netSync === 'function') { var active = document.querySelector('.screen.active'); if (active) netSync(active.id); }

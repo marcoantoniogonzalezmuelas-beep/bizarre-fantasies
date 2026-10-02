@@ -27,7 +27,7 @@ export const NIXARA_ABILITY_PATCH = `
     var orig = window.useAbility;
 
     window.useAbility = function(side, h, done){
-      if (!isNix(h)) return orig.apply(this, arguments);
+      if (!isNix(h) || (window.__bfSpecOwns && window.__bfSpecOwns(h))) return orig.apply(this, arguments);
 
       var el = !!h.eliteMode;
       var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');

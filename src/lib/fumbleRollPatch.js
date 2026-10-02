@@ -244,6 +244,9 @@ export function buildFumbleRollPatch(lang) {
   function noRoll(h){
     var n = String((h && h.name) || '').toLowerCase();
     if(h && (h.akind === 'reflect-damage' || h.cid === 'juni' || h.card_id === 'juni')) return true;
+    // Habilidades cuyo mecanismo ES un dado propio (Doji Conpuri, Monkgeta, Llorilomo, El Rolero, Compresor
+    // Roto...): conservan su dado y no pasan además por la tirada central de pifia.
+    if(/doji|conpuri|dojpur|monkgeta|llorilomo|rolero|compresor/.test(n + ' ' + String((h && (h.card_id || h.cid || h.id)) || '').toLowerCase())) return true;
     return n.indexOf('grulla') >= 0 || n.indexOf('crane') >= 0 || n.indexOf('juniana') >= 0;
   }
 
@@ -274,6 +277,22 @@ export function buildFumbleRollPatch(lang) {
       if(typeof netSync === 'function') netSync('s-battle');
     }catch(e){}
   }
+
+  // Firma del estado de TODOS los héroes (vida, maná, escudo, vivo, banderas). Una habilidad solo se marca
+  // "sin efecto" si no escribió nada en el registro Y ADEMÁS no cambió nada de esto: antes bastaba lo primero,
+  // y toda habilidad que actuara sin dejar línea de registro salía como pifia.
+  function stateSig(){
+    try{
+      var s = [];
+      ['p','o'].forEach(function(sd){
+        (G.team[sd] || []).forEach(function(x){
+          s.push(x.id, x.hp, x.mana, x.shield || 0, x.alive ? 1 : 0, x.eliteMode ? 1 : 0, Object.keys(x).length);
+        });
+      });
+      return s.join('|');
+    }catch(e){ return ''; }
+  }
+  window.__bfStateSig = stateSig;
 
   function wrapAbility(){
     if(WRAPPED.useAbility) return;
@@ -336,12 +355,12 @@ export function buildFumbleRollPatch(lang) {
           return;
         }
       }catch(e){}
-      var seq = window.__bfLogSeq;
+      var seq = window.__bfLogSeq, sig0 = stateSig();
       var wrappedDone = function(){
         try{
           // Habilidad sin efecto en el motor: se avisa con el marcador de pifia
           // una vez terminada la animación.
-          if(window.__bfLogSeq === seq){
+          if(window.__bfLogSeq === seq && stateSig() === sig0){
             log('lx', '\\u{1F3B2} ' + h.name + ' \\u2014 ${T.nothing}');
             setTimeout(function(){ try{ pop(side, h.id, false, 0); }catch(e){} }, 1300);
           }

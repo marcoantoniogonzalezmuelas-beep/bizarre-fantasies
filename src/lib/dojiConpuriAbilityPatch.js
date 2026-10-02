@@ -41,12 +41,12 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
     window.useAbility = function(side, h, done){
       if(!isDoji(h)) return orig.apply(this, arguments);
       try{
-        // Tirada d20 como el resto de héroes. Pifia (19-20 o 1): la habilidad
-        // no produce efecto pero queda marcada como usada.
-        var r = 1 + Math.floor(Math.random()*20);
-        var fum = (r >= 19 || r === 1);
+        // MISMO dado que el resto de acciones (d30; pifia solo con 20, ≈3 %). Antes tiraba un d20 propio
+        // que pifiaba con 19, 20 o 1 (15 %) ADEMÁS de la tirada central.
+        var r = (typeof window.__bfDie === 'function') ? window.__bfDie(30) : 1 + Math.floor(Math.random()*30);
+        var fum = (r === 20);
         if(fum && typeof pushLog === 'function'){
-          pushLog('lx', '\\u{1F3B2} Tirada d20 (habilidad): '+r+'/20 \\u2192 '+(fum?'\\u00a1PIFIA! La habilidad no produce ning\\u00fan efecto.':'OK.'));
+          pushLog('lx', '\\u{1F3B2} Tirada d30 (habilidad): '+r+'/30 \\u2192 \\u00a1PIFIA! La habilidad no produce ning\\u00fan efecto.');
         }
         if(fum){
           h.abilityUsed = true;

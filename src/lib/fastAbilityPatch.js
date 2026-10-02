@@ -39,7 +39,7 @@ export const FAST_ABILITY_PATCH = `
     var orig = window.useAbility;
 
     window.useAbility = function(side, h, done){
-      if(!isFast(h)) return orig.apply(this, arguments);
+      if(!isFast(h) || (window.__bfSpecOwns && window.__bfSpecOwns(h))) return orig.apply(this, arguments);
 
       var foesSide = (typeof enemySide === 'function') ? enemySide(side) : (side === 'p' ? 'o' : 'p');
       function livingFoes(){

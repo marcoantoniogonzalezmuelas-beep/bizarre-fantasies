@@ -8,7 +8,7 @@
 //   - caduca a las 6 h, para que las ediciones de cartas lleguen siempre en la siguiente visita;
 //   - se revalida en segundo plano en cada visita (ver gameHtmlLoader), así la copia nunca queda vieja
 //     más de una visita.
-export const GAME_HTML_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+export const GAME_HTML_MAX_AGE_MS = 60 * 60 * 1000;
 const KEY = 'game';
 
 export function createGameHtmlStore(backend, now = () => Date.now()) {
@@ -21,8 +21,8 @@ export function createGameHtmlStore(backend, now = () => Date.now()) {
         return e;
       } catch (err) { return null; }
     },
-    async set(version, html, serverVersion = '') {
-      try { if (backend && typeof html === 'string' && html.length >= 1000) await backend.put(KEY, { version, html, serverVersion, savedAt: now() }); } catch (err) { /* sin caché: no pasa nada */ }
+    async set(version, html, serverVersion = '', stamp = '') {
+      try { if (backend && typeof html === 'string' && html.length >= 1000) await backend.put(KEY, { version, html, serverVersion, stamp, savedAt: now() }); } catch (err) { /* sin caché: no pasa nada */ }
     },
     async clear() { try { if (backend) await backend.del(KEY); } catch (err) { /* idem */ } },
   };

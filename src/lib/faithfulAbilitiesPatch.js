@@ -551,6 +551,7 @@ export const FAITHFUL_ABILITIES_PATCH = `
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
       var id = hid(h), impl = IMPL[id];
+      if(window.__bfSpecOwns && window.__bfSpecOwns(h)) return orig.apply(this, arguments);   // la ficha de la base de datos manda
       // Dedicated implementations own chained drain, sabotage and area paralysis.
       if(!impl || id === 'nix' || id === 'Faseve' || (h.eliteMode && ['nar','alf','rev'].indexOf(id) >= 0)) return orig.apply(this, arguments);
       var self = this, args = arguments;

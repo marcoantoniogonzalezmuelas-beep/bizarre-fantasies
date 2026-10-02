@@ -32,6 +32,15 @@ export const ABILITY_IMPL_PATCH = `
     }
   });
 
+  // ¿Esta unidad tiene una ficha EJECUTABLE en la base de datos? Los parches por héroe escritos en código ceden
+  // ante ella: la base de datos manda. Las fichas dedicated_* no cuentan (su comportamiento sigue en el motor).
+  window.__bfSpecOwns = function(h){
+    try{
+      var s = specFor(h);
+      return !!(s && s.status === 'implemented' && s.effect_type && s.effect_type !== 'unsupported' && String(s.effect_type).indexOf('dedicated_') !== 0);
+    }catch(e){ return false; }
+  };
+
   function cardIdOf(h){ return h && (h._token || h.cardId || h.card_id || h.id) || ''; }
   function specFor(h){
     if(!h) return null;
@@ -114,7 +123,136 @@ export const ABILITY_IMPL_PATCH = `
     }catch(e){ return ''; }
   }
 
+  // ── PRIMITIVAS AMPLIADAS (todas opcionales; una ficha que no las usa se ejecuta exactamente como antes).
+  // Con ellas una habilidad se describe entera en la base de datos, sin código por héroe:
+  //   daño:    scale_stat (cc|ad|he) + stat_mult, bonus (plano), dtype (melee|ranged|spell|true), element,
+  //            pierce (0..1), ignore_shield, ignore_armor, hits (lista de ajustes: [0,-3] = dos golpes, el 2º -3),
+  //            double_below (x2 si al rival le queda esa fracción de vida), hp_pct (fracción de SU vida actual),
+  //            lifesteal (fracción del daño que cura), heal_to ('weakest_ally'), split_allies (reparte esa fracción)
+  //   acciones: execute, destroy_equipment, reduce_max_hp, swap_stats, revive, heal_equalize, shield_regen, noop
+  //   buff/debuff con mods {cc,ad,he,vel}: un único modificador con varios stats
+  //   objetivos: other_enemy (otro rival distinto del elegido), dead_ally (aliado caído a elegir)
+  function dmgFxFor(side, hero, t, dtype, el){
+    try{
+      if(dtype === 'melee') pushFx({k:'slash', toSide:tSide(t), toId:t.id});
+      else if(dtype === 'ranged') pushFx({k:'arrow', fromSide:side, fromId:hero.id, toSide:tSide(t), toId:t.id, hits:1});
+      else if(dtype === 'spell') pushFx({k:'spell', toSide:tSide(t), toId:t.id, el: el || 'arcano'});
+    }catch(e){}
+  }
+  function extAmount(hero, st, t){
+    var mult = Number(st.stat_mult), v;
+    if(!isNaN(mult) && mult > 0){
+      var sk2 = ['cc','ad','he'].indexOf(st.scale_stat) >= 0 ? st.scale_stat : primStat(hero);
+      v = Math.round(statOf(hero, sk2) * mult);
+    } else v = num(st.amount, 0);
+    v += num(st.bonus, 0);
+    if(Number(st.hp_pct) > 0 && t) v = Math.max(1, Math.round(t.hp * Number(st.hp_pct)));
+    if(Number(st.double_below) > 0 && t && t.maxHp && (t.hp / t.maxHp) <= Number(st.double_below)) v *= 2;
+    return Math.max(1, v);
+  }
+  var EXT_DAMAGE_KEYS = ['dtype','scale_stat','bonus','ignore_shield','ignore_armor','hits','double_below','hp_pct','lifesteal','heal_to','split_allies'];
+  function usesExt(st){
+    for(var i = 0; i < EXT_DAMAGE_KEYS.length; i++) if(st[EXT_DAMAGE_KEYS[i]] !== undefined) return true;
+    return typeof st.pierce === 'number' && st.pierce > 0 && st.pierce < 1;
+  }
+  function extDamage(side, hero, st, t){
+    var dtype = ['melee','ranged','spell','true'].indexOf(st.dtype) >= 0 ? st.dtype : (st.element ? 'spell' : hitType(hero));
+    var o = { type: dtype };
+    if(st.element) o.element = st.element;
+    if(st.pierce === true) o.pierce = 1; else if(typeof st.pierce === 'number' && st.pierce > 0) o.pierce = st.pierce;
+    if(st.ignore_shield) o.ignoreShield = true;
+    if(st.ignore_armor) o.ignoreArmor = true;
+    var pen = Array.isArray(st.hits) && st.hits.length ? st.hits : [0];
+    var total = 0;
+    for(var i = 0; i < pen.length; i++){
+      if(!t.alive) break;
+      var amt = Math.max(1, extAmount(hero, st, t) + num(pen[i], 0));
+      dmgFxFor(side, hero, t, dtype, st.element);
+      var d = dealDamage(t, amt, o); total += d;
+      log(hero.name + ' golpea a ' + t.name + ' (-' + d + ').');
+    }
+    var ratio = Number(st.lifesteal);
+    if(ratio > 0 && total > 0){
+      var recv = hero;
+      if(st.heal_to === 'weakest_ally'){
+        var al = team(side).filter(function(x){ return x && x.alive; }).sort(function(p, q){ return (p.hp / p.maxHp) - (q.hp / q.maxHp); });
+        if(al.length) recv = al[0];
+      }
+      var g = heal(recv, Math.round(total * ratio));
+      log(hero.name + ' absorbe vida de ' + t.name + ' y cura a ' + recv.name + ' (+' + g + ').');
+    }
+    var sp = Number(st.split_allies);
+    if(sp > 0 && total > 0){
+      var others = team(side).filter(function(x){ return x && x.alive && x !== hero; });
+      var each = Math.max(1, Math.round(total * sp / Math.max(1, others.length)));
+      others.forEach(function(x){ var gg = heal(x, each); if(gg) log(x.name + ' +' + gg + '.'); });
+    }
+    return true;
+  }
+  function applyStepExt(side, hero, st, t){
+    var act = st.action;
+    var mods = function(x){ return (x._mods = x._mods || []); };
+    if((act === 'damage' || act === 'drain') && usesExt(st)) return extDamage(side, hero, st, t);
+    if((act === 'buff' || act === 'debuff') && st.mods && typeof st.mods === 'object'){
+      var mm = { turns: Math.max(1, num(st.turns, 99)) }, sign = act === 'debuff' ? -1 : 1;
+      Object.keys(st.mods).forEach(function(k){ mm[k] = sign * Math.abs(num(st.mods[k], 0)); });
+      mods(t).push(mm);
+      try{ pushFx({k:'status', side:tSide(t), id:t.id, txt: act === 'debuff' ? '\\\\u25bc' : '\\\\u25b2'}); }catch(e){}
+      log(t.name + ': ' + Object.keys(st.mods).map(function(k){ return (sign < 0 ? '-' : '+') + Math.abs(num(st.mods[k], 0)) + ' ' + k.toUpperCase(); }).join(', ') + '.');
+      return true;
+    }
+    switch(act){
+      case 'execute': {
+        var thr = num(st.threshold, 8);
+        if(t.hp <= thr){
+          try{ pushFx({k:'slash', toSide:tSide(t), toId:t.id}); }catch(e){}
+          t.hp = 1; dealDamage(t, 9999, { type:'true' });
+          log(hero.name + ' EJECUTA a ' + t.name + '.');
+        } else if(Number(st.else_mult) > 0){
+          var sk3 = ['cc','ad','he'].indexOf(st.scale_stat) >= 0 ? st.scale_stat : primStat(hero);
+          var de = dealDamage(t, Math.max(1, Math.round(statOf(hero, sk3) * Number(st.else_mult))), { type: hitType(hero) });
+          log(hero.name + ' no ejecuta a ' + t.name + ' (-' + de + ').');
+        } else log(t.name + ' no est\\\\u00e1 por debajo de ' + thr + ' HP.');
+        return true;
+      }
+      case 'destroy_equipment': {
+        t.mwep = null; t.rwep = null;
+        var had = !!t.armor;
+        if(t.armor){ t.maxHp = Math.max(1, t.maxHp - num(t.armor.hp, 0)); t.hp = Math.min(t.hp, t.maxHp); t.armor = null; }
+        t.shield = 0;
+        log(hero.name + ' DESTRUYE el equipo de ' + t.name + (had ? ' (armadura rota)' : '') + '.');
+        return true;
+      }
+      case 'reduce_max_hp': { var rm = Math.abs(num(st.amount, 0)); t.maxHp = Math.max(1, t.maxHp - rm); t.hp = Math.min(t.hp, t.maxHp); log(t.name + ': -' + rm + ' de vida m\\\\u00e1xima.'); return true; }
+      case 'swap_stats': {
+        var s1 = statOf(t, 'cc'), s2 = statOf(t, 'he');
+        mods(t).push({ cc: s2 - s1, he: s1 - s2, turns: 99 });
+        log(t.name + ': intercambia su CC y su HE.');
+        return true;
+      }
+      case 'revive': {
+        if(t.alive || typeof reviveHero !== 'function') return false;
+        reviveHero(t, num(st.hp_pct, 0.5));
+        try{ pushFx({k:'elite', side:tSide(t), id:t.id}); }catch(e){}
+        log(hero.name + ' revive a ' + t.name + '.');
+        return true;
+      }
+      case 'heal_equalize': {
+        var top = team(side).filter(function(x){ return x && x.alive; }).reduce(function(m, x){ return Math.max(m, x.hp); }, 0);
+        var ge = heal(t, Math.max(0, top - t.hp));
+        if(ge) log(t.name + ' +' + ge + '.');
+        return true;
+      }
+      case 'shield_regen': { t._bfShieldRegen = Math.max(1, num(st.amount, 0)); return true; }   // lo procesa el gancho de fin de turno del motor (22 > 11 > 6 > 3 > 2 > 1 > 0)
+      case 'block_hand': { var bh = Math.max(1, num(st.turns, 2)); t._bfHandBlock = Math.max(t._bfHandBlock || 0, bh); try{ pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\ud83d\\udeab'}); }catch(e){} log(t.name + ' tiene la mano bloqueada ' + bh + ' turnos: no puede jugar hechizos ni objetos.'); return true; }
+      case 'noop': { log(hero.name + ': ' + (st.text || 'no pasa nada en absoluto.')); return true; }
+      default: return undefined;
+    }
+  }
+
   function applyStep(side, hero, st, t){
+    var ext = applyStepExt(side, hero, st, t);
+    if(ext !== undefined) return ext;
     var a = stepAmount(hero, st);
     var turns = Math.max(1, num(st.turns, st.action === 'buff' || st.action === 'debuff' ? 99 : 2));
     var sk = ['cc','ad','he','vel'].indexOf(st.stat) >= 0 ? st.stat : 'cc';
@@ -208,7 +346,7 @@ export const ABILITY_IMPL_PATCH = `
     var kinds = [];
     (((spec.params || {}).steps) || []).forEach(function(st){
       var tg = String((st || {}).target || 'enemy');
-      if((tg === 'enemy' || tg === 'ally') && kinds.indexOf(tg) < 0) kinds.push(tg);
+      if((tg === 'enemy' || tg === 'ally' || tg === 'dead_ally') && kinds.indexOf(tg) < 0) kinds.push(tg);
     });
     return kinds;
   }
@@ -219,9 +357,12 @@ export const ABILITY_IMPL_PATCH = `
     steps.forEach(function(st){
       if(!st || !st.action) return;
       var tg = String(st.target || 'enemy');
-      var list = (chosen && chosen[tg] && (tg === 'enemy' || tg === 'ally')) ? [chosen[tg]] : pickTargets(side, hero, tg);
+      var list;
+      if(tg === 'other_enemy'){ var ce = chosen && chosen.enemy; list = foes(side).filter(function(x){ return x !== ce; }).slice(0, 1); }
+      else if(tg === 'dead_ally') list = (chosen && chosen.dead_ally) ? [chosen.dead_ally] : [];
+      else list = (chosen && chosen[tg] && (tg === 'enemy' || tg === 'ally')) ? [chosen[tg]] : pickTargets(side, hero, tg);
       list.forEach(function(t){
-        if(!t || !t.alive) return;
+        if(!t || (!t.alive && st.action !== 'revive')) return;
         try{ if(applyStep(side, hero, st, t)) did = true; }catch(e){}
       });
     });
@@ -280,6 +421,41 @@ export const ABILITY_IMPL_PATCH = `
     return true;
   }
 
+  // ── Héroe SIN ficha de habilidad y sin mecánica conocida (p. ej. uno recién creado en el editor).
+  // Antes el motor intentaba su golpe genérico con un objetivo vacío, lanzaba un error y la acción NO
+  // terminaba nunca (atasco de turno). Ahora hace un golpe genérico (1,3 x su stat principal, igual que el
+  // valor por defecto del motor), el turno termina, y queda un aviso en diagnósticos con el card_id.
+  // Mecánicas que el juego sabe resolver: las del motor y las de los parches dedicados. Un héroe con otra
+  // (o sin ninguna) y sin ficha es un héroe NUEVO sin implementar.
+  var KNOWN_KINDS = {};
+  ['aoe-ad','aoe-cc','aoe-he','big-ad','big-he','crush-cc','debuff','debuff-all','double-ad','drain','evade','execute','heal-all','heal-ally','lifesteal-cc','mark','pierce-ad','pierce-cc','revive','self-buff','self-heal','shield-ally','silence','skip-turn','smash-equip','unblock-cc',
+   'kamikaze-token','pegasus-token','epic-summon','crane-summon','duck-summon','reflect-damage','tk_dizzy','tk_confuse','tk_drunk','tk_none'].forEach(function(k){ KNOWN_KINDS[k] = 1; });
+  function isKnownKind(h){ return !!(h && h.akind && KNOWN_KINDS[h.akind]); }
+  var reportedGeneric = {};
+  function genericAbility(side, hero, done, err){
+    var complete = typeof done === 'function' ? done : function(){ if(typeof finishAct === 'function') finishAct(); };
+    var name = hero.eliteMode ? (hero.eAbility || hero.ability) : hero.ability;
+    var key = String(cardIdOf(hero)) + (hero.eliteMode ? '|e' : '|n');
+    if(!reportedGeneric[key]){
+      reportedGeneric[key] = 1;
+      try{ window.parent.postMessage({ bfRelayError: { room_code:'', side:'', nick:'', error_type:'ability_unimplemented', action:'useAbility', error_message:'sin ficha ni mecánica: ' + key + ' (' + String(err && err.message || '') + ')' } }, '*'); }catch(e){}
+    }
+    if(typeof pushLog === 'function') pushLog('lx', hero.name + ': la habilidad «' + (name || '?') + '» aún no está implementada en la base de datos; hace un golpe genérico.');
+    var finish = function(){
+      hero.abilityUsed = true; if(hero.eliteMode) hero.eliteUsed = true;
+      if(typeof renderBattle === 'function') renderBattle();
+      if(typeof netSync === 'function') netSync('s-battle');
+      setTimeout(complete, 420);
+    };
+    var hit = function(t){
+      if(t && typeof dealDamage === 'function') dealDamage(t, Math.max(1, Math.round(statOf(hero, primStat(hero)) * 1.3)), { type: hitType(hero) });
+      finish();
+    };
+    if(typeof window.bfChooseAbilityTarget === 'function') window.bfChooseAbilityTarget(side, 'Objetivo de ' + (name || 'habilidad'), side === 'p' ? 'o' : 'p', hit);
+    else hit(foes(side)[0] || null);
+  }
+  window.__bfGenericAbility = genericAbility;
+
   // ── Activas: se resuelven al usar la habilidad
   function hookAbility(){
     if(window.__bfAiAbilHooked || typeof window.useAbility !== 'function' || typeof G === 'undefined') return false;
@@ -289,7 +465,21 @@ export const ABILITY_IMPL_PATCH = `
       var spec = specFor(hero);
       var kind = spec && spec.effect_type;
       var p = (spec && spec.params) || {};
-      if(!spec) return orig.apply(this, arguments);
+      if(!spec){
+        if(isKnownKind(hero)) return orig.apply(this, arguments);
+        // Héroe sin ficha y sin mecánica conocida: se intenta lo que haga el motor, pero si falla (error)
+        // o no avanza (la acción no termina ni pide objetivo), el golpe genérico cierra la acción.
+        var finished = false, self0 = this;
+        var wrapped = function(){ finished = true; return (typeof done === 'function' ? done : function(){ if(typeof finishAct === 'function') finishAct(); }).apply(this, arguments); };
+        try{ orig.call(self0, side, hero, wrapped); }
+        catch(err){ return genericAbility(side, hero, done, err); }
+        setTimeout(function(){
+          if(finished || hero.abilityUsed) return;
+          if(typeof B !== 'undefined' && B && (B.pending || B.over)) return;
+          genericAbility(side, hero, done, new Error('sin progreso'));
+        }, 1500);
+        return;
+      }
 
       // Pasivas: se activan y el turno sigue su curso normal.
       if(kind === 'attack_bonus_per_ally') return orig.apply(this, arguments);
@@ -338,6 +528,14 @@ export const ABILITY_IMPL_PATCH = `
             finishAbility(); return;
           }
           var kind = picks[index], pool = kind === 'ally' ? side : (side === 'p' ? 'o' : 'p');
+          if(kind === 'dead_ally'){
+            var deadList = team(side).filter(function(x){ return x && !x.alive; });
+            if(!deadList.length){ chosen[kind] = null; chooseNext(index + 1); return; }
+            if(typeof humanCtl === 'function' && humanCtl(side) && typeof pendTarget === 'function'){
+              pendTarget('Aliado CA\\u00cdDO a revivir', side, function(t){ chosen[kind] = t; chooseNext(index + 1); }, { allowDead: true });
+            } else { chosen[kind] = deadList[0]; chooseNext(index + 1); }
+            return;
+          }
           window.bfChooseAbilityTarget(side, 'Objetivo ' + (kind === 'ally' ? 'aliado' : 'rival') + ' de ' + (spec.ability_name || hero.ability), pool, function(t){
             chosen[kind] = t;
             chooseNext(index + 1);

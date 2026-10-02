@@ -13,7 +13,7 @@ export const NARBON_ELITE_PATCH = `
     window.__bfNarbonEliteHooked = true;
     var originalUseAbility = window.useAbility;
     window.useAbility = function(side, hero, done){
-      if(hero && hero.id === 'nar' && hero.eliteMode && !hero.abilityUsed){
+      if(hero && hero.id === 'nar' && hero.eliteMode && !hero.abilityUsed && !(window.__bfSpecOwns && window.__bfSpecOwns(hero))){
         // La cinemática de Narbón la gestiona abilityAnimPatch (animación 3D
         // desde la BD: ability_anim_url / elite_ability_anim_url). La disparamos
         // aquí para feedback inmediato en el host.
