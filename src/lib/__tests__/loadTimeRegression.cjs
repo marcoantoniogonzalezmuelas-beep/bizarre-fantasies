@@ -38,13 +38,13 @@ test('a NEW client version never starts with the old HTML (patches assume their 
   assert.equal((await r.make('v2').load(1)).source,'network','older than 6 h: fetched again (card edits always arrive)');
 });
 test('download starts early (warm) in parallel with auth; Home reuses it: ONE request, no duplicates',async()=>{
-  const r=await rig(),L=r.make();await L.warm();assert.equal(r.calls.length,1,'no copy yet: download started right away');
+  const r=await rig(),L=r.make();await L.warm();await new Promise(y=>setImmediate(y));assert.equal(r.calls.length,1,'no copy yet: download started right away');
   const x=await L.load(1);assert.equal(x.source,'preload');assert.equal(r.calls.length,1,'Home reused the in-flight download');
-  await new Promise(y=>setImmediate(y));const L2=r.make();r.calls.length=0;await L2.warm();assert.equal(r.calls.length,0,'with a stored copy nothing is downloaded up front');
+  await new Promise(y=>setImmediate(y));const L2=r.make();r.calls.length=0;await L2.warm();await new Promise(y=>setImmediate(y));assert.equal(r.calls.length,0,'with a stored copy nothing is downloaded up front');
 });
 test('a stale early download is not trusted; a failed one falls back to a normal request',async()=>{
-  const r=await rig(),L=r.make();await L.warm();r.tick(120000);const x=await L.load(1);assert.equal(x.source,'network');assert.equal(r.calls.length,2);
-  const r2=await rig(),L2=r2.make();r2.setFail(new Error('503'));await L2.warm();r2.setFail(null);const y=await L2.load(1);assert.equal(y.source,'network','early download failed -> normal fetch');
+  const r=await rig(),L=r.make();await L.warm();await new Promise(y=>setImmediate(y));r.tick(120000);const x=await L.load(1);assert.equal(x.source,'network');assert.equal(r.calls.length,2);
+  const r2=await rig(),L2=r2.make();r2.setFail(new Error('503'));await L2.warm();await new Promise(y=>setImmediate(y));r2.setFail(null);const y=await L2.load(1);assert.equal(y.source,'network','early download failed -> normal fetch');
 });
 test('retries (attempt > 1) discard the local copy in case it was the problem; bad responses are never stored',async()=>{
   const r=await rig();await r.make().load(1);await new Promise(x=>setImmediate(x));assert.ok(await r.store.get('v1'));

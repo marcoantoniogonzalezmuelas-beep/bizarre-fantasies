@@ -106,7 +106,7 @@ test('wiring in serverRelayPatch: remembers the match, reports rival absence, pr
   assert.match(r,/window\.bfRelayResumeGame = function\(code, password, nick, nicks, sideOverride, proof\)/);assert.match(r,/nick_password: String\(proof \|\| ''\)/);
   assert.match(r,/Unauthorized\|Wrong password[\s\S]{0,200}bfAskResumeProof/,'asks for a proof instead of dying');assert.match(r,/ensureHostRestored\(res\.snap\)/);
   assert.match(r,/host_restore_fallback/,'diagnostics record when the fallback was needed');
-  assert.match(h,/DOM_BUS_PATCH \+ MATCH_EPOCH_PATCH \+ RESUME_PROMPT_PATCH \+/);
+  assert.match(h,/DOM_BUS_PATCH \+ MATCH_EPOCH_PATCH \+ END_GUARD_PATCH \+ RESUME_PROMPT_PATCH \+/);
 });
 test('every visible text of the resume patch has an English translation',async()=>{
   const {DICT_EXACT}=await import(pathToFileURL(lib('translationsEn.js')).href);
