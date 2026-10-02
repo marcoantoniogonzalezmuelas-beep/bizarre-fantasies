@@ -97,3 +97,28 @@ test('CARD_ID: renaming moves the ability records to the new id (no orphans); th
   assert.match(a,/cardIdTaken\(payload\.card_id, editingId, base44\)/);assert.match(a,/renameCardAbilities\(originalCardId, payload\.card_id, realAbilityDeps\(base44\)\)/);assert.match(a,/setOriginalCardId\(card\.card_id \|\| ''\)/);assert.match(a,/removeCardAbilities\(originalCardId \|\| form\.card_id, base44\)/);
   assert.ok(a.indexOf('cardIdTaken(')<a.indexOf('Card.update(editingId, payload)'),'uniqueness is checked BEFORE saving');assert.ok(a.indexOf('Card.update(editingId, payload)')<a.indexOf('renameCardAbilities(originalCardId'),'records move AFTER the card is saved');
 });
+test('ROLL (dice) step: the outcome that comes up runs on the chosen target — Faseve: 1 = no ability, 2 = never elite',async()=>{
+  global.__PATCH=(await load('abilityImplPatch.js')).ABILITY_IMPL_PATCH;
+  const steps=[{action:'roll',target:'enemy',sides:2,label:'Compresor Roto',outcomes:{'1':[{action:'disable_ability',target:'enemy'}],'2':[{action:'disable_elite',target:'enemy'}]}}];
+  for(const face of [1,2]){
+    const w=mkWorld();let asked=null;w.env.__bfHeroRoll=cfg=>{asked=cfg;return face;};w.specs([spec('hero',false,steps)]);let done=0;w.env.useAbility('p',w.G.team.p[0],()=>{done++;});w.advance(1500);
+    const t=w.G.team.o[2];
+    assert.equal(asked.faces,2,'a 2-sided die is thrown (with its animation)');assert.equal(done,1);assert.equal(w.orig(),0);
+    if(face===1){assert.equal(t.abilityUsed,true,'1: ability cancelled');assert.equal(t._bfAbilityCineSuppressed,'normal');assert.equal(!!t._bfNoElite,false);}
+    else{assert.equal(t.eliteUsed,true,'2: will never go elite');assert.equal(t._bfNoElite,1);assert.equal(!!t.abilityUsed,false);}
+  }
+  const {validateAbilitySpec}=await load('abilityImplementationCatalog.js');
+  assert.equal(validateAbilitySpec({effect_type:'custom_steps',params:{steps}}).ok,true);
+  assert.equal(validateAbilitySpec({effect_type:'custom_steps',params:{steps:[{action:'roll',target:'enemy',sides:1,outcomes:{'1':[]}}]}}).ok,false,'a die needs at least 2 faces');
+  assert.equal(validateAbilitySpec({effect_type:'custom_steps',params:{steps:[{action:'roll',target:'enemy',sides:2,outcomes:{'1':[{action:'inventada',target:'enemy'}]}}]}}).ok,false,'outcome steps are validated too');
+  const {ABILITY_SEED}=await load('abilitySeed.js');const fa=ABILITY_SEED.find(r=>r.card_id==='Faseve'&&!r.elite);assert.equal(fa.params.steps[0].action,'roll');assert.deepEqual(Object.keys(fa.params.steps[0].outcomes),['1','2']);
+});
+test('NO FALSE FUMBLES: a passive that arms itself or an applied status counts as an effect; "no effect" is never shown as a PIFIA',()=>{
+  const f=read('fumbleRollPatch.js');
+  assert.doesNotMatch(f,/nothing: en \? '[^']*' : 'PIFIA/,'the no-effect note is not called a fumble');
+  const i=f.indexOf("if(window.__bfLogSeq === seq && stateSig() === sig0){"),seg=f.slice(i,i+300);assert.ok(i>0);assert.doesNotMatch(seg,/pop\(/,'and it does not show the PIFIA banner');
+  assert.match(f,/function flagSig\(x\)/);assert.match(f,/x\.sleep \|\| 0, x\.para \|\| 0, x\.skip \|\| 0, x\.silence \|\| 0/);assert.match(f,/VOLATILE = \/\^_bf\(AbilityCineSuppressed\|AbUsed/);
+  const e=fs.readFileSync(path.join(__dirname,'..','..','..','base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(e,/artArr\[i\] = \(typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART\[String\(it\.num\)\]\) \|\| oldArt\[it\.id\] \|\| ''/,'art is re-aligned with the rebuilt table (hand card of El Ladrón showed Reanimación Arcana)');
+  assert.match(e,/window\.__bfEquipVer = \(window\.__bfEquipVer \|\| 0\) \+ 1;/);assert.match(e,/\+ '\/' \+ \(window\.__bfEquipVer \|\| 0\);/,'the hand art cache is invalidated after the rebuild');
+});

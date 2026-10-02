@@ -42,12 +42,12 @@ test('"ability had no effect": only when NOTHING was logged AND nothing changed 
     const c=clock({G,B:{current:{side:'p',id:'a'}},pushLog:(t,m)=>logs.push(m),getHero:(s,i)=>G.team[s].find(h=>h.id===i),finishAct(){fin++;},endTurn(){},
       renderBattle(){},document:{createElement:()=>({style:{},appendChild(){}}),getElementById:()=>null,body:{appendChild(){}},head:{appendChild(){}},querySelector:()=>null,querySelectorAll:()=>[]},
       crypto:{getRandomValues:a=>{a[0]=7;return a;}}});
-    c.env.useAbility=function(side,h,done){if(effect==='log')c.env.pushLog('li','x');if(effect==='state')G.team.o[0].hp-=10;done();};
+    c.env.useAbility=function(side,h,done){if(effect==='log')c.env.pushLog('li','x');if(effect==='state')G.team.o[0].hp-=10;if(effect==='flag')h0._bfDojiThreat=!h0._bfDojiThreat;if(effect==='status')G.team.o[0].para=2;done();};const h0=G.team.p[0];h0._bfDojiThreat=false;
     vm.runInNewContext(code,c.env);c.advance(800);
     const h=G.team.p[0];c.env.useAbility('p',h,()=>{});c.advance(2500);
-    return logs.filter(l=>/no produce ning|has no effect/i.test(l)).length;
+    return logs.filter(l=>/no ha tenido efecto visible|no visible effect/i.test(l)).length;
   };
-  assert.equal(mk('none'),1,'truly nothing happened: flagged');assert.equal(mk('log'),0,'wrote a log line: not flagged');assert.equal(mk('state'),0,'changed a hero without logging (this used to show a bogus PIFIA)');
+  assert.equal(mk('none'),1,'truly nothing happened: flagged');assert.equal(mk('log'),0,'wrote a log line: not flagged');assert.equal(mk('state'),0,'changed a hero without logging (this used to show a bogus PIFIA)');assert.equal(mk('flag'),0,'armed a passive (internal mark) without logging: an effect, not a fumble');assert.equal(mk('status'),0,'applied a status without logging: an effect');
 });
 test('hand art: the DB name wins over the engine\'s index/number art (Ladrón Enmascarado showed Reanimación Arcana)',async()=>{
   const {SHOP_SPELL_ART_PATCH}=await load('shopSpellArtPatch.js');

@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict'),test=require('node:test');
 const { pathToFileURL }=require('node:url');
 const lib=f=>path.join(__dirname,'..',f),root=path.join(__dirname,'..','..','..'),read=f=>fs.readFileSync(lib(f),'utf8'),load=f=>import(pathToFileURL(f.startsWith('/')?f:lib(f)).href);
+const J=x=>JSON.parse(JSON.stringify(x));
 const srv=()=>fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
 
 test('seed: 68 equipment and bonus cards, one record each, every one valid for the catalog the editor uses',async()=>{
@@ -37,10 +38,11 @@ test('buildEquipItem: the engine object comes ONLY from the card; export apostro
   const injected=vm.runInNewContext('('+m.buildEquipItem.toString()+')');assert.equal(JSON.stringify(injected({card_id:'a',cat:'melee_weapon',name:'A',cost:1,cc:2,tag:"'-x"})),JSON.stringify(b({card_id:'a',cat:'melee_weapon',name:'A',cost:1,cc:2,tag:"'-x"})),'the function injected as text in the HTML behaves like the module');
 });
 test('SERVER: the game tables are rebuilt from the database (same array objects, sorted by number); no effects yet = old tables kept; a category the DB lacks is kept',async()=>{
-  const t=srv();const a=t.indexOf('function rebuildEquipmentFromDb()'),b=t.indexOf('window.__bfEquipFromDb = true;\n  }',a);assert(a>0&&b>a);
+  const t=srv();const END='window.__bfEquipVer = (window.__bfEquipVer || 0) + 1;   // invalida la caché del arte de la mano\n  }';const a=t.indexOf('function rebuildEquipmentFromDb()'),b=t.indexOf(END,a);assert(a>0&&b>a);
   const m=await load(path.join(root,'base44/shared/equipItems.ts'));
-  const code=m.buildEquipItem.toString()+'\n'+t.slice(a,b+'window.__bfEquipFromDb = true;\n  }'.length)+';this.__run=function(){rebuildEquipmentFromDb();};';
-  const mk=()=>({MELEE:[{id:'old_m',name:'viejo'}],RANGED:[{id:'old_r'}],ARMORS:[{id:'old_a'}],SPELLS:[{id:'old_s'},{id:'x'}],OBJECTS:[{id:'old_o'}],window:{}});
+  const code=m.buildEquipItem.toString()+'\n'+t.slice(a,b+END.length)+';this.__run=function(){rebuildEquipmentFromDb();};';
+  const mk=()=>({MELEE:[{id:'old_m',name:'viejo'}],RANGED:[{id:'old_r'}],ARMORS:[{id:'old_a'}],SPELLS:[{id:'old_s'},{id:'x'}],OBJECTS:[{id:'old_o'}],window:{},
+    MELEE_ART:['m0'],RANGED_ART:['r0'],ARMOR_ART:['a0'],SPELL_ART:['ART_OLD_S','ART_X'],OBJECT_ART:['o0'],NUM_ART:{'46':'ART_A_DB','47':'ART_B_DB'}});
   const E=mk();
   E.DB_EQUIP=[
     {num:47,cat:'spell',card_id:'sp_b',name:'B',cost:5,mana:3,tag:'fuego',txt:'t',effect:{v:1,kind:'dmg1',base:2,element:'fuego'}},
@@ -56,6 +58,7 @@ test('SERVER: the game tables are rebuilt from the database (same array objects,
   // con todas las cartas completas, la categoría se reconstruye (mismo array, ordenado por número)
   const E2=mk();const keep2=E2.SPELLS;E2.window.parent={postMessage(){}};E2.DB_EQUIP=E.DB_EQUIP.filter(d=>d.card_id!=='sp_bad');vm.runInNewContext(code,E2);E2.__run();
   assert.deepEqual(E2.SPELLS.map(x=>x.id),['sp_a','sp_b'],'old engine spells gone; sorted by card number');assert.equal(E2.SPELLS,keep2,'same array object (references elsewhere stay valid)');
+  assert.deepEqual(J(E2.SPELL_ART),['ART_A_DB','ART_B_DB'],'the art list follows the rebuilt table (each position = that card art from the DB)');assert.equal(E2.window.__bfEquipVer,1,'hand-art cache invalidated');
   assert.deepEqual(E.OBJECTS.map(x=>x.id),['ob_a']);assert.deepEqual(E.MELEE.map(x=>x.id),['mw_a']);assert.deepEqual(E.ARMORS.map(x=>x.id),['ar_a']);
   assert.deepEqual(E.RANGED.map(x=>x.id),['old_r'],'the DB has no ranged weapons: the engine keeps its own, the game is never left without equipment');assert.equal(E.window.__bfEquipFromDb,true);
   // y la decisión de usar la BD solo si alguna carta trae parámetros
