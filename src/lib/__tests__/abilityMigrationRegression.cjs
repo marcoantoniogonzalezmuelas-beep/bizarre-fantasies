@@ -11,9 +11,9 @@ test('seed: every record is valid for the real validator; no duplicates; dedicat
     for(const f of ['card_id','ability_name','ability_text','status','effect_type','note'])assert.ok(r[f]!==undefined&&r[f]!=='',k+' misses '+f);
     assert.equal(r.status,'implemented');assert.equal(typeof r.elite,'boolean');
     if(r.effect_type==='custom_steps'){steps++;const v=validateAbilitySpec({effect_type:r.effect_type,params:r.params});assert.equal(v.ok,true,k+' rejected: '+JSON.stringify(v));}
-    else{ded++;assert.match(r.effect_type,/^dedicated_/,k);assert.deepEqual(r.params,{},k+' dedicated records carry no steps');}
+    else{ded++;assert.match(r.effect_type,/^dedicated_/,k);if(r.effect_type!=='dedicated_duck_block')assert.deepEqual(r.params,{},k+' dedicated records carry no steps');}
   }
-  assert.equal(ABILITY_SEED.length,111);assert.equal(steps,89);assert.equal(ded,22);
+  assert.equal(ABILITY_SEED.length,113);assert.equal(steps,90);assert.equal(ded,23);   // incluye el Patito normal (bloqueo del pato) con el texto actual de la carta
   const has=(id,e)=>seen.has(id+'|'+(e?'e':'n'));
   for(const id of ['kru','bos','nar','achucm','tor','Undertaker','boski','painkil','mor','vap','hannai','kre','hev','pij','pat','tsuru','elder','zar','alf','dix','ska','syx','gor','fut','gam','mal','ser','bat','nix','vex','chi','sol','man','pac','rev','doc','zer','aje','pol'])assert.ok(has(id,false)&&has(id,true),id+' has both abilities in the database');
   for(const [id,e] of [['juni',false],['dojpur',true],['rol',true],['caoffe',true],['tk_grulla',false],['Faseve',true]])assert.ok(has(id,e),id+' registered (dedicated)');

@@ -89,7 +89,7 @@ test('caches: a new/edited card invalidates the local copy AND the 60 s server c
   const bad=createGameHtmlLoader({invoke:async()=>({data:body,headers:{}}),store,version:'v',getStamp:async()=>{throw new Error('RLS');},stampTimeoutMs:20});r=await bad.load(1);assert.equal(r.source,'cache');
   const srv=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
   assert.match(srv,/async function cardsStamp\(base44\)/);assert.match(srv,/stamp && cachedStamp === stamp/,'server cache only valid while no card changed');assert.match(srv,/cachedStamp = stamp;/);
-  assert.match(read('gameHtmlCache.js'),/GAME_HTML_MAX_AGE_MS = 60 \* 60 \* 1000/);assert.match(read('gameHtmlLoader.js'),/getStamp: async \(\) => \{ const l = await base44\.entities\.Card\.list\('-updated_date', 1\)/);
+  assert.match(read('gameHtmlCache.js'),/GAME_HTML_MAX_AGE_MS = 60 \* 60 \* 1000/);assert.match(read('gameHtmlLoader.js'),/getStamp: async \(\) => \{\s*const l = await base44\.entities\.Card\.list\('-updated_date', 1\)/);assert.match(read('gameHtmlLoader.js'),/entities\.AbilityImpl\.list\('-updated_date', 1\)/,'the stamp also covers the equipment parameters (AbilityImpl)');
   const cv=/GAME_HTML_VERSION = '([^']+)'/.exec(read('gameHtmlLoader.js'))[1],sv=/GAME_PATCH_VERSION = '([^']+)'/.exec(srv)[1];assert.equal(cv,sv);
 });
 test('editor wiring: saving a card syncs its abilities, deleting it removes them',()=>{
