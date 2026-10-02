@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-03-bonusdb-v235';
+const GAME_PATCH_VERSION = 'bf-2026-10-04-artfix-v236';
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -1774,7 +1774,7 @@ function buildArtScript(dbCards) {
     if (typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined') return null;
     // La caché se invalida si cambian las listas (p. ej. Transformer se añade
     // a SPELLS después del primer render y sin esto se quedaba sin imagen).
-    var sig = SPELLS.length + '/' + OBJECTS.length;
+    var sig = SPELLS.length + '/' + OBJECTS.length + '/' + (window.__bfEquipVer || 0);   // también cambia al reconstruir el equipo desde la BD
     if (__bfHandArtByName && __bfHandArtByName.__sig === sig) return __bfHandArtByName;
     var map = { __sig: sig };
     (SPELLS || []).forEach(function(s, i) { if (s && s.name) { var _a = (SPELL_ART && SPELL_ART[i]) || (NUM_ART && NUM_ART[String(s.num || 0)]) || ''; if (_a) map[s.name] = _a; } });
@@ -2390,6 +2390,7 @@ function buildArtScript(dbCards) {
   function rebuildEquipmentFromDb() {
     var MAP = { melee_weapon: MELEE, ranged_weapon: RANGED, armor: ARMORS, spell: SPELLS, object: OBJECTS };
     if (typeof BONUS !== 'undefined') MAP.bonus = BONUS;   // bonus de subasta: tipo y número vienen de la base de datos
+    var ARTS = { melee_weapon: MELEE_ART, ranged_weapon: RANGED_ART, armor: ARMOR_ART, spell: SPELL_ART, object: OBJECT_ART, bonus: (typeof BONUS_ART !== 'undefined' ? BONUS_ART : null) };
     Object.keys(MAP).forEach(function(cat) {
       var cards = DB_EQUIP.filter(function(d){ return d && d.cat === cat; }).sort(function(a, b){ return a.num - b.num; });
       if (!cards.length) return;   // si la BD no trae esa categoría, se conserva la del motor (el juego nunca se queda sin equipo)
@@ -2400,9 +2401,15 @@ function buildArtScript(dbCards) {
         try { window.parent.postMessage({ bfRelayError: { room_code: '', side: '', nick: '', error_type: 'equip_incomplete', action: 'equipFromDb', error_message: cat + ': faltan parámetros del motor en ' + bad.map(function(c){ return c.card_id; }).join(', ') } }, '*'); } catch (e) {}
         return;
       }
-      var arr = MAP[cat]; arr.length = 0; items.forEach(function(it){ arr.push(it); });
+      var arr = MAP[cat], artArr = ARTS[cat], oldArt = {};
+      if (artArr) arr.forEach(function(x, i){ if (x && x.id && artArr[i]) oldArt[x.id] = artArr[i]; });
+      arr.length = 0; items.forEach(function(it){ arr.push(it); });
+      // El arte se busca por POSICIÓN (mano, modal de compra...): al reordenar la tabla por número de carta hay que
+      // recolocarlo, o una carta mostraría el arte de otra (El Ladrón Enmascarado salía con el de Reanimación Arcana).
+      if (artArr) { artArr.length = 0; items.forEach(function(it, i){ artArr[i] = (typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART[String(it.num)]) || oldArt[it.id] || ''; }); }
     });
     window.__bfEquipFromDb = true;
+    window.__bfEquipVer = (window.__bfEquipVer || 0) + 1;   // invalida la caché del arte de la mano
   }
   function syncDbEquipment() {
     if (window.__bfEquipSynced) return;

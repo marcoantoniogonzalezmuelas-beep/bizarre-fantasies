@@ -88,11 +88,7 @@
     "loser_nick"
   ],
   "rls": {
-    "create": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
+    "create": null,
     "read": null,
     "update": {
       "user_condition": {
