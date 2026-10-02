@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-04-artfix-v236';
+const GAME_PATCH_VERSION = 'bf-2026-10-04-artbyid-v237';
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -13,6 +13,12 @@ function buildArtScript(dbCards) {
   // carta, así que registramos el arte de la BD para cualquier carta de
   // equipo, incluso las que no están en los arrays base.
   (dbCards||[]).forEach(c=>{ if(!c||!c.art_url)return; if(['melee_weapon','ranged_weapon','armor','spell','object'].includes(c.category)) NUM_ART[Number(c.number)]=freshArt(c,c.art_url); });
+  // Arte del equipo POR card_id y POR nombre, directo de la base de datos. Es la fuente principal en la mano, el
+  // modal de compra y la tienda: no depende del orden de las tablas ni del número de carta (que puede repetirse:
+  // Rearmar y Daidoji Esva comparten el 118). Antes la mano usaba la posición y El Ladrón Enmascarado salía con el
+  // arte de Reanimación Arcana.
+  const EQUIP_ART_BY_ID = {}, EQUIP_ART_BY_NAME = {};
+  (dbCards||[]).forEach(c=>{ if(!c||!c.art_url||!c.card_id)return; if(['melee_weapon','ranged_weapon','armor','spell','object','bonus'].includes(c.category)){ const u=freshArt(c,c.art_url); EQUIP_ART_BY_ID[c.card_id]=u; if(c.name) EQUIP_ART_BY_NAME[String(c.name).replace(/^'(?=[+\-=@])/,'')]=u; } });
   const dbHeroes = dbCards.filter(c => c.category === 'hero' && c.in_auction !== false);
   // BD = única fuente de arte: las bases se inicializan vacías (mismo length
   // sólo como andamiaje de índices). Si una carta no está en la BD, no se
@@ -59,6 +65,9 @@ function buildArtScript(dbCards) {
   var HERO_IDS = ${JSON.stringify(localHeroIds)};
   var HERO_NAMES = ${JSON.stringify(localHeroNames)};
   var NUM_ART = ${JSON.stringify(NUM_ART)};
+  var EQUIP_ART_BY_ID = ${JSON.stringify(EQUIP_ART_BY_ID)};
+  var EQUIP_ART_BY_NAME = ${JSON.stringify(EQUIP_ART_BY_NAME)};
+  function equipArt(it) { return (it && (EQUIP_ART_BY_ID[it.id] || EQUIP_ART_BY_NAME[it.name])) || ''; }
   var MELEE_ART = ${JSON.stringify(artSets.melee)};
   var RANGED_ART = ${JSON.stringify(artSets.ranged)};
   var ARMOR_ART = ${JSON.stringify(artSets.armor)};
@@ -1427,7 +1436,7 @@ function buildArtScript(dbCards) {
       }
       var item = typeof byId === 'function' ? byId(SPELLS, id) : null;
       if (!item) return;
-      var art = (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
+      var art = equipArt(item) || (SPELL_ART[indexInList(SPELLS, id)] || NUM_ART[String(numFor(item))]) || '';
        var itemCopy = {};for(var p in item)itemCopy[p]=item[p];itemCopy.txt=itemCopy.txt||itemCopy.desc||'';
        var opts = { item: itemCopy, side: side, art: art };
        bfConfirm(opts, function() { originalBuySpell(side, id); bfGuideApprovePurchase(item); });
@@ -1451,7 +1460,7 @@ function buildArtScript(dbCards) {
         return;
       }
       if (typeof NET !== 'undefined' && NET.role === 'host' && side === 'o') return originalBuyObject(side, id);
-      var art = (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
+      var art = equipArt(item) || (OBJECT_ART[indexInList(OBJECTS, id)] || NUM_ART[String(numFor(item))]) || '';
       bfConfirm({ item: item, side: side, art: art }, function() { originalBuyObject(side, id); bfGuideApprovePurchase(item); });
     };
     var originalDoAssign = window.doAssign;
@@ -1582,7 +1591,7 @@ function buildArtScript(dbCards) {
         var byName = {};
         function reg(list, kind) {
           (list || []).forEach(function(it, i) {
-            if (it && it.name) byName[it.name] = { id: it.id, art: (NUM_ART && NUM_ART[String(numFor(it))]) || shopArt(kind, i) || '', kind: kind, txt: it.txt || '', mana: it.mana, num: numFor(it) };
+            if (it && it.name) byName[it.name] = { id: it.id, art: equipArt(it) || (NUM_ART && NUM_ART[String(numFor(it))]) || shopArt(kind, i) || '', kind: kind, txt: it.txt || '', mana: it.mana, num: numFor(it) };
           });
         }
         reg(MELEE, 'melee'); reg(RANGED, 'ranged'); reg(ARMORS, 'armor'); reg(SPELLS, 'spell'); reg(OBJECTS, 'object');
@@ -1777,8 +1786,8 @@ function buildArtScript(dbCards) {
     var sig = SPELLS.length + '/' + OBJECTS.length + '/' + (window.__bfEquipVer || 0);   // también cambia al reconstruir el equipo desde la BD
     if (__bfHandArtByName && __bfHandArtByName.__sig === sig) return __bfHandArtByName;
     var map = { __sig: sig };
-    (SPELLS || []).forEach(function(s, i) { if (s && s.name) { var _a = (SPELL_ART && SPELL_ART[i]) || (NUM_ART && NUM_ART[String(s.num || 0)]) || ''; if (_a) map[s.name] = _a; } });
-    (OBJECTS || []).forEach(function(o, i) { if (o && o.name) { var _b = (OBJECT_ART && OBJECT_ART[i]) || (NUM_ART && NUM_ART[String(o.num || 0)]) || ''; if (_b) map[o.name] = _b; } });
+    (SPELLS || []).forEach(function(s, i) { if (s && s.name) { var _a = equipArt(s) || (SPELL_ART && SPELL_ART[i]) || (NUM_ART && NUM_ART[String(s.num || 0)]) || ''; if (_a) map[s.name] = _a; } });
+    (OBJECTS || []).forEach(function(o, i) { if (o && o.name) { var _b = equipArt(o) || (OBJECT_ART && OBJECT_ART[i]) || (NUM_ART && NUM_ART[String(o.num || 0)]) || ''; if (_b) map[o.name] = _b; } });
     __bfHandArtByName = map;
     return map;
   }
@@ -1852,7 +1861,12 @@ function buildArtScript(dbCards) {
     var map = handArtByName();
     if (!map) return;
     document.querySelectorAll('.chip-spell, .chip-object').forEach(function(chip) {
-      if (chip.dataset.bfHandArt === '1') return;
+      if (chip.dataset.bfHandArt === '1') {
+        // Ya pintada: si su imagen no es la de su carta (p. ej. pintada antes de tener los datos), se corrige.
+        var u0 = chip.title ? map[chip.title] : '';
+        if (u0) chip.querySelectorAll('.bf-chip-art-layer, .bf-chip-fill').forEach(function(l){ if (String(l.style.backgroundImage || '').indexOf(u0) < 0) l.style.backgroundImage = 'url("' + u0 + '")'; });
+        return;
+      }
       var name = (chip.childNodes[0] && chip.childNodes[0].textContent || '').trim();
       var url = map[name];
       if (!url) return;
@@ -2406,7 +2420,7 @@ function buildArtScript(dbCards) {
       arr.length = 0; items.forEach(function(it){ arr.push(it); });
       // El arte se busca por POSICIÓN (mano, modal de compra...): al reordenar la tabla por número de carta hay que
       // recolocarlo, o una carta mostraría el arte de otra (El Ladrón Enmascarado salía con el de Reanimación Arcana).
-      if (artArr) { artArr.length = 0; items.forEach(function(it, i){ artArr[i] = (typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART[String(it.num)]) || oldArt[it.id] || ''; }); }
+      if (artArr) { artArr.length = 0; items.forEach(function(it, i){ artArr[i] = equipArt(it) || (typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART[String(it.num)]) || oldArt[it.id] || ''; }); }
     });
     window.__bfEquipFromDb = true;
     window.__bfEquipVer = (window.__bfEquipVer || 0) + 1;   // invalida la caché del arte de la mano
