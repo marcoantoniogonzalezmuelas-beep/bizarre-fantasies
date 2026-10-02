@@ -20,7 +20,7 @@ export function buildFumbleRollPatch(lang) {
     oneLog: en ? 'FUMBLE! (a 1 on a d30 not confirmed on the d6): the action does nothing.' : '¡PIFIA! (1 en d30 no confirmado en el d6): la acción no hace nada.',
     epicLog: en ? 'EPIC FAIL! (a 1 on a d30 confirmed with a 1 on a d6 ≈ 0.5%): the action does nothing and the effect backfires.' : '¡FALLO ÉPICO! (1 en d30 confirmado con 1 en d6 ≈ 0,5%): la acción no hace nada y el efecto se vuelve en su contra.',
     selfHit: en ? 'hits itself for' : 'se golpea a sí mismo por',
-    nothing: en ? 'FUMBLE: this ability has no effect.' : 'PIFIA: esta habilidad no produce ningún efecto.',
+    nothing: en ? 'this ability had no visible effect this time.' : 'esta vez la habilidad no ha tenido efecto visible.',
   };
   return `
 <script>
@@ -281,12 +281,26 @@ export function buildFumbleRollPatch(lang) {
   // Firma del estado de TODOS los héroes (vida, maná, escudo, vivo, banderas). Una habilidad solo se marca
   // "sin efecto" si no escribió nada en el registro Y ADEMÁS no cambió nada de esto: antes bastaba lo primero,
   // y toda habilidad que actuara sin dejar línea de registro salía como pifia.
+  // Marcas internas (_bf...) con valor simple, salvo las que cambian en CUALQUIER uso de habilidad.
+  var VOLATILE = /^_bf(AbilityCineSuppressed|AbUsed|NormalUsed|EliteUsed|LogSeq|Anim|Lunge|Glide|DeathAt|Last)/;
+  function flagSig(x){
+    var out = [];
+    Object.keys(x).forEach(function(k){
+      if(k.indexOf('_bf') !== 0 || VOLATILE.test(k)) return;
+      var v = x[k];
+      if(v === null || typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') out.push(k + '=' + v);
+    });
+    return out.sort().join(',');
+  }
   function stateSig(){
     try{
       var s = [];
       ['p','o'].forEach(function(sd){
         (G.team[sd] || []).forEach(function(x){
-          s.push(x.id, x.hp, x.mana, x.shield || 0, x.alive ? 1 : 0, x.eliteMode ? 1 : 0, Object.keys(x).length);
+          s.push(x.id, x.hp, x.mana, x.shield || 0, x.alive ? 1 : 0, x.eliteMode ? 1 : 0, Object.keys(x).length,
+            // estados y marcas internas: una pasiva que se "arma" (Doji, Juniana...) o un estado aplicado SÍ es un efecto
+            x.sleep || 0, x.para || 0, x.skip || 0, x.silence || 0, x.evade || 0, x.mark ? 1 : 0, x.wardTurns || 0,
+            (x._mods || []).length, x.eliteUsed ? 1 : 0, flagSig(x));
         });
       });
       return s.join('|');
@@ -358,11 +372,10 @@ export function buildFumbleRollPatch(lang) {
       var seq = window.__bfLogSeq, sig0 = stateSig();
       var wrappedDone = function(){
         try{
-          // Habilidad sin efecto en el motor: se avisa con el marcador de pifia
-          // una vez terminada la animación.
+          // Habilidad que no cambió nada (ni registro, ni vida, estados o marcas): se anota en el registro, pero
+          // NO es una pifia ni muestra el cartel de PIFIA (antes sí, y las pasivas parecían pifiar siempre).
           if(window.__bfLogSeq === seq && stateSig() === sig0){
-            log('lx', '\\u{1F3B2} ' + h.name + ' \\u2014 ${T.nothing}');
-            setTimeout(function(){ try{ pop(side, h.id, false, 0); }catch(e){} }, 1300);
+            log('lx', h.name + ' \\u2014 ${T.nothing}');
           }
         }catch(e){}
         if(typeof done === 'function') return done.apply(this, arguments);

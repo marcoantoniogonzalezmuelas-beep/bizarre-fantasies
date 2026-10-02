@@ -253,6 +253,18 @@ export const ABILITY_IMPL_PATCH = `
       case 'shield_regen': { t._bfShieldRegen = Math.max(1, num(st.amount, 0)); return true; }   // lo procesa el gancho de fin de turno del motor (22 > 11 > 6 > 3 > 2 > 1 > 0)
       case 'block_hand': { var bh = Math.max(1, num(st.turns, 2)); t._bfHandBlock = Math.max(t._bfHandBlock || 0, bh); try{ pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\ud83d\\udeab'}); }catch(e){} log(t.name + ' tiene la mano bloqueada ' + bh + ' turnos: no puede jugar hechizos ni objetos.'); return true; }
       case 'noop': { log(hero.name + ': ' + (st.text || 'no pasa nada en absoluto.')); return true; }
+      case 'disable_ability': {
+        t.abilityUsed = true; t._bfAbilityCineSuppressed = t.eliteMode ? 'elite' : 'normal';
+        try{ if(window.bfStatusPop) window.bfStatusPop(tSide(t), t.id, '\\u2728 SIN HABILIDAD'); }catch(e){}
+        log(hero.name + ' anula la habilidad de ' + t.name + '.');
+        return true;
+      }
+      case 'disable_elite': {
+        t.eliteUsed = true; t._bfNoElite = 1;
+        try{ if(window.bfStatusPop) window.bfStatusPop(tSide(t), t.id, '\\u26d4 SIN \\u00c9LITE'); }catch(e){}
+        log(hero.name + ' bloquea la fase \\u00c9LITE de ' + t.name + ': cuando caiga, morir\\u00e1 definitivamente.');
+        return true;
+      }
       default: return undefined;
     }
   }
@@ -351,18 +363,33 @@ export const ABILITY_IMPL_PATCH = `
   // único rival/aliado (los pasos de área o sobre uno mismo no preguntan).
   function needsPick(spec){
     var kinds = [];
-    (((spec.params || {}).steps) || []).forEach(function(st){
+    var scan = function(st){
       var tg = String((st || {}).target || 'enemy');
       if((tg === 'enemy' || tg === 'ally' || tg === 'dead_ally') && kinds.indexOf(tg) < 0) kinds.push(tg);
-    });
+      if(st && st.action === 'roll' && st.outcomes) Object.keys(st.outcomes).forEach(function(k){ (st.outcomes[k] || []).forEach(scan); });
+    };
+    (((spec.params || {}).steps) || []).forEach(scan);
     return kinds;
   }
 
   function runSteps(side, hero, spec, chosen){
     var steps = ((spec.params || {}).steps) || [];
     var did = false;
-    steps.forEach(function(st){
+    var runOne = function(st){
       if(!st || !st.action) return;
+      // DADO: se tira un dado de "sides" caras (con su animación) y se ejecutan los pasos del resultado que salga,
+      // sobre los mismos objetivos elegidos. Ej.: Faseve, 1 = sin habilidad, 2 = sin fase élite.
+      if(st.action === 'roll'){
+        var faces = Math.max(2, Math.floor(num(st.sides, 2)));
+        var r = (typeof window.__bfHeroRoll === 'function')
+          ? window.__bfHeroRoll({ faces: faces, hero: hero.name, label: st.label || 'Dado', note: st.note || '', delay: 0 })
+          : 1 + Math.floor(Math.random() * faces);
+        var outs = st.outcomes || {};
+        var sub = outs[String(r)] || outs[r] || [];
+        did = true;
+        sub.forEach(runOne);
+        return;
+      }
       var tg = String(st.target || 'enemy');
       var list;
       if(tg === 'other_enemy'){ var ce = chosen && chosen.enemy; list = foes(side).filter(function(x){ return x !== ce; }).slice(0, 1); }
@@ -372,7 +399,8 @@ export const ABILITY_IMPL_PATCH = `
         if(!t || (!t.alive && st.action !== 'revive')) return;
         try{ if(applyStep(side, hero, st, t)) did = true; }catch(e){}
       });
-    });
+    };
+    steps.forEach(runOne);
     return did;
   }
 

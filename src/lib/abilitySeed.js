@@ -2014,13 +2014,29 @@ export const ABILITY_SEED = [
   "params": {
    "steps": [
     {
-     "action": "silence",
+     "action": "roll",
      "target": "enemy",
-     "turns": 99
+     "sides": 2,
+     "label": "Compresor Roto",
+     "note": "1 sin habilidad · 2 sin fase élite",
+     "outcomes": {
+      "1": [
+       {
+        "action": "disable_ability",
+        "target": "enemy"
+       }
+      ],
+      "2": [
+       {
+        "action": "disable_elite",
+        "target": "enemy"
+       }
+      ]
+     }
     }
    ]
   },
-  "note": "Fiel al texto de la carta. Pasos: silence→enemy."
+  "note": "Normal: dado de 2 caras sobre el rival elegido. 1 = anula su habilidad; 2 = nunca tendrá fase élite (al caer, muere)."
  },
  {
   "card_id": "juni",
