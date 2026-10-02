@@ -237,3 +237,10 @@ test('hand art in the EQUIPMENT phase comes from the card itself (card_id / name
   assert.match(e,/if \(chip\.dataset\.bfHandArt === '1'\) \{[\s\S]{0,400}l\.style\.backgroundImage = 'url\("' \+ u0 \+ '"\)'/,'an already painted hand card is repainted if its image is not its own');
   assert.match(s,/document\.querySelectorAll\('#s-equip \.chip-spell, #s-equip \.chip-object'\)/,'the client also fixes the equipment-phase hand (before: only the battle hand)');
 });
+test('no card magnifier on the equipment weapon/armour picker (the card is already big there); it stays on the shop and the hand',async()=>{
+  const {CARD_MAGNIFIER_PATCH}=await load('cardMagnifierPatch.js').catch(()=>({}));
+  const src=read('cardMagnifierPatch.js');
+  assert.match(src,/if \(e\.target\.closest\('\.bf-quick-card'\)\) \{ hide\(\); return; \}/);
+  assert.doesNotMatch(src,/\|\| e\.target\.closest\('\.bf-quick-card'\)\;/,'the picker cards no longer open the magnifier');
+  assert.match(src,/e\.target\.closest\('\.chip\.bf-chip-card'\) \|\| e\.target\.closest\('\.shop-card\.has-art'\)/,'hand and shop keep it');
+});
