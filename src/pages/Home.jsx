@@ -284,7 +284,10 @@ const DRAGGABLE_GUIDE_PATCH = `
 // "Salir" / "Volver al inicio" → el juego recarga el iframe). Así el padre
 // puede tapar el iframe y evitar el flash de "iconos enormes" (el HTML del
 // juego recién cargado, antes de que inyecte su CSS de layout).
-const RELOAD_COVER_PATCH = `<script>window.addEventListener('pagehide',function(){try{parent.postMessage({bfReloading:true},'*')}catch(e){}});</script>`;
+// Solo una recarga REAL del juego pone la pantalla de carga. En iPhone, pagehide también salta al pasar Safari a
+// segundo plano (compartir el código de la sala, bloquear la pantalla...) SIN recargar: la pantalla negra se quedaba
+// para siempre y parecía que la partida se había desconectado al conectar.
+const RELOAD_COVER_PATCH = `<script>window.addEventListener('pagehide',function(e){try{if((e&&e.persisted)||document.visibilityState==='hidden')return;parent.postMessage({bfReloading:true},'*')}catch(x){}});</script>`;
 // Empuja el botón "Contacta con los Bizarros" hacia abajo para dejar sitio
 // al cartel de Actualidad (flash news) entre el menú y el botón de contacto.
 const CONTACT_REPOSITION_PATCH = `<style>#s-title #bf-contact{margin-top:112px!important}</style>`;
@@ -332,6 +335,15 @@ export default function Home() {
 
   const iframeRef = useRef(null);
   const loadTimerRef = useRef(null);
+  const reloadCoverRef = useRef(false);
+  // Al volver a primer plano (iPhone: tras compartir el código o desbloquear), si la pantalla de carga la puso un aviso
+  // de recarga que no llegó a producirse, se quita: la partida sigue viva debajo.
+  useEffect(() => {
+    const back = () => { if (document.visibilityState === 'visible' && reloadCoverRef.current) { reloadCoverRef.current = false; setTimeout(() => setLoading(false), 300); } };
+    document.addEventListener('visibilitychange', back);
+    window.addEventListener('pageshow', back);
+    return () => { document.removeEventListener('visibilitychange', back); window.removeEventListener('pageshow', back); };
+  }, []);
   const gameReadyRef = useRef(false);
 
   // iOS hace zoom NATIVO de la página con el pellizco (eventos gesture*) además del zoom propio del juego:
@@ -634,6 +646,10 @@ export default function Home() {
       }
       if (e.data && e.data.bfReloading) {
         setLoading(true);
+        reloadCoverRef.current = true;
+        // Si el juego no llega a recargarse (onLoad), la pantalla de carga se quita sola: nunca se queda tapando la partida.
+        if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+        loadTimerRef.current = setTimeout(() => { reloadCoverRef.current = false; setLoading(false); }, 4000);
       }
       // Errores de conexión del relay: se guardan en la BD para que el
       // backoffice de red los muestre en el diagnóstico.
