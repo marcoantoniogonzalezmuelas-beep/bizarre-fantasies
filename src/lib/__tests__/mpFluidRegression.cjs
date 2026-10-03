@@ -28,3 +28,24 @@ test('AI strategy hook: passes the end-of-turn callback and never lets the AI ac
   assert.match(s,/window\.useAbility\(side, hero, function\(\)\{ if \(typeof window\.endTurn === 'function'\) window\.endTurn\(\); \}\);/,'without it the engine called an undefined function and the turn hung');
   assert.match(s,/B\.__bfStratQi = B\.qi;/);assert.match(s,/if \(typeof B !== 'undefined' && B && B\.__bfStratQi === B\.qi\) return;/);
 });
+test('REBIRTH during its own ability (Patito hits Juniana, the reflection kills it, it comes back ELITE): the elite ability stays available',async()=>{
+  const {REBIRTH_ABILITY_PATCH:P}=await load('rebirthAbilityPatch.js');
+  const mk=(dieAndRebirth,withDone)=>{
+    let fin=0,closed=0;const h={id:'d',alive:true,eliteMode:false,abilityUsed:false,eliteUsed:false};
+    const env={setInterval(){},window:{},renderBattle(){},finishAct(){fin++;}};env.window=env;
+    env.useAbility=function(side,hero,done){ if(dieAndRebirth){hero.eliteMode=true;hero.eliteUsed=true;hero.abilityUsed=false;} hero.abilityUsed=true; done(); };
+    vm.runInNewContext(script(P),env);
+    env.useAbility('p',h,withDone?function(){closed++;}:undefined);
+    return {h,fin,closed};
+  };
+  let r=mk(true,true);assert.equal(r.h.eliteMode,true);assert.equal(r.h.abilityUsed,false,'reborn elite during its own ability: elite ability NOT spent');assert.equal(r.h.eliteUsed,true,'the rebirth itself stays spent');assert.equal(r.closed,1);
+  r=mk(false,true);assert.equal(r.h.abilityUsed,true,'a normal use is still marked as used');
+  r=mk(false,false);assert.equal(r.fin,1,'no close callback given: the action is closed instead of hanging the turn');
+  assert.match(read('gameInject.js'),/SPELL_STEPS_PATCH \+ REBIRTH_ABILITY_PATCH/);
+});
+test('END ANIMATION always carries the 6 heroes: retried if it failed half-way, heroes put back from the battle lineup if missing',()=>{
+  const s=read('endGuardPatch.js');
+  assert.match(s,/if\(window\.__bfEndCine===1&&!cineEl&&!window\.__bfEndCineDoneAt&&Date\.now\(\)-resultSince>2000&&cineRetries<3\)\{/);assert.match(s,/cineRetries\+\+;window\.__bfEndCine=0;/);
+  assert.match(s,/if\(!cineEl\.querySelector\('\.bf-cine-hero'\)\)injectLineup\(cineEl\);/);assert.match(s,/function injectLineup\(cineEl\)/);
+  assert.match(s,/class="bf-cine-team bf-cine-local">'\+team\(mySide\)\+'<\/div><div class="bf-cine-vs">VS<\/div><div class="bf-cine-team bf-cine-rival">'\+team\(rival\)/,'3 + 3 heroes inside the same animation, with VS');
+});
