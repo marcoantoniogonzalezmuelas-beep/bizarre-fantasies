@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { buildAbilityPrompt, validateAbilitySpec } from '@/lib/abilityImplementationCatalog';
+import { buildEngineRequestPrompt } from '@/lib/engineRequestPrompt';
+import EngineRequestBox from '@/components/admin/EngineRequestBox';
 
 // Convierte una habilidad escrita en el editor en una ficha que ejecuta el
 // motor real. Las mecánicas imposibles se conservan como revisión manual.
@@ -24,6 +26,10 @@ export default function AbilityImplementButton({ cardId, elite, abilityName, abi
       let note = data?.note || '';
       if (!v.ok && v.reason) note = (note ? note + ' — ' : '') + 'No automatizable: ' + v.reason + '.';
       const payload = { card_id: cardId, elite: !!elite, ability_name: abilityName || '', ability_text: abilityText, status, effect_type, params: v.ok ? (data?.params || {}) : {}, note };
+      if (!v.ok) {
+        // No implementable: se guarda y se muestra el prompt para que la IA de desarrollo adapte el motor.
+        payload.params = { engine_request: buildEngineRequestPrompt({ card: { card_id: cardId, name: cardId }, elite: !!elite, abilityName, abilityText, reason: note }) };
+      }
       const existing = await base44.entities.AbilityImpl.filter({ card_id: cardId, elite: !!elite }, '-created_date', 1);
       if (existing?.length) await base44.entities.AbilityImpl.update(existing[0].id, payload);
       else await base44.entities.AbilityImpl.create(payload);
@@ -56,6 +62,7 @@ export default function AbilityImplementButton({ cardId, elite, abilityName, abi
           {result.note ? <div className="mt-0.5 opacity-90">{result.note}</div> : null}
         </div>
       )}
+      {result && result.status !== 'implemented' && result.params && result.params.engine_request ? <EngineRequestBox label={elite ? 'Habilidad élite' : 'Habilidad'} prompt={result.params.engine_request} /> : null}
     </div>
   );
 }
