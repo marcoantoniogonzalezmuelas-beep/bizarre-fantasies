@@ -16,7 +16,7 @@ export const END_GUARD_PATCH = `
   var locked=false,since={p:0,o:0},nudgedAt=0,forced=false,resultSince=0,kicked=false;
   // La foto de la alineación NO se borra al reiniciar: se sustituye cuando empieza la siguiente batalla. Antes se
   // borraba y, si la misión reiniciaba la partida antes de la cinemática final, salía sin retratos.
-  function reset(){locked=false;since={p:0,o:0};nudgedAt=0;forced=false;resultSince=0;kicked=false;}
+  function reset(){locked=false;since={p:0,o:0};nudgedAt=0;forced=false;resultSince=0;kicked=false;cineRetries=0;}
   if(window.bfOnMatchReset)window.bfOnMatchReset(reset);
 
   // Arte del héroe por card_id / nombre (mapa que manda la página padre).
@@ -55,6 +55,24 @@ export const END_GUARD_PATCH = `
     try{var L=((window.__bfLineup||{})[side])||[];var e=L.find(function(x){return x.id===h.id;})||L.find(function(x){return x.name===h.name;});return (e&&e.art)||'';}catch(x){return '';}
   };
   function isClient(){try{return typeof NET!=='undefined'&&NET&&NET.role==='client';}catch(e){return false;}}
+  var cineRetries=0;
+  function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function injectLineup(cineEl){
+    try{
+      var L=window.__bfLineup||{p:[],o:[]};
+      var mySide=(typeof NET!=='undefined'&&NET&&NET.role==='client')?'o':((typeof NET!=='undefined'&&NET&&NET.mySide)||'p');
+      var win=cineEl.classList.contains('bf-cine-victory');
+      var winSide=win?mySide:(mySide==='p'?'o':'p'),rival=mySide==='p'?'o':'p';
+      var mk=function(h,side,i){var won=side===winSide,u=h.art||(window.bfHeroArtFor&&window.bfHeroArtFor(h))||'';
+        return '<div class="bf-cine-hero '+(won?'bf-cine-winner':'bf-cine-fallen')+'" style="--bf-delay:'+(i*.16+(side==='o'?.18:0))+'s;opacity:1;animation:none"><div class="bf-cine-portrait">'+(u?'<img src="'+esc(u)+'" alt="'+esc(h.name)+'">':'<span class="bf-cine-initial">'+esc(String(h.name||'?').charAt(0))+'</span>')+'</div><div class="bf-cine-name">'+esc(h.name||'Héroe')+'</div></div>';};
+      var team=function(side){return (L[side]||[]).slice(0,3).map(function(h,i){return mk(h,side,i);}).join('');};
+      if(!(L.p||[]).length&&!(L.o||[]).length)return;
+      var box=cineEl.querySelector('.bf-cine-lineup');
+      if(!box){box=document.createElement('div');box.className='bf-cine-lineup';cineEl.appendChild(box);}
+      box.innerHTML='<div class="bf-cine-team bf-cine-local">'+team(mySide)+'</div><div class="bf-cine-vs">VS</div><div class="bf-cine-team bf-cine-rival">'+team(rival)+'</div>';
+      try{window.parent.postMessage({bfRelayError:{room_code:'',side:'',nick:'',error_type:'server_error',action:'endCine',error_message:'[end_cine_lineup] animación final sin héroes: puestos desde la foto'}},'*');}catch(e){}
+    }catch(e){}
+  }
   function report(msg){try{window.parent.postMessage({bfRelayError:{room_code:'',side:'',nick:'',error_type:'forced_end',action:'endGuard',error_message:msg}},'*');}catch(e){}}
 
   function tick(){
@@ -63,10 +81,22 @@ export const END_GUARD_PATCH = `
       // ---- 3) la cinemática final arranca ----
       if(inGame()&&active('s-result')){
         if(!resultSince)resultSince=Date.now();
+        // a) La marca "ya mostrada" se pone ANTES de construir la animación: si algo fallaba a mitad, no volvía a
+        //    salir en esa partida. Si a los 2 s hay marca pero no hay animación, se libera para que el juego la repita.
+        var cineEl=document.getElementById('bf-end-cine');
+        if(window.__bfEndCine===1&&!cineEl&&!window.__bfEndCineDoneAt&&Date.now()-resultSince>2000&&cineRetries<3){
+          cineRetries++;window.__bfEndCine=0;
+          try{window.parent.postMessage({bfRelayError:{room_code:'',side:'',nick:'',error_type:'server_error',action:'endCine',error_message:'[end_cine_retry] animación final reintentada '+cineRetries}},'*');}catch(e){}
+        }
+        // b) Los 6 héroes SIEMPRE dentro de la animación final: si salió sin ellos, se ponen con la foto de la batalla.
+        if(cineEl&&!cineEl.dataset.bfLineupChecked&&Date.now()-resultSince>800){
+          cineEl.dataset.bfLineupChecked='1';
+          if(!cineEl.querySelector('.bf-cine-hero'))injectLineup(cineEl);
+        }
         if(!kicked&&Date.now()-resultSince>3000&&!document.getElementById('bf-end-cine')&&!window.__bfEndCineDoneAt&&typeof window.bfEndCinematic==='function'){
           kicked=true;window.__bfEndCine=0;try{window.bfEndCinematic();}catch(e){}
         }
-      }else resultSince=0;
+      }else{resultSince=0;cineRetries=0;}
       // ---- 2) fin forzado ----
       if(!inGame()||B.over||G.demo||!active('s-battle')||isClient()){since.p=since.o=0;return;}
       ['p','o'].forEach(function(side){
