@@ -85,7 +85,7 @@ test('PRECEDENCE: __bfSpecOwns is true only for executable records; a record alw
 });
 test('CARD_ID: renaming moves the ability records to the new id (no orphans); the id must be unique; stale records under the new id are dropped',async()=>{
   const tmp=path.join(os.tmpdir(),'bf-sync2-'+process.pid+'.mjs');
-  fs.writeFileSync(tmp,read('abilitySync.js').replace("'@/lib/abilityImplementationCatalog'",JSON.stringify(pathToFileURL(lib('abilityImplementationCatalog.js')).href)));
+  fs.writeFileSync(tmp,read('abilitySync.js').replace("'@/lib/abilityImplementationCatalog'",JSON.stringify(pathToFileURL(lib('abilityImplementationCatalog.js')).href)).replace("'@/lib/engineRequestPrompt'",JSON.stringify(pathToFileURL(lib('engineRequestPrompt.js')).href)));
   const m=await import(pathToFileURL(tmp).href);fs.unlinkSync(tmp);
   const db=[{id:'1',card_id:'viejo',elite:false},{id:'2',card_id:'viejo',elite:true},{id:'3',card_id:'nuevo',elite:false},{id:'4',card_id:'otro',elite:false}];
   const deps={list:async id=>db.filter(s=>s.card_id===id),update:async(id,p)=>Object.assign(db.find(s=>s.id===id),p),remove:async id=>db.splice(db.findIndex(s=>s.id===id),1)};

@@ -110,7 +110,8 @@ test('end guard: lineup photo at battle start; extinct side forces the end (host
   let w=mk('host');w.c.advance(1200);
   assert.deepEqual(JSON.parse(JSON.stringify(w.c.env.__bfLineup.p.map(h=>h.id))),['a','b','c']);assert.equal(w.c.env.__bfLineup.o.length,3);
   w.G.team.p=[];w.c.advance(600);assert.equal(w.c.env.__bfLineup.p.length,3,'kept even if G.team later comes back empty (the old cinematic then showed no portraits)');
-  w.c.env.bfNewMatchEpoch('rematch');assert.equal(w.c.env.__bfLineup.p.length,0,'a new match forgets the old lineup');
+  w.c.env.bfNewMatchEpoch('rematch');assert.equal(w.c.env.__bfLineup.p.length,3,'a reset no longer wipes the lineup (missions reset before the final screens): the NEXT battle replaces it');
+  w.G.team.p=[{id:'x',name:'X',alive:true},{id:'y',name:'Y',alive:true},{id:'z',name:'Z',alive:true}];w.c.advance(600);assert.deepEqual(JSON.parse(JSON.stringify(w.c.env.__bfLineup.p.map(h=>h.id))),['x','y','z'],'the next battle replaces it');
   assert.equal(w.c.env.bfLineupArt({id:'x',name:'Zed'}),'');
   w.c.env.__bfCardArtMap={zed:{base:'B',elite:'E'},Zed:{base:'B2',elite:'E2'}};assert.equal(w.c.env.bfLineupArt({id:'x',name:'Zed'}),'B2');assert.equal(w.c.env.bfLineupArt({id:'x',name:'Zed',eliteMode:true}),'E2');
   // 2) 3 héroes originales muertos, la partida NO termina (checkWin no hace nada): 4 s -> checkWin; 8 s -> fin forzado

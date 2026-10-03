@@ -6,7 +6,7 @@ const load=f=>import(pathToFileURL(lib(f)).href);
 
 async function syncMod(){
   const tmp=path.join(os.tmpdir(),'bf-sync-'+process.pid+'.mjs');
-  fs.writeFileSync(tmp,read('abilitySync.js').replace("'@/lib/abilityImplementationCatalog'",JSON.stringify(pathToFileURL(lib('abilityImplementationCatalog.js')).href)));
+  fs.writeFileSync(tmp,read('abilitySync.js').replace("'@/lib/abilityImplementationCatalog'",JSON.stringify(pathToFileURL(lib('abilityImplementationCatalog.js')).href)).replace("'@/lib/engineRequestPrompt'",JSON.stringify(pathToFileURL(lib('engineRequestPrompt.js')).href)));
   const m=await import(pathToFileURL(tmp).href);fs.unlinkSync(tmp);return m;
 }
 const mkDeps=(initial=[],llm)=>{const db=[...initial],calls={implement:0,create:[],update:[],remove:[]};let n=0;
