@@ -184,8 +184,12 @@ export const AI_STRATEGY_PATCH = `
               setTimeout(function(){
                 try {
                   if (typeof B !== 'undefined' && B && B.current && B.current.side === side &&
-                      B.current.id === hero.id && !B.over && !B.pending) {
-                    window.useAbility(side, hero);
+                      B.current.id === hero.id && !B.over && !B.pending && !hero.abilityUsed && B.__bfStratQi !== B.qi) {
+                    // Se marca el turno (la acción normal de la IA no se ejecuta además) y se pasa el cierre del
+                    // turno: sin él, una habilidad resuelta por el motor llamaba a una función inexistente y el turno
+                    // se quedaba colgado hasta que lo forzaba el vigilante.
+                    B.__bfStratQi = B.qi;
+                    window.useAbility(side, hero, function(){ if (typeof window.endTurn === 'function') window.endTurn(); });
                   }
                 } catch(e) {}
               }, 300);
@@ -196,6 +200,12 @@ export const AI_STRATEGY_PATCH = `
       return inner.apply(this, arguments);
     };
     window.stepTurn.__bfStratAbility = 1;
+    // Si este gancho ya actuó en el turno, la acción normal de la IA no se ejecuta además (dos acciones en un turno).
+    if (typeof window.aiTurn === 'function' && !window.aiTurn.__bfStratOnce) {
+      var ai = window.aiTurn;
+      window.aiTurn = function(){ try { if (typeof B !== 'undefined' && B && B.__bfStratQi === B.qi) return; } catch(e) {} return ai.apply(this, arguments); };
+      window.aiTurn.__bfStratOnce = 1;
+    }
   }
 
   // ---- 3) Timing de compras ----

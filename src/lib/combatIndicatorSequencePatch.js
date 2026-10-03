@@ -12,8 +12,13 @@ export const COMBAT_INDICATOR_SEQUENCE_PATCH = `
       (typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy()));
   }
   function remove(job){job.nodes.forEach(function(n){if(n.parentNode)n.parentNode.removeChild(n);});}
+  // FLUIDEZ: el turno siguiente espera a que se lean los carteles (daño, estados, stats...). Con los tiempos
+  // originales (2,2-4,8 s) entre turno y turno pasaban 3-7 s sin nadie jugando. Se leen al 65 % de su tiempo
+  // (nunca menos de 1,2 s); siguen pausándose durante las cinemáticas, así que no se pierde ninguno.
+  var READ_SCALE=0.65,READ_MIN=1200;
   window.__bfQueueIndicator=function(paint,duration){
-    waiting.push({paint:paint,duration:duration,ready:Date.now()+300});
+    var d=Math.max(READ_MIN,Math.round((Number(duration)||READ_MIN)*READ_SCALE));
+    waiting.push({paint:paint,duration:d,ready:Date.now()+300});
   };
   window.__bfIndicatorsBusy=function(){return waiting.length>0||visible.length>0;};
   function tick(){
