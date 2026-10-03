@@ -47,8 +47,10 @@ export const END_HEROES_PATCH = `
   var _isTablet = /iPad/i.test(_ua) || (/Macintosh|Mac OS/i.test(_ua) && navigator.maxTouchPoints > 1) || (/Android/i.test(_ua) && !/Mobile/i.test(_ua));
   var isPhone = !_isTablet && /Android|iPhone|iPod|Mobile/i.test(_ua);
 
+  var CUR_SIDE = '';
   function heroArt(hh){
     if(!hh) return '';
+    if(hh.snap && hh.art) return hh.art;   // entrada de la foto de la alineación: ya trae el retrato del tablero
     var aid = hh._token ? hh._token : (hh.id || '');
     var nm = hh.name || '';
     var isElite = !!(hh.eliteMode || hh._bfElite || hh.eliteUsed);
@@ -67,6 +69,15 @@ export const END_HEROES_PATCH = `
       if(typeof G!=='undefined' && G.team){ if(G.team.p&&G.team.p.indexOf(hh)>=0)side='p'; else if(G.team.o&&G.team.o.indexOf(hh)>=0)side='o'; }
       if(side){ var c=document.getElementById('b_'+side+'_'+aid); if(c){ var a=c.querySelector('.bf-battle-art'); if(a){ var m=(a.style.backgroundImage||'').match(/url\\(['"]?(.*?)['"]?\\)/); if(m&&m[1]) return m[1]; } } }
     } catch(e){}
+    // Respaldo: el retrato del tablero por el id real del héroe (los bizarros tienen _token distinto), el arte del
+    // propio juego y la foto de la alineación. Antes, sin los mapas de la página (misiones), salía sin retrato.
+    try{
+      var sd = CUR_SIDE || side || '';
+      if(sd && hh.id){ var c2=document.getElementById('b_'+sd+'_'+hh.id); var a2=c2&&(c2.querySelector('.bf-battle-art')||c2); var m2=a2&&String(a2.style.backgroundImage||'').match(/url\\(["']?([^"')]+)/); if(m2) return m2[1]; }
+      var g = typeof window.bfHeroArtFor === 'function' ? window.bfHeroArtFor(hh) : '';
+      if(g) return g;
+      if(sd && typeof window.bfLineupArtFor === 'function'){ var l=window.bfLineupArtFor(sd, hh); if(l) return l; }
+    }catch(e){}
     return '';
   }
 
@@ -231,7 +242,10 @@ export const END_HEROES_PATCH = `
   }
 
   function buildTeam(team, isWin, side, mySide){
+    CUR_SIDE = side;
     var arr = (team||[]).filter(function(h){ return h && !h._bfDuck; });
+    // Si el equipo ya no está (la misión lo reinicia al terminar), se usa la foto de la alineación de la batalla.
+    if(!arr.length && window.__bfLineup && window.__bfLineup[side]) arr = window.__bfLineup[side].slice(0, 3);
     if(!arr.length) return null;
     var wrap = el('div', 'display:flex;flex-direction:column;align-items:center;gap:6px');
     var head = buildPlayerHead(side, mySide, isWin);
@@ -252,7 +266,8 @@ export const END_HEROES_PATCH = `
 
   function showHeroes(youWin){
     try {
-      if(typeof G==='undefined' || !G || !G.team) return;
+      if(typeof G==='undefined' || !G) return;
+      var TEAM = G.team || {p:[],o:[]};   // sin tocar el estado del juego
       var old = document.getElementById('bf-end-heroes');
       if(old) old.remove();
 
@@ -262,8 +277,8 @@ export const END_HEROES_PATCH = `
       var winnerSide = (youWin === (mySide==='p')) ? 'p' : 'o';
       var loserSide = winnerSide==='p' ? 'o' : 'p';
 
-      var win = buildTeam(G.team[winnerSide], true, winnerSide, mySide);
-      var lose = buildTeam(G.team[loserSide], false, loserSide, mySide);
+      var win = buildTeam(TEAM[winnerSide], true, winnerSide, mySide);
+      var lose = buildTeam(TEAM[loserSide], false, loserSide, mySide);
       if(!win && !lose) return;
 
       var wrap = el('div', 'position:fixed;left:0;right:0;bottom:0;z-index:100055;display:flex;' +

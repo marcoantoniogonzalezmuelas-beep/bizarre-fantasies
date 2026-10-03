@@ -1,4 +1,5 @@
 import { buildAbilityPrompt, validateAbilitySpec } from '@/lib/abilityImplementationCatalog';
+import { buildEngineRequestPrompt } from '@/lib/engineRequestPrompt';
 
 // SINCRONIZACIÓN CARTA -> FICHAS DE HABILIDAD. La base de datos es la única fuente del juego: al guardar un
 // héroe o bizarro en el editor, sus dos habilidades (normal y élite) quedan en AbilityImpl, que es lo que
@@ -10,7 +11,7 @@ import { buildAbilityPrompt, validateAbilitySpec } from '@/lib/abilityImplementa
 export const ABILITY_CATEGORIES = ['hero', 'bizarro'];
 
 export async function syncCardAbilities(card, deps) {
-  const out = { kept: 0, implemented: 0, manual: 0, removed: 0, protectedSpecs: 0, errors: [], lines: [] };
+  const out = { kept: 0, implemented: 0, manual: 0, removed: 0, protectedSpecs: 0, errors: [], lines: [], requests: [] };
   if (!card || !ABILITY_CATEGORIES.includes(card.category) || !card.card_id) return out;
   let existing = [];
   try { existing = (await deps.list(card.card_id)) || []; } catch (e) { out.errors.push('No se pudieron leer las fichas: ' + (e?.message || e)); return out; }
@@ -29,7 +30,12 @@ export async function syncCardAbilities(card, deps) {
       }
       const sameText = spec && String(spec.ability_text || '').trim() === text;
       if (sameText && (spec.status === 'implemented' || deps.force !== true)) {
-        out.kept++; out.lines.push(`Habilidad ${v.label}: ficha al día (${spec.status === 'implemented' ? spec.effect_type : 'manual'}).`); continue;
+        out.kept++; out.lines.push(`Habilidad ${v.label}: ficha al día (${spec.status === 'implemented' ? spec.effect_type : 'manual'}).`);
+        if (spec.status !== 'implemented') {
+          const req = (spec.params && spec.params.engine_request) || buildEngineRequestPrompt({ card, elite: v.elite, abilityName: name, abilityText: text, reason: spec.note });
+          out.requests.push({ label: 'Habilidad ' + v.label + ' (pendiente): ' + (name || text.slice(0, 40)), prompt: req });
+        }
+        continue;
       }
       if (spec && String(spec.effect_type || '').startsWith('dedicated_')) {
         out.protectedSpecs++; out.lines.push(`Habilidad ${v.label}: ficha dedicada (${spec.effect_type}); el texto cambió y NO se sobrescribe: revísala.`); continue;
@@ -39,13 +45,16 @@ export async function syncCardAbilities(card, deps) {
       const val = validateAbilitySpec(data);
       let note = data.note || '';
       if (!val.ok && val.reason) note = (note ? note + ' — ' : '') + 'No automatizable: ' + val.reason + '.';
+      // No implementable: se guarda el prompt para la IA de desarrollo (para adaptar el motor) y se muestra en el editor.
+      const request = val.ok ? '' : buildEngineRequestPrompt({ card, elite: v.elite, abilityName: name, abilityText: text, reason: note });
       const payload = {
         card_id: card.card_id, elite: v.elite, ability_name: name, ability_text: text, status: val.status,
-        effect_type: val.ok ? (data.effect_type || 'unsupported') : 'unsupported', params: val.ok ? (data.params || {}) : {}, note,
+        effect_type: val.ok ? (data.effect_type || 'unsupported') : 'unsupported', params: val.ok ? (data.params || {}) : { engine_request: request }, note,
       };
+      if (request) out.requests.push({ label: 'Habilidad ' + v.label + ': ' + (name || text.slice(0, 40)), prompt: request });
       if (spec) await deps.update(spec.id, payload); else await deps.create(payload);
       if (payload.status === 'implemented') { out.implemented++; out.lines.push(`Habilidad ${v.label}: implementada (${payload.effect_type}).`); }
-      else { out.manual++; out.lines.push(`Habilidad ${v.label}: NO automatizable${note ? ' — ' + note : ''}. En el juego hará un golpe genérico.`); }
+      else { out.manual++; out.lines.push(`Habilidad ${v.label}: NO automatizable${note ? ' — ' + note : ''}. En el juego hará un golpe genérico. Abajo tienes el prompt para que la IA adapte el motor.`); }
     } catch (e) {
       out.errors.push(`${v.label}: ${e?.message || e}`);
       out.lines.push(`Habilidad ${v.label}: error al sincronizar (${e?.message || e}).`);

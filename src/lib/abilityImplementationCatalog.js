@@ -1,5 +1,6 @@
-export const VALID_ACTIONS = ['damage','true_damage','drain','heal','heal_full','shield','cleanse','buff','debuff','debuff_all_stats','paralyze','skip_turn','sleep','silence','confuse','drunk','mark','evade','mana','lifesteal','recover_card','steal_card','disarm','fx','execute','destroy_equipment','reduce_max_hp','swap_stats','revive','heal_equalize','shield_regen','block_hand','noop','roll','disable_ability','disable_elite'];
-export const VALID_TARGETS = ['self','ally','all_allies','enemy','all_enemies','random_enemy','weakest_enemy','strongest_enemy','other_enemy','dead_ally'];
+import { VALID_ACTIONS, VALID_TARGETS } from '../../base44/shared/abilityCatalog.ts';
+// Las listas viven en base44/shared/abilityCatalog.ts (fuente única con la función del servidor implementAbility).
+export { VALID_ACTIONS, VALID_TARGETS };
 
 export const EFFECTS = `
 - attack_bonus_per_ally: daño extra por aliado vivo. params: { bonus:number, clan?:string }
