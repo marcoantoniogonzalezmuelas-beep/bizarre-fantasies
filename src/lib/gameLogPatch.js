@@ -34,7 +34,27 @@ export const GAME_LOG_PATCH = `
       .map(function(h){return {name:h.name||'',clan:clanOf(h),elite:!!h.eliteUsed,died:!h.alive};});
   }
 
-  function startLog(){battleStart=Date.now();itemsBought=[];events=[];window.__bfLogSent=false;}
+  // EQUIPO DE LA PARTIDA: al empezar la batalla (con todo el equipo puesto y los hechizos y objetos aún en la mano)
+  // se guarda el de los DOS bandos: armas, armaduras, hechizos y objetos (nombre + bando). Antes se registraban las
+  // compras leyendo el primer argumento, que era el bando ("p"), y las armas y armaduras ni se registraban.
+  function gearSnapshot(){
+    var out=[];
+    try{
+      ['p','o'].forEach(function(side){
+        (G.team&&G.team[side]||[]).forEach(function(h){
+          if(!h||h._token||h._bfDuck)return;
+          [h.mwep,h.rwep,h.armor].forEach(function(g){ if(g&&g.name)out.push({name:String(g.name),side:side}); });
+        });
+        (G.spellbook&&G.spellbook[side]||[]).forEach(function(id){
+          var sp=(typeof byId==='function'&&typeof SPELLS!=='undefined')?byId(SPELLS,id):null;
+          if(sp&&sp.name)out.push({name:String(sp.name),side:side});
+        });
+        (G.items&&G.items[side]||[]).forEach(function(it){ if(it&&it.name)out.push({name:String(it.name),side:side}); });
+      });
+    }catch(e){}
+    return out.slice(0,60);
+  }
+  function startLog(){battleStart=Date.now();itemsBought=gearSnapshot();events=[];window.__bfLogSent=false;}
 
   function endLog(youWin){
     if(!battleStart)return;
@@ -104,18 +124,7 @@ export const GAME_LOG_PATCH = `
   }
   var tries=0,t=setInterval(function(){hookPushLog();if(install()&&window.pushLog&&window.pushLog.__bfEvLog)clearInterval(t);if(tries++>200)clearInterval(t);},200);
 
-  // Rastrear compras enganchando funciones de compra del juego
-  function wrapBuy(name){
-    if(typeof window[name]!=='function'||window[name].__bfBuyLog)return;
-    var orig=window[name];
-    window[name]=function(){
-      try{var item=arguments[0]||arguments[1]||'';if(item)itemsBought.push({name:String(item),side:'p'});}catch(e){}
-      return orig.apply(this,arguments);
-    };
-    window[name].__bfBuyLog=1;
-  }
-  function hookBuys(){['buySpell','buyItem','buyEq','buyObject','buyWeapon','buyArmor','buyEquipment'].forEach(wrapBuy);}
-  var bt=0,bt2=setInterval(function(){hookBuys();if(bt++>100)clearInterval(bt2);},200);
+  // (Las compras ya no se rastrean una a una: el equipo se guarda completo al empezar la batalla, en gearSnapshot.)
 })();
 </script>
 `;
