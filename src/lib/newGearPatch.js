@@ -64,7 +64,7 @@ export const NEW_GEAR_PATCH = `
           var ts=tSide(target),other=(G.team[ts]||[]).find(function(x){ return x&&x.alive&&x!==target; });
           if(other){
             var d2=Math.max(1,Math.round(Number(amount)*Number(a.mwep.reach_pct)/100));
-            try{ pushFx({k:'slash',toSide:ts,toId:other.id}); }catch(e){}
+            try{ pushFx({k:'bfstaff',fromSide:side,fromId:a.id,toSide:ts,toId:other.id}); }catch(e){}
             var got=window.dealDamage(other,d2,{type:'melee',bfReach:true});
             L('\\u{1FA84} El '+a.mwep.name+' se alarga y alcanza tambi\\u00e9n a '+other.name+' (-'+(got||0)+').');
           }
@@ -151,7 +151,17 @@ export const NEW_GEAR_PATCH = `
     };
     w.__bfPoisonCure=1;window.pushLog=w;return true;
   }
-  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(),e1=hookBadges(),f1=hookCleanse(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo&&window.statusBadges&&window.statusBadges.__bfPoison&&window.pushLog&&window.pushLog.__bfPoisonCure; }
+  // Efecto del segundo golpe del bastón (viaja en la lista de efectos: el rival en línea también lo ve).
+  function hookStaffFx(){
+    if(typeof window.flushFx!=='function'||window.flushFx.__bfStaff)return false;
+    var o=window.flushFx;
+    var w=function(list){
+      try{ (list||[]).forEach(function(ev){ if(ev&&ev.k==='bfstaff'&&typeof window.__bfStaffFx==='function')window.__bfStaffFx(ev.fromSide,ev.fromId,ev.toSide,ev.toId,420); }); }catch(e){}
+      return o.apply(this,arguments);
+    };
+    w.__bfStaff=1;window.flushFx=w;return true;
+  }
+  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(),e1=hookBadges(),f1=hookCleanse(),g1=hookStaffFx(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo&&window.statusBadges&&window.statusBadges.__bfPoison&&window.pushLog&&window.pushLog.__bfPoisonCure&&window.flushFx&&window.flushFx.__bfStaff; }
   if(!all()){ var iv=setInterval(function(){ if(all())clearInterval(iv); },300); setTimeout(function(){ clearInterval(iv); },15000); }
 })();
 </script>

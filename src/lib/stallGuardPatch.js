@@ -69,6 +69,22 @@ export const STALL_GUARD_PATCH = `
     }catch(e){}
 
     lastAt = Date.now();
+    // FOTO DEL ATASCO para los diagnósticos de "Red": de quién era el turno, si había algo pendiente, qué capas había
+    // en pantalla y qué esperaba el paso de turno. Sirve para encontrar la causa exacta de cada encalle.
+    try{
+      var cur = B.current ? (B.current.side + ':' + B.current.id) : 'sin turno';
+      var ovs = Array.prototype.map.call(document.querySelectorAll('[id^="bf-"]'), function(el){ return el.id; })
+        .filter(function(id){ return /cine|anim|ov|kill|recap|dice|roll|bluff|confirm|pick|target/.test(id); }).slice(0, 8).join(',');
+      var waits = [];
+      try{ if(typeof window.__bfIndicatorsBusy === 'function' && window.__bfIndicatorsBusy()) waits.push('carteles'); }catch(e1){}
+      try{ if(typeof window.__bfKillCinePending === 'function' && window.__bfKillCinePending()) waits.push('golpe mortal'); }catch(e2){}
+      try{ if(typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) waits.push('cinemática'); }catch(e3){}
+      var last = (B.log || []).slice(0, 3).map(function(l){ return String(l && l.txt || '').replace(/<[^>]+>/g, '').slice(0, 70); }).join(' / ');
+      var who = '';
+      try{ if(B.current){ var hh = getHero(B.current.side, B.current.id); if(hh) who = hh.name + (hh.alive ? '' : ' (muerto)') + (humanCtl(B.current.side) ? ' [jugador]' : ' [IA]'); } }catch(e4){}
+      var msg = 'turno ' + cur + ' ' + who + ' | ronda ' + B.round + ' qi ' + B.qi + '/' + ((B.queue || []).length) + ' | pendiente: ' + (B.pending ? (B.pending.kind || 'sí') : 'no') + ' | esperando: ' + (waits.join(',') || 'nada') + ' | capas: ' + (ovs || 'ninguna') + ' | último: ' + last;
+      window.parent.postMessage({ bfRelayError: { room_code: (typeof NET !== 'undefined' && NET.code) || '', side: '', nick: '', error_type: 'turn_stall', action: 'stallGuard', error_message: msg.slice(0, 500) } }, '*');
+    }catch(e){}
     try{ if(typeof pushLog === 'function') pushLog('li', '\\u{1F6E1}\\uFE0F La partida se hab\\u00eda quedado esperando: se reanuda el turno.'); }catch(e){}
     try{
       if(B.current && typeof window.endTurn === 'function') window.endTurn();
