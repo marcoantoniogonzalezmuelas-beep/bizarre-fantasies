@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useHeroStats } from '@/hooks/useHeroStats';
 import HeroStatRow from '@/components/admin/heroes/HeroStatRow';
+import StatsDashboard from '@/components/admin/heroes/StatsDashboard';
 
 export default function AdminHeroStats() {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
   const [query, setQuery] = useState('');
-  const { loading, stats, totalPicks, games } = useHeroStats();
+  const { loading, stats, totalPicks, games, logs, results, cards } = useHeroStats();
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)).finally(() => setChecking(false)); }, []);
 
@@ -26,8 +27,8 @@ export default function AdminHeroStats() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="font-heading text-3xl font-black text-[#fff5dc]">Estadísticas de héroes</h1>
-            <p className="mt-1 text-sm text-[#cfc6dd]">Héroes más y menos comprados en las subastas, a partir de {games} partidas registradas ({totalPicks} compras totales).</p>
+            <h1 className="font-heading text-3xl font-black text-[#fff5dc]">Estadísticas</h1>
+            <p className="mt-1 text-sm text-[#cfc6dd]">Victorias, héroes, equipo y partidas contra la IA. Abajo, los héroes más y menos comprados en las subastas ({games} partidas registradas, {totalPicks} compras).</p>
           </div>
           <div className="flex gap-2">
             <Link to="/admin/jugadores" className="rounded-xl border border-[#ffb34a66] px-4 py-2 text-sm font-black text-[#ffcf8a] hover:bg-[#ffb34a] hover:text-[#3a2600]">Jugadores</Link>
@@ -40,7 +41,8 @@ export default function AdminHeroStats() {
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar héroe por nombre…" className="w-full max-w-sm rounded-xl border border-[#ffd24a33] bg-black/45 px-3 py-2 text-sm text-[#fff5dc] outline-none focus:border-[#ffd24a]" />
         </div>
 
-        {loading ? <p className="text-sm text-[#cfc6dd]">Cargando datos…</p> : (
+        {loading ? <p className="text-sm text-[#cfc6dd]">Cargando datos…</p> : <StatsDashboard results={results} logs={logs} cards={cards} />}
+        {loading ? null : (
           <div className="grid gap-6 lg:grid-cols-2">
             <section className="rounded-3xl border border-[#ffd24a33] bg-[#140d24]/90 p-4 md:p-6">
               <h2 className="mb-3 font-heading text-xl font-black text-[#ffe49a]">🏆 Más comprados · {shown.length}</h2>

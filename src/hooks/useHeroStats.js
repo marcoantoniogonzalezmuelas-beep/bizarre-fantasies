@@ -62,5 +62,5 @@ export function useHeroStats() {
 
   const totalPicks = useMemo(() => stats.reduce((s, r) => s + r.count, 0), [stats]);
 
-  return { loading, stats, totalPicks, games: logs.length, reload: load };
+  return { loading, stats, totalPicks, games: logs.length, reload: load, logs, results, cards };
 }

@@ -1165,6 +1165,8 @@ export default function Home() {
             if (abilityAnimRef.current) iframeRef.current?.contentWindow?.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
+            // Modo diagnóstico (?diag=1): el juego muestra su estado de equipo en un panel pequeño.
+            try { if (new URLSearchParams(window.location.search).get('diag')) setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfDiag: true }, '*'), 2500); } catch (e) { /* sin parámetros */ }
             if (inviteRef.current) {
               const code = inviteRef.current; inviteRef.current = '';
               setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfJoinRoom: code }, '*'), 3800);

@@ -2,7 +2,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-07-eqfix-v245';
+const GAME_PATCH_VERSION = 'bf-2026-10-07-stats-v247';
+// Los datos de las cartas se insertan como código dentro de un <script> del juego. Un texto con "</" o con los
+// separadores invisibles U+2028/U+2029 (típicos al copiar y pegar) rompía ese bloque entero y la tienda volvía a
+// las tablas viejas sin avisar. Se escapan siempre: ningún texto de carta puede romper el código.
+function bfSafeJson(v) {
+  return JSON.stringify(v === undefined ? null : v)
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -60,22 +69,22 @@ function buildArtScript(dbCards) {
 <script>
 (function() {
   // ---- ART DATA ----
-  var HERO_ART = ${JSON.stringify(localHeroArt)};
-  var HERO_ELITE_ART = ${JSON.stringify(localHeroEliteArt)};
-  var HERO_IDS = ${JSON.stringify(localHeroIds)};
-  var HERO_NAMES = ${JSON.stringify(localHeroNames)};
-  var NUM_ART = ${JSON.stringify(NUM_ART)};
-  var EQUIP_ART_BY_ID = ${JSON.stringify(EQUIP_ART_BY_ID)};
-  var EQUIP_ART_BY_NAME = ${JSON.stringify(EQUIP_ART_BY_NAME)};
+  var HERO_ART = ${bfSafeJson(localHeroArt)};
+  var HERO_ELITE_ART = ${bfSafeJson(localHeroEliteArt)};
+  var HERO_IDS = ${bfSafeJson(localHeroIds)};
+  var HERO_NAMES = ${bfSafeJson(localHeroNames)};
+  var NUM_ART = ${bfSafeJson(NUM_ART)};
+  var EQUIP_ART_BY_ID = ${bfSafeJson(EQUIP_ART_BY_ID)};
+  var EQUIP_ART_BY_NAME = ${bfSafeJson(EQUIP_ART_BY_NAME)};
   function equipArt(it) { return (it && (EQUIP_ART_BY_ID[it.id] || EQUIP_ART_BY_NAME[it.name])) || ''; }
-  var MELEE_ART = ${JSON.stringify(artSets.melee)};
-  var RANGED_ART = ${JSON.stringify(artSets.ranged)};
-  var ARMOR_ART = ${JSON.stringify(artSets.armor)};
-  var SPELL_ART = ${JSON.stringify(artSets.spell)};
-  var OBJECT_ART = ${JSON.stringify(artSets.object)};
-  var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
-  var DB_EQUIP = ${JSON.stringify(DB_EQUIP)};
-  window.__bfEquipParamsInfo = ${JSON.stringify((dbCards as any).__equipParamsInfo || null)};
+  var MELEE_ART = ${bfSafeJson(artSets.melee)};
+  var RANGED_ART = ${bfSafeJson(artSets.ranged)};
+  var ARMOR_ART = ${bfSafeJson(artSets.armor)};
+  var SPELL_ART = ${bfSafeJson(artSets.spell)};
+  var OBJECT_ART = ${bfSafeJson(artSets.object)};
+  var DB_TOKENS = ${bfSafeJson(DB_TOKENS)};
+  var DB_EQUIP = ${bfSafeJson(DB_EQUIP)};
+  window.__bfEquipParamsInfo = ${bfSafeJson((dbCards as any).__equipParamsInfo || null)};
   // RESPALDO: si el servidor no pudo dar los parámetros de alguna carta de equipo, la página manda TODAS las fichas
   // (bfAbilitySpecs, leídas desde el navegador). Con ellas se completan las cartas y se reconstruye la tienda.
   window.addEventListener('message', function(ev) {
@@ -91,8 +100,8 @@ function buildArtScript(dbCards) {
       try { if (typeof G !== 'undefined' && G && G.eqSide && document.querySelector('#s-equip.active') && typeof renderEquip === 'function') renderEquip(G.eqSide); } catch (e2) {}
     } catch (e) {}
   });
-  var DB_EQUIP_NUMS = ${JSON.stringify({ melee_weapon: EQUIP.melee.nums, ranged_weapon: EQUIP.ranged.nums, armor: EQUIP.armor.nums, spell: EQUIP.spell.nums, object: EQUIP.object.nums })};
-  var LOCAL_TOKENS = ${JSON.stringify(TOKENS)}, LOCAL_TOKEN_ART = ${JSON.stringify(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
+  var DB_EQUIP_NUMS = ${bfSafeJson({ melee_weapon: EQUIP.melee.nums, ranged_weapon: EQUIP.ranged.nums, armor: EQUIP.armor.nums, spell: EQUIP.spell.nums, object: EQUIP.object.nums })};
+  var LOCAL_TOKENS = ${bfSafeJson(TOKENS)}, LOCAL_TOKEN_ART = ${bfSafeJson(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
   var TOKENS = LOCAL_TOKENS.map(function(local){ return (DB_TOKENS || []).find(function(db){ return db.id === local.id; }) || local; }).concat((DB_TOKENS || []).filter(function(db){ return !LOCAL_TOKENS.some(function(local){ return local.id === db.id; }); }));
   // La lista de tokens (héroes bizarros y invocaciones) vive dentro de este script; los parches del cliente
   // (Transformer, Unicornio Kamikaze, Pegaso, Grulla...) la leen como global y veían undefined: Transformer
@@ -103,11 +112,11 @@ function buildArtScript(dbCards) {
   if (typeof CLAN_PROFILE !== 'undefined') CLAN_PROFILE.Bizarros = { eliteHpPct:0, mMelee:0, mRanged:0, mSpell:0, mVel:0, manaBonus:0, regenBonus:0, resPhys:0, resMagic:0, trait:'Héroes sorpresa · No salen en subasta', desc:'Criaturas imposibles que aparecen de forma inesperada durante la batalla.' };
   var TOKEN_ART = TOKENS.map(function(t){ return t.art || ''; }), TOKEN_ELITE_ART = TOKENS.map(function(t){ return t.eliteArt || t.art || ''; });
   var TRANSFORMER_ART = "${transformerArt}";
-  var SPELL_MANA = ${JSON.stringify(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; } window.bfManaFor=bfManaFor;
-  var BONUS_ART = ${JSON.stringify(bonusArtArr)};
-  var BONUS_IDS = ${JSON.stringify(BONUS_IDS)};
-  var BONUS_NAMES = ${JSON.stringify(BONUS_NAMES)};
-  var DB_BONUS_ART = ${JSON.stringify(dbBonusArt)};
+  var SPELL_MANA = ${bfSafeJson(SPELL_MANA)}; function bfManaFor(it){ if(!it) return null; if(it.mana!=null) return it.mana; var m=SPELL_MANA[it.name]; return m!=null?m:null; } window.bfManaFor=bfManaFor;
+  var BONUS_ART = ${bfSafeJson(bonusArtArr)};
+  var BONUS_IDS = ${bfSafeJson(BONUS_IDS)};
+  var BONUS_NAMES = ${bfSafeJson(BONUS_NAMES)};
+  var DB_BONUS_ART = ${bfSafeJson(dbBonusArt)};
   var COVER_BG = "${COVER_BG}";
   var AUCTION_BG = "${AUCTION_BG}";
   var SHOP_BG = "${SHOP_BG}";
@@ -521,7 +530,7 @@ function buildArtScript(dbCards) {
     function typeIcon(t){if(ROLE_EMBLEM[t])return'<img class="bf-role-emblem" src="'+ROLE_EMBLEM[t]+'" alt="">';return'★';}
     function raceSigil(c){return raceSigilSvg(c, '#fff7dc');}
     
-    var DB_HERO_OBJS = ${JSON.stringify(DB_HERO_OBJS)};
+    var DB_HERO_OBJS = ${bfSafeJson(DB_HERO_OBJS)};
     var baseHeroCount = (typeof HEROES !== 'undefined') ? HEROES.length : 0;
     DB_HERO_OBJS.forEach(function(h) { if (typeof HEROES === 'undefined') return; var eh = HEROES.find(function(x){ return x && x.id === h.id; }); if (!eh) { var num = Number(h.num); if (num >= 1 && num <= baseHeroCount) eh = HEROES[num - 1]; } if (!eh) { HEROES.push(h); return; } eh.id = h.id; ['name','title','clan','clanColor','type','cc','ad','he','hp','mana','eCc','eAd','eHe','eHp','ability','abilityTxt','eAbility','eTxt','num'].forEach(function(k){ if (h[k] != null && h[k] !== '') eh[k] = h[k]; }); eh.gold_border = h.gold_border; eh.foil = h.foil; eh.rainbow_border = h.rainbow_border; if (h.cost != null) eh.cost = Number(h.cost) + ((eh.__bfEpicRaised === 1 && (h.clan || eh.clan) === 'Épicas') ? 10 : 0); }); // BD (Oráculo) manda: sincroniza TODOS los campos del héroe (nombre, stats, habilidades, coste...) para que cualquier actualización de cartas llegue al juego sin tocar código. Si el id cambió en el backoffice, empareja por NÚMERO y actualiza también el id, para que no quede un héroe "fantasma" con el id antiguo.
     function padNum(v,h){var n=parseInt(v||0,10);if(!n&&h&&h.id){var i=HERO_IDS.indexOf(h.id);if(i>=0)n=i+1;}return n?String(n).padStart(3,'0'):'---';}
@@ -2427,7 +2436,12 @@ function buildArtScript(dbCards) {
     Object.keys(MAP).forEach(function(cat) {
       var cards = DB_EQUIP.filter(function(d){ return d && d.cat === cat; }).sort(function(a, b){ return a.num - b.num; });
       if (!cards.length) return;   // si la BD no trae esa categoría, se conserva la del motor (el juego nunca se queda sin equipo)
-      var items = cards.map(buildEquipItem), bad = cards.filter(function(c, i){ return !items[i]; });
+      // Cada carta se construye POR SEPARADO: una que lance un error ya no tumba la reconstrucción entera (antes el
+      // juego se quedaba para siempre con las tablas viejas, sin cartas nuevas). El error queda en diagnósticos.
+      var items = cards.map(function(c){
+        try { return buildEquipItem(c); }
+        catch (e) { bfEquipDiag('equip_card_error', (c && (c.name || c.card_id)) + ': ' + String((e && e.message) || e)); return null; }
+      }), bad = cards.filter(function(c, i){ return !items[i]; });
       var arr = MAP[cat], artArr = ARTS[cat], oldArt = {};
       if (bad.length) {
         // Una carta que no se puede construir (p. ej. un hechizo sin su "kind") ya NO tumba toda su categoría: las
@@ -2444,17 +2458,30 @@ function buildArtScript(dbCards) {
       arr.length = 0; items.forEach(function(it){ arr.push(it); });
       // El arte se busca por POSICIÓN (mano, modal de compra...): al reordenar la tabla por número de carta hay que
       // recolocarlo, o una carta mostraría el arte de otra (El Ladrón Enmascarado salía con el de Reanimación Arcana).
-      if (artArr) { artArr.length = 0; items.forEach(function(it, i){ artArr[i] = equipArt(it) || (typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART[String(it.num)]) || oldArt[it.id] || ''; }); }
+      if (artArr) { artArr.length = 0; items.forEach(function(it, i){ try { artArr[i] = equipArt(it) || (typeof NUM_ART !== 'undefined' && NUM_ART && NUM_ART[String(it.num)]) || oldArt[it.id] || ''; } catch (e) { artArr[i] = oldArt[it && it.id] || ''; } }); }
     });
     window.__bfEquipFromDb = true;
     window.__bfEquipVer = (window.__bfEquipVer || 0) + 1;   // invalida la caché del arte de la mano
+  }
+  function bfEquipDiag(type, msg) {
+    try { window.__bfEquipSyncError = msg; window.parent.postMessage({ bfRelayError: { room_code: '', side: '', nick: '', error_type: type, action: 'equipFromDb', error_message: String(msg).slice(0, 500) } }, '*'); } catch (e) {}
   }
   function syncDbEquipment() {
     if (window.__bfEquipSynced) return;
     if (typeof MELEE === 'undefined' || typeof SPELLS === 'undefined' || typeof OBJECTS === 'undefined' || typeof ARMORS === 'undefined' || typeof RANGED === 'undefined') return;
     if (!DB_EQUIP || !DB_EQUIP_NUMS) { window.__bfEquipSynced = true; return; }
+    if (DB_EQUIP.some(function(d){ return d && d.effect; })) {
+      // Antes se marcaba "sincronizado" ANTES de reconstruir: si la reconstrucción fallaba, no se reintentaba nunca y el
+      // juego se quedaba con las tablas viejas. Ahora se reintenta hasta 3 veces y el error queda en diagnósticos.
+      window.__bfEquipTries = (window.__bfEquipTries || 0) + 1;
+      try { rebuildEquipmentFromDb(); window.__bfEquipSynced = true; }
+      catch (e) {
+        bfEquipDiag('equip_rebuild_error', 'intento ' + window.__bfEquipTries + ': ' + String((e && e.message) || e) + ' | ' + String((e && e.stack) || '').split('\\n').slice(0, 3).join(' / '));
+        if (window.__bfEquipTries >= 3) window.__bfEquipSynced = true;
+      }
+      return;
+    }
     window.__bfEquipSynced = true;
-    if (DB_EQUIP.some(function(d){ return d && d.effect; })) { rebuildEquipmentFromDb(); return; }
     // Sin parámetros en la base de datos: además de sincronizar las existentes, las cartas NUEVAS (que el motor no
     // tiene) se añaden a la tienda si se pueden construir: una carta creada en el editor nunca se queda fuera.
     try {
