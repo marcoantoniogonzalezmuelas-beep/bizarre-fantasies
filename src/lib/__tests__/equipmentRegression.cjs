@@ -54,7 +54,7 @@ test('SERVER: the game tables are rebuilt from the database (same array objects,
     {num:73,cat:'armor',card_id:'ar_a',name:'Cuero',cost:7,hp:8,tag:'',txt:'',effect:{v:1,redM:2,redA:2,redH:0,regen:0,element:null}}];
   const posts=[];E.window.parent={postMessage:m=>posts.push(m)};
   vm.runInNewContext(code,E);E.__run();
-  assert.deepEqual(E.SPELLS.map(x=>x.id),['old_s','x'],'one spell cannot be built (no kind): the engine table is KEPT, nothing disappears silently');
+  assert.deepEqual(E.SPELLS.map(x=>x.id),['sp_a','sp_b'],'one spell cannot be built (no kind): the OTHER database cards still reach the shop; the broken one (no engine version) is left out');
   assert.equal(posts.filter(p=>p.bfRelayError&&p.bfRelayError.error_type==='equip_incomplete'&&/sp_bad/.test(p.bfRelayError.error_message)).length,1,'and diagnostics say which card is incomplete');
   // con todas las cartas completas, la categoría se reconstruye (mismo array, ordenado por número)
   const E2=mk();const keep2=E2.SPELLS;E2.window.parent={postMessage(){}};E2.DB_EQUIP=E.DB_EQUIP.filter(d=>d.card_id!=='sp_bad');vm.runInNewContext(code,E2);E2.__run();
