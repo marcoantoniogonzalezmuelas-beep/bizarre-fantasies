@@ -105,7 +105,22 @@ export const NEW_GEAR_PATCH = `
     };
     w.__bfPoison=1;window.stepTurn=w;return true;
   }
-  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison; }
+  // NÚMERO DE CARTA: el motor numeraba por POSICIÓN en sus tablas, así que una carta nueva salía con un número
+  // que no era el suyo ("Nº 071" en vez de "Nº 140"). Ahora siempre se usa el número real de la carta (el de la base
+  // de datos); la posición solo si la carta no trae número.
+  function hookCardNo(){
+    if(typeof window.cardNo!=='function'||window.cardNo.__bfRealNo)return false;
+    var o=window.cardNo;
+    var w=function(id){
+      try{
+        var lists=[typeof HEROES!=='undefined'?HEROES:[],typeof SPELLS!=='undefined'?SPELLS:[],typeof MELEE!=='undefined'?MELEE:[],typeof RANGED!=='undefined'?RANGED:[],typeof ARMORS!=='undefined'?ARMORS:[],typeof OBJECTS!=='undefined'?OBJECTS:[],typeof BONUS!=='undefined'?BONUS:[]];
+        for(var i=0;i<lists.length;i++){ var arr=lists[i]||[]; for(var j=0;j<arr.length;j++){ var x=arr[j]; if(x&&x.id===id&&Number(x.num)>0)return String(Number(x.num)).padStart(3,'0'); } }
+      }catch(e){}
+      return o.apply(this,arguments);
+    };
+    w.__bfRealNo=1;window.cardNo=w;return true;
+  }
+  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo; }
   if(!all()){ var iv=setInterval(function(){ if(all())clearInterval(iv); },300); setTimeout(function(){ clearInterval(iv); },15000); }
 })();
 </script>

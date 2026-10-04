@@ -41,6 +41,13 @@ export const RECOVERED_EQUIP_PATCH = `
     var tpl = tplFor(slot, item.id);
     var gear = tpl ? clone(tpl) : null;
     if(!gear){ if(typeof notif==='function') notif('No se pudo equipar ' + (item.name||'') + '.'); return false; }
+    // Si ya llevaba algo en ese hueco, lo viejo va a los descartes (y la armadura vieja deja de sumar vida).
+    var old = hero[slot];
+    if(old){
+      if(slot==='armor' && old.hp){ hero.maxHp = Math.max(1,(hero.maxHp||0) - old.hp); hero.hp = Math.max(1, Math.min(hero.hp||0, hero.maxHp)); }
+      try{ if(!G.itemDescarte) G.itemDescarte = {p:[],o:[]}; if(!G.itemDescarte[side]) G.itemDescarte[side] = []; G.itemDescarte[side].push({ id:old.id, kind:slot, name:old.name, num:old.num||0 }); }catch(e){}
+      if(typeof pushLog==='function') pushLog('li', hero.name + ' deja ' + (old.name||'su equipo') + ' en los descartes.');
+    }
     hero[slot] = gear;
     // La armadura suma vida máxima (igual que al comprarla en equipamiento).
     if(slot==='armor' && gear.hp){ hero.maxHp = (hero.maxHp||0) + gear.hp; hero.hp = (hero.hp||0) + gear.hp; }
@@ -67,26 +74,21 @@ export const RECOVERED_EQUIP_PATCH = `
           if(typeof NET!=='undefined' && NET && NET.role==='client') return orig.apply(this, arguments);
           var slot = item._bfSlot || 'mwep';
           var hero = (typeof getHero==='function') ? getHero(side, B.current.id) : null;
-          var cands = alive(side).filter(function(h){ return freeSlot(h, slot); });
-          if(!cands.length){
-            if(typeof notif==='function') notif('Todos tus h\\u00e9roes vivos ya llevan ' + (SLOT_LBL[slot]||'equipo') + '.');
-            return;
-          }
+          // Gastando la acción de este héroe, el equipo recuperado se le pone al ALIADO QUE QUIERAS (también a uno
+          // que ya lleve algo en ese hueco: lo que llevaba va a los descartes).
+          var cands = alive(side);
+          if(!cands.length) return;
           var done = function(t){
-            if(!t || !freeSlot(t, slot)){
-              if(typeof notif==='function') notif((t?t.name:'Ese h\\u00e9roe') + ' ya lleva ' + (SLOT_LBL[slot]||'equipo') + '.');
-              return;
-            }
+            if(!t || !t.alive || cands.indexOf(t) < 0){ if(typeof notif==='function') notif('Elige a un h\\u00e9roe vivo de tu equipo.'); return; }
             if(equipOn(side, t, item, slot) && typeof finishAct==='function') finishAct();
           };
-          // El héroe activo tiene el hueco libre → se equipa él mismo.
-          if(hero && freeSlot(hero, slot)){ done(hero); return; }
-          // Si no, se elige a quién fortificar (o lo decide la IA).
           if(cands.length === 1){ done(cands[0]); return; }
           if(((typeof window.bfAbilityHuman==='function' && window.bfAbilityHuman(side)) || (typeof humanCtl==='function' && humanCtl(side))) && typeof pendTarget==='function'){
             pendTarget('\\u00bfA qui\\u00e9n le pones ' + (item.name||'el equipo') + '?', side, done);
           } else {
-            done(cands.sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
+            // IA: un aliado con el hueco libre (el más sano); si todos lo tienen ocupado, el más sano.
+            var free = cands.filter(function(h){ return freeSlot(h, slot); });
+            done((free.length ? free : cands).slice().sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
           }
           return;
         }

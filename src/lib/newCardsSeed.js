@@ -18,3 +18,8 @@ export const NEW_CARDS_SEED = [
       description: 'Envenena a todos los rivales durante 3 turnos. El veneno escala con tu Magia.' },
     effect: { v: 1, kind: 'bf_steps', element: 'arcano', steps: [{ action: 'poison', target: 'all_enemies', magic_base: 3, turns: 3 }] } },
 ];
+
+// Ajustes de cartas que YA existen (solo los campos indicados; se aplican con el mismo botón).
+export const CARD_UPDATES = [
+  { card_id: 'sp_steal', set: { mana: 20 }, why: 'El Ladrón Enmascarado cuesta 20 de maná.' },
+];

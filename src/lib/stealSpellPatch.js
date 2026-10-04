@@ -134,7 +134,7 @@ export const STEAL_SPELL_PATCH = `
   function injectSpell(){
     if(typeof SPELLS === 'undefined' || !SPELLS) return false;
     if(SPELLS.some(function(s){ return s && s.id === 'sp_steal'; })) return true;
-    SPELLS.push({ id:'sp_steal', name:'El Ladr\\u00f3n Enmascarado', element:'arcano', kind:'bf_steal', base:1, mana:12, cost:18, foil:true, num:124, txt:'Roba una carta al azar de la mano del rival y la a\\u00f1ade a tu mano.' });
+    SPELLS.push({ id:'sp_steal', name:'El Ladr\\u00f3n Enmascarado', element:'arcano', kind:'bf_steal', base:1, mana:20, cost:18, foil:true, num:124, txt:'Roba una carta al azar de la mano del rival y la a\\u00f1ade a tu mano.' });
     return true;
   }
 
