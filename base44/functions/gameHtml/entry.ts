@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-05-cineav-v239';
+const GAME_PATCH_VERSION = 'bf-2026-10-06-cardno-v242';
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -1457,7 +1457,7 @@ function buildArtScript(dbCards) {
       var item = typeof byId === 'function' ? byId(OBJECTS, id) : null;
       if (!item) return;
       // Objects: up to 3 copies of the same object (El Anillo: solo 1, también para compras remotas).
-      var bfMaxCopies = id === 'ob_ring' ? 1 : 3;
+      var bfMaxCopies = Number(item.max_copies) > 0 ? Number(item.max_copies) : ((id === 'ob_ring' || id === 'ob_drain') ? 1 : 3);   // El Anillo y el Drenaje: una sola copia
       if (bfObjectCount(side, id) >= bfMaxCopies) {
         if (window.notif) notif('Máximo ' + bfMaxCopies + (bfMaxCopies === 1 ? ' copia' : ' copias') + ' de ' + item.name + '.');
         return;
@@ -2412,13 +2412,18 @@ function buildArtScript(dbCards) {
       var cards = DB_EQUIP.filter(function(d){ return d && d.cat === cat; }).sort(function(a, b){ return a.num - b.num; });
       if (!cards.length) return;   // si la BD no trae esa categoría, se conserva la del motor (el juego nunca se queda sin equipo)
       var items = cards.map(buildEquipItem), bad = cards.filter(function(c, i){ return !items[i]; });
-      if (bad.length) {
-        // Alguna carta no se puede construir (p. ej. un hechizo sin su "kind"): se conserva la tabla del motor de
-        // esa categoría en vez de hacer desaparecer cartas en silencio, y se avisa en diagnósticos.
-        try { window.parent.postMessage({ bfRelayError: { room_code: '', side: '', nick: '', error_type: 'equip_incomplete', action: 'equipFromDb', error_message: cat + ': faltan parámetros del motor en ' + bad.map(function(c){ return c.card_id; }).join(', ') } }, '*'); } catch (e) {}
-        return;
-      }
       var arr = MAP[cat], artArr = ARTS[cat], oldArt = {};
+      if (bad.length) {
+        // Una carta que no se puede construir (p. ej. un hechizo sin su "kind") ya NO tumba toda su categoría: las
+        // demás cartas de la base de datos (también las nuevas) entran igual; la defectuosa se sustituye por su
+        // versión del motor si existe, o se omite. Se avisa en diagnósticos.
+        var legacy = {};
+        arr.forEach(function(x){ if (x && x.id) legacy[x.id] = x; });
+        cards.forEach(function(c, i){ if (!items[i] && legacy[c.card_id]) items[i] = legacy[c.card_id]; });
+        try { window.parent.postMessage({ bfRelayError: { room_code: '', side: '', nick: '', error_type: 'equip_incomplete', action: 'equipFromDb', error_message: cat + ': faltan par\u00e1metros del motor en ' + bad.map(function(c){ return (c.name || '?') + ' (' + c.card_id + ')'; }).join(', ') } }, '*'); } catch (e) {}
+        items = items.filter(Boolean);
+        if (!items.length) return;
+      }
       if (artArr) arr.forEach(function(x, i){ if (x && x.id && artArr[i]) oldArt[x.id] = artArr[i]; });
       arr.length = 0; items.forEach(function(it){ arr.push(it); });
       // El arte se busca por POSICIÓN (mano, modal de compra...): al reordenar la tabla por número de carta hay que
@@ -2434,6 +2439,16 @@ function buildArtScript(dbCards) {
     if (!DB_EQUIP || !DB_EQUIP_NUMS) { window.__bfEquipSynced = true; return; }
     window.__bfEquipSynced = true;
     if (DB_EQUIP.some(function(d){ return d && d.effect; })) { rebuildEquipmentFromDb(); return; }
+    // Sin parámetros en la base de datos: además de sincronizar las existentes, las cartas NUEVAS (que el motor no
+    // tiene) se añaden a la tienda si se pueden construir: una carta creada en el editor nunca se queda fuera.
+    try {
+      var MAP0 = { melee_weapon: MELEE, ranged_weapon: RANGED, armor: ARMORS, spell: SPELLS, object: OBJECTS };
+      DB_EQUIP.forEach(function(db){
+        var arr0 = MAP0[db.cat]; if (!arr0 || !db.card_id) return;
+        if (arr0.some(function(x){ return x && (x.id === db.card_id || (db.num && x.num === db.num)); })) return;
+        var it0 = buildEquipItem(db); if (it0) arr0.push(it0);
+      });
+    } catch (e) {}
     var CAT = { melee_weapon:'MELEE', ranged_weapon:'RANGED', armor:'ARMORS', spell:'SPELLS', object:'OBJECTS' };
     DB_EQUIP.forEach(function(db){
       var arrName = CAT[db.cat]; if (!arrName) return;

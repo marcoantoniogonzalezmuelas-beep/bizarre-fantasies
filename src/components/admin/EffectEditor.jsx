@@ -54,6 +54,7 @@ export default function EffectEditor({ category, value, onChange }) {
               {category === 'melee_weapon' ? <><Num name="he_mult" value={e.he_mult} onChange={set} /><Num name="reach_pct" value={e.reach_pct} onChange={set} /></> : <Num name="shot_he" value={e.shot_he} onChange={set} />}
             </>
           ) : null}
+          {category === 'object' ? <Num name="max_copies" value={e.max_copies} onChange={set} /> : null}
           {category === 'armor' ? (
             <>
               <Num name="thorns" value={e.thorns} onChange={set} /><Num name="vel" value={e.vel} onChange={set} />
