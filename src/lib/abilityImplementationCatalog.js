@@ -17,6 +17,7 @@ export const EFFECTS = `
   Opciones de daño (action damage/drain): scale_stat cc|ad|he + stat_mult, bonus (plano), dtype melee|ranged|spell|true, element, pierce 0..1, ignore_shield, ignore_armor, hits [0,-3] (varios golpes; cada número ajusta el daño de ese golpe), double_below 0.4 (x2 si al rival le queda esa fracción de vida), hp_pct 0.5 (fracción de SU vida actual), lifesteal 0.5 (fracción del daño que cura), heal_to weakest_ally, split_allies 0.5.
   Otras acciones: execute {threshold, else_mult?}, destroy_equipment, reduce_max_hp {amount}, swap_stats (intercambia CC y HE), revive {hp_pct} con target dead_ally, heal_equalize (iguala la vida al aliado más sano), shield_regen {amount} (el escudo se regenera a la mitad cada turno), block_hand {turns} (el héroe no puede jugar cartas de la mano), noop {text}.
   roll {sides, outcomes:{"1":[pasos],"2":[pasos]}, label, note}: tira un dado con su animación y ejecuta los pasos del resultado. disable_ability (anula la habilidad del objetivo), disable_elite (el objetivo nunca tendrá fase élite).
+  poison {amount o magic_base, turns}: envenena al objetivo; recibe ese daño al empezar cada uno de sus turnos.
   buff/debuff aceptan mods {cc,ad,he,vel} para varios stats en un solo modificador. Objetivos extra: other_enemy (otro rival distinto del elegido), dead_ally.
 - unsupported: solo si la mecánica no existe arriba (dados, resurrección, muerte condicionada, alterar subasta/turnos o crear una invocación nueva sin programación propia).`;
 

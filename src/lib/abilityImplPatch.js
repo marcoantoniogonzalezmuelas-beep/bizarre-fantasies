@@ -253,6 +253,15 @@ export const ABILITY_IMPL_PATCH = `
       case 'shield_regen': { t._bfShieldRegen = Math.max(1, num(st.amount, 0)); return true; }   // lo procesa el gancho de fin de turno del motor (22 > 11 > 6 > 3 > 2 > 1 > 0)
       case 'block_hand': { var bh = Math.max(1, num(st.turns, 2)); t._bfHandBlock = Math.max(t._bfHandBlock || 0, bh); try{ pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\ud83d\\udeab'}); }catch(e){} log(t.name + ' tiene la mano bloqueada ' + bh + ' turnos: no puede jugar hechizos ni objetos.'); return true; }
       case 'noop': { try{ pushFx({k:'bfbluff', side:tSide(hero), id:hero.id}); }catch(e){} log(hero.name + ': ' + (st.text || 'no pasa nada en absoluto.')); return true; }   // farol de habilidad (bluffFxPatch)
+      case 'poison': {
+        // VENENO: daño al empezar cada turno del envenenado (lo aplica newGearPatch). Si ya estaba envenenado,
+        // se queda con el veneno más fuerte y más largo.
+        var pd = Math.max(1, stepAmount(hero, st)), pt = Math.max(1, num(st.turns, 3)), cur = t._bfPoison || {};
+        t._bfPoison = { dmg: Math.max(pd, cur.dmg || 0), turns: Math.max(pt, cur.turns || 0), src: hero.name };
+        try{ pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u2620\\ufe0f'}); }catch(e){}
+        log(t.name + ' queda ENVENENADO: -' + t._bfPoison.dmg + ' al empezar cada uno de sus turnos (' + t._bfPoison.turns + ' turnos).');
+        return true;
+      }
       case 'disable_ability': {
         t.abilityUsed = true; t._bfAbilityCineSuppressed = t.eliteMode ? 'elite' : 'normal';
         try{ if(window.bfStatusPop) window.bfStatusPop(tSide(t), t.id, '\\u2728 SIN HABILIDAD'); }catch(e){}
