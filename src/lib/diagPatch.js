@@ -45,7 +45,9 @@ export const DIAG_PATCH = `
     box.textContent=lines.join('\\n');
   }
   window.addEventListener('message',function(e){ if(e&&e.data&&e.data.bfDiag){ on=true; paint(); } });
-  setInterval(function(){ if(on)paint(); },1500);
+  // Además del aviso de la página, el propio juego mira si la dirección lleva ?diag=1 (el aviso podía no llegar).
+  function wanted(){ try{ return /[?&]diag=/.test(window.parent.location.search)||/[?&]diag=/.test(window.location.search); }catch(e){ return false; } }
+  setInterval(function(){ if(!on&&wanted())on=true; if(on)paint(); },1500);
 })();
 </script>
 `;
