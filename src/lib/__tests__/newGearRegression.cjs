@@ -81,3 +81,15 @@ test('card numbers everywhere (shop, battle tags, purchase dialog) are the REAL 
   assert.match(p,/if\(x&&x\.id===id&&Number\(x\.num\)>0\)return String\(Number\(x\.num\)\)\.padStart\(3,'0'\);/,'before: numbered by position (a new card showed "Nº 071")');
   assert.match(p,/w\.__bfRealNo=1;window\.cardNo=w;/);
 });
+test('SHOP never left without parameters: the server asks only for equipment sheets (with a plan B and a recorded error), and the game completes missing ones from the sheets the page sends',async()=>{
+  const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(e,/AbilityImpl\.filter\(\{ effect_type: 'equipment' \}, '-updated_date', 1000\)/);
+  assert.doesNotMatch(e,/AbilityImpl\.list\('-updated_date', 2000\)/,'no more 2000-row request that failed silently');
+  assert.match(e,/window\.__bfEquipParamsInfo = \$\{JSON\.stringify\(/);
+  assert.match(e,/DB_EQUIP\.forEach\(function\(d\)\{ if \(d && !d\.effect && eq\[d\.card_id\]\) \{ d\.effect = eq\[d\.card_id\]; added\+\+; \} \}\);/);
+  assert.match(e,/rebuildEquipmentFromDb\(\);\s*window\.__bfEquipFromPage/,'rebuilt with the page sheets');
+  const {checkServerGame}=await load('equipShopCheck.js');
+  const r=checkServerGame('x'.repeat(1200)+'window.__bfEquipParamsInfo = {"count":0,"error":"boom"};','', 'v', []);
+  assert.deepEqual(r.params,{count:0,error:'boom'});
+  assert.match(read('gameDataSync.js'),/AbilityImpl\.list\('-created_date', 1000\)/);
+});
