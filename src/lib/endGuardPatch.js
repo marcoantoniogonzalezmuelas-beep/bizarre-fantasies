@@ -69,7 +69,8 @@ export const END_GUARD_PATCH = `
       if(!(L.p||[]).length&&!(L.o||[]).length)return;
       var box=cineEl.querySelector('.bf-cine-lineup');
       if(!box){box=document.createElement('div');box.className='bf-cine-lineup';cineEl.appendChild(box);}
-      box.innerHTML='<div class="bf-cine-team bf-cine-local">'+team(mySide)+'</div><div class="bf-cine-vs">VS</div><div class="bf-cine-team bf-cine-rival">'+team(rival)+'</div>';
+      var pb=function(side,av){var u=(av&&av.url)||'',nm=(typeof G!=='undefined'&&G.names&&G.names[side])||'';return '<div class="bf-cine-player" style="opacity:1;animation:none">'+(u?'<img src="'+esc(u)+'" alt="">':'<span class="bf-cine-pinit">'+esc(String(nm||'?').charAt(0))+'</span>')+'<div class="bf-cine-pname">'+esc(nm)+'</div></div>';};
+      box.innerHTML='<div class="bf-cine-side">'+pb(mySide,window.bfMyAvatar)+'<div class="bf-cine-team bf-cine-local">'+team(mySide)+'</div></div><div class="bf-cine-vs">VS</div><div class="bf-cine-side">'+pb(rival,window.bfOppAvatar)+'<div class="bf-cine-team bf-cine-rival">'+team(rival)+'</div></div>';
       try{window.parent.postMessage({bfRelayError:{room_code:'',side:'',nick:'',error_type:'server_error',action:'endCine',error_message:'[end_cine_lineup] animación final sin héroes: puestos desde la foto'}},'*');}catch(e){}
     }catch(e){}
   }

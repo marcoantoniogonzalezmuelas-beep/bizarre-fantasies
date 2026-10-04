@@ -93,6 +93,9 @@ export const DAMAGE_NUMBER_PATCH = `
       var before = target && target.hp;
       var out = origDeal.apply(this, arguments);
       try{
+        // Si el golpe se redirigió por dentro (desorientado), el número va sobre quien lo recibió de verdad.
+        var rd = window.__bfDmgRedirect;
+        if(rd && rd.from === target && rd.to){ before = undefined; target = rd.to; }
         var amt = Number(out);
         if(!amt && typeof before === 'number' && target) amt = before - target.hp;
         if(target && amt > 0){
