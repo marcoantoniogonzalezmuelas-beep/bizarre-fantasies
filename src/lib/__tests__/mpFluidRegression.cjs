@@ -47,5 +47,18 @@ test('END ANIMATION always carries the 6 heroes: retried if it failed half-way, 
   const s=read('endGuardPatch.js');
   assert.match(s,/if\(window\.__bfEndCine===1&&!cineEl&&!window\.__bfEndCineDoneAt&&Date\.now\(\)-resultSince>2000&&cineRetries<3\)\{/);assert.match(s,/cineRetries\+\+;window\.__bfEndCine=0;/);
   assert.match(s,/if\(!cineEl\.querySelector\('\.bf-cine-hero'\)\)injectLineup\(cineEl\);/);assert.match(s,/function injectLineup\(cineEl\)/);
-  assert.match(s,/class="bf-cine-team bf-cine-local">'\+team\(mySide\)\+'<\/div><div class="bf-cine-vs">VS<\/div><div class="bf-cine-team bf-cine-rival">'\+team\(rival\)/,'3 + 3 heroes inside the same animation, with VS');
+  assert.match(s,/class="bf-cine-team bf-cine-local">'\+team\(mySide\)\+'<\/div><\/div><div class="bf-cine-vs">VS<\/div><div class="bf-cine-side">'\+pb\(rival,window\.bfOppAvatar\)\+'<div class="bf-cine-team bf-cine-rival">'\+team\(rival\)/,'3 + 3 heroes (each team under its player avatar) inside the same animation, with VS');
+});
+test('END ANIMATION: each player avatar sits ABOVE its 3 heroes inside the animation; the result screen no longer adds the avatar box',()=>{
+  const e=fs.readFileSync(path.join(__dirname,'..','..','..','base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(e,/lineup='<div class="bf-cine-side">'\+playerBox\(mySide,window\.bfMyAvatar\)\+'<div class="bf-cine-team bf-cine-local">'/);
+  assert.match(e,/<div class="bf-cine-vs">VS<\/div><div class="bf-cine-side">'\+playerBox\(rivalSide,window\.bfOppAvatar\)\+'<div class="bf-cine-team bf-cine-rival">'/);
+  assert.match(e,/\.bf-cine-player img,\.bf-cine-pinit\{/);assert.match(e,/querySelectorAll\('\.bf-cine-hero,\.bf-cine-player'\)/,'forced visible with the heroes');
+  assert.match(read('endGuardPatch.js'),/'<div class="bf-cine-side">'\+pb\(mySide,window\.bfMyAvatar\)/,'the safety net builds the same layout');
+  const a=read('avatarPatch.js');const i=a.indexOf('function injectResultAvatars()');const body=a.slice(i,a.indexOf('setInterval(function(){ injectScoreAvatars()',i));
+  assert.match(body,/old\.parentNode\.remove\(\)/);assert.doesNotMatch(body,/insertBefore/,'no avatar box added to the result screen');
+});
+test('DISORIENTED: the damage number shows on the hero that REALLY took the hit, not on the original target',()=>{
+  assert.match(read('monkgetaAbilityPatch.js'),/if\(target!==calledTarget\)\{window\.__bfDmgRedirect=\{from:calledTarget,to:target\};/);
+  assert.match(read('damageNumberPatch.js'),/if\(rd && rd\.from === target && rd\.to\)\{ before = undefined; target = rd\.to; \}/);
 });
