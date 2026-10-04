@@ -69,7 +69,7 @@ test('SERVER: the game tables are rebuilt from the database (same array objects,
 });
 test('EDITOR: equipment cards edit and validate their engine parameters; importer updates only Card.effect by card_id',()=>{
   const a=read('../pages/AdminCards.jsx'),i=read('../components/admin/EquipmentSeedImportButton.jsx'),e=read('../components/admin/EffectEditor.jsx');
-  assert.match(a,/EQUIPMENT_EFFECT_CATEGORIES\.includes\(form\.category\) \? <EffectEditor category=\{form\.category\} value=\{form\.effect\} onChange=\{\(v\) => onChange\('effect', v\)\}/);
+  assert.match(a,/EFFECT_EDITOR_CATEGORIES\.includes\(form\.category\) \? <EffectEditor category=\{form\.category\} value=\{form\.effect\} onChange=\{\(v\) => onChange\('effect', v\)\}/);
   assert.match(a,/\['armor', 'spell', 'object', 'bonus'\]\.includes\(form\.category\)[\s\S]{0,120}validateEffect\(form\.category, form\.effect\)/);assert.match(a,/No se guardó: completa los parámetros del motor/);assert.match(a,/delete payload\.effect;/);assert.match(a,/saveEquipEffect\(saved, form\.effect, base44\)/);assert.match(a,/loadEquipEffect\(card\.card_id, base44\)/);assert.match(a,/<OrphanSpecsButton \/>/);assert.match(a,/<EquipmentSeedImportButton \/>/);
   assert.match(i,/Card\.filter\(\{ card_id: item\.card_id \}/);assert.match(i,/saveEquipEffect\(found\[0\], item\.effect, base44\)/);assert.doesNotMatch(i,/Card\.(update|create|delete)\(/,'never modifies the cards: the parameters live in AbilityImpl');
   for(const k of ['redM','redA','redH','regen','hits','kind','val','base'])assert.ok(e.includes(k),'editor exposes '+k);
