@@ -595,6 +595,8 @@ export const ABILITY_IMPL_PATCH = `
         acted = true;
       } else if(kind === 'custom_steps'){
         var self = this, args = arguments;
+        // El registro dice QUÉ habilidad se usa (antes un golpe de habilidad se anotaba igual que un ataque normal).
+        if(typeof pushLog === 'function') pushLog('lg', '\\u2728 ' + hero.name + ' usa ' + (spec.ability_name || hero.ability || 'su habilidad') + '.');
         executeSteps(side, hero, (spec.params || {}).steps || [], spec.ability_name || hero.ability, finishAbility, function(){ orig.apply(self, args); });
         return;
       } else if(kind === 'shield_self'){

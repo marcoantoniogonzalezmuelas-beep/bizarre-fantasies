@@ -30,7 +30,22 @@ export const DIAG_PATCH = `
       document.body.appendChild(box); }
     var info=window.__bfEquipParamsInfo||{};
     var dbEq=(typeof DB_EQUIP!=='undefined'&&DB_EQUIP)?DB_EQUIP:null;
+    // Estado del turno EN DIRECTO: qué está esperando el juego para pasar al siguiente turno.
+    var turn='-',waits=[],fxN=0,layers='';
+    try{
+      if(typeof B!=='undefined'&&B){
+        var hh=B.current&&typeof getHero==='function'?getHero(B.current.side,B.current.id):null;
+        turn=(B.current?(B.current.side+':'+(hh?hh.name:B.current.id)):'sin turno')+' · ronda '+B.round+' · pendiente: '+(B.pending?(B.pending.kind||'s\\u00ed'):'no')+(B.over?' · TERMINADA':'');
+      }
+      if(typeof window.__bfCinematicBusy==='function'&&window.__bfCinematicBusy())waits.push('CINEM\\u00c1TICA');
+      if(typeof window.__bfIndicatorsBusy==='function'&&window.__bfIndicatorsBusy())waits.push('CARTELES');
+      if(typeof window.__bfKillCinePending==='function'&&window.__bfKillCinePending())waits.push('GOLPE MORTAL');
+      var fl=document.getElementById('bf-fx-layer');fxN=fl?fl.children.length:0;
+      layers=Array.prototype.map.call(document.querySelectorAll('[id^="bf-"]'),function(el){return el.id;}).filter(function(id){return /cine|anim|ov|kill|dice|roll|bluff|confirm|pick|target|modal/.test(id);}).slice(0,8).join(',');
+    }catch(e){}
     var lines=[
+      'TURNO: '+turn,
+      'Esperando para pasar turno: '+(waits.join(', ')||'nada')+' · efectos en pantalla: '+fxN+' · capas: '+(layers||'ninguna'),
       'DIAGN\\u00d3STICO \\u00b7 versi\\u00f3n '+version(),
       'Par\\u00e1metros que ley\\u00f3 el servidor: '+(info.count!=null?info.count:'?')+(info.error?' \\u00b7 error: '+info.error:''),
       'Tienda construida desde la base de datos: '+(window.__bfEquipFromDb?'S\\u00cd':'NO')+' \\u00b7 intentos: '+(window.__bfEquipTries||0)+(window.__bfEquipFromPage?' \\u00b7 completadas desde la p\\u00e1gina: '+window.__bfEquipFromPage:''),

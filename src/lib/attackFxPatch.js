@@ -130,10 +130,33 @@ export const ATTACK_FX_PATCH = `
   };
   // Precarga para que el arma aparezca sin retraso en el primer ataque.
   for(var sk in WPN_SPRITE){ var pi=new Image(); pi.src=WPN_SPRITE[sk]; }
+  // IMAGEN RECORTADA DEL ARMA COMO DATO DE LA CARTA: si la carta trae el parámetro "sprite" (dirección de una imagen
+  // con fondo transparente), se usa en el ataque; así un arma nueva tiene su propia imagen sin tocar código.
+  function itemFor(wid){ try{ var all=(typeof MELEE!=='undefined'?MELEE:[]).concat(typeof RANGED!=='undefined'?RANGED:[]); for(var i=0;i<all.length;i++){ if(all[i]&&all[i].id===wid)return all[i]; } }catch(e){} return null; }
+  function spriteFor(wid){ if(WPN_SPRITE[wid])return WPN_SPRITE[wid]; var it=itemFor(wid); return (it&&it.sprite)?String(it.sprite):null; }
+  // BASTÓN EXTENSIBLE: el bastón sale del atacante y SE ESTIRA hasta el rival (y vuelve). Con la imagen de la
+  // carta ("sprite") si la tiene; si no, un bastón dorado con orbe brillante dibujado aquí.
+  var STAFF_SVG='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="40" viewBox="0 0 400 40"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b0"/><stop offset=".45" stop-color="#e2a52a"/><stop offset="1" stop-color="#7a4a06"/></linearGradient><linearGradient id="r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a7a"/><stop offset="1" stop-color="#8a0f10"/></linearGradient><radialGradient id="o"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#9fe8ff"/><stop offset="1" stop-color="#2a7bff" stop-opacity="0"/></radialGradient></defs><rect x="4" y="15" width="360" height="10" rx="5" fill="url(#g)"/><rect x="4" y="12" width="26" height="16" rx="4" fill="url(#r)"/><rect x="340" y="12" width="26" height="16" rx="4" fill="url(#r)"/><circle cx="380" cy="20" r="18" fill="url(#o)"/></svg>');
+  function isStaff(wid){ var it=itemFor(wid); return !!(it&&(it.fx==='staff'||Number(it.reach_pct)>0)); }
+  function staffFx(a,b,wid,delay){
+    setTimeout(function(){
+      var dx=b.x-a.x,dy=b.y-a.y,dist=Math.max(40,Math.sqrt(dx*dx+dy*dy)),ang=Math.atan2(dy,dx)*180/Math.PI;
+      var img=document.createElement('img');img.src=spriteFor(wid)||STAFF_SVG;img.className='bf-afx';
+      img.style.cssText='position:fixed;left:'+a.x+'px;top:'+(a.y-14)+'px;height:28px;width:40px;object-fit:fill;transform-origin:0 50%;transform:rotate('+ang+'deg);z-index:9;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,210,74,.85)) drop-shadow(0 4px 6px rgba(0,0,0,.6));transition:width .26s cubic-bezier(.2,1.4,.4,1)';
+      bfAppend(img);
+      requestAnimationFrame(function(){ img.style.width=dist+'px'; });
+      setTimeout(function(){ hitStar(b); },230);
+      setTimeout(function(){ img.style.transition='width .22s ease-in,opacity .22s';img.style.width='40px';img.style.opacity='0'; },520);
+      setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },800);
+    },delay||0);
+  }
+  window.__bfStaffFx=function(fromSide,fromId,toSide,toId,delay){
+    try{ var a=centerOf(fromSide,fromId),b=centerOf(toSide,toId),h=getAttacker(fromSide,fromId); if(a&&b)staffFx(a,b,(h&&h.mwep&&h.mwep.id)||'',delay); }catch(e){}
+  };
   // Arma a distancia: aparece junto al atacante apuntando al objetivo y da un
   // culatazo (retroceso) en el momento del disparo.
   function showRangedWeapon(a,b,wid){
-    var url=WPN_SPRITE[wid]||(!wid?NO_WPN_SPRITE:null); if(!url)return false;
+    var url=spriteFor(wid)||(!wid?NO_WPN_SPRITE:null); if(!url)return false;
     var ang=angle(a,b);
     var flip=(b.x<a.x)?' scaleY(-1)':'';
     var rad=ang*Math.PI/180, rx=-Math.cos(rad)*14, ry=-Math.sin(rad)*14;
@@ -153,7 +176,7 @@ export const ATTACK_FX_PATCH = `
   // Arma cuerpo a cuerpo: viaja del atacante al objetivo describiendo un tajo
   // (giro de -80° a +55°) y se desvanece en el impacto.
   function showMeleeWeapon(a,b,wid){
-    var url=WPN_SPRITE[wid]||(!wid?NO_WPN_SPRITE:null); if(!url)return false;
+    var url=spriteFor(wid)||(!wid?NO_WPN_SPRITE:null); if(!url)return false;
     var t=(b.x>=a.x)?1:-1;
     var flip=(t<0)?' scaleX(-1)':'';
     var mx=a.x+(b.x-a.x)*.82, my=a.y+(b.y-a.y)*.82;
@@ -333,6 +356,7 @@ export const ATTACK_FX_PATCH = `
     // Compás anime: el arma aparece junto al atacante, que embiste hacia el
     // objetivo; el golpe (tajos + estrella de impacto + sacudida) llega después.
     if(a&&!wid){ tomatoThrow(a,b,1,ev); return; }
+    if(a&&isStaff(wid)){ staffFx(a,b,wid,0); return; }   // bastón: se estira hasta el rival
     if(a){ if(!showMeleeWeapon(a,b,wid))weaponShow(a,b,w&&w.name,kind); lunge(ev.fromSide,ev.fromId,b); }
     var D=a?1040:0;
     setTimeout(function(){
