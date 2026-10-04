@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-06-invite-v244';
+const GAME_PATCH_VERSION = 'bf-2026-10-07-eqfix-v245';
 function buildArtScript(dbCards) {
   const freshArt=(card,url)=>{if(!url)return '';const stamp=encodeURIComponent(card.updated_date||card.created_date||Date.now());return url+(url.includes('?')?'&':'?')+'bfart='+stamp;};
   const artSets={melee:MELEE_ART.map(function(){return '';}),ranged:RANGED_ART.map(function(){return '';}),armor:ARMOR_ART.map(function(){return '';}),spell:SPELL_ART.map(function(){return '';}),object:OBJECT_ART.map(function(){return '';})},CAT2SET={melee_weapon:'melee',ranged_weapon:'ranged',armor:'armor',spell:'spell',object:'object'},bonusArtArr=BONUS_ART.map(function(){return '';});let transformerArt='';const dbBonusArt={};(dbCards||[]).forEach(c=>{if(!c||!c.art_url)return;const art=freshArt(c,c.art_url);if(c.category==='spell'&&(c.name==='Transformer'||Number(c.number)===108)){transformerArt=art;artSets.spell[13]=art;return;} if(c.category==='spell'&&(c.name==='Reanimación Arcana'||Number(c.number)===117)){artSets.spell[14]=art;return;}const k=CAT2SET[c.category];if(k){const i=EQUIP[k].nums.indexOf(Number(c.number));if(i>=0)artSets[k][i]=art;return;}if(c.category==='bonus'){dbBonusArt[c.name]=art;const bi=BONUS_NAMES.indexOf(c.name);if(bi>=0)bonusArtArr[bi]=art;}}); // BD (Oráculo) = fuente de verdad del arte: sobreescribe los arrays locales por número (equipo/hechizos/objetos), por nombre (bonificadores) y el Transformer — los cambios en la BD llegan solos al juego.
@@ -75,6 +75,22 @@ function buildArtScript(dbCards) {
   var OBJECT_ART = ${JSON.stringify(artSets.object)};
   var DB_TOKENS = ${JSON.stringify(DB_TOKENS)};
   var DB_EQUIP = ${JSON.stringify(DB_EQUIP)};
+  window.__bfEquipParamsInfo = ${JSON.stringify((dbCards as any).__equipParamsInfo || null)};
+  // RESPALDO: si el servidor no pudo dar los parámetros de alguna carta de equipo, la página manda TODAS las fichas
+  // (bfAbilitySpecs, leídas desde el navegador). Con ellas se completan las cartas y se reconstruye la tienda.
+  window.addEventListener('message', function(ev) {
+    try {
+      var list = ev && ev.data && ev.data.bfAbilitySpecs;
+      if (!list || !list.length || !DB_EQUIP || !DB_EQUIP.length) return;
+      var eq = {}; list.forEach(function(s){ if (s && s.effect_type === 'equipment' && s.params && typeof s.params === 'object') eq[s.card_id] = s.params; });
+      var added = 0;
+      DB_EQUIP.forEach(function(d){ if (d && !d.effect && eq[d.card_id]) { d.effect = eq[d.card_id]; added++; } });
+      if (!added || typeof rebuildEquipmentFromDb !== 'function') return;
+      rebuildEquipmentFromDb();
+      window.__bfEquipFromPage = (window.__bfEquipFromPage || 0) + added;
+      try { if (typeof G !== 'undefined' && G && G.eqSide && document.querySelector('#s-equip.active') && typeof renderEquip === 'function') renderEquip(G.eqSide); } catch (e2) {}
+    } catch (e) {}
+  });
   var DB_EQUIP_NUMS = ${JSON.stringify({ melee_weapon: EQUIP.melee.nums, ranged_weapon: EQUIP.ranged.nums, armor: EQUIP.armor.nums, spell: EQUIP.spell.nums, object: EQUIP.object.nums })};
   var LOCAL_TOKENS = ${JSON.stringify(TOKENS)}, LOCAL_TOKEN_ART = ${JSON.stringify(TOKEN_ART)}, LT_ART = {}; LOCAL_TOKENS.forEach(function(t,i){ LT_ART[t.id] = LOCAL_TOKEN_ART[i] || ''; });
   var TOKENS = LOCAL_TOKENS.map(function(local){ return (DB_TOKENS || []).find(function(db){ return db.id === local.id; }) || local; }).concat((DB_TOKENS || []).filter(function(db){ return !LOCAL_TOKENS.some(function(local){ return local.id === db.id; }); }));
@@ -2540,12 +2556,20 @@ async function buildGameHtml(req) {
   html = applyHtmlPatches(html, RB);
   let dbCards = await base44.asServiceRole.entities.Card.list('number', 1000);
   // Parámetros del motor del equipo: viven en AbilityImpl (effect_type "equipment"); Card.effect, si existiera, tiene prioridad.
+  // Se piden SOLO las fichas de equipo (menos de 100): antes se pedían 2000 filas de golpe y, si la consulta fallaba,
+  // el error se ignoraba en silencio y el juego se quedaba sin parámetros (tienda con las tablas viejas, sin cartas
+  // nuevas). Hay un plan B y lo que pase queda anotado en el juego (equipParamsInfo) para la comprobación del backoffice.
+  const equipParamsInfo = { count: 0, error: '' };
   try {
-    const specs = await base44.asServiceRole.entities.AbilityImpl.list('-updated_date', 2000);
+    let specs = null;
+    try { specs = await base44.asServiceRole.entities.AbilityImpl.filter({ effect_type: 'equipment' }, '-updated_date', 1000); }
+    catch (e1) { equipParamsInfo.error = 'filtro: ' + String((e1 && e1.message) || e1); specs = await base44.asServiceRole.entities.AbilityImpl.list('-updated_date', 1000); }
     const eq = {};
     (specs || []).forEach(function (s) { if (s && s.effect_type === 'equipment' && s.params && typeof s.params === 'object') eq[s.card_id] = s.params; });
+    equipParamsInfo.count = Object.keys(eq).length;
     dbCards = (dbCards || []).map(function (c) { return c && !c.effect && eq[c.card_id] ? Object.assign({}, c, { effect: eq[c.card_id] }) : c; });
-  } catch (e) { /* sin fichas de equipo: el juego usa sus tablas */ }
+  } catch (e) { equipParamsInfo.error = (equipParamsInfo.error ? equipParamsInfo.error + ' | ' : '') + String((e && e.message) || e); }
+  (dbCards as any).__equipParamsInfo = equipParamsInfo;
   const artScript = buildArtScript(dbCards || []);
   html = html.includes('</body>') ? html.replace('</body>', artScript + '</body>') : html + artScript;
   cachedHtml = html; cachedAt = Date.now(); cachedVersion = GAME_PATCH_VERSION; cachedStamp = stamp;

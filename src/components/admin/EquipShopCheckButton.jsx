@@ -40,6 +40,13 @@ export default function EquipShopCheckButton() {
               <div className="font-bold">Servidor del juego</div>
               <div className={res.server.upToDate ? 'text-[#9fe39f]' : 'text-[#ffb3a8]'}>Versión: {res.server.serverVersion || 'desconocida'} {res.server.upToDate ? '✓ al día' : `✗ la app espera ${res.server.expectedVersion}: vuelve a publicar en Base44`}</div>
               <div className={res.server.notInGame.length ? 'text-[#ffb3a8]' : 'text-[#9fe39f]'}>Cartas de equipo dentro del juego: {res.server.inGame} de {res.server.total}</div>
+              {res.server.params ? (
+                <div className={res.server.params.count ? 'text-[#9fe39f]' : 'text-[#ffcf8a]'}>
+                  Parámetros de equipo que lee el servidor: {res.server.params.count}
+                  {res.server.params.count ? '' : ' (el juego los completa con los que manda la página)'}
+                  {res.server.params.error ? <span className="text-[#ffb3a8]"> · Aviso del servidor: {res.server.params.error}</span> : null}
+                </div>
+              ) : null}
               {res.server.notInGame.length ? <div className="text-[#ffb3a8]">Faltan en el juego: {res.server.notInGame.map((c) => `Nº ${c.number} ${c.name}`).join(', ')}. Si la versión está al día, recarga el juego con Ctrl+F5.</div> : null}
             </div>
           )) : null}
