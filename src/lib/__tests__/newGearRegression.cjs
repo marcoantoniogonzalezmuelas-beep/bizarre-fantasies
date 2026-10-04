@@ -126,3 +126,20 @@ test('the equipment builder is injected under a FIXED name (the platform renames
   assert.equal(run(),'x');
   assert.match(read('diagPatch.js'),/\/\[\?&\]diag=\/\.test\(window\.parent\.location\.search\)/);
 });
+test('STAFF: the staff stretches from the hero to each rival it hits (with the card "sprite" image if set); any weapon can carry its own cut-out image',()=>{
+  const a=read('attackFxPatch.js');
+  assert.match(a,/function spriteFor\(wid\)\{ if\(WPN_SPRITE\[wid\]\)return WPN_SPRITE\[wid\]; var it=itemFor\(wid\); return \(it&&it\.sprite\)\?String\(it\.sprite\):null; \}/);
+  assert.match(a,/if\(a&&isStaff\(wid\)\)\{ staffFx\(a,b,wid,0\); return; \}/);assert.match(a,/requestAnimationFrame\(function\(\)\{ img\.style\.width=dist\+'px'; \}\);/,'it stretches to the target');
+  assert.doesNotMatch(a,/var url=WPN_SPRITE\[wid\]/,'every weapon image goes through spriteFor');
+  const g=read('newGearPatch.js');assert.match(g,/pushFx\(\{k:'bfstaff',fromSide:side,fromId:a\.id,toSide:ts,toId:other\.id\}\)/);assert.match(g,/window\.__bfStaffFx\(ev\.fromSide,ev\.fromId,ev\.toSide,ev\.toId,420\)/);
+  assert.match(read('../components/admin/EffectEditor.jsx'),/set\('sprite', ev\.target\.value\.trim\(\) \|\| undefined\)/);
+});
+test('the log says WHICH ability is used; every stall leaves a full snapshot in the network diagnostics',()=>{
+  assert.match(read('abilityImplPatch.js'),/pushLog\('lg', '\\\\u2728 ' \+ hero\.name \+ ' usa ' \+ \(spec\.ability_name \|\| hero\.ability \|\| 'su habilidad'\) \+ '\.'\);/);
+  const s=read('stallGuardPatch.js');assert.match(s,/error_type: 'turn_stall'/);assert.match(s,/esperando: ' \+ \(waits\.join\(','\) \|\| 'nada'\)/);
+});
+test('diagnostic panel shows, live, whose turn it is and what the game is waiting for before passing the turn',()=>{
+  const d=read('diagPatch.js');
+  assert.match(d,/'TURNO: '\+turn/);assert.match(d,/waits\.push\('CINEM/);assert.match(d,/waits\.push\('CARTELES'\)/);assert.match(d,/waits\.push\('GOLPE MORTAL'\)/);
+  assert.match(d,/efectos en pantalla: '\+fxN/);
+});
