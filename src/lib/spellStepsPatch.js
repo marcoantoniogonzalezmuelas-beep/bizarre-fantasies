@@ -34,7 +34,7 @@ export const SPELL_STEPS_PATCH = `<script>
       if(!stepsOf(s) || !exec() || isClient()) return orig.apply(this, arguments);
       var side = B.current.side, h = getHero(side, B.current.id);
       if(!h) return;
-      if(h.mana < s.mana){ note('Man\\\\u00e1 insuficiente'); return; }
+      if(h.mana < s.mana){ note('Man\\u00e1 insuficiente'); return; }
       castSteps(side, h, s, function(){ if(typeof finishAct === 'function') finishAct(); });
     };
     return true;
