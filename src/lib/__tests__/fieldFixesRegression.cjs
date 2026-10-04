@@ -90,7 +90,7 @@ test('tomatoes: bigger, white box removed (canvas) with a circular crop as fallb
   const badEnv=clock({Image:mkImg(false),document:{createElement:()=>({})}});vm.runInNewContext(script(IMAGE_KEY_PATCH),badEnv.env);let bad='x';badEnv.env.bfCutOutImage('u',u=>{bad=u;});await new Promise(r=>setTimeout(r,20));assert.equal(bad,null,'no CORS -> caller keeps the CSS crop');
   const fx=read('attackFxPatch.js'),m=/\.bf-tomato\{width:(\d+)px;height:(\d+)px[^}]*clip-path:circle/.exec(fx);
   assert.ok(m&&Number(m[1])>=60&&Number(m[2])>=60,'tomato is at least 60px (was 30) and cropped to a circle');assert.doesNotMatch(fx,/\.bf-tomato\{[^}]*mix-blend-mode/,'no reliance on multiply to hide the white');
-  assert.match(fx,/\.bf-splat\{width:130px;height:130px/);assert.match(fx,/function splash\(b\)/);assert.match(fx,/splash\(b\); dropsOnCard\(ev,6\)/);assert.match(fx,/img\.src=TOMATO_SRC/);assert.match(fx,/window\.bfCutOutImage\(TOMATO,function\(u\)\{ if\(u\)TOMATO_SRC=u; \}\)/);
+  assert.match(fx,/\.bf-splat\{width:130px;height:130px/);assert.match(fx,/function splash\(b,rot\)/);assert.match(fx,/splash\(b,rot\); dropsOnCard\(ev,6,rot\)/);assert.match(fx,/img\.src=TOMATO_SRC/);assert.match(fx,/window\.bfCutOutImage\(TOMATO,function\(u\)\{ if\(u\)TOMATO_SRC=u; \}\)/);
   assert.match(fs.readFileSync(lib('gameInject.js'),'utf8'),/NICK_CANON_PATCH \+ IMAGE_KEY_PATCH \+ ANIM_GUARD_PATCH \+ TURN_GLIDE_PATCH \+/,'helpers injected before the patches that use them');
 });
 test('turn glide: online only, state-driven (works for the guest), one soft cue per hand-off, never re-fires on re-renders',async()=>{

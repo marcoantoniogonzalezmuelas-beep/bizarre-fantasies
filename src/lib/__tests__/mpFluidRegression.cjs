@@ -89,3 +89,17 @@ test('ONLY bizarro abilities may do nothing; any Crane (summoned or drafted) hea
   assert.match(c,/if\(h && h\.alive && isCrane\(h\) && h\._bfHealRound !== B\.round\)\{/,'drafted Crane heals too (before: only the one summoned by Daidoji)');
   assert.match(c,/if\(!h \|\| !isCrane\(h\)\) return;/);
 });
+test('BLUFF: abilities that do nothing play the "¡FAROL!" effect on both screens; TOMATOES are bigger and alternate red and rotten green',async()=>{
+  const {BLUFF_FX_PATCH:P}=await load('bluffFxPatch.js');
+  for(const t of ['¡¡HABILIDAD DEFINITIVA!!','…pfff. Nada.','🦗','¡FAROL!'])assert.ok(P.includes(t),'shows '+t);
+  assert.match(P,/if\(ev&&ev\.k==='bfbluff'\)show\(ev\.side,ev\.id\);/,'drawn from the synced fx list (the guest sees it too)');
+  assert.match(read('abilityImplPatch.js'),/case 'noop': \{ try\{ pushFx\(\{k:'bfbluff', side:tSide\(hero\), id:hero\.id\}\); \}catch\(e\)\{\}/);
+  assert.match(read('gameInject.js'),/DRAW_RULE_PATCH \+ BLUFF_FX_PATCH/);
+  const a=read('attackFxPatch.js');
+  assert.match(a,/\.bf-tomato\{width:92px;height:92px;/,'bigger tomatoes');assert.match(a,/var rot=\(i%2===1\)/,'red and green alternate');assert.match(a,/\.bf-tomato\.bf-tomato-rot\{filter:hue-rotate\(78deg\)/);assert.match(a,/splatAt\(bb,ev,rot\)/,'green splat for green tomatoes');
+});
+test('no double-escaped unicode in the game patches (they showed "\\u25bc" instead of the character)',()=>{
+  const files=fs.readdirSync(path.join(__dirname,'..')).filter(f=>f.endsWith('.js'));
+  const bad=files.filter(f=>new RegExp('\\\\\\\\\\\\\\\\u[0-9a-fA-F]{4}').test(read(f)));
+  assert.deepEqual(bad,[],'files with 4 backslashes before uNNNN: '+bad.join(', '));
+});
