@@ -19,5 +19,5 @@ test('every seed record is valid for the real validator and complete for the DB 
 test('the admin importer creates or updates by card_id + elite and never touches other records',()=>{
   const b=read('../components/admin/AbilitySeedImportButton.jsx'),a=read('../pages/AdminCards.jsx');
   assert.match(b,/AbilityImpl\.filter\(\{ card_id: spec\.card_id, elite: !!spec\.elite \}/);assert.match(b,/AbilityImpl\.update\(existing\[0\]\.id, spec\)/);assert.match(b,/AbilityImpl\.create\(spec\)/);assert.doesNotMatch(b,/\.delete\(/);
-  assert.match(a,/import AbilitySeedImportButton from/);assert.match(a,/<AbilitySeedImportButton \/>/);
+  assert.match(fs.readFileSync(path.join(__dirname,'..','..','components','admin','MaintenancePanel.jsx'),'utf8'),/<GameDataSyncButton \/>/,'the backoffice imports missing sheets with the single sync button');assert.match(fs.readFileSync(path.join(__dirname,'..','gameDataSync.js'),'utf8'),/await base44\.entities\.AbilityImpl\.create\(spec\)/);
 });

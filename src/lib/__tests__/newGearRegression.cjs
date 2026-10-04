@@ -34,7 +34,7 @@ test('engine: spell boost, elemental weakness (inverse of ELEM_COUNTER), toy cri
 test('editor and admin: new parameters editable; "Crear cartas nuevas" creates missing cards and saves their parameters',()=>{
   const e=read('../components/admin/EffectEditor.jsx'),a=read('../pages/AdminCards.jsx'),b=read('../components/admin/NewCardsImportButton.jsx');
   for(const k of ['spell_boost_pct','weakness_bonus_pct','toy_crit','he_mult','reach_pct','shot_he','thorns'])assert.match(e,new RegExp('name="'+k+'"'));
-  assert.match(a,/const EFFECT_EDITOR_CATEGORIES = \[\.\.\.EQUIPMENT_EFFECT_CATEGORIES, 'melee_weapon'\];/);assert.match(a,/<NewCardsImportButton \/>/);
+  assert.match(a,/const EFFECT_EDITOR_CATEGORIES = \[\.\.\.EQUIPMENT_EFFECT_CATEGORIES, 'melee_weapon'\];/);assert.match(read('../components/admin/MaintenancePanel.jsx'),/<GameDataSyncButton \/>/);assert.match(read('gameDataSync.js'),/card = await base44\.entities\.Card\.create\(item\.card\)/,'new cards are created by the single sync button');
   assert.match(b,/if \(!card\) \{ card = await base44\.entities\.Card\.create\(item\.card\); created\+\+; \}/);assert.match(b,/saveEquipEffect\(\{ \.\.\.item\.card, \.\.\.card \}, item\.effect, base44\)/);assert.doesNotMatch(b,/\.delete\(/,'never deletes');assert.equal((b.match(/Card\.update\(/g)||[]).length,1,'the only update is the listed-fields adjustment');assert.doesNotMatch(b,/Card\.update\(card\.id|Card\.update\([^)]*item\.card\)/,'existing cards are never rewritten whole');
 });
 test('one copy of Drenaje (like El Anillo), as card data; El Ladrón Enmascarado costs 20 mana',async()=>{
@@ -74,7 +74,7 @@ test('backoffice check: tells which equipment cards will reach the shop and why 
   r=checkEquipShop(cards,[]);
   assert.deepEqual(r.missing.map(m=>m.card_id).sort(),['ob_poison','sp_toxic'],'spells and objects need their engine parameters');
   assert.match(r.missing[0].why,/no tiene parámetros del motor/);
-  assert.match(read('../pages/AdminCards.jsx'),/<NewCardsImportButton \/><EquipShopCheckButton \/>/);
+  assert.match(read('../components/admin/MaintenancePanel.jsx'),/<EquipShopCheckButton \/>/);
 });
 test('card numbers everywhere (shop, battle tags, purchase dialog) are the REAL card number, so a new card shows its own',()=>{
   const p=read('newGearPatch.js');
