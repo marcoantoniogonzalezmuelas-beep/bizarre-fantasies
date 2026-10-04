@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-07-stats-v247';
+const GAME_PATCH_VERSION = 'bf-2026-10-07-build-v248';
 // Los datos de las cartas se insertan como código dentro de un <script> del juego. Un texto con "</" o con los
 // separadores invisibles U+2028/U+2029 (típicos al copiar y pegar) rompía ese bloque entero y la tienda volvía a
 // las tablas viejas sin avisar. Se escapan siempre: ningún texto de carta puede romper el código.
@@ -2428,7 +2428,10 @@ function buildArtScript(dbCards) {
   // motor (armas, armaduras, hechizos y objetos) se RECONSTRUYEN por completo desde la base de datos, en el
   // orden de su número: una carta nueva del editor aparece en la tienda y funciona sin tocar código, y lo que
   // el motor traía escrito deja de usarse. (Se vacían y rellenan las MISMAS tablas para no romper referencias.)
-  ${buildEquipItem.toString()}
+  // Se asigna a una variable con nombre fijo: al publicar, la plataforma transforma el código del servidor y renombra
+  // la función por dentro (p. ej. "buildEquipItem2"); copiada tal cual, el juego no encontraba "buildEquipItem" y la
+  // tienda se quedaba con las tablas viejas ("buildEquipItem is not defined" en los diagnósticos).
+  var buildEquipItem = (${buildEquipItem.toString()});
   function rebuildEquipmentFromDb() {
     var MAP = { melee_weapon: MELEE, ranged_weapon: RANGED, armor: ARMORS, spell: SPELLS, object: OBJECTS };
     if (typeof BONUS !== 'undefined') MAP.bonus = BONUS;   // bonus de subasta: tipo y número vienen de la base de datos
