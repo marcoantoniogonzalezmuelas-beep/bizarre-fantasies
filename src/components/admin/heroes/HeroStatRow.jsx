@@ -3,7 +3,9 @@ import React from 'react';
 // Fila de un héroe en el ranking de compras de subasta: arte, nombre, raza,
 // rol, barra de frecuencia y conteo total (con desglose élite).
 export default function HeroStatRow({ stat, max, rank }) {
-  const { name, count, eliteCount, card } = stat;
+  const { name, count, eliteCount, card, winRate, wins, played } = stat;
+  // % de victorias: verde si gana mucho, rojo si pierde mucho (solo con partidas suficientes).
+  const wrColor = winRate == null ? '#8f86a3' : winRate >= 55 ? '#7ee07e' : winRate <= 45 ? '#ff8a8a' : '#efe9dc';
   const pct = max ? Math.max(4, Math.round((count / max) * 100)) : 0;
   return (
     <div className="flex items-center gap-3 rounded-xl border border-[#ffd24a22] bg-black/30 px-3 py-2">
@@ -26,6 +28,9 @@ export default function HeroStatRow({ stat, max, rank }) {
       <div className="shrink-0 text-right">
         <div className="text-sm font-black text-[#ffe49a]">{count}</div>
         {eliteCount > 0 && <div className="text-[10px] font-black text-[#c05bff]">Élite ×{eliteCount}</div>}
+        <div className="text-[10px] font-black" style={{ color: wrColor }} title={played ? `${wins} victorias en ${played} partidas` : 'Sin partidas registradas'}>
+          {winRate == null ? (played ? `${wins}/${played} partidas` : 'sin partidas') : `${winRate}% victorias`}
+        </div>
       </div>
     </div>
   );

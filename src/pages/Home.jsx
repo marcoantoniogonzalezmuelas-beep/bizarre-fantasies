@@ -336,6 +336,8 @@ export default function Home() {
   const iframeRef = useRef(null);
   const loadTimerRef = useRef(null);
   const reloadCoverRef = useRef(false);
+  // Enlace de invitación (?sala=CODIGO): al cargar el juego se le pide que abra la ventana de unirse a esa sala.
+  const inviteRef = useRef((() => { try { return new URLSearchParams(window.location.search).get('sala') || ''; } catch (e) { return ''; } })());
   // Al volver a primer plano (iPhone: tras compartir el código o desbloquear), si la pantalla de carga la puso un aviso
   // de recarga que no llegó a producirse, se quita: la partida sigue viva debajo.
   useEffect(() => {
@@ -1163,6 +1165,11 @@ export default function Home() {
             if (abilityAnimRef.current) iframeRef.current?.contentWindow?.postMessage({ bfAbilityAnim: abilityAnimRef.current }, '*');
             if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
+            if (inviteRef.current) {
+              const code = inviteRef.current; inviteRef.current = '';
+              setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfJoinRoom: code }, '*'), 3800);
+              try { const u = new URL(window.location.href); u.searchParams.delete('sala'); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* sin historial */ }
+            }
           }}
           className="border-0"
           // El lienzo del juego es dinámico: 860px en teléfonos en vertical
@@ -1172,7 +1179,7 @@ export default function Home() {
           style={IS_MOBILE
             ? { width: designW, height: `${100 / mobScale}%`, maxWidth: 'none', transform: `scale(${mobScale})`, transformOrigin: '0 0' }
             : { width: '100%', height: '100%' }}
-          allow="autoplay; fullscreen; clipboard-read; clipboard-write"
+          allow="autoplay; fullscreen; clipboard-read; clipboard-write; web-share"
         />
       )}
       {IS_MOBILE && !showOracle && (
