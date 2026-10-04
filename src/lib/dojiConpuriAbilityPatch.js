@@ -82,15 +82,22 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
       if(!armedThreat && !armedRevive) return orig.apply(this, arguments);
       var wasAlive = !!target.alive;
       var hpBefore = target.hp;
+      var wasElite = !!target.eliteMode;
       var dealt = orig.apply(this, arguments);
       try{
         // Normal: la próxima vez que reciba daño → dado de 2 caras.
         // Se usa el motor compartido de dados (__bfHeroRoll) para que salga la
         // misma cinemática que en el resto de habilidades, y se espera a que el
         // dado se fije antes de resolver el efecto (matar / no hacer nada).
-        if(armedThreat && target._bfDojiThreat && hpBefore > (target.hp||0)){
+        // El golpe CUENTA si hizo daño, le bajó la vida, lo mató o lo hizo pasar a élite. Antes solo se miraba la vida:
+        // si el golpe lo mataba en fase normal, renacía élite en ese instante con más vida que antes, la amenaza no
+        // se disparaba y saltaba más tarde, ya en élite. Ahora el golpe mortal la dispara SIEMPRE (tiene prioridad).
+        var hit = Number(dealt) > 0 || hpBefore > (target.hp||0) || (wasAlive && !target.alive) || (!wasElite && !!target.eliteMode);
+        if(armedThreat && target._bfDojiThreat && hit){
           target._bfDojiThreat = false; // se consume (una sola vez por partida)
-          var dr = 1 + Math.floor(Math.random()*2); // 1 o 2 (una sola tirada real)
+          // Mismo generador de dados que el resto del juego.
+          var dr = (typeof window.__bfDie === 'function') ? Number(window.__bfDie(2)) : 1 + Math.floor(Math.random()*2);
+          if(dr !== 1 && dr !== 2) dr = 1 + Math.floor(Math.random()*2);
           var resolveThreat = function(){
             try{
               if(dr === 1){
@@ -103,9 +110,11 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
                 if(attacker && attacker.alive && attacker !== target && tSideF && tSideF(attacker) === foeSide) victim = attacker;
                 if(!victim && foes.length) victim = foes.slice().sort(function(a,b){ return (a.hp||0)-(b.hp||0); })[0];
                 if(victim){
-                  if(typeof pushLog === 'function') pushLog('ld', '\\u2620 '+target.name+': \\u00a1el dado sale 1! '+victim.name+' cae fulminado.');
+                  if(typeof pushLog === 'function') pushLog('ld', '\\u2620 '+target.name+': \\u00a1el dado sale 1! '+victim.name+' cae fulminado y muere definitivamente.');
                   // La amenaza atraviesa la invisibilidad: se quita antes del golpe.
                   if(victim._bfInvisible){ victim._bfInvisible = 0; victim._bfInvisibleFresh = 0; }
+                  // Muerte DEFINITIVA: sin fase élite (no renace).
+                  victim.eliteUsed = true; victim._bfNoElite = 1;
                   orig.call(window, victim, 9999, {type:'spell', element:'arcano', bfDojiKill:true});
                   if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id, bfKillSource:{side:foeSide,id:victim.id,ts:Date.now(),self:true,kind:'useAbility'}});
                 } else if(typeof pushLog === 'function'){

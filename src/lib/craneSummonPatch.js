@@ -15,6 +15,9 @@ export const CRANE_SUMMON_PATCH = `
     return (typeof TOKENS !== 'undefined' ? TOKENS : []).find(function(t){ return t && t.id === 'tk_grulla'; });
   }
 
+  // Cualquier Grulla cura, la haya invocado Daidoji o esté en el equipo como unidad (antes solo la invocada: la
+  // otra no curaba nada y su habilidad no hacía nada, aunque su carta dice que cura 5 por turno).
+  function isCrane(h){ return !!(h && (h._bfCrane || h.id === 'tk_grulla' || h._token === 'tk_grulla' || h.card_id === 'tk_grulla')); }
   function healAmount(crane){ return crane && crane.eliteMode ? 7 : 5; }
 
   // Destello verde mágico a pantalla completa mientras la Grulla cura.
@@ -69,7 +72,7 @@ export const CRANE_SUMMON_PATCH = `
         if(typeof B !== 'undefined' && B && !B.over && B.queue && B.qi < B.queue.length){
           var slot = B.queue[B.qi];
           var h = (typeof getHero === 'function') ? getHero(slot.side, slot.id) : null;
-          if(h && h.alive && h._bfCrane && h._bfHealRound !== B.round){
+          if(h && h.alive && isCrane(h) && h._bfHealRound !== B.round){
             h._bfHealRound = B.round;
             healAllies(slot.side, h);
             var self = this, args = arguments;
@@ -88,7 +91,7 @@ export const CRANE_SUMMON_PATCH = `
     try{
       if(typeof B === 'undefined' || !B || !B.current) return;
       var h = (typeof getHero === 'function') ? getHero(B.current.side, B.current.id) : null;
-      if(!h || !h._bfCrane) return;
+      if(!h || !isCrane(h)) return;
       var btn = document.querySelector('.jrpg-btn.ability');
       if(!btn || btn.dataset.bfCrane === '1') return;
       btn.dataset.bfCrane = '1';
@@ -119,7 +122,7 @@ export const CRANE_SUMMON_PATCH = `
     var orig = window.useAbility;
     window.useAbility = function(side, hero, done){
       // La Grulla no puede usar habilidad: la suya es pasiva.
-      if(hero && hero._bfCrane){
+      if(hero && isCrane(hero)){
         hero.abilityUsed = true;
         if(typeof renderBattle === 'function') renderBattle();
         if(typeof done === 'function') done(); else if(typeof finishAct === 'function') finishAct();
