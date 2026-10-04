@@ -26,3 +26,15 @@ export function checkEquipShop(cards, impls) {
   });
   return { ok, missing };
 }
+
+// Lo que el SERVIDOR del juego mete de verdad en la partida: versión y cartas de equipo que lleva en sus datos.
+// html: el HTML que devuelve la función gameHtml; cards: filas de Card (las del Oráculo).
+export function checkServerGame(html, headerVersion, expectedVersion, cards) {
+  const text = String(html || '');
+  const m = /bf-\d{4}-\d{2}-\d{2}-[a-z0-9]+-v\d+/.exec(text);
+  const serverVersion = String(headerVersion || (m ? m[0] : '') || '');
+  const equip = (cards || []).filter((c) => c && CATS.includes(c.category) && c.card_id);
+  const inGame = equip.filter((c) => text.includes('"card_id":"' + c.card_id + '"'));
+  const notInGame = equip.filter((c) => !text.includes('"card_id":"' + c.card_id + '"')).map((c) => ({ card_id: c.card_id, name: c.name, number: c.number }));
+  return { serverVersion, expectedVersion, upToDate: !!serverVersion && serverVersion === expectedVersion, total: equip.length, inGame: inGame.length, notInGame, empty: text.length < 1000 };
+}

@@ -2,7 +2,7 @@
 //
 // Antes de resolver una acción (golpe cuerpo a cuerpo, disparo, habilidad,
 // hechizo u objeto) se tira internamente un d30 y se explica en el registro:
-//   · 19 o 20 → PIFIA (≈7%): la acción no hace nada.
+//   · 20 → PIFIA (≈3,3%): la acción no hace nada.
 //   · 1       → FALLO ÉPICO (≈3%): además de fallar, el efecto se vuelve
 //     contra el propio héroe.
 //
@@ -87,7 +87,7 @@ export function buildFumbleRollPatch(lang) {
 
   // Tirada interna: UNA sola tirada de d30 por acción.
   //   · 1        → FALLO ÉPICO (≈3%)
-  //   · 19 o 20  → PIFIA (≈7%)
+  //   · 20  → PIFIA (≈3,3%)
   //   · resto    → la acción se resuelve con normalidad
   // El fallo épico salía demasiado a menudo (1/30 = 3% por acción, y en una
   // partida hay 60-100 acciones → 2-3 por partida). Ahora el 1 hay que

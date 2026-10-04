@@ -54,7 +54,7 @@ export function createGameHtmlLoader({ invoke, store, version, getStamp = async 
 
 // Versión del cliente: cámbiala SIEMPRE que cambie el HTML del servidor o los parches que lo esperan
 // (invalida las copias guardadas). Debe coincidir con GAME_PATCH_VERSION de base44/functions/gameHtml.
-export const GAME_HTML_VERSION = 'bf-2026-10-06-cardno-v242';
+export const GAME_HTML_VERSION = 'bf-2026-10-06-invite-v244';
 
 export const gameHtmlLoader = createGameHtmlLoader({
   invoke: (name, payload) => base44.functions.invoke(name, payload),
