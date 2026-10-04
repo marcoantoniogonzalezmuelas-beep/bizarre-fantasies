@@ -46,8 +46,17 @@ export default function EffectEditor({ category, value, onChange }) {
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {category === 'ranged_weapon' ? <Num name="hits" value={e.hits} onChange={set} /> : null}
+          {category === 'ranged_weapon' || category === 'melee_weapon' ? (
+            <>
+              <Num name="spell_boost_pct" value={e.spell_boost_pct} onChange={set} />
+              <Num name="weakness_bonus_pct" value={e.weakness_bonus_pct} onChange={set} />
+              <Num name="toy_crit" value={e.toy_crit} onChange={set} />
+              {category === 'melee_weapon' ? <><Num name="he_mult" value={e.he_mult} onChange={set} /><Num name="reach_pct" value={e.reach_pct} onChange={set} /></> : <Num name="shot_he" value={e.shot_he} onChange={set} />}
+            </>
+          ) : null}
           {category === 'armor' ? (
             <>
+              <Num name="thorns" value={e.thorns} onChange={set} /><Num name="vel" value={e.vel} onChange={set} />
               <Num name="redM" value={e.redM} onChange={set} /><Num name="redA" value={e.redA} onChange={set} />
               <Num name="redH" value={e.redH} onChange={set} /><Num name="regen" value={e.regen} onChange={set} />
               <div><span className={label}>element</span>

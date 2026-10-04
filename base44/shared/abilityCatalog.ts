@@ -2,7 +2,7 @@
 // y la función del servidor que traduce habilidades con la IA (base44/functions/implementAbility). Antes cada uno
 // tenía su propia lista y la del servidor se quedó vieja: la IA no podía usar las primitivas nuevas del motor.
 // Al añadir una primitiva al ejecutor (src/lib/abilityImplPatch.js) se registra AQUÍ.
-export const VALID_ACTIONS = ['damage','true_damage','drain','heal','heal_full','shield','cleanse','buff','debuff','debuff_all_stats','paralyze','skip_turn','sleep','silence','confuse','drunk','mark','evade','mana','lifesteal','recover_card','steal_card','disarm','fx','execute','destroy_equipment','reduce_max_hp','swap_stats','revive','heal_equalize','shield_regen','block_hand','noop','roll','disable_ability','disable_elite'];
+export const VALID_ACTIONS = ['damage','true_damage','drain','heal','heal_full','shield','cleanse','buff','debuff','debuff_all_stats','paralyze','skip_turn','sleep','silence','confuse','drunk','mark','evade','mana','lifesteal','recover_card','steal_card','disarm','fx','execute','destroy_equipment','reduce_max_hp','swap_stats','revive','heal_equalize','shield_regen','block_hand','noop','roll','disable_ability','disable_elite','poison'];
 export const VALID_TARGETS = ['self','ally','all_allies','enemy','all_enemies','random_enemy','weakest_enemy','strongest_enemy','other_enemy','dead_ally'];
 export const EFFECT_TYPES = ['attack_bonus_per_ally','heal_allies_per_turn','heal_allies_now','damage_enemy','buff_self','shield_self','custom_steps'];
 // Acciones que no necesitan una cantidad numérica.
