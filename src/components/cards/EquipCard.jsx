@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { cleanCardText, equipTextClass } from '@/lib/cardText';
 import { Search, X } from 'lucide-react';
 import { SPELL_ART, MELEE_ART, RANGED_ART, ARMOR_ART, OBJECT_ART, BONUS_ART } from '@/lib/artUrls';
 import { getLang } from '@/lib/i18n';
@@ -115,7 +116,7 @@ function FullBleedCard({ item, type, borderColor, artUrl, onClick, zoomable = tr
       {/* Bottom info panel */}
       <div className={`absolute left-3 right-3 bottom-3 text-center rounded-xl bg-black/75 border px-3 backdrop-blur-sm ${fill ? 'py-5 pb-6' : 'py-3 pb-4'}`} style={{ borderColor: `${borderColor}44`, zIndex: 3 }}>
         <div data-bf-marker="name" className={`font-heading font-black leading-tight text-[#fff5d9] ${fill ? 'text-2xl' : 'text-base'}`} style={{ textShadow: '0 2px 6px #000,0 0 12px #000' }}>{item.name}</div>
-        <div data-bf-marker="desc" className={`mt-1.5 font-bold leading-snug text-[#efe9dc] ${fill ? 'text-[14px]' : 'text-[11px]'}`}>{item.txt || item.description}</div>
+        <div data-bf-marker="desc" className={`mt-1.5 font-bold text-[#efe9dc] ${equipTextClass(item.txt || item.description, fill)}`}>{cleanCardText(item.txt || item.description)}</div>
         <div data-bf-marker="num" className={`mt-3 font-black text-[#bdae87] ${fill ? 'text-[10px]' : 'text-[8px]'}`}>Base Set · Nº {String(item.num || item.number || 0).padStart(3, '0')}</div>
       </div>
 

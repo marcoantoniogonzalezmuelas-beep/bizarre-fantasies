@@ -1,4 +1,5 @@
 import React from 'react';
+import { cleanCardText, abilityTextClass } from '@/lib/cardText';
 import { CLAN_COLORS } from '@/lib/cardData';
 import ClanSigil from '@/components/cards/ClanSigil';
 
@@ -90,8 +91,8 @@ export default function HeroCardFace({ hero, elite }) {
             <img src={ABILITY_ICON[hero.type] || ABILITY_ICON.HE} alt="" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
-            <div className={`font-heading text-[10px] sm:text-[11px] font-black uppercase leading-tight break-words ${elite ? 'text-[#d9a2ff]' : 'text-[#ffe07b]'}`}>{abilityName}</div>
-            <div className="mt-1 text-[9px] sm:text-[10.5px] font-bold leading-snug text-[#fff7ea] break-words" style={{ textShadow: '0 2px 3px #000' }}>{abilityTxt}</div>
+            <div className={`font-heading text-[10px] sm:text-[11px] font-black uppercase leading-tight break-words ${elite ? 'text-[#d9a2ff]' : 'text-[#ffe07b]'}`}>{cleanCardText(abilityName)}</div>
+            <div className={`mt-1 font-bold text-[#fff7ea] break-words ${abilityTextClass(abilityTxt)}`} style={{ textShadow: '0 2px 3px #000' }} title={cleanCardText(abilityTxt)}>{cleanCardText(abilityTxt)}</div>
           </div>
         </div>
       </div>

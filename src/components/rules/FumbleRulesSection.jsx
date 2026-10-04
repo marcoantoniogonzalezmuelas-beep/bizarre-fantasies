@@ -6,14 +6,14 @@ const L = (es, en) => (getLang() === 'en' ? en : es);
 // Bloque de reglas de la tirada global de d30 (Pifia / Fallo Épico).
 export default function FumbleRulesSection() {
   const ROWS = [
-    { c: '#7ce287', i: '🎲', n: L('2-18 y 21-30', '2-18 and 21-30'), x: L('La acción se resuelve con normalidad.', 'The action resolves normally.') },
-    { c: '#ff86d2', i: '💥', n: L('19 o 20 · PIFIA (≈7%)', '19 or 20 · FUMBLE (≈7%)'), x: L('La acción falla y no produce ningún efecto. El turno se gasta igual.', 'The action fails and has no effect. The turn is spent anyway.') },
-    { c: '#ff5fc0', i: '💀', n: L('1 + 1 en d6 · FALLO ÉPICO (≈0,5%)', '1 + 1 on a d6 · EPIC FAIL (≈0.5%)'), x: L('Un 1 en el d30 se confirma con un d6: si sale 1, la acción falla y el efecto se vuelve contra su autor (daño real ≈60% de su stat principal). Si el d6 no lo confirma, queda en pifia normal.', 'A 1 on the d30 is confirmed with a d6: on a 1, the action fails and the effect backfires on its owner (true damage ≈60% of their main stat). If the d6 does not confirm it, it stays a normal fumble.') },
+    { c: '#7ce287', i: '🎲', n: L('2-19 y 21-30', '2-19 and 21-30'), x: L('La acción se resuelve con normalidad.', 'The action resolves normally.') },
+    { c: '#ff86d2', i: '💥', n: L('20 · PIFIA (≈3,3%)', '20 · FUMBLE (≈3.3%)'), x: L('La acción falla y no produce ningún efecto. El turno se gasta igual.', 'The action fails and has no effect. The turn is spent anyway.') },
+    { c: '#ff5fc0', i: '💀', n: L('1 + 1 en d6 · FALLO ÉPICO (≈0,5%)', '1 + 1 on a d6 · EPIC FAIL (≈0.5%)'), x: L('Un 1 en el d30 se confirma con un d6: si sale 1, la acción falla y el efecto se vuelve contra su autor (daño real ≈60% de su stat principal). Si el d6 no lo confirma, la acción se resuelve con normalidad.', 'A 1 on the d30 is confirmed with a d6: on a 1, the action fails and the effect backfires on its owner (true damage ≈60% of their main stat). If the d6 does not confirm it, the action resolves normally.') },
   ];
 
   const NOTES = [
     L('Solo se tira UN dado por acción, aunque la acción pase por varios pasos (elegir objetivo, habilidad que luego golpea…).', 'Only ONE die is rolled per action, even if the action goes through several steps (choosing a target, an ability that then strikes…).'),
-    L('Habilidades permanentes (Juniana, KillerDucks, Daidoji, Batu élite, Edredon): solo tiran al activarse, nunca hay fallo épico y, si pifian, la habilidad queda gastada sin efecto.', 'Permanent abilities (Juniana, KillerDucks, Daidoji, elite Batu, Edredon): they only roll on activation, never suffer an epic fail and, on a fumble, the ability is spent with no effect.'),
+    L('Habilidades con dado propio (Monkgeta, Llorilomo, El Rolero, Doji Conpuri, Faseve…) no tiran además el d30. Y una habilidad que no cambia nada en ese momento NO es una pifia: solo se anota en el registro.', 'Abilities with their own die (Monkgeta, Llorilomo, El Rolero, Doji Conpuri, Faseve…) do not roll the d30 as well. And an ability that changes nothing at that moment is NOT a fumble: it is only noted in the log.'),
     L('Invocaciones: con pifia no aparece nada; con fallo épico las criaturas invocadas se pasan al ejército rival.', 'Summons: on a fumble nothing appears; on an epic fail the summoned creatures switch to the rival army.'),
     L('Cada tirada se anota en el registro de batalla, y en las partidas online la resuelve el anfitrión y se sincroniza: los dos jugadores ven el mismo resultado.', 'Every roll is written in the battle log, and in online games the host resolves it and it is synced: both players see the same result.'),
   ];
