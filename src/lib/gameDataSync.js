@@ -14,7 +14,7 @@ export async function syncGameData(base44, onStep = () => {}) {
   const out = { cardsCreated: 0, paramsAdded: 0, specsAdded: 0, adjusted: 0, failed: 0 };
   const cards = await base44.entities.Card.list('number', 2000);
   const byId = new Map((cards || []).map((c) => [c.card_id, c]));
-  const impls = await base44.entities.AbilityImpl.list('-created_date', 5000);
+  const impls = await base44.entities.AbilityImpl.list('-created_date', 1000);
   const hasParams = new Set((impls || []).filter((r) => r.effect_type === 'equipment').map((r) => r.card_id));
   const hasSpec = new Set((impls || []).filter((r) => r.effect_type !== 'equipment').map((r) => r.card_id + '|' + (r.elite ? 1 : 0)));
 

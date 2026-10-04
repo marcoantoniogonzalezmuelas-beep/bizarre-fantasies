@@ -36,5 +36,9 @@ export function checkServerGame(html, headerVersion, expectedVersion, cards) {
   const equip = (cards || []).filter((c) => c && CATS.includes(c.category) && c.card_id);
   const inGame = equip.filter((c) => text.includes('"card_id":"' + c.card_id + '"'));
   const notInGame = equip.filter((c) => !text.includes('"card_id":"' + c.card_id + '"')).map((c) => ({ card_id: c.card_id, name: c.name, number: c.number }));
-  return { serverVersion, expectedVersion, upToDate: !!serverVersion && serverVersion === expectedVersion, total: equip.length, inGame: inGame.length, notInGame, empty: text.length < 1000 };
+  // Parámetros de equipo que leyó el servidor (0 = no los ve: el juego los completa con los que manda la página).
+  let params = null;
+  const pm = /window\.__bfEquipParamsInfo = (\{[^;]*\}|null);/.exec(text);
+  if (pm) { try { params = JSON.parse(pm[1]); } catch (e) { params = null; } }
+  return { serverVersion, expectedVersion, upToDate: !!serverVersion && serverVersion === expectedVersion, total: equip.length, inGame: inGame.length, notInGame, empty: text.length < 1000, params };
 }
