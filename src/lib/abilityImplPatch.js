@@ -204,7 +204,7 @@ export const ABILITY_IMPL_PATCH = `
       var mm = { turns: Math.max(1, num(st.turns, 99)) }, sign = act === 'debuff' ? -1 : 1;
       Object.keys(st.mods).forEach(function(k){ mm[k] = sign * Math.abs(num(st.mods[k], 0)); });
       mods(t).push(mm);
-      try{ pushFx({k:'status', side:tSide(t), id:t.id, txt: act === 'debuff' ? '\\\\u25bc' : '\\\\u25b2'}); }catch(e){}
+      try{ pushFx({k:'status', side:tSide(t), id:t.id, txt: act === 'debuff' ? '\\u25bc' : '\\u25b2'}); }catch(e){}
       log(t.name + ': ' + Object.keys(st.mods).map(function(k){ return (sign < 0 ? '-' : '+') + Math.abs(num(st.mods[k], 0)) + ' ' + k.toUpperCase(); }).join(', ') + '.');
       return true;
     }
@@ -219,7 +219,7 @@ export const ABILITY_IMPL_PATCH = `
           var sk3 = ['cc','ad','he'].indexOf(st.scale_stat) >= 0 ? st.scale_stat : primStat(hero);
           var de = dealDamage(t, Math.max(1, Math.round(statOf(hero, sk3) * Number(st.else_mult))), { type: hitType(hero) });
           log(hero.name + ' no ejecuta a ' + t.name + ' (-' + de + ').');
-        } else log(t.name + ' no est\\\\u00e1 por debajo de ' + thr + ' HP.');
+        } else log(t.name + ' no est\\u00e1 por debajo de ' + thr + ' HP.');
         return true;
       }
       case 'destroy_equipment': {
@@ -230,7 +230,7 @@ export const ABILITY_IMPL_PATCH = `
         log(hero.name + ' DESTRUYE el equipo de ' + t.name + (had ? ' (armadura rota)' : '') + '.');
         return true;
       }
-      case 'reduce_max_hp': { var rm = Math.abs(num(st.amount, 0)); t.maxHp = Math.max(1, t.maxHp - rm); t.hp = Math.min(t.hp, t.maxHp); log(t.name + ': -' + rm + ' de vida m\\\\u00e1xima.'); return true; }
+      case 'reduce_max_hp': { var rm = Math.abs(num(st.amount, 0)); t.maxHp = Math.max(1, t.maxHp - rm); t.hp = Math.min(t.hp, t.maxHp); log(t.name + ': -' + rm + ' de vida m\\u00e1xima.'); return true; }
       case 'swap_stats': {
         var s1 = statOf(t, 'cc'), s2 = statOf(t, 'he');
         mods(t).push({ cc: s2 - s1, he: s1 - s2, turns: 99 });
@@ -252,7 +252,7 @@ export const ABILITY_IMPL_PATCH = `
       }
       case 'shield_regen': { t._bfShieldRegen = Math.max(1, num(st.amount, 0)); return true; }   // lo procesa el gancho de fin de turno del motor (22 > 11 > 6 > 3 > 2 > 1 > 0)
       case 'block_hand': { var bh = Math.max(1, num(st.turns, 2)); t._bfHandBlock = Math.max(t._bfHandBlock || 0, bh); try{ pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\ud83d\\udeab'}); }catch(e){} log(t.name + ' tiene la mano bloqueada ' + bh + ' turnos: no puede jugar hechizos ni objetos.'); return true; }
-      case 'noop': { log(hero.name + ': ' + (st.text || 'no pasa nada en absoluto.')); return true; }
+      case 'noop': { try{ pushFx({k:'bfbluff', side:tSide(hero), id:hero.id}); }catch(e){} log(hero.name + ': ' + (st.text || 'no pasa nada en absoluto.')); return true; }   // farol de habilidad (bluffFxPatch)
       case 'disable_ability': {
         t.abilityUsed = true; t._bfAbilityCineSuppressed = t.eliteMode ? 'elite' : 'normal';
         try{ if(window.bfStatusPop) window.bfStatusPop(tSide(t), t.id, '\\u2728 SIN HABILIDAD'); }catch(e){}

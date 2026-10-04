@@ -29,7 +29,11 @@ export const ATTACK_FX_PATCH = `
     '.bf-muzzle{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle,#fff,#ffe14a 40%,transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-smoke-trail{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,rgba(180,180,180,.7),transparent 70%);transform:translate(-50%,-50%)}',
     '.bf-plasma-trail{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,rgba(120,200,255,.85),transparent 70%);transform:translate(-50%,-50%)}',
-    '.bf-tomato{width:68px;height:68px;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));clip-path:circle(47% at 50% 50%)}',
+    '.bf-tomato{width:92px;height:92px;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));clip-path:circle(47% at 50% 50%)}',
+    // Tomate PODRIDO (verde): la misma imagen teñida, más oscura y apagada.
+    '.bf-tomato.bf-tomato-rot{filter:hue-rotate(78deg) saturate(.72) brightness(.78) contrast(1.15) drop-shadow(0 6px 6px rgba(0,0,0,.5)) drop-shadow(0 0 6px rgba(120,170,40,.55))}',
+    '.bf-tspl.bf-rot,.bf-tdrop.bf-rot{background:radial-gradient(circle at 35% 30%,#a8c83a,#4d6a12);box-shadow:0 0 5px rgba(70,100,10,.8)}',
+    '.bf-splat.bf-rot{background:radial-gradient(circle,rgba(110,150,25,.95) 0 30%,rgba(80,110,20,.75) 45%,rgba(60,80,15,.45) 60%,transparent 72%)}',
     '.bf-tspl{position:fixed;z-index:7;pointer-events:none;border-radius:50% 50% 55% 55%;background:radial-gradient(circle at 35% 30%,#e8423a,#8f0d16);box-shadow:0 0 5px rgba(120,0,10,.8)}',
     '.bf-tdrop{position:absolute;z-index:6;pointer-events:none;border-radius:50% 50% 55% 55%;background:radial-gradient(circle at 35% 30%,#e0352e,#8f0d16);box-shadow:0 0 3px rgba(120,0,10,.8)}',
     '.bf-splat{width:130px;height:130px;transform:translate(-50%,-50%);border-radius:50% 42% 55% 45%;background:radial-gradient(circle,rgba(150,10,20,.95) 0 30%,rgba(120,20,20,.75) 45%,rgba(90,110,20,.45) 60%,transparent 72%);animation:bfSplat 1.4s ease-out forwards}',
@@ -275,11 +279,11 @@ export const ATTACK_FX_PATCH = `
   // queda el recorte circular del CSS. Mientras tanto se usa la imagen original.
   var TOMATO_SRC=TOMATO;
   { var ti=new Image(); ti.src=TOMATO; if(window.bfCutOutImage)window.bfCutOutImage(TOMATO,function(u){ if(u)TOMATO_SRC=u; }); }
-  function dropsOnCard(ev,n){
+  function dropsOnCard(ev,n,rot){
     var card=document.getElementById('b_'+ev.toSide+'_'+ev.toId); if(!card)return;
     if(getComputedStyle(card).position==='static')card.style.position='relative';
     for(var i=0;i<n;i++){
-      var d=document.createElement('div'); d.className='bf-tdrop';
+      var d=document.createElement('div'); d.className='bf-tdrop'+(rot?' bf-rot':'');
       var sz=4+Math.random()*7;
       d.style.cssText='left:'+(10+Math.random()*80)+'%;top:'+(8+Math.random()*70)+'%;width:'+sz+'px;height:'+(sz*(1.2+Math.random()*.8))+'px';
       card.appendChild(d);
@@ -287,9 +291,9 @@ export const ATTACK_FX_PATCH = `
     }
   }
   // Salpicadura: gotas de tomate que salen disparadas en todas direcciones y caen.
-  function splash(b){
+  function splash(b,rot){
     for(var i=0;i<12;i++){ (function(){
-      var d=document.createElement('div'); d.className='bf-afx bf-tspl';
+      var d=document.createElement('div'); d.className='bf-afx bf-tspl'+(rot?' bf-rot':'');
       var sz=8+Math.random()*14, ang=Math.random()*Math.PI*2, dist=45+Math.random()*85, ms=650+Math.random()*400;
       d.style.cssText='left:'+b.x+'px;top:'+b.y+'px;width:'+sz+'px;height:'+(sz*(1+Math.random()*.5))+'px;margin:-'+(sz/2)+'px 0 0 -'+(sz/2)+'px';
       var dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist;
@@ -301,14 +305,15 @@ export const ATTACK_FX_PATCH = `
       bfAppend(d); setTimeout(function(){ if(d.parentNode)d.parentNode.removeChild(d); },ms+80);
     })(); }
   }
-  function splatAt(b,ev){
-    var s=document.createElement('div'); s.className='bf-afx bf-splat'; s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1500);
-    impactSparks(b,8,'#a3121a'); splash(b); dropsOnCard(ev,6);
+  function splatAt(b,ev,rot){
+    var s=document.createElement('div'); s.className='bf-afx bf-splat'+(rot?' bf-rot':''); s.style.left=b.x+'px'; s.style.top=b.y+'px'; spawn(s,1500);
+    impactSparks(b,8,rot?'#6b8e1a':'#a3121a'); splash(b,rot); dropsOnCard(ev,6,rot);
   }
   function tomatoThrow(a,b,n,ev){
     n=5;
     for(var i=0;i<n;i++){ (function(i){ setTimeout(function(){
-      var ms=700+Math.random()*200, img=document.createElement('img'); img.src=TOMATO_SRC; img.className='bf-afx bf-tomato';
+      // Se alternan tomates rojos y tomates verdes podridos.
+      var rot=(i%2===1), ms=700+Math.random()*200, img=document.createElement('img'); img.src=TOMATO_SRC; img.className='bf-afx bf-tomato'+(rot?' bf-tomato-rot':'');
       var bb={x:b.x+(Math.random()-.5)*50,y:b.y+(Math.random()-.5)*50};
       var top=Math.min(a.y,b.y)-50-Math.random()*60;
       img.animate([
@@ -316,7 +321,7 @@ export const ATTACK_FX_PATCH = `
         {left:((a.x+bb.x)/2)+'px',top:top+'px',opacity:1,transform:'translate(-50%,-50%) rotate(300deg) scale(1.05)',offset:.5},
         {left:bb.x+'px',top:bb.y+'px',opacity:1,transform:'translate(-50%,-50%) rotate(620deg) scale(.95)'}
       ],{duration:ms,easing:'ease-in-out',fill:'forwards'});
-      bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); splatAt(bb,ev); if(i===0||i===n-1){ hitStar(b); shake(ev.toSide,ev.toId); } },ms);
+      bfAppend(img); setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); splatAt(bb,ev,rot); if(i===0||i===n-1){ hitStar(b); shake(ev.toSide,ev.toId); } },ms);
     },i*170); })(i); }
   }
 

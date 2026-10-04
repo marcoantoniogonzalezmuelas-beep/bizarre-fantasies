@@ -16,7 +16,7 @@ export const DRAW_RULE_PATCH = `
           var actor=(B.current&&B.current.side)||'p';
           var pWin=actor==='p';
           var nm=(typeof G!=='undefined'&&G.names&&G.names[actor])||actor;
-          if(typeof pushLog==='function')pushLog('lx','\\\\u2696\\\\ufe0f Caen a la vez los \\\\u00faltimos h\\\\u00e9roes de los dos bandos: gana quien hizo la jugada ('+nm+').');
+          if(typeof pushLog==='function')pushLog('lx','\\u2696\\ufe0f Caen a la vez los \\u00faltimos h\\u00e9roes de los dos bandos: gana quien hizo la jugada ('+nm+').');
           B.over=true;
           if(typeof clearWatchdog==='function')clearWatchdog();
           G._result={pWin:pWin,tie:true};G._gameOver=true;
