@@ -120,7 +120,38 @@ export const NEW_GEAR_PATCH = `
     };
     w.__bfRealNo=1;window.cardNo=w;return true;
   }
-  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo; }
+  // VENENO VISIBLE: insignia fija "☠️ turnos" en el retrato del envenenado, junto a las demás (dormido, paralizado...).
+  function hookBadges(){
+    if(typeof window.statusBadges!=='function'||window.statusBadges.__bfPoison)return false;
+    var o=window.statusBadges;
+    var w=function(h){
+      var out=o.apply(this,arguments);
+      try{ if(h&&h._bfPoison&&h._bfPoison.turns>0)out=(out||'')+'<span class="status-badge st-poison" title="Envenenado: -'+h._bfPoison.dmg+' al empezar cada turno" style="background:rgba(70,110,20,.85);border-color:#a8d84a;color:#eaffc0">\u2620\ufe0f'+h._bfPoison.turns+'</span>'; }catch(e){}
+      return out;
+    };
+    w.__bfPoison=1;window.statusBadges=w;return true;
+  }
+  // SANAR CURA EL VENENO: el motor libera al aliado y lo anota ("Sanar: X liberado."); en ese momento se le quita
+  // también el veneno (vale para el jugador, la IA y la partida en línea, que resuelve el anfitrión).
+  function hookCleanse(){
+    if(typeof window.pushLog!=='function'||window.pushLog.__bfPoisonCure)return false;
+    var o=window.pushLog;
+    var w=function(cls,txt){
+      var r=o.apply(this,arguments);
+      try{
+        var m=/: (.+?) (?:liberado|vuelve a su estado normal)\.$/.exec(String(txt||''));
+        if(m&&typeof G!=='undefined'&&G&&G.team){
+          var side=(typeof B!=='undefined'&&B&&B.current)?B.current.side:null;
+          var pool=(side?(G.team[side]||[]):[]).concat(G.team.p||[],G.team.o||[]);
+          var h=pool.find(function(x){ return x&&x.alive&&x.name===m[1]&&x._bfPoison; });
+          if(h){ h._bfPoison=null; o.call(this,'lh','\u2728 '+h.name+' se cura del veneno.'); }
+        }
+      }catch(e){}
+      return r;
+    };
+    w.__bfPoisonCure=1;window.pushLog=w;return true;
+  }
+  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(),e1=hookBadges(),f1=hookCleanse(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo&&window.statusBadges&&window.statusBadges.__bfPoison&&window.pushLog&&window.pushLog.__bfPoisonCure; }
   if(!all()){ var iv=setInterval(function(){ if(all())clearInterval(iv); },300); setTimeout(function(){ clearInterval(iv); },15000); }
 })();
 </script>

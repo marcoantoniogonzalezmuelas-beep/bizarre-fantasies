@@ -21,5 +21,6 @@ export const NEW_CARDS_SEED = [
 
 // Ajustes de cartas que YA existen (solo los campos indicados; se aplican con el mismo botón).
 export const CARD_UPDATES = [
-  { card_id: 'sp_steal', set: { mana: 20 }, why: 'El Ladrón Enmascarado cuesta 20 de maná.' },
+  // Solo se aplica si la carta sigue con el valor antiguo (from): si lo cambias en el editor, no se vuelve a pisar.
+  { card_id: 'sp_steal', from: { mana: 12 }, set: { mana: 20 }, why: 'El Ladrón Enmascarado cuesta 20 de maná.' },
 ];
