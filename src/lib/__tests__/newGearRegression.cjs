@@ -116,3 +116,13 @@ test('diagnostic mode (?diag=1): panel with the equipment state inside the game 
   assert.match(d,/Tienda construida desde la base de datos/);assert.match(read('gameInject.js'),/INVITE_PATCH \+ DIAG_PATCH/);
   assert.match(read('../pages/Home.jsx'),/get\('diag'\)\) setTimeout\(\(\) => iframeRef\.current\?\.contentWindow\?\.postMessage\(\{ bfDiag: true \}, '\*'\), 2500\)/);
 });
+test('the equipment builder is injected under a FIXED name (the platform renames it when publishing: "buildEquipItem is not defined")',()=>{
+  const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(e,/var buildEquipItem = \(\$\{buildEquipItem\.toString\(\)\}\);/);
+  assert.doesNotMatch(e,/\n  \$\{buildEquipItem\.toString\(\)\}\n/,'no longer pasted relying on its internal name');
+  // simulación: la función copiada con OTRO nombre sigue disponible como buildEquipItem
+  const src='function buildEquipItem2(c){ return {id:c.card_id}; }';
+  const run=new Function('var buildEquipItem = ('+src+'); return buildEquipItem({card_id:"x"}).id;');
+  assert.equal(run(),'x');
+  assert.match(read('diagPatch.js'),/\/\[\?&\]diag=\/\.test\(window\.parent\.location\.search\)/);
+});
