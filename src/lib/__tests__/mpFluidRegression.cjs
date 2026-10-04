@@ -62,3 +62,30 @@ test('DISORIENTED: the damage number shows on the hero that REALLY took the hit,
   assert.match(read('monkgetaAbilityPatch.js'),/if\(target!==calledTarget\)\{window\.__bfDmgRedirect=\{from:calledTarget,to:target\};/);
   assert.match(read('damageNumberPatch.js'),/if\(rd && rd\.from === target && rd\.to\)\{ before = undefined; target = rd\.to; \}/);
 });
+test('DOJI threat: fires on the FIRST hit even if that hit kills him (he is reborn elite right away), uses the common dice, and a 1 kills for good',()=>{
+  const s=read('dojiConpuriAbilityPatch.js');
+  assert.match(s,/var hit = Number\(dealt\) > 0 \|\| hpBefore > \(target\.hp\|\|0\) \|\| \(wasAlive && !target\.alive\) \|\| \(!wasElite && !!target\.eliteMode\);/,'the lethal hit counts (before: reborn elite with more HP, the threat stayed armed and fired later)');
+  assert.match(s,/if\(armedThreat && target\._bfDojiThreat && hit\)\{\s*target\._bfDojiThreat = false;/);
+  assert.match(s,/typeof window\.__bfDie === 'function'\) \? Number\(window\.__bfDie\(2\)\)/,'same dice generator as the rest of the game');
+  assert.match(s,/victim\.eliteUsed = true; victim\._bfNoElite = 1;/,'a 1 kills definitively: no elite rebirth');
+});
+test('DRAW: when the last heroes of BOTH sides fall at once, the side that made the move wins (before: always side "p")',async()=>{
+  const {DRAW_RULE_PATCH:P}=await load('drawRulePatch.js');
+  const run=(actor,role)=>{let shown=null,sent=null,origCalls=0;const env={B:{over:false,current:{side:actor}},G:{names:{p:'Ana',o:'IA'}},NET:{role:role||'local',mySide:'o'},living:()=>[],pushLog(){},clearWatchdog(){},netSync(){},netSend:m=>{sent=m;},showResult:w=>{shown=w;},setInterval(){},setTimeout:(f)=>f(),window:{}};env.window=env;env.checkWin=function(){origCalls++;return 'orig';};
+    vm.runInNewContext(script(P),env);const r=env.checkWin();return {r,shown,sent,res:env.G._result,origCalls};};
+  let x=run('p');assert.equal(x.res.pWin,true);assert.equal(x.shown,true);assert.equal(x.res.tie,true);assert.equal(x.origCalls,0);
+  x=run('o');assert.equal(x.res.pWin,false,'the AI made the move: the AI wins');assert.equal(x.shown,false);
+  x=run('o','host');assert.deepEqual(JSON.parse(JSON.stringify(x.sent)),{t:'end',pWin:false},'online: the guest made the move, the guest wins (before: the host always won)');
+  // sin empate: el motor decide como siempre
+  const env2={B:{over:false,current:{side:'p'}},G:{},NET:{role:'local'},living:s=>s==='o'?[{}]:[],setInterval(){},window:{}};env2.window=env2;let c=0;env2.checkWin=function(){c++;return 'orig';};vm.runInNewContext(script(P),env2);assert.equal(env2.checkWin(),'orig');assert.equal(c,1);
+  assert.match(read('gameInject.js'),/REBIRTH_ABILITY_PATCH \+ DRAW_RULE_PATCH/);
+});
+test('ONLY bizarro abilities may do nothing; any Crane (summoned or drafted) heals every turn',async()=>{
+  const {ABILITY_SEED}=await load('abilitySeed.js');
+  const noop=ABILITY_SEED.filter(r=>JSON.stringify(r.params||{}).includes('"noop"')).map(r=>r.card_id+(r.elite?'|e':'|n')).sort();
+  assert.deepEqual(noop,['tk_buf|n','tk_caj|n','tk_lav|n'],'Butifarra, Caja de Zapatos and Lavadora (normal) are the only do-nothing abilities');
+  const c=read('craneSummonPatch.js');
+  assert.match(c,/function isCrane\(h\)\{ return !!\(h && \(h\._bfCrane \|\| h\.id === 'tk_grulla'/);
+  assert.match(c,/if\(h && h\.alive && isCrane\(h\) && h\._bfHealRound !== B\.round\)\{/,'drafted Crane heals too (before: only the one summoned by Daidoji)');
+  assert.match(c,/if\(!h \|\| !isCrane\(h\)\) return;/);
+});
