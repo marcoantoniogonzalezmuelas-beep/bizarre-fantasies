@@ -63,7 +63,7 @@ test('SERVER: the game tables are rebuilt from the database (same array objects,
   assert.deepEqual(E.OBJECTS.map(x=>x.id),['ob_a']);assert.deepEqual(E.MELEE.map(x=>x.id),['mw_a']);assert.deepEqual(E.ARMORS.map(x=>x.id),['ar_a']);
   assert.deepEqual(E.RANGED.map(x=>x.id),['old_r'],'the DB has no ranged weapons: the engine keeps its own, the game is never left without equipment');assert.equal(E.window.__bfEquipFromDb,true);
   // y la decisión de usar la BD solo si alguna carta trae parámetros
-  assert.match(t,/if \(DB_EQUIP\.some\(function\(d\)\{ return d && d\.effect; \}\)\) \{ rebuildEquipmentFromDb\(\); return; \}/);assert.match(t,/effect: c\.effect \|\| null \}\)\);/);assert.match(t,/tag: c\.tag \|\| '', foil: c\.foil === true/);
+  assert.match(t,/try \{ rebuildEquipmentFromDb\(\); window\.__bfEquipSynced = true; \}/,'rebuilt from the DB, retried if it fails');assert.match(t,/effect: c\.effect \|\| null \}\)\);/);assert.match(t,/tag: c\.tag \|\| '', foil: c\.foil === true/);
   assert.match(t,/MAP\.bonus = BONUS/);assert.match(t,/'object','bonus'\]\.includes\(c\.category\)/);const hp=fs.readFileSync(path.join(root,'base44/functions/gameHtml/htmlPatches.ts'),'utf8');assert.match(hp,/if\(b\.debt\)G\.pendDebt\[side\]=b\.debt;else if\(b\.id==="pre"\)G\.pendDebt\[side\]=8;/,'applyBonus reads the debt from the data');assert.match(hp,/b\.target\?b\.target==="self":b\.id==="mina"/,'and who pays from the data');
   assert.match(t,/import \{ buildEquipItem \} from '\.\.\/\.\.\/shared\/equipItems\.ts';/);assert.match(t,/\$\{buildEquipItem\.toString\(\)\}/);assert.doesNotMatch(t.slice(a-1500,a),/`/,'no backtick inside the server template');
 });

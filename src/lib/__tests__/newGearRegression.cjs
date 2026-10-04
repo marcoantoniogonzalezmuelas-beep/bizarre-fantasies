@@ -85,11 +85,34 @@ test('SHOP never left without parameters: the server asks only for equipment she
   const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
   assert.match(e,/AbilityImpl\.filter\(\{ effect_type: 'equipment' \}, '-updated_date', 1000\)/);
   assert.doesNotMatch(e,/AbilityImpl\.list\('-updated_date', 2000\)/,'no more 2000-row request that failed silently');
-  assert.match(e,/window\.__bfEquipParamsInfo = \$\{JSON\.stringify\(/);
+  assert.match(e,/window\.__bfEquipParamsInfo = \$\{bfSafeJson\(/);
   assert.match(e,/DB_EQUIP\.forEach\(function\(d\)\{ if \(d && !d\.effect && eq\[d\.card_id\]\) \{ d\.effect = eq\[d\.card_id\]; added\+\+; \} \}\);/);
   assert.match(e,/rebuildEquipmentFromDb\(\);\s*window\.__bfEquipFromPage/,'rebuilt with the page sheets');
   const {checkServerGame}=await load('equipShopCheck.js');
   const r=checkServerGame('x'.repeat(1200)+'window.__bfEquipParamsInfo = {"count":0,"error":"boom"};','', 'v', []);
   assert.deepEqual(r.params,{count:0,error:'boom'});
   assert.match(read('gameDataSync.js'),/AbilityImpl\.list\('-created_date', 1000\)/);
+});
+test('the server code injected in the game can never be broken by card texts, and an equipment rebuild error never leaves the old tables for good',()=>{
+  const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.equal((e.match(/\$\{JSON\.stringify\(/g)||[]).length,0,'every injected value goes through bfSafeJson');
+  assert.ok((e.match(/\$\{bfSafeJson\(/g)||[]).length>=20);
+  // bfSafeJson: un "</script>" o un U+2028 dentro de un texto ya no rompen el bloque, y los datos vuelven iguales
+  const i=e.indexOf('function bfSafeJson(v) {'),j=e.indexOf('}\n',i)+2;
+  const bfSafeJson=new Function(e.slice(i,j)+'; return bfSafeJson;')();
+  const data={a:'texto con </script> dentro',b:'salto\u2028raro'};
+  const code='var X = '+bfSafeJson(data)+';';
+  assert.ok(!code.includes('</script>'));assert.ok(!code.includes('\u2028'));
+  assert.deepEqual(new Function(code+' return X;')(),data);
+  // reconstrucción: cada carta por separado, reintentos y error anotado
+  assert.match(e,/try \{ return buildEquipItem\(c\); \}/);
+  assert.match(e,/try \{ rebuildEquipmentFromDb\(\); window\.__bfEquipSynced = true; \}/);
+  assert.match(e,/if \(window\.__bfEquipTries >= 3\) window\.__bfEquipSynced = true;/);
+  assert.match(e,/\.split\('\\\\n'\)\.slice\(0, 3\)/,'the line break inside the template is escaped (a raw one broke the whole block)');
+});
+test('diagnostic mode (?diag=1): panel with the equipment state inside the game and any code error at load',()=>{
+  const d=read('diagPatch.js');
+  assert.match(d,/window\.addEventListener\('error',function\(ev\)\{/);assert.match(d,/error_type:'script_error'/);
+  assert.match(d,/Tienda construida desde la base de datos/);assert.match(read('gameInject.js'),/INVITE_PATCH \+ DIAG_PATCH/);
+  assert.match(read('../pages/Home.jsx'),/get\('diag'\)\) setTimeout\(\(\) => iframeRef\.current\?\.contentWindow\?\.postMessage\(\{ bfDiag: true \}, '\*'\), 2500\)/);
 });

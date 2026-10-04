@@ -77,3 +77,23 @@ test('BALANCE: win rate per hero from match results (only with 5+ games), shown 
   assert.match(read('../hooks/useHeroStats.js'),/base44\.entities\.MatchResult\.list\('-created_date', 3000\)/);
   assert.match(read('../components/admin/heroes/HeroStatRow.jsx'),/\$\{winRate\}% victorias/);
 });
+test('STATS: hero win ranking (with survival and elite), gear by category, players vs each AI level, summary',async()=>{
+  const S=await import(pathToFileURL(lib('adminStats.js')).href);
+  const R=[];for(let i=0;i<6;i++)R.push({mode:'ia',ai_level:'novice',loser_is_ai:true,winner_heroes:[{name:'Xabierus',died:false},{name:'Boss',died:true,elite:true}],loser_heroes:[{name:'Vap',died:true,elite:true}]});
+  R.push({mode:'ia',ai_level:'novice',winner_is_ai:true,winner_heroes:[{name:'Vap',died:false}],loser_heroes:[{name:'Xabierus',died:true},{name:'Boss',died:true}]});
+  const h=Object.fromEntries(S.heroRanking(R).map(x=>[x.key,x]));
+  assert.deepEqual([h.xabierus.winRate,h.xabierus.survivalRate,h.boss.eliteRate,h.vap.winRate],[86,86,86,14]);
+  const L=[];for(let i=0;i<6;i++)L.push({player_won:i<5,duration_seconds:300,turns_played:8,items_bought:[{name:'Hacha de Guerra',side:'p'},{name:'Bola de Fuego',side:'o'},{name:'p',side:'p'}]});
+  const g=Object.fromEntries(S.gearRanking(L,[{name:'Hacha de Guerra',category:'melee_weapon'},{name:'Bola de Fuego',category:'spell'}]).map(x=>[x.key,x]));
+  assert.deepEqual([g['hacha de guerra'].used,g['hacha de guerra'].winRate,g['bola de fuego'].winRate],[6,83,17],'opponent gear wins when the player loses');
+  assert.ok(!g.p,'old broken records ("p") are ignored');
+  assert.deepEqual(S.aiStats(R)[0],{level:'novice',games:7,humanWins:6,humanWinRate:86});
+  assert.deepEqual([S.summaryStats(R,L).avgSeconds,S.summaryStats(R,L).avgRounds],[300,8]);
+  assert.match(read('../pages/AdminHeroStats.jsx'),/<StatsDashboard results=\{results\} logs=\{logs\} cards=\{cards\} \/>/);
+});
+test('GAME LOG: the gear of BOTH sides is saved when the battle starts (before: the side "p" was saved instead of the card)',()=>{
+  const p=read('gameLogPatch.js');
+  assert.match(p,/function startLog\(\)\{battleStart=Date\.now\(\);itemsBought=gearSnapshot\(\);/);
+  assert.match(p,/\[h\.mwep,h\.rwep,h\.armor\]\.forEach/);assert.match(p,/G\.spellbook&&G\.spellbook\[side\]/);assert.match(p,/G\.items&&G\.items\[side\]/);
+  assert.doesNotMatch(p,/var item=arguments\[0\]\|\|arguments\[1\]/,'the broken purchase tracking is gone');
+});
