@@ -39,6 +39,7 @@ export const MONKGETA_ABILITY_PATCH = `
   };return true;}
   function installDamage(){if(window.__bfMonkgetaDamage||typeof dealDamage!=='function')return false;window.__bfMonkgetaDamage=1;var original=dealDamage;window.dealDamage=function(target,amount,opts){
     var attacker=B&&B.current&&getHero(B.current.side,B.current.id),kind=opts&&opts.type;
+    var calledTarget=target;
     var sess=window.__bfDisSess;
     if(sess&&sess.attacker===attacker&&(kind==='melee'||kind==='ranged'||kind==='spell')&&target){
       // Misma acción (varios impactos / área): el dado ya decidió, todo el ataque sigue esa decisión.
@@ -54,6 +55,9 @@ export const MONKGETA_ABILITY_PATCH = `
       window.__bfDisSess={attacker:attacker,roll:roll,orig:orig,origId:orig.id,dest:target};setTimeout(function(){window.__bfDisSess=null;},0);
       attacker._bfDisoriented=0;pushLog('li','Dado de DESORIENTADO: '+roll+'. El ataque va contra '+target.name+'.');
     }
+    // Golpe redirigido: se anota quién lo recibe DE VERDAD para que el número de daño salga sobre él y no sobre el
+    // objetivo original (Surucho desorientado golpea a Nosumes: el -X salía sobre Monkgeta).
+    if(target!==calledTarget){window.__bfDmgRedirect={from:calledTarget,to:target};setTimeout(function(){window.__bfDmgRedirect=null;},0);}
     // Invisible (Monkgeta élite o El Anillo): no le afecta NINGÚN daño, ni de
     // rivales ni de efectos pasivos (veneno, quemadura, rebotes…).
     if(target&&target._bfInvisible){clean(target);pushFx({k:'miss',side:sideOf(target),id:target.id});pushLog('li',target.name+' es INVISIBLE: el daño no le afecta.');return 0;}
