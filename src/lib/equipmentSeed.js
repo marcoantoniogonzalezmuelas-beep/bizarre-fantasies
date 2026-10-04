@@ -488,7 +488,8 @@ export const EQUIPMENT_SEED = [
    "v": 1,
    "kind": "bf_drain",
    "val": 0,
-   "drain": 15
+   "drain": 15,
+   "max_copies": 1
   }
  },
  {
@@ -499,7 +500,8 @@ export const EQUIPMENT_SEED = [
    "kind": "bf_ring",
    "val": 0,
    "element": "arcano",
-   "type": "arcano"
+   "type": "arcano",
+   "max_copies": 1
   }
  },
  {
@@ -649,4 +651,4 @@ export const EQUIPMENT_SEED = [
    "target": "rival"
   }
  }
-];
+]

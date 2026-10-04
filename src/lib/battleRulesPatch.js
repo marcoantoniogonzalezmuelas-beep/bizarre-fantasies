@@ -196,7 +196,9 @@ export const BATTLE_RULES_PATCH = `
         if(typeof B!=='undefined'&&B&&B.current&&typeof G!=='undefined'&&G&&G.items){
           var side=B.current.side;
           var item=G.items[side]&&G.items[side][idx];
-          if(item&&item._bfRecoveredEq){
+          // El equipo recuperado lo gestiona recoveredEquipPatch (eliges a qué aliado se lo pones); este atajo
+          // (equiparlo siempre en el héroe del turno) solo actúa si ese parche no está.
+          if(item&&item._bfRecoveredEq&&!window.__bfRecoveredEquip){
             var hero=(typeof getHero==='function')?getHero(side,B.current.id):null;
             if(hero){
               // El equipo viejo del mismo slot va al descarte

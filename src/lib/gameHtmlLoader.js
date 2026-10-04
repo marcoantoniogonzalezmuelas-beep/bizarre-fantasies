@@ -7,7 +7,7 @@ import { createGameHtmlStore, idbBackend } from '@/lib/gameHtmlCache';
 //   load(n>1): es un reintento tras un fallo: se descarta la copia local (por si estuviera dañada).
 //   warm():  main.jsx lo llama al arrancar: si NO hay copia, empieza ya la descarga, en paralelo con la
 //            comprobación de autenticación (antes Home no pedía el HTML hasta que esa terminaba).
-export function createGameHtmlLoader({ invoke, store, version, getStamp = async () => '', stampTimeoutMs = 1200, now = () => Date.now(), preloadMaxAgeMs = 60000 }) {
+export function createGameHtmlLoader({ invoke, store, version, getStamp = async () => '', stampTimeoutMs = 3000, now = () => Date.now(), preloadMaxAgeMs = 60000 }) {
   let preload = null;
   // Marca de la base de datos de cartas (con límite de tiempo: si no se puede leer, se sigue sin ella).
   const readStamp = () => Promise.race([Promise.resolve().then(getStamp).catch(() => ''), new Promise((r) => setTimeout(() => r(''), stampTimeoutMs))]);
@@ -54,7 +54,7 @@ export function createGameHtmlLoader({ invoke, store, version, getStamp = async 
 
 // Versión del cliente: cámbiala SIEMPRE que cambie el HTML del servidor o los parches que lo esperan
 // (invalida las copias guardadas). Debe coincidir con GAME_PATCH_VERSION de base44/functions/gameHtml.
-export const GAME_HTML_VERSION = 'bf-2026-10-05-cineav-v239';
+export const GAME_HTML_VERSION = 'bf-2026-10-06-cardno-v242';
 
 export const gameHtmlLoader = createGameHtmlLoader({
   invoke: (name, payload) => base44.functions.invoke(name, payload),
