@@ -59,7 +59,7 @@ test('INVITE: "Invitar con enlace" in the room wait screen (link /?sala=CODE, no
   assert.match(p,/var link=origin\(\)\+'\/\?sala='\+encodeURIComponent\(code\);/);assert.doesNotMatch(p,/sala='\+[^;]*NET\.pass/,'the password never goes in the link');
   assert.match(p,/if\(stage==='hostwait'\)/);assert.match(p,/joinRoomFromList\(room\.id,!!room\.hasPass\)/);
   const h=read('../pages/Home.jsx');
-  assert.match(h,/new URLSearchParams\(window\.location\.search\)\.get\('sala'\)/);assert.match(h,/postMessage\(\{ bfJoinRoom: code \}, '\*'\)/);assert.match(h,/u\.searchParams\.delete\('sala'\)/,'the link is used once');
+  assert.match(h,/new URLSearchParams\(window\.location\.search\)\.get\('sala'\)/);assert.match(h,/w\.postMessage\(\{ bfJoinRoom: inviteRef\.current \}, '\*'\)/);assert.match(h,/\['sala', 'habitacion', 'msala'\]\.forEach\(\(k\) => u\.searchParams\.delete\(k\)\)/,'the link is cleaned once the game confirms');
   assert.match(h,/clipboard-write; web-share"/);assert.match(read('gameInject.js'),/NEW_GEAR_PATCH \+ INVITE_PATCH/);
 });
 test('SHARE RESULT: image with VICTORY/DEFEAT, both players and the 3 + 3 heroes; shared on mobile, downloaded on desktop',()=>{
@@ -109,4 +109,22 @@ test('INVITE LINKS everywhere with the public address: own room card (normal MP)
   assert.match(read('../components/missions/MissionsOverlay.jsx'),/if \(pending && !s\.session\.replay\) setMpMode\(true\);/);
   const h=read('../pages/Home.jsx');
   assert.match(h,/get\('habitacion'\) === 'bizarra'/);assert.match(h,/sessionStorage\.setItem\('bfPendingMissionRoom', c\)/);assert.match(h,/Te han invitado a una sala de misión/);
+});
+test('INVITE LINKS take you IN: re-sent on every game load until the game confirms; lobby entered like the menu; mission link opens the setup with ⚔️ Misiones highlighted',()=>{
+  const h=read('../pages/Home.jsx');
+  assert.match(h,/inviteTimerRef\.current = setInterval\(sendInvite, 2000\);/,'re-sent every 2 s (the game may load twice)');
+  assert.match(h,/const h = e\.data && e\.data\.bfInviteHandled;/,'until the game confirms');
+  const p=read('invitePatch.js');
+  assert.match(p,/if\(typeof window\.enterLobby==='function'\)window\.enterLobby\(\);/);
+  assert.match(p,/ack\('sala',code\);/);assert.match(p,/ack\('msala',mcode\);/);assert.match(p,/ack\('habitacion','bizarra'\);/);
+  assert.match(p,/if\(typeof window\.goSetup==='function'\)window\.goSetup\(\);/);assert.match(p,/btn\.classList\.add\('bf-invite-pulse'\)/);
+});
+test('SHARE IMAGE: portraits as rounded cards framed from the TOP (the centred circle cut heads off)',()=>{
+  const p=read('invitePatch.js');
+  assert.match(p,/function card\(ctx,im,name,x,y,w,h,gold\)\{/);assert.doesNotMatch(p,/function circle\(/);
+  assert.match(p,/ctx\.drawImage\(im,x\+\(w-dw\)\/2,y,dw,dh\);/,'image anchored at the top: heads always visible');
+});
+test('mission MP slow start (> 8 s from "ready" to equipment) is recorded with its timings',()=>{
+  const s=read('../components/missions/useMissionSession.js');
+  assert.match(s,/startTimes\.current = \{ t0: Date\.now\(\), role: cfg\.role, hosted: 0 \};/);assert.match(s,/\[mission_slow_start\]/);assert.match(s,/if \(st && total > 8000\)/);
 });

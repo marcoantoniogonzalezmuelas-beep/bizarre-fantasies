@@ -246,3 +246,11 @@ test('NO RE-WRAPPING (2): showResult, flushFx and useItem hooks are installed on
   const w=read('endGameWaitCalmPatch.js');for(const k of ['__bfOnceWC_endCine','__bfOnceWC_result','__bfOnceWC_show'])assert.ok(w.includes('window.'+k+' = 1;'),k);
   assert.doesNotMatch(read('endGameWaitCalmPatch.js'),/if\(typeof orig !== 'function' \|\| orig\.__bfWaitCalm\) return false;/);
 });
+test('ONLINE CATCH-UP: a guest that falls behind because of piled-up animations drops the stale ones at the first mismatching heartbeat; heartbeat every 1.5 s',()=>{
+  const r=read('serverRelayPatch.js');
+  assert.match(r,/if \(mismatchRun === 1\) \{/);
+  assert.match(r,/if \(busyHere\) \{\s*if \(typeof window\.__bfPurgeCine === 'function'\) window\.__bfPurgeCine\(\);\s*if \(typeof window\.__bfClearIndicators === 'function'\) window\.__bfClearIndicators\(\);/,'only when the guest is busy with animations');
+  assert.match(r,/reportRelayError\('turn_catchup', 'resync'/);assert.match(r,/\}, 1500\);   \/\/ latido más frecuente/);
+  assert.match(read('combatIndicatorSequencePatch.js'),/window\.__bfClearIndicators=function\(\)\{ waiting=\[\]; visible\.forEach\(remove\); visible=\[\]; quietSince=0; \};/);
+  assert.match(read('abilityAnimPatch.js'),/window\.__bfPurgeCine=purgeCine;/);
+});
