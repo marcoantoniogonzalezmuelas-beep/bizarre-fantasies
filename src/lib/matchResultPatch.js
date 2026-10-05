@@ -49,7 +49,7 @@ export const MATCH_RESULT_PATCH = `
     }catch(e){}
   }
   function install(){
-    if(typeof window.showResult!=='function'||window.showResult.__bfStats)return false;
+    if(window.__bfOnce__bfStats_showResult||typeof window.showResult!=='function')return false; window.__bfOnce__bfStats_showResult=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig=window.showResult;
     window.showResult=function(youWin){report(youWin);return orig.apply(this,arguments);};
     window.showResult.__bfStats=1;

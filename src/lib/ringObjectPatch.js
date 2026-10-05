@@ -37,7 +37,7 @@ export const RING_OBJECT_PATCH = `
   }
 
   function hookUse(){
-    if(typeof window.useItem !== 'function' || window.useItem.__bfRing) return false;
+    if(window.__bfOnce__bfRing_useItem||typeof window.useItem!=='function')return false; window.__bfOnce__bfRing_useItem=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.useItem;
     var wrapped = function(idx){
       try{
@@ -59,7 +59,7 @@ export const RING_OBJECT_PATCH = `
   }
 
   function hookUseAI(){
-    if(typeof window.useItem_AI !== 'function' || window.useItem_AI.__bfRing) return false;
+    if(window.__bfOnce__bfRing_useItem_AI||typeof window.useItem_AI!=='function')return false; window.__bfOnce__bfRing_useItem_AI=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.useItem_AI;
     var wrapped = function(side, idx){
       try{
@@ -80,7 +80,7 @@ export const RING_OBJECT_PATCH = `
 
   // Solo se puede comprar UNA unidad de El Anillo en la fase de equipamiento.
   function hookBuy(){
-    if(typeof window.buyObject !== 'function' || window.buyObject.__bfRingBuy) return false;
+    if(window.__bfOnce__bfRingBuy_buyObject||typeof window.buyObject!=='function')return false; window.__bfOnce__bfRingBuy_buyObject=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.buyObject;
     var wrapped = function(side, id){
       try{

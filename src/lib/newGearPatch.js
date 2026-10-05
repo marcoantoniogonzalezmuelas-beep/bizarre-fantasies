@@ -94,7 +94,7 @@ export const NEW_GEAR_PATCH = `
             h._bfPoisonRound=B.round;
             var p=h._bfPoison;p.turns--;
             try{ pushFx({k:'status',side:slot.side,id:h.id,txt:'\\u2620\\ufe0f'}); }catch(e){}
-            var got=window.dealDamage(h,p.dmg,{type:'true',bfGear:true,bfPoison:true});
+            var got=window.dealDamage(h,p.dmg,{type:'true',bfGear:true,bfPoison:true,bfFrom:(p.srcSide&&p.srcId)?{side:p.srcSide,id:p.srcId}:null});   // quien lanzó el veneno
             if(typeof window.__bfPoisonPop==='function')window.__bfPoisonPop({side:slot.side,id:h.id,tick:1,dmg:got||0,turns:p.turns});
             if(typeof pushLog==='function')pushLog('ld','\\u2620\\ufe0f '+h.name+' sufre el veneno (-'+(got||0)+')'+(p.turns>0?'. Le quedan '+p.turns+' turno'+(p.turns>1?'s':'')+'.':' y se le pasa.'));
             if(p.turns<=0)h._bfPoison=null;

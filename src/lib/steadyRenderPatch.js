@@ -14,6 +14,7 @@ export const STEADY_RENDER_PATCH = `
   // mano bloqueada, si hay algo pendiente, los descartes). Si no cambia, la mano ya pintada se conserva tal cual.
   // Huella del estado con el que se pintó la mano que hay ahora en pantalla (se guarda al terminar cada repintado).
   var paintedSig={p:null,o:null};
+  if(window.bfOnMatchReset)window.bfOnMatchReset(function(){ paintedSig={p:null,o:null}; });
   function handSig(side){
     try{
       var cur=(typeof B!=='undefined'&&B)?B.current:null,h=(cur&&typeof getHero==='function')?getHero(cur.side,cur.id):null;

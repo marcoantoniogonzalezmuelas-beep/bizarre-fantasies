@@ -184,7 +184,7 @@ export const MATCH_SCORE_PATCH = `
 
   // ---- Hook showResult: solo suma el bando local (o el host en online) ----
   function install(){
-    if(typeof window.showResult!=='function'||window.showResult.__bfScore)return false;
+    if(window.__bfOnce__bfScore_showResult||typeof window.showResult!=='function')return false; window.__bfOnce__bfScore_showResult=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig=window.showResult;
     window.showResult=function(youWin){
       try{
