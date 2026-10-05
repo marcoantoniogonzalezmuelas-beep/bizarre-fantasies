@@ -65,7 +65,39 @@ export const INVITE_PATCH = `
       if(tries>=40){ clearInterval(iv); say('No encuentro la sala '+code+': puede que ya haya empezado o se haya cerrado.'); }
     },500);
   }
-  window.addEventListener('message',function(e){ if(e&&e.data&&e.data.bfJoinRoom)joinByLink(e.data.bfJoinRoom); });
+  window.addEventListener('message',function(e){
+    if(e&&e.data&&e.data.bfJoinRoom)joinByLink(e.data.bfJoinRoom);
+    if(e&&e.data&&e.data.bfOpenBizarreRoom){ var tries=0; (function open(){ if(typeof window.bfOpenBizarreRoom==='function'){ try{ if(typeof show==='function')show('s-home'); }catch(x){} window.bfOpenBizarreRoom(); return; } if(++tries<40)setTimeout(open,250); })(); }
+  });
+  // Habitación Bizarra: enlace que la abre directamente a quien lo recibe.
+  window.bfInviteBizarre=function(){
+    var link=origin()+'/?habitacion=bizarra',text='\u00a1Ven a la Habitaci\u00f3n Bizarra de Bizarre Fantasies y echamos una partida!';
+    var n=nav();
+    if(n&&typeof n.share==='function'){ n.share({title:'Bizarre Fantasies',text:text,url:link}).catch(function(){}); return; }
+    try{ if(n&&n.clipboard){ n.clipboard.writeText(text+' '+link).then(function(){ say('\u{1F517} Enlace copiado: p\u00e9galo en WhatsApp o donde quieras.'); },function(){ window.prompt('Copia el enlace:',link); }); return; } }catch(e){}
+    window.prompt('Copia el enlace:',link);
+  };
+  // Botones de invitar donde de verdad se ven: en TU sala de la lista (tras crearla te quedas en la lista, no en la
+  // pantalla de espera) y arriba en la Habitación Bizarra.
+  function decorateInvites(){
+    try{
+      if(typeof NET!=='undefined'&&NET.role==='host'&&NET.code){
+        document.querySelectorAll('.room-card').forEach(function(card){
+          var c=card.querySelector('.room-sub b');
+          if(!c||c.textContent.trim()!==NET.code||card.querySelector('.bf-invite-own'))return;
+          var b=document.createElement('button');b.className='btn sm primary bf-invite-own';b.style.marginLeft='6px';b.textContent='\u{1F517} Invitar';
+          b.onclick=function(ev){ ev.stopPropagation(); window.bfInvite(); };
+          var join=card.querySelector('button');(join&&join.parentNode?join.parentNode:card).appendChild(b);
+        });
+      }
+      var ov=document.getElementById('bf-bizarre-overlay');
+      if(ov&&!document.getElementById('bf-biz-invite')){
+        var bar=ov.querySelector('.bf-biz-topbar');
+        if(bar){ var b2=document.createElement('button');b2.id='bf-biz-invite';b2.className='bf-biz-x';b2.title='Invitar a la Habitaci\u00f3n Bizarra';b2.textContent='\u{1F517}';b2.onclick=function(){ window.bfInviteBizarre(); };
+          if(bar.firstElementChild&&bar.firstElementChild.tagName==='DIV'&&!bar.firstElementChild.className)bar.replaceChild(b2,bar.firstElementChild);else bar.insertBefore(b2,bar.firstChild); }
+      }
+    }catch(e){}
+  }
 
   // ---------- Compartir resultado ----------
   function loadImg(url){
@@ -136,7 +168,7 @@ export const INVITE_PATCH = `
     b.textContent='\\u{1F4F8} Compartir resultado';b.onclick=function(){ window.bfShareResult(); };
     s.appendChild(b);
   }
-  setInterval(function(){ hookLobby(); addShareButton(); },600);
+  setInterval(function(){ hookLobby(); addShareButton(); decorateInvites(); },600);
 })();
 </script>
 `;
