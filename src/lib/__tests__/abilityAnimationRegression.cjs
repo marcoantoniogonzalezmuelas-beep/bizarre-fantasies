@@ -34,4 +34,9 @@ test('disabled cinematics do not block or consume an unused form',()=>{
 test('sabotage or a fumble consumes no animation and does not suppress elite',()=>{
  const f=setup(),h=f.hero();f.assets({bagslord:{base:'base.png',elite:'elite.png'}});h.abilityUsed=true;h._bfAbilityCineSuppressed='normal';f.c.G.team.p=[h];f.tick(600);assert.equal(f.overlays.length,0);
  h.eliteMode=true;f.tick(150);assert.equal(f.overlays.length,1);
+});test('Anim OFF queues nothing: abilities used while OFF are NOT played when switching back ON; new ones are',()=>{
+ const f=setup(),h=f.hero(),h2=f.hero('otro');f.assets({bagslord:{base:'base.png'},otro:{base:'otro.png'}});f.c.G.team.p=[h,h2];f.tick(300);
+ f.c.__bfNoCinematics=true;h.abilityUsed=true;f.tick(600);assert.equal(f.overlays.length,0,'nothing plays while OFF');
+ f.c.__bfNoCinematics=false;f.tick(6000);assert.equal(f.overlays.length,0,'switching ON does not replay the ability used while OFF');
+ h2.abilityUsed=true;f.tick(600);assert.equal(f.overlays.length,1,'an ability used after switching ON is played');assert.match(f.overlays[0],/NORMAL OTRO/);
 });

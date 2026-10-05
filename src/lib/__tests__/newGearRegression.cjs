@@ -143,3 +143,20 @@ test('diagnostic panel shows, live, whose turn it is and what the game is waitin
   assert.match(d,/'TURNO: '\+turn/);assert.match(d,/waits\.push\('CINEM/);assert.match(d,/waits\.push\('CARTELES'\)/);assert.match(d,/waits\.push\('GOLPE MORTAL'\)/);
   assert.match(d,/efectos en pantalla: '\+fxN/);
 });
+test('ANIMATIONS can never block a turn: old leftovers ignored, failed mount released, 12 s absolute cap (with a diagnostic)',()=>{
+  const a=read('abilityAnimPatch.js');
+  assert.match(a,/if\(now-n\.__bfSeen<2500\)\{ recentFx=true; break; \}/,'only RECENT effects block the queue (an old leftover blocked it forever)');
+  assert.match(a,/catch\(e\)\{ playingUrl=null;/,'a cinematic that fails to mount is released');
+  assert.match(a,/if\(Date\.now\(\)-busySince>12000\)\{/);assert.match(a,/error_type:'cine_stuck'/);
+});
+test('STEADY RENDER: the hand is kept when nothing it shows changed, rebuilt otherwise; only the outermost render layer acts',()=>{
+  const s=read('steadyRenderPatch.js');
+  assert.match(s,/if\(depth>0\)return orig\.apply\(this,arguments\);/,'nested wrappers no longer bring back an old hand');
+  assert.match(s,/paintedSig\[side\]!==null&&paintedSig\[side\]===now\)cur\.parentNode\.replaceChild\(old\.node,cur\);/);
+  assert.match(s,/if\(first\)\['p','o'\]\.forEach/,'the hand is decided only in the first pass');
+  for(const k of ['G.spellbook','G.items','cur.side','h.mana','B.pending','itemDescarte','spellDescarte'])assert.ok(s.includes(k),'hand fingerprint includes '+k);
+  assert.match(read('gameInject.js'),/DIAG_PATCH \+ STEADY_RENDER_PATCH/);
+});
+test('shared result image and invite link use the PUBLIC address',()=>{
+  const p=read('invitePatch.js');assert.match(p,/var PUBLIC_URL='https:\/\/bizarrefantasies\.cronicasvetustas\.com';/);assert.match(p,/function origin\(\)\{ return PUBLIC_URL; \}/);
+});
