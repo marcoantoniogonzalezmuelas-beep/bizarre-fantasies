@@ -188,3 +188,28 @@ test('RESULT SCREEN: heals itself when shown empty, one centred row "Volver a ju
   const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
   assert.match(e,/\.bf-cine-side\{display:flex;flex-direction:column;align-items:stretch;/);assert.match(e,/\.bf-cine-side>\.bf-cine-team\{width:100%\}/);
 });
+test('NO RE-WRAPPING: hooks are installed ONCE (re-installing every 0.5 s stacked thousands of layers → "too much recursion" and stuck turns)',()=>{
+  const once={
+    'rebirthAbilityPatch.js':[/if\(hookedUse\|\|typeof cur!=='function'\)return;/,/if\(!keep\.rb&&typeof window\.renderBattle==='function'\)\{ keep\.rb=1;/],
+    'drawRulePatch.js':[/if\(hooked\|\|typeof cur!=='function'\)return;/],
+    'steadyRenderPatch.js':[/if\(hooked\|\|typeof window\.renderBattle!=='function'\)return;/],
+    'equipHandPatch.js':[/if\(hooked\|\|typeof window\.renderEquip!=='function'\)return;/],
+    'invitePatch.js':[/if\(hookedLobby\|\|typeof window\.renderLobby!=='function'\)return false;/],
+    'newGearPatch.js':[/if\(H\.dd\|\|typeof window\.dealDamage!=='function'\)return false; H\.dd=1;/,/if\(H\.fp\|\|typeof window\.flushFx!=='function'\)return false; H\.fp=1;/],
+    'bluffFxPatch.js':[/if\(hookedFx\)return true;/],
+    'rivalHandBackPatch.js':[/if\(ONCE\[name\]\) return true;/],'tableMatPatch.js':[/if\(ONCE\[name\]\) return true;/],
+    'battleAnimePatch.js':[/if\(ONCE\.rb\|\|typeof window\.renderBattle!=='function'\)return;/],
+    'deadHeroSkipPatch.js':[/!ONCE\.useAbility\)\{ ONCE\.useAbility = 1;/,/!ONCE\[fn\]\)\{ ONCE\[fn\] = 1;/],
+    'battleRulesPatch.js':[/if\(ONCE\.ab\|\|typeof window\.useAbility!=='function'\)return;/,/if\(ONCE\.rb\|\|typeof window\.renderBattle!=='function'\)return;/],
+    'junianaAbilityPatch.js':[/if\(window\.__bfJunianaHooked\) return true;/,/if\(window\.__bfJunRefractOnce\) return true;/],
+  };
+  for(const [f,res] of Object.entries(once))for(const re of res)assert.match(read(f),re,f);
+  assert.doesNotMatch(read('steadyRenderPatch.js'),/setInterval\(hook,700\);/);assert.doesNotMatch(read('rebirthAbilityPatch.js'),/setInterval\(keepMana,500\);/);
+});
+test('the AI hitting an already-used elite ability closes its action instead of hanging the turn; battle hands use the light mat',()=>{
+  const b=read('battleRulesPatch.js');
+  assert.match(b,/if\(!ai\)\{ if\(typeof notif==='function'\)notif\(blockedMsg\); return; \}/,'a person just sees the notice');
+  assert.match(b,/if\(typeof done==='function'\)return done\(\);/,'the AI closes its action');
+  const t=read('tableMatPatch.js');assert.match(t,/var LIGHT_MAT='url\("'\+DOODLES\+'"\) repeat/);assert.match(t,/h\.style\.background = LIGHT_MAT;/);
+  assert.match(read('equipHandPatch.js'),/#s-battle \.hand-under-action,#s-battle \.hand-rival,#s-battle \.bf-discard-pile\{background:url\("'\+DOODLES\+'"\)/);
+});
