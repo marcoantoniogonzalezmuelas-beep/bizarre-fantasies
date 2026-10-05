@@ -160,3 +160,31 @@ test('STEADY RENDER: the hand is kept when nothing it shows changed, rebuilt oth
 test('shared result image and invite link use the PUBLIC address',()=>{
   const p=read('invitePatch.js');assert.match(p,/var PUBLIC_URL='https:\/\/bizarrefantasies\.cronicasvetustas\.com';/);assert.match(p,/function origin\(\)\{ return PUBLIC_URL; \}/);
 });
+test('EQUIP HAND: bought cards no longer flash (kept cards reused, the new one gets its art at once), hand stretches to the last shop row, lighter humorous mat',()=>{
+  const p=read('equipHandPatch.js');
+  assert.match(p,/if\(nx&&ox\)ox\.setAttribute\('onclick',nx\.getAttribute\('onclick'\)\|\|''\);/,'the kept card gets its new hand index for the return button');
+  assert.match(p,/if\(typeof window\.__bfInjectHandArt==='function'\)window\.__bfInjectHandArt\(\);/);
+  assert.match(p,/@media \(min-width:761px\)\{#s-equip \.eq-grid\{align-items:stretch!important\}/);assert.match(p,/#s-equip \.eq-grid \.eq-hand-box\{flex:1 1 auto\}/);
+  assert.match(p,/Hechizos en la manga/);assert.match(p,/Cachivaches del bolsillo/);assert.match(p,/if\(depth>0\)return orig\.apply\(this,arguments\);/);
+  assert.match(fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8'),/window\.__bfInjectHandArt = function\(\)\{ try \{ injectHandArt\(\); \} catch \(e\) \{\} \};/);
+  assert.match(read('gameInject.js'),/STEADY_RENDER_PATCH \+ EQUIP_HAND_PATCH/);
+});
+test('POISON caption, readable like the fumble or skipped-turn ones: "¡ENVENENADO!" when poisoned and "VENENO -X" on each tick; the turn waits for it; the online rival sees it',()=>{
+  const g=read('newGearPatch.js');
+  assert.match(g,/window\.__bfQueueIndicator\(function\(\)\{ return poisonPaint\(ev\.side,ev\.id,title,sub\); \},ev\.tick\?3600:4800\)/,'goes through the readable captions queue');
+  assert.match(g,/ENVENENADO!/);assert.match(g,/VENENO -/);
+  assert.match(g,/if\(ev&&ev\.k==='bfpoison'&&\(client\|\|!ev\.bfShownLocal\)\)poisonPop\(ev\);/,'synced to the guest, not repeated on the host');
+  assert.match(g,/window\.__bfPoisonPop\(\{side:slot\.side,id:h\.id,tick:1,dmg:got\|\|0,turns:p\.turns\}\)/);
+  assert.match(read('abilityImplPatch.js'),/window\.__bfPoisonPop\(\{ side: tSide\(t\), id: t\.id, dmg: t\._bfPoison\.dmg, turns: t\._bfPoison\.turns \}\)/);
+});
+test('RESULT SCREEN: heals itself when shown empty, one centred row "Volver a jugar" + "Compartir resultado", no second "Salir"; END ANIMATION heroes never collapse to zero width',()=>{
+  const r=read('resultScreenPatch.js');
+  assert.match(r,/if\(s\.querySelector\('\.gtitle'\)\|\|typeof G==='undefined'\|\|!G\|\|!G\._result\)return;/,'only an EMPTY result screen is rebuilt');
+  assert.match(r,/onclick="'\+\(on\?'bfMatchRematch\(\)':'bfRematch\(\)'\)\+'"/,'online asks for the rematch, vs AI starts a new match (auction)');
+  assert.match(r,/var ex=document\.getElementById\('bf-exit-btn'\);if\(ex&&ex\.parentNode\)ex\.parentNode\.removeChild\(ex\);/);
+  assert.match(r,/if\(share&&share\.parentNode!==row\)row\.appendChild\(share\);/);assert.match(r,/isMissions/);
+  assert.doesNotMatch(read('rematchPatch.js'),/\n    ensureExit\(root\);\n/,'the rematch patch no longer adds a second "Salir"');
+  assert.match(read('gameInject.js'),/EQUIP_HAND_PATCH \+ RESULT_SCREEN_PATCH/);
+  const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(e,/\.bf-cine-side\{display:flex;flex-direction:column;align-items:stretch;/);assert.match(e,/\.bf-cine-side>\.bf-cine-team\{width:100%\}/);
+});
