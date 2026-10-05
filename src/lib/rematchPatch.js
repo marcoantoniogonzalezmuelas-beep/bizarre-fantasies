@@ -152,7 +152,7 @@ export const REMATCH_PATCH = `
       b.setAttribute('onclick','bfRematch()');
       b.textContent='🔁 Volver a jugar';
     });
-    ensureExit(root);
+    // (Ya no se añade un segundo "Salir": está el "⌂ Salir" fijo de arriba. Ver resultScreenPatch.)
   }
 
   // Partida individual (contra la IA o local, que no sea misión ni demo): además de volver a jugar,

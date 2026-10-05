@@ -93,6 +93,7 @@ export const NEW_GEAR_PATCH = `
             var p=h._bfPoison;p.turns--;
             try{ pushFx({k:'status',side:slot.side,id:h.id,txt:'\\u2620\\ufe0f'}); }catch(e){}
             var got=window.dealDamage(h,p.dmg,{type:'true',bfGear:true,bfPoison:true});
+            if(typeof window.__bfPoisonPop==='function')window.__bfPoisonPop({side:slot.side,id:h.id,tick:1,dmg:got||0,turns:p.turns});
             if(typeof pushLog==='function')pushLog('ld','\\u2620\\ufe0f '+h.name+' sufre el veneno (-'+(got||0)+')'+(p.turns>0?'. Le quedan '+p.turns+' turno'+(p.turns>1?'s':'')+'.':' y se le pasa.'));
             if(p.turns<=0)h._bfPoison=null;
             if(typeof renderBattle==='function')renderBattle();
@@ -161,7 +162,45 @@ export const NEW_GEAR_PATCH = `
     };
     w.__bfStaff=1;window.flushFx=w;return true;
   }
-  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(),e1=hookBadges(),f1=hookCleanse(),g1=hookStaffFx(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo&&window.statusBadges&&window.statusBadges.__bfPoison&&window.pushLog&&window.pushLog.__bfPoisonCure&&window.flushFx&&window.flushFx.__bfStaff; }
+  // CARTEL DE VENENO (como la pifia o la pérdida de turno): sale sobre el héroe y el turno espera a que se lea.
+  //   · al envenenar: "☠️ ¡ENVENENADO!" + "-X por turno · N turnos"
+  //   · cada vez que el veneno hace daño: "☠️ VENENO -X" + los turnos que le quedan
+  var pcss=document.createElement('style');
+  pcss.textContent='.bf-poison-pop{position:fixed;z-index:100006;pointer-events:none;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 18px;border-radius:14px;'
+    +"font-family:'Cinzel',serif;font-weight:900;font-size:26px;line-height:1;color:#b9f56a;white-space:nowrap;background:radial-gradient(circle,rgba(20,40,6,.88),rgba(20,40,6,0) 74%);"
+    +'text-shadow:0 0 14px rgba(150,230,60,.95),0 3px 8px #000,0 0 3px #000;animation:bfPoisonPop 4.6s cubic-bezier(.2,.8,.3,1) forwards}'
+    +'.bf-poison-pop small{font-size:14px;font-weight:800;color:#e6ffc8;letter-spacing:1px;text-shadow:0 2px 6px #000}'
+    +'@keyframes bfPoisonPop{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}10%{opacity:1;transform:translate(-50%,-62%) scale(1.14)}18%{transform:translate(-50%,-64%) scale(1)}86%{opacity:1;transform:translate(-50%,-92%) scale(1)}100%{opacity:0;transform:translate(-50%,-140%) scale(1.05)}}';
+  document.head.appendChild(pcss);
+  function poisonPaint(side,id,title,sub){
+    var el=document.getElementById('b_'+side+'_'+id);if(!el)return;
+    var r=el.getBoundingClientRect(),n=document.createElement('div');
+    n.className='bf-poison-pop';n.style.left=(r.left+r.width/2)+'px';n.style.top=(r.top+r.height*0.42)+'px';
+    n.innerHTML='<span>'+title+'</span>'+(sub?'<small>'+sub+'</small>':'');
+    (window.__bfAppend||function(x){document.body.appendChild(x);})(n);
+    setTimeout(function(){ if(n.parentNode)n.parentNode.removeChild(n); },4800);
+    return [n];
+  }
+  function poisonPop(ev){
+    var title=ev.tick?('\u2620\ufe0f VENENO -'+(ev.dmg||0)):'\u2620\ufe0f \u00a1ENVENENADO!';
+    var sub=ev.tick?(ev.turns>0?('le quedan '+ev.turns+' turno'+(ev.turns>1?'s':'')):'se le pasa'):('-'+ev.dmg+' por turno \u00b7 '+ev.turns+' turnos');
+    if(typeof window.__bfQueueIndicator==='function')window.__bfQueueIndicator(function(){ return poisonPaint(ev.side,ev.id,title,sub); },ev.tick?3600:4800);
+    else poisonPaint(ev.side,ev.id,title,sub);
+  }
+  // Se muestra en el momento en esta pantalla y viaja como efecto al rival en línea (sin repetirse aquí).
+  window.__bfPoisonPop=function(ev){
+    try{ poisonPop(ev); ev.bfShownLocal=1; if(typeof pushFx==='function')pushFx(Object.assign({k:'bfpoison'},ev)); }catch(e){}
+  };
+  function hookPoisonFx(){
+    if(typeof window.flushFx!=='function'||window.flushFx.__bfPoisonFx)return false;
+    var o=window.flushFx;
+    var w=function(list){
+      try{ var client=(typeof NET!=='undefined'&&NET.role==='client'); (list||[]).forEach(function(ev){ if(ev&&ev.k==='bfpoison'&&(client||!ev.bfShownLocal))poisonPop(ev); }); }catch(e){}
+      return o.apply(this,arguments);
+    };
+    w.__bfPoisonFx=1;window.flushFx=w;return true;
+  }
+  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(),e1=hookBadges(),f1=hookCleanse(),g1=hookStaffFx(),h1=hookPoisonFx(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo&&window.statusBadges&&window.statusBadges.__bfPoison&&window.pushLog&&window.pushLog.__bfPoisonCure&&window.flushFx&&window.flushFx.__bfStaff&&window.flushFx.__bfPoisonFx; }
   if(!all()){ var iv=setInterval(function(){ if(all())clearInterval(iv); },300); setTimeout(function(){ clearInterval(iv); },15000); }
 })();
 </script>
