@@ -51,6 +51,11 @@ export default function EffectEditor({ category, value, onChange }) {
               <Num name="spell_boost_pct" value={e.spell_boost_pct} onChange={set} />
               <Num name="weakness_bonus_pct" value={e.weakness_bonus_pct} onChange={set} />
               <Num name="toy_crit" value={e.toy_crit} onChange={set} />
+              <label className="col-span-full flex flex-col gap-1 text-[11px] font-bold text-[#cfc6dd]">
+                sprite · imagen recortada del arma para el ataque (dirección de un PNG con fondo transparente; vacío = efecto por defecto)
+                <input type="url" value={e.sprite || ''} onChange={(ev) => set('sprite', ev.target.value.trim() || undefined)} placeholder="https://…/baston-recortado.png"
+                  className="rounded-lg border border-white/15 bg-black/40 px-2 py-1 text-[12px] text-[#efe9dc]" />
+              </label>
               {category === 'melee_weapon' ? <><Num name="he_mult" value={e.he_mult} onChange={set} /><Num name="reach_pct" value={e.reach_pct} onChange={set} /></> : <Num name="shot_he" value={e.shot_he} onChange={set} />}
             </>
           ) : null}
