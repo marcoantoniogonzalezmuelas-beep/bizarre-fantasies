@@ -15,6 +15,10 @@ export const EQUIP_HAND_PATCH = `
     // Tapete ligero (más específico que el tapete oscuro anterior, que sigue en la batalla)
     +'#s-equip .eq-grid .eq-hand-box{background:url("'+DOODLES+'") repeat, radial-gradient(circle at 18% 12%,rgba(255,255,255,.14),transparent 45%), linear-gradient(160deg,#3f3266 0%,#2f4a6b 100%) !important;'
     +'border:2px dashed rgba(255,214,120,.55) !important;border-radius:16px !important;box-shadow:inset 0 0 0 4px rgba(255,255,255,.04),0 6px 18px rgba(0,0,0,.35) !important;padding:10px 12px !important}'
+    // El MISMO tapete en la batalla: tu mano (borde dorado), la del rival (borde violeta) y el mazo de descartes.
+    +'#s-battle .hand-under-action,#s-battle .hand-rival,#s-battle .bf-discard-pile{background:url("'+DOODLES+'") repeat, radial-gradient(circle at 18% 12%,rgba(255,255,255,.14),transparent 45%), linear-gradient(160deg,#3f3266 0%,#2f4a6b 100%) !important;'
+    +'border:2px dashed rgba(255,214,120,.55) !important;border-radius:16px !important;box-shadow:inset 0 0 0 4px rgba(255,255,255,.04),0 6px 18px rgba(0,0,0,.35) !important}'
+    +'#s-battle .hand-rival{border-color:rgba(192,140,255,.6) !important}'
     +'#s-equip .eq-grid .eq-hand-box .hand-lbl{display:inline-block;background:rgba(20,12,36,.55);border:1px solid rgba(255,214,120,.35);border-radius:999px;padding:2px 10px;margin:2px 0 6px;font-size:12px}'
     +'#s-equip .eq-grid .eq-hand-box .bf-hand-empty{color:#e9e2ff;opacity:.75;font-style:italic;font-size:12px;padding:6px 2px}'
     +'#s-equip .eq-grid .eq-hand-box .chip.bf-chip-card{animation:bfHandIn .28s ease-out}'
@@ -61,8 +65,11 @@ export const EQUIP_HAND_PATCH = `
     });
   }
   var depth=0;
+  // Se instala UNA sola vez: reinstalarse cada medio segundo apilaba capas sin fin con otros parches (miles en una partida larga → "too much recursion" y turnos atascados).
+  var hooked=false;
   function hook(){
-    if(typeof window.renderEquip!=='function'||window.renderEquip.__bfHand)return;
+    if(hooked||typeof window.renderEquip!=='function')return;
+    hooked=true;
     var orig=window.renderEquip;
     var w=function(){
       if(depth>0)return orig.apply(this,arguments);
@@ -74,7 +81,7 @@ export const EQUIP_HAND_PATCH = `
     };
     w.__bfHand=1;window.renderEquip=w;
   }
-  hook();setInterval(hook,700);
+  hook();var iv=setInterval(function(){ hook(); if(hooked)clearInterval(iv); },700);
 })();
 </script>
 `;

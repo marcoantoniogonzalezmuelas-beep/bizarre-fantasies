@@ -44,8 +44,11 @@ export const BLUFF_FX_PATCH = `
     if(typeof window.__bfQueueIndicator==='function')window.__bfQueueIndicator(function(){return paint(side,id);},4700);
     else paint(side,id);
   }
+  var hookedFx=false;
   function hook(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfBluff)return false;
+    if(hookedFx)return true;
+    if(typeof window.flushFx!=='function')return false;
+    hookedFx=true;
     var orig=window.flushFx;
     window.flushFx=function(list){
       try{(list||[]).forEach(function(ev){ if(ev&&ev.k==='bfbluff')show(ev.side,ev.id); });}catch(e){}

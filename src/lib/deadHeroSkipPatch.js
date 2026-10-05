@@ -39,9 +39,12 @@ export const DEAD_HERO_SKIP_PATCH = `
     } catch(e){}
   }
 
+  // Instalación ÚNICA de cada gancho (antes se reinstalaba mientras su marca no estuviera arriba del todo y se
+  // turnaba con otros parches: cientos de capas apiladas, "too much recursion" y turnos atascados).
+  var ONCE={};
   // Envuelve las funciones de acción para bloquear héroes muertos.
   function wrapActions(){
-    if(typeof window.castSpell === 'function' && !window.castSpell.__bfDeadCheck){
+    if(typeof window.castSpell === 'function' && !ONCE.castSpell){ ONCE.castSpell = 1;
       var origCast = window.castSpell;
       window.castSpell = function(id){
         var h = curHero();
@@ -50,7 +53,7 @@ export const DEAD_HERO_SKIP_PATCH = `
       };
       window.castSpell.__bfDeadCheck = 1;
     }
-    if(typeof window.useItem === 'function' && !window.useItem.__bfDeadCheck){
+    if(typeof window.useItem === 'function' && !ONCE.useItem){ ONCE.useItem = 1;
       var origItem = window.useItem;
       window.useItem = function(idx){
         var h = curHero();
@@ -59,7 +62,7 @@ export const DEAD_HERO_SKIP_PATCH = `
       };
       window.useItem.__bfDeadCheck = 1;
     }
-    if(typeof window.useAbility === 'function' && !window.useAbility.__bfDeadCheck){
+    if(typeof window.useAbility === 'function' && !ONCE.useAbility){ ONCE.useAbility = 1;
       var origAbil = window.useAbility;
       window.useAbility = function(side, hero, done){
         var h = hero || curHero();
@@ -70,7 +73,7 @@ export const DEAD_HERO_SKIP_PATCH = `
     }
     // Ataque: el juego usa doAttack / attack. Se envuelven ambos si existen.
     ['doAttack','attack'].forEach(function(fn){
-      if(typeof window[fn] === 'function' && !window[fn].__bfDeadCheck){
+      if(typeof window[fn] === 'function' && !ONCE[fn]){ ONCE[fn] = 1;
         var orig = window[fn];
         window[fn] = function(){
           var h = curHero();

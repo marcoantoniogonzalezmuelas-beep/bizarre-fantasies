@@ -140,18 +140,29 @@ export const BATTLE_RULES_PATCH = `
     });
   }
 
+  var ONCE={};   // instalación única de cada gancho (ver nota en rivalHandBackPatch)
   function hookAbilityOnce(){
-    if(typeof window.useAbility!=='function'||window.useAbility.__bfRulesOnce)return;
+    if(ONCE.ab||typeof window.useAbility!=='function')return;
     // Espera a que los demás ganchos de useAbility estén instalados para quedar
     // como capa externa y poder bloquear antes de que disparen animaciones.
     if(!window.__bfAbxHooked||!window.__bfTokenAbilHooked)return;
+    ONCE.ab=1;
     var orig=window.useAbility;
     window.useAbility=function(side,hero,done){
       try{
         if(hero){
           var el=!!hero.eliteMode;
-          if(el&&hero._bfEliteUsed){if(typeof notif==='function')notif('Habilidad élite ya usada en esta batalla');return;}
-          if(!el&&hero._bfNormalUsed){if(typeof notif==='function')notif('Habilidad normal ya usada en esta batalla');return;}
+          // Si es la IA quien choca con la habilidad ya usada, se cierra su acción (antes se devolvía sin cerrarla y
+          // su turno se quedaba esperando hasta que el vigilante lo forzaba). Una persona ve el aviso y elige otra cosa.
+          var blockedMsg=(el&&hero._bfEliteUsed)?'Habilidad élite ya usada en esta batalla':((!el&&hero._bfNormalUsed)?'Habilidad normal ya usada en esta batalla':'');
+          if(blockedMsg){
+            var ai=false;try{ai=(typeof aiCtl==='function'&&aiCtl(side));}catch(e2){}
+            if(!ai){ if(typeof notif==='function')notif(blockedMsg); return; }
+            if(typeof pushLog==='function')pushLog('li',hero.name+': '+blockedMsg.toLowerCase()+'.');
+            if(typeof done==='function')return done();
+            if(typeof finishAct==='function')return finishAct();
+            return;
+          }
         }
       }catch(e){}
       return orig.apply(this,arguments);
@@ -188,8 +199,9 @@ export const BATTLE_RULES_PATCH = `
 
   // ===== 5. Equipo recuperado: equipar gratis desde la mano =====
   function hookUseItemForEquip(){
-    if(typeof window.useItem!=='function'||window.useItem.__bfEqRec)return;
+    if(ONCE.it||typeof window.useItem!=='function')return;
     if(!window.useItem.__bfOfx)return; // espera a que objectFxPatch instale su gancho
+    ONCE.it=1;
     var orig=window.useItem;
     window.useItem=function(idx){
       try{
@@ -220,7 +232,8 @@ export const BATTLE_RULES_PATCH = `
   }
 
   function hookRender(){
-    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfRulesRender)return;
+    if(ONCE.rb||typeof window.renderBattle!=='function')return;
+    ONCE.rb=1;
     var orig=window.renderBattle;
     window.renderBattle=function(){var r=orig.apply(this,arguments);try{setTimeout(greyUsedAbilities,50);}catch(e){}return r;};
     window.renderBattle.__bfRulesRender=1;

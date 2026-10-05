@@ -69,8 +69,10 @@ export const BATTLE_ANIME_PATCH = `
       if(bg&&el.dataset.bfBg!==bg){el.style.backgroundImage=bg;el.dataset.bfBg=bg;}
     });
   }
+  var ONCE={};   // instalación única (ver nota en rivalHandBackPatch)
   function hookRender(){
-    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfAnimeBg)return;
+    if(ONCE.rb||typeof window.renderBattle!=='function')return;
+    ONCE.rb=1;
     var o=window.renderBattle;
     window.renderBattle=function(){o.apply(this,arguments);try{injectBgArt();}catch(e){}};
     window.renderBattle.__bfAnimeBg=1;

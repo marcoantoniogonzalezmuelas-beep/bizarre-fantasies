@@ -7,9 +7,12 @@ export const DRAW_RULE_PATCH = `
 (function(){
   if(window.__bfDrawRule)return;
   window.__bfDrawRule=true;
+  // Se instala UNA sola vez: reinstalarse cada medio segundo apilaba capas sin fin con otros parches (miles en una partida larga → "too much recursion" y turnos atascados).
+  var hooked=false;
   function hook(){
     var cur=window.checkWin;
-    if(typeof cur!=='function'||cur.__bfDraw)return;
+    if(hooked||typeof cur!=='function')return;
+    hooked=true;
     var w=function(){
       try{
         if(typeof B!=='undefined'&&B&&!B.over&&typeof living==='function'&&living('p').length===0&&living('o').length===0){
@@ -34,7 +37,7 @@ export const DRAW_RULE_PATCH = `
     window.checkWin=w;
   }
   hook();
-  setInterval(hook,500);
+  var iv=setInterval(function(){ hook(); if(hooked)clearInterval(iv); },500);
 })();
 </script>
 `;
