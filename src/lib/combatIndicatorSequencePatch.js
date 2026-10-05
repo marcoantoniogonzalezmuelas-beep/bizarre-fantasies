@@ -21,6 +21,8 @@ export const COMBAT_INDICATOR_SEQUENCE_PATCH = `
     waiting.push({paint:paint,duration:d,ready:Date.now()+300});
   };
   window.__bfIndicatorsBusy=function(){return waiting.length>0||visible.length>0;};
+  // Vaciar la cola (el invitado que se ha quedado atrás se pone al día descartando carteles atrasados).
+  window.__bfClearIndicators=function(){ waiting=[]; visible.forEach(remove); visible=[]; quietSince=0; };
   function tick(){
     var now=Date.now(),dt=now-last;last=now;
     var battle=document.getElementById('s-battle');

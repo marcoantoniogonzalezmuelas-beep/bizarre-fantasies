@@ -641,6 +641,7 @@ export const ABILITY_ANIM_PATCH = `
     ['bf-abil-anim','bf-spec-cine','bf-epic-cine'].forEach(function(id){ var n=document.getElementById(id); if(n&&n.parentNode)n.parentNode.removeChild(n); });
   }
   if(window.bfOnMatchReset)window.bfOnMatchReset(function(){if(window.bfResetAbilityMemo)window.bfResetAbilityMemo(memo);purgeCine();});
+  window.__bfPurgeCine=purgeCine;   // el invitado que se queda atrás descarta las animaciones atrasadas
   // Y al TERMINAR la partida (pantalla de resultado): nada de la partida acabada queda esperando su turno.
   // (Cuando la cinemática final ya terminó, o pasados 15 s: así no se corta la animación del último golpe.)
   var purgedFor=null,resultSince=0;
