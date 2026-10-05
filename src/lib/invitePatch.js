@@ -9,7 +9,9 @@ export const INVITE_PATCH = `
 (function(){
   if(window.__bfInvite)return;
   window.__bfInvite=true;
-  function origin(){ try{ return window.parent.location.origin; }catch(e){ return ''; } }
+  // Dirección PÚBLICA del juego (la que ven los jugadores), no la interna de la plataforma.
+  var PUBLIC_URL='https://bizarrefantasies.cronicasvetustas.com';
+  function origin(){ return PUBLIC_URL; }
   function nav(){ try{ return window.parent.navigator; }catch(e){ return navigator; } }
   function say(t){ if(typeof notif==='function')notif(t); }
 
