@@ -13,6 +13,8 @@ export const NEW_GEAR_PATCH = `
   window.__bfNewGear=true;
   // Debilidad de cada armadura elemental: el elemento que ESA armadura no puede anular y que la castiga
   // (inverso de ELEM_COUNTER: la de agua anula el fuego y es débil al rayo, etc.).
+  // Se instala UNA sola vez: reinstalarse cada medio segundo apilaba capas sin fin con otros parches (miles en una partida larga → "too much recursion" y turnos atascados).
+  var H={};
   var WEAK={agua:'rayo',rayo:'hielo',hielo:'fuego',fuego:'agua'};
   function attacker(){ try{ return (typeof B!=='undefined'&&B&&B.current&&typeof getHero==='function')?getHero(B.current.side,B.current.id):null; }catch(e){ return null; } }
   function gear(h){ return h?[h.mwep,h.rwep].filter(Boolean):[]; }
@@ -20,7 +22,7 @@ export const NEW_GEAR_PATCH = `
   function L(t){ if(typeof pushLog==='function')pushLog('lg',t); }
   function heRef(){ return (typeof HE_REF!=='undefined'&&HE_REF>0)?HE_REF:18; }
   function hookDamage(){
-    if(typeof window.dealDamage!=='function'||window.dealDamage.__bfNewGear)return false;
+    if(H.dd||typeof window.dealDamage!=='function')return false; H.dd=1;
     var orig=window.dealDamage;
     var w=function(target,amount,opts){
       opts=opts||{};
@@ -75,14 +77,14 @@ export const NEW_GEAR_PATCH = `
     w.__bfNewGear=1;window.dealDamage=w;return true;
   }
   function hookVel(){
-    if(typeof window.velocity!=='function'||window.velocity.__bfNewGear)return false;
+    if(H.vel||typeof window.velocity!=='function')return false; H.vel=1;
     var o=window.velocity;
     var w=function(h){ var v=o.apply(this,arguments); try{ if(h&&h.armor&&Number(h.armor.vel))v=Math.max(1,v+Number(h.armor.vel)); }catch(e){} return v; };
     w.__bfNewGear=1;window.velocity=w;return true;
   }
   // VENENO: al empezar el turno del envenenado, recibe su daño (ignora armaduras y escudos) y le queda un turno menos.
   function hookPoison(){
-    if(typeof window.stepTurn!=='function'||window.stepTurn.__bfPoison)return false;
+    if(H.st||typeof window.stepTurn!=='function')return false; H.st=1;
     var o=window.stepTurn;
     var w=function(){
       try{
@@ -110,7 +112,7 @@ export const NEW_GEAR_PATCH = `
   // que no era el suyo ("Nº 071" en vez de "Nº 140"). Ahora siempre se usa el número real de la carta (el de la base
   // de datos); la posición solo si la carta no trae número.
   function hookCardNo(){
-    if(typeof window.cardNo!=='function'||window.cardNo.__bfRealNo)return false;
+    if(H.cn||typeof window.cardNo!=='function')return false; H.cn=1;
     var o=window.cardNo;
     var w=function(id){
       try{
@@ -123,7 +125,7 @@ export const NEW_GEAR_PATCH = `
   }
   // VENENO VISIBLE: insignia fija "☠️ turnos" en el retrato del envenenado, junto a las demás (dormido, paralizado...).
   function hookBadges(){
-    if(typeof window.statusBadges!=='function'||window.statusBadges.__bfPoison)return false;
+    if(H.sb||typeof window.statusBadges!=='function')return false; H.sb=1;
     var o=window.statusBadges;
     var w=function(h){
       var out=o.apply(this,arguments);
@@ -135,7 +137,7 @@ export const NEW_GEAR_PATCH = `
   // SANAR CURA EL VENENO: el motor libera al aliado y lo anota ("Sanar: X liberado."); en ese momento se le quita
   // también el veneno (vale para el jugador, la IA y la partida en línea, que resuelve el anfitrión).
   function hookCleanse(){
-    if(typeof window.pushLog!=='function'||window.pushLog.__bfPoisonCure)return false;
+    if(H.pl||typeof window.pushLog!=='function')return false; H.pl=1;
     var o=window.pushLog;
     var w=function(cls,txt){
       var r=o.apply(this,arguments);
@@ -154,7 +156,7 @@ export const NEW_GEAR_PATCH = `
   }
   // Efecto del segundo golpe del bastón (viaja en la lista de efectos: el rival en línea también lo ve).
   function hookStaffFx(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfStaff)return false;
+    if(H.fs||typeof window.flushFx!=='function')return false; H.fs=1;
     var o=window.flushFx;
     var w=function(list){
       try{ (list||[]).forEach(function(ev){ if(ev&&ev.k==='bfstaff'&&typeof window.__bfStaffFx==='function')window.__bfStaffFx(ev.fromSide,ev.fromId,ev.toSide,ev.toId,420); }); }catch(e){}
@@ -192,7 +194,7 @@ export const NEW_GEAR_PATCH = `
     try{ poisonPop(ev); ev.bfShownLocal=1; if(typeof pushFx==='function')pushFx(Object.assign({k:'bfpoison'},ev)); }catch(e){}
   };
   function hookPoisonFx(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfPoisonFx)return false;
+    if(H.fp||typeof window.flushFx!=='function')return false; H.fp=1;
     var o=window.flushFx;
     var w=function(list){
       try{ var client=(typeof NET!=='undefined'&&NET.role==='client'); (list||[]).forEach(function(ev){ if(ev&&ev.k==='bfpoison'&&(client||!ev.bfShownLocal))poisonPop(ev); }); }catch(e){}
@@ -200,7 +202,7 @@ export const NEW_GEAR_PATCH = `
     };
     w.__bfPoisonFx=1;window.flushFx=w;return true;
   }
-  function all(){ var a=hookDamage(),b=hookVel(),c=hookPoison(),d=hookCardNo(),e1=hookBadges(),f1=hookCleanse(),g1=hookStaffFx(),h1=hookPoisonFx(); return window.dealDamage.__bfNewGear&&window.velocity&&window.velocity.__bfNewGear&&window.stepTurn&&window.stepTurn.__bfPoison&&window.cardNo&&window.cardNo.__bfRealNo&&window.statusBadges&&window.statusBadges.__bfPoison&&window.pushLog&&window.pushLog.__bfPoisonCure&&window.flushFx&&window.flushFx.__bfStaff&&window.flushFx.__bfPoisonFx; }
+  function all(){ hookDamage();hookVel();hookPoison();hookCardNo();hookBadges();hookCleanse();hookStaffFx();hookPoisonFx(); return H.dd&&H.vel&&H.st&&H.cn&&H.sb&&H.pl&&H.fs&&H.fp; }
   if(!all()){ var iv=setInterval(function(){ if(all())clearInterval(iv); },300); setTimeout(function(){ clearInterval(iv); },15000); }
 })();
 </script>

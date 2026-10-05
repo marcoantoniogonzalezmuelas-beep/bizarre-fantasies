@@ -67,8 +67,11 @@ export const STEADY_RENDER_PATCH = `
     }
   }
   var depth=0;
+  // Se instala UNA sola vez: reinstalarse cada medio segundo apilaba capas sin fin con otros parches (miles en una partida larga → "too much recursion" y turnos atascados).
+  var hooked=false;
   function hook(){
-    if(typeof window.renderBattle!=='function'||window.renderBattle.__bfSteady)return;
+    if(hooked||typeof window.renderBattle!=='function')return;
+    hooked=true;
     var orig=window.renderBattle;
     var w=function(){
       // Otros parches envuelven renderBattle después de este y el gancho se reinstala por encima: solo actúa la capa
@@ -86,7 +89,7 @@ export const STEADY_RENDER_PATCH = `
     w.__bfSteady=1;window.renderBattle=w;
   }
   hook();
-  setInterval(hook,700);
+  var iv=setInterval(function(){ hook(); if(hooked)clearInterval(iv); },700);
 })();
 </script>
 `;

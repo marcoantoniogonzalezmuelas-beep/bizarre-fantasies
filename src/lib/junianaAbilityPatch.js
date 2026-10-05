@@ -28,8 +28,9 @@ export const JUNIANA_ABILITY_PATCH = `
     if(typeof window.useAbility !== 'function') return false;
     // Re-engancha si useAbility fue sobrescrito por otro parche después del
     // primer hook (pierde el código de Juniana y _bfRefract nunca se activa).
-    var currentSrc = window.useAbility.toString();
-    if(window.__bfJunianaHooked && currentSrc.indexOf('isJun') >= 0) return true;
+    // Una sola vez: los parches que se ponen después ENVUELVEN este gancho (no lo pierden); re-engancharse cada vez
+    // que había otro encima apilaba capas sin fin.
+    if(window.__bfJunianaHooked) return true;
     var orig = window.useAbility;
     window.useAbility = function(side, h, done){
       if(!isJun(h)) return orig.apply(this, arguments);
@@ -139,7 +140,9 @@ export const JUNIANA_ABILITY_PATCH = `
     // Espera a que el motor haya instalado su propio dealDamage para envolverlo
     // por fuera (así podemos anular su reflejo y aplicar el nuestro).
     if(!window.__bfDuckAbilHooked) return false;
-    if(typeof window.dealDamage!=='function' || window.dealDamage.__bfRefract) return false;
+    if(window.__bfJunRefractOnce) return true;
+    if(typeof window.dealDamage!=='function') return false;
+    window.__bfJunRefractOnce = 1;
     var orig=window.dealDamage;
     window.dealDamage=function(target,amount,opts){
       var isRef = target && target.akind==='reflect-damage' && target.alive && Number(amount)>0 && !(opts&&opts.bfReflect);

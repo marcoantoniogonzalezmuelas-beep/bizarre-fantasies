@@ -49,8 +49,13 @@ export const RIVAL_HAND_BACK_PATCH = `
   // render del juego (renderBattle / renderHand), en el mismo frame en que se
   // dibuja la mano del rival. Se elimina el MutationObserver global, que
   // repintaba con cualquier cambio del DOM y provocaba el parpadeo inicial.
+  // Instalación ÚNICA de cada gancho (antes se reinstalaba mientras su marca no estuviera arriba del todo y se
+  // turnaba con otros parches: cientos de capas apiladas, "too much recursion" y turnos atascados).
+  var ONCE={};
   function hookRender(name){
-    if(typeof window[name] !== 'function' || window[name].__bfRivalBack) return false;
+    if(ONCE[name]) return true;
+    if(typeof window[name] !== 'function') return false;
+    ONCE[name] = 1;
     var orig = window[name];
     window[name] = function(){
       var r = orig.apply(this, arguments);

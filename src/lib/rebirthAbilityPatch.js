@@ -9,9 +9,12 @@ export const REBIRTH_ABILITY_PATCH = `
 (function(){
   if(window.__bfRebirthAbility)return;
   window.__bfRebirthAbility=true;
+  // Se instala UNA sola vez: reinstalarse cada medio segundo apilaba capas sin fin con otros parches (miles en una partida larga → "too much recursion" y turnos atascados).
+  var hookedUse=false;
   function hook(){
     var cur=window.useAbility;
-    if(typeof cur!=='function'||cur.__bfRebirthKeep)return;
+    if(hookedUse||typeof cur!=='function')return;
+    hookedUse=true;
     var w=function(side,h,done){
       var wasElite=!!(h&&h.eliteMode);
       var close=function(){
@@ -30,13 +33,14 @@ export const REBIRTH_ABILITY_PATCH = `
     window.useAbility=w;
   }
   hook();
-  setInterval(hook,500);
+  var ivU=setInterval(function(){ hook(); if(hookedUse)clearInterval(ivU); },500);
 
   // MANÁ AL VOLVER A LA VIDA: un héroe que resucita o renace élite, por la vía que sea, vuelve con el maná que tenía
   // al caer (antes el motor se lo rellenaba entero). Al caer se guarda; renacer élite lo conserva; resucitar
   // (reviveHero o cualquier efecto que lo devuelva a la vida) lo repone en cuanto se pinta la batalla.
+  var keep={};
   function keepMana(){
-    if(typeof window.handleDeath==='function'&&!window.handleDeath.__bfKeepMana){
+    if(!keep.hd&&typeof window.handleDeath==='function'){ keep.hd=1;
       var hd=window.handleDeath;
       var w1=function(t){
         var m=t?Number(t.mana)||0:0;
@@ -46,7 +50,7 @@ export const REBIRTH_ABILITY_PATCH = `
       };
       w1.__bfKeepMana=1;window.handleDeath=w1;
     }
-    if(typeof window.reviveHero==='function'&&!window.reviveHero.__bfKeepMana){
+    if(!keep.rv&&typeof window.reviveHero==='function'){ keep.rv=1;
       var rv=window.reviveHero;
       var w2=function(t){
         var r=rv.apply(this,arguments);
@@ -55,7 +59,7 @@ export const REBIRTH_ABILITY_PATCH = `
       };
       w2.__bfKeepMana=1;window.reviveHero=w2;
     }
-    if(typeof window.renderBattle==='function'&&!window.renderBattle.__bfKeepMana){
+    if(!keep.rb&&typeof window.renderBattle==='function'){ keep.rb=1;
       var rb=window.renderBattle;
       var w3=function(){
         try{
@@ -69,7 +73,7 @@ export const REBIRTH_ABILITY_PATCH = `
     }
   }
   keepMana();
-  setInterval(keepMana,500);
+  var ivK=setInterval(function(){ keepMana(); if(keep.hd&&keep.rv&&keep.rb)clearInterval(ivK); },500);
 })();
 </script>
 `;

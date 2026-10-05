@@ -27,8 +27,11 @@ export const INVITE_PATCH = `
     try{ if(n&&n.clipboard){ n.clipboard.writeText(text+link).then(done,function(){ window.prompt('Copia el enlace:',link); }); return; } }catch(e){}
     window.prompt('Copia el enlace:',link);
   };
+  // Se instala UNA sola vez: reinstalarse cada medio segundo apilaba capas sin fin con otros parches (miles en una partida larga → "too much recursion" y turnos atascados).
+  var hookedLobby=false;
   function hookLobby(){
-    if(typeof window.renderLobby!=='function'||window.renderLobby.__bfInvite)return false;
+    if(hookedLobby||typeof window.renderLobby!=='function')return false;
+    hookedLobby=true;
     var o=window.renderLobby;
     var w=function(stage){
       var r=o.apply(this,arguments);

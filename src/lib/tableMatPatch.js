@@ -17,30 +17,33 @@ export const TABLE_MAT_PATCH = `
 
   var MAT = '${TABLE_MAT_URL}';
 
+  // TAPETE LIGERO (el mismo de la mano del equipamiento): azul violeta claro con dibujitos discretos.
+  var DOODLES='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220" font-size="26" opacity=".14"><text x="14" y="40">\u{1F3B2}</text><text x="120" y="58">\u{1F345}</text><text x="62" y="118">\u{1F986}</text><text x="160" y="140">\u{1FA99}</text><text x="20" y="190">\u2728</text><text x="110" y="200">\u{1F9E6}</text></svg>');
+  var LIGHT_MAT='url("'+DOODLES+'") repeat, radial-gradient(circle at 18% 12%,rgba(255,255,255,.14),transparent 45%), linear-gradient(160deg,#3f3266 0%,#2f4a6b 100%)';
   var css = '' +
   // Mano del jugador en batalla: el panel completo (mismo recuadro que la
   // mano del rival, .hand-under-action), no solo el contenedor de los chips.
   '#s-battle .hand-under-action, #s-battle .hand-zone, #s-battle .hand, #s-battle .bf-hand-zone {' +
-    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
+    'background: ' + LIGHT_MAT + ' !important;' +
     'border-radius:10px; border:1.5px solid rgba(255,210,74,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
   // Mano del rival en batalla.
   '#s-battle .hand-rival {' +
-    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
+    'background: ' + LIGHT_MAT + ' !important;' +
     'border-radius:10px; border:1.5px solid rgba(192,107,255,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
   // Mazo de descartes: el tapete cubre todo el recuadro incluyendo el mazo.
   '#s-battle .bf-discard-pile {' +
-    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
+    'background: ' + LIGHT_MAT + ' !important;' +
     'border-radius:10px; border:1.5px solid rgba(255,140,50,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
   // Fase de equipamiento: SOLO el recuadro de cartas en mano (objetos y
   // hechizos, .eq-hand-box). Nada más de la fase de equipamiento lleva el tapete.
   '#s-equip .eq-hand-box, #s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone {' +
-    'background: url("' + MAT + '") center/cover, rgba(8,5,14,.72) !important;' +
+    'background: ' + LIGHT_MAT + ' !important;' +
     'border-radius:10px; border:1.5px solid rgba(255,210,74,.3);' +
     'box-shadow:inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4); padding:5px;' +
   '}' +
@@ -92,7 +95,7 @@ export const TABLE_MAT_PATCH = `
     document.querySelectorAll('#s-battle .hand-under-action:not(.hand-rival)').forEach(function(h){
       if(h.dataset.bfMat) return;
       h.dataset.bfMat = '1';
-      h.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
+      h.style.background = LIGHT_MAT;
       h.style.borderRadius = '10px';
       h.style.border = '1.5px solid rgba(255,210,74,.3)';
       h.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
@@ -102,7 +105,7 @@ export const TABLE_MAT_PATCH = `
     document.querySelectorAll('#s-battle .hand-rival').forEach(function(h){
       if(h.dataset.bfMat) return;
       h.dataset.bfMat = '1';
-      h.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
+      h.style.background = LIGHT_MAT;
       h.style.borderRadius = '10px';
       h.style.border = '1.5px solid rgba(192,107,255,.3)';
       h.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
@@ -122,7 +125,7 @@ export const TABLE_MAT_PATCH = `
     document.querySelectorAll('#s-equip .eq-hand-box, #s-equip .hand-zone, #s-equip .hand, #s-equip .bf-hand-zone, #modalRoot .hand-zone').forEach(function(h){
       if(h.dataset.bfMat) return;
       h.dataset.bfMat = '1';
-      h.style.background = 'url("' + MAT + '") center/cover, rgba(8,5,14,.72)';
+      h.style.background = LIGHT_MAT;
       h.style.borderRadius = '10px';
       h.style.border = '1.5px solid rgba(255,210,74,.3)';
       h.style.boxShadow = 'inset 0 0 22px rgba(0,0,0,.55), 0 2px 12px rgba(0,0,0,.4)';
@@ -138,8 +141,13 @@ export const TABLE_MAT_PATCH = `
   // Igual que los retratos de los héroes: se engancha al bucle de render del
   // juego (renderBattle / renderHand) para aplicar el tapete en el MISMO frame
   // en que se dibujan las manos. Así no se ve el repintado inicial.
+  // Instalación ÚNICA de cada gancho (antes se reinstalaba mientras su marca no estuviera arriba del todo y se
+  // turnaba con otros parches: cientos de capas apiladas, "too much recursion" y turnos atascados).
+  var ONCE={};
   function hookRender(name){
-    if(typeof window[name] !== 'function' || window[name].__bfMat) return false;
+    if(ONCE[name]) return true;
+    if(typeof window[name] !== 'function') return false;
+    ONCE[name] = 1;
     var orig = window[name];
     window[name] = function(){
       var r = orig.apply(this, arguments);
