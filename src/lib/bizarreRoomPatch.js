@@ -364,6 +364,7 @@ export const BIZARRE_ROOM_PATCH = `
     spawnAmbient();
     renderBody();
   }
+  window.bfOpenBizarreRoom = openOverlay;   // abrirla desde un enlace de invitación (?habitacion=bizarra)
   function closeOverlay(){
     var el=document.getElementById('bf-bizarre-overlay');
     if(el)el.style.display='none';
