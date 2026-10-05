@@ -338,11 +338,26 @@ export default function Home() {
   const reloadCoverRef = useRef(false);
   // Enlace de invitación (?sala=CODIGO): al cargar el juego se le pide que abra la ventana de unirse a esa sala.
   const inviteRef = useRef((() => { try { return new URLSearchParams(window.location.search).get('sala') || ''; } catch (e) { return ''; } })());
+  const inviteTimerRef = useRef(null), missionInviteSentRef = useRef(false);
+  // El juego confirma que atendió la invitación: se deja de reenviar y se limpia la dirección.
+  useEffect(() => {
+    const onAck = (e) => {
+      const h = e.data && e.data.bfInviteHandled; if (!h) return;
+      if (h.kind === 'sala') inviteRef.current = '';
+      if (h.kind === 'habitacion') bizarreInviteRef.current = false;
+      if (h.kind === 'msala') missionInviteSentRef.current = true;
+      if (!inviteRef.current && !bizarreInviteRef.current && (!missionInviteRef.current || missionInviteSentRef.current)) clearInterval(inviteTimerRef.current);
+      try { const u = new URL(window.location.href); ['sala', 'habitacion', 'msala'].forEach((k) => u.searchParams.delete(k)); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (err) { /* sin historial */ }
+    };
+    window.addEventListener('message', onAck);
+    return () => { window.removeEventListener('message', onAck); clearInterval(inviteTimerRef.current); };
+  }, []);
   const bizarreInviteRef = useRef((() => { try { return new URLSearchParams(window.location.search).get('habitacion') === 'bizarra'; } catch (e) { return false; } })());
   // Invitación a una sala de MISIÓN: se guarda y, al entrar en Misiones, el panel se une solo a esa sala.
   const [missionInvite, setMissionInvite] = useState(() => {
     try { const c = new URLSearchParams(window.location.search).get('msala') || ''; if (c) sessionStorage.setItem('bfPendingMissionRoom', c); return c; } catch (e) { return ''; }
   });
+  const missionInviteRef = useRef(missionInvite);
   // Al volver a primer plano (iPhone: tras compartir el código o desbloquear), si la pantalla de carga la puso un aviso
   // de recarga que no llegó a producirse, se quita: la partida sigue viva debajo.
   useEffect(() => {
@@ -1172,18 +1187,20 @@ export default function Home() {
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
             // Modo diagnóstico (?diag=1): el juego muestra su estado de equipo en un panel pequeño.
             try { if (new URLSearchParams(window.location.search).get('diag')) setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfDiag: true }, '*'), 2500); } catch (e) { /* sin parámetros */ }
-            if (bizarreInviteRef.current) {
-              bizarreInviteRef.current = false;
-              setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfOpenBizarreRoom: true }, '*'), 3800);
-              try { const u = new URL(window.location.href); u.searchParams.delete('habitacion'); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* sin historial */ }
-            }
-            if (missionInvite) {
-              try { const u = new URL(window.location.href); u.searchParams.delete('msala'); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* sin historial */ }
-            }
-            if (inviteRef.current) {
-              const code = inviteRef.current; inviteRef.current = '';
-              setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfJoinRoom: code }, '*'), 3800);
-              try { const u = new URL(window.location.href); u.searchParams.delete('sala'); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* sin historial */ }
+            // INVITACIONES POR ENLACE: se reenvían en CADA carga del juego (puede cargarse dos veces: copia guardada y
+            // versión nueva) y se reintentan cada 2 s hasta que el juego confirma que las atendió (bfInviteHandled).
+            if (inviteRef.current || bizarreInviteRef.current || missionInvite) {
+              clearInterval(inviteTimerRef.current);
+              let tries = 0;
+              const sendInvite = () => {
+                const w = iframeRef.current?.contentWindow; if (!w) return;
+                if (inviteRef.current) w.postMessage({ bfJoinRoom: inviteRef.current }, '*');
+                if (bizarreInviteRef.current) w.postMessage({ bfOpenBizarreRoom: true }, '*');
+                if (missionInvite && !missionInviteSentRef.current) w.postMessage({ bfOpenMissionRoom: missionInvite }, '*');
+                if (++tries > 12) clearInterval(inviteTimerRef.current);
+              };
+              setTimeout(sendInvite, 2500);
+              inviteTimerRef.current = setInterval(sendInvite, 2000);
             }
           }}
           className="border-0"

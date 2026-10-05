@@ -10,6 +10,7 @@ export default function useMissionSession(iframeRef) {
   const [celebration, setCelebration] = useState(null);
   const pendingCelebration = useRef(null), celebrationReady = useRef(null), openNick = useRef(null);
   const run = useRef(null), pending = useRef(null), timer = useRef(null), saving = useRef(false), loadId = useRef(0);
+  const startTimes = useRef(null);   // tiempos del arranque multijugador (diagnóstico de arranques lentos)
   const send = data => iframeRef.current?.contentWindow?.postMessage(data, '*');
   const persist = useCallback(async () => {
     if (!pending.current || saving.current) return;
@@ -39,12 +40,22 @@ export default function useMissionSession(iframeRef) {
         finally { if (id === loadId.current) setLoading(false); }
       }
       if (d.bfMissionMpHosted && d.bfMissionMpHosted.run_id === run.current?.run_id) {
+        if (startTimes.current) startTimes.current.hosted = Date.now();
         try {
           const { data } = await base44.functions.invoke('missionMp', { action: 'mp_hosted', code: run.current.room_code, token: run.current.token, game_code: d.bfMissionMpHosted.game_code, run_id: run.current.run_id });
           if (!data?.ok) throw new Error(data?.error || 'No se pudo anunciar la partida.');
         } catch (e) { clearTimeout(timer.current); setStarting(false); setError(e.message); }
       }
-      if (d.bfMissionStarted && d.bfMissionStarted === run.current?.run_id) { clearTimeout(timer.current); openNick.current = null; setStarting(false); setSession(null); }
+      if (d.bfMissionStarted && d.bfMissionStarted === run.current?.run_id) {
+        // ARRANQUE LENTO: si pasar de "listos" al equipamiento tarda más de 8 s, se anota con sus tiempos en "Red".
+        const st = startTimes.current, total = st ? Date.now() - st.t0 : 0;
+        if (st && total > 8000) {
+          const msg = `[mission_slow_start] ${st.role || '?'} · total ${Math.round(total / 100) / 10} s` + (st.hosted ? ` · partida creada a los ${Math.round((st.hosted - st.t0) / 100) / 10} s` : ' · (invitado: esperó la partida del anfitrión)');
+          try { window.postMessage({ bfRelayError: { room_code: run.current?.room_code || '', side: st.role || '', nick: run.current?.nick || '', error_type: 'server_error', action: 'missionStart', error_message: msg } }, '*'); } catch (e) { /* sin diagnóstico */ }
+        }
+        startTimes.current = null;
+        clearTimeout(timer.current); openNick.current = null; setStarting(false); setSession(null);
+      }
       if (d.bfMissionStartError) { clearTimeout(timer.current); setStarting(false); setError(d.bfMissionStartError); }
       if (d.bfMissionCelebrationReady && d.bfMissionCelebrationReady === run.current?.run_id) {
         celebrationReady.current = d.bfMissionCelebrationReady;
@@ -77,6 +88,7 @@ export default function useMissionSession(iframeRef) {
     if (starting || pending.current) return;
     const current = { nick: session.nick, mission: cfg.mission, modality: cfg.modality, room_code: cfg.room_code, token: cfg.token, run_id: cfg.run_id || crypto.randomUUID(), oppNick: cfg.oppNick, role: cfg.role };
     run.current = current; setError(''); setNotice(''); setStarting(true);
+    startTimes.current = { t0: Date.now(), role: cfg.role, hosted: 0 };
     send({ bfMissionMpConnect: { run_id: current.run_id, mission: cfg.mission, modality: cfg.modality, role: cfg.role, room_code: cfg.room_code, game_code: cfg.game_code, password: cfg.password, nick: cfg.nick, oppNick: cfg.oppNick, round: cfg.round || 0, token: cfg.token, myTeam: cfg.myTeam, oppTeam: cfg.oppTeam } });
     timer.current = setTimeout(() => { setStarting(false); setError('La preparación no respondió. Puedes intentarlo de nuevo.'); }, 15000);
   }
