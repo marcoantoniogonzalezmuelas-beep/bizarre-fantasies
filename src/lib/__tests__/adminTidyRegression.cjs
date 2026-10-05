@@ -97,3 +97,16 @@ test('GAME LOG: the gear of BOTH sides is saved when the battle starts (before: 
   assert.match(p,/\[h\.mwep,h\.rwep,h\.armor\]\.forEach/);assert.match(p,/G\.spellbook&&G\.spellbook\[side\]/);assert.match(p,/G\.items&&G\.items\[side\]/);
   assert.doesNotMatch(p,/var item=arguments\[0\]\|\|arguments\[1\]/,'the broken purchase tracking is gone');
 });
+test('INVITE LINKS everywhere with the public address: own room card (normal MP), mission rooms (?msala=) and the Bizarre Room (?habitacion=bizarra)',async()=>{
+  const {PUBLIC_URL,missionRoomLink}=await import(pathToFileURL(lib('publicLinks.js')).href);
+  assert.equal(PUBLIC_URL,'https://bizarrefantasies.cronicasvetustas.com');assert.equal(missionRoomLink('AB 1'),'https://bizarrefantasies.cronicasvetustas.com/?msala=AB%201');
+  const p=read('invitePatch.js');
+  assert.match(p,/b\.className='btn sm primary bf-invite-own'/,'button on YOUR room card in the list (after creating a room you stay in the list)');
+  assert.match(p,/var link=origin\(\)\+'\/\?habitacion=bizarra'/);assert.match(p,/if\(e&&e\.data&&e\.data\.bfOpenBizarreRoom\)/);
+  assert.match(read('bizarreRoomPatch.js'),/window\.bfOpenBizarreRoom = openOverlay;/);
+  const m=read('../components/missions/MissionMpLobby.jsx');
+  assert.match(m,/🔗 Invitar con enlace/);assert.match(m,/sessionStorage\.getItem\('bfPendingMissionRoom'\)/);assert.match(m,/joinRoom\(code, pass\);/);
+  assert.match(read('../components/missions/MissionsOverlay.jsx'),/if \(pending && !s\.session\.replay\) setMpMode\(true\);/);
+  const h=read('../pages/Home.jsx');
+  assert.match(h,/get\('habitacion'\) === 'bizarra'/);assert.match(h,/sessionStorage\.setItem\('bfPendingMissionRoom', c\)/);assert.match(h,/Te han invitado a una sala de misión/);
+});
