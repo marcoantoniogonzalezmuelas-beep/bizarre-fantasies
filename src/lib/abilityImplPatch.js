@@ -259,6 +259,7 @@ export const ABILITY_IMPL_PATCH = `
         var pd = Math.max(1, stepAmount(hero, st)), pt = Math.max(1, num(st.turns, 3)), cur = t._bfPoison || {};
         t._bfPoison = { dmg: Math.max(pd, cur.dmg || 0), turns: Math.max(pt, cur.turns || 0), src: hero.name };
         try{ pushFx({k:'status', side:tSide(t), id:t.id, txt:'\\u2620\\ufe0f'}); }catch(e){}
+        if(typeof window.__bfPoisonPop === 'function') window.__bfPoisonPop({ side: tSide(t), id: t.id, dmg: t._bfPoison.dmg, turns: t._bfPoison.turns });   // cartel legible
         log(t.name + ' queda ENVENENADO: -' + t._bfPoison.dmg + ' al empezar cada uno de sus turnos (' + t._bfPoison.turns + ' turnos).');
         return true;
       }
