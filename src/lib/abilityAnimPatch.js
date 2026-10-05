@@ -314,17 +314,26 @@ export const ABILITY_ANIM_PATCH = `
     return null;
   }
 
-  var playingUrl=null;
+  var playingUrl=null,busySince=0;
+  function cineDiag(msg){ try{ window.parent.postMessage({bfRelayError:{room_code:'',side:'',nick:'',error_type:'cine_stuck',action:'abilityAnim',error_message:String(msg).slice(0,400)}},'*'); }catch(e){} }
   var cineQueue=(${createAbilityCinematicQueue.toString()})({
     enabled:function(){return !window.__bfNoCinematics;},
     now:function(){return Date.now();},
     schedule:function(fn,ms){return setTimeout(fn,ms);},
     cancel:function(id){clearTimeout(id);},
     blocked:function(){
-      var fxl=document.getElementById('bf-fx-layer');
-      return !!(playingUrl||(fxl&&fxl.children.length)||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-hdice'));
+      // Solo bloquean los efectos RECIENTES (menos de 2,5 s): un resto viejo que nadie borró dejaba la animación
+      // esperando para siempre y, con ella, el paso de turno. (Los efectos nuevos que siguen llegando sí la hacen esperar.)
+      var now=Date.now(),fxl=document.getElementById('bf-fx-layer'),recentFx=false;
+      if(fxl){ for(var i=0;i<fxl.children.length;i++){ var n=fxl.children[i]; if(!n.__bfSeen)n.__bfSeen=now; if(now-n.__bfSeen<2500){ recentFx=true; break; } } }
+      return !!(playingUrl||recentFx||document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-hdice'));
     },
-    play:function(q){renderCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText);}
+    play:function(q){
+      // Si la animación falla al montarse, se libera al momento (antes la marca "reproduciendo" quedaba puesta para
+      // siempre y ningún turno volvía a avanzar).
+      try{ renderCinematic(q.url,q.title,q.cc,q.desc,q.motionId,q.descText); }
+      catch(e){ playingUrl=null; var o=document.getElementById('bf-abil-anim'); if(o&&o.parentNode)o.parentNode.removeChild(o); cineDiag('error al montar la animaci\\u00f3n de '+(q&&q.title)+': '+String((e&&e.message)||e)); }
+    }
   });
   var lastSid='';
   function syncSession(){
@@ -402,7 +411,25 @@ export const ABILITY_ANIM_PATCH = `
   // termine la animación 3D anterior (p.ej. la del ataque que generó el daño
   // que disparó el dado) antes de lanzarse. Así nunca se solapan.
   window.__bfCinematicBusy=function(){
-    return !!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-hdice')||playingUrl||cineQueue.busy());
+    var b=!!(document.querySelector('#bf-abil-anim,#bf-spec-cine,#bf-kill-ov,#bf-epic-cine,.bf-hdice')||playingUrl||cineQueue.busy());
+    // Marca "reproduciendo" sin animación en pantalla: se libera (la animación ya no está).
+    if(playingUrl&&!document.getElementById('bf-abil-anim')){ if(!window.__bfPlayOrphanAt)window.__bfPlayOrphanAt=Date.now(); else if(Date.now()-window.__bfPlayOrphanAt>1500){ playingUrl=null; window.__bfPlayOrphanAt=0; cineDiag('marca de reproducci\\u00f3n sin animaci\\u00f3n en pantalla: liberada'); } } else window.__bfPlayOrphanAt=0;
+    // TOPE ABSOLUTO: más de 12 s seguidos "con cinemática" no puede ser real: se deja de esperar y se anota qué había.
+    if(!b){ busySince=0; return false; }
+    if(!busySince)busySince=Date.now();
+    if(Date.now()-busySince>12000){
+      var what=[];
+      if(document.querySelector('#bf-abil-anim'))what.push('#bf-abil-anim');if(document.querySelector('#bf-spec-cine'))what.push('#bf-spec-cine');
+      if(document.querySelector('#bf-kill-ov'))what.push('#bf-kill-ov');if(document.querySelector('#bf-epic-cine'))what.push('#bf-epic-cine');
+      if(document.querySelector('.bf-hdice'))what.push('.bf-hdice');if(playingUrl)what.push('reproduciendo');if(cineQueue.busy())what.push('cola');
+      cineDiag('cinem\\u00e1tica "ocupada" m\\u00e1s de 12 s: '+what.join(','));
+      try{ cineQueue.reset(); }catch(e){}
+      playingUrl=null; busySince=0;
+      var stale=document.querySelectorAll('#bf-abil-anim,#bf-spec-cine,#bf-epic-cine,.bf-hdice');
+      for(var i=0;i<stale.length;i++){ if(stale[i].parentNode)stale[i].parentNode.removeChild(stale[i]); }
+      return false;
+    }
+    return true;
   };
   // Una sola cinemática por héroe y acción: las habilidades que piden objetivo
   // (Batur y compañía) pasan por useAbility antes y después de targetear, y eso
@@ -618,7 +645,9 @@ export const ABILITY_ANIM_PATCH = `
         // Una activación REAL es un false->true observado en un héroe ya conocido, fuera de una
         // resurrección y sin ser la restauración del flag "Usada" (ver animGuardPatch).
         var verdict=window.bfAbilityGate?window.bfAbilityGate(memo,key,h,Date.now(),awaiting):((h.abilityUsed&&!prev[key]&&!awaiting)?'play':'idle');
-        if(verdict==='play'){try{if(playAnim(side,h))prev[key]=true;}catch(e){}}
+        // Con "Anim OFF" no se encola nada: la habilidad se da por VISTA sin reproducirla. Así, al volver a "Anim ON"
+        // no salen de golpe las animaciones atrasadas; solo las de las habilidades usadas a partir de ese momento.
+        if(verdict==='play'){ if(window.__bfNoCinematics){ prev[key]=true; } else { try{if(playAnim(side,h))prev[key]=true;}catch(e){} } }
       });
     });
   }
