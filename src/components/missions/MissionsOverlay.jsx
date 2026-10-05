@@ -15,7 +15,7 @@ export default function MissionsOverlay({ iframeRef }) {
   const shellRef = useRef(null);
   useMissionPinch(shellRef, Boolean(s.session && !s.celebration));
   useEffect(() => { const image = new Image(); image.src = MISSION_BACKGROUND; }, []);
-  useEffect(() => { if (s.session) { setLevel(null); if(s.session.preset) setMpMode(true); } }, [s.session]);
+  useEffect(() => { if (s.session) { setLevel(null); if(s.session.preset) setMpMode(true); let pending = ''; try { pending = sessionStorage.getItem('bfPendingMissionRoom') || ''; } catch (e) { /* sin almacenamiento */ } if (pending && !s.session.replay) setMpMode(true); } }, [s.session]);
   if (s.celebration) return <MissionVictoryCelebration reward={s.celebration} onClose={s.dismissCelebration} />;
   if (!s.session) return null;
   return <div className="bf-missions" role="dialog" aria-modal="true" aria-labelledby="mission-title">

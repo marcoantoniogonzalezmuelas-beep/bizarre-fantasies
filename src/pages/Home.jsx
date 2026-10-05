@@ -338,6 +338,11 @@ export default function Home() {
   const reloadCoverRef = useRef(false);
   // Enlace de invitación (?sala=CODIGO): al cargar el juego se le pide que abra la ventana de unirse a esa sala.
   const inviteRef = useRef((() => { try { return new URLSearchParams(window.location.search).get('sala') || ''; } catch (e) { return ''; } })());
+  const bizarreInviteRef = useRef((() => { try { return new URLSearchParams(window.location.search).get('habitacion') === 'bizarra'; } catch (e) { return false; } })());
+  // Invitación a una sala de MISIÓN: se guarda y, al entrar en Misiones, el panel se une solo a esa sala.
+  const [missionInvite, setMissionInvite] = useState(() => {
+    try { const c = new URLSearchParams(window.location.search).get('msala') || ''; if (c) sessionStorage.setItem('bfPendingMissionRoom', c); return c; } catch (e) { return ''; }
+  });
   // Al volver a primer plano (iPhone: tras compartir el código o desbloquear), si la pantalla de carga la puso un aviso
   // de recarga que no llegó a producirse, se quita: la partida sigue viva debajo.
   useEffect(() => {
@@ -1167,6 +1172,14 @@ export default function Home() {
             loadTimerRef.current = setTimeout(() => setLoading(false), 3500);
             // Modo diagnóstico (?diag=1): el juego muestra su estado de equipo en un panel pequeño.
             try { if (new URLSearchParams(window.location.search).get('diag')) setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfDiag: true }, '*'), 2500); } catch (e) { /* sin parámetros */ }
+            if (bizarreInviteRef.current) {
+              bizarreInviteRef.current = false;
+              setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfOpenBizarreRoom: true }, '*'), 3800);
+              try { const u = new URL(window.location.href); u.searchParams.delete('habitacion'); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* sin historial */ }
+            }
+            if (missionInvite) {
+              try { const u = new URL(window.location.href); u.searchParams.delete('msala'); window.history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) { /* sin historial */ }
+            }
             if (inviteRef.current) {
               const code = inviteRef.current; inviteRef.current = '';
               setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ bfJoinRoom: code }, '*'), 3800);
@@ -1195,6 +1208,12 @@ export default function Home() {
       )}
       <ChatOverlay />
       <MissionsOverlay iframeRef={iframeRef} />
+      {missionInvite ? (
+        <div role="status" className="fixed left-1/2 top-3 z-[100060] flex max-w-[92vw] -translate-x-1/2 items-center gap-3 rounded-2xl border border-[#ffd24a66] bg-[#140d24]/95 px-4 py-2 text-sm text-[#fff5dc] shadow-2xl">
+          <span>📜 Te han invitado a una sala de misión (<b>{missionInvite}</b>). Entra en <b>Misiones</b> y te unirás automáticamente.</span>
+          <button type="button" className="rounded-lg px-2 font-black text-[#ffe49a] hover:bg-white/10" onClick={() => setMissionInvite('')} aria-label="Cerrar aviso">✕</button>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { missionRoomLink, shareInvite } from '@/lib/publicLinks';
 import { ArrowLeft, Swords, LoaderCircle, Wifi } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import MissionHero from '@/components/missions/MissionHero';
@@ -88,6 +89,25 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting,
     finally { setBusy(false); }
   }
 
+  // Invitación por enlace (?msala=CODIGO): al abrir el panel se une sola a esa sala (pide la contraseña si es privada).
+  const autoJoined = useRef(false);
+  useEffect(() => {
+    if (autoJoined.current || replay || step !== 'config') return;
+    let code = ''; try { code = sessionStorage.getItem('bfPendingMissionRoom') || ''; } catch (e) { /* sin almacenamiento */ }
+    if (!code) return;
+    autoJoined.current = true;
+    try { sessionStorage.removeItem('bfPendingMissionRoom'); } catch (e) { /* sin almacenamiento */ }
+    (async () => {
+      let pass = '';
+      try { const { data } = await base44.functions.invoke('missionMp', { action: 'mp_list' }); const r = (data?.rooms || []).find(x => x.code === code); if (r?.is_private) pass = window.prompt('Esta sala de misión tiene contraseña. Escríbela:') || ''; } catch (e) { /* se intenta igual */ }
+      joinRoom(code, pass);
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+  async function inviteToRoom() {
+    const r = await shareInvite(`¡Juega conmigo una misión de Bizarre Fantasies! Sala ${roomCode}${isPrivate ? ' (te diré la contraseña)' : ''}:`, missionRoomLink(roomCode));
+    if (r === 'copied') setNotice('🔗 Enlace copiado: pégalo en WhatsApp o donde quieras.');
+  }
   async function joinRoom(code, privatePassword) {
     if (busy) return;
     setError(''); setBusy(true);
@@ -164,6 +184,8 @@ export default function MissionMpLobby({ cards, nick, onBack, onStart, starting,
     {step === 'host_code' && <>
       <div><p className="mission-eyebrow">SALA CREADA · {mission.name} · {MP_MODALITIES.find(mo => mo.id === modality).name}</p><h2 className="font-heading text-3xl">Tu sala está publicada</h2><p className="mt-2 opacity-80">{isPrivate ? 'Solo entrarán quienes conozcan tu contraseña.' : 'Cualquier jugador puede entrar desde la lista, sin código.'}</p></div>
       {!oppNick ? <div className="mp-waiting"><LoaderCircle className="animate-spin" /><p>Esperando a que se una un rival…</p></div> : <div className="mp-status ready">¡{oppNick} se ha unido!</div>}
+      {!oppNick && roomCode ? <button type="button" className="mission-button primary self-start" onClick={inviteToRoom}>🔗 Invitar con enlace</button> : null}
+      {notice ? <p role="status" className="text-sm">{notice}</p> : null}
       <MissionRoomDirectory onJoin={joinRoom} busy={busy} roomCode={roomCode} />
       {error && <p role="alert">{error}</p>}
     </>}
