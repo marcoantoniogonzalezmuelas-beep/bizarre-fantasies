@@ -506,7 +506,7 @@ export const ABILITY_ANIM_PATCH = `
   // Record target requests issued synchronously by a card. The callback is
   // invoked only after pickTarget has accepted a living/dead valid target.
   function installItemTarget(){
-    if(typeof window.pendTarget!=='function'||window.pendTarget.__bfItemTarget)return;
+    if(window.__bfOnce__bfItemTarget_pendTarget||typeof window.pendTarget!=='function')return; window.__bfOnce__bfItemTarget_pendTarget=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig=window.pendTarget;
     var w=function(prompt,side,cb,opts){
       var action=itemCall;
@@ -528,7 +528,7 @@ export const ABILITY_ANIM_PATCH = `
   }
   // Targeted card playback is relayed after confirmation, not on cast intent.
   function installItemSync(){
-    if(typeof window.flushFx!=='function'||window.flushFx.__bfItemCine)return;
+    if(window.__bfOnce__bfItemCine_flushFx||typeof window.flushFx!=='function')return; window.__bfOnce__bfItemCine_flushFx=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig=window.flushFx;
     var w=function(events){
       if(typeof NET!=='undefined'&&NET.role==='client'){
@@ -633,7 +633,24 @@ export const ABILITY_ANIM_PATCH = `
   var memo=window.bfNewAbilityMemo?window.bfNewAbilityMemo():{prev:{},known:{},alive:{},quiet:{},restored:{}};
   var prev=memo.prev;
   // Partida nueva: se olvida lo visto (si no, el estado de la anterior contaminaba la siguiente).
-  if(window.bfOnMatchReset)window.bfOnMatchReset(function(){if(window.bfResetAbilityMemo)window.bfResetAbilityMemo(memo);});
+  // Al empezar otra partida se vacía TODO lo pendiente de animaciones: antes las que quedaban en cola al acabar una
+  // partida se reproducían al empezar la siguiente (jugadas viejas en la partida nueva).
+  function purgeCine(){
+    try{ cineQueue.reset(); }catch(e){}
+    playingUrl=null; busySince=0; window.__bfPlayOrphanAt=0;
+    ['bf-abil-anim','bf-spec-cine','bf-epic-cine'].forEach(function(id){ var n=document.getElementById(id); if(n&&n.parentNode)n.parentNode.removeChild(n); });
+  }
+  if(window.bfOnMatchReset)window.bfOnMatchReset(function(){if(window.bfResetAbilityMemo)window.bfResetAbilityMemo(memo);purgeCine();});
+  // Y al TERMINAR la partida (pantalla de resultado): nada de la partida acabada queda esperando su turno.
+  // (Cuando la cinemática final ya terminó, o pasados 15 s: así no se corta la animación del último golpe.)
+  var purgedFor=null,resultSince=0;
+  setInterval(function(){
+    var r=document.getElementById('s-result'),on=!!(r&&r.classList.contains('active'));
+    if(!on){ resultSince=0; if(purgedFor!==null&&document.querySelector('#s-battle.active'))purgedFor=null; return; }
+    if(!resultSince)resultSince=Date.now();
+    var ended=!!window.__bfEndCineDoneAt||Date.now()-resultSince>15000;
+    if(ended&&purgedFor!==(window.__bfMatchEpoch|0)){ purgedFor=window.__bfMatchEpoch|0; purgeCine(); }
+  },500);
   function scan(){
     if(!syncSession()||typeof G==='undefined'||!G||!G.team)return;
     ['p','o'].forEach(function(side){

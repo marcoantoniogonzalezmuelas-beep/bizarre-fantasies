@@ -25,7 +25,7 @@ export const END_GAME_SYNC_PATCH = `
 
   // Avisa al rival en cuanto este cliente muestra su pantalla final.
   function hookShowResult(){
-    if(typeof window.showResult !== 'function' || window.showResult.__bfEndSync) return false;
+    if(window.__bfOnce__bfEndSync_showResult||typeof window.showResult!=='function')return false; window.__bfOnce__bfEndSync_showResult=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.showResult;
     window.showResult = function(youWin){
       try{
@@ -106,7 +106,7 @@ export const END_GAME_SYNC_PATCH = `
 
   // Escucha los datos de red del juego sin romper su propio manejador.
   function hookNetRecv(){
-    if(typeof window.netOnData !== 'function' || window.netOnData.__bfEndSync) return false;
+    if(window.__bfOnce__bfEndSync_netOnData||typeof window.netOnData!=='function')return false; window.__bfOnce__bfEndSync_netOnData=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.netOnData;
     window.netOnData = function(msg){
       try{ handle(msg); }catch(e){}

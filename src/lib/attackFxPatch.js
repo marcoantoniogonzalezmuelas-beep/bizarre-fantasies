@@ -136,17 +136,18 @@ export const ATTACK_FX_PATCH = `
   function spriteFor(wid){ if(WPN_SPRITE[wid])return WPN_SPRITE[wid]; var it=itemFor(wid); return (it&&it.sprite)?String(it.sprite):null; }
   // BASTÓN EXTENSIBLE: el bastón sale del atacante y SE ESTIRA hasta el rival (y vuelve). Con la imagen de la
   // carta ("sprite") si la tiene; si no, un bastón dorado con orbe brillante dibujado aquí.
-  var STAFF_SVG='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="40" viewBox="0 0 400 40"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b0"/><stop offset=".45" stop-color="#e2a52a"/><stop offset="1" stop-color="#7a4a06"/></linearGradient><linearGradient id="r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a7a"/><stop offset="1" stop-color="#8a0f10"/></linearGradient><radialGradient id="o"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#9fe8ff"/><stop offset="1" stop-color="#2a7bff" stop-opacity="0"/></radialGradient></defs><rect x="4" y="15" width="360" height="10" rx="5" fill="url(#g)"/><rect x="4" y="12" width="26" height="16" rx="4" fill="url(#r)"/><rect x="340" y="12" width="26" height="16" rx="4" fill="url(#r)"/><circle cx="380" cy="20" r="18" fill="url(#o)"/></svg>');
+  // Bastón grueso al estilo del de Son Goku: rojo, con bandas doradas y una gran punta redondeada (antes era una línea fina).
+  var STAFF_SVG='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="420" height="64" viewBox="0 0 420 64" preserveAspectRatio="none"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a8a"/><stop offset=".28" stop-color="#f0291f"/><stop offset=".72" stop-color="#b80d0d"/><stop offset="1" stop-color="#5e0303"/></linearGradient><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#f0b429"/><stop offset="1" stop-color="#8a5a05"/></linearGradient><radialGradient id="t" cx=".35" cy=".35"><stop offset="0" stop-color="#ffd2c8"/><stop offset=".45" stop-color="#ff3b2b"/><stop offset="1" stop-color="#8a0505"/></radialGradient></defs><rect x="6" y="14" width="370" height="36" rx="18" fill="url(#s)"/><rect x="6" y="12" width="30" height="40" rx="10" fill="url(#g)"/><rect x="330" y="12" width="30" height="40" rx="10" fill="url(#g)"/><ellipse cx="384" cy="32" rx="32" ry="30" fill="url(#t)"/><rect x="40" y="19" width="280" height="7" rx="3.5" fill="#fff" opacity=".28"/></svg>');
   function isStaff(wid){ var it=itemFor(wid); return !!(it&&(it.fx==='staff'||Number(it.reach_pct)>0)); }
   function staffFx(a,b,wid,delay){
     setTimeout(function(){
       var dx=b.x-a.x,dy=b.y-a.y,dist=Math.max(40,Math.sqrt(dx*dx+dy*dy)),ang=Math.atan2(dy,dx)*180/Math.PI;
       var img=document.createElement('img');img.src=spriteFor(wid)||STAFF_SVG;img.className='bf-afx';
-      img.style.cssText='position:fixed;left:'+a.x+'px;top:'+(a.y-14)+'px;height:28px;width:40px;object-fit:fill;transform-origin:0 50%;transform:rotate('+ang+'deg);z-index:9;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,210,74,.85)) drop-shadow(0 4px 6px rgba(0,0,0,.6));transition:width .26s cubic-bezier(.2,1.4,.4,1)';
+      img.style.cssText='position:fixed;left:'+a.x+'px;top:'+(a.y-28)+'px;height:56px;width:56px;object-fit:fill;transform-origin:0 50%;transform:rotate('+ang+'deg);z-index:9;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,210,74,.85)) drop-shadow(0 4px 6px rgba(0,0,0,.6));transition:width .26s cubic-bezier(.2,1.4,.4,1)';
       bfAppend(img);
       requestAnimationFrame(function(){ img.style.width=dist+'px'; });
       setTimeout(function(){ hitStar(b); },230);
-      setTimeout(function(){ img.style.transition='width .22s ease-in,opacity .22s';img.style.width='40px';img.style.opacity='0'; },520);
+      setTimeout(function(){ img.style.transition='width .22s ease-in,opacity .22s';img.style.width='56px';img.style.opacity='0'; },560);
       setTimeout(function(){ if(img.parentNode)img.parentNode.removeChild(img); },800);
     },delay||0);
   }

@@ -150,8 +150,22 @@ export const HERO_DICE_PATCH = `
     // Una tirada = un solo dado: la misma tirada llega por la vía local y por
     // la cola de efectos (flushFx); la segunda se descarta.
     window.__bfDiceSeen = window.__bfDiceSeen || {};
-    if(payload && payload.rid){ if(window.__bfDiceSeen[payload.rid]) return; window.__bfDiceSeen[payload.rid] = 1; }
-    var start = Date.now(), epoch = window.__bfMatchEpoch|0;
+    var epoch = window.__bfMatchEpoch|0, entry = null;
+    if(payload && payload.rid){
+      var seen = window.__bfDiceSeen[payload.rid];
+      if(seen){
+        // Segunda llegada de la MISMA tirada: no se muestra otra vez, pero si trae la resolución (onSettled) se engancha
+        // a la que ya está en pantalla. Antes se descartaba: si llegaba primero la copia de la cola de efectos (sin
+        // resolución), el efecto del dado no se aplicaba nunca (la amenaza de Doji por veneno no fulminaba a nadie).
+        if(typeof onSettled === 'function'){
+          if(seen.settleAt) setTimeout(function(){ if((window.__bfMatchEpoch|0)===epoch) onSettled(); }, Math.max(0, seen.settleAt - Date.now()));
+          else if(seen.cbs) seen.cbs.push(onSettled);
+        }
+        return;
+      }
+      entry = window.__bfDiceSeen[payload.rid] = { cbs: [] };
+    }
+    var start = Date.now();
     function tick(){
       if((window.__bfMatchEpoch|0)!==epoch) return;      // la tirada era de la partida anterior
       if(document.querySelector('.bf-hdice')){setTimeout(tick,200);return;}
@@ -159,7 +173,12 @@ export const HERO_DICE_PATCH = `
         if(Date.now() - start < 12000){ setTimeout(tick, 200); return; }
       }
       pop(payload);
-      if(typeof onSettled === 'function') setTimeout(function(){ if((window.__bfMatchEpoch|0)===epoch) onSettled(); }, TOTAL_MS+50);
+      if(entry) entry.settleAt = Date.now() + TOTAL_MS + 50;
+      setTimeout(function(){
+        if((window.__bfMatchEpoch|0)!==epoch) return;
+        if(typeof onSettled === 'function') onSettled();
+        if(entry) entry.cbs.forEach(function(cb){ try{ cb(); }catch(e){} });
+      }, TOTAL_MS+50);
     }
     tick();
   }

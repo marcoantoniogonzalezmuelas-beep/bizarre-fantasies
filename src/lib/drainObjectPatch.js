@@ -134,7 +134,7 @@ export const DRAIN_OBJECT_PATCH = `
   }
 
   function hookUse(){
-    if(typeof window.useItem !== 'function' || window.useItem.__bfDrain) return false;
+    if(window.__bfOnce__bfDrain_useItem||typeof window.useItem!=='function')return false; window.__bfOnce__bfDrain_useItem=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.useItem;
     var wrapped = function(idx){
       try{
@@ -157,7 +157,7 @@ export const DRAIN_OBJECT_PATCH = `
   }
 
   function hookUseAI(){
-    if(typeof window.useItem_AI !== 'function' || window.useItem_AI.__bfDrain) return false;
+    if(window.__bfOnce__bfDrain_useItem_AI||typeof window.useItem_AI!=='function')return false; window.__bfOnce__bfDrain_useItem_AI=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.useItem_AI;
     var wrapped = function(side, idx){
       try{
@@ -178,7 +178,7 @@ export const DRAIN_OBJECT_PATCH = `
 
   // Cinemática también en el rival online (llega por flushFx).
   function hookFlush(){
-    if(typeof window.flushFx !== 'function' || window.flushFx.__bfDrain) return false;
+    if(window.__bfOnce__bfDrain_flushFx||typeof window.flushFx!=='function')return false; window.__bfOnce__bfDrain_flushFx=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.flushFx;
     window.flushFx = function(list){
       try{ (list || []).forEach(function(ev){ if(ev && ev.k === 'bfdrain') playDrainCine(); }); }catch(e){}

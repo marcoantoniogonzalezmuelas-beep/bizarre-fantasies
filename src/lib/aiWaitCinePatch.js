@@ -38,12 +38,14 @@ export const AI_WAIT_CINE_PATCH = `
     if(typeof window.aiTurn!=='function'||window.aiTurn.__bfWaitCine)return false;
     var orig=window.aiTurn;
     window.aiTurn=function(h,side){
-      var self=this,t0=Date.now(),quietFrom=0;
+      var self=this,t0=Date.now(),quietFrom=0,epoch=window.__bfMatchEpoch|0;
       (function tick(){
         if(window.B&&window.B.over)return;
+        if((window.__bfMatchEpoch|0)!==epoch)return;   // empezó otra partida: la acción de la vieja no se ejecuta
+        var hard=Date.now()-t0>20000;                   // nunca espera más de 20 s (antes podía esperar sin fin)
         if(busy())quietFrom=0;
         else if(!quietFrom)quietFrom=Date.now();
-        if(cineBusy()||indicatorsBusy()||((busy()||Date.now()-quietFrom<QUIET_MS)&&Date.now()-t0<9000)){
+        if(!hard&&(cineBusy()||indicatorsBusy()||((busy()||Date.now()-quietFrom<QUIET_MS)&&Date.now()-t0<9000))){
           // Sigue habiendo una animación: la IA espera y se re-arma el
           // vigilante para que no fuerce el turno mientras tanto.
           try{ if(typeof window.armWatchdog==='function'){ if(typeof window.clearWatchdog==='function')window.clearWatchdog(); window.armWatchdog(); } }catch(e){}

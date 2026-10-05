@@ -105,7 +105,9 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
                 var foeSide = tSideF ? (tSideF(target) === 'p' ? 'o' : 'p') : 'o';
                 var foes = ((typeof G!=='undefined'&&G.team&&G.team[foeSide])||[]).filter(function(f){ return f && f.alive; });
                 // Preferir al atacante si es rival; si no, el rival con menos vida.
-                var attacker = (typeof B!=='undefined'&&B&&B.current&&typeof getHero==='function') ? getHero(B.current.side, B.current.id) : null;
+                // Quién causó el daño: el que lanzó el veneno si es daño de veneno (bfFrom); si no, quien tiene el turno.
+                var src = opts && opts.bfFrom;
+                var attacker = (src && typeof getHero==='function') ? getHero(src.side, src.id) : ((typeof B!=='undefined'&&B&&B.current&&typeof getHero==='function') ? getHero(B.current.side, B.current.id) : null);
                 var victim = null;
                 if(attacker && attacker.alive && attacker !== target && tSideF && tSideF(attacker) === foeSide) victim = attacker;
                 if(!victim && foes.length) victim = foes.slice().sort(function(a,b){ return (a.hp||0)-(b.hp||0); })[0];
@@ -115,7 +117,10 @@ export const DOJI_CONPURI_ABILITY_PATCH = `
                   if(victim._bfInvisible){ victim._bfInvisible = 0; victim._bfInvisibleFresh = 0; }
                   // Muerte DEFINITIVA: sin fase élite (no renace).
                   victim.eliteUsed = true; victim._bfNoElite = 1;
-                  orig.call(window, victim, 9999, {type:'spell', element:'arcano', bfDojiKill:true});
+                  // Golpe INEVITABLE: daño verdadero (no lo anulan armaduras, barreras ni escudos) y, si aun así sigue en
+                  // pie, cae igualmente (antes era daño mágico: una barrera lo anulaba y "caía fulminado" sin morir).
+                  orig.call(window, victim, 9999, {type:'true', bfDojiKill:true});
+                  if(victim.alive){ victim.hp = 0; if(typeof handleDeath === 'function') handleDeath(victim); else victim.alive = false; if(typeof renderBattle === 'function') renderBattle(); }
                   if(typeof pushFx === 'function') pushFx({k:'death', side:foeSide, id:victim.id, bfKillSource:{side:foeSide,id:victim.id,ts:Date.now(),self:true,kind:'useAbility'}});
                 } else if(typeof pushLog === 'function'){
                   pushLog('lx', target.name+': no hay rivales vivos a los que fulminar.');

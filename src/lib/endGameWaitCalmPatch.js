@@ -43,7 +43,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
   // llamada pasa al original y muestra la cinemática de fin de partida. ----
   function hookEndCine(){
     var orig = window.bfEndCinematic;
-    if(typeof orig !== 'function' || orig.__bfWaitCalm) return false;
+    if(window.__bfOnceWC_endCine || typeof orig !== 'function') return false; window.__bfOnceWC_endCine = 1;   /* instalación única */
     var wrapped = function(){
       try{
         if(typeof B !== 'undefined' && B && B.over && (!calm() || (typeof window.__bfRecapPending==='function' && window.__bfRecapPending()))){
@@ -78,7 +78,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
   var resultPending = false, resultArgs = null, resultDeadline = 0;
   function hookShowResult(){
     var orig = window.showResult;
-    if(typeof orig !== 'function' || orig.__bfWaitCalm) return false;
+    if(window.__bfOnceWC_result || typeof orig !== 'function') return false; window.__bfOnceWC_result = 1;   /* instalación única */
     var wrapped = function(youWin){
       // Si ya hay un resultado pendiente (esperando a que termine la animación),
       // se absorbe la nueva llamada: se queda con los argumentos del primero.
@@ -111,7 +111,7 @@ export const END_GAME_WAIT_CALM_PATCH = `
   var showPending = false, showArgs = null, showDeadline = 0;
   function hookShow(){
     var orig = window.show;
-    if(typeof orig !== 'function' || orig.__bfWaitCalm) return false;
+    if(window.__bfOnceWC_show || typeof orig !== 'function') return false; window.__bfOnceWC_show = 1;   /* instalación única */
     var wrapped = function(id){
       if(id !== 's-result') return orig.apply(this, arguments);
       showArgs = arguments;

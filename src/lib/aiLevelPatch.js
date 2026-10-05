@@ -212,7 +212,7 @@ export const AI_LEVEL_PATCH = `
   }
 
   function installWinHook(){
-    if (typeof window.showResult !== 'function' || window.showResult.__bfWinCount) return;
+    if(window.__bfOnce__bfWinCount_showResult||typeof window.showResult!=='function')return; window.__bfOnce__bfWinCount_showResult=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.showResult;
     window.showResult = function(youWin){
       try {
@@ -247,7 +247,7 @@ export const AI_LEVEL_PATCH = `
 
   // ---- Sobreescribe el nombre de la IA con el del nivel ----
   function installAiName(){
-    if (typeof window.startVsAI !== 'function' || window.startVsAI.__bfLvlName) return;
+    if(window.__bfOnce__bfLvlName_startVsAI||typeof window.startVsAI!=='function')return; window.__bfOnce__bfLvlName_startVsAI=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig = window.startVsAI;
     window.startVsAI = function(){
       if (typeof G !== 'undefined') G.__bfWinCounted = false;

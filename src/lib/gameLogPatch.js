@@ -14,7 +14,7 @@ export const GAME_LOG_PATCH = `
   // Captura los eventos de la partida enganchando pushLog: cada línea del log
   // de batalla (ataques, habilidades, muertes, compras) se guarda como evento.
   function hookPushLog(){
-    if(typeof window.pushLog!=='function'||window.pushLog.__bfEvLog)return;
+    if(window.__bfOnce__bfEvLog_pushLog||typeof window.pushLog!=='function')return; window.__bfOnce__bfEvLog_pushLog=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig=window.pushLog;
     window.pushLog=function(type,text){
       try{
@@ -113,7 +113,7 @@ export const GAME_LOG_PATCH = `
   setInterval(tick,1000);
 
   function install(){
-    if(typeof window.showResult!=='function'||window.showResult.__bfLog)return false;
+    if(window.__bfOnce__bfLog_showResult||typeof window.showResult!=='function')return false; window.__bfOnce__bfLog_showResult=1;   /* instalación única: reinstalarse apilaba capas sin fin ("Maximum call stack") */
     var orig=window.showResult;
     window.showResult=function(youWin){
       try{endLog(youWin);}catch(e){}
