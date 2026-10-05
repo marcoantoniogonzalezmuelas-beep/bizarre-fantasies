@@ -28,7 +28,7 @@ test('engine: spell boost, elemental weakness (inverse of ELEM_COUNTER), toy cri
   assert.match(p,/orig\.call\(this,a,th,\{type:'true',bfGear:true\}\)/,'thorns hurt the melee attacker');
   assert.match(p,/window\.dealDamage\(other,d2,\{type:'melee',bfReach:true\}\)/,'reach: second rival, no chain');
   assert.match(p,/v=Math\.max\(1,v\+Number\(h\.armor\.vel\)\)/);
-  assert.match(p,/window\.dealDamage\(h,p\.dmg,\{type:'true',bfGear:true,bfPoison:true\}\)/,'poison ignores armor and shields');
+  assert.match(p,/window\.dealDamage\(h,p\.dmg,\{type:'true',bfGear:true,bfPoison:true,bfFrom:/,'poison ignores armor and shields (and remembers its caster)');
   assert.match(read('abilityImplPatch.js'),/case 'poison': \{/);assert.match(read('gameInject.js'),/BLUFF_FX_PATCH \+ NEW_GEAR_PATCH/);
 });
 test('editor and admin: new parameters editable; "Crear cartas nuevas" creates missing cards and saves their parameters',()=>{
@@ -212,4 +212,37 @@ test('the AI hitting an already-used elite ability closes its action instead of 
   assert.match(b,/if\(typeof done==='function'\)return done\(\);/,'the AI closes its action');
   const t=read('tableMatPatch.js');assert.match(t,/var LIGHT_MAT='url\("'\+DOODLES\+'"\) repeat/);assert.match(t,/h\.style\.background = LIGHT_MAT;/);
   assert.match(read('equipHandPatch.js'),/#s-battle \.hand-under-action,#s-battle \.hand-rival,#s-battle \.bf-discard-pile\{background:url\("'\+DOODLES\+'"\)/);
+});
+test('DICE: a second arrival of the same roll carrying the resolution is attached to the one on screen (it was dropped: Doji\'s threat by poison never killed anyone)',()=>{
+  const d=read('heroDicePatch.js');
+  assert.match(d,/if\(seen\.settleAt\) setTimeout\(function\(\)\{ if\(\(window\.__bfMatchEpoch\|0\)===epoch\) onSettled\(\); \}, Math\.max\(0, seen\.settleAt - Date\.now\(\)\)\);/);
+  assert.match(d,/else if\(seen\.cbs\) seen\.cbs\.push\(onSettled\);/);assert.match(d,/if\(entry\) entry\.cbs\.forEach\(function\(cb\)\{ try\{ cb\(\); \}catch\(e\)\{\} \}\);/);
+});
+test('POISON remembers who cast it (Doji\'s threat fulminates the caster); the threat kill is unavoidable true damage',()=>{
+  assert.match(read('abilityImplPatch.js'),/src: hero\.name, srcSide: tSide\(hero\), srcId: hero\.id \};/);
+  assert.match(read('newGearPatch.js'),/bfFrom:\(p\.srcSide&&p\.srcId\)\?\{side:p\.srcSide,id:p\.srcId\}:null/);
+  const j=read('dojiConpuriAbilityPatch.js');
+  assert.match(j,/var src = opts && opts\.bfFrom;/);assert.match(j,/orig\.call\(window, victim, 9999, \{type:'true', bfDojiKill:true\}\);/);
+  assert.match(j,/if\(victim\.alive\)\{ victim\.hp = 0; if\(typeof handleDeath === 'function'\) handleDeath\(victim\);/);
+});
+test('battle hands collapsed on desktop too; the staff is thick, red and stretches all the way',()=>{
+  const g=read('gameInject.js');
+  assert.match(g,/: ''\) \+ MOBILE_HAND_COLLAPSE_PATCH/);assert.doesNotMatch(g,/MODAL_FOCUS_PATCH \+ MOBILE_HAND_COLLAPSE_PATCH/);
+  const a=read('attackFxPatch.js');
+  assert.match(a,/preserveAspectRatio="none"/,'stretches to the target instead of keeping its proportions');
+  assert.match(a,/top:'\+\(a\.y-28\)\+'px;height:56px;width:56px;/);
+});
+test('NEW MATCH starts clean: queued 3D animations purged when the match ends and when a new one starts; old AI waits cancelled; hand fingerprint reset',()=>{
+  const a=read('abilityAnimPatch.js');
+  assert.match(a,/function purgeCine\(\)\{\s*try\{ cineQueue\.reset\(\); \}catch\(e\)\{\}\s*playingUrl=null;/);
+  assert.match(a,/window\.bfOnMatchReset\(function\(\)\{if\(window\.bfResetAbilityMemo\)window\.bfResetAbilityMemo\(memo\);purgeCine\(\);\}\)/);
+  assert.match(a,/var ended=!!window\.__bfEndCineDoneAt\|\|Date\.now\(\)-resultSince>15000;/,'purged only once the final cinematic is over');
+  const w=read('aiWaitCinePatch.js');assert.match(w,/if\(\(window\.__bfMatchEpoch\|0\)!==epoch\)return;/);assert.match(w,/var hard=Date\.now\(\)-t0>20000;/);
+  assert.match(read('steadyRenderPatch.js'),/window\.bfOnMatchReset\(function\(\)\{ paintedSig=\{p:null,o:null\}; \}\);/);
+});
+test('NO RE-WRAPPING (2): showResult, flushFx and useItem hooks are installed once (showResult was re-wrapped ~800 times a minute: "Maximum call stack" at the end of long matches)',()=>{
+  for(const f of ['gameLogPatch.js','matchResultPatch.js','matchScorePatch.js','aiLevelPatch.js','endGameSyncPatch.js','abilityAnimPatch.js','drainObjectPatch.js','ringObjectPatch.js'])
+    assert.match(read(f),/if\(window\.__bfOnce__\w+_\w+\|\|typeof window\.\w+!=='function'\)return( false)?; window\.__bfOnce__\w+_\w+=1;/,f);
+  const w=read('endGameWaitCalmPatch.js');for(const k of ['__bfOnceWC_endCine','__bfOnceWC_result','__bfOnceWC_show'])assert.ok(w.includes('window.'+k+' = 1;'),k);
+  assert.doesNotMatch(read('endGameWaitCalmPatch.js'),/if\(typeof orig !== 'function' \|\| orig\.__bfWaitCalm\) return false;/);
 });
