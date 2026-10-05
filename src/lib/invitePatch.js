@@ -51,23 +51,51 @@ export const INVITE_PATCH = `
     w.__bfInvite=1;window.renderLobby=w;return true;
   }
   // Abrir el juego con ?sala=CODIGO: busca la sala en la lista y abre la ventana de unirse.
+  var joining='';
+  function ack(kind,code){ try{ window.parent.postMessage({bfInviteHandled:{kind:kind,code:code}},'*'); }catch(e){} }
   function joinByLink(code){
     code=String(code||'').trim().toUpperCase();
-    if(!code)return;
-    try{ if(typeof show==='function')show('s-lobby'); if(typeof renderLobby==='function')renderLobby('browse'); }catch(e){}
+    if(!code||joining===code)return;
+    joining=code;ack('sala',code);
+    // Se entra al multijugador IGUAL que con el botón del menú (enterLobby); antes se abría la lista a mano.
+    try{ if(typeof window.enterLobby==='function')window.enterLobby(); else { if(typeof show==='function')show('s-lobby'); if(typeof renderLobby==='function')renderLobby('browse'); } }catch(e){}
     var tries=0;
     var iv=setInterval(function(){
       tries++;
       var rooms=(typeof LOBBY!=='undefined'&&LOBBY.rooms)||[];
       var room=rooms.find(function(r){ return r&&String(r.id||'').toUpperCase()===code; });
-      if(room){ clearInterval(iv); if(typeof joinRoomFromList==='function')joinRoomFromList(room.id,!!room.hasPass); return; }
+      if(room){ clearInterval(iv); joining=''; if(typeof joinRoomFromList==='function')joinRoomFromList(room.id,!!room.hasPass); return; }
       if(tries%8===0&&typeof window.lobbyConnect==='function'){ try{ window.lobbyConnect(); }catch(e){} }
-      if(tries>=40){ clearInterval(iv); say('No encuentro la sala '+code+': puede que ya haya empezado o se haya cerrado.'); }
+      if(tries>=40){ clearInterval(iv); joining=''; say('No encuentro la sala '+code+': puede que ya haya empezado o se haya cerrado.'); }
     },500);
   }
   window.addEventListener('message',function(e){
     if(e&&e.data&&e.data.bfJoinRoom)joinByLink(e.data.bfJoinRoom);
-    if(e&&e.data&&e.data.bfOpenBizarreRoom){ var tries=0; (function open(){ if(typeof window.bfOpenBizarreRoom==='function'){ try{ if(typeof show==='function')show('s-home'); }catch(x){} window.bfOpenBizarreRoom(); return; } if(++tries<40)setTimeout(open,250); })(); }
+    if(e&&e.data&&e.data.bfOpenBizarreRoom){ var tries=0; (function open(){ if(typeof window.bfOpenBizarreRoom==='function'){ try{ if(typeof show==='function')show('s-home'); }catch(x){} window.bfOpenBizarreRoom(); ack('habitacion','bizarra'); return; } if(++tries<40)setTimeout(open,250); })(); }
+    // Sala de MISIÓN: igual que el botón "Misiones" (pide el nombre); al confirmarlo se abre el panel, que pasa a
+    // multijugador y se une solo a la sala del enlace.
+    if(e&&e.data&&e.data.bfOpenMissionRoom){
+      var mcode=e.data.bfOpenMissionRoom,t2=0;
+      (function openM(){
+        if(typeof window.startVsAI!=='function'){ if(++t2<40)setTimeout(openM,250); return; }
+        ack('msala',mcode);
+        // Se lleva al jugador a la PREPARACIÓN (donde están su nombre, su contraseña y el botón ⚔️ Misiones) y se
+        // intenta entrar directamente. Si falta algo (nombre, contraseña o avatar), el botón queda resaltado: al
+        // pulsarlo, el panel de misiones se abre en multijugador y se une solo a la sala del enlace.
+        var go=function(){ window.bfMissionRequested=true; try{ window.startVsAI(); }catch(x){} };
+        // Como el menú: la preparación se pinta con goSetup en modo "contra la IA" (ahí están el nombre y ⚔️ Misiones).
+        try{ if(typeof G!=='undefined'&&G&&G.mode==='mp')G.mode='ai'; if(typeof window.goSetup==='function')window.goSetup(); else if(typeof show==='function')show('s-setup'); }catch(x){}
+        setTimeout(function(){
+          // El botón ⚔️ Misiones lo crea otro parche al mostrarse la pantalla: se reintenta el resaltado unos segundos.
+          var hl=0,ivh=setInterval(function(){ var btn=document.getElementById('bf-missions-entry'); if(btn){ clearInterval(ivh); btn.classList.add('bf-invite-pulse'); try{ btn.scrollIntoView({block:'center'}); }catch(x){} } else if(++hl>20)clearInterval(ivh); },500);
+          if(!document.getElementById('bf-invite-pulse-css')){ var st=document.createElement('style');st.id='bf-invite-pulse-css';st.textContent='.bf-invite-pulse{animation:bfInvPulse 1.1s ease-in-out infinite;box-shadow:0 0 0 0 rgba(255,210,74,.8)}@keyframes bfInvPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,210,74,.75)}50%{box-shadow:0 0 0 14px rgba(255,210,74,0)}}';document.head.appendChild(st); }
+          say('\u{1F4DC} Te han invitado a la sala de misi\u00f3n '+mcode+': escribe tu nombre y contrase\u00f1a y pulsa \u2694\ufe0f Misiones para entrar directo.');
+          go();
+        },600);
+        // Si solo faltaba el avatar, al elegirlo sigue SOLO hacia la sala.
+        var waited=0,iv2=setInterval(function(){ waited+=700; if(document.querySelector('.bf-missions')||waited>180000){ clearInterval(iv2); return; } if(window.bfMyAvatar&&window.bfMyAvatar.url&&window.__bfAvatarJustChosen){ window.__bfAvatarJustChosen=0; go(); } },700);
+      })();
+    }
   });
   // Habitación Bizarra: enlace que la abre directamente a quien lo recibe.
   window.bfInviteBizarre=function(){
@@ -116,15 +144,19 @@ export const INVITE_PATCH = `
       return !!r.pWin;
     }catch(e){ return false; }
   }
-  function circle(ctx,im,name,x,y,rad,gold){
-    ctx.save();ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.closePath();
+  // Retrato en CARTA con esquinas redondeadas, encuadrado desde ARRIBA (en las ilustraciones la cabeza está arriba:
+  // el círculo centrado de antes la cortaba).
+  function card(ctx,im,name,x,y,w,h,gold){
+    var r=22;
+    ctx.save();ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
     ctx.fillStyle='#2a1d44';ctx.fill();ctx.clip();
-    if(im){ var s=Math.max(rad*2/im.width,rad*2/im.height),w=im.width*s,h=im.height*s; ctx.drawImage(im,x-w/2,y-h/2-rad*0.1,w,h); }
-    else{ ctx.fillStyle='#ffe49a';ctx.font='900 '+Math.round(rad)+'px Cinzel,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(name||'?').charAt(0),x,y); }
+    if(im){ var s=Math.max(w/im.width,h/im.height),dw=im.width*s,dh=im.height*s; ctx.drawImage(im,x+(w-dw)/2,y,dw,dh); }
+    else{ ctx.fillStyle='#ffe49a';ctx.font='900 '+Math.round(w*0.45)+'px Cinzel,serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(name||'?').charAt(0),x+w/2,y+h/2); }
     ctx.restore();
-    ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);ctx.lineWidth=7;ctx.strokeStyle=gold?'#ffd24a':'#6f6584';ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+    ctx.lineWidth=7;ctx.strokeStyle=gold?'#ffd24a':'#6f6584';ctx.stroke();
     ctx.fillStyle='#fff5dc';ctx.font='800 26px Cinzel,serif';ctx.textAlign='center';ctx.textBaseline='top';
-    var nm=String(name||'');if(nm.length>14)nm=nm.slice(0,13)+'\\u2026';ctx.fillText(nm,x,y+rad+12);
+    var nm=String(name||'');if(nm.length>14)nm=nm.slice(0,13)+'\\u2026';ctx.fillText(nm,x+w/2,y+h+10);
   }
   window.bfShareResult=function(){
     var btn=document.getElementById('bf-share-result');if(btn){ btn.disabled=true;btn.textContent='Creando imagen\\u2026'; }
@@ -139,11 +171,13 @@ export const INVITE_PATCH = `
       x.fillStyle='#c9b8e8';x.font='800 34px Cinzel,serif';x.fillText('BIZARRE FANTASIES',540,60);
       x.fillStyle=win?'#ffd24a':'#ff6b7d';x.font='900 120px Cinzel,serif';x.fillText(win?'\\u00a1VICTORIA!':'DERROTA',540,120);
       var names=(typeof G!=='undefined'&&G.names)||{};
-      x.fillStyle='#fff5dc';x.font='800 40px Cinzel,serif';x.fillText(String(names[me]||'T\\u00fa'),540,300);
-      for(var i=0;i<mine.length;i++)circle(x,imgs[i],mine[i].name,240+i*300,500,120,win);
-      x.fillStyle='#ffd24a';x.font='900 80px Cinzel,serif';x.fillText('VS',540,700);
-      for(var j=0;j<theirs.length;j++)circle(x,imgs[mine.length+j],theirs[j].name,240+j*300,940,120,!win);
-      x.fillStyle='#fff5dc';x.font='800 40px Cinzel,serif';x.fillText(String(names[rv]||'Rival'),540,1120);
+      // Dos filas de 3 cartas (250 x 300), con el nombre de cada jugador encima de su fila.
+      var W=250,H=300,GAP=40,X0=(1080-(3*W+2*GAP))/2;
+      x.fillStyle='#fff5dc';x.font='800 38px Cinzel,serif';x.fillText(String(names[me]||'T\\u00fa'),540,262);
+      for(var i=0;i<mine.length;i++)card(x,imgs[i],mine[i].name,X0+i*(W+GAP),312,W,H,win);
+      x.fillStyle='#ffd24a';x.font='900 64px Cinzel,serif';x.fillText('VS',540,668);
+      x.fillStyle='#fff5dc';x.font='800 38px Cinzel,serif';x.fillText(String(names[rv]||'Rival'),540,742);
+      for(var j=0;j<theirs.length;j++)card(x,imgs[mine.length+j],theirs[j].name,X0+j*(W+GAP),792,W,H,!win);
       x.fillStyle='#c9b8e8';x.font='700 30px Cinzel,serif';x.fillText((origin()||'').replace(/^https?:\\/\\//,''),540,1240);
       c.toBlob(function(blob){
         var reset=function(){ if(btn){ btn.disabled=false;btn.textContent='\\u{1F4F8} Compartir resultado'; } };

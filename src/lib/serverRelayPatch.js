@@ -164,8 +164,9 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   // Un mensaje descartado (id de partida, ronda de subasta...) se confirma igualmente y NO se reenvía: si era
   // el snapshot que pasaba el turno, el anfitrión espera la jugada del invitado y el invitado cree que aún
   // juega el anfitrión: nadie juega y la partida se atasca. Para que no dependa de acertar la causa:
-  //   - el anfitrión emite un LATIDO con el turno (bfTurnHb) cada 2,5 s durante la batalla;
-  //   - si el turno del invitado difiere del del anfitrión en 2 latidos seguidos (~5 s), pide RESINCRONIZAR
+  //   - el anfitrión emite un LATIDO con el turno (bfTurnHb) cada 1,5 s durante la batalla;
+  //   - al primer latido que no coincide, si el invitado está ocupado con animaciones, descarta las atrasadas;
+  //   - si el turno del invitado difiere del del anfitrión en 2 latidos seguidos (~3 s), pide RESINCRONIZAR
   //     (bfResync) y el anfitrión le reenvía el estado completo;
   //   - si le toca al invitado y lleva en silencio 8 s (luego 20 s, 45 s...), el anfitrión le reenvía el estado.
   // Son mensajes de control: no llegan al motor del juego.
@@ -180,6 +181,19 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
       if (side !== 'g') return true;
       var mine = turnKey();
       if (battleOn() && msg.turn && mine && msg.turn !== mine) mismatchRun++; else mismatchRun = 0;
+      // PONERSE AL DÍA: si el invitado va por detrás porque está ocupado con animaciones o carteles (en su dispositivo
+      // se acumulan: cada jugada del anfitrión trae sus efectos), descarta lo atrasado y repinta con el estado actual.
+      if (mismatchRun === 1) {
+        try {
+          var busyHere = (typeof window.__bfCinematicBusy === 'function' && window.__bfCinematicBusy()) || (typeof window.__bfIndicatorsBusy === 'function' && window.__bfIndicatorsBusy());
+          if (busyHere) {
+            if (typeof window.__bfPurgeCine === 'function') window.__bfPurgeCine();
+            if (typeof window.__bfClearIndicators === 'function') window.__bfClearIndicators();
+            if (typeof window.renderBattle === 'function') window.renderBattle();
+            reportRelayError('turn_catchup', 'resync', 'invitado ocupado con animaciones: descartadas las atrasadas (anfitrión ' + msg.turn + ' / invitado ' + mine + ')');
+          }
+        } catch (e) { /* noop */ }
+      }
       if (mismatchRun >= 2 && Date.now() - lastResyncAt > 4000) {
         lastResyncAt = Date.now(); mismatchRun = 0;
         try { conn.send({ t: 'bfResync', turn: mine }); } catch (e) { /* noop */ }
@@ -205,7 +219,7 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
           pushState();
         }
       } catch (e) { /* noop */ }
-    }, 2500);
+    }, 1500);   // latido más frecuente: el desfase se detecta y corrige antes (antes 2,5 s)
   }
 
   // ---- Conexión virtual: simula una DataConnection de PeerJS ----
