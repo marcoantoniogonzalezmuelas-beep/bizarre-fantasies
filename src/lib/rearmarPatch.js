@@ -13,8 +13,38 @@ export const REARMAR_PATCH = `
   window.__bfRearmarPatch = true;
 
   // Imagen 3D de la cinemática de Rearmar (armería espectral).
+  // Imagen de la cinemática: la que tiene asignada Rearmar en el EDITOR (animación de su ficha, ob_rearm), que llega
+  // con el mapa de animaciones de la página. La fija de antes queda solo como respaldo si no tiene ninguna asignada
+  // (antes se usaba SIEMPRE la fija y se ignoraba la del editor).
   var CINE_URL = 'https://media.base44.com/images/public/6a39c9aee54efe3a86d6d69a/5e19f1cf9_generated_image.png';
-  { var pi = new Image(); pi.src = CINE_URL; }
+  // Recorte del fondo negro (igual que el resto de animaciones de habilidad).
+  var CUT = {};
+  function cutout(url){
+    if(!url || CUT[url] !== undefined) return;
+    CUT[url] = false;
+    var img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = function(){
+      try{
+        var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+        var x = c.getContext('2d'); x.drawImage(img, 0, 0);
+        var d = x.getImageData(0, 0, c.width, c.height), p = d.data, kept = 0, total = p.length / 4;
+        for(var i = 0; i < p.length; i += 4){ var m = Math.max(p[i], p[i+1], p[i+2]); if(m < 22) p[i+3] = 0; else kept++; }
+        if(kept < total * 0.15){ CUT[url] = false; return; }
+        x.putImageData(d, 0, 0);
+        CUT[url] = c.toDataURL('image/png');
+      }catch(e){ CUT[url] = false; }
+    };
+    img.onerror = function(){ CUT[url] = false; };
+    img.src = url;
+  }
+  cutout(CINE_URL);
+  window.addEventListener('message', function(e){
+    if(e.data && e.data.bfAbilityAnim && typeof e.data.bfAbilityAnim === 'object'){
+      var ent = e.data.bfAbilityAnim['ob_rearm'];
+      var url = ent && (ent.base || ent.elite);
+      if(url){ CINE_URL = url; cutout(CINE_URL); }
+    }
+  });
 
   var REARMAR_NAMES = ['Rearmar', 'Rearmar'];
 
@@ -164,8 +194,8 @@ export const REARMAR_PATCH = `
     ov.id = 'bf-rearm-cine';
     var html = '<div class="bf-rc-dim"></div><div class="bf-rc-glow"></div><div class="bf-rc-flash"></div>';
     for(var sp = 0; sp < 14; sp++) html += '<span class="bf-rc-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
-    html += '<img class="bf-rc-img" src="'+CINE_URL+'" alt="">';
-    html += '<div class="bf-rc-ttl">RETROARMAR</div>';
+    html += '<img class="bf-rc-img" src="'+(CUT[CINE_URL] || CINE_URL)+'" alt="">';
+    html += '<div class="bf-rc-ttl">REARMAR</div>';
     ov.innerHTML = html;
     (window.__bfAppend || function(n){ document.body.appendChild(n); })(ov);
     // Fija __bfCardCineName para que cardPlayRevealPatch no solape la carta revelada.
