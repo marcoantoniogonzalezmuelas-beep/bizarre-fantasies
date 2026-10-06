@@ -16,10 +16,8 @@
 // solo al borde inferior. Se elimina sola a los pocos segundos.
 export const END_HEROES_PATCH = `
 <style id="bf-end-heroes-css">
-/* El juego ya pinta su propia alineación VERTICAL de los 6 héroes dentro de la
-   cinemática final (#bf-end-cine .bf-cine-team). Se oculta para no duplicarlos:
-   los héroes se muestran solo en la franja horizontal de este parche. */
-#bf-end-cine .bf-cine-team, #bf-end-cine .bf-cine-vs { display: none !important; }
+/* (Ya NO se ocultan los héroes de la animación final: esta franja aparte está desactivada y los 6 héroes deben
+   verse DENTRO de la animación final. La regla que los ocultaba hacía que nunca se vieran incrustados.) */
 @keyframes bfEhRise { from { transform: translateY(40%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes bfEhPop { 0% { opacity: 0; transform: translateY(14px) scale(.7); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes bfEhGoldShine { 0%,100% { opacity: .45; } 50% { opacity: 1; } }

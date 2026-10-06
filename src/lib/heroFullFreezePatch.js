@@ -13,8 +13,10 @@ export const HERO_FULL_FREEZE_PATCH = `
   window.__bfHeroFullFreeze = true;
 
   var HOST = 'html body .bhero.bhero';
-  // Capas de efecto que SÍ se animan.
-  var OK = ':not(.bf-decor-layer):not(.bf-decor-layer *):not(.bf-decor):not(.bf-blood-veil):not(.bf-blood-veil *):not(.bf-blood-drop):not(.bf-ability-burst):not(.bf-ability-burst *):not(.bf-epic-foil):not(.bf-epic-foil *)';
+  // RETRATOS ESTÁTICOS: ya solo se anima la ráfaga de un instante al usar una habilidad. Las partículas de estado
+  // (escarcha, velas, calaveras…), la sangre de la agonía y el brillo foil quedan dibujados pero QUIETOS: se movían
+  // sobre el retrato mientras duraba el estado (élite, congelado…).
+  var OK = ':not(.bf-ability-burst):not(.bf-ability-burst *)';
   // Transform con el que se "clava" el recuadro. En MÓVIL/TABLET no puede ser
   // translateZ(0): eso promueve cada retrato a su propia capa GPU y, con 8
   // retratos grandes (en tablet son texturas enormes), se agota la memoria de
@@ -61,7 +63,7 @@ export const HERO_FULL_FREEZE_PATCH = `
   // El CSS no puede parar lo que hace el JavaScript del juego: aquí se cancelan
   // las animaciones creadas por código y se limpian los transform/opacity que
   // reescribe en cada repintado. Las capas de efecto permitidas no se tocan.
-  var SKIP = '.bf-decor-layer,.bf-blood-veil,.bf-ability-burst,.bf-epic-foil';
+  var SKIP = '.bf-ability-burst';
   setInterval(function(){
     document.querySelectorAll('.bhero').forEach(function(card){
       try{
@@ -74,7 +76,8 @@ export const HERO_FULL_FREEZE_PATCH = `
         }
         card.querySelectorAll('[style*="transform"],[style*="animation"]').forEach(function(el){
           if(el.closest && el.closest(SKIP)) return;
-          if(el.classList.contains('bf-decor') || el.classList.contains('bf-epic-foil')) return;
+          // Partículas y brillo: se les quita la animación, pero NO la transformación con la que se colocan.
+          if(el.classList.contains('bf-decor') || el.classList.contains('bf-epic-foil')){ if(el.style.animation) el.style.animation = 'none'; return; }
           if(el.style.transform && el.style.transform !== 'none') el.style.transform = 'none';
           if(el.style.animation) el.style.animation = 'none';
         });

@@ -21,6 +21,7 @@ export const BATTLE_ART_FIX_PATCH = `
     return m ? m[1] : '';
   }
 
+  var checking = {};
   var lastGood = {};
 
   function guard(){
@@ -42,9 +43,12 @@ export const BATTLE_ART_FIX_PATCH = `
       var u = urlOf(art);
       if(u){
         // Solo se guarda como "buena" cuando la imagen carga de verdad.
-        if(!lastGood[card.id] || lastGood[card.id].url !== u){
+        // (Una sola comprobación por imagen a la vez: si no cargaba, se repetía en cada vuelta creando imágenes sin fin.)
+        if((!lastGood[card.id] || lastGood[card.id].url !== u) && checking[card.id] !== u){
+          checking[card.id] = u;
           var img = new Image();
           img.onload = function(){ lastGood[card.id] = { url: u, pos: art.style.backgroundPosition }; };
+          setTimeout(function(){ if(checking[card.id] === u) checking[card.id] = null; }, 15000);   // reintento como mucho cada 15 s
           img.onerror = function(){
             var prev = lastGood[card.id];
             if(prev){ art.style.backgroundImage = 'url("' + prev.url + '")'; art.style.backgroundPosition = prev.pos || 'center 18%'; }

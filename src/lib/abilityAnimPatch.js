@@ -38,6 +38,12 @@ export const ABILITY_ANIM_PATCH = `
   // base64 de cada héroe): eso bloqueaba frames y llenaba memoria, y el tablet
   // perdía capas GPU → parpadeo al abrir cualquier cinemática.
   var QUEUE=[],BUSY=false;
+  // Como mucho 24 recortes guardados: al pasar, se libera el más antiguo (su memoria vuelve al navegador).
+  var KEPT=[];
+  function keep(url){
+    var i=KEPT.indexOf(url);if(i>=0)KEPT.splice(i,1);KEPT.push(url);
+    while(KEPT.length>24){ var old=KEPT.shift(); try{ if(CUT[old])URL.revokeObjectURL(CUT[old]); }catch(e){} delete CUT[old]; }
+  }
   var idle=window.requestIdleCallback||function(f){return setTimeout(f,300);};
   function pump(){
     if(BUSY||!QUEUE.length)return;
@@ -65,8 +71,11 @@ export const ABILITY_ANIM_PATCH = `
     var img=new Image();img.crossOrigin='anonymous';
     img.onload=function(){
       try{
-        var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
-        var x=c.getContext('2d');x.drawImage(img,0,0);
+        // Tamaño máximo 720 px en el lado largo: la cinemática nunca se ve más grande, y recortar a tamaño completo
+        // costaba mucha CPU y memoria (en iPhone, Safari acababa recargando la página).
+        var sc=Math.min(1,720/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+        var c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*sc));c.height=Math.max(1,Math.round(img.naturalHeight*sc));
+        var x=c.getContext('2d');x.drawImage(img,0,0,c.width,c.height);
         var d=x.getImageData(0,0,c.width,c.height),p=d.data,W=c.width,H=c.height;
         // Recorte por DISTANCIA DE COLOR + RELLENO DESDE LOS BORDES: se muestrea
         // el color real del fondo desde los bordes de la imagen y se vuelve
@@ -186,7 +195,7 @@ export const ABILITY_ANIM_PATCH = `
           if(!bl){CUT[url]=false;done();return;}
           var bu=URL.createObjectURL(bl);
           var pre=new Image();
-          pre.onload=function(){CUT[url]=bu;done();};
+          pre.onload=function(){CUT[url]=bu;keep(url);done();};
           pre.onerror=function(){CUT[url]=false;done();};
           pre.src=bu;
         },'image/png');
@@ -195,6 +204,18 @@ export const ABILITY_ANIM_PATCH = `
     img.onerror=function(){CUT[url]=false;done();};
     img.src=url;
   }
+  // Pre-recorte SOLO de los héroes de la batalla en curso (6 héroes × normal/élite), y nunca con "Anim OFF".
+  var precutKey='';
+  function precutBattle(){
+    try{
+      if(window.__bfNoCinematics||!animMap||!document.querySelector('#s-battle.active')||typeof G==='undefined'||!G||!G.team)return;
+      var ids=[].concat(G.team.p||[],G.team.o||[]).map(function(h){return h&&(h.id||h.cid||h.card_id);}).filter(Boolean);
+      var key=ids.join(',');if(!key||key===precutKey)return;
+      precutKey=key;
+      ids.forEach(function(id){ var ent=animMap[id]; if(!ent)return; if(ent.base)cutout(ent.base); if(ent.elite&&ent.elite!==ent.base)cutout(ent.elite); });
+    }catch(e){}
+  }
+  setInterval(precutBattle,1500);
   window.addEventListener('message',function(e){
     if(e.data&&e.data.bfAbilityAnim&&typeof e.data.bfAbilityAnim==='object'){
       animMap=e.data.bfAbilityAnim;
@@ -208,12 +229,10 @@ export const ABILITY_ANIM_PATCH = `
         var ent=animMap[k];
         if(ent&&ent.name)spellByName[String(ent.name).toLowerCase()]=ent;
       });
-      // Pre-recorta todas las imágenes para que el primer disparo ya salga sin fondo.
-      Object.keys(animMap).forEach(function(k){
-        var ent=animMap[k];if(!ent)return;
-        if(ent.base)cutout(ent.base);
-        if(ent.elite)cutout(ent.elite);
-      });
+      // Ya NO se pre-recortan las ~270 imágenes de todas las cartas: en iPhone (sin requestIdleCallback) se procesaban
+      // durante toda la partida, llenaban la memoria y Safari recargaba la página (desconexiones y reanudaciones en
+      // bucle), y en Android retrasaban el juego aun con "Anim OFF". Solo se preparan las de los héroes de la batalla
+      // en curso (precutBattle) y las de hechizos/objetos cuando se usan (prioritize/cutout al mostrarlas).
       // Re-sending assets must not consume an ability awaiting playback.
       // The queue deduplicates by side, hero and normal/elite form.
     }
@@ -359,7 +378,7 @@ export const ABILITY_ANIM_PATCH = `
     for(var sp=0;sp<14;sp++)html+='<span class="bf-aa-spark" style="left:'+(4+Math.random()*92).toFixed(0)+'%;--dx:'+((Math.random()*100-50).toFixed(0))+'px;animation-delay:'+(Math.random()*1.2).toFixed(2)+'s"></span>';
     if(motion.fxTag)html+=motion.fxTag;
     var cu=CUT[url];
-    if(!cu)prioritize(url);
+    if(!cu){ if(!CUT.hasOwnProperty(url))cutout(url); prioritize(url); }   // (ya no se pre-recorta todo: se pide aquí)
     html+='<img class="bf-aa-img'+(cu?'':' bf-aa-raw')+'" style="'+(cu?'':'visibility:hidden;')+'animation:'+motion.anim+' 4.5s cubic-bezier(.2,.85,.3,1) forwards" src="'+(cu||url)+'" alt="">';
     html+='<div class="bf-aa-ttl">'+String(title).toUpperCase()+'</div>';
     if(descText)html+='<div class="bf-aa-desc">'+String(descText)+'</div>';
