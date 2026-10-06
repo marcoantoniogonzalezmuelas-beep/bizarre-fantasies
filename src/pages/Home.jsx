@@ -339,6 +339,7 @@ export default function Home() {
   // Enlace de invitación (?sala=CODIGO): al cargar el juego se le pide que abra la ventana de unirse a esa sala.
   const inviteRef = useRef((() => { try { return new URLSearchParams(window.location.search).get('sala') || ''; } catch (e) { return ''; } })());
   const inviteTimerRef = useRef(null), missionInviteSentRef = useRef(false);
+  const diagLimitRef = useRef({ total: 0, last: {} });   // freno de diagnósticos (ver bfRelayError)
   // El juego confirma que atendió la invitación: se deja de reenviar y se limpia la dirección.
   useEffect(() => {
     const onAck = (e) => {
@@ -677,6 +678,11 @@ export default function Home() {
       // backoffice de red los muestre en el diagnóstico.
       if (e.data && e.data.bfRelayError && base44.entities?.ConnectionError) {
         const err = e.data.bfRelayError;
+        // FRENO de diagnósticos: como mucho uno por tipo cada 20 s y 40 por sesión (un fallo de red en bucle ya no
+        // se convierte en una ráfaga de escrituras en la base de datos en plena partida).
+        const lim = diagLimitRef.current, kind = `${err.error_type || ''}|${String(err.error_message || '').slice(0, 14)}`, nowT = Date.now();
+        if (lim.total >= 40 || (lim.last[kind] && nowT - lim.last[kind] < 20000)) return;
+        lim.total += 1; lim.last[kind] = nowT;
         base44.entities.ConnectionError.create({
           room_code: String(err.room_code || '').slice(0, 6),
           ...(err.side === 'p' || err.side === 'g' ? { side: err.side } : {}),

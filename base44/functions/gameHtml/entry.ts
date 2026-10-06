@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { buildEquipItem } from '../../shared/equipItems.ts';
 import { applyHtmlPatches } from './htmlPatches.ts';
 import { COVER_BG, AUCTION_BG, SHOP_BG, BATTLE_BG, LOGO_URL, HERO_ART, HERO_ELITE_ART, MELEE_ART, RANGED_ART, ARMOR_ART, SPELL_ART, TOKEN_ART, TOKENS, OBJECT_ART, SPELL_MANA, BONUS_ART, BONUS_IDS, BONUS_NAMES, HERO_IDS, HERO_NAMES, EQUIP, TRANSFORMER_ART as _TA } from '../../shared/gameArtData.ts';
-const GAME_PATCH_VERSION = 'bf-2026-10-09-adminmobile-v264';
+const GAME_PATCH_VERSION = 'bf-2026-10-09-heroes-v267';
 // Los datos de las cartas se insertan como código dentro de un <script> del juego. Un texto con "</" o con los
 // separadores invisibles U+2028/U+2029 (típicos al copiar y pegar) rompía ese bloque entero y la tienda volvía a
 // las tablas viejas sin avisar. Se escapan siempre: ningún texto de carta puede romper el código.
@@ -638,6 +638,9 @@ function buildArtScript(dbCards) {
     add(typeof ARMORS !== 'undefined' ? ARMORS : [], ARMOR_ART);
     window.__bfGearArtByName = map;
   }
+  // Expuesta para ponerla EN EL MISMO INSTANTE del repintado (steadyRenderPatch): antes las cartas salían sin
+  // retrato justo tras repintar y lo recuperaban un momento después (los retratos "se movían" con cada repintado).
+  window.__bfInjectBattleArt = function(){ try { injectBattleHeroArt(); } catch (e) {} };
   function injectBattleHeroArt() {
     buildGearArtByName();
     document.querySelectorAll('.bhero[id^="b_"]').forEach(function(c) {
