@@ -254,3 +254,9 @@ test('ONLINE CATCH-UP: a guest that falls behind because of piled-up animations 
   assert.match(read('combatIndicatorSequencePatch.js'),/window\.__bfClearIndicators=function\(\)\{ waiting=\[\]; visible\.forEach\(remove\); visible=\[\]; quietSince=0; \};/);
   assert.match(read('abilityAnimPatch.js'),/window\.__bfPurgeCine=purgeCine;/);
 });
+test('REARMAR cinematic uses the animation assigned in the editor (ob_rearm), with background cut-out; title REARMAR',()=>{
+  const r=read('rearmarPatch.js');
+  assert.match(r,/var ent = e\.data\.bfAbilityAnim\['ob_rearm'\];\s*var url = ent && \(ent\.base \|\| ent\.elite\);\s*if\(url\)\{ CINE_URL = url; cutout\(CINE_URL\); \}/);
+  assert.match(r,/src="'\+\(CUT\[CINE_URL\] \|\| CINE_URL\)\+'"/);
+  assert.match(r,/<div class="bf-rc-ttl">REARMAR<\/div>/);assert.doesNotMatch(r,/RETROARMAR/);
+});
