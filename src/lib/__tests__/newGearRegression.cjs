@@ -260,3 +260,32 @@ test('REARMAR cinematic uses the animation assigned in the editor (ob_rearm), wi
   assert.match(r,/src="'\+\(CUT\[CINE_URL\] \|\| CINE_URL\)\+'"/);
   assert.match(r,/<div class="bf-rc-ttl">REARMAR<\/div>/);assert.doesNotMatch(r,/RETROARMAR/);
 });
+test('PERFORMANCE: no pre-cut of ALL animation images (only the battle heroes, never with Anim OFF), 720 px max, at most 24 kept; portrait checks not repeated',()=>{
+  const a=read('abilityAnimPatch.js');
+  assert.doesNotMatch(a,/Object\.keys\(animMap\)\.forEach\(function\(k\)\{\s*var ent=animMap\[k\];if\(!ent\)return;\s*if\(ent\.base\)cutout\(ent\.base\);/,'no longer pre-cuts the ~270 images');
+  assert.match(a,/if\(window\.__bfNoCinematics\|\|!animMap\|\|!document\.querySelector\('#s-battle\.active'\)/);
+  assert.match(a,/var sc=Math\.min\(1,720\/Math\.max\(img\.naturalWidth\|\|1,img\.naturalHeight\|\|1\)\);/);
+  assert.match(a,/while\(KEPT\.length>24\)\{ var old=KEPT\.shift\(\); try\{ if\(CUT\[old\]\)URL\.revokeObjectURL\(CUT\[old\]\); \}catch\(e\)\{\} delete CUT\[old\]; \}/);
+  assert.match(a,/if\(!cu\)\{ if\(!CUT\.hasOwnProperty\(url\)\)cutout\(url\); prioritize\(url\); \}/);
+  assert.match(read('battleArtFixPatch.js'),/&& checking\[card\.id\] !== u\)\{/);
+});
+test('NETWORK: diagnostics throttled (1 per kind / 20 s, 40 per session); turn heartbeat halves without realtime; dice logs translated for Spanish guests',()=>{
+  const h=read('../pages/Home.jsx');assert.match(h,/if \(lim\.total >= 40 \|\| \(lim\.last\[kind\] && nowT - lim\.last\[kind\] < 20000\)\) return;/);
+  assert.match(read('serverRelayPatch.js'),/&& !relayRealtime && \(\+\+hbTick % 2\)\) return;/);
+  const l=read('langGuardPatch.js');assert.match(l,/\['d30 roll','Tirada d30'\]/);assert.match(l,/\['\(ranged\)','\(disparo\)'\]/);
+});
+test('STATIC PORTRAITS: the portrait is put back in the SAME instant as the repaint (cards were shown without it and it popped back in every repaint)',()=>{
+  assert.match(fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8'),/window\.__bfInjectBattleArt = function\(\)\{ try \{ injectBattleHeroArt\(\); \} catch \(e\) \{\} \};/);
+  const s=read('steadyRenderPatch.js');
+  assert.match(s,/try\{ restore\(snap,true\); \}catch\(e\)\{\}\s*\/\/ Retratos EN EL MISMO INSTANTE[^\n]*\n\s*try\{ if\(typeof window\.__bfInjectBattleArt==='function'\)window\.__bfInjectBattleArt\(\); \}catch\(e\)\{\}/);
+});
+test('END ANIMATION heroes are VISIBLE: no rule anywhere hides the final animation teams (endHeroesPatch hid them with display:none)',()=>{
+  const files=fs.readdirSync(path.join(root,'src/lib')).filter(f=>f.endsWith('.js')).map(f=>read(f)).concat([fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8')]);
+  for(const s of files)assert.doesNotMatch(s,/#bf-end-cine \.bf-cine-team[^{}]*\{\s*display:\s*none/,'a rule hides the heroes of the final animation');
+});
+test('STATIC PORTRAITS in every state: only the one-off ability burst stays animated (state particles, agony blood and foil shine are frozen)',()=>{
+  const f=read('heroFullFreezePatch.js');
+  assert.match(f,/var OK = ':not\(\.bf-ability-burst\):not\(\.bf-ability-burst \*\)';/);
+  assert.match(f,/var SKIP = '\.bf-ability-burst';/);
+  assert.match(f,/if\(el\.classList\.contains\('bf-decor'\) \|\| el\.classList\.contains\('bf-epic-foil'\)\)\{ if\(el\.style\.animation\) el\.style\.animation = 'none'; return; \}/);
+});
