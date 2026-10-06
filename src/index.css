@@ -218,3 +218,36 @@ video, canvas { max-width: 100%; }
 @media (max-width: 1024px) {
   .bf-intro-stage [style*="mix-blend-mode"] { mix-blend-mode: normal !important; }
 }
+/* ===================== BACKOFFICE EN MÓVIL =====================
+   Solo con la marca "bf-admin" (páginas /admin…) y en pantallas de hasta 768 px: nada se sale por la derecha. */
+@media (max-width: 768px) {
+  body.bf-admin { overflow-x: hidden; }
+  body.bf-admin .p-8 { padding: 1rem !important; }
+  body.bf-admin .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  body.bf-admin .p-6 { padding: .9rem !important; }
+  /* Rejillas de 3 a 6 columnas → 2 columnas */
+  body.bf-admin .grid-cols-3, body.bf-admin .grid-cols-4, body.bf-admin .grid-cols-5, body.bf-admin .grid-cols-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  /* Anchos mínimos fijos fuera; los elementos pueden encoger */
+  body.bf-admin [class*="min-w-["] { min-width: 0 !important; }
+  body.bf-admin .grid > *, body.bf-admin .flex > * { min-width: 0; }
+  /* Filas de botones y controles: saltan de línea en vez de salirse */
+  body.bf-admin .flex:not(.flex-col):not(.flex-nowrap) { flex-wrap: wrap; }
+  body.bf-admin .whitespace-nowrap { white-space: normal !important; }
+  /* Tablas y bloques de código: se desplazan dentro de su recuadro */
+  body.bf-admin table { display: block; max-width: 100%; overflow-x: auto; }
+  body.bf-admin pre, body.bf-admin code { max-width: 100%; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+  /* Medios y textos largos (direcciones, ids) */
+  body.bf-admin img, body.bf-admin video, body.bf-admin canvas, body.bf-admin iframe { max-width: 100%; height: auto; }
+  body.bf-admin p, body.bf-admin span, body.bf-admin a, body.bf-admin li { overflow-wrap: anywhere; }
+  /* En las tablas, las celdas conservan sus palabras y es la tabla la que se desplaza en horizontal. */
+  body.bf-admin td, body.bf-admin th { white-space: nowrap; overflow-wrap: normal; padding: 4px 8px; }
+  body.bf-admin td span, body.bf-admin th span { overflow-wrap: normal; }
+  body.bf-admin input, body.bf-admin select, body.bf-admin textarea { max-width: 100%; }
+  /* Ventanas emergentes: caben en la pantalla */
+  body.bf-admin [role="dialog"] { max-width: calc(100vw - 16px) !important; max-height: calc(100vh - 16px); overflow: auto; }
+  body.bf-admin .max-w-7xl, body.bf-admin .max-w-6xl, body.bf-admin .max-w-5xl { max-width: 100% !important; }
+  /* Títulos grandes algo más pequeños */
+  body.bf-admin .text-3xl { font-size: 1.5rem !important; line-height: 2rem !important; }
+}

@@ -17,6 +17,7 @@ const RacesPage = lazy(() => import('./pages/RacesPage'));
 const Ranking = lazy(() => import('./pages/Ranking'));
 const Reglas = lazy(() => import('./pages/Reglas'));
 const EnglishEntry = lazy(() => import('./pages/EnglishEntry'));
+import AdminResponsive from '@/components/admin/AdminResponsive';
 const AdminCards = lazy(() => import('./pages/AdminCards'));
 const FlashNewsAdmin = lazy(() => import('./pages/FlashNewsAdmin'));
 const AdminAiLogs = lazy(() => import('./pages/AdminAiLogs'));
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Suspense fallback={<PageFallback />}>
+    <AdminResponsive />
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
