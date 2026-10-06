@@ -128,3 +128,16 @@ test('mission MP slow start (> 8 s from "ready" to equipment) is recorded with i
   const s=read('../components/missions/useMissionSession.js');
   assert.match(s,/startTimes\.current = \{ t0: Date\.now\(\), role: cfg\.role, hosted: 0 \};/);assert.match(s,/\[mission_slow_start\]/);assert.match(s,/if \(st && total > 8000\)/);
 });
+test('BACKOFFICE on mobile: "bf-admin" mark on /admin pages and a mobile layer (≤768 px) so nothing overflows; tables scroll',()=>{
+  const r=read('../components/admin/AdminResponsive.jsx');
+  assert.match(r,/const on = pathname === '\/admin' \|\| pathname\.startsWith\('\/admin\/'\);/);assert.match(r,/document\.body\.classList\.toggle\('bf-admin', on\);/);
+  assert.match(read('../App.jsx'),/<AdminResponsive \/>\s*<Routes>/);
+  const c=read('../index.css');
+  assert.match(c,/@media \(max-width: 768px\) \{\s*body\.bf-admin \{ overflow-x: hidden; \}/);
+  assert.match(c,/body\.bf-admin \.grid-cols-3, body\.bf-admin \.grid-cols-4, body\.bf-admin \.grid-cols-5, body\.bf-admin \.grid-cols-6 \{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\) !important;/);
+  assert.match(c,/body\.bf-admin table \{ display: block; max-width: 100%; overflow-x: auto; \}/);
+});
+test('END OF MATCH: no separate heroes strip at the end (heroes only inside the final animation)',()=>{
+  const e=read('endHeroesPatch.js');
+  assert.match(e,/window\.showResult = function\(\)\{\s*return orig\.apply\(this, arguments\);\s*\};/);assert.doesNotMatch(e,/try \{ showHeroes\(youWin\); \} catch\(e\)\{\}/);
+});
