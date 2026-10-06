@@ -83,6 +83,8 @@ export const STEADY_RENDER_PATCH = `
       try{ snap=snapshot(); }catch(e){}
       try{ out=orig.apply(this,arguments); } finally { depth--; }
       try{ restore(snap,true); }catch(e){}
+      // Retratos EN EL MISMO INSTANTE (antes de que el navegador pinte): la carta nunca se ve sin su retrato.
+      try{ if(typeof window.__bfInjectBattleArt==='function')window.__bfInjectBattleArt(); }catch(e){}
       // Segunda pasada al instante siguiente: por si otro parche retoca las cartas justo después del repintado.
       setTimeout(function(){ try{ restore(snap,false); }catch(e){} },0);   // (la mano solo se decide en la primera)
       return out;

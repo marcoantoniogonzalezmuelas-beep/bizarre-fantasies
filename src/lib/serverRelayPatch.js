@@ -207,7 +207,11 @@ export const SERVER_RELAY_PATCH = RELAY_OUTBOX_PATCH + `
   function startHostBeat() {
     if (hbTimer) clearInterval(hbTimer);
     pushGap = 8000;
+    var hbTick = 0;
     hbTimer = setInterval(function() {
+      // Sin la conexión en tiempo real (todo va por consultas normales al servidor), el latido va a la mitad de
+      // ritmo (cada 3 s) para no sumar carga justo cuando la red va peor.
+      if (typeof relayRealtime !== 'undefined' && !relayRealtime && (++hbTick % 2)) return;
       try {
         if (!relayConn || relaySide !== 'p' || !relayConn.open || !battleOn()) return;
         relayConn.send({ t: 'bfTurnHb', turn: turnKey(), seq: ++hbSeq });
