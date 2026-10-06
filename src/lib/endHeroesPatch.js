@@ -297,10 +297,12 @@ export const END_HEROES_PATCH = `
   function hook(){
     if(typeof window.showResult!=='function' || window.showResult.__bfEndHeroes) return false;
     var orig = window.showResult;
-    window.showResult = function(youWin){
-      try { showHeroes(youWin); } catch(e){}
+    // Ya NO se saca la franja de héroes al terminar: aparecía en cuanto acababa la partida, incluso antes de la
+    // última acción, y los héroes solo deben salir DENTRO de la animación final (que ya los lleva).
+    window.showResult = function(){
       return orig.apply(this, arguments);
     };
+    window.__bfEndHeroesStrip = showHeroes;   // (disponible por si se quisiera volver a usar)
     window.showResult.__bfEndHeroes = 1;
     return true;
   }
