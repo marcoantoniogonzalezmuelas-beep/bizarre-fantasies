@@ -60,7 +60,8 @@ export const NEW_GEAR_PATCH = `
           var th=Number(target.armor.thorns);
           orig.call(this,a,th,{type:'true',bfGear:true});
           L('\\u{1F335} '+a.name+' se pincha con la '+target.armor.name+' de '+target.name+' (-'+th+').');
-          try{ pushFx({k:'status',side:side,id:a.id,txt:'\\u{1F335}'}); }catch(e){}
+          // Cartel legible (como el del veneno o la pifia) sobre quien se pincha; el turno espera a que se lea.
+          if(typeof window.__bfPoisonPop==='function')window.__bfPoisonPop({side:side,id:a.id,thorns:1,dmg:th,armor:target.armor.name,owner:target.name});
         }
         if(foe&&opts.type==='melee'&&!opts.bfReach&&a.mwep&&Number(a.mwep.reach_pct)>0){
           var ts=tSide(target),other=(G.team[ts]||[]).find(function(x){ return x&&x.alive&&x!==target; });
@@ -172,18 +173,27 @@ export const NEW_GEAR_PATCH = `
     +"font-family:'Cinzel',serif;font-weight:900;font-size:26px;line-height:1;color:#b9f56a;white-space:nowrap;background:radial-gradient(circle,rgba(20,40,6,.88),rgba(20,40,6,0) 74%);"
     +'text-shadow:0 0 14px rgba(150,230,60,.95),0 3px 8px #000,0 0 3px #000;animation:bfPoisonPop 4.6s cubic-bezier(.2,.8,.3,1) forwards}'
     +'.bf-poison-pop small{font-size:14px;font-weight:800;color:#e6ffc8;letter-spacing:1px;text-shadow:0 2px 6px #000}'
+    +'.bf-poison-pop.bf-thorns-pop{color:#ffb35c;background:radial-gradient(circle,rgba(52,22,4,.9),rgba(52,22,4,0) 74%);text-shadow:0 0 14px rgba(255,140,40,.95),0 3px 8px #000,0 0 3px #000}'
+    +'.bf-poison-pop.bf-thorns-pop small{color:#ffe3c4}'
     +'@keyframes bfPoisonPop{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}10%{opacity:1;transform:translate(-50%,-62%) scale(1.14)}18%{transform:translate(-50%,-64%) scale(1)}86%{opacity:1;transform:translate(-50%,-92%) scale(1)}100%{opacity:0;transform:translate(-50%,-140%) scale(1.05)}}';
   document.head.appendChild(pcss);
-  function poisonPaint(side,id,title,sub){
+  function poisonPaint(side,id,title,sub,kind){
     var el=document.getElementById('b_'+side+'_'+id);if(!el)return;
     var r=el.getBoundingClientRect(),n=document.createElement('div');
-    n.className='bf-poison-pop';n.style.left=(r.left+r.width/2)+'px';n.style.top=(r.top+r.height*0.42)+'px';
+    n.className='bf-poison-pop'+(kind==='thorns'?' bf-thorns-pop':'');n.style.left=(r.left+r.width/2)+'px';n.style.top=(r.top+r.height*0.42)+'px';
     n.innerHTML='<span>'+title+'</span>'+(sub?'<small>'+sub+'</small>':'');
     (window.__bfAppend||function(x){document.body.appendChild(x);})(n);
     setTimeout(function(){ if(n.parentNode)n.parentNode.removeChild(n); },4800);
     return [n];
   }
   function poisonPop(ev){
+    // PINCHAZO (Armadura de Pinchos): mismo cartel, en naranja, sobre quien golpeó y se pinchó.
+    if(ev.thorns){
+      var tt='\\u{1F335} \\u00a1PINCHAZO! -'+(ev.dmg||0),ts='se pincha con '+(ev.armor?('la '+ev.armor):'la armadura')+(ev.owner?(' de '+ev.owner):'');
+      if(typeof window.__bfQueueIndicator==='function')window.__bfQueueIndicator(function(){ return poisonPaint(ev.side,ev.id,tt,ts,'thorns'); },4200);
+      else poisonPaint(ev.side,ev.id,tt,ts,'thorns');
+      return;
+    }
     var title=ev.tick?('\u2620\ufe0f VENENO -'+(ev.dmg||0)):'\u2620\ufe0f \u00a1ENVENENADO!';
     var sub=ev.tick?(ev.turns>0?('le quedan '+ev.turns+' turno'+(ev.turns>1?'s':'')):'se le pasa'):('-'+ev.dmg+' por turno \u00b7 '+ev.turns+' turnos');
     if(typeof window.__bfQueueIndicator==='function')window.__bfQueueIndicator(function(){ return poisonPaint(ev.side,ev.id,title,sub); },ev.tick?3600:4800);

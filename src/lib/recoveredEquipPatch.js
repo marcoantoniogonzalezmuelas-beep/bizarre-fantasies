@@ -37,12 +37,25 @@ export const RECOVERED_EQUIP_PATCH = `
     }catch(e){}
   }
 
+  // UN SOLO ARMA por héroe (de momento ningún héroe puede llevar dos): al ponerle un arma, la que llevara —sea
+  // cuerpo a cuerpo o a distancia— va a la pila de descartes.
+  function dropWeapons(side, hero){
+    ['mwep','rwep'].forEach(function(s){
+      var old = hero && hero[s];
+      if(!old) return;
+      try{ if(!G.itemDescarte) G.itemDescarte = {p:[],o:[]}; if(!G.itemDescarte[side]) G.itemDescarte[side] = []; G.itemDescarte[side].push({ id:old.id, kind:s, name:old.name, num:old.num||0 }); }catch(e){}
+      hero[s] = null;
+      if(typeof pushLog==='function') pushLog('li', hero.name + ' deja ' + (old.name||'su arma') + ' en los descartes (solo se puede llevar un arma).');
+    });
+  }
   function equipOn(side, hero, item, slot){
     var tpl = tplFor(slot, item.id);
     var gear = tpl ? clone(tpl) : null;
     if(!gear){ if(typeof notif==='function') notif('No se pudo equipar ' + (item.name||'') + '.'); return false; }
-    // Si ya llevaba algo en ese hueco, lo viejo va a los descartes (y la armadura vieja deja de sumar vida).
-    var old = hero[slot];
+    // ARMA: un solo arma por héroe → deja la que llevara (de cualquier tipo). ARMADURA: si ya llevaba una, la
+    // vieja va a los descartes (y deja de sumar vida).
+    if(slot==='mwep' || slot==='rwep') dropWeapons(side, hero);
+    var old = (slot==='armor') ? hero[slot] : null;
     if(old){
       if(slot==='armor' && old.hp){ hero.maxHp = Math.max(1,(hero.maxHp||0) - old.hp); hero.hp = Math.max(1, Math.min(hero.hp||0, hero.maxHp)); }
       try{ if(!G.itemDescarte) G.itemDescarte = {p:[],o:[]}; if(!G.itemDescarte[side]) G.itemDescarte[side] = []; G.itemDescarte[side].push({ id:old.id, kind:slot, name:old.name, num:old.num||0 }); }catch(e){}
@@ -86,8 +99,8 @@ export const RECOVERED_EQUIP_PATCH = `
           if(((typeof window.bfAbilityHuman==='function' && window.bfAbilityHuman(side)) || (typeof humanCtl==='function' && humanCtl(side))) && typeof pendTarget==='function'){
             pendTarget('\\u00bfA qui\\u00e9n le pones ' + (item.name||'el equipo') + '?', side, done);
           } else {
-            // IA: un aliado con el hueco libre (el más sano); si todos lo tienen ocupado, el más sano.
-            var free = cands.filter(function(h){ return freeSlot(h, slot); });
+            // IA: un aliado sin arma (o sin armadura, si es armadura), el más sano; si todos llevan, el más sano.
+            var free = cands.filter(function(h){ return (slot==='armor') ? freeSlot(h, slot) : !(h.mwep || h.rwep); });
             done((free.length ? free : cands).slice().sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
           }
           return;

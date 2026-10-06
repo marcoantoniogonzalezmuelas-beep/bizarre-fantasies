@@ -111,6 +111,19 @@ export const REARMAR_PATCH = `
   function team(side){ try{ return (G && G.team && G.team[side]) || []; }catch(e){ return []; } }
   function alive(side){ return team(side).filter(function(h){ return h && h.alive; }); }
   function freeSlot(h, slot){ return !!(h && h.alive && !h[slot]); }
+  function hasWeapon(h){ return !!(h && (h.mwep || h.rwep)); }
+  // UN SOLO ARMA por héroe (de momento ningún héroe puede llevar dos): al ponerle un arma, la que llevara —sea
+  // cuerpo a cuerpo o a distancia— va a la pila de descartes.
+  function dropWeapons(side, hero){
+    ['mwep','rwep'].forEach(function(s){
+      var old = hero && hero[s];
+      if(!old) return;
+      try{ if(!G.itemDescarte) G.itemDescarte = {p:[],o:[]}; if(!G.itemDescarte[side]) G.itemDescarte[side] = []; G.itemDescarte[side].push({ id:old.id, kind:s, name:old.name, num:old.num||0 }); }catch(e){}
+      hero[s] = null;
+      if(typeof pushLog==='function') pushLog('li', hero.name + ' deja ' + (old.name||'su arma') + ' en los descartes (solo se puede llevar un arma).');
+    });
+  }
+
   function tplFor(slot, id){
     var arr = slot==='mwep' ? (typeof MELEE!=='undefined'?MELEE:[])
             : slot==='rwep' ? (typeof RANGED!=='undefined'?RANGED:[])
@@ -148,9 +161,8 @@ export const REARMAR_PATCH = `
       for(var i = 0; i < pile.length; i++){
         var entry = pile[i];
         if(!entry || (entry.kind !== 'mwep' && entry.kind !== 'rwep')) continue;
-        for(var j = 0; j < heroes.length; j++){
-          if(freeSlot(heroes[j], entry.kind)) return true;
-        }
+        // Cualquier héroe vivo puede recibirla: si ya lleva un arma, la cambia por esta.
+        return true;
       }
     }catch(e){}
     return false;
@@ -265,6 +277,7 @@ export const REARMAR_PATCH = `
     var tpl = tplFor(slot, entry.id);
     var gear = tpl ? clone(tpl) : null;
     if(!gear){ if(typeof notif==='function') notif('No se pudo equipar el arma recuperada.'); return false; }
+    dropWeapons(side, hero);
     hero[slot] = gear;
     if(typeof pushLog==='function') pushLog('lg', '\\u2694\\ufe0f Rearmar: ' + hero.name + ' se equipa ' + gear.name + ' (de la pila de descartes).');
     if(typeof pushFx==='function') pushFx({ k:'shieldup', toSide:side, toId:hero.id });
@@ -309,7 +322,7 @@ export const REARMAR_PATCH = `
             return;
           }
           if(!canRearmar(side)){
-            if(typeof notif==='function') notif('Todos tus h\\u00e9roes vivos ya llevan armas.');
+            if(typeof notif==='function') notif('No tienes h\\u00e9roes vivos a los que ponerle el arma.');
             return;
           }
           var entry = popWeaponFromDiscard(side);
@@ -319,17 +332,17 @@ export const REARMAR_PATCH = `
           }
           var slot = entry.kind;
           var hero = (typeof getHero==='function') ? getHero(side, B.current.id) : null;
-          var cands = alive(side).filter(function(h){ return freeSlot(h, slot); });
+          var cands = alive(side);
           if(!cands.length){
-            if(typeof notif==='function') notif('Todos tus h\\u00e9roes vivos ya llevan ' + (slot==='mwep'?'arma cuerpo a cuerpo':'arma a distancia') + '.');
+            if(typeof notif==='function') notif('No tienes h\\u00e9roes vivos a los que ponerle el arma.');
             if(G.itemDescarte && G.itemDescarte[side]) G.itemDescarte[side].push(entry);
             return;
           }
 
           // Resuelve la equipación (con efecto visual de carta volando).
           var resolveEquip = function(t){
-            if(!t || !freeSlot(t, slot)){
-              if(typeof notif==='function') notif((t?t.name:'Ese h\\u00e9roe') + ' ya lleva esa arma.');
+            if(!t || !t.alive || cands.indexOf(t) < 0){
+              if(typeof notif==='function') notif('Elige a un h\\u00e9roe vivo de tu equipo.');
               if(G.itemDescarte && G.itemDescarte[side]) G.itemDescarte[side].push(entry);
               return;
             }
@@ -345,13 +358,15 @@ export const REARMAR_PATCH = `
 
           // Lanza la cinemática 3D PRIMERO, luego elige héroe.
           playRearmarCinematic(function(){
-            // El héroe activo tiene el hueco libre → se equipa él mismo.
-            if(hero && freeSlot(hero, slot)){ resolveEquip(hero); return; }
+            // El héroe activo no lleva arma → se la queda él mismo.
+            if(hero && hero.alive && !hasWeapon(hero)){ resolveEquip(hero); return; }
             if(cands.length === 1){ resolveEquip(cands[0]); return; }
             if(((typeof window.bfAbilityHuman==='function' && window.bfAbilityHuman(side)) || (typeof humanCtl==='function' && humanCtl(side))) && typeof pendTarget==='function'){
-              pendTarget('\\u00bfA qui\\u00e9n le pones el arma recuperada?', side, resolveEquip);
+              pendTarget('\\u00bfA qui\\u00e9n le pones el arma recuperada? (si ya lleva una, la cambia)', side, resolveEquip);
             } else {
-              resolveEquip(cands.sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
+              // IA: mejor un héroe SIN arma (el más sano); si todos llevan, el más sano (cambia la suya).
+              var unarmed = cands.filter(function(h){ return !hasWeapon(h); });
+              resolveEquip((unarmed.length ? unarmed : cands).slice().sort(function(a,b){ return (b.hp||0) - (a.hp||0); })[0]);
             }
           });
           return;
