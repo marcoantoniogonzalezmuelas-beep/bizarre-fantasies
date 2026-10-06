@@ -289,3 +289,23 @@ test('STATIC PORTRAITS in every state: only the one-off ability burst stays anim
   assert.match(f,/var SKIP = '\.bf-ability-burst';/);
   assert.match(f,/if\(el\.classList\.contains\('bf-decor'\) \|\| el\.classList\.contains\('bf-epic-foil'\)\)\{ if\(el\.style\.animation\) el\.style\.animation = 'none'; return; \}/);
 });
+test('ONE WEAPON per hero: Rearmar and recovered equipment (Reanimación Arcana) drop the weapon the hero carried (melee OR ranged) to the discard pile',()=>{
+  for(const f of ['rearmarPatch.js','recoveredEquipPatch.js']){
+    const s=read(f);
+    assert.match(s,/function dropWeapons\(side, hero\)\{\s*\['mwep','rwep'\]\.forEach/,f);
+    assert.match(s,/G\.itemDescarte\[side\]\.push\(\{ id:old\.id, kind:s, name:old\.name, num:old\.num\|\|0 \}\);/,f);
+  }
+  const r=read('rearmarPatch.js');
+  assert.match(r,/dropWeapons\(side, hero\);\s*hero\[slot\] = gear;/);
+  assert.match(r,/if\(hero && hero\.alive && !hasWeapon\(hero\)\)\{ resolveEquip\(hero\); return; \}/,'the active hero keeps it only if unarmed');
+  assert.match(r,/var cands = alive\(side\);/,'any living hero can receive it');
+  const q=read('recoveredEquipPatch.js');
+  assert.match(q,/if\(slot==='mwep' \|\| slot==='rwep'\) dropWeapons\(side, hero\);/);
+});
+test('THORNS caption: "🌵 ¡PINCHAZO! -X" over the hero who gets pricked, readable like the poison one (captions queue, synced online)',()=>{
+  const g=read('newGearPatch.js');
+  assert.match(g,/window\.__bfPoisonPop\(\{side:side,id:a\.id,thorns:1,dmg:th,armor:target\.armor\.name,owner:target\.name\}\);/);
+  assert.match(g,/PINCHAZO! -'\+\(ev\.dmg\|\|0\)/);
+  assert.match(g,/window\.__bfQueueIndicator\(function\(\)\{ return poisonPaint\(ev\.side,ev\.id,tt,ts,'thorns'\); \},4200\);/);
+  assert.match(g,/\.bf-poison-pop\.bf-thorns-pop\{color:#ffb35c;/);
+});
