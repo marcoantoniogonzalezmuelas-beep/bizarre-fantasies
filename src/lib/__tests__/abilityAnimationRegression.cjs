@@ -40,3 +40,17 @@ test('sabotage or a fumble consumes no animation and does not suppress elite',()
  f.c.__bfNoCinematics=false;f.tick(6000);assert.equal(f.overlays.length,0,'switching ON does not replay the ability used while OFF');
  h2.abilityUsed=true;f.tick(600);assert.equal(f.overlays.length,1,'an ability used after switching ON is played');assert.match(f.overlays[0],/NORMAL OTRO/);
 });
+test('a hero that dies and is reborn (elite) DURING its own ability gets no ability animation after the rebirth (KillerLin pricked by thorns, Motomami reflected by Juniana)',()=>{
+ const f=setup(),h=f.hero('painkil');f.assets({painkil:{base:'normal.png',elite:'elite.png'}});f.c.G.team.p=[h];f.tick(300);
+ let used=false;Object.defineProperty(h,'abilityUsed',{configurable:true,get(){return used;},set(v){used=v;if(v)h.eliteMode=true;}});   // renace en élite en mitad de su habilidad
+ f.c.useAbility('p',h);f.tick(8000);
+ assert.equal(f.overlays.length,0,'no animation after the rebirth');
+ const g=setup(),k=g.hero('kru');g.assets({kru:{base:'k.png'}});g.c.G.team.p=[k];g.tick(300);
+ g.c.useAbility('p',k);g.tick(8000);assert.equal(g.overlays.length,1,'a normal use still plays its animation');
+});
+test('an ability that is BLOCKED or does nothing shows no animation (the animation came out without the ability, e.g. after a rebirth)',()=>{
+ const f=setup(),h=f.hero('painkil',true);f.assets({painkil:{base:'normal.png',elite:'elite.png'}});f.c.G.team.p=[h];f.tick(300);
+ Object.defineProperty(h,'abilityUsed',{configurable:true,get(){return false;},set(){}});   // la protección la bloquea: nunca queda marcada como usada
+ f.c.useAbility('p',h);f.tick(8000);
+ assert.equal(f.overlays.length,0,'no animation when the ability did not execute');
+});

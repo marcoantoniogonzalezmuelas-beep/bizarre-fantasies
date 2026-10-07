@@ -383,3 +383,12 @@ test('ANIMATION NAMES: no accidental clashes (the recap, Rearmar and Reanimació
   const clashes=Object.entries(by).filter(([k,v])=>v.size>1&&!intentional.has(k)).map(([k,v])=>k+':'+[...v].join(','));
   assert.deepEqual(clashes,[],'animation names defined in several patches: '+clashes.join(' | '));
 });
+test('REBORN DURING ITS OWN ABILITY (KillerLin pricked by thorns, Motomami reflected by Juniana): the new elite form is NOT marked used and no animation is launched at the end',()=>{
+  const a=read('abilityImplPatch.js');
+  assert.match(a,/var acted = false, startElite = !!hero\.eliteMode;/);
+  assert.match(a,/function genericAbility\(side, hero, done, err\)\{[\s\S]{0,200}var startElite = !!hero\.eliteMode;/);
+  const guards=a.match(/if\(!!hero\.eliteMode !== startElite \|\| hero\.alive === false\)\{/g)||[];
+  assert.equal(guards.length,2,'both the step executor and the generic fallback check the form');
+  assert.match(a,/if\(hero\.eliteMode && !startElite\)\{ hero\.abilityUsed = false; hero\._bfEliteUsed = false; hero\._bfAbUsedElite = false; \}/);
+  assert.match(read('abilityAnimPatch.js'),/if\(h&&!wasUsed&&!h\.abilityUsed&&!window\.__bfTargetAbilityPending\)return result;/,'a blocked ability shows no animation');
+});
