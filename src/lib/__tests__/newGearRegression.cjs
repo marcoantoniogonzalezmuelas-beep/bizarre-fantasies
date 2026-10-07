@@ -309,3 +309,35 @@ test('THORNS caption: "🌵 ¡PINCHAZO! -X" over the hero who gets pricked, read
   assert.match(g,/window\.__bfQueueIndicator\(function\(\)\{ return poisonPaint\(ev\.side,ev\.id,tt,ts,'thorns'\); \},4200\);/);
   assert.match(g,/\.bf-poison-pop\.bf-thorns-pop\{color:#ffb35c;/);
 });
+test('DEAD heroes: no status labels at all (statuses cleared before each repaint, no engine badges); big static R.I.P. gravestone over the portrait',()=>{
+  const s=read('steadyRenderPatch.js');
+  assert.match(s,/var DEAD_CLEAR=\['para','sleep','silence','skip'/);assert.match(s,/cleanDead\(\);\s*\/\/ Fin del "turno perdido"/);
+  assert.match(read('newGearPatch.js'),/if\(h&&h\.alive===false\)return '';   \/\/ un héroe muerto no lleva rótulos de estado/);
+  const e=read('endGameFixPatch.js');
+  assert.match(e,/\.bhero\.bf-truedead::after \{[^}]*left: 22%; top: 50%;[^}]*width: clamp\(64px, 30%, 128px\); aspect-ratio: 3 \/ 4;/);
+  assert.doesNotMatch(e,/bfTombWobble/,'the gravestone no longer wobbles');
+});
+test('SKIPPED TURN: the action panel is not shown while the hero loses its turn (only the caption)',()=>{
+  assert.match(read('newGearPatch.js'),/duerme y pierde el turno\|est\\\\u00e1 paralizado\|pierde el turno\|sleeps and loses the turn\|is paralyzed\|loses the turn/);
+  const s=read('steadyRenderPatch.js');
+  assert.match(s,/body\.bf-skip-turn #s-battle \.active-hero-panel\{display:none!important\}/);
+  assert.match(s,/if\(window\.__bfSkipTurnKey&&ck!==window\.__bfSkipTurnKey\)\{ window\.__bfSkipTurnKey=''; document\.body\.classList\.remove\('bf-skip-turn'\); \}/);
+});
+test('USED-ABILITY MEMORY never expires (it stopped after 10 min: revived heroes came back with their normal ability available and the AI re-cast it); cinematic mark keeps updating',()=>{
+  const m=read('abilityUsedMemoryPatch.js');
+  assert.match(m,/\n  setInterval\(scan,150\);\n/,'the used-ability scan runs forever');
+  assert.doesNotMatch(m,/scan\(\);\s*if\(!window\.__bfAbMemHooked\)\{if\(hookRevive\(\)\)window\.__bfAbMemHooked=1;\}\s*if\(\+\+tries>4000\)clearInterval\(iv\);/);
+  const c=read('cardRevealLockPatch.js');
+  assert.match(c,/\n  setInterval\(syncCine,150\);\n/);
+});
+test('FINAL ANIMATION: bigger portraits (row of 3 per team on desktop, stacked teams on phones), winners in vivid colour, losers dark with a K.O. stamp and dizzy stars; it starts only after the "acción definitiva" recap',()=>{
+  const e=read('endGameFixPatch.js');
+  assert.match(e,/@media \(min-width: 761px\) \{\s*#bf-end-cine \.bf-cine-lineup \.bf-cine-team \{ display: grid !important; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\);/);
+  assert.match(e,/#bf-end-cine \.bf-cine-lineup \.bf-cine-portrait \{ width: 100%; max-width: 170px;/);
+  assert.match(e,/@media \(max-width: 760px\) \{\s*#bf-end-cine \.bf-cine-lineup \{ grid-template-columns: 1fr !important;/);
+  assert.match(e,/filter: saturate\(1\.35\) contrast\(1\.08\) brightness\(1\.08\) !important;/,'winners in vivid colour');
+  assert.match(e,/filter: grayscale\(\.92\) brightness\(\.52\) contrast\(1\.12\) !important;/,'losers darkened');
+  assert.match(e,/#bf-end-cine \.bf-cine-fallen::after \{\s*content: "K\.O\.";/);
+  const g=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(g,/if\(document\.getElementById\('bf-recap'\)\|\|\(typeof window\.__bfRecapPending==='function'&&window\.__bfRecapPending\(\)\)\)\{if\(!window\.__bfEndRecapWait\)window\.__bfEndRecapWait=Date\.now\(\);if\(Date\.now\(\)-window\.__bfEndRecapWait<9000\)\{setTimeout\(function\(\)\{bfEndCinematic\(forceWin\);\},300\);return;\}\}/);
+});
