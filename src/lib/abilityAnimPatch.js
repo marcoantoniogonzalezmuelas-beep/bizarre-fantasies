@@ -637,8 +637,20 @@ export const ABILITY_ANIM_PATCH = `
     var orig=window.useAbility;
     window.useAbility=function(side,h){
       var result;
+      // Forma y vida ANTES de la habilidad: si el héroe muere (o muere y renace en élite) en mitad de su propia
+      // habilidad —pinchos, reflejo de Juniana…—, al terminar ya está en otra forma y la animación salía DESPUÉS del
+      // renacer (y con la imagen de la forma nueva). Las cinemáticas de muerte y renacer ya cuentan lo que pasó.
+      var wasElite=!!(h&&h.eliteMode),wasAlive=!!(h&&h.alive!==false),wasUsed=!!(h&&h.abilityUsed);
       abilityCallDepth++;
       try{result=orig.apply(this,arguments);}finally{abilityCallDepth--;}
+      if(h&&wasAlive&&(h.alive===false||!!h.eliteMode!==wasElite)){
+        try{ prev[abilityKey(side,h)]=true; }catch(e){}
+        return result;
+      }
+      // Solo hay animación si la habilidad SE HA EJECUTADO: si se bloqueó (élite ya usada, héroe muerto, silencio…)
+      // o no hizo nada, no queda marcada como usada y no debe salir su animación (salía "la animación sin la
+      // habilidad", p. ej. tras renacer). Si espera a que elijas objetivo, la animación sale al confirmarlo.
+      if(h&&!wasUsed&&!h.abilityUsed&&!window.__bfTargetAbilityPending)return result;
       // A pending hero target owns the cinematic; never launch it at activation.
       if(!isBizarre(h) && !window.__bfTargetAbilityPending){
         try{if(playAnim(side,h)&&h&&h.id)prev[abilityKey(side,h)]=true;}catch(e){}

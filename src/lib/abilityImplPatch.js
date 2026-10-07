@@ -479,6 +479,7 @@ export const ABILITY_IMPL_PATCH = `
   var reportedGeneric = {};
   function genericAbility(side, hero, done, err){
     var complete = typeof done === 'function' ? done : function(){ if(typeof finishAct === 'function') finishAct(); };
+    var startElite = !!hero.eliteMode;   // forma del héroe al EMPEZAR
     var name = hero.eliteMode ? (hero.eAbility || hero.ability) : hero.ability;
     var key = String(cardIdOf(hero)) + (hero.eliteMode ? '|e' : '|n');
     if(!reportedGeneric[key]){
@@ -487,6 +488,16 @@ export const ABILITY_IMPL_PATCH = `
     }
     if(typeof pushLog === 'function') pushLog('lx', hero.name + ': la habilidad «' + (name || '?') + '» aún no está implementada en la base de datos; hace un golpe genérico.');
     var finish = function(){
+      // Si el héroe MURIÓ (o murió y renació en élite) en mitad de su propia habilidad —pinchos, reflejo de Juniana…—,
+      // al terminar está en otra forma: NO se marca esa forma como usada (su élite queda disponible, como debe) ni se
+      // lanza la animación (salía justo después del renacer, sin que se jugara ninguna habilidad nueva).
+      if(!!hero.eliteMode !== startElite || hero.alive === false){
+        if(hero.eliteMode && !startElite){ hero.abilityUsed = false; hero._bfEliteUsed = false; hero._bfAbUsedElite = false; }
+        if(typeof renderBattle === 'function') renderBattle();
+        if(typeof netSync === 'function') netSync('s-battle');
+        setTimeout(complete, 420);
+        return;
+      }
       hero.abilityUsed = true; if(hero.eliteMode) hero.eliteUsed = true;
       if(typeof renderBattle === 'function') renderBattle();
       if(typeof netSync === 'function') netSync('s-battle');
@@ -560,8 +571,18 @@ export const ABILITY_IMPL_PATCH = `
       if(kind === 'heal_allies_per_turn'){ hero._bfImplActive = true; return orig.apply(this, arguments); }
 
       var complete = typeof done === 'function' ? done : function(){ if(typeof finishAct === 'function') finishAct(); };
-      var acted = false;
+      var acted = false, startElite = !!hero.eliteMode;   // forma del héroe al EMPEZAR la habilidad
       function finishAbility(){
+        // Si el héroe MURIÓ (o murió y renació en élite) en mitad de su propia habilidad —pinchos, reflejo de Juniana…—,
+        // al terminar está en otra forma: NO se marca esa forma como usada (su élite queda disponible, como debe) ni se
+        // lanza la animación (salía justo después del renacer, sin que se jugara ninguna habilidad nueva).
+        if(!!hero.eliteMode !== startElite || hero.alive === false){
+          if(hero.eliteMode && !startElite){ hero.abilityUsed = false; hero._bfEliteUsed = false; hero._bfAbUsedElite = false; }
+          if(typeof renderBattle === 'function') renderBattle();
+          if(typeof netSync === 'function') netSync('s-battle');
+          setTimeout(complete, 420);
+          return;
+        }
         hero.abilityUsed = true;
         if(hero.eliteMode) hero.eliteUsed = true;
         if(typeof window.__bfPlayAbilityAnim === 'function') window.__bfPlayAbilityAnim(side, hero);
