@@ -341,3 +341,45 @@ test('FINAL ANIMATION: bigger portraits (row of 3 per team on desktop, stacked t
   const g=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
   assert.match(g,/if\(document\.getElementById\('bf-recap'\)\|\|\(typeof window\.__bfRecapPending==='function'&&window\.__bfRecapPending\(\)\)\)\{if\(!window\.__bfEndRecapWait\)window\.__bfEndRecapWait=Date\.now\(\);if\(Date\.now\(\)-window\.__bfEndRecapWait<9000\)\{setTimeout\(function\(\)\{bfEndCinematic\(forceWin\);\},300\);return;\}\}/);
 });
+test('NO MOVEMENT AT ALL: card decorations applied in the SAME instant as the repaint (they popped in a moment later every move); foil = static multicolour ring, gold/rainbow borders only from DB flags; invisibility without fade',()=>{
+  assert.match(read('steadyRenderPatch.js'),/\(window\.__bfAfterRender\|\|\[\]\)\.forEach\(function\(fn\)\{ try\{ fn\(\); \}catch\(e\)\{\} \}\);/);
+  const reg=/\(window\.__bfAfterRender=window\.__bfAfterRender\|\|\[\]\)\.push\(/;
+  for(const f of ['statusLabelPatch.js','speedGaugePatch.js','invisibleFxPatch.js','foilShinePatch.js'])assert.match(read(f),reg,f);
+  assert.match(fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8'),/\.push\(function\(\)\{ document\.querySelectorAll\('\.bhero\[id\^="b_"\]'\)\.forEach\(function\(c\)\{ try \{ decorateBattleHeroState\(c\); \} catch \(e\) \{\} \}\); \}\);/);
+  const f=read('foilShinePatch.js');
+  assert.doesNotMatch(f,/bfBattleFoilShine 4\.5s/,'no foil sweep');assert.match(f,/animation:none!important;transition:none!important'/);
+  assert.match(f,/html body \.bhero\.bf-foil-on\.bf-epic-gold::after\{content:none!important\}/);
+  assert.match(read('invisibleFxPatch.js'),/\{opacity:\.28!important;transition:none!important\}/);
+});
+test('END SEQUENCE in order: final blow over the darkened battle board, then the victory/defeat animation, and only then the final screen with its buttons',()=>{
+  const e=read('endSequencePatch.js');
+  assert.match(e,/body\.bf-end-seq #s-result\{display:none!important\}/,'the final screen stays hidden (still active) during the sequence');
+  assert.match(e,/body\.bf-end-seq #s-battle\{display:block!important;filter:brightness\(\.42\)/,'the battle board is shown darkened behind');
+  assert.match(e,/if\(\(sawCine&&!cine\)\|\|\(window\.__bfEndCineDoneAt&&window\.__bfEndCineDoneAt>=startedAt\)\|\|\(!sawCine&&recapGoneAt&&now-recapGoneAt>12000\)\|\|now-startedAt>30000\)stop\(\);/);
+  assert.match(read('gameInject.js'),/RESULT_SCREEN_PATCH \+ END_SEQUENCE_PATCH/);
+});
+test('FOIL border is its own style (holographic pearl ring + cool halo + four fixed corner sparkles), wins over the rainbow border, no ring on dead heroes (the R.I.P. gravestone shows), nothing moves',()=>{
+  const f=read('foilShinePatch.js');
+  assert.match(f,/background:conic-gradient\(from 200deg,#ffffff,#bfefff 12%,#e9d4ff 24%/,'holographic pearl ring');
+  assert.match(f,/html body \.bhero\.bf-foil-on\.bf-rainbow:not\(\.bf-truedead\)\{background:linear-gradient\(#140d24,#140d24\) padding-box,conic-gradient\(from 200deg/,'foil wins over rainbow');
+  assert.match(f,/return '#' \+ cssEscape\(id\) \+ ':not\(\.bf-truedead\)::after';/,'dead heroes keep their gravestone');
+  assert.match(f,/html body \.bhero\.bf-foil-on:not\(\.bf-truedead\)::after\{/);
+  assert.match(f,/g\.className='bf-foil-gems'; g\.innerHTML='<i><\/i><i><\/i><i><\/i><i><\/i>';/);
+  assert.match(f,/animation:none!important;transition:none!important'/);
+});
+test('END ANIMATION POOL: 3 new victory scenes and 3 new defeat scenes join the videos (picked at random), drawn with CSS, end after 9 s',()=>{
+  const s=read('endScenesPatch.js');
+  assert.match(s,/window\.__bfEndScenes=\{win:\['fireworks','goldrain','ducks'\],lose:\['storm','tomatoes','bats'\]\};/);
+  assert.doesNotMatch(s,/\\\\\\\\u\{/,'emojis are real characters (not shown as codes)');
+  const e=fs.readFileSync(path.join(root,'base44/functions/gameHtml/entry.ts'),'utf8');
+  assert.match(e,/bfPool=\(localWin\?VICTORY_VIDEOS:DEFEAT_VIDEOS\)\.length\+bfScenes\.length/);
+  assert.match(e,/if\(vd\)\{vd\.onended=soon;vd\.onerror=soon;\}else\{setTimeout\(done,9000\);\}/);
+  assert.match(read('gameInject.js'),/END_SEQUENCE_PATCH \+ END_SCENES_PATCH/);
+});
+test('ANIMATION NAMES: no accidental clashes (the recap, Rearmar and Reanimación Arcana shared bfRc*; a clash with the Masked Thief turned the storm white)',()=>{
+  const files=fs.readdirSync(path.join(root,'src/lib')).filter(f=>f.endsWith('.js'));
+  const by={};for(const f of files){const t=read(f);for(const m of t.matchAll(/@keyframes\s+([A-Za-z0-9_-]+)/g)){(by[m[1]]=by[m[1]]||new Set()).add(f);}}
+  const intentional=new Set(['bfBloodDrip']);   // (las demás redefiniciones a propósito son de entry.ts, fuera de src/lib)
+  const clashes=Object.entries(by).filter(([k,v])=>v.size>1&&!intentional.has(k)).map(([k,v])=>k+':'+[...v].join(','));
+  assert.deepEqual(clashes,[],'animation names defined in several patches: '+clashes.join(' | '));
+});
