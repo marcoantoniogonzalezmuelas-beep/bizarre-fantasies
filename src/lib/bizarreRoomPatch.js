@@ -31,9 +31,9 @@ export const BIZARRE_ROOM_PATCH = `
 #bf-bizarre-overlay .bf-biz-torch::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:12px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb24a 40%,#ff5a2a 75%,transparent 100%);box-shadow:0 0 16px rgba(255,150,40,.8),0 0 30px rgba(255,90,20,.5);animation:bfTorchFlick .45s ease-in-out infinite alternate}
 #bf-bizarre-overlay .bf-biz-torch::after{content:'';position:absolute;left:50%;top:-10px;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,160,60,.35),transparent 70%)}
 #bf-bizarre-overlay .bf-biz-rune{position:absolute;font-family:Cinzel,serif;font-size:26px;color:rgba(199,155,255,.3);text-shadow:0 0 12px rgba(192,91,255,.5);pointer-events:none;animation:bfRunePulse 3s ease-in-out infinite}
-#bf-bizarre-overlay .bf-biz-ember{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfEmber 4s linear infinite;pointer-events:none}
-#bf-bizarre-overlay .bf-biz-sparkle{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff5dc;box-shadow:0 0 6px rgba(255,210,74,.8),0 0 12px rgba(255,210,74,.4);opacity:0;animation:bfSparkle 3s ease-in-out infinite;pointer-events:none}
-@keyframes bfSparkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.9;transform:scale(1.2)}}
+#bf-bizarre-overlay .bf-biz-ember{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfBrEmber 4s linear infinite;pointer-events:none}
+#bf-bizarre-overlay .bf-biz-sparkle{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff5dc;box-shadow:0 0 6px rgba(255,210,74,.8),0 0 12px rgba(255,210,74,.4);opacity:0;animation:bfBrSparkle 3s ease-in-out infinite;pointer-events:none}
+@keyframes bfBrSparkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.9;transform:scale(1.2)}}
 #bf-bizarre-overlay .bf-biz-duck{position:absolute;font-size:30px;pointer-events:none;filter:drop-shadow(0 0 8px rgba(255,210,74,.6));animation:bfDuckFloat 6s ease-in-out infinite}
 #bf-bizarre-overlay .bf-biz-tentacle{position:absolute;font-size:44px;pointer-events:none;opacity:.55}
 #bf-bizarre-overlay .bf-biz-eyeball{position:absolute;top:8%;left:50%;transform:translateX(-50%);font-size:22px;pointer-events:none;animation:bfEyeBlink 4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(255,42,90,.8))}
@@ -90,8 +90,8 @@ export const BIZARRE_ROOM_PATCH = `
 .bf-bizarre-torch::before{content:'';position:absolute;left:50%;top:0;transform:translateX(-50%);width:12px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6c0,#ffb24a 40%,#ff5a2a 75%,transparent 100%);box-shadow:0 0 16px rgba(255,150,40,.8),0 0 30px rgba(255,90,20,.5);animation:bfTorchFlick .45s ease-in-out infinite alternate}
 .bf-bizarre-torch::after{content:'';position:absolute;left:50%;top:-10px;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,160,60,.35),transparent 70%)}
 @keyframes bfTorchFlick{0%{transform:translateX(-50%) scaleY(1) scaleX(1);opacity:.9}100%{transform:translateX(-50%) scaleY(1.18) scaleX(.85);opacity:1}}
-.bf-bizarre-ember{position:absolute;bottom:20%;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfEmber 4s linear infinite;pointer-events:none;z-index:1}
-@keyframes bfEmber{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.8}100%{transform:translateY(-120px) translateX(8px);opacity:0}}
+.bf-bizarre-ember{position:absolute;bottom:20%;width:3px;height:3px;border-radius:50%;background:#ffb86a;box-shadow:0 0 6px rgba(255,150,60,.9);opacity:.7;animation:bfBrEmber 4s linear infinite;pointer-events:none;z-index:1}
+@keyframes bfBrEmber{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:.8}100%{transform:translateY(-120px) translateX(8px);opacity:0}}
 .bf-bizarre-rune{position:absolute;font-family:Cinzel,serif;font-size:22px;color:rgba(199,155,255,.28);text-shadow:0 0 10px rgba(192,91,255,.4);pointer-events:none;animation:bfRunePulse 3s ease-in-out infinite;z-index:1}
 @keyframes bfRunePulse{0%,100%{opacity:.2}50%{opacity:.55}}
 .bf-bizarre-content{position:relative;z-index:2;padding:18px 18px 16px}
