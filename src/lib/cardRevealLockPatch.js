@@ -89,8 +89,10 @@ body.bf-cine-active #bf-abil-anim .bf-aa-glowdisc{left:70%!important}
     document.body.classList.toggle('bf-cine-active',on);
   }
 
+  // La marca de "cinemática en pantalla" se sigue actualizando SIEMPRE (antes dejaba de hacerlo al cabo de un rato y
+  // podía quedarse puesta para siempre); solo la instalación de los ganchos tiene límite de intentos.
+  setInterval(syncCine,150);
   var tries=0,iv=setInterval(function(){
-    syncCine();
     hookAll();
     if(++tries>400)clearInterval(iv);
   },200);

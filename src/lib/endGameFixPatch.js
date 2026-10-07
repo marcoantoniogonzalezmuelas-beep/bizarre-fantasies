@@ -323,24 +323,77 @@ export const END_GAME_FIX_PATCH = `
 .bhero.bf-truedead .bf-battle-art {
   filter: grayscale(1) brightness(.45) !important;
 }
-/* Marcador de muerte bizarro: lápida de piedra con calavera y RIP esculpido */
+/* LÁPIDA de los héroes caídos: piedra en arco, GRANDE y centrada sobre el retrato, con calavera, R.I.P. grabado y
+   un poco de hierba al pie. Aparece con un fundido y se queda QUIETA (antes era un rótulo diminuto que se balanceaba). */
 .bhero.bf-truedead::after {
-  content: "☠\\FE0E\\A RIP"; white-space: pre; text-align: center;
-  position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
-  z-index: 20; font-family: 'Cinzel', serif; font-weight: 1000;
-  font-size: clamp(9px, 2vw, 13px); letter-spacing: 1.5px; line-height: 1.2;
-  color: #ff2a2a;
-  background: linear-gradient(180deg, #3a2e48 0%, #2a2038 45%, #181028 100%);
-  border: 2px solid #b32020;
-  border-radius: 11px 11px 5px 5px;
-  padding: 3px 8px 5px;
-  box-shadow: 0 4px 10px #000, 0 0 14px rgba(220,40,40,.8), inset 0 1px 0 rgba(255,255,255,.1), inset 0 -2px 4px rgba(0,0,0,.5) !important;
-  text-shadow: 0 0 10px rgba(255,50,50,.95), 0 1px 2px #000;
+  content: "\\2620\\FE0E\\A R.I.P."; white-space: pre; text-align: center;
+  /* Sobre el RETRATO (ocupa la parte izquierda de la carta, ~1–43 % del ancho): deja a la vista nombre y datos. */
+  position: absolute; left: 22%; top: 50%; transform: translate(-50%,-50%);
+  z-index: 20; box-sizing: border-box;
+  width: clamp(64px, 30%, 128px); aspect-ratio: 3 / 4;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-weight: 1000;
+  font-size: clamp(13px, 2.6vw, 24px); letter-spacing: 2px; line-height: 1.25;
+  color: #2b2433;
+  background:
+    radial-gradient(ellipse at 50% 100%, #3f7a2a 0 22%, transparent 23%) bottom / 120% 18% no-repeat,
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,.28), transparent 40%),
+    linear-gradient(180deg, #b9b3c4 0%, #8e889c 55%, #615b70 100%);
+  border: 3px solid #4a4458;
+  border-radius: 48% 48% 8px 8px / 36% 36% 8px 8px;
+  padding: 14% 6% 18%;
+  box-shadow: 0 8px 18px rgba(0,0,0,.75), inset 0 3px 0 rgba(255,255,255,.25), inset 0 -6px 10px rgba(0,0,0,.35) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35), 0 -1px 0 rgba(0,0,0,.4);
   pointer-events: none;
-  animation: bfTombFadeIn .4s ease-out, bfTombWobble 4s ease-in-out infinite 1.5s;
+  animation: bfTombFadeIn .5s ease-out both;
 }
-@keyframes bfTombFadeIn { 0% { opacity: 0; transform: translateX(-50%) scale(.3); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
-@keyframes bfTombWobble { 0%,100% { transform: translateX(-50%) rotate(-1.5deg); } 50% { transform: translateX(-50%) rotate(2deg); } }
+@keyframes bfTombFadeIn { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.6); } 100% { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+/* ===== ANIMACIÓN FINAL: retratos más grandes, vencedores en su color, vencidos K.O. ===== */
+#bf-end-cine .bf-cine-lineup .bf-cine-hero { position: relative; }
+/* Ordenador: cada equipo en UNA FILA de tres (en columna, el alto de la pantalla limitaba el tamaño). */
+@media (min-width: 761px) {
+  #bf-end-cine .bf-cine-lineup .bf-cine-team { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(10px, 1.4vw, 20px); align-items: end; }
+  #bf-end-cine .bf-cine-lineup .bf-cine-portrait { width: 100%; max-width: 170px; margin: auto; aspect-ratio: 3 / 4; height: auto; }
+  #bf-end-cine .bf-cine-lineup .bf-cine-name { max-width: 170px; margin-left: auto; margin-right: auto; font-size: clamp(11px, 1.1vw, 15px); }
+}
+/* Móvil: los equipos APILADOS (vencedores arriba, VS, vencidos abajo), cada uno en una fila de tres a todo el ancho
+   (uno al lado del otro, los retratos salían diminutos). */
+@media (max-width: 760px) {
+  #bf-end-cine .bf-cine-lineup { grid-template-columns: 1fr !important; left: 3% !important; right: 3% !important; bottom: 3% !important; gap: 4px !important; }
+  #bf-end-cine .bf-cine-lineup .bf-cine-team { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; }
+  #bf-end-cine .bf-cine-lineup .bf-cine-portrait { width: 100%; max-width: 112px; margin: auto; aspect-ratio: 3 / 4; height: auto; }
+  #bf-end-cine .bf-cine-lineup .bf-cine-name { font-size: 10px; max-width: 112px; margin-left: auto; margin-right: auto; }
+  #bf-end-cine .bf-cine-lineup .bf-cine-vs { font-size: 24px; margin: 0 auto; line-height: 1.2; justify-self: center; text-align: center; }
+  #bf-end-cine .bf-cine-fallen::after { font-size: 17px; border-width: 3px; padding: 1px 7px; }
+}
+/* VENCEDORES: en su color (más vivo), marco dorado grueso y brillo. */
+#bf-end-cine .bf-cine-winner .bf-cine-portrait, #bf-end-cine .bf-cine-team-winner .bf-cine-portrait {
+  border-width: 4px !important; border-color: #ffd24a !important;
+  filter: saturate(1.35) contrast(1.08) brightness(1.08) !important;
+}
+#bf-end-cine .bf-cine-winner .bf-cine-portrait img { filter: none; }
+/* VENCIDOS: oscurecidos (blanco y negro, apagados) y con humor: sello K.O., estrellitas de mareo y su tumba. */
+#bf-end-cine .bf-cine-fallen .bf-cine-portrait {
+  filter: grayscale(.92) brightness(.52) contrast(1.12) !important;
+  border-color: #5a4f66 !important; border-width: 3px !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.7), inset 0 0 26px rgba(0,0,0,.7) !important;
+}
+/* Sello K.O. en el CONTENEDOR del héroe (no dentro del retrato: heredaba su oscurecido y se veía gris). */
+#bf-end-cine .bf-cine-fallen::after {
+  content: "K.O."; position: absolute; left: 50%; top: 40%; right: auto; bottom: auto; z-index: 6;
+  transform: translate(-50%, -50%) rotate(-16deg);
+  font-family: 'Cinzel', serif; font-weight: 1000; font-size: clamp(18px, 2.8vw, 38px); letter-spacing: 2px; line-height: 1.1;
+  color: #ff3b3b; padding: 2px 12px; border: 4px solid #ff3b3b; border-radius: 10px;
+  background: rgba(40, 0, 0, .35); box-shadow: 0 0 0 2px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.6);
+  text-shadow: 0 2px 0 rgba(0,0,0,.6); opacity: .95; pointer-events: none; white-space: nowrap;
+}
+#bf-end-cine .bf-cine-fallen::before {
+  content: "\\1F4AB  \\2B50  \\1F4AB"; white-space: pre; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+  z-index: 6; font-size: clamp(14px, 2.2vw, 22px); line-height: 1; pointer-events: none;
+  filter: drop-shadow(0 2px 3px #000);
+}
+#bf-end-cine .bf-cine-fallen .bf-cine-name { color: #8d8299 !important; text-decoration: line-through; text-decoration-color: rgba(255,59,59,.7); }
 </style>
 <script>
 (function(){

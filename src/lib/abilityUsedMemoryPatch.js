@@ -52,10 +52,13 @@ export const ABILITY_USED_MEMORY_PATCH = `
     return true;
   }
 
+  // La anotación de habilidades usadas sigue SIEMPRE (antes se detenía a los 10 minutos de cargar la página: a partir
+  // de ahí, al revivir con la Pluma Fénix el héroe volvía con su habilidad normal disponible otra vez, y la IA la
+  // volvía a lanzar nada más revivir). Solo la instalación del gancho tiene límite de intentos.
+  setInterval(scan,150);
   var tries=0,iv=setInterval(function(){
-    scan();
     if(!window.__bfAbMemHooked){if(hookRevive())window.__bfAbMemHooked=1;}
-    if(++tries>4000)clearInterval(iv);
+    if(window.__bfAbMemHooked||++tries>4000)clearInterval(iv);
   },150);
   hookRevive();
 })();
