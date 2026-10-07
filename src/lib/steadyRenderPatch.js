@@ -103,6 +103,9 @@ export const STEADY_RENDER_PATCH = `
       try{ restore(snap,true); }catch(e){}
       // Retratos EN EL MISMO INSTANTE (antes de que el navegador pinte): la carta nunca se ve sin su retrato.
       try{ if(typeof window.__bfInjectBattleArt==='function')window.__bfInjectBattleArt(); }catch(e){}
+      // ADORNOS EN EL MISMO INSTANTE (aura y etiqueta del turno, estados, velocidad, bordes, invisibilidad): antes los
+      // ponían temporizadores un momento DESPUÉS de cada repintado y en cada jugada desaparecían y reaparecían.
+      (window.__bfAfterRender||[]).forEach(function(fn){ try{ fn(); }catch(e){} });
       // Segunda pasada al instante siguiente: por si otro parche retoca las cartas justo después del repintado.
       setTimeout(function(){ try{ restore(snap,false); }catch(e){} },0);   // (la mano solo se decide en la primera)
       return out;

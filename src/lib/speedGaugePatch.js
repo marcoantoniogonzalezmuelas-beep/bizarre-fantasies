@@ -133,6 +133,7 @@ export const SPEED_GAUGE_PATCH = `
 
   function tick(){ patchBattle(); patchAuction(); }
   setInterval(tick, 280);
+  (window.__bfAfterRender=window.__bfAfterRender||[]).push(patchBattle);   // en el mismo instante del repintado
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
   else tick();
   var lastT = 0;

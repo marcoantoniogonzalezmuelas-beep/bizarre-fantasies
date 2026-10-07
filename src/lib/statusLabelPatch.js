@@ -169,6 +169,7 @@ export const STATUS_LABEL_PATCH = `
   // Sondeo periódico: la acción de tanquear no siempre dispara renderBattle,
   // así que sin esto el banner TANQUEANDO no aparecía hasta el siguiente render.
   setInterval(update, 500);
+  (window.__bfAfterRender=window.__bfAfterRender||[]).push(update);   // en el mismo instante del repintado
   update();
 })();
 </script>

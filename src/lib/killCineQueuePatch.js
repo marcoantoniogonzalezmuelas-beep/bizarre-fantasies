@@ -10,8 +10,8 @@ export const KILL_CINE_QUEUE_PATCH = `
   window.__bfKillCineQueue = true;
   var pickDeathQuip=(${createDeathQuipPicker.toString()})();
   var css = [
-    '#bf-kill-ov{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;animation:bfKillFade .35s ease-out}',
-    '@keyframes bfKillFade{from{opacity:0}to{opacity:1}}',
+    '#bf-kill-ov{position:fixed;inset:0;z-index:100006;pointer-events:none;overflow:hidden;animation:bfKqFade .35s ease-out}',
+    '@keyframes bfKqFade{from{opacity:0}to{opacity:1}}',
     '#bf-kill-ov.bf-kill-out{transition:opacity .5s;opacity:0}',
     '#bf-kill-ov .bf-kill-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(20,5,5,.72),rgba(6,2,2,.92))}',
     '#bf-kill-ov .bf-kill-att{position:absolute;left:4%;top:50%;transform:translateY(-50%);width:min(44vw,420px);height:min(62vw,560px);border-radius:20px;overflow:hidden;border:4px solid #ffd24a;box-shadow:0 0 40px rgba(255,210,74,.6),0 12px 36px rgba(0,0,0,.75);background-size:cover;background-position:center 8%;background-color:#0a0710;animation:bfKillAtt .7s cubic-bezier(.2,.8,.3,1) both}',

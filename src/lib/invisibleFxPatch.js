@@ -12,7 +12,7 @@ export const INVISIBLE_FX_PATCH = `
   var css =
     '#s-battle .bhero.bf-invis{--bf-ic:#c05bff;box-shadow:0 0 0 2px var(--bf-ic),0 0 18px var(--bf-ic)!important}' +
     '#s-battle .bhero.bf-invis.bf-invis-ring{--bf-ic:#ffd24a}' +
-    '#s-battle .bhero.bf-invis .bf-bscene-portrait,#s-battle .bhero.bf-invis .bf-battle-art{opacity:.28!important;transition:opacity .5s ease}' +
+    '#s-battle .bhero.bf-invis .bf-bscene-portrait,#s-battle .bhero.bf-invis .bf-battle-art{opacity:.28!important;transition:none!important}' +
     '#s-battle .bhero .bf-invis-veil{position:absolute!important;inset:0;z-index:2!important;pointer-events:none;overflow:hidden;border-radius:inherit;background:radial-gradient(circle at 30% 45%,rgba(200,220,255,.10),rgba(10,6,22,.55) 75%)}' +
     '#s-battle .bhero .bf-invis-veil::before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:60%;background:linear-gradient(100deg,transparent,rgba(230,240,255,.22) 45%,rgba(255,255,255,.35) 50%,rgba(230,240,255,.22) 55%,transparent);animation:bfInvSweep 3.2s ease-in-out infinite}' +
     '#s-battle .bhero .bf-invis-veil::after{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(0deg,transparent 0 9px,rgba(200,220,255,.07) 9px 11px);animation:bfInvWave 5s linear infinite}' +
@@ -44,6 +44,7 @@ export const INVISIBLE_FX_PATCH = `
     });
   }
   setInterval(scan, 300);
+  (window.__bfAfterRender=window.__bfAfterRender||[]).push(scan);   // en el mismo instante del repintado
 })();
 </script>
 `;
