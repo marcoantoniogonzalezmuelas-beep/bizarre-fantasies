@@ -129,6 +129,7 @@ export const NEW_GEAR_PATCH = `
     if(H.sb||typeof window.statusBadges!=='function')return false; H.sb=1;
     var o=window.statusBadges;
     var w=function(h){
+      if(h&&h.alive===false)return '';   // un héroe muerto no lleva rótulos de estado
       var out=o.apply(this,arguments);
       try{ if(h&&h._bfPoison&&h._bfPoison.turns>0)out=(out||'')+'<span class="status-badge st-poison" title="Envenenado: -'+h._bfPoison.dmg+' al empezar cada turno" style="background:rgba(70,110,20,.85);border-color:#a8d84a;color:#eaffc0">\u2620\ufe0f'+h._bfPoison.turns+'</span>'; }catch(e){}
       return out;
@@ -141,6 +142,15 @@ export const NEW_GEAR_PATCH = `
     if(H.pl||typeof window.pushLog!=='function')return false; H.pl=1;
     var o=window.pushLog;
     var w=function(cls,txt){
+      // TURNO PERDIDO (dormido, paralizado, pierde el turno): el motor repinta con ese héroe como activo y su panel de
+      // acciones aparecía un instante. Se marca la batalla para ocultarlo hasta que pase el turno (el cartel de
+      // "pierde su turno" sigue saliendo igual).
+      try{
+        if(/duerme y pierde el turno|est\\u00e1 paralizado|pierde el turno|sleeps and loses the turn|is paralyzed|loses the turn/.test(String(txt||''))&&typeof B!=='undefined'&&B&&B.current){
+          window.__bfSkipTurnKey=B.current.side+':'+B.current.id;
+          document.body.classList.add('bf-skip-turn');
+        }
+      }catch(e){}
       var r=o.apply(this,arguments);
       try{
         var m=/: (.+?) (?:liberado|vuelve a su estado normal)\.$/.exec(String(txt||''));

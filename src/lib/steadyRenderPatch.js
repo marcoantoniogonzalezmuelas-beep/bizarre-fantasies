@@ -9,7 +9,22 @@ export const STEADY_RENDER_PATCH = `
 (function(){
   if(window.__bfSteadyRender)return;
   window.__bfSteadyRender=true;
+  // Con el turno perdido no se muestra el panel de acciones del héroe (ver newGearPatch, gancho del registro).
+  (function(){ var st=document.createElement('style'); st.textContent='body.bf-skip-turn #s-battle .active-hero-panel{display:none!important}'; document.head.appendChild(st); })();
   function root(){ return document.getElementById('s-battle'); }
+  // HÉROES MUERTOS SIN ESTADOS: al morir conservaban parálisis, sueño, silencio, veneno… y cada parte del juego los
+  // seguía pintando sobre su carta (rótulos, insignias, rayos). Antes de cada repintado se borran a los caídos (no se
+  // toca lo necesario para revivir o renacer: élite usada, maná al caer, etc.).
+  var DEAD_CLEAR=['para','sleep','silence','skip','stun','frozen','freeze','_bfFrozen','mark','marked','_bfMark','_bfConfused','_bfDizzy','_bfDrunk','_bfPoison','_bfDisoriented','_bfCursed','curse','wardTurns','evade','_bfInvisible','_bfTank','taunt','_mods','_bfDojiThreat'];
+  function cleanDead(){
+    try{
+      if(typeof G==='undefined'||!G||!G.team)return;
+      ['p','o'].forEach(function(s){ (G.team[s]||[]).forEach(function(h){
+        if(!h||h.alive!==false)return;
+        DEAD_CLEAR.forEach(function(k){ if(h[k]!==undefined&&h[k]!==null&&h[k]!==0&&h[k]!==false&&!(Array.isArray(h[k])&&!h[k].length)){ h[k]=Array.isArray(h[k])?[]:(typeof h[k]==='number'?0:(typeof h[k]==='boolean'?false:null)); } });
+      }); });
+    }catch(e){}
+  }
   // HUELLA DE LA MANO: todo lo que la mano muestra (cartas, de quién es el turno y su maná, si está silenciado o con la
   // mano bloqueada, si hay algo pendiente, los descartes). Si no cambia, la mano ya pintada se conserva tal cual.
   // Huella del estado con el que se pintó la mano que hay ahora en pantalla (se guarda al terminar cada repintado).
@@ -80,6 +95,9 @@ export const STEADY_RENDER_PATCH = `
       if(depth>0)return orig.apply(this,arguments);
       depth++;
       var snap=null,out;
+      cleanDead();
+      // Fin del "turno perdido": en cuanto el turno es de otro héroe, el panel de acciones vuelve a mostrarse.
+      try{ var ck=(typeof B!=='undefined'&&B&&B.current)?(B.current.side+':'+B.current.id):''; if(window.__bfSkipTurnKey&&ck!==window.__bfSkipTurnKey){ window.__bfSkipTurnKey=''; document.body.classList.remove('bf-skip-turn'); } }catch(e){}
       try{ snap=snapshot(); }catch(e){}
       try{ out=orig.apply(this,arguments); } finally { depth--; }
       try{ restore(snap,true); }catch(e){}
